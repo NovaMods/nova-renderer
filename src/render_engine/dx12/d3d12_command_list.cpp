@@ -7,7 +7,7 @@
 #include "d3dx12.h"
 #include "dx12_utils.hpp"
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     d3d12_command_list::d3d12_command_list(ComPtr<ID3D12GraphicsCommandList> cmds) : cmds(std::move(cmds)) {}
 
     void d3d12_command_list::resource_barriers([[maybe_unused]] pipeline_stage_flags stages_before_barrier,

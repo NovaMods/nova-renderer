@@ -17,7 +17,7 @@
 #include <nova_renderer/util/utils.hpp>
 #include <nova_renderer/window.hpp>
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     struct buffer_create_info_t {
         enum class usage {
             UNIFORM_BUFFER,

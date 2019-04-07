@@ -11,7 +11,7 @@
 
 #include "d3d12_structs.hpp"
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     using namespace Microsoft::WRL;
 
     class d3d12_command_list : public command_list_t {

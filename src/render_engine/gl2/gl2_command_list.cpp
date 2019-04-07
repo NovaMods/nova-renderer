@@ -7,8 +7,8 @@
 
 #include "gl2_structs.hpp"
 
-namespace nova::renderer {
-    gl2_command_list::gl2_command_list() {
+namespace nova::renderer::rhi {
+    rhi::gl2_command_list::gl2_command_list() {
         // TODO: maintain an average of the number of commands per command list, and allocate enough commands for like 90% of all command
         // lists
         commands.reserve(128);

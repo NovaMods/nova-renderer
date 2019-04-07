@@ -12,7 +12,7 @@
 
 using Microsoft::WRL::ComPtr;
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     d3d12_render_engine::d3d12_render_engine(nova_settings& settings) : render_engine_t(settings) {
         const std::optional<nova_error> create_device_error = create_device();
         if(create_device_error) {

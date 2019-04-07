@@ -9,7 +9,7 @@
 
 #include "glad.h"
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     enum class gl2_command_type {
         BUFFER_COPY,
         EXECUTE_COMMAND_LISTS,

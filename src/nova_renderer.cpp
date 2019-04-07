@@ -65,7 +65,7 @@ namespace nova::renderer {
 #if defined(NOVA_WINDOWS)
             {
                 MTR_SCOPE("Init", "InitDirect3D12RenderEngine");
-                engine = std::make_unique<d3d12_render_engine>(render_settings);
+                engine = std::make_unique<rhi::d3d12_render_engine>(render_settings);
             } break;
 #else
                 NOVA_LOG(WARN) << "You selected the DX12 graphics API, but your system doesn't support it. Defaulting to Vulkan";
@@ -73,12 +73,12 @@ namespace nova::renderer {
 #endif
             case graphics_api::vulkan: {
                 MTR_SCOPE("Init", "InitVulkanRenderEngine");
-                engine = std::make_unique<vk_render_engine>(render_settings);
+                engine = std::make_unique<rhi::vk_render_engine>(render_settings);
             } break;
 
             case graphics_api::gl2: {
                 MTR_SCOPE("Init", "InitGL2RenderEngine");
-                engine = std::make_unique<gl2_render_engine>(render_settings);
+                engine = std::make_unique<rhi::gl2_render_engine>(render_settings);
             } break;
         }
     }
@@ -137,13 +137,13 @@ namespace nova::renderer {
 
     void nova_renderer::destroy_render_passes() {
         for(renderpass_t* renderpass : renderpasses) {
-            engine->destroy_renderpass(renderpass);
+            engine->destroy_renderpass(renderpass->renderpass);
         }
 
         renderpasses.clear();
     }
 
-    render_engine_t* nova_renderer::get_engine() const { return engine.get(); }
+    rhi::render_engine_t* nova_renderer::get_engine() const { return engine.get(); }
 
     nova_renderer* nova_renderer::get_instance() { return instance.get(); }
 

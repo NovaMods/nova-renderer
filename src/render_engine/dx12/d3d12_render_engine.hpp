@@ -13,7 +13,7 @@
 #include <dxgi1_4.h>
 #include <wrl.h>
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     struct d3d12_renderpass_t : renderpass_t {};
 
     /*!

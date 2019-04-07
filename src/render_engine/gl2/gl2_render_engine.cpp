@@ -8,7 +8,7 @@
 
 #include "../../util/logger.hpp"
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     gl2_render_engine::gl2_render_engine(nova_settings& settings) : render_engine_t(settings) {
         const bool loaded_opengl = gladLoadGL() != 0;
         if(!loaded_opengl) {
@@ -36,8 +36,8 @@ namespace nova::renderer {
     resource_t* gl2_render_engine::create_texture(const texture2d_create_info_t& info) { return nullptr; }
     semaphore_t* gl2_render_engine::create_semaphore() { return nullptr; }
     std::vector<semaphore_t*> gl2_render_engine::create_semaphores(uint32_t num_semaphores) { return std::vector<semaphore_t*>(); }
-    fence_t* gl2_render_engine::create_fence(bool signaled = false) { return nullptr; }
-    std::vector<fence_t*> gl2_render_engine::create_fences(uint32_t num_fences, bool signaled = false) { return std::vector<fence_t*>(); }
+    fence_t* gl2_render_engine::create_fence(bool signaled) { return nullptr; }
+    std::vector<fence_t*> gl2_render_engine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<fence_t*>(); }
     void gl2_render_engine::destroy_renderpass(renderpass_t* pass) {}
     void gl2_render_engine::destroy_pipeline(pipeline_t* pipeline) {}
     void gl2_render_engine::destroy_resource(resource_t* resource) {}
@@ -45,7 +45,7 @@ namespace nova::renderer {
     void gl2_render_engine::destroy_fences(const std::vector<fence_t*>& fences) {}
     void gl2_render_engine::submit_command_list(command_list_t* cmds,
                                                 queue_type queue,
-                                                fence_t* fence_to_signal = nullptr,
-                                                const std::vector<semaphore_t*>& wait_semaphores = {},
-                                                const std::vector<semaphore_t*>& signal_semaphores = {}) {}
+                                                fence_t* fence_to_signal,
+                                                const std::vector<semaphore_t*>& wait_semaphores,
+                                                const std::vector<semaphore_t*>& signal_semaphores) {}
 } // namespace nova::renderer
