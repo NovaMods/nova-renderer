@@ -9,14 +9,16 @@
 
 #include <nova_renderer/command_list.hpp>
 
-namespace nova::renderer {
-    using namespace Microsoft::WRL;
-
-    struct d3d12_resource_t : resource_t {
-        ComPtr<ID3D12Resource> resource;
+namespace nova::renderer::rhi {        
+    struct d3d12_buffer_t : buffer_t {
+        Microsoft::WRL::ComPtr<ID3D12Resource> resource;
     };
 
-    struct d3d12_framebuffer_t : framebuffer_t {
+    struct d3d12_image_t : image_t {
+        Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+    };
+
+    struct d3d12_framebuffer_t : rhi::framebuffer_t {
         std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> render_targets;
 
         bool has_depth_stencil = false;

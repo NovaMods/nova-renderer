@@ -9,6 +9,8 @@
 #include "d3d12_render_engine.hpp"
 #include "d3dx12.h"
 #include "dx12_utils.hpp"
+#include "../../util/windows_utils.hpp"
+#include "d3d12_structs.hpp"
 
 using Microsoft::WRL::ComPtr;
 
@@ -31,9 +33,76 @@ namespace nova::renderer::rhi {
 
     pipeline_t* d3d12_render_engine::create_pipeline(const shaderpack::pipeline_create_info_t& data) { return nullptr; }
 
-    resource_t* d3d12_render_engine::create_buffer(const buffer_create_info_t& info) { return nullptr; }
+    buffer_t* d3d12_render_engine::create_buffer(const buffer_create_info_t& info) { return nullptr; }
 
-    resource_t* d3d12_render_engine::create_texture(const texture2d_create_info_t& info) { return nullptr; }
+    image_t* d3d12_render_engine::create_texture(const shaderpack::texture_create_info_t& info) {
+        d3d12_image_t* image = new d3d12_image_t;
+
+        const shaderpack::texture_format& format = info.format;
+
+        glm::uvec2 dimensions;
+        if(format.dimension_type == shaderpack::texture_dimension_type_enum::Absolute) {
+            dimensions.x = static_cast<uint32_t>(format.width);
+            dimensions.y = static_cast<uint32_t>(format.height);
+        } else {
+            swapchain->GetSourceSize(&dimensions.x, &dimensions.y);
+            dimensions.x *= static_cast<uint32_t>(format.width);
+            dimensions.y *= static_cast<uint32_t>(format.height);
+        }
+
+        const DXGI_FORMAT dx12_format = to_dxgi_format(format.pixel_format);
+
+        DXGI_SAMPLE_DESC sample_desc = {};
+        sample_desc.Count = 1;
+        sample_desc.Quality = 1;
+
+        D3D12_RESOURCE_DESC texture_desc = {};
+        texture_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        texture_desc.Alignment = 0;
+        texture_desc.Width = dimensions.x;
+        texture_desc.Height = dimensions.y;
+        texture_desc.DepthOrArraySize = 1;
+        texture_desc.MipLevels = 1;
+        texture_desc.Format = dx12_format;
+        texture_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+        texture_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+        texture_desc.SampleDesc = sample_desc;
+
+        if(format.pixel_format == shaderpack::pixel_format_enum::Depth || format.pixel_format == shaderpack::pixel_format_enum::DepthStencil) {
+            texture_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+        }
+
+        // TODO: Info in shaderpack::texture_create_info_t about what heap to put the texture in
+        ComPtr<ID3D12Resource> texture;
+        auto heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+        const HRESULT hr = device->CreateCommittedResource(&heap_props,
+                                                           D3D12_HEAP_FLAG_NONE,
+                                                           &texture_desc,
+                                                           D3D12_RESOURCE_STATE_RENDER_TARGET,
+                                                           nullptr,
+                                                           IID_PPV_ARGS(&texture));
+
+        if(FAILED(hr)) {
+            std::string error_description;
+            switch(hr) {
+                case E_OUTOFMEMORY:
+                    error_description = "Out of memory";
+                    break;
+
+                case E_INVALIDARG:
+                    error_description = "One or more arguments are invalid";
+                    break;
+            }
+
+            NOVA_LOG(ERROR) << "Could not create texture " << info.name << ": Error code " << hr << ", Error description '"
+                            << error_description << ", Windows error: '" << get_last_windows_error() << "'";
+
+            return nullptr;
+        }
+        texture->SetName(s2ws(info.name).c_str());
+
+        return image;
+    }
 
     semaphore_t* d3d12_render_engine::create_semaphore() { return nullptr; }
 
@@ -48,7 +117,11 @@ namespace nova::renderer::rhi {
 
     void d3d12_render_engine::destroy_pipeline(pipeline_t* pipeline) {}
 
-    void d3d12_render_engine::destroy_texture(resource_t* resource) {}
+    void d3d12_render_engine::destroy_texture(image_t* resource) { 
+        // TODO: Free the texture, D3D12-style?
+
+        delete resource;
+    }
 
     void d3d12_render_engine::destroy_semaphores(const std::vector<semaphore_t*>& semaphores) {}
 
