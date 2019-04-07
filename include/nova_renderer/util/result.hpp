@@ -113,5 +113,8 @@ namespace nova::renderer {
         }
     };
 
+    template <typename ValueType>
+    result(ValueType value) -> result<ValueType>;
+
 #define MAKE_ERROR(s, ...) nova_error(fmt::format(fmt(s), __VA_ARGS__))
 } // namespace nova::renderer

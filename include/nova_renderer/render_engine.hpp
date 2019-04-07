@@ -143,7 +143,7 @@ namespace nova::renderer {
          * \param width The width, in pixels, of the desired window
          * \param height The height, in pixels of the desired window
          */
-        virtual void open_window(const nova_settings::window_options& options) = 0;
+        virtual void open_window_and_create_surface(const nova_settings::window_options& options) = 0;
 
     };
 } // namespace nova::renderer
