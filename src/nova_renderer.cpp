@@ -73,7 +73,7 @@ namespace nova::renderer {
 #endif
             case graphics_api::vulkan: {
                 MTR_SCOPE("Init", "InitVulkanRenderEngine");
-                engine = std::make_unique<vk_render_engine>(render_settings, render_doc);
+                engine = std::make_unique<vk_render_engine>(render_settings);
             } break;
 
             case graphics_api::gl2: {
@@ -88,24 +88,62 @@ namespace nova::renderer {
     nova_settings& nova_renderer::get_settings() { return render_settings; }
 
     void nova_renderer::execute_frame() const {
-        MTR_SCOPE("RenderLoop", "execute_frame");
-
-
-
         mtr_flush();
+
+        MTR_SCOPE("RenderLoop", "execute_frame");
     }
 
-    void nova_renderer::load_shaderpack(const std::string& shaderpack_name) const {
+    void nova_renderer::load_shaderpack(const std::string& shaderpack_name) {
         MTR_SCOPE("ShaderpackLoading", "load_shaderpack");
         glslang::InitializeProcess();
 
-        const shaderpack_data_t shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name));
+        const shaderpack_data_t data = load_shaderpack_data(fs::path(shaderpack_name));
 
-        engine->set_shaderpack(shaderpack_data);
+        if(shaderpack_loaded) {
+            destroy_render_passes();
+            destroy_graphics_pipelines();
+            materials.clear();
+            material_passes_by_pipeline.clear();
+            destroy_dynamic_resources();
+
+            NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
+        }
+
+        create_textures(data.resources.textures);
+        NOVA_LOG(DEBUG) << "Dynamic textures created";
+        for(const material_data& mat_data : data.materials) {
+            materials[mat_data.name] = mat_data;
+
+            for(const material_pass& mat : mat_data.passes) {
+                material_passes_by_pipeline[mat.pipeline].push_back(mat);
+            }
+        }
+        NOVA_LOG(DEBUG) << "Materials saved";
+
+        create_render_passes(data.passes);
+        NOVA_LOG(DEBUG) << "Created render passes";
+        create_graphics_pipelines(data.pipelines);
+        NOVA_LOG(DEBUG) << "Created pipelines";
+
+        create_material_descriptor_sets();
+        NOVA_LOG(TRACE) << "Material descriptor sets created";
+
+        generate_barriers_for_dynamic_resources();
+
+        shaderpack_loaded = true;
+
         NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name << " loaded successfully";
+    } 
+
+    void nova_renderer::destroy_render_passes() {
+        for(renderpass_t* renderpass : renderpasses) {
+            engine->destroy_renderpass(renderpass);
+        }
+
+        renderpasses.clear();
     }
 
-    render_engine* nova_renderer::get_engine() const { return engine.get(); }
+    render_engine_t* nova_renderer::get_engine() const { return engine.get(); }
 
     nova_renderer* nova_renderer::get_instance() { return instance.get(); }
 

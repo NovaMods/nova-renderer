@@ -13,7 +13,7 @@
 using Microsoft::WRL::ComPtr;
 
 namespace nova::renderer {
-    d3d12_render_engine::d3d12_render_engine(nova_settings& settings) : render_engine(settings) {
+    d3d12_render_engine::d3d12_render_engine(nova_settings& settings) : render_engine_t(settings) {
         const std::optional<nova_error> create_device_error = create_device();
         if(create_device_error) {
             NOVA_LOG(FATAL) << "Could not create D3D12 render engine: " << create_device_error->to_string();

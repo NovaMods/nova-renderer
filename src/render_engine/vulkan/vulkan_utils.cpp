@@ -4,7 +4,7 @@
  */
 
 #include "vulkan_utils.hpp"
-#include <nova_renderer/render_engine.hpp>
+#include <nova_renderer/render_engine_t.hpp>
 
 namespace nova::renderer {
     VkImageLayout to_vk_layout(const resource_state state) {

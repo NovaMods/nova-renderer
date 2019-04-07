@@ -12,12 +12,14 @@
 #include <string>
 
 #include "nova_settings.hpp"
-#include "render_engine.hpp"
+#include "render_engine_t.hpp"
 #include "renderdoc_app.h"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(already_initialized_exception);
     NOVA_EXCEPTION(uninitialized_exception);
+
+    
 
     /*!
      * \brief Main class for Nova. Owns all of Nova's resources and provides a way to access them
@@ -36,7 +38,7 @@ namespace nova::renderer {
         nova_renderer& operator=(const nova_renderer& other) = delete;
 
         ~nova_renderer();
-
+        
         /*!
          * \brief Loads the shaderpack with the given name
          *
@@ -46,7 +48,7 @@ namespace nova::renderer {
          *
          * \param shaderpack_name The name of the shaderpack to load
          */
-        void load_shaderpack(const std::string& shaderpack_name) const;
+        void load_shaderpack(const std::string& shaderpack_name);
 
         /*!
          * \brief Executes a single frame
@@ -55,7 +57,7 @@ namespace nova::renderer {
 
         nova_settings& get_settings();
 
-        [[nodiscard]] render_engine* get_engine() const;
+        [[nodiscard]] render_engine_t* get_engine() const;
 
         static nova_renderer* initialize(const nova_settings& settings);
 
@@ -65,10 +67,21 @@ namespace nova::renderer {
 
     private:
         nova_settings render_settings;
-        std::unique_ptr<render_engine> engine;
+        std::unique_ptr<render_engine_t> engine;
 
         RENDERDOC_API_1_3_0* render_doc;
         static std::unique_ptr<nova_renderer> instance;
+
+#pragma region Shaderpack
+        bool shaderpack_loaded = false;
+
+        /*!
+         * \brief The renderpasses in the shaderpack, in submission order
+         */
+        std::vector<renderpass_t*> renderpasses;
+
+        void destroy_render_passes();
+#pragma endregion
     };
 } // namespace nova::renderer
 

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <nova_renderer/render_engine.hpp>
+#include <nova_renderer/render_engine_t.hpp>
 
 namespace nova::renderer {
     struct vk_resource_t : resource_t {

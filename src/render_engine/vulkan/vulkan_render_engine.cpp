@@ -25,7 +25,7 @@
 #endif
 
 namespace nova::renderer {
-    vk_render_engine::vk_render_engine(nova_settings& settings) : render_engine(settings) {
+    vk_render_engine::vk_render_engine(nova_settings& settings) : render_engine_t(settings) {
         create_instance();
 
         if(settings.debug.enabled) {

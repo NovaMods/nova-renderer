@@ -9,7 +9,7 @@
 #include "../../util/logger.hpp"
 
 namespace nova::renderer {
-    gl2_render_engine::gl2_render_engine(nova_settings& settings) : render_engine(settings) {
+    gl2_render_engine::gl2_render_engine(nova_settings& settings) : render_engine_t(settings) {
         const bool loaded_opengl = gladLoadGL() != 0;
         if(!loaded_opengl) {
             NOVA_LOG(FATAL) << "Could not load OpenGL 2.1 functions, sorry bro";
