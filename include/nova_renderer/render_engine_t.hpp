@@ -1,4 +1,9 @@
-#pragma once
+//
+// Created by jannis on 29.08.18.
+//
+
+#ifndef NOVA_RENDERER_RENDER_ENGINE_HPP
+#define NOVA_RENDERER_RENDER_ENGINE_HPP
 
 #include <memory>
 
@@ -147,3 +152,5 @@ namespace nova::renderer {
 
     };
 } // namespace nova::renderer
+
+#endif // NOVA_RENDERER_RENDER_ENGINE_HPP

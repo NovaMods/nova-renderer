@@ -4,7 +4,7 @@
  */
 
 #pragma once
-#include <nova_renderer/render_engine.hpp>
+#include <nova_renderer/render_engine_t.hpp>
 #include "glad.h"
 
 namespace nova::renderer {
@@ -19,7 +19,7 @@ namespace nova::renderer {
     /*!
      * \brief OpenGL 2.1 render engine because compatibility
      */
-    class gl2_render_engine : render_engine {
+    class gl2_render_engine : render_engine_t {
     public:
         explicit gl2_render_engine(nova_settings& settings);
 

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include <nova_renderer/render_engine.hpp>
+#include <nova_renderer/render_engine_t.hpp>
 
 #include "swapchain.hpp"
 
@@ -18,7 +18,7 @@ namespace nova::renderer {
     /*!
      * \brief Vulkan implementation of a render engine
      */
-    class vk_render_engine : public render_engine {
+    class vk_render_engine : public render_engine_t {
     public:
         vk_render_engine(nova_settings& settings);
 

@@ -1,6 +1,10 @@
-#include "vulkan_utils.hpp"
+/*!
+ * \author ddubois
+ * \date 29-Nov-18.
+ */
 
-#include "nova_renderer/render_engine.hpp"
+#include "vulkan_utils.hpp"
+#include <nova_renderer/render_engine_t.hpp>
 
 namespace nova::renderer {
     VkImageLayout to_vk_layout(const resource_state state) {

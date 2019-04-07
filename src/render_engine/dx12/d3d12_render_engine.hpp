@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <nova_renderer/render_engine.hpp>
+#include <nova_renderer/render_engine_t.hpp>
 
 #include <d3d12.h>
 
@@ -19,7 +19,7 @@ namespace nova::renderer {
     /*!
      * \brief D3D12 implementation of a render engine
      */
-    class d3d12_render_engine : public render_engine {
+    class d3d12_render_engine : public render_engine_t {
     public:
         d3d12_render_engine(nova_settings& settings);
 
