@@ -34,8 +34,6 @@ namespace nova::renderer::rhi {
         residency buffer_residency;
     };
 
-    struct texture2d_create_info_t {};
-
     NOVA_EXCEPTION(render_engine_initialization_exception);
     NOVA_EXCEPTION(render_engine_rendering_exception);
 
@@ -79,9 +77,9 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] virtual pipeline_t* create_pipeline(const shaderpack::pipeline_create_info_t& data) = 0;
 
-        [[nodiscard]] virtual resource_t* create_buffer(const buffer_create_info_t& info) = 0;
+        [[nodiscard]] virtual buffer_t* create_buffer(const buffer_create_info_t& info) = 0;
 
-        [[nodiscard]] virtual resource_t* create_texture(const texture2d_create_info_t& info) = 0;
+        [[nodiscard]] virtual image_t* create_texture(const shaderpack::texture_create_info_t& info) = 0;
 
         [[nodiscard]] virtual semaphore_t* create_semaphore() = 0;
 
@@ -97,7 +95,7 @@ namespace nova::renderer::rhi {
 
         virtual void destroy_pipeline(pipeline_t* pipeline) = 0;
 
-        virtual void destroy_resource(resource_t* resource) = 0;
+        virtual void destroy_texture(image_t* resource) = 0;
 
         virtual void destroy_semaphores(const std::vector<semaphore_t*>& semaphores) = 0;
 

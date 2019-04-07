@@ -33,8 +33,8 @@ namespace nova::renderer::rhi {
 
         result<renderpass_t*> create_renderpass(const shaderpack::render_pass_create_info_t& data) override final;
         pipeline_t* create_pipeline(const shaderpack::pipeline_create_info_t& data) override final;
-        resource_t* create_buffer(const buffer_create_info_t& info) override final;
-        resource_t* create_texture(const texture2d_create_info_t& info) override final;
+        buffer_t* create_buffer(const buffer_create_info_t& info) override final;
+        image_t* create_texture(const shaderpack::texture_create_info_t& info) override final;
         semaphore_t* create_semaphore() override final;
         std::vector<semaphore_t*> create_semaphores(uint32_t num_semaphores) override final;
         fence_t* create_fence(bool signaled = false) override final;
@@ -42,7 +42,7 @@ namespace nova::renderer::rhi {
 
         void destroy_renderpass(renderpass_t* pass) override final;
         void destroy_pipeline(pipeline_t* pipeline) override final;
-        void destroy_resource(resource_t* resource) override final;
+        void destroy_texture(image_t* resource) override final;
         void destroy_semaphores(const std::vector<semaphore_t*>& semaphores) override final;
         void destroy_fences(const std::vector<fence_t*>& fences) override final;
 
@@ -100,7 +100,7 @@ namespace nova::renderer::rhi {
 
         void create_device_and_queues();
 
-        bool does_device_support_extensions(VkPhysicalDevice device);
+        static bool does_device_support_extensions(VkPhysicalDevice device);
 
         void create_swapchain();
 

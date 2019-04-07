@@ -30,3 +30,4 @@ readability*
 -*-misplaced-const
 -*-use-auto
 -*-else-after-return
+-*-pro-type-static-cast-downcast
