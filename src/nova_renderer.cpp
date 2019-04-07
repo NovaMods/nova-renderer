@@ -107,12 +107,12 @@ namespace nova::renderer {
             NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
         }
 
-        create_textures(data.resources.textures);
+        create_dynamic_textures(data.resources.textures);
         NOVA_LOG(DEBUG) << "Dynamic textures created";
-        for(const material_data& mat_data : data.materials) {
+        for(const shaderpack::material_data_t& mat_data : data.materials) {
             materials[mat_data.name] = mat_data;
 
-            for(const material_pass& mat : mat_data.passes) {
+            for(const shaderpack::material_pass_t& mat : mat_data.passes) {
                 material_passes_by_pipeline[mat.pipeline].push_back(mat);
             }
         }
@@ -131,6 +131,13 @@ namespace nova::renderer {
         shaderpack_loaded = true;
 
         NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name << " loaded successfully";
+    }
+
+    void nova_renderer::create_dynamic_textures(const std::vector<shaderpack::texture_create_info_t>& texture_create_infos) {
+        for(const shaderpack::texture_create_info_t& create_info : texture_create_infos) {
+            rhi::resource_t* new_texture = rhi->create_texture(create_info);
+            dynamic_textures.emplace(create_info.name, new_texture);
+        }
     }
 
     void nova_renderer::destroy_render_passes() {
@@ -152,11 +159,13 @@ namespace nova::renderer {
     }
 
     void nova_renderer::destroy_dynamic_resources() {
-        for(auto& [name, resource] : dynamic_resources) {
-            rhi->destroy_resource(resource);
+        for(auto& [name, resource] : dynamic_textures) {
+            rhi->destroy_texture(resource);
         }
 
-        dynamic_resources.clear();
+        dynamic_textures.clear();
+
+        // TODO: Also destroy dynamic buffers, when we have support for those
     }
 
     rhi::render_engine_t* nova_renderer::get_engine() const { return rhi.get(); }

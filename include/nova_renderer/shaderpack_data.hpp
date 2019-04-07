@@ -414,7 +414,7 @@ namespace nova::renderer::shaderpack {
     /*!
      * \brief A texture that a pass can use
      */
-    struct texture_create_into_t {
+    struct texture_create_info_t {
         /*!
          * \brief The name of the texture
          *
@@ -455,7 +455,7 @@ namespace nova::renderer::shaderpack {
     };
 
     struct shaderpack_resources_data_t {
-        std::vector<texture_create_into_t> textures;
+        std::vector<texture_create_info_t> textures;
         std::vector<sampler_create_info_t> samplers;
     };
 

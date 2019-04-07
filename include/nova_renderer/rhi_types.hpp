@@ -14,7 +14,15 @@ namespace nova::renderer::rhi {
         ASYNC_COMPUTE,
     };
 
-    struct resource_t {};
+    struct resource_t {
+        bool is_dynamic = false;
+    };
+
+    struct image_t : resource_t {
+        bool is_depth_tex = false;
+    };
+
+    struct buffer_t : resource_t {};
 
     struct framebuffer_t {
         glm::uvec2 size;
@@ -22,13 +30,13 @@ namespace nova::renderer::rhi {
 
     struct renderpass_t {
         bool writes_to_backbuffer = false;
-	};
-	
-	struct pipeline_t {};
+    };
+
+    struct pipeline_t {};
 
     struct semaphore_t {};
 
     struct fence_t {};
 
     struct descriptor_t {};
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi

@@ -66,7 +66,7 @@ namespace nova::renderer::shaderpack {
      * \return A map from texture name to the name of the texture the first texture can be aliased with
      */
     std::unordered_map<std::string, std::string> determine_aliasing_of_textures(
-        const std::unordered_map<std::string, texture_create_into_t>& textures,
+        const std::unordered_map<std::string, texture_create_info_t>& textures,
         const std::unordered_map<std::string, range>& resource_used_range,
         const std::vector<std::string>& resources_in_order);
 } // namespace nova::renderer

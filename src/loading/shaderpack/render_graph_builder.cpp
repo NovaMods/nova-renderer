@@ -235,7 +235,7 @@ namespace nova::renderer::shaderpack {
     }
 
     std::unordered_map<std::string, std::string> determine_aliasing_of_textures(
-        const std::unordered_map<std::string, texture_create_into_t>& textures,
+        const std::unordered_map<std::string, texture_create_info_t>& textures,
         const std::unordered_map<std::string, range>& resource_used_range,
         const std::vector<std::string>& resources_in_order) {
         std::unordered_map<std::string, std::string> aliases;

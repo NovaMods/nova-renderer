@@ -43,7 +43,7 @@ namespace nova::renderer::rhi {
     }
 
     void gl2_render_engine::destroy_pipeline(pipeline_t* pipeline) {}
-    void gl2_render_engine::destroy_resource(resource_t* resource) {}
+    void gl2_render_engine::destroy_texture(resource_t* resource) {}
     void gl2_render_engine::destroy_semaphores(const std::vector<semaphore_t*>& semaphores) {}
     void gl2_render_engine::destroy_fences(const std::vector<fence_t*>& fences) {}
     void gl2_render_engine::submit_command_list(command_list_t* cmds,

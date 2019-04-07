@@ -216,9 +216,79 @@ namespace nova::renderer::rhi {
 
     pipeline_t* vk_render_engine::create_pipeline(const shaderpack::pipeline_create_info_t& data) { return nullptr; }
 
-    resource_t* vk_render_engine::create_buffer(const buffer_create_info_t& info) { return nullptr; }
+    buffer_t* vk_render_engine::create_buffer(const buffer_create_info_t& info) { return nullptr; }
 
-    resource_t* vk_render_engine::create_texture(const texture2d_create_info_t& info) { return nullptr; }
+    image_t* vk_render_engine::create_texture(const shaderpack::texture_create_info_t& info) {
+        vk_image_t* texture = new vk_image_t;
+
+        const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
+        const glm::uvec2 swapchain_extent_glm = {swapchain_extent.width, swapchain_extent.height};
+
+        texture->is_dynamic = true;
+        VkFormat format = to_vk_format(info.format.pixel_format);
+
+        VkImageCreateInfo image_create_info = {};
+        image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        image_create_info.imageType = VK_IMAGE_TYPE_2D;
+        image_create_info.format = format;
+        const glm::uvec2 texture_size = info.format.get_size_in_pixels(swapchain_extent_glm);
+        image_create_info.extent.width = texture_size.x;
+        image_create_info.extent.height = texture_size.y;
+        image_create_info.extent.depth = 1;
+        image_create_info.mipLevels = 1;
+        image_create_info.arrayLayers = 1;
+        image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+        image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+        if(format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT) {
+            image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        } else {
+            image_create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        }
+        image_create_info.queueFamilyIndexCount = 1;
+        image_create_info.pQueueFamilyIndices = &graphics_family_index;
+        image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+        VmaAllocationCreateInfo alloc_create_info = {};
+        alloc_create_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+        alloc_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+        alloc_create_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        alloc_create_info.preferredFlags = 0;
+        alloc_create_info.memoryTypeBits = 0;
+        alloc_create_info.pool = nullptr;
+        alloc_create_info.pUserData = nullptr;
+
+        vmaCreateImage(vma_allocator, &image_create_info, &alloc_create_info, &texture->image, &texture->allocation, &texture->vma_info);
+
+        VkImageViewCreateInfo image_view_create_info = {};
+        image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        image_view_create_info.image = texture->image;
+        image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        image_view_create_info.format = image_create_info.format;
+        if(format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT) {
+            image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+            texture->is_depth_tex = true;
+        } else {
+            image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        }
+        image_view_create_info.subresourceRange.baseArrayLayer = 0;
+        image_view_create_info.subresourceRange.layerCount = 1;
+        image_view_create_info.subresourceRange.baseMipLevel = 0;
+        image_view_create_info.subresourceRange.levelCount = 1;
+
+        vkCreateImageView(device, &image_view_create_info, nullptr, &texture->image_view);
+
+        if(settings.debug.enabled) {
+            VkDebugUtilsObjectNameInfoEXT object_name = {};
+            object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+            object_name.objectType = VK_OBJECT_TYPE_IMAGE;
+            object_name.objectHandle = reinterpret_cast<uint64_t>(texture->image);
+            object_name.pObjectName = info.name.c_str();
+            NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
+            NOVA_LOG(INFO) << "Set image " << texture->image << " to have name " << info.name;
+        }
+
+        return texture;
+    }
 
     semaphore_t* vk_render_engine::create_semaphore() { return nullptr; }
 
@@ -235,7 +305,12 @@ namespace nova::renderer::rhi {
 
     void vk_render_engine::destroy_pipeline(pipeline_t* pipeline) {}
 
-    void vk_render_engine::destroy_resource(resource_t* resource) {}
+    void vk_render_engine::destroy_texture(image_t* resource) {
+        vk_image_t* vk_image = static_cast<vk_image_t*>(resource);
+        vmaDestroyImage(vma_allocator, vk_image->image, vk_image->allocation);
+
+        delete vk_image;
+    }
 
     void vk_render_engine::destroy_semaphores(const std::vector<semaphore_t*>& semaphores) {}
 
@@ -528,7 +603,7 @@ namespace nova::renderer::rhi {
 
         return pools_by_queue;
     }
-    
+
     VkDescriptorPool vk_render_engine::make_new_descriptor_pool() const {
         std::vector<VkDescriptorPoolSize> pool_sizes;
         pool_sizes.emplace_back(
@@ -630,4 +705,4 @@ namespace nova::renderer::rhi {
 #endif
         return VK_FALSE;
     }
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi

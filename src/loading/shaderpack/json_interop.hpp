@@ -11,7 +11,7 @@
 namespace nova::renderer::shaderpack {
     void from_json(const nlohmann::json& j, texture_format& format);
 
-    void from_json(const nlohmann::json& j, texture_create_into_t& tex);
+    void from_json(const nlohmann::json& j, texture_create_info_t& tex);
 
     void from_json(const nlohmann::json& j, sampler_create_info_t& sampler);
 

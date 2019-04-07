@@ -48,7 +48,7 @@ namespace nova::renderer::rhi {
 
     void d3d12_render_engine::destroy_pipeline(pipeline_t* pipeline) {}
 
-    void d3d12_render_engine::destroy_resource(resource_t* resource) {}
+    void d3d12_render_engine::destroy_texture(resource_t* resource) {}
 
     void d3d12_render_engine::destroy_semaphores(const std::vector<semaphore_t*>& semaphores) {}
 

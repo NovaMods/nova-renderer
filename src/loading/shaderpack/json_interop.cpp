@@ -17,7 +17,7 @@ namespace nova::renderer::shaderpack {
         format.height = get_json_value<float>(j, "height").value_or(0);
     }
 
-    void from_json(const nlohmann::json& j, texture_create_into_t& tex) {
+    void from_json(const nlohmann::json& j, texture_create_info_t& tex) {
         tex.name = get_json_value<std::string>(j, "name").value();
         tex.format = get_json_value<texture_format>(j, "format").value();
     }
@@ -28,7 +28,7 @@ namespace nova::renderer::shaderpack {
     }
 
     void from_json(const nlohmann::json& j, shaderpack_resources_data_t& res) {
-        res.textures = get_json_array<texture_create_into_t>(j, "textures");
+        res.textures = get_json_array<texture_create_info_t>(j, "textures");
         res.samplers = get_json_array<sampler_create_info_t>(j, "samplers");
     }
 
