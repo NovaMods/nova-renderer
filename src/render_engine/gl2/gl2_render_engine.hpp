@@ -12,9 +12,7 @@ namespace nova::renderer::rhi {
         GLuint id;
     };
 
-	struct gl_renderpass_t : renderpass_t {
-
-	};
+    struct gl_renderpass_t : renderpass_t {};
 
     /*!
      * \brief OpenGL 2.1 render engine because compatibility
@@ -52,10 +50,10 @@ namespace nova::renderer::rhi {
                                               queue_type needed_queue_type,
                                               command_list_t::level command_list_type) override;
         void submit_command_list(command_list_t* cmds,
-                                         queue_type queue,
-                                         fence_t* fence_to_signal = nullptr,
-                                         const std::vector<semaphore_t*>& wait_semaphores = {},
-                                         const std::vector<semaphore_t*>& signal_semaphores = {}) override;
+                                 queue_type queue,
+                                 fence_t* fence_to_signal = nullptr,
+                                 const std::vector<semaphore_t*>& wait_semaphores = {},
+                                 const std::vector<semaphore_t*>& signal_semaphores = {}) override;
 
     protected:
         static void set_initial_state();
@@ -66,4 +64,4 @@ namespace nova::renderer::rhi {
 
         std::unordered_map<std::string, sampler_create_info_t> samplers;
     };
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi

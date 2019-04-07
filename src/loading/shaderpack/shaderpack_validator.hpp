@@ -12,7 +12,7 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
-namespace nova::renderer {
+namespace nova::renderer::shaderpack {
     struct validation_report {
         std::vector<std::string> warnings;
         std::vector<std::string> errors;

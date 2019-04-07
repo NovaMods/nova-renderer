@@ -18,7 +18,7 @@
 
 #include "../../tasks/task_scheduler.hpp"
 
-namespace nova::renderer {
+namespace nova::renderer::shaderpack {
     // Removed from the GLSLang version we're using
     const TBuiltInResource default_built_in_resource = {
         /* .MaxLights = */ 32,

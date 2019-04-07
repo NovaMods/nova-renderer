@@ -20,9 +20,8 @@
 #include <vulkan/vulkan.h>
 
 #include <glm/glm.hpp>
-#include <unordered_set>
 
-namespace nova::renderer {
+namespace nova::renderer::shaderpack {
     NOVA_EXCEPTION(validation_failure_exception);
 
     /*!

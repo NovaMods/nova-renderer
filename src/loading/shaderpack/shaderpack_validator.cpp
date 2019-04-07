@@ -14,7 +14,7 @@
 #undef ERROR
 #endif
 
-namespace nova::renderer {
+namespace nova::renderer::shaderpack {
     /*!
      * \brief All the default values for a JSON pipeline
      *

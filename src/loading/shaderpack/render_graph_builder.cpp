@@ -8,7 +8,7 @@
 #include <unordered_set>
 #include "../../util/logger.hpp"
 
-namespace nova::renderer {
+namespace nova::renderer::shaderpack {
     /*!
      * \brief Adds all the passes that `pass_name` depends on to the list of ordered passes
      *

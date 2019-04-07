@@ -8,7 +8,7 @@
 #include <nova_renderer/shaderpack_data.hpp>
 #include "../json_utils.hpp"
 
-namespace nova::renderer {
+namespace nova::renderer::shaderpack {
     /*!
      * \brief If a data member isn't in the JSON (which is fully supported and is 100% fine) then we use this to fill in
      * any missing values

@@ -325,37 +325,37 @@ namespace nova::renderer {
         static std::vector<VkVertexInputBindingDescription> input_descriptions = {
             VkVertexInputBindingDescription{
                 0,                          // binding
-                sizeof(full_vertex),        // stride
+                sizeof(full_vertex_t),        // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 1,                          // binding
-                sizeof(full_vertex),        // stride
+                sizeof(full_vertex_t),        // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 2,                          // binding
-                sizeof(full_vertex),        // stride
+                sizeof(full_vertex_t),        // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 3,                          // binding
-                sizeof(full_vertex),        // stride
+                sizeof(full_vertex_t),        // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 4,                          // binding
-                sizeof(full_vertex),        // stride
+                sizeof(full_vertex_t),        // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 5,                          // binding
-                sizeof(full_vertex),        // stride
+                sizeof(full_vertex_t),        // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 6,                          // binding
-                sizeof(full_vertex),        // stride
+                sizeof(full_vertex_t),        // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
         };
