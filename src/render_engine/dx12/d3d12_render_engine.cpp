@@ -118,6 +118,7 @@ namespace nova::renderer {
 
     void d3d12_render_engine::create_queues() {
         D3D12_COMMAND_QUEUE_DESC rtv_queue_desc = {};
+        rtv_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
         CHECK_ERROR(device->CreateCommandQueue(&rtv_queue_desc, IID_PPV_ARGS(&direct_command_queue)),
                     "Could not create main command queue");
 

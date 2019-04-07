@@ -41,8 +41,6 @@ namespace nova::renderer {
         create_swapchain();
 
         create_per_thread_command_pools();
-
-        create_per_thread_descriptor_sets();
     }
 
     std::shared_ptr<window_t> vk_render_engine::get_window() const { return window; }
@@ -527,16 +525,7 @@ namespace nova::renderer {
 
         return pools_by_queue;
     }
-
-    void vk_render_engine::create_per_thread_descritor_sets() {
-        const uint32_t num_threads = 1;
-        descriptor_pools_by_thread_idx.reserve(num_threads);
-
-        for(uint32_t i = 0; i < num_threads; i++) {
-            descriptor_pools_by_thread_idx.push_back(make_new_descriptor_pool());
-        }
-    }
-
+    
     VkDescriptorPool vk_render_engine::make_new_descriptor_pool() const {
         std::vector<VkDescriptorPoolSize> pool_sizes;
         pool_sizes.emplace_back(
