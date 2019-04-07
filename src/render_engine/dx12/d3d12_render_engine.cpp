@@ -43,7 +43,8 @@ namespace nova::renderer::rhi {
 
     std::vector<fence_t*> d3d12_render_engine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<fence_t*>(); }
 
-    void d3d12_render_engine::destroy_renderpass(renderpass_t* pass) {}
+    void d3d12_render_engine::destroy_renderpass(renderpass_t* pass) { delete pass;
+    }
 
     void d3d12_render_engine::destroy_pipeline(pipeline_t* pipeline) {}
 

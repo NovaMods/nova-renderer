@@ -26,19 +26,22 @@ namespace nova::renderer::rhi {
         glFrontFace(GL_CCW);
     }
 
-    result<renderpass_t*> gl2_render_engine::create_renderpass(const render_pass_create_info_t& data) {
+    result<renderpass_t*> gl2_render_engine::create_renderpass(const shaderpack::render_pass_create_info_t& data) {
         return result<renderpass_t*>(new renderpass_t);
     }
 
     framebuffer_t* gl2_render_engine::create_framebuffer(const std::vector<resource_t*>& attachments) { return nullptr; }
-    pipeline_t* gl2_render_engine::create_pipeline(const pipeline_create_info_t& data) { return nullptr; }
+    pipeline_t* gl2_render_engine::create_pipeline(const shaderpack::pipeline_create_info_t& data) { return nullptr; }
     resource_t* gl2_render_engine::create_buffer(const buffer_create_info_t& info) { return nullptr; }
     resource_t* gl2_render_engine::create_texture(const texture2d_create_info_t& info) { return nullptr; }
     semaphore_t* gl2_render_engine::create_semaphore() { return nullptr; }
     std::vector<semaphore_t*> gl2_render_engine::create_semaphores(uint32_t num_semaphores) { return std::vector<semaphore_t*>(); }
     fence_t* gl2_render_engine::create_fence(bool signaled) { return nullptr; }
     std::vector<fence_t*> gl2_render_engine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<fence_t*>(); }
-    void gl2_render_engine::destroy_renderpass(renderpass_t* pass) {}
+
+    void gl2_render_engine::destroy_renderpass(renderpass_t* pass) { delete pass;
+    }
+
     void gl2_render_engine::destroy_pipeline(pipeline_t* pipeline) {}
     void gl2_render_engine::destroy_resource(resource_t* resource) {}
     void gl2_render_engine::destroy_semaphores(const std::vector<semaphore_t*>& semaphores) {}
