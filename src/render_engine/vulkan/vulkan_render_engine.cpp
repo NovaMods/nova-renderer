@@ -42,7 +42,7 @@ namespace nova::renderer {
 
         create_per_thread_command_pools();
 
-		create_pre_thread_descriptor_sets();
+        create_per_thread_descriptor_sets();
     }
 
     std::shared_ptr<window_t> vk_render_engine::get_window() const { return window; }
@@ -212,6 +212,8 @@ namespace nova::renderer {
             object_name.pObjectName = data.name.c_str();
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
         }
+
+        return result(static_cast<renderpass_t*>(renderpass));
     }
 
     pipeline_t* vk_render_engine::create_pipeline(const pipeline_create_info_t& data) { return nullptr; }
@@ -224,9 +226,9 @@ namespace nova::renderer {
 
     std::vector<semaphore_t*> vk_render_engine::create_semaphores(uint32_t num_semaphores) { return std::vector<semaphore_t*>(); }
 
-    fence_t* vk_render_engine::create_fence(bool signaled = false) { return nullptr; }
+    fence_t* vk_render_engine::create_fence(bool signaled) { return nullptr; }
 
-    std::vector<fence_t*> vk_render_engine::create_fences(uint32_t num_fences, bool signaled = false) { return std::vector<fence_t*>(); }
+    std::vector<fence_t*> vk_render_engine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<fence_t*>(); }
 
     void vk_render_engine::destroy_renderpass(renderpass_t* pass) {}
 
@@ -246,9 +248,9 @@ namespace nova::renderer {
 
     void vk_render_engine::submit_command_list(command_list_t* cmds,
                                                queue_type queue,
-                                               fence_t* fence_to_signal = nullptr,
-                                               const std::vector<semaphore_t*>& wait_semaphores = {},
-                                               const std::vector<semaphore_t*>& signal_semaphores = {}) {}
+                                               fence_t* fence_to_signal,
+                                               const std::vector<semaphore_t*>& wait_semaphores,
+                                               const std::vector<semaphore_t*>& signal_semaphores) {}
 
     void vk_render_engine::open_window_and_create_surface(const nova_settings::window_options& options) {
 #ifdef NOVA_LINUX
@@ -343,7 +345,7 @@ namespace nova::renderer {
         NOVA_CHECK_RESULT(vkCreateDebugUtilsMessengerEXT(instance, &debug_create_info, nullptr, &debug_callback));
     }
 
-    void vk_render_engine::initialze_vma() {
+    void vk_render_engine::initialize_vma() {
         VmaAllocatorCreateInfo allocator_create_info = {};
         allocator_create_info.physicalDevice = gpu.phys_device;
         allocator_create_info.device = device;
