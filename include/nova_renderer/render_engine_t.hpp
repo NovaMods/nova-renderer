@@ -16,6 +16,7 @@
 #include <nova_renderer/util/result.hpp>
 #include <nova_renderer/util/utils.hpp>
 #include <nova_renderer/window.hpp>
+#include "../../src/render_engine/dx12/win32_window.hpp"
 
 namespace nova::renderer::rhi {
     struct buffer_create_info_t {
@@ -125,6 +126,8 @@ namespace nova::renderer::rhi {
 
     protected:
         nova_settings& settings;
+
+        glm::uvec2 swapchain_size;
 
 #ifdef NOVA_LINUX
         std::shared_ptr<x11_window> window;
