@@ -14,11 +14,7 @@ using Microsoft::WRL::ComPtr;
 
 namespace nova::renderer::rhi {
     d3d12_render_engine::d3d12_render_engine(nova_settings& settings) : render_engine_t(settings) {
-        const std::optional<nova_error> create_device_error = create_device();
-        if(create_device_error) {
-            NOVA_LOG(FATAL) << "Could not create D3D12 render engine: " << create_device_error->to_string();
-            return;
-        }
+        create_device();
 
         open_window_and_create_surface(settings.window);
 
@@ -27,13 +23,13 @@ namespace nova::renderer::rhi {
 
     std::shared_ptr<window_t> d3d12_render_engine::get_window() const { return window; }
 
-    result<renderpass_t*> d3d12_render_engine::create_renderpass(const render_pass_create_info_t& data) {
+    result<renderpass_t*> d3d12_render_engine::create_renderpass(const shaderpack::render_pass_create_info_t& data) {
         return result<renderpass_t*>(new d3d12_renderpass_t);
     }
 
     framebuffer_t* d3d12_render_engine::create_framebuffer(const std::vector<resource_t*>& attachments) { return nullptr; }
 
-    pipeline_t* d3d12_render_engine::create_pipeline(const pipeline_create_info_t& data) { return nullptr; }
+    pipeline_t* d3d12_render_engine::create_pipeline(const shaderpack::pipeline_create_info_t& data) { return nullptr; }
 
     resource_t* d3d12_render_engine::create_buffer(const buffer_create_info_t& info) { return nullptr; }
 

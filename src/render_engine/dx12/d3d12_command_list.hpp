@@ -20,24 +20,24 @@ namespace nova::renderer::rhi {
 
         void resource_barriers([[maybe_unused]] pipeline_stage_flags stages_before_barrier,
                               [[maybe_unused]] pipeline_stage_flags stages_after_barrier,
-                              const std::vector<resource_barrier_t>& barriers) override;
+                              const std::vector<resource_barrier_t>& barriers) override final;
 
         void copy_buffer(resource_t* destination_buffer,
                          uint64_t destination_offset,
                          resource_t* source_buffer,
                          uint64_t source_offset,
-                         uint64_t num_bytes) override;
+                         uint64_t num_bytes) override final;
 
-        void execute_command_lists(const std::vector<command_list_t*>& lists) override;
+        void execute_command_lists(const std::vector<command_list_t*>& lists) override final;
 
-        void begin_renderpass([[maybe_unused]] renderpass_t* renderpass, framebuffer_t* framebuffer) override;
-        void end_renderpass() override;
-        void bind_pipeline() override;
-        void bind_material() override;
+        void begin_renderpass([[maybe_unused]] renderpass_t* renderpass, framebuffer_t* framebuffer) override final;
+        void end_renderpass() override final;
+        void bind_pipeline() override final;
+        void bind_material() override final;
 
-        void bind_vertex_buffers() override;
-        void bind_index_buffer() override;
-        void draw_indexed_mesh() override;
+        void bind_vertex_buffers() override final;
+        void bind_index_buffer() override final;
+        void draw_indexed_mesh() override final;
 
     private:
         ComPtr<ID3D12GraphicsCommandList> cmds;

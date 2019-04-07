@@ -45,7 +45,7 @@ namespace nova::renderer::rhi {
 
     std::shared_ptr<window_t> vk_render_engine::get_window() const { return window; }
 
-    result<renderpass_t*> vk_render_engine::create_renderpass(const render_pass_create_info_t& data) {
+    result<renderpass_t*> vk_render_engine::create_renderpass(const shaderpack::render_pass_create_info_t& data) {
         VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
 
         vk_renderpass_t* renderpass = new vk_renderpass_t;
@@ -86,7 +86,7 @@ namespace nova::renderer::rhi {
 
         bool writes_to_backbuffer = false;
         // Collect framebuffer size information from color output attachments
-        for(const texture_attachment_info_t& attachment : data.texture_outputs) {
+        for(const shaderpack::texture_attachment_info_t& attachment : data.texture_outputs) {
             if(attachment.name == "Backbuffer") {
                 // Handle backbuffer
                 // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip
@@ -214,7 +214,7 @@ namespace nova::renderer::rhi {
         return result(static_cast<renderpass_t*>(renderpass));
     }
 
-    pipeline_t* vk_render_engine::create_pipeline(const pipeline_create_info_t& data) { return nullptr; }
+    pipeline_t* vk_render_engine::create_pipeline(const shaderpack::pipeline_create_info_t& data) { return nullptr; }
 
     resource_t* vk_render_engine::create_buffer(const buffer_create_info_t& info) { return nullptr; }
 
@@ -228,7 +228,10 @@ namespace nova::renderer::rhi {
 
     std::vector<fence_t*> vk_render_engine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<fence_t*>(); }
 
-    void vk_render_engine::destroy_renderpass(renderpass_t* pass) {}
+    void vk_render_engine::destroy_renderpass(renderpass_t* pass) {
+        vk_renderpass_t* vk_renderpass = static_cast<vk_renderpass_t*>(pass);
+        vkDestroyRenderPass(device, vk_renderpass->pass, nullptr);
+    }
 
     void vk_render_engine::destroy_pipeline(pipeline_t* pipeline) {}
 
