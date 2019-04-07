@@ -1,20 +1,24 @@
-#include "shaderpack_loading.hpp"
+/*!
+ * \author ddubois
+ * \date 21-Aug-18.
+ */
 
-#include <SPIRV/GlslangToSpv.h>
+#include "shaderpack_loading.hpp"
 #include <glslang/Include/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
-
-#include "../../tasks/task_scheduler.hpp"
 #include "../folder_accessor.hpp"
 #include "../json_utils.hpp"
 #include "../loading_utils.hpp"
 #include "../regular_folder_accessor.hpp"
 #include "../zip_folder_accessor.hpp"
+#include "SPIRV/GlslangToSpv.h"
 #include "json_interop.hpp"
 #include "render_graph_builder.hpp"
 #include "shaderpack_validator.hpp"
 
-namespace nova::renderer {
+#include "../../tasks/task_scheduler.hpp"
+
+namespace nova::renderer::shaderpack {
     // Removed from the GLSLang version we're using
     const TBuiltInResource default_built_in_resource = {
         /* .MaxLights = */ 32,

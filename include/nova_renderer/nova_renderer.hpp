@@ -3,16 +3,20 @@
 #include <memory>
 #include <string>
 
-#include "nova_settings.hpp"
-#include "render_engine_t.hpp"
-#include "renderdoc_app.h"
+#include <nova_renderer/nova_settings.hpp>
+#include <nova_renderer/render_engine_t.hpp>
+#include <nova_renderer/renderdoc_app.h>
 
 namespace nova::renderer {
     NOVA_EXCEPTION(already_initialized_exception);
     NOVA_EXCEPTION(uninitialized_exception);
 
 #pragma region Runtime - optimized data
-    struct material_pass_t {};
+    struct material_pass_t {
+        // Descriptors for the material pass
+
+        std::vector<static_mesh_renderable_t> renderables;
+    };
 
     struct pipeline_t {
         rhi::pipeline_t* pipeline;

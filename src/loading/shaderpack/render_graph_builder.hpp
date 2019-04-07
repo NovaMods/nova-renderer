@@ -1,11 +1,16 @@
-#pragma once
+/*!
+ * \author ddubois
+ * \date 17-Sep-18.
+ */
 
+#ifndef NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP
+#define NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP
+
+#include <nova_renderer/shaderpack_data.hpp>
 #include <string>
 #include <unordered_map>
 
-#include "nova_renderer/shaderpack_data.hpp"
-
-namespace nova::renderer {
+namespace nova::renderer::shaderpack {
     NOVA_EXCEPTION(pass_ordering_exception);
     NOVA_EXCEPTION(circular_rendergraph_exception);
 
@@ -65,3 +70,5 @@ namespace nova::renderer {
         const std::unordered_map<std::string, range>& resource_used_range,
         const std::vector<std::string>& resources_in_order);
 } // namespace nova::renderer
+
+#endif // NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP

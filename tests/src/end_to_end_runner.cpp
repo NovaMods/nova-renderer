@@ -37,16 +37,16 @@ namespace nova::renderer {
             render_engine_t* engine = renderer->get_engine();
             std::shared_ptr<window_t> window = engine->get_window();
 
-            mesh_data cube = {};
+            mesh_data_t cube = {};
             cube.vertex_data = {
-                full_vertex{{-1, -1, -1}, {}, {}, {}, {}, {}, {}},
-                full_vertex{{-1, -1, 1}, {}, {}, {}, {}, {}, {}},
-                full_vertex{{-1, 1, -1}, {}, {}, {}, {}, {}, {}},
-                full_vertex{{-1, 1, 1}, {}, {}, {}, {}, {}, {}},
-                full_vertex{{1, -1, -1}, {}, {}, {}, {}, {}, {}},
-                full_vertex{{1, -1, 1}, {}, {}, {}, {}, {}, {}},
-                full_vertex{{1, 1, -1}, {}, {}, {}, {}, {}, {}},
-                full_vertex{{1, 1, 1}, {}, {}, {}, {}, {}, {}},
+                full_vertex_t{{-1, -1, -1}, {}, {}, {}, {}, {}, {}},
+                full_vertex_t{{-1, -1, 1}, {}, {}, {}, {}, {}, {}},
+                full_vertex_t{{-1, 1, -1}, {}, {}, {}, {}, {}, {}},
+                full_vertex_t{{-1, 1, 1}, {}, {}, {}, {}, {}, {}},
+                full_vertex_t{{1, -1, -1}, {}, {}, {}, {}, {}, {}},
+                full_vertex_t{{1, -1, 1}, {}, {}, {}, {}, {}, {}},
+                full_vertex_t{{1, 1, -1}, {}, {}, {}, {}, {}, {}},
+                full_vertex_t{{1, 1, 1}, {}, {}, {}, {}, {}, {}},
             };
             cube.indices = {0, 1, 3, 6, 0, 2, 5, 0, 4, 6, 4, 0, 0, 3, 2, 5, 1, 0, 3, 1, 5, 7, 4, 6, 4, 7, 5, 7, 6, 2, 7, 2, 3, 7, 3, 5};
 
@@ -57,7 +57,7 @@ namespace nova::renderer {
             window->on_frame_end();
 
             result<renderable_id_t> renderable_add_result = mesh_add_result.flatMap([&](const mesh_id_t& mesh_id) {
-                static_mesh_renderable_data data = {};
+                static_mesh_renderable_data_t data = {};
                 data.mesh = mesh_id;
                 data.material_name = "gbuffers_terrain";
                 data.initial_position = glm::vec3(0, 0, -5);

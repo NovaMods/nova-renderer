@@ -5,7 +5,7 @@
 #include <nova_renderer/shaderpack_data.hpp>
 
 namespace nova::renderer {
-    struct full_vertex {
+    struct full_vertex_t {
         glm::vec3 position;          // 12 bytes
         glm::vec3 normal;            // 12 bytes
         glm::vec3 tangent;           // 12 bytes
@@ -15,7 +15,7 @@ namespace nova::renderer {
         glm::vec4 additional_stuff;  // 16 bytes
     };
 
-    static_assert(sizeof(full_vertex) % 16 == 0, "full_vertex struct is not aligned to 16 bytes!");
+    static_assert(sizeof(full_vertex_t) % 16 == 0, "full_vertex struct is not aligned to 16 bytes!");
 
     /*!
      * \brief All the data needed to make a single mesh
@@ -24,20 +24,20 @@ namespace nova::renderer {
      * particles, etc will probably have FAR fewer vertices than chunks, meaning that there's not a huge savings by
      * making them use special vertex formats
      */
-    struct mesh_data {
-        std::vector<full_vertex> vertex_data;
+    struct mesh_data_t {
+        std::vector<full_vertex_t> vertex_data;
         std::vector<uint32_t> indices;
     };
 
     using mesh_id_t = uint32_t;
 
-    struct static_mesh_renderable_update_data {
+    struct static_mesh_renderable_update_data_t {
         std::string material_name;
 
         mesh_id_t mesh;
     };
 
-    struct static_mesh_renderable_data : static_mesh_renderable_update_data {
+    struct static_mesh_renderable_data_t : static_mesh_renderable_update_data_t {
         glm::vec3 initial_position;
         glm::vec3 initial_rotation;
         glm::vec3 initial_scale = glm::vec3(1);
@@ -49,13 +49,13 @@ namespace nova::renderer {
 
     static std::atomic<renderable_id_t> next_renderable_id;
 
-    struct renderable_metadata {
+    struct renderable_metadata_t {
         renderable_id_t id = 0;
 
         std::vector<std::string> passes;
     };
 
-    struct renderable_base {
+    struct renderable_base_t {
         renderable_id_t id = 0;
 
         bool is_visible = true;
@@ -63,5 +63,5 @@ namespace nova::renderer {
         glm::mat4 model_matrix = glm::mat4(1);
     };
 
-    struct vk_static_mesh_renderable : renderable_base {};
+    struct static_mesh_renderable_t : renderable_base_t {};
 } // namespace nova::renderer
