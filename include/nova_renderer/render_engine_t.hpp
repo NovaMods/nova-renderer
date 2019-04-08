@@ -51,7 +51,7 @@ namespace nova::renderer::rhi {
     public:
         render_engine_t(render_engine_t&& other) = delete;
         render_engine_t& operator=(render_engine_t&& other) noexcept = delete;
-        
+
         render_engine_t(const render_engine_t& other) = delete;
         render_engine_t& operator=(const render_engine_t& other) = delete;
 
@@ -74,7 +74,9 @@ namespace nova::renderer::rhi {
          */
         [[nodiscard]] virtual result<renderpass_t*> create_renderpass(const shaderpack::render_pass_create_info_t& data) = 0;
 
-		[[nodiscard]] virtual framebuffer_t* create_framebuffer(const std::vector<image_t*>& attachments) = 0;
+        [[nodiscard]] virtual framebuffer_t* create_framebuffer(const renderpass_t* renderpass,
+                                                                const std::vector<image_t*>& attachments,
+                                                                const glm::uvec2& framebuffer_size) = 0;
 
         [[nodiscard]] virtual pipeline_t* create_pipeline(const shaderpack::pipeline_create_info_t& data) = 0;
 
@@ -152,8 +154,7 @@ namespace nova::renderer::rhi {
          * \param height The height, in pixels of the desired window
          */
         virtual void open_window_and_create_surface(const nova_settings::window_options& options) = 0;
-
     };
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi
 
 #endif // NOVA_RENDERER_RENDER_ENGINE_HPP
