@@ -74,7 +74,7 @@ namespace nova::renderer::rhi {
          */
         [[nodiscard]] virtual result<renderpass_t*> create_renderpass(const shaderpack::render_pass_create_info_t& data) = 0;
 
-		[[nodiscard]] virtual framebuffer_t* create_framebuffer(const std::vector<resource_t*>& attachments) = 0;
+		[[nodiscard]] virtual framebuffer_t* create_framebuffer(const std::vector<image_t*>& attachments) = 0;
 
         [[nodiscard]] virtual pipeline_t* create_pipeline(const shaderpack::pipeline_create_info_t& data) = 0;
 

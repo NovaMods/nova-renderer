@@ -89,7 +89,7 @@ namespace nova::renderer {
         }
 
         template <typename FuncType>
-        auto flatMap(FuncType&& func) -> result<decltype(func(value).value)> {
+        auto flat_map(FuncType&& func) -> result<decltype(func(value).value)> {
             using RetVal = decltype(func(value).value);
 
             if(has_value) {
@@ -111,10 +111,12 @@ namespace nova::renderer {
                 error_func(error);
             }
         }
+
+        operator bool() const { return has_value; }
     };
 
     template <typename ValueType>
-    result(ValueType value) -> result<ValueType>;
+    result(ValueType value)->result<ValueType>;
 
 #define MAKE_ERROR(s, ...) nova_error(fmt::format(fmt(s), __VA_ARGS__))
 } // namespace nova::renderer

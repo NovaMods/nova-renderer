@@ -61,7 +61,7 @@ namespace nova::renderer {
             renderer->execute_frame();
             window->on_frame_end();
 
-            result<renderable_id_t> renderable_add_result = mesh_add_result.flatMap([&](const mesh_id_t& mesh_id) {
+            result<renderable_id_t> renderable_add_result = mesh_add_result.flat_map([&](const mesh_id_t& mesh_id) {
                 static_mesh_renderable_data_t data = {};
                 data.mesh = mesh_id;
                 data.material_name = "gbuffers_terrain";

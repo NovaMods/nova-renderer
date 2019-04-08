@@ -214,15 +214,16 @@ namespace nova::renderer::rhi {
         return result(static_cast<renderpass_t*>(renderpass));
     }
 
+    framebuffer_t* vk_render_engine::create_framebuffer(const std::vector<image_t*>& attachments) {
+        
+    }
+
     pipeline_t* vk_render_engine::create_pipeline(const shaderpack::pipeline_create_info_t& data) { return nullptr; }
 
     buffer_t* vk_render_engine::create_buffer(const buffer_create_info_t& info) { return nullptr; }
 
     image_t* vk_render_engine::create_texture(const shaderpack::texture_create_info_t& info) {
         vk_image_t* texture = new vk_image_t;
-
-        const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
-        const glm::uvec2 swapchain_extent_glm = {swapchain_extent.width, swapchain_extent.height};
 
         texture->is_dynamic = true;
         VkFormat format = to_vk_format(info.format.pixel_format);
@@ -231,7 +232,7 @@ namespace nova::renderer::rhi {
         image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         image_create_info.imageType = VK_IMAGE_TYPE_2D;
         image_create_info.format = format;
-        const glm::uvec2 texture_size = info.format.get_size_in_pixels(swapchain_extent_glm);
+        const glm::uvec2 texture_size = info.format.get_size_in_pixels(swapchain_size);
         image_create_info.extent.width = texture_size.x;
         image_create_info.extent.height = texture_size.y;
         image_create_info.extent.depth = 1;
@@ -569,6 +570,10 @@ namespace nova::renderer::rhi {
             vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, present_modes.data()));
 
         swapchain = std::make_unique<swapchain_manager>(max_in_flight_frames, *this, window->get_window_size(), present_modes);
+
+        const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
+        swapchain_size.x = swapchain_extent.width;
+        swapchain_size.y = swapchain_extent.height;
     }
 
     void vk_render_engine::create_per_thread_command_pools() {
