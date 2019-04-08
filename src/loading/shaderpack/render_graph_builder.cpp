@@ -74,11 +74,19 @@ namespace nova::renderer::shaderpack {
         return left || right;
     }
 
-    std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass_create_info_t>& passes) {
+    result<std::vector<render_pass_create_info_t>> order_passes(const std::vector<render_pass_create_info_t>& passes) {
         MTR_SCOPE("Renderpass", "order_passes");
 
         NOVA_LOG(DEBUG) << "Executing Pass Scheduler";
+
+        std::unordered_map<std::string, render_pass_create_info_t> render_passes_to_order;
+        render_passes_to_order.reserve(passes.size());
+        for(const render_pass_create_info_t& create_info : passes) {
+            render_passes_to_order.emplace(create_info.name, create_info);
+        }
+
         std::vector<std::string> ordered_passes;
+        ordered_passes.reserve(passes.size());
 
         /*
          * Build some acceleration structures
@@ -89,9 +97,7 @@ namespace nova::renderer::shaderpack {
         // that resource
         auto resource_to_write_pass = std::unordered_map<std::string, std::vector<std::string>>{};
 
-        for(const auto& item : passes) {
-            const render_pass_create_info_t& pass = item.second;
-
+        for(const auto& pass : passes) {
             for(const auto& output : pass.texture_outputs) {
                 resource_to_write_pass[output.name].push_back(pass.name);
             }
@@ -110,14 +116,14 @@ namespace nova::renderer::shaderpack {
         if(resource_to_write_pass.find("Backbuffer") == resource_to_write_pass.end()) {
             NOVA_LOG(ERROR)
                 << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
-            throw pass_ordering_exception("Failed to order passes because no backbuffer was found");
-        } // This block never returns.
+            return result<std::vector<render_pass_create_info_t>>(nova_error("Failed to order passes because no backbuffer was found"));
+        }
 
         auto backbuffer_writes = resource_to_write_pass["Backbuffer"];
         ordered_passes.insert(ordered_passes.end(), backbuffer_writes.begin(), backbuffer_writes.end());
 
-        for(const auto& pass : backbuffer_writes) {
-            add_dependent_passes(pass, passes, ordered_passes, resource_to_write_pass, 1);
+        for(const auto& pass_name : backbuffer_writes) {
+            add_dependent_passes(pass_name, render_passes_to_order, ordered_passes, resource_to_write_pass, 1);
         }
 
         std::reverse(ordered_passes.begin(), ordered_passes.end());
@@ -143,7 +149,15 @@ namespace nova::renderer::shaderpack {
 
         // Granite does some reordering to try and find a submission order that has the fewest pipeline barriers. Not
         // gonna worry about that now
-        return ordered_passes;
+
+        std::vector<render_pass_create_info_t> passes_in_submission_order;
+        passes_in_submission_order.reserve(ordered_passes.size());
+
+        for(const std::string& pass_name : ordered_passes) {
+            passes_in_submission_order.push_back(render_passes_to_order.at(pass_name));
+        }
+
+        return result(passes_in_submission_order);
     }
 
     void add_dependent_passes(const std::string& pass_name,
@@ -267,4 +281,4 @@ namespace nova::renderer::shaderpack {
         return aliases;
     }
 
-} // namespace nova::renderer
+} // namespace nova::renderer::shaderpack

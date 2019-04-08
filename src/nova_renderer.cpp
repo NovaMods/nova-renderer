@@ -14,6 +14,7 @@
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
 #include "render_engine/gl2/gl2_render_engine.hpp"
 #include "util/logger.hpp"
+#include "loading/shaderpack/render_graph_builder.hpp"
 
 namespace nova::renderer {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
@@ -102,6 +103,16 @@ namespace nova::renderer {
 
         create_dynamic_textures(data.resources.textures);
         NOVA_LOG(DEBUG) << "Dynamic textures created";
+
+
+        const std::vector<shaderpack::render_pass_create_info_t> render_passes_by_order = order_passes(data.passes);
+
+        create_render_passes(data.passes);
+        NOVA_LOG(DEBUG) << "Created render passes";
+
+        create_graphics_pipelines(data.pipelines);
+        NOVA_LOG(DEBUG) << "Created pipelines";
+
         for(const shaderpack::material_data_t& mat_data : data.materials) {
             materials[mat_data.name] = mat_data;
 
@@ -110,11 +121,6 @@ namespace nova::renderer {
             }
         }
         NOVA_LOG(DEBUG) << "Materials saved";
-
-        create_render_passes(data.passes);
-        NOVA_LOG(DEBUG) << "Created render passes";
-        create_graphics_pipelines(data.pipelines);
-        NOVA_LOG(DEBUG) << "Created pipelines";
 
         create_material_descriptor_sets();
         NOVA_LOG(TRACE) << "Material descriptor sets created";
@@ -130,6 +136,12 @@ namespace nova::renderer {
         for(const shaderpack::texture_create_info_t& create_info : texture_create_infos) {
             rhi::resource_t* new_texture = rhi->create_texture(create_info);
             dynamic_textures.emplace(create_info.name, new_texture);
+        }
+    }
+
+    void nova_renderer::create_render_passes(const std::vector<shaderpack::render_pass_create_info_t>& pass_create_infos) {
+
+        for(const shaderpack::render_pass_create_info_t& create_info : pass_create_infos) {
         }
     }
 
@@ -152,8 +164,8 @@ namespace nova::renderer {
     }
 
     void nova_renderer::destroy_dynamic_resources() {
-        for(auto& [name, resource] : dynamic_textures) {
-            rhi->destroy_texture(resource);
+        for(auto& [name, image] : dynamic_textures) {
+            rhi->destroy_texture(image);
         }
 
         dynamic_textures.clear();
