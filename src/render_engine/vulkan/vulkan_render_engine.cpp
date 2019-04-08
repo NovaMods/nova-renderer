@@ -362,8 +362,10 @@ namespace nova::renderer::rhi {
     }
 
     void vk_render_engine::destroy_framebuffer(const framebuffer_t* framebuffer) {
-        vk_framebuffer_t* vk_framebuffer = static_cast<vk_framebuffer_t*>(framebuffer);
+        const vk_framebuffer_t* vk_framebuffer = static_cast<const vk_framebuffer_t*>(framebuffer);
         vkDestroyFramebuffer(device, vk_framebuffer->framebuffer, nullptr);
+
+        delete vk_framebuffer;
     }
 
     void vk_render_engine::destroy_pipeline(pipeline_t* pipeline) {}

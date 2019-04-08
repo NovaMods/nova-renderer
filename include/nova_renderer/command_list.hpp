@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
-#include <nova_renderer/rhi_types.hpp>
+
+#include "nova_renderer/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
 #pragma region Enums

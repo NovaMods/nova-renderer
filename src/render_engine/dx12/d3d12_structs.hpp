@@ -7,7 +7,8 @@
 
 #pragma once
 
-#include <nova_renderer/command_list.hpp>
+#include "nova_renderer/command_list.hpp"
+#include "d3dx12.h"
 
 namespace nova::renderer::rhi {        
     struct d3d12_buffer_t : buffer_t {
@@ -18,8 +19,8 @@ namespace nova::renderer::rhi {
         Microsoft::WRL::ComPtr<ID3D12Resource> resource;
     };
 
-    struct d3d12_framebuffer_t : rhi::framebuffer_t {
-        std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> render_targets;
+    struct d3d12_framebuffer_t : framebuffer_t {
+        std::vector<CD3DX12_CPU_DESCRIPTOR_HANDLE> render_targets;
 
         bool has_depth_stencil = false;
         D3D12_CPU_DESCRIPTOR_HANDLE depth_stencil_image = {};
