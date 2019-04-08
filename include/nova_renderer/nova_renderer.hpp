@@ -37,6 +37,8 @@ namespace nova::renderer {
         rhi::framebuffer_t* framebuffer;
 
         std::vector<pipeline_t> pipelines;
+
+        bool writes_to_backbuffer;
     };
 #pragma endregion
 

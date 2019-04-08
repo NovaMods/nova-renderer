@@ -12,9 +12,10 @@
 #endif
 #include "debugging/renderdoc.hpp"
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
+#include <minitrace.h>
+#include "loading/shaderpack/render_graph_builder.hpp"
 #include "render_engine/gl2/gl2_render_engine.hpp"
 #include "util/logger.hpp"
-#include "loading/shaderpack/render_graph_builder.hpp"
 
 namespace nova::renderer {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
@@ -104,28 +105,16 @@ namespace nova::renderer {
         create_dynamic_textures(data.resources.textures);
         NOVA_LOG(DEBUG) << "Dynamic textures created";
 
-
-        const std::vector<shaderpack::render_pass_create_info_t> render_passes_by_order = order_passes(data.passes);
-
-        create_render_passes(data.passes);
-        NOVA_LOG(DEBUG) << "Created render passes";
-
-        create_graphics_pipelines(data.pipelines);
-        NOVA_LOG(DEBUG) << "Created pipelines";
-
-        for(const shaderpack::material_data_t& mat_data : data.materials) {
-            materials[mat_data.name] = mat_data;
-
-            for(const shaderpack::material_pass_t& mat : mat_data.passes) {
-                material_passes_by_pipeline[mat.pipeline].push_back(mat);
-            }
+        const result<std::vector<shaderpack::render_pass_create_info_t>> ordering_result = order_passes(data.passes);
+        if(!ordering_result) {
+            NOVA_LOG(ERROR) << ordering_result.error.to_string();
+            return;
         }
-        NOVA_LOG(DEBUG) << "Materials saved";
 
-        create_material_descriptor_sets();
-        NOVA_LOG(TRACE) << "Material descriptor sets created";
+        const std::vector<shaderpack::render_pass_create_info_t> render_passes_by_order = ordering_result.value;
 
-        generate_barriers_for_dynamic_resources();
+        create_render_passes(render_passes_by_order);
+        NOVA_LOG(DEBUG) << "Created render passes";
 
         shaderpack_loaded = true;
 
@@ -140,8 +129,40 @@ namespace nova::renderer {
     }
 
     void nova_renderer::create_render_passes(const std::vector<shaderpack::render_pass_create_info_t>& pass_create_infos) {
-
         for(const shaderpack::render_pass_create_info_t& create_info : pass_create_infos) {
+            rhi->create_renderpass(create_info)
+                .flat_map([&](rhi::renderpass_t* new_pass) {
+                    renderpass_t renderpass;
+                    renderpass.renderpass = new_pass;
+
+                    std::vector<rhi::image_t*> output_images;
+                    output_images.reserve(create_info.texture_outputs.size());
+
+                    for(const shaderpack::texture_attachment_info_t& attachment_info : create_info.texture_outputs) {
+                        if(attachment_info.name == "Backbuffer") {
+                            if(create_info.texture_outputs.size() == 1) {
+                                renderpass.writes_to_backbuffer = true;
+                                renderpass.framebuffer = nullptr; // Will be resolved when rendering
+
+                            } else {
+                                return result<renderpass_t>(MAKE_ERROR(
+                                    "Pass {:s} writes to the backbuffer and {:d} other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures",
+                                    create_info.name,
+                                    create_info.texture_outputs.size() - 1));
+                            }
+
+                        } else {
+                            rhi::image_t* image = dynamic_textures.at(attachment_info.name);
+                            output_images.push_back(image);
+                        }
+                    }
+
+                renderpass.framebuffer = rhi->create_framebuffer(output_images);
+                    return result(renderpass);
+                })
+                .on_error([&](const nova_error& error) {
+                    NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name << ": " << error.to_string();
+                });
         }
     }
 

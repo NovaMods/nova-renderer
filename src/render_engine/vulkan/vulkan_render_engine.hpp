@@ -32,6 +32,9 @@ namespace nova::renderer::rhi {
         std::shared_ptr<window_t> get_window() const override final;
 
         result<renderpass_t*> create_renderpass(const shaderpack::render_pass_create_info_t& data) override final;
+
+        framebuffer_t* create_framebuffer(const std::vector<image_t*>& attachments) override final;
+
         pipeline_t* create_pipeline(const shaderpack::pipeline_create_info_t& data) override final;
         buffer_t* create_buffer(const buffer_create_info_t& info) override final;
         image_t* create_texture(const shaderpack::texture_create_info_t& info) override final;
