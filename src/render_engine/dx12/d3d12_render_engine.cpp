@@ -6,11 +6,11 @@
 #include <d3d12sdklayers.h>
 
 #include "../../util/logger.hpp"
+#include "../../util/windows_utils.hpp"
 #include "d3d12_render_engine.hpp"
+#include "d3d12_structs.hpp"
 #include "d3dx12.h"
 #include "dx12_utils.hpp"
-#include "../../util/windows_utils.hpp"
-#include "d3d12_structs.hpp"
 
 using Microsoft::WRL::ComPtr;
 
@@ -29,7 +29,50 @@ namespace nova::renderer::rhi {
         return result<renderpass_t*>(new d3d12_renderpass_t);
     }
 
-    framebuffer_t* d3d12_render_engine::create_framebuffer(const std::vector<resource_t*>& attachments) { return nullptr; }
+    framebuffer_t* d3d12_render_engine::create_framebuffer(const renderpass_t* renderpass,
+                                                           const std::vector<image_t*>& attachments,
+                                                           const glm::uvec2& framebuffer_size) {
+        const size_t attachment_count = attachments.size();
+
+        D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_descriptor = {};
+        rtv_heap_descriptor.NumDescriptors = attachment_count;
+        rtv_heap_descriptor.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+        rtv_heap_descriptor.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+        ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap;
+        HRESULT hr = device->CreateDescriptorHeap(&rtv_heap_descriptor, IID_PPV_ARGS(&rtv_descriptor_heap));
+        if(FAILED(hr)) {
+            NOVA_LOG(FATAL) << "Could not create descriptor heap for the RTV";
+            throw render_engine_initialization_exception("Could not create descriptor head for the RTV");
+        }
+
+        const uint32_t rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+        d3d12_framebuffer_t* framebuffer = new d3d12_framebuffer_t;
+        framebuffer->render_targets.reserve(attachment_count);
+
+        std::vector<ComPtr<ID3D12Resource>> rendertargets;
+        rendertargets.reserve(attachment_count);
+
+        for(uint32_t i = 0; i < attachments.size(); i++) {
+            const image_t* attachment = attachments.at(i);
+            const d3d12_image_t* d3d12_image = static_cast<const d3d12_image_t*>(attachment);
+
+            rendertargets.push_back(d3d12_image->resource);
+
+            framebuffer->render_targets.emplace_back(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart());
+
+            // Create the Render Target View, which binds the swapchain buffer to the RTV handle
+            device->CreateRenderTargetView(d3d12_image->resource.Get(), nullptr, framebuffer->render_targets.at(i));
+
+            // Increment the RTV handle
+            framebuffer->render_targets.at(i).Offset(1, rtv_descriptor_size);
+        }
+
+        framebuffer->size = framebuffer_size;
+
+        return framebuffer;
+    }
 
     pipeline_t* d3d12_render_engine::create_pipeline(const shaderpack::pipeline_create_info_t& data) { return nullptr; }
 
@@ -68,7 +111,8 @@ namespace nova::renderer::rhi {
         texture_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
         texture_desc.SampleDesc = sample_desc;
 
-        if(format.pixel_format == shaderpack::pixel_format_enum::Depth || format.pixel_format == shaderpack::pixel_format_enum::DepthStencil) {
+        if(format.pixel_format == shaderpack::pixel_format_enum::Depth ||
+           format.pixel_format == shaderpack::pixel_format_enum::DepthStencil) {
             texture_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
         }
 
@@ -112,12 +156,11 @@ namespace nova::renderer::rhi {
 
     std::vector<fence_t*> d3d12_render_engine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<fence_t*>(); }
 
-    void d3d12_render_engine::destroy_renderpass(renderpass_t* pass) { delete pass;
-    }
+    void d3d12_render_engine::destroy_renderpass(renderpass_t* pass) { delete pass; }
 
     void d3d12_render_engine::destroy_pipeline(pipeline_t* pipeline) {}
 
-    void d3d12_render_engine::destroy_texture(image_t* resource) { 
+    void d3d12_render_engine::destroy_texture(image_t* resource) {
         // TODO: Free the texture, D3D12-style?
 
         delete resource;
@@ -201,4 +244,4 @@ namespace nova::renderer::rhi {
         copy_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
         CHECK_ERROR(device->CreateCommandQueue(&copy_queue_desc, IID_PPV_ARGS(&copy_command_queue)), "Could not create copy command queue");
     }
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi
