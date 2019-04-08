@@ -9,6 +9,7 @@
 #include <nova_renderer/shaderpack_data.hpp>
 #include <string>
 #include <unordered_map>
+#include <nova_renderer/util/result.hpp>
 
 namespace nova::renderer::shaderpack {
     NOVA_EXCEPTION(pass_ordering_exception);
@@ -41,7 +42,7 @@ namespace nova::renderer::shaderpack {
      * \param passes A map from pass name to pass of all the passes to order
      * \return The names of the passes in submission order
      */
-    std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass_create_info_t>& passes);
+    result<std::vector<render_pass_create_info_t>> order_passes(const std::vector<render_pass_create_info_t>& passes);
 
     /*!
      * \brief Puts textures in usage order and determines which have overlapping usage ranges
@@ -69,6 +70,6 @@ namespace nova::renderer::shaderpack {
         const std::unordered_map<std::string, texture_create_info_t>& textures,
         const std::unordered_map<std::string, range>& resource_used_range,
         const std::vector<std::string>& resources_in_order);
-} // namespace nova::renderer
+} // namespace nova::renderer::shaderpack
 
 #endif // NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP

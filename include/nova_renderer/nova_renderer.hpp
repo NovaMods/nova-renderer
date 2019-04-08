@@ -107,9 +107,11 @@ namespace nova::renderer {
          */
         std::vector<renderpass_t> renderpasses;
 
-        std::unordered_map<std::string, rhi::resource_t*> dynamic_textures;
+        std::unordered_map<std::string, rhi::image_t*> dynamic_textures;
 
         void create_dynamic_textures(const std::vector<shaderpack::texture_create_info_t>& texture_create_infos);
+
+        void create_render_passes(const std::vector<shaderpack::render_pass_create_info_t>& pass_create_infos);
 
         void destroy_render_passes();
 

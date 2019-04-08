@@ -96,7 +96,7 @@ namespace nova::renderer::rhi {
 
         virtual void destroy_pipeline(pipeline_t* pipeline) = 0;
 
-        virtual void destroy_texture(image_t* resource) = 0;
+        virtual void destroy_texture(image_t* image) = 0;
 
         virtual void destroy_semaphores(const std::vector<semaphore_t*>& semaphores) = 0;
 
