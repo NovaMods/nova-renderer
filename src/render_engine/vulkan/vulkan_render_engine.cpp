@@ -247,8 +247,32 @@ namespace nova::renderer::rhi {
         return result(static_cast<renderpass_t*>(renderpass));
     }
 
-    framebuffer_t* vk_render_engine::create_framebuffer(const std::vector<image_t*>& attachments) {
-        
+    framebuffer_t* vk_render_engine::create_framebuffer(const renderpass_t* renderpass,
+                                                        const std::vector<image_t*>& attachments,
+                                                        const glm::uvec2& framebuffer_size) {
+        const vk_renderpass_t* vk_renderpass = static_cast<const vk_renderpass_t*>(renderpass);
+
+        std::vector<VkImageView> attachment_views;
+        attachment_views.reserve(attachments.size());
+        for(const image_t* attachment : attachments) {
+            const vk_image_t* vk_image = static_cast<const vk_image_t*>(attachment);
+            attachment_views.push_back(vk_image->image_view);
+        }
+
+        VkFramebufferCreateInfo framebuffer_create_info = {};
+        framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebuffer_create_info.renderPass = vk_renderpass->pass;
+        framebuffer_create_info.attachmentCount = static_cast<uint32_t>(attachment_views.size());
+        framebuffer_create_info.pAttachments = attachment_views.data();
+        framebuffer_create_info.width = framebuffer_size.x;
+        framebuffer_create_info.height = framebuffer_size.y;
+        framebuffer_create_info.layers = 1;
+
+        vk_framebuffer_t* framebuffer = new vk_framebuffer_t;
+        framebuffer->size = framebuffer_size;
+        NOVA_CHECK_RESULT(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer->framebuffer));
+
+        return framebuffer;
     }
 
     pipeline_t* vk_render_engine::create_pipeline(const shaderpack::pipeline_create_info_t& data) { return nullptr; }
@@ -335,6 +359,11 @@ namespace nova::renderer::rhi {
     void vk_render_engine::destroy_renderpass(renderpass_t* pass) {
         vk_renderpass_t* vk_renderpass = static_cast<vk_renderpass_t*>(pass);
         vkDestroyRenderPass(device, vk_renderpass->pass, nullptr);
+    }
+
+    void vk_render_engine::destroy_framebuffer(const framebuffer_t* framebuffer) {
+        vk_framebuffer_t* vk_framebuffer = static_cast<vk_framebuffer_t*>(framebuffer);
+        vkDestroyFramebuffer(device, vk_framebuffer->framebuffer, nullptr);
     }
 
     void vk_render_engine::destroy_pipeline(pipeline_t* pipeline) {}

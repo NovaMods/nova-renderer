@@ -33,7 +33,9 @@ namespace nova::renderer::rhi {
 
         result<renderpass_t*> create_renderpass(const shaderpack::render_pass_create_info_t& data) override final;
 
-        framebuffer_t* create_framebuffer(const std::vector<image_t*>& attachments) override final;
+        framebuffer_t* create_framebuffer(const renderpass_t* renderpass,
+                                          const std::vector<image_t*>& attachments,
+                                          const glm::uvec2& framebuffer_size) override final;
 
         pipeline_t* create_pipeline(const shaderpack::pipeline_create_info_t& data) override final;
         buffer_t* create_buffer(const buffer_create_info_t& info) override final;
@@ -44,6 +46,9 @@ namespace nova::renderer::rhi {
         std::vector<fence_t*> create_fences(uint32_t num_fences, bool signaled = false) override final;
 
         void destroy_renderpass(renderpass_t* pass) override final;
+
+        void destroy_framebuffer(const framebuffer_t* framebuffer) override final;
+
         void destroy_pipeline(pipeline_t* pipeline) override final;
         void destroy_texture(image_t* resource) override final;
         void destroy_semaphores(const std::vector<semaphore_t*>& semaphores) override final;
