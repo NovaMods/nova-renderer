@@ -12,11 +12,11 @@
 
 namespace nova::renderer::rhi {        
     struct d3d12_buffer_t : buffer_t {
-        Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+        ID3D12Resource* resource;
     };
 
     struct d3d12_image_t : image_t {
-        Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+        ID3D12Resource* resource;
     };
 
     struct d3d12_framebuffer_t : framebuffer_t {
@@ -24,5 +24,7 @@ namespace nova::renderer::rhi {
 
         bool has_depth_stencil = false;
         D3D12_CPU_DESCRIPTOR_HANDLE depth_stencil_image = {};
+
+        ID3D12DescriptorHeap* descriptor_heap;
     };
 }
