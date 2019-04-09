@@ -33,24 +33,22 @@ namespace nova::renderer::rhi {
                                                            const std::vector<image_t*>& attachments,
                                                            const glm::uvec2& framebuffer_size) {
         const size_t attachment_count = attachments.size();
+        d3d12_framebuffer_t* framebuffer = new d3d12_framebuffer_t;
+        framebuffer->render_targets.reserve(attachment_count);
 
         D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_descriptor = {};
         rtv_heap_descriptor.NumDescriptors = attachment_count;
         rtv_heap_descriptor.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
         rtv_heap_descriptor.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
-        ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap;
-        HRESULT hr = device->CreateDescriptorHeap(&rtv_heap_descriptor, IID_PPV_ARGS(&rtv_descriptor_heap));
+        const HRESULT hr = device->CreateDescriptorHeap(&rtv_heap_descriptor, IID_PPV_ARGS(&framebuffer->descriptor_heap));
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create descriptor heap for the RTV";
             throw render_engine_initialization_exception("Could not create descriptor head for the RTV");
         }
 
         const uint32_t rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
-        d3d12_framebuffer_t* framebuffer = new d3d12_framebuffer_t;
-        framebuffer->render_targets.reserve(attachment_count);
-
+        
         std::vector<ComPtr<ID3D12Resource>> rendertargets;
         rendertargets.reserve(attachment_count);
 
@@ -60,10 +58,10 @@ namespace nova::renderer::rhi {
 
             rendertargets.push_back(d3d12_image->resource);
 
-            framebuffer->render_targets.emplace_back(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart());
+            framebuffer->render_targets.emplace_back(framebuffer->descriptor_heap->GetCPUDescriptorHandleForHeapStart());
 
             // Create the Render Target View, which binds the swapchain buffer to the RTV handle
-            device->CreateRenderTargetView(d3d12_image->resource.Get(), nullptr, framebuffer->render_targets.at(i));
+            device->CreateRenderTargetView(d3d12_image->resource, nullptr, framebuffer->render_targets.at(i));
 
             // Increment the RTV handle
             framebuffer->render_targets.at(i).Offset(1, rtv_descriptor_size);
@@ -158,12 +156,20 @@ namespace nova::renderer::rhi {
 
     void d3d12_render_engine::destroy_renderpass(renderpass_t* pass) { delete pass; }
 
+    void d3d12_render_engine::destroy_framebuffer(const framebuffer_t* framebuffer) {
+        const d3d12_framebuffer_t* d3d12_framebuffer = static_cast<const d3d12_framebuffer_t*>(framebuffer);
+        d3d12_framebuffer->descriptor_heap->Release();
+
+        delete d3d12_framebuffer;
+    }
+
     void d3d12_render_engine::destroy_pipeline(pipeline_t* pipeline) {}
 
     void d3d12_render_engine::destroy_texture(image_t* resource) {
-        // TODO: Free the texture, D3D12-style?
+        const d3d12_image_t* d3d12_framebuffer = static_cast<const d3d12_image_t*>(resource);
+        d3d12_framebuffer->resource->Release();
 
-        delete resource;
+        delete d3d12_framebuffer;
     }
 
     void d3d12_render_engine::destroy_semaphores(const std::vector<semaphore_t*>& semaphores) {}
