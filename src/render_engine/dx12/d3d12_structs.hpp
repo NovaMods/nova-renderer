@@ -10,7 +10,9 @@
 #include "nova_renderer/command_list.hpp"
 #include "d3dx12.h"
 
-namespace nova::renderer::rhi {        
+namespace nova::renderer::rhi {
+    struct d3d12_renderpass_t : renderpass_t {};
+
     struct d3d12_buffer_t : buffer_t {
         ID3D12Resource* resource;
     };

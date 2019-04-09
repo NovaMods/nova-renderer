@@ -8,12 +8,6 @@
 #include "glad.h"
 
 namespace nova::renderer::rhi {
-    struct gl_image_t : image_t {
-        GLuint id;
-    };
-
-    struct gl_renderpass_t : renderpass_t {};
-
     /*!
      * \brief OpenGL 2.1 render engine because compatibility
      */
@@ -33,7 +27,9 @@ namespace nova::renderer::rhi {
 
         // Inherited via render_engine
         result<renderpass_t*> create_renderpass(const shaderpack::render_pass_create_info_t& data) override final;
-        framebuffer_t* create_framebuffer(const std::vector<resource_t*>& attachments) override final;
+        framebuffer_t* create_framebuffer(const renderpass_t* renderpass,
+                                          const std::vector<image_t*>& attachments,
+                                          const glm::uvec2& framebuffer_size) override final;
         pipeline_t* create_pipeline(const shaderpack::pipeline_create_info_t& data) override final;
         buffer_t* create_buffer(const buffer_create_info_t& info) override final;
         image_t* create_texture(const shaderpack::texture_create_info_t& info) override final;
