@@ -7,6 +7,7 @@
 #include "gl2_command_list.hpp"
 
 #include "../../util/logger.hpp"
+#include "gl2_structs.hpp"
 
 namespace nova::renderer::rhi {
     gl2_render_engine::gl2_render_engine(nova_settings& settings) : render_engine_t(settings) {
@@ -33,12 +34,19 @@ namespace nova::renderer::rhi {
         return result<renderpass_t*>(new renderpass_t);
     }
 
-    framebuffer_t* gl2_render_engine::create_framebuffer(const std::vector<resource_t*>& attachments) { return nullptr; }
+    framebuffer_t* gl2_render_engine::create_framebuffer(const renderpass_t* renderpass,
+                                                         const std::vector<image_t*>& attachments,
+                                                         const glm::uvec2& framebuffer_size) {
+        gl2_framebuffer_t* framebuffer = new gl2_framebuffer_t;
+
+        return framebuffer;
+    }
+
     pipeline_t* gl2_render_engine::create_pipeline(const shaderpack::pipeline_create_info_t& data) { return nullptr; }
     buffer_t* gl2_render_engine::create_buffer(const buffer_create_info_t& info) { return nullptr; }
 
     image_t* gl2_render_engine::create_texture(const shaderpack::texture_create_info_t& info) {
-        gl_image_t* image = new gl_image_t;
+        gl2_image_t* image = new gl2_image_t;
 
         glGenTextures(1, &image->id);
         glBindTexture(GL_TEXTURE_2D, image->id);
@@ -97,7 +105,7 @@ namespace nova::renderer::rhi {
     void gl2_render_engine::destroy_pipeline(pipeline_t* pipeline) {}
 
     void gl2_render_engine::destroy_texture(image_t* resource) {
-        gl_image_t* gl_image = static_cast<gl_image_t*>(resource);
+        gl2_image_t* gl_image = static_cast<gl2_image_t*>(resource);
         glDeleteTextures(1, &gl_image->id);
 
         delete gl_image;

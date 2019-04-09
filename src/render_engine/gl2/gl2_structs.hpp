@@ -8,11 +8,11 @@
 #pragma once
 
 namespace nova::renderer::rhi {
-    struct gl_resource_t : resource_t {
+    struct gl2_image_t : image_t {
         GLuint id;
     };
 
-    struct gl_framebuffer_t : framebuffer_t {
-        GLuint framebuffer;
-    };
+    struct gl2_renderpass_t : renderpass_t {};
+
+    struct gl2_framebuffer_t : framebuffer_t {};
 }

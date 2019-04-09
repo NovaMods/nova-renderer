@@ -14,8 +14,6 @@
 #include <wrl.h>
 
 namespace nova::renderer::rhi {
-    struct d3d12_renderpass_t : renderpass_t {};
-
     /*!
      * \brief D3D12 implementation of a render engine
      */
@@ -73,10 +71,14 @@ namespace nova::renderer::rhi {
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> compute_command_queue;
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> copy_command_queue;
 
+        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap;
+
 #pragma region Initialization
         void create_device();
 
         void create_queues();
+
+        void create_rtv_descriptor_heap();
 #pragma endregion
     };
 } // namespace nova::renderer
