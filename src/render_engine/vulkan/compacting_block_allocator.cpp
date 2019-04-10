@@ -4,7 +4,7 @@
  */
 
 #include "compacting_block_allocator.hpp"
-#include <nova_renderer/render_engine.hpp>
+#include "nova_renderer/render_engine.hpp"
 #include "../../util/logger.hpp"
 #include "vulkan_utils.hpp"
 

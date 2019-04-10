@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../include/nova_renderer/util/platform.hpp"
+#include "nova_renderer/util/platform.hpp"
 
 #ifndef WIN32_LEAN_AND_MEAN
 	#define WIN32_LEAN_AND_MEAN

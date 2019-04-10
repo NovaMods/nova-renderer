@@ -3,7 +3,7 @@
  * \date 18-May-16.
  */
 
-#include <nova_renderer/util/utils.hpp>
+#include "nova_renderer/util/utils.hpp"
 #include "logger.hpp"
 
 namespace nova::renderer {

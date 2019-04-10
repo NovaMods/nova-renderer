@@ -6,12 +6,12 @@
 #include "shaderpack_loading.hpp"
 #include <glslang/Include/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
+#include <SPIRV/GlslangToSpv.h>
 #include "../folder_accessor.hpp"
 #include "../json_utils.hpp"
 #include "../loading_utils.hpp"
 #include "../regular_folder_accessor.hpp"
 #include "../zip_folder_accessor.hpp"
-#include "SPIRV/GlslangToSpv.h"
 #include "json_interop.hpp"
 #include "render_graph_builder.hpp"
 #include "shaderpack_validator.hpp"

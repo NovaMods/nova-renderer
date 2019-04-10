@@ -1,7 +1,7 @@
 #ifndef RENDERER_AUTO_ALLOCATED_BUFFER_H
 #define RENDERER_AUTO_ALLOCATED_BUFFER_H
 
-#include <nova_renderer/util/result.hpp>
+#include "nova_renderer/util/result.hpp"
 #include <string>
 #include <vector>
 #include <vulkan/vulkan.h>

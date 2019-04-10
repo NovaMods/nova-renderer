@@ -3,8 +3,9 @@
  * \date 15-Aug-18.
  */
 
+#include "nova_renderer/util/utils.hpp"
+
 #include "zip_folder_accessor.hpp"
-#include <nova_renderer/util/utils.hpp>
 #include "../util/logger.hpp"
 
 #include <array>

@@ -3,7 +3,7 @@
  * \date 06-Feb-19.
  */
 
-#include "../../../tests/src/general_test_setup.hpp"
+#include "../../util/logger.hpp"
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "swapchain.hpp"

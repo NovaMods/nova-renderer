@@ -6,7 +6,7 @@
 #ifndef NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP
 #define NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP
 
-#include <nova_renderer/shaderpack_data.hpp>
+#include "nova_renderer/shaderpack_data.hpp"
 #include <string>
 #include <unordered_map>
 

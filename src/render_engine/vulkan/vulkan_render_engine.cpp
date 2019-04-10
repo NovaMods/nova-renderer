@@ -17,7 +17,6 @@
 #ifdef NOVA_LINUX
 #include <cxxabi.h>
 #include <execinfo.h>
-
 #endif
 
 namespace nova::renderer {

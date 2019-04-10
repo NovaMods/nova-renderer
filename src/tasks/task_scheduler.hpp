@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <functional>
 #include <future>
-#include <nova_renderer/util/utils.hpp>
+#include "nova_renderer/util/utils.hpp"
 #include "../util/logger.hpp"
 #include "condition_counter.hpp"
 #include "wait_free_queue.hpp"

@@ -8,7 +8,7 @@
 
 #include <cstdint>
 #include <glm/glm.hpp>
-#include <nova_renderer/util/utils.hpp>
+#include "nova_renderer/util/utils.hpp"
 #include <vector>
 #include <vulkan/vulkan.h>
 
