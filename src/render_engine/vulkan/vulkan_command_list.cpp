@@ -23,8 +23,10 @@ namespace nova::renderer::rhi {
         image_barriers.reserve(barriers.size());
 
         for(const resource_barrier_t& barrier : barriers) {
-            switch(barrier.resource_to_barrier->resource_type) {
-                case resource_t::type::IMAGE:
+            switch(barrier.resource_to_barrier->type) {
+                case resource_t::type_t::IMAGE:
+                    vk_image_t* image = static_cast<vk_image_t*>(barrier.resource_to_barrier);
+
                     VkImageMemoryBarrier image_barrier = {};
                     image_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                     image_barrier.srcAccessMask = barrier.access_before_barrier;
@@ -33,7 +35,7 @@ namespace nova::renderer::rhi {
                     image_barrier.newLayout = to_vk_layout(barrier.final_state);
                     image_barrier.srcQueueFamilyIndex = render_engine.get_queue_family_index(barrier.source_queue);
                     image_barrier.dstQueueFamilyIndex = render_engine.get_queue_family_index(barrier.destination_queue);
-                    image_barrier.image = barrier.resource_to_barrier->image;
+                    image_barrier.image = image->image;
                     image_barrier.subresourceRange.aspectMask = barrier.image_memory_barrier.aspect;
                     image_barrier.subresourceRange.baseMipLevel = 0; // TODO: Something smarter with mips
                     image_barrier.subresourceRange.levelCount = 1;
@@ -44,14 +46,16 @@ namespace nova::renderer::rhi {
 
                     break;
 
-                case resource_t::type::BUFFER:
+                case resource_t::type_t::BUFFER:
+                    vk_buffer_t* buffer = static_cast<vk_buffer_t*>(barrier.resource_to_barrier);
+
                     VkBufferMemoryBarrier buffer_barrier = {};
                     buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
                     buffer_barrier.srcAccessMask = barrier.access_before_barrier;
                     buffer_barrier.dstAccessMask = barrier.access_after_barrier;
                     buffer_barrier.srcQueueFamilyIndex = render_engine.get_queue_family_index(barrier.source_queue);
                     buffer_barrier.dstQueueFamilyIndex = render_engine.get_queue_family_index(barrier.destination_queue);
-                    buffer_barrier.buffer = barrier.resource_to_barrier->buffer;
+                    buffer_barrier.buffer = buffer->buffer;
                     buffer_barrier.offset = barrier.buffer_memory_barrier.offset;
                     buffer_barrier.size = barrier.buffer_memory_barrier.size;
 
@@ -73,9 +77,9 @@ namespace nova::renderer::rhi {
                              image_barriers.data());
     }
 
-    void vulkan_command_list::copy_buffer(resource_t* destination_buffer,
+    void vulkan_command_list::copy_buffer(buffer_t* destination_buffer,
                                           const uint64_t destination_offset,
-                                          resource_t* source_buffer,
+                                          buffer_t* source_buffer,
                                           const uint64_t source_offset,
                                           const uint64_t num_bytes) {
         VkBufferCopy copy = {};
@@ -83,7 +87,10 @@ namespace nova::renderer::rhi {
         copy.dstOffset = destination_offset;
         copy.size = num_bytes;
 
-        vkCmdCopyBuffer(cmds, source_buffer->buffer, destination_buffer->buffer, 1, &copy);
+        vk_buffer_t* vk_destination_buffer = static_cast<vk_buffer_t*>(destination_buffer);
+        vk_buffer_t* vk_source_buffer = static_cast<vk_buffer_t*>(source_buffer);
+
+        vkCmdCopyBuffer(cmds, vk_source_buffer->buffer, vk_destination_buffer->buffer, 1, &copy);
     }
 
     void vulkan_command_list::execute_command_lists(const std::vector<command_list_t*>& lists) {
@@ -99,11 +106,14 @@ namespace nova::renderer::rhi {
     }
 
     void vulkan_command_list::begin_renderpass(renderpass_t* renderpass, framebuffer_t* framebuffer) {
+        vk_renderpass_t* vk_renderpass = static_cast<vk_renderpass_t*>(renderpass);
+        vk_framebuffer_t* vk_framebuffer = static_cast<vk_framebuffer_t*>(framebuffer);
+
         VkRenderPassBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        begin_info.renderPass = renderpass->renderpass;
-        begin_info.framebuffer = framebuffer->framebuffer;
-        begin_info.renderArea = framebuffer->size;
+        begin_info.renderPass = vk_renderpass->pass;
+        begin_info.framebuffer = vk_framebuffer->framebuffer;
+        begin_info.renderArea = {framebuffer->size.x, framebuffer->size.y};
 
         // Nova _always_ records command lists in parallel for each renderpass
         vkCmdBeginRenderPass(cmds, &begin_info, VK_SUBPASS_CONTENTS_INLINE);

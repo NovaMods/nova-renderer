@@ -15,6 +15,12 @@ namespace nova::renderer::rhi {
     };
 
     struct resource_t {
+        enum type_t {
+            BUFFER,
+            IMAGE,
+        };
+
+        type_t type;
         bool is_dynamic = false;
     };
 

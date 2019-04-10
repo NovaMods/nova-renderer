@@ -168,9 +168,9 @@ namespace nova::renderer::rhi {
          * \pre destination_offset plus num_bytes is less than the size of destination_buffer
          * \pre destination_offset plus num_bytes is less than the size of source_buffer
          */
-        virtual void copy_buffer(resource_t* destination_buffer,
+        virtual void copy_buffer(buffer_t* destination_buffer,
                                  uint64_t destination_offset,
-                                 resource_t* source_buffer,
+                                 buffer_t* source_buffer,
                                  uint64_t source_offset,
                                  uint64_t num_bytes) = 0;
 

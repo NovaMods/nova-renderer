@@ -17,6 +17,12 @@ namespace nova::renderer::rhi {
         VmaAllocationInfo vma_info{};
     };
 
+    struct vk_buffer_t : buffer_t {
+        VkBuffer buffer;
+        VmaAllocation allocation;
+        VmaAllocationInfo vma_info{};
+    };
+
     struct vk_renderpass_t : renderpass_t {
         VkRenderPass pass;
         VkRect2D render_area{};

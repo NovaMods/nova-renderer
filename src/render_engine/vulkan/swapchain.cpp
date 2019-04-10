@@ -4,15 +4,17 @@
  */
 
 #include "swapchain.hpp"
+
 #include "../../util/logger.hpp"
-#include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
 
-namespace nova::renderer {
-    swapchain_manager::swapchain_manager(const uint32_t requested_num_swapchain_images,
-                                         vk_render_engine& render_engine,
-                                         const glm::ivec2 window_dimensions,
-                                         const std::vector<VkPresentModeKHR>& present_modes)
+#include "vulkan_render_engine.hpp"
+
+namespace nova::renderer::rhi {
+    vk_swapchain_manager::vk_swapchain_manager(const uint32_t requested_num_swapchain_images,
+                                               vk_render_engine& render_engine,
+                                               const glm::ivec2 window_dimensions,
+                                               const std::vector<VkPresentModeKHR>& present_modes)
         : render_engine(render_engine),
           swapchain_extent{static_cast<uint32_t>(window_dimensions.x), static_cast<uint32_t>(window_dimensions.y)} {
         const auto surface_format = choose_surface_format(render_engine.gpu.surface_formats);
@@ -141,7 +143,7 @@ namespace nova::renderer {
         transition_swapchain_images_into_correct_layout(swapchain_images);
     }
 
-    VkSurfaceFormatKHR swapchain_manager::choose_surface_format(const std::vector<VkSurfaceFormatKHR>& formats) {
+    VkSurfaceFormatKHR vk_swapchain_manager::choose_surface_format(const std::vector<VkSurfaceFormatKHR>& formats) {
         VkSurfaceFormatKHR result;
 
         if(formats.size() == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
@@ -161,7 +163,7 @@ namespace nova::renderer {
         return formats[0];
     }
 
-    VkPresentModeKHR swapchain_manager::choose_present_mode(const std::vector<VkPresentModeKHR>& modes) {
+    VkPresentModeKHR vk_swapchain_manager::choose_present_mode(const std::vector<VkPresentModeKHR>& modes) {
         const VkPresentModeKHR desired_mode = VK_PRESENT_MODE_MAILBOX_KHR;
 
         // Mailbox mode is best mode (also not sure why)
@@ -175,7 +177,7 @@ namespace nova::renderer {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D swapchain_manager::choose_surface_extent(const VkSurfaceCapabilitiesKHR& caps, const glm::ivec2& window_dimensions) {
+    VkExtent2D vk_swapchain_manager::choose_surface_extent(const VkSurfaceCapabilitiesKHR& caps, const glm::ivec2& window_dimensions) {
         VkExtent2D extent;
 
         if(caps.currentExtent.width == 0xFFFFFFFF) {
@@ -188,7 +190,7 @@ namespace nova::renderer {
         return extent;
     }
 
-    void swapchain_manager::present_current_image(VkSemaphore wait_semaphores) const {
+    void vk_swapchain_manager::present_current_image(VkSemaphore wait_semaphores) const {
 
         VkResult swapchain_result = {};
 
@@ -204,7 +206,7 @@ namespace nova::renderer {
         NOVA_CHECK_RESULT(vkQueuePresentKHR(render_engine.graphics_queue, &present_info));
     }
 
-    void swapchain_manager::transition_swapchain_images_into_correct_layout(const std::vector<VkImage>& images) const {
+    void vk_swapchain_manager::transition_swapchain_images_into_correct_layout(const std::vector<VkImage>& images) const {
         std::vector<VkImageMemoryBarrier> barriers;
         barriers.reserve(images.size());
 
@@ -228,7 +230,7 @@ namespace nova::renderer {
             barriers.push_back(barrier);
         }
 
-        VkCommandPool command_pool = render_engine.get_command_buffer_pool_for_current_thread(0, render_engine.graphics_family_index);
+        VkCommandPool command_pool = render_engine.get_command_pool_for_thread(0, render_engine.graphics_family_index);
 
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -275,7 +277,7 @@ namespace nova::renderer {
         vkFreeCommandBuffers(render_engine.device, command_pool, 1, &cmds);
     }
 
-    void swapchain_manager::deinit() {
+    void vk_swapchain_manager::deinit() {
         for(auto& i : swapchain_images) {
             vkDestroyImage(render_engine.device, i, nullptr);
         }
@@ -289,11 +291,11 @@ namespace nova::renderer {
         }
     }
 
-    uint32_t swapchain_manager::get_current_index() const { return cur_swapchain_index; }
+    uint32_t vk_swapchain_manager::get_current_index() const { return cur_swapchain_index; }
 
-    uint32_t swapchain_manager::get_num_images() const { return num_swapchain_images; }
+    uint32_t vk_swapchain_manager::get_num_images() const { return num_swapchain_images; }
 
-    void swapchain_manager::acquire_next_swapchain_image(VkSemaphore image_acquire_semaphore) {
+    void vk_swapchain_manager::acquire_next_swapchain_image(VkSemaphore image_acquire_semaphore) {
         const auto acquire_result = vkAcquireNextImageKHR(render_engine.device,
                                                           swapchain,
                                                           std::numeric_limits<uint64_t>::max(),
@@ -310,20 +312,20 @@ namespace nova::renderer {
         }
     }
 
-    void swapchain_manager::set_current_layout(VkImageLayout new_layout) { swapchain_image_layouts[cur_swapchain_index] = new_layout; }
+    void vk_swapchain_manager::set_current_layout(VkImageLayout new_layout) { swapchain_image_layouts[cur_swapchain_index] = new_layout; }
 
-    VkFramebuffer swapchain_manager::get_current_framebuffer() {
+    VkFramebuffer vk_swapchain_manager::get_current_framebuffer() {
         NOVA_LOG(TRACE) << "Getting swapchain framebuffer " << cur_swapchain_index << " out of " << framebuffers.size();
         return framebuffers[cur_swapchain_index];
     }
 
-    VkImage swapchain_manager::get_current_image() { return swapchain_images[cur_swapchain_index]; }
+    VkImage vk_swapchain_manager::get_current_image() { return swapchain_images[cur_swapchain_index]; }
 
-    VkImageLayout swapchain_manager::get_current_layout() { return swapchain_image_layouts[cur_swapchain_index]; }
+    VkImageLayout vk_swapchain_manager::get_current_layout() { return swapchain_image_layouts[cur_swapchain_index]; }
 
-    VkExtent2D swapchain_manager::get_swapchain_extent() const { return swapchain_extent; }
+    VkExtent2D vk_swapchain_manager::get_swapchain_extent() const { return swapchain_extent; }
 
-    VkFormat swapchain_manager::get_swapchain_format() const { return swapchain_format; }
+    VkFormat vk_swapchain_manager::get_swapchain_format() const { return swapchain_format; }
 
-    VkFence swapchain_manager::get_current_frame_fence() { return fences[cur_swapchain_index]; }
-} // namespace nova::renderer
+    VkFence vk_swapchain_manager::get_current_frame_fence() { return fences[cur_swapchain_index]; }
+} // namespace nova::renderer::rhi

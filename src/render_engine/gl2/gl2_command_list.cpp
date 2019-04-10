@@ -20,13 +20,13 @@ namespace nova::renderer::rhi {
         // Don't need to do anything whoop
     }
 
-    void gl2_command_list::copy_buffer(resource_t* destination_buffer,
+    void gl2_command_list::copy_buffer(buffer_t* destination_buffer,
                                        const uint64_t destination_offset,
-                                       resource_t* source_buffer,
+                                       buffer_t* source_buffer,
                                        const uint64_t source_offset,
                                        const uint64_t num_bytes) {
-        gl_resource_t* dst_buf = reinterpret_cast<gl_resource_t*>(destination_buffer);
-        gl_resource_t* src_buf = reinterpret_cast<gl_resource_t*>(source_buffer);
+        gl2_buffer_t* dst_buf = reinterpret_cast<gl2_buffer_t*>(destination_buffer);
+        gl2_buffer_t* src_buf = reinterpret_cast<gl2_buffer_t*>(source_buffer);
 
         commands.emplace_back();
 
@@ -47,7 +47,7 @@ namespace nova::renderer::rhi {
     }
 
     void gl2_command_list::begin_renderpass([[maybe_unused]] renderpass_t* renderpass, framebuffer_t* framebuffer) {
-        gl_framebuffer_t* gl_framebuffer = reinterpret_cast<gl_framebuffer_t*>(framebuffer);
+        gl2_framebuffer_t* gl_framebuffer = reinterpret_cast<gl2_framebuffer_t*>(framebuffer);
 
         commands.emplace_back();
 
