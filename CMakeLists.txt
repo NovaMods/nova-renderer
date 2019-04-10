@@ -79,11 +79,9 @@ include(external)
 # Add Nova source code #
 ########################
 set(NOVA_SOURCE
-        include/nova_renderer/util/platform.hpp
         src/loading/zip_folder_accessor.hpp
         src/loading/regular_folder_accessor.hpp
         src/loading/folder_accessor.hpp
-        include/nova_renderer/nova_renderer.hpp
         src/nova_renderer.cpp
         src/loading/folder_accessor.cpp
         src/loading/regular_folder_accessor.cpp
@@ -93,22 +91,16 @@ set(NOVA_SOURCE
         src/loading/shaderpack/shaderpack_loading.hpp
         src/loading/loading_utils.cpp
         src/loading/loading_utils.hpp
-        include/nova_renderer/shaderpack_data.hpp
         src/loading/shaderpack/shaderpack_data.cpp
 
         src/settings/nova_settings.cpp
-        include/nova_renderer/nova_settings.hpp
         src/util/logger.cpp
         src/util/logger.hpp
-        include/nova_renderer/render_engine.hpp
-        include/nova_renderer/window.hpp
         src/loading/shaderpack/json_interop.cpp
         src/loading/shaderpack/json_interop.hpp
         src/loading/json_utils.hpp
-        include/nova_renderer/util/utils.hpp
         src/util/utils.cpp
-        include/nova_renderer/renderables.hpp
-        src/render_objects/uniform_structs.hpp 
+        src/render_objects/uniform_structs.hpp
         src/loading/shaderpack/shaderpack_validator.cpp 
         src/loading/shaderpack/shaderpack_validator.hpp 
         src/loading/shaderpack/render_graph_builder.cpp 
@@ -143,10 +135,24 @@ set(NOVA_SOURCE
 
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
-        include/nova_renderer/renderdoc_app.h
 
-        include/nova_renderer/util/result.hpp
         src/util/result.cpp
+        )
+
+####################
+# Add Nova headers #
+####################
+set(NOVA_HEADERS
+        include/nova_renderer/util/platform.hpp
+        include/nova_renderer/nova_renderer.hpp
+        include/nova_renderer/shaderpack_data.hpp
+        include/nova_renderer/nova_settings.hpp
+        include/nova_renderer/render_engine.hpp
+        include/nova_renderer/window.hpp
+        include/nova_renderer/util/utils.hpp
+        include/nova_renderer/renderables.hpp
+        include/nova_renderer/renderdoc_app.h
+        include/nova_renderer/util/result.hpp
         )
 
 ##################################
@@ -225,12 +231,13 @@ endif()
 #################
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small
-source_group("nova" FILES ${NOVA_NO_COMPILE} ${3RD_PARTY_SOURCE} ${NOVA_SOURCE})
+source_group("nova" FILES ${NOVA_NO_COMPILE} ${3RD_PARTY_SOURCE} ${NOVA_SOURCE} ${NOVA_HEADERS})
 
 ##########################
 # Setup the nova library #
 ##########################
 add_library(nova-renderer STATIC
+    ${NOVA_HEADERS}
     ${NOVA_SOURCE}
     ${3RD_PARTY_SOURCE}
 )
