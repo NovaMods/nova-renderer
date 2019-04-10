@@ -31,6 +31,8 @@ namespace nova::renderer::rhi {
         // Inherited via render_engine
         std::shared_ptr<window_t> get_window() const override final;
 
+        void set_num_renderpasses(uint32_t num_renderpasses) override final;
+
         result<renderpass_t*> create_renderpass(const shaderpack::render_pass_create_info_t& data) override final;
 
         framebuffer_t* create_framebuffer(const renderpass_t* renderpass,

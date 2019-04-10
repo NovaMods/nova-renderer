@@ -4,8 +4,8 @@
  */
 
 #pragma once
-#include "nova_renderer/render_engine_t.hpp"
 #include "glad.h"
+#include "nova_renderer/render_engine_t.hpp"
 
 namespace nova::renderer::rhi {
     /*!
@@ -21,9 +21,11 @@ namespace nova::renderer::rhi {
         gl2_render_engine(const gl2_render_engine& other) = delete;
         gl2_render_engine& operator=(const gl2_render_engine& other) = delete;
 
-        ~gl2_render_engine() override final;
+        ~gl2_render_engine() override final = default;
 
         std::shared_ptr<window_t> get_window() const override final;
+
+        void set_num_renderpasses(uint32_t num_renderpasses) override final;
 
         // Inherited via render_engine
         result<renderpass_t*> create_renderpass(const shaderpack::render_pass_create_info_t& data) override final;

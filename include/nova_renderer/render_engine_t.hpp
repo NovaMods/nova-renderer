@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "../../src/render_engine/dx12/win32_window.hpp"
 #include "nova_renderer/command_list.hpp"
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/renderables.hpp"
@@ -16,7 +17,6 @@
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/util/utils.hpp"
 #include "nova_renderer/window.hpp"
-#include "../../src/render_engine/dx12/win32_window.hpp"
 
 namespace nova::renderer::rhi {
     struct buffer_create_info_t {
@@ -61,6 +61,19 @@ namespace nova::renderer::rhi {
         virtual ~render_engine_t() = default;
 
         [[nodiscard]] virtual std::shared_ptr<window_t> get_window() const = 0;
+
+        /*!
+         * \brief Sets the number of renderpasses that the current shaderpack uses
+         *
+         * A render engine will often preallocate some per-renderpass data, so knowing how many renderpasses there are
+         * helps it not overallocate, underallocate, or allocate at runtime
+         *
+         * \param num_renderpasses The number of renderpasses in the current shaderpack
+         *
+         * \note Should only be called when loading a new shaderpack. Must be called before creating the shaderpack's
+         * data
+         */
+        virtual void set_num_renderpasses(uint32_t num_renderpasses) = 0;
 
         /*!
          * \brief Creates a renderpass from the provided data

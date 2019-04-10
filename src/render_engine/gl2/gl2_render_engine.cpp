@@ -20,7 +20,6 @@ namespace nova::renderer::rhi {
         open_window_and_create_surface(settings.window);
 
         set_initial_state();
-
     }
 
     void gl2_render_engine::set_initial_state() {
@@ -28,6 +27,10 @@ namespace nova::renderer::rhi {
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
+    }
+
+    void gl2_render_engine::set_num_renderpasses([[maybe_unused]] uint32_t num_renderpasses) {
+        // GL2 doesn't need to do anything either
     }
 
     result<renderpass_t*> gl2_render_engine::create_renderpass(const shaderpack::render_pass_create_info_t& data) {
