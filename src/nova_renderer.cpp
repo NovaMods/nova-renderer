@@ -135,6 +135,8 @@ namespace nova::renderer {
     }
 
     void nova_renderer::create_render_passes(const std::vector<shaderpack::render_pass_create_info_t>& pass_create_infos) {
+        rhi->set_num_renderpasses(pass_create_infos.size());
+
         for(const shaderpack::render_pass_create_info_t& create_info : pass_create_infos) {
             rhi->create_renderpass(create_info)
                 .flat_map([&](rhi::renderpass_t* new_pass) {
@@ -143,6 +145,11 @@ namespace nova::renderer {
 
                     std::vector<rhi::image_t*> output_images;
                     output_images.reserve(create_info.texture_outputs.size());
+
+                    glm::uvec2 framebuffer_size(0);
+
+                    std::vector<std::string> attachment_errors;
+                    attachment_errors.reserve(create_info.texture_outputs.size());
 
                     for(const shaderpack::texture_attachment_info_t& attachment_info : create_info.texture_outputs) {
                         if(attachment_info.name == "Backbuffer") {
@@ -160,10 +167,30 @@ namespace nova::renderer {
                         } else {
                             rhi::image_t* image = dynamic_textures.at(attachment_info.name);
                             output_images.push_back(image);
+
+                            const shaderpack::texture_create_info_t& info = dynamic_texture_infos.at(attachment_info.name);
+                            const glm::uvec2 attachment_size = info.format.get_size_in_pixels(
+                                {render_settings.window.width, render_settings.window.height});
+
+                            if(framebuffer_size.x > 0) {
+                                if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {
+                                    attachment_errors.push_back(fmt::format(
+                                        fmt("Attachment {:s} has a size of {:d}x{:d}, but the framebuffer for pass {:s} has a size of {:d}x{:d} - these must match! All attachments of a single renderpass must have the same size"),
+                                        attachment_info.name,
+                                        attachment_size.x,
+                                        attachment_size.y,
+                                        create_info.name,
+                                        framebuffer_size.x,
+                                        framebuffer_size.y));
+                                }
+
+                            } else {
+                                framebuffer_size = attachment_size;
+                            }
                         }
                     }
 
-                renderpass.framebuffer = rhi->create_framebuffer(output_images);
+                    renderpass.framebuffer = rhi->create_framebuffer(new_pass, output_images, framebuffer_size);
                     return result(renderpass);
                 })
                 .on_error([&](const nova_error& error) {
