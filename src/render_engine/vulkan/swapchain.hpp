@@ -7,10 +7,11 @@
 #define NOVA_RENDERER_FRAMEBUFFER_MANAGER_H
 
 #include <cstdint>
-#include <glm/glm.hpp>
-#include "nova_renderer/util/utils.hpp"
 #include <vector>
+#include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
+
+#include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
     class vulkan_render_engine;

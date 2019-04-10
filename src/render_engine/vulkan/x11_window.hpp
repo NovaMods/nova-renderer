@@ -7,8 +7,9 @@
 
 #ifdef NOVA_LINUX
 
-#include <X11/Xlib.h>
 #include <cstdint>
+#include <X11/Xlib.h>
+
 #include "nova_renderer/window.hpp"
 
 namespace nova::renderer {

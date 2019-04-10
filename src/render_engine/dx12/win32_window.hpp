@@ -1,8 +1,8 @@
 #ifndef WIN32_WINDOW_H
 #define WIN32_WINDOW_H
 
-#include <nova_renderer/util/platform.hpp>
-#include <nova_renderer/window.hpp>
+#include "nova_renderer/window.hpp"
+#include "nova_renderer/util/platform.hpp"
 
 #ifdef SUPPORT_DX12
 
@@ -12,11 +12,11 @@
 
 #include <sdkddkver.h>
 
-#include "../../util/windows.hpp"
-
 #include <DirectXMath.h>
 #include <dxgi1_2.h>
 #include <glm/glm.hpp>
+
+#include "../../util/windows.hpp"
 
 #ifdef ERROR
 #undef ERROR

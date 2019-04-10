@@ -8,6 +8,7 @@
 
 #include <nlohmann/json.hpp>
 #include <optional>
+
 #include "../util/logger.hpp"
 
 namespace nova::renderer {

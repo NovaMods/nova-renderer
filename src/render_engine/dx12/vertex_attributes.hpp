@@ -7,8 +7,8 @@
 #define NOVA_RENDERER_VERTEX_ATTRIBUTES_HPP
 
 #include <cstdint>
-#include <dxgi.h>
 #include <unordered_map>
+#include <dxgi.h>
 
 #include "../../util/logger.hpp"
 

@@ -3,10 +3,12 @@
 //
 
 #include "linux_utils.hpp"
+
 #include <cstring>
 #include <cxxabi.h>
 #include <execinfo.h>
 #include <fmt/format.h>
+
 #include "logger.hpp"
 
 void nova_backtrace() {

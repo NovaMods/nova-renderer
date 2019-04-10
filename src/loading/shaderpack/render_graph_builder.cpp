@@ -2,10 +2,11 @@
  * \author ddubois
  * \date 17-Sep-18.
  */
-
 #include "render_graph_builder.hpp"
-#include <minitrace/minitrace.h>
+
 #include <unordered_set>
+#include <minitrace/minitrace.h>
+
 #include "../../util/logger.hpp"
 
 namespace nova::renderer {

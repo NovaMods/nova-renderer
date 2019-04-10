@@ -8,11 +8,6 @@
 #if defined(NOVA_WINDOWS)
 #include "../util/windows.hpp"
 #include "../util/windows_utils.hpp"
-
-// Fucking hell
-#ifdef ERROR
-#undef ERROR
-#endif
 #elif defined(NOVA_LINUX)
 #include <dlfcn.h>
 #include "../util/linux_utils.hpp"

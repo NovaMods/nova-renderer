@@ -1,5 +1,3 @@
-#include <utility>
-
 /*!
  * \author ddubois
  * \date 21-Aug-18.
@@ -13,10 +11,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
-
-#ifdef ERROR
-#undef ERROR
-#endif
+#include <utility>
 
 namespace nova::renderer {
     enum log_level { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, MAX_LEVEL };

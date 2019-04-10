@@ -9,8 +9,8 @@
 #ifndef NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
 #define NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
 
-#include <nlohmann/json.hpp>
 #include <string>
+#include <nlohmann/json.hpp>
 
 namespace nova::renderer {
     struct validation_report {

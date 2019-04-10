@@ -6,19 +6,16 @@
 #include <array>
 #include <future>
 
+#include <glslang/MachineIndependent/Initialize.h>
+#include <minitrace/minitrace.h>
+
 #include "nova_renderer/nova_renderer.hpp"
-
-#include "glslang/MachineIndependent/Initialize.h"
 #include "loading/shaderpack/shaderpack_loading.hpp"
-
 #if defined(NOVA_WINDOWS)
 #include "render_engine/dx12/dx12_render_engine.hpp"
 #endif
-
-#include "debugging/renderdoc.hpp"
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
-
-#include <minitrace/minitrace.h>
+#include "debugging/renderdoc.hpp"
 #include "util/logger.hpp"
 
 namespace nova::renderer {

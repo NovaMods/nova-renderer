@@ -2,12 +2,13 @@
  * \author ddubois
  * \date 06-Feb-19.
  */
+#include "vulkan_render_engine.hpp"
 
-#include <fmt/format.h>
 #include <set>
+#include <fmt/format.h>
+
 #include "../../util/logger.hpp"
 #include "swapchain.hpp"
-#include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer {

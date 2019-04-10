@@ -7,6 +7,7 @@
 #define NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H
 
 #include <miniz/miniz_zip.h>
+
 #include "folder_accessor.hpp"
 
 namespace nova::renderer {
