@@ -87,6 +87,8 @@ namespace nova::renderer::rhi {
 
         VkCommandPool get_command_pool_for_thread(uint32_t thread_idx, uint32_t queue_family_index);
 
+        uint32_t get_queue_family_index(queue_type type) const;
+
     protected:
         void open_window_and_create_surface(const nova_settings::window_options& options) override final;
 

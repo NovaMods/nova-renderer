@@ -14,8 +14,8 @@ namespace nova::renderer::rhi {
         : cmds(cmds), render_engine(render_engine) {}
 
     void vulkan_command_list::resource_barriers(const pipeline_stage_flags stages_before_barrier,
-                                               const pipeline_stage_flags stages_after_barrier,
-                                               const std::vector<resource_barrier_t>& barriers) {
+                                                const pipeline_stage_flags stages_after_barrier,
+                                                const std::vector<resource_barrier_t>& barriers) {
         std::vector<VkBufferMemoryBarrier> buffer_barriers;
         buffer_barriers.reserve(barriers.size());
 
@@ -24,7 +24,7 @@ namespace nova::renderer::rhi {
 
         for(const resource_barrier_t& barrier : barriers) {
             switch(barrier.resource_to_barrier->type) {
-                case resource_t::type_t::IMAGE:
+                case resource_t::type_t::IMAGE: {
                     vk_image_t* image = static_cast<vk_image_t*>(barrier.resource_to_barrier);
 
                     VkImageMemoryBarrier image_barrier = {};
@@ -43,10 +43,9 @@ namespace nova::renderer::rhi {
                     image_barrier.subresourceRange.layerCount = 1;
 
                     image_barriers.push_back(image_barrier);
+                } break;
 
-                    break;
-
-                case resource_t::type_t::BUFFER:
+                case resource_t::type_t::BUFFER: {
                     vk_buffer_t* buffer = static_cast<vk_buffer_t*>(barrier.resource_to_barrier);
 
                     VkBufferMemoryBarrier buffer_barrier = {};
@@ -60,8 +59,7 @@ namespace nova::renderer::rhi {
                     buffer_barrier.size = barrier.buffer_memory_barrier.size;
 
                     buffer_barriers.push_back(buffer_barrier);
-
-                    break;
+                } break;
             }
         }
 
@@ -113,9 +111,9 @@ namespace nova::renderer::rhi {
         begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         begin_info.renderPass = vk_renderpass->pass;
         begin_info.framebuffer = vk_framebuffer->framebuffer;
-        begin_info.renderArea = {framebuffer->size.x, framebuffer->size.y};
+        begin_info.renderArea = {static_cast<uint32_t>(framebuffer->size.x), static_cast<uint32_t>(framebuffer->size.y)};
 
         // Nova _always_ records command lists in parallel for each renderpass
         vkCmdBeginRenderPass(cmds, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
     }
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi

@@ -34,8 +34,7 @@ namespace nova::renderer {
 
             renderer->load_shaderpack(CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack");
 
-            render_engine_t* engine = renderer->get_engine();
-            std::shared_ptr<window_t> window = engine->get_window();
+            std::shared_ptr<window_t> window = renderer->get_window();
 
             mesh_data_t cube = {};
             cube.vertex_data = {
@@ -50,7 +49,7 @@ namespace nova::renderer {
             };
             cube.indices = {0, 1, 3, 6, 0, 2, 5, 0, 4, 6, 4, 0, 0, 3, 2, 5, 1, 0, 3, 1, 5, 7, 4, 6, 4, 7, 5, 7, 6, 2, 7, 2, 3, 7, 3, 5};
 
-            result<mesh_id_t> mesh_add_result = engine->add_mesh(cube);
+            result<mesh_id_t> mesh_add_result = renderer->add_mesh(cube);
 
             // Render one frame to upload mesh data
             renderer->execute_frame();
@@ -62,7 +61,7 @@ namespace nova::renderer {
                 data.material_name = "gbuffers_terrain";
                 data.initial_position = glm::vec3(0, 0, -5);
 
-                return engine->add_renderable(data);
+                return renderer->add_renderable(data);
             });
 
             if(!renderable_add_result.has_value) {

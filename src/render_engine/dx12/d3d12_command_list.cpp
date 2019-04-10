@@ -19,14 +19,15 @@ namespace nova::renderer::rhi {
         for(const resource_barrier_t& barrier : barriers) {
             ID3D12Resource* resource_to_barrier;
             switch(barrier.resource_to_barrier->type) {
-                case resource_t::BUFFER:
+                case resource_t::BUFFER: {
                     d3d12_buffer_t* d3d12_buffer = static_cast<d3d12_buffer_t*>(barrier.resource_to_barrier);
                     resource_to_barrier = d3d12_buffer->resource;
-                    break;
-                case resource_t::IMAGE:
+                } break;
+
+                case resource_t::IMAGE: {
                     d3d12_image_t* d3d12_image = static_cast<d3d12_image_t*>(barrier.resource_to_barrier);
                     resource_to_barrier = d3d12_image->resource;
-                    break;
+                } break;
                 default:;
             }
 
