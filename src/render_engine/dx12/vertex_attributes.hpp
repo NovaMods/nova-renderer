@@ -3,8 +3,7 @@
  * \date 20-Oct-18.
  */
 
-#ifndef NOVA_RENDERER_VERTEX_ATTRIBUTES_HPP
-#define NOVA_RENDERER_VERTEX_ATTRIBUTES_HPP
+#pragma once
 
 #include <cstdint>
 #include <unordered_map>
@@ -61,5 +60,3 @@ namespace nova::renderer {
         return total_size;
     }
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_VERTEX_ATTRIBUTES_HPP

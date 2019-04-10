@@ -3,8 +3,7 @@
  * \date 14-Aug-18.
  */
 
-#ifndef NOVA_RENDERER_REGULAR_FOLDER_ACCESSOR_H
-#define NOVA_RENDERER_REGULAR_FOLDER_ACCESSOR_H
+#pragma once
 
 #include "folder_accessor.hpp"
 
@@ -24,5 +23,3 @@ namespace nova::renderer {
         bool does_resource_exist_on_filesystem(const fs::path& resource_path) override;
     };
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_REGULAR_FOLDER_ACCESSOR_H

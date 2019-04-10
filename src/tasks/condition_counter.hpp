@@ -3,8 +3,7 @@
  * \date 17-Dec-18.
  */
 
-#ifndef NOVA_RENDERER_CONDITION_COUNTER_HPP
-#define NOVA_RENDERER_CONDITION_COUNTER_HPP
+#pragma once
 
 #include <condition_variable>
 #include <cstdint>
@@ -45,5 +44,3 @@ namespace nova::ttl {
         uint32_t wait_val = 0;
     };
 } // namespace nova::ttl
-
-#endif // NOVA_RENDERER_CONDITION_COUNTER_HPP

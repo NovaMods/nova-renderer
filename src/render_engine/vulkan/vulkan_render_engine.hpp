@@ -2,8 +2,7 @@
 // Created by jannis on 30.08.18.
 //
 
-#ifndef NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
-#define NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
+#pragma once
 
 #include <condition_variable>
 #include <mutex>
@@ -639,5 +638,3 @@ namespace nova::renderer {
                                                          const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                                          void* pUserData);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP

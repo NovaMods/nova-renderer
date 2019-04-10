@@ -3,8 +3,7 @@
  * \date 30-Aug-18.
  */
 
-#ifndef NOVA_RENDERER_DX_12_RENDER_ENGINE_HPP
-#define NOVA_RENDERER_DX_12_RENDER_ENGINE_HPP
+#pragma once
 
 #include "nova_renderer/render_engine.hpp"
 
@@ -225,5 +224,3 @@ namespace nova::renderer {
 
     bool operator==(const D3D12_ROOT_DESCRIPTOR1& lhs, const D3D12_ROOT_DESCRIPTOR1& rhs);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_DX_12_RENDER_ENGINE_HPP

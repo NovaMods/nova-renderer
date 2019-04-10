@@ -1,5 +1,4 @@
-#ifndef WIN32_WINDOW_H
-#define WIN32_WINDOW_H
+#pragma once
 
 #include "nova_renderer/window.hpp"
 #include "nova_renderer/util/platform.hpp"
@@ -97,5 +96,4 @@ namespace nova::renderer {
     };
 } // namespace nova::renderer
 
-#endif
 #endif

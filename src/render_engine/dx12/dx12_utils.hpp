@@ -3,8 +3,7 @@
  * \date 20-Oct-18.
  */
 
-#ifndef NOVA_RENDERER_DX_12_UTILS_HPP
-#define NOVA_RENDERER_DX_12_UTILS_HPP
+#pragma once
 
 #include <d3d12.h>
 
@@ -22,5 +21,3 @@ namespace nova::renderer {
 
     D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(primitive_topology_enum primitive_mode);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_DX_12_UTILS_HPP

@@ -2,8 +2,7 @@
 // Created by jannis on 30.08.18.
 //
 
-#ifndef NOVA_RENDERER_VULKAN_UTILS_HPP
-#define NOVA_RENDERER_VULKAN_UTILS_HPP
+#pragma once
 
 #include <string>
 #include <vector>
@@ -34,4 +33,3 @@ namespace nova::renderer {
 #else
 #define NOVA_CHECK_RESULT(expr) expr
 #endif
-#endif // NOVA_RENDERER_VULKAN_UTILS_HPP

@@ -3,8 +3,7 @@
  * \date 20-Oct-18.
  */
 
-#ifndef NOVA_RENDERER_DX_12_TEXTURE_HPP
-#define NOVA_RENDERER_DX_12_TEXTURE_HPP
+#pragma once
 
 #include <d3d12.h>
 #include <wrl.h>
@@ -36,5 +35,3 @@ namespace nova::renderer {
         ComPtr<ID3D12Resource> resource;
     };
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_DX_12_TEXTURE_HPP

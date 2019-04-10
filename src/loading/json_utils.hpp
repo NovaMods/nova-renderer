@@ -3,8 +3,7 @@
  * \date 05-Sep-18.
  */
 
-#ifndef NOVA_RENDERER_UTILS_HPP
-#define NOVA_RENDERER_UTILS_HPP
+#pragma once
 
 #include <optional>
 
@@ -175,5 +174,3 @@ namespace nova::renderer {
         return std::vector<ValType>{};
     }
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_UTILS_HPP

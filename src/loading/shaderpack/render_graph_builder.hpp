@@ -3,8 +3,7 @@
  * \date 17-Sep-18.
  */
 
-#ifndef NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP
-#define NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP
+#pragma once
 
 #include <string>
 #include <unordered_map>
@@ -71,5 +70,3 @@ namespace nova::renderer {
         const std::unordered_map<std::string, range>& resource_used_range,
         const std::vector<std::string>& resources_in_order);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP

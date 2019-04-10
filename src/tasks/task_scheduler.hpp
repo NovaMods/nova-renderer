@@ -3,8 +3,7 @@
  * \date 15-Dec-18.
  */
 
-#ifndef NOVA_RENDERER_THREAD_POOL_HPP
-#define NOVA_RENDERER_THREAD_POOL_HPP
+#pragma once
 
 #include <atomic>
 #include <cstdint>
@@ -259,5 +258,3 @@ namespace nova::ttl {
 
     void thread_func(task_scheduler* pool);
 } // namespace nova::ttl
-
-#endif // NOVA_RENDERER_THREAD_POOL_HPP

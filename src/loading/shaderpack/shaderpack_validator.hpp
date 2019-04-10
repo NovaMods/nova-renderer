@@ -6,8 +6,7 @@
  * \date 12-Sep-18.
  */
 
-#ifndef NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
-#define NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
+#pragma once
 
 #include <string>
 
@@ -76,5 +75,3 @@ namespace nova::renderer {
      */
     validation_report validate_material(nlohmann::json& material_json);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP

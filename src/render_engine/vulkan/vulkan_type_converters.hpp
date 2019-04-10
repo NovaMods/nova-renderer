@@ -2,8 +2,8 @@
 // Created by jannis on 18.09.18.
 //
 
-#ifndef NOVA_RENDERER_VULKAN_TYPE_CONVERTERS_HPP
-#define NOVA_RENDERER_VULKAN_TYPE_CONVERTERS_HPP
+#pragma once
+
 #include <vulkan/vulkan.h>
 
 #include "nova_renderer/shaderpack_data.hpp"
@@ -11,8 +11,6 @@
 #ifdef Always // RIP X11 and its macros
 #undef Always
 #endif
-
-#endif // NOVA_RENDERER_VULKAN_TYPE_CONVERTERS_HPP
 
 namespace nova::renderer::vulkan {
     class type_converters {

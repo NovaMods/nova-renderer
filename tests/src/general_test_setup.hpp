@@ -2,8 +2,7 @@
 // Created by jannis on 07.09.18.
 //
 
-#ifndef NOVA_RENDERER_GENERAL_TEST_SETUP_HPP
-#define NOVA_RENDERER_GENERAL_TEST_SETUP_HPP
+#pragma once
 
 #include <fstream>
 #include <iostream>
@@ -71,5 +70,3 @@
         });                                                                                                                                \
     }
 #endif
-
-#endif // NOVA_RENDERER_GENERAL_TEST_SETUP_HPP

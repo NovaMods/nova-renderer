@@ -3,8 +3,7 @@
  * \date 15-Aug-18.
  */
 
-#ifndef NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H
-#define NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H
+#pragma once
 
 #include <miniz/miniz_zip.h>
 
@@ -60,5 +59,3 @@ namespace nova::renderer {
      */
     void print_file_tree(const std::unique_ptr<file_tree_node>& folder, uint32_t depth);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H

@@ -1,5 +1,4 @@
-#ifndef RENDERER_AUTO_ALLOCATED_BUFFER_H
-#define RENDERER_AUTO_ALLOCATED_BUFFER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -76,5 +75,3 @@ namespace nova::renderer {
 
     VkDeviceSize space_between(const auto_buffer_chunk& first, const auto_buffer_chunk& last);
 } // namespace nova::renderer
-
-#endif // RENDERER_AUTO_ALLOCATED_BUFFER_H

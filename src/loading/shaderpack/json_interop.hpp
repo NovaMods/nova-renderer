@@ -3,8 +3,7 @@
  * \date 07-Sep-18.
  */
 
-#ifndef NOVA_RENDERER_JSON_INTEROP_HPP
-#define NOVA_RENDERER_JSON_INTEROP_HPP
+#pragma once
 
 #include "nova_renderer/shaderpack_data.hpp"
 
@@ -33,5 +32,3 @@ namespace nova::renderer {
 
     void from_json(const nlohmann::json& j, material_data& mat);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_JSON_INTEROP_HPP

@@ -2,8 +2,7 @@
 // Created by jannis on 01.09.18.
 //
 
-#ifndef NOVA_RENDERER_X_11_WINDOW_HPP
-#define NOVA_RENDERER_X_11_WINDOW_HPP
+#pragma once
 
 #ifdef NOVA_LINUX
 
@@ -57,5 +56,3 @@ namespace nova::renderer {
 #ifdef Bool
 #undef Bool
 #endif
-
-#endif // NOVA_RENDERER_X_11_WINDOW_HPP

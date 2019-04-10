@@ -3,8 +3,7 @@
  * \date 14-Aug-18.
  */
 
-#ifndef NOVA_RENDERER_RESOURCEPACK_H
-#define NOVA_RENDERER_RESOURCEPACK_H
+#pragma once
 
 #include <mutex>
 #include <optional>
@@ -121,5 +120,3 @@ namespace nova::renderer {
      */
     bool has_root(const fs::path& path, const fs::path& root);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_RESOURCEPACK_H
