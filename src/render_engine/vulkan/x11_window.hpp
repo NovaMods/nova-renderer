@@ -1,7 +1,3 @@
-//
-// Created by jannis on 01.09.18.
-//
-
 #pragma once
 
 #ifdef NOVA_LINUX

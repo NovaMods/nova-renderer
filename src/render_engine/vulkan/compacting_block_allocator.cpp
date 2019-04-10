@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 11-Nov-18.
- */
-
 #include "compacting_block_allocator.hpp"
 
 #include "nova_renderer/render_engine.hpp"

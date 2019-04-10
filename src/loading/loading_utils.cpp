@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 21-Aug-18.
- */
-
 #include "loading_utils.hpp"
 
 namespace nova::renderer {

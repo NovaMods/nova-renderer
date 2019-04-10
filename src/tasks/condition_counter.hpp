@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 17-Dec-18.
- */
-
 #pragma once
 
 #include <condition_variable>

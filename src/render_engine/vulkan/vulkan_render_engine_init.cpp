@@ -1,7 +1,3 @@
-/*!
- * \author ddubois
- * \date 06-Feb-19.
- */
 #include <set>
 
 #include <fmt/format.h>

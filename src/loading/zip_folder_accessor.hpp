@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 15-Aug-18.
- */
-
 #pragma once
 
 #include <miniz/miniz_zip.h>

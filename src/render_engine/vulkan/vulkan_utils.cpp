@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 29-Nov-18.
- */
-
 #include "vulkan_utils.hpp"
 
 #include "nova_renderer/render_engine.hpp"

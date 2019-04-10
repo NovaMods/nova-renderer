@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 03-Sep-18.
- */
-
 #include "nova_renderer/nova_renderer.hpp"
 
 #include <array>

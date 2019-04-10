@@ -1,8 +1,3 @@
-/*!
- * \author David
- * \date 22-May-16.
- */
-
 #pragma once
 
 #include <string>

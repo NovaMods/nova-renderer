@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 24-Jan-19.
- */
-
 #pragma once
 
 #include <string>

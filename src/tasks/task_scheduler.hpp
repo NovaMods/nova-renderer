@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 15-Dec-18.
- */
-
 #pragma once
 
 #include <atomic>

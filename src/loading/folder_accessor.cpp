@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 14-Aug-18.
- */
-
 #include "folder_accessor.hpp"
 
 #include "../util/logger.hpp"

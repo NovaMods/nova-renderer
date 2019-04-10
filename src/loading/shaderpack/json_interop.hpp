@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 07-Sep-18.
- */
-
 #pragma once
 
 #include "nova_renderer/shaderpack_data.hpp"

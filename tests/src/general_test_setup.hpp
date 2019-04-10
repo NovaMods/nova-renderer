@@ -1,7 +1,3 @@
-//
-// Created by jannis on 07.09.18.
-//
-
 #pragma once
 
 #include <fstream>

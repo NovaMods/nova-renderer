@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 10-Oct-18.
- */
-
 #include "windows_utils.hpp"
 
 #include <string>

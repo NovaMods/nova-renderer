@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 28-Apr-18.
- */
-
 #pragma once
 
 #include <cstdint>

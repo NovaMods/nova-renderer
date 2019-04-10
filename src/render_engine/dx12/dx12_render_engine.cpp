@@ -1,7 +1,3 @@
-/*!
- * \author ddubois
- * \date 30-Aug-18.
- */
 #include "dx12_render_engine.hpp"
 
 #include <algorithm>

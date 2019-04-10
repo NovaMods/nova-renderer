@@ -1,8 +1,3 @@
-/*!
- * \author David
- * \date 18-May-16.
- */
-
 #include "nova_renderer/util/utils.hpp"
 
 #include "logger.hpp"

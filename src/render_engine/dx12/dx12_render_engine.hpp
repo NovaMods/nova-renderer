@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 30-Aug-18.
- */
-
 #pragma once
 
 #include "nova_renderer/render_engine.hpp"

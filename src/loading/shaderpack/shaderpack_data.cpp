@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 23-Aug-18.
- */
-
 #include "nova_renderer/shaderpack_data.hpp"
 
 #include "../../util/vma_usage.hpp"

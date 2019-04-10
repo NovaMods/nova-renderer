@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 07-Sep-18.
- */
-
 #include "json_interop.hpp"
 
 #include "../json_utils.hpp"

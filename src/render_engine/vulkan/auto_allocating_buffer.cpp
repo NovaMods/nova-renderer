@@ -1,7 +1,3 @@
-/*!
- * \author ddubois
- * \date 12-Feb-18.
- */
 #include "auto_allocating_buffer.hpp"
 
 #include <fmt/format.h>

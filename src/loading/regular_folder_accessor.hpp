@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 14-Aug-18.
- */
-
 #pragma once
 
 #include "folder_accessor.hpp"

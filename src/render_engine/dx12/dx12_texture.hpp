@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 20-Oct-18.
- */
-
 #pragma once
 
 #include <d3d12.h>

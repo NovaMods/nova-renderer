@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 30-Aug-18.
- */
-
 #include "general_test_setup.hpp"
 #undef TEST
 

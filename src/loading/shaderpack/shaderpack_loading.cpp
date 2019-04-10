@@ -1,7 +1,3 @@
-/*!
- * \author ddubois
- * \date 21-Aug-18.
- */
 #include "shaderpack_loading.hpp"
 
 #include <SPIRV/GlslangToSpv.h>

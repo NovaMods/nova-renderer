@@ -1,7 +1,3 @@
-/*!
- * \author ddubois
- * \date 06-Feb-19.
- */
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "../../util/logger.hpp"

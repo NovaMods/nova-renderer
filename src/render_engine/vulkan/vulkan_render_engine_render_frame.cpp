@@ -1,7 +1,3 @@
-/*!
- * \author ddubois
- * \date 07-Feb-19.
- */
 #include <fmt/format.h>
 
 #include "../../util/logger.hpp"

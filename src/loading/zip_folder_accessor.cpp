@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 15-Aug-18.
- */
-
 #include "zip_folder_accessor.hpp"
 
 #include <array>

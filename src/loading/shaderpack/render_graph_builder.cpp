@@ -1,7 +1,3 @@
-/*!
- * \author ddubois
- * \date 17-Sep-18.
- */
 #include "render_graph_builder.hpp"
 
 #include <unordered_set>

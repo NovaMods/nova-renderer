@@ -1,7 +1,3 @@
-//
-// Created by jannis on 22.12.18.
-//
-
 #include "linux_utils.hpp"
 
 #include <cstring>

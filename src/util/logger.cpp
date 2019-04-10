@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 21-Aug-18.
- */
-
 #include "logger.hpp"
 
 namespace nova::renderer {

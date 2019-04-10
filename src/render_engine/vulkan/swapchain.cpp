@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 28-Apr-18.
- */
-
 #include "swapchain.hpp"
 
 #include "../../util/logger.hpp"
