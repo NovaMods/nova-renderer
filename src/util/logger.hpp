@@ -7,6 +7,12 @@
 #include <unordered_map>
 #include <utility>
 
+// Hope this fixes windows build for now, not sure where it comes from
+// TODO: Fix the root of this issue (@dethraid, @cwfitzgerald)
+#ifdef ERROR
+#undef ERROR
+#endif
+
 namespace nova::renderer {
     enum log_level { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, MAX_LEVEL };
 
