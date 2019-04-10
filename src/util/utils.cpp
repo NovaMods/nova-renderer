@@ -4,6 +4,7 @@
  */
 
 #include "nova_renderer/util/utils.hpp"
+
 #include "logger.hpp"
 
 namespace nova::renderer {

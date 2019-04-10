@@ -6,8 +6,9 @@
 #ifndef NOVA_RENDERER_UTILS_HPP
 #define NOVA_RENDERER_UTILS_HPP
 
-#include <nlohmann/json.hpp>
 #include <optional>
+
+#include <nlohmann/json.hpp>
 
 #include "../util/logger.hpp"
 

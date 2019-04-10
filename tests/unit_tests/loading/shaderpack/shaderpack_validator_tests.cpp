@@ -3,9 +3,8 @@
  * \date 9-Oct-2018
  */
 
-#include "../../../src/general_test_setup.hpp"
-
 #include "../../../../src/loading/shaderpack/shaderpack_validator.hpp"
+#include "../../../src/general_test_setup.hpp"
 #undef TEST
 #include <gtest/gtest.h>
 

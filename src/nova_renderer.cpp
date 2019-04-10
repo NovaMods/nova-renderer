@@ -3,19 +3,20 @@
  * \date 03-Sep-18.
  */
 
+#include "nova_renderer/nova_renderer.hpp"
+
 #include <array>
 #include <future>
 
 #include <glslang/MachineIndependent/Initialize.h>
 #include <minitrace/minitrace.h>
 
-#include "nova_renderer/nova_renderer.hpp"
 #include "loading/shaderpack/shaderpack_loading.hpp"
 #if defined(NOVA_WINDOWS)
 #include "render_engine/dx12/dx12_render_engine.hpp"
 #endif
-#include "render_engine/vulkan/vulkan_render_engine.hpp"
 #include "debugging/renderdoc.hpp"
+#include "render_engine/vulkan/vulkan_render_engine.hpp"
 #include "util/logger.hpp"
 
 namespace nova::renderer {

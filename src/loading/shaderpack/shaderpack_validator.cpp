@@ -8,6 +8,7 @@
 #include <fmt/format.h>
 
 #include "nova_renderer/util/utils.hpp"
+
 #include "../json_utils.hpp"
 
 namespace nova::renderer {

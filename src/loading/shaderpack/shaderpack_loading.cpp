@@ -4,10 +4,11 @@
  */
 #include "shaderpack_loading.hpp"
 
+#include <SPIRV/GlslangToSpv.h>
 #include <glslang/Include/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
-#include <SPIRV/GlslangToSpv.h>
 
+#include "../../tasks/task_scheduler.hpp"
 #include "../folder_accessor.hpp"
 #include "../json_utils.hpp"
 #include "../loading_utils.hpp"
@@ -16,7 +17,6 @@
 #include "json_interop.hpp"
 #include "render_graph_builder.hpp"
 #include "shaderpack_validator.hpp"
-#include "../../tasks/task_scheduler.hpp"
 
 namespace nova::renderer {
     // Removed from the GLSLang version we're using

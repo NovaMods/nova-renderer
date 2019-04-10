@@ -6,6 +6,7 @@
 #define NOVA_RENDERER_RENDER_ENGINE_HPP
 
 #include <memory>
+
 #include "nova_settings.hpp"
 #include "renderables.hpp"
 #include "shaderpack_data.hpp"

@@ -10,6 +10,7 @@
 #define NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
 
 #include <string>
+
 #include <nlohmann/json.hpp>
 
 namespace nova::renderer {

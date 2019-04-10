@@ -10,11 +10,10 @@
 
 #include <algorithm>
 #include <exception>
+#include <fstream>
 #include <optional>
 #include <string>
 #include <vector>
-
-#include <fstream>
 
 #include "filesystem.hpp"
 

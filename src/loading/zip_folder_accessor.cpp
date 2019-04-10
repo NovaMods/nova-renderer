@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "nova_renderer/util/utils.hpp"
+
 #include "../util/logger.hpp"
 
 namespace nova::renderer {

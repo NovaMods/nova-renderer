@@ -9,18 +9,18 @@
 #define NOVA_RENDERER_SHADERPACK_DATA_HPP
 
 #include <cstdint>
-#include <nlohmann/json.hpp>
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
-#include "util/filesystem.hpp"
-#include "util/utils.hpp"
-
-#include <vulkan/vulkan.h>
 
 #include <glm/glm.hpp>
-#include <unordered_set>
+#include <nlohmann/json.hpp>
+#include <vulkan/vulkan.h>
+
+#include "util/filesystem.hpp"
+#include "util/utils.hpp"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(validation_failure_exception);

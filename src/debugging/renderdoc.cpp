@@ -10,6 +10,7 @@
 #include "../util/windows_utils.hpp"
 #elif defined(NOVA_LINUX)
 #include <dlfcn.h>
+
 #include "../util/linux_utils.hpp"
 #endif
 

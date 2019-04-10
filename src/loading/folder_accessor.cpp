@@ -4,6 +4,7 @@
  */
 
 #include "folder_accessor.hpp"
+
 #include "../util/logger.hpp"
 
 namespace nova::renderer {

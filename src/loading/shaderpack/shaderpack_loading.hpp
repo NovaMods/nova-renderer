@@ -7,6 +7,7 @@
 #define NOVA_RENDERER_SHADERPACK_LOADING_HPP
 
 #include <future>
+
 #include <nova_renderer/shaderpack_data.hpp>
 #include <nova_renderer/util/filesystem.hpp>
 

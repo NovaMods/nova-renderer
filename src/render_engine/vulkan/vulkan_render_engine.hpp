@@ -5,11 +5,11 @@
 #ifndef NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
 #define NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
 
-#include "nova_renderer/render_engine.hpp"
-
-#include <queue>
 #include <condition_variable>
 #include <mutex>
+#include <queue>
+
+#include "nova_renderer/render_engine.hpp"
 
 #ifdef NOVA_LINUX
 #define VK_USE_PLATFORM_XLIB_KHR // Use X11 for window creating on Linux... TODO: Wayland?
@@ -17,8 +17,8 @@
 #include <X11/Xlib.h>
 #include <vulkan/vulkan_xlib.h>
 
-#include "x11_window.hpp"
 #include "../../util/linux_utils.hpp"
+#include "x11_window.hpp"
 #elif defined(NOVA_WINDOWS)
 #define VK_USE_PLATFORM_WIN32_KHR
 #define NOVA_USE_WIN32
@@ -28,15 +28,16 @@
 #include "../dx12/win32_window.hpp"
 #endif
 
-#include <vulkan/vulkan.h>
 #include <spirv_cross/spirv_glsl.hpp>
+#include <vulkan/vulkan.h>
 
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/renderdoc_app.h"
-#include "../../util/vma_usage.hpp"
-#include "compacting_block_allocator.hpp"
+
 #include "../../render_objects/uniform_structs.hpp"
+#include "../../util/vma_usage.hpp"
 #include "auto_allocating_buffer.hpp"
+#include "compacting_block_allocator.hpp"
 #include "fixed_size_buffer_allocator.hpp"
 #include "struct_uniform_buffer.hpp"
 #include "swapchain.hpp"

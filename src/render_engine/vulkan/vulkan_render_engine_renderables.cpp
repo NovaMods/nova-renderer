@@ -1,10 +1,10 @@
-#include "vulkan_render_engine.hpp"
-
-#include <glm/gtc/matrix_transform.hpp>
 #include <fmt/format.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "nova_renderer/renderables.hpp"
+
 #include "../../render_objects/uniform_structs.hpp"
+#include "vulkan_render_engine.hpp"
 
 namespace nova::renderer {
     void vulkan_render_engine::create_builtin_uniform_buffers() {
