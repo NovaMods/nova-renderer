@@ -1,9 +1,4 @@
-//
-// Created by jannis on 11.09.18.
-//
-
-#ifndef NOVA_RENDERER_RENDER_OBJECT_HPP
-#define NOVA_RENDERER_RENDER_OBJECT_HPP
+#pragma once
 
 #include <atomic>
 
@@ -70,5 +65,3 @@ namespace nova::renderer {
 
     struct vk_static_mesh_renderable : renderable_base {};
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_RENDER_OBJECT_HPP

@@ -1,12 +1,8 @@
 /*!
  * \brief Holds all the structs that correspond to the data in a shaderpack
- *
- * \author ddubois
- * \date 23-Aug-18.
  */
 
-#ifndef NOVA_RENDERER_SHADERPACK_DATA_HPP
-#define NOVA_RENDERER_SHADERPACK_DATA_HPP
+#pragma once
 
 #include <cstdint>
 #include <optional>
@@ -603,5 +599,3 @@ namespace nova::renderer {
     std::string to_string(state_enum val);
     std::string to_string(vertex_field_enum val);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_SHADERPACK_DATA_HPP

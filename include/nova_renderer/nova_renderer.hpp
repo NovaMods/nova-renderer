@@ -1,12 +1,8 @@
 /*!
  * \brief Main class for Nova. This class exists as a singleton so it's always available
- *
- * \author ddubois
- * \date 14-Aug-18.
  */
 
-#ifndef NOVA_RENDERER_NOVA_RENDERER_H
-#define NOVA_RENDERER_NOVA_RENDERER_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -71,5 +67,3 @@ namespace nova::renderer {
         static std::unique_ptr<nova_renderer> instance;
     };
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_NOVA_RENDERER_H
