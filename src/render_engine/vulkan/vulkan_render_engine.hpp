@@ -17,6 +17,10 @@
 #elif defined(NOVA_WINDOWS)
 #define VK_USE_PLATFORM_WIN32_KHR
 #define NOVA_USE_WIN32
+
+#ifdef ERROR
+#undef ERROR
+#endif
 #include <vulkan/vulkan_win32.h>
 
 #include "../../util/windows.hpp"
