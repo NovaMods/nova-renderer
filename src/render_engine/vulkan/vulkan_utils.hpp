@@ -5,20 +5,22 @@
 
 #include "vulkan.hpp"
 
-#include <nova_renderer/command_list.hpp>
+#include "nova_renderer/command_list.hpp"
+
+#include "nova_renderer/shaderpack_data.hpp"
 
 namespace nova::renderer {
-    VkImageLayout to_vk_layout(resource_state state);
+    VkImageLayout to_vk_layout(rhi::resource_state state);
 
-	VkPrimitiveTopology to_primitive_topology(primitive_topology_enum topology);
+	VkPrimitiveTopology to_primitive_topology(shaderpack::primitive_topology_enum topology);
 
-	VkBlendFactor to_blend_factor(blend_factor_enum factor);
+	VkBlendFactor to_blend_factor(shaderpack::blend_factor_enum factor);
 
-	VkCompareOp to_compare_op(const compare_op_enum compare_op);
+	VkCompareOp to_compare_op(const shaderpack::compare_op_enum compare_op);
 
-	VkStencilOp to_stencil_op(stencil_op_enum stencil_op);
+	VkStencilOp to_stencil_op(shaderpack::stencil_op_enum stencil_op);
 
-	VkFormat to_vk_format(const pixel_format_enum format);
+	VkFormat to_vk_format(const shaderpack::pixel_format_enum format);
 
     std::string vk_result_to_string(VkResult result);
 

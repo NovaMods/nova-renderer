@@ -107,7 +107,12 @@ namespace nova::renderer {
 
         void create_dynamic_textures(const std::vector<shaderpack::texture_create_info_t>& texture_create_infos);
 
-        void create_render_passes(const std::vector<shaderpack::render_pass_create_info_t>& pass_create_infos);
+        void create_render_passes(const std::vector<shaderpack::render_pass_create_info_t>& pass_create_infos,
+                                  const std::vector<shaderpack::pipeline_create_info_t>& pipelines,
+                                  const std::vector<shaderpack::material_data_t>& materials);
+
+        result<renderpass_t> create_framebuffer_for_renderpass(const shaderpack::render_pass_create_info_t& create_info,
+                                                               rhi::renderpass_t* new_pass);
 
         void destroy_render_passes();
 

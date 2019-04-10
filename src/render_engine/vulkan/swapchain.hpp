@@ -1,15 +1,12 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
-
 #include <glm/glm.hpp>
-
+#include <vector>
+#include <vulkan/vulkan.h>
 #include "nova_renderer/util/utils.hpp"
 
-#include "vulkan.hpp"
-
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     class vk_render_engine;
 
     NOVA_EXCEPTION(swapchain_creation_failed);
@@ -22,12 +19,12 @@ namespace nova::renderer {
      *
      * You can even get the framebuffer constructed from the current swapchain. Wow!
      */
-    class swapchain_manager {
+    class vk_swapchain_manager {
     public:
-        swapchain_manager(uint32_t num_swapchain_images,
-                          vk_render_engine& render_engine,
-                          glm::ivec2 window_dimensions,
-                          const std::vector<VkPresentModeKHR>& present_modes);
+        vk_swapchain_manager(uint32_t num_swapchain_images,
+                             vk_render_engine& render_engine,
+                             glm::ivec2 window_dimensions,
+                             const std::vector<VkPresentModeKHR>& present_modes);
 
         void present_current_image(VkSemaphore wait_semaphores) const;
 

@@ -12,7 +12,13 @@ namespace nova::renderer::rhi {
         GLuint id;
     };
 
+    struct gl2_buffer_t : buffer_t {
+        GLuint id;
+    };
+
     struct gl2_renderpass_t : renderpass_t {};
 
-    struct gl2_framebuffer_t : framebuffer_t {};
+    struct gl2_framebuffer_t : framebuffer_t {
+        GLuint framebuffer;
+    };
 }

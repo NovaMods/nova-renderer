@@ -18,8 +18,27 @@ namespace nova::renderer::rhi {
     /*!
      * \brief Vulkan implementation of a render engine
      */
-    class vk_render_engine : public render_engine_t {
+    class vk_render_engine final : public render_engine_t {
     public:
+        // Global Vulkan objects
+        VkInstance instance;
+
+        VkDevice device;
+        VmaAllocator vma_allocator;
+
+        VkSurfaceKHR surface{};
+
+        uint32_t graphics_family_index;
+        uint32_t compute_family_index;
+        uint32_t transfer_family_index;
+
+        VkQueue graphics_queue;
+        VkQueue compute_queue;
+        VkQueue copy_queue;
+
+        // Info about the hardware
+        vk_gpu_info gpu;
+
         vk_render_engine(nova_settings& settings);
 
         vk_render_engine(vk_render_engine&& old) noexcept = delete;
@@ -28,7 +47,9 @@ namespace nova::renderer::rhi {
         vk_render_engine(const vk_render_engine& other) = delete;
         vk_render_engine& operator=(const vk_render_engine& other) = delete;
 
-        // Inherited via render_engine
+        ~vk_render_engine() = default;
+
+        #pragma region Render engine interface
         std::shared_ptr<window_t> get_window() const override final;
 
         void set_num_renderpasses(uint32_t num_renderpasses) override final;
@@ -62,38 +83,22 @@ namespace nova::renderer::rhi {
                                  fence_t* fence_to_signal = nullptr,
                                  const std::vector<semaphore_t*>& wait_semaphores = {},
                                  const std::vector<semaphore_t*>& signal_semaphores = {}) override final;
+        #pragma endregion
+
+        VkCommandPool get_command_pool_for_thread(uint32_t thread_idx, uint32_t queue_family_index);
 
     protected:
         void open_window_and_create_surface(const nova_settings::window_options& options) override final;
 
     private:
-        // Global Vulkan objects
-        VkInstance instance;
-
-        VkDevice device;
-        VmaAllocator vma_allocator;
-
-        VkSurfaceKHR surface{};
-
-        uint32_t graphics_family_index;
-        uint32_t compute_family_index;
-        uint32_t transfer_family_index;
-
-        VkQueue graphics_queue;
-        VkQueue compute_queue;
-        VkQueue copy_queue;
-
-        std::unique_ptr<swapchain_manager> swapchain;
+        std::unique_ptr<vk_swapchain_manager> swapchain;
         uint32_t max_in_flight_frames = 3;
 
         /*!
          * The index in the vector is the thread index, the key in the map is the queue family index
          */
         std::vector<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
-
-        // Info about the hardware
-        vk_gpu_info gpu;
-
+        
         // Debugging things
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;

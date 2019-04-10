@@ -121,7 +121,7 @@ namespace nova::renderer::shaderpack {
 
     shaderpack_resources_data_t load_dynamic_resources_file(const std::shared_ptr<folder_accessor_base>& folder_access);
 
-    std::vector<render_pass_create_info_t> load_passes_file(const std::shared_ptr<folder_accessor_base>& folder_access);
+    result<std::vector<render_pass_create_info_t>> load_passes_file(const std::shared_ptr<folder_accessor_base>& folder_access);
 
     std::vector<pipeline_create_info_t> load_pipeline_files(const std::shared_ptr<folder_accessor_base>& folder_access);
     pipeline_create_info_t load_single_pipeline(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& pipeline_path);
@@ -151,7 +151,7 @@ namespace nova::renderer::shaderpack {
 
         shaderpack_data_t data{};
         data.resources = load_dynamic_resources_file(folder_access);
-        data.passes = load_passes_file(folder_access);
+        data.passes = load_passes_file(folder_access).value;
         data.pipelines = load_pipeline_files(folder_access);
         data.materials = load_material_files(folder_access);
 
@@ -206,36 +206,19 @@ namespace nova::renderer::shaderpack {
         return {};
     }
 
-    std::vector<render_pass_create_info_t> load_passes_file(const std::shared_ptr<folder_accessor_base>& folder_access) {
+    result<std::vector<render_pass_create_info_t>> load_passes_file(const std::shared_ptr<folder_accessor_base>& folder_access) {
         NOVA_LOG(TRACE) << "load_passes_file called";
         const auto passes_bytes = folder_access->read_text_file("passes.json");
         try {
             auto json_passes = nlohmann::json::parse(passes_bytes);
-            auto passes = json_passes.get<std::vector<render_pass_create_info_t>>();
+            const auto passes = json_passes.get<std::vector<render_pass_create_info_t>>();
 
-            std::unordered_map<std::string, render_pass_create_info_t> passes_by_name;
-            passes_by_name.reserve(passes.size());
-            for(const auto& pass : passes) {
-                passes_by_name[pass.name] = pass;
-            }
+            return order_passes(passes);
 
-            const auto ordered_pass_names = order_passes(passes_by_name);
-            passes.clear();
-            for(const auto& named_pass : ordered_pass_names) {
-                passes.push_back(passes_by_name.at(named_pass));
-            }
-
-            return passes;
+        } catch(nlohmann::json::parse_error& err) {
+            return result<std::vector<render_pass_create_info_t>>(
+                MAKE_ERROR("Could not parse your shaderpack's passes.json: {:s}", err.what()));
         }
-        catch(nlohmann::json::parse_error& err) {
-            NOVA_LOG(ERROR) << "Could not parse your shaderpack's passes.json: " << err.what();
-            loading_failed = true;
-        }
-
-        // Don't check for a resources_not_found exception because a shaderpack _needs_ a passes.json and if the
-        // shaderpack doesn't provide one then it can't be loaded, so we'll catch that exception later on
-
-        return {};
     }
 
     std::vector<pipeline_create_info_t> load_pipeline_files(const std::shared_ptr<folder_accessor_base>& folder_access) {
@@ -243,8 +226,8 @@ namespace nova::renderer::shaderpack {
         std::vector<fs::path> potential_pipeline_files;
         try {
             potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
-        }
-        catch(const filesystem_exception& exception) {
+
+        } catch(const filesystem_exception& exception) {
             throw pipeline_load_failed("Materials folder does not exist", exception);
         }
 
@@ -522,4 +505,4 @@ namespace nova::renderer::shaderpack {
         NOVA_LOG(TRACE) << "Load of material " << material_path << " succeeded";
         return material;
     }
-} // namespace nova::renderer
+} // namespace nova::renderer::shaderpack

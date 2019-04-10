@@ -48,6 +48,8 @@
 #ifndef GLAPIENTRY
 #define GLAPIENTRY APIENTRY
 #endif
+#include <cstdint>
+#include <cmath>
 
 #ifdef __cplusplus
 extern "C" {

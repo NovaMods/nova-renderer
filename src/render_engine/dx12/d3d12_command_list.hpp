@@ -22,9 +22,9 @@ namespace nova::renderer::rhi {
                               [[maybe_unused]] pipeline_stage_flags stages_after_barrier,
                               const std::vector<resource_barrier_t>& barriers) override final;
 
-        void copy_buffer(resource_t* destination_buffer,
+        void copy_buffer(buffer_t* destination_buffer,
                          uint64_t destination_offset,
-                         resource_t* source_buffer,
+                         buffer_t* source_buffer,
                          uint64_t source_offset,
                          uint64_t num_bytes) override final;
 

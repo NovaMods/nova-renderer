@@ -637,7 +637,7 @@ namespace nova::renderer::rhi {
         NOVA_CHECK_RESULT(
             vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, present_modes.data()));
 
-        swapchain = std::make_unique<swapchain_manager>(max_in_flight_frames, *this, window->get_window_size(), present_modes);
+        swapchain = std::make_unique<vk_swapchain_manager>(max_in_flight_frames, *this, window->get_window_size(), present_modes);
 
         const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
         swapchain_size.x = swapchain_extent.width;
