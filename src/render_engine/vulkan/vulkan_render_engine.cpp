@@ -78,6 +78,10 @@ namespace nova::renderer::rhi {
 
     std::shared_ptr<window_t> vk_render_engine::get_window() const { return window; }
 
+    void vk_render_engine::set_num_renderpasses([[maybe_unused]] uint32_t num_renderpasses) {
+        // Pretty sure Vulkan doesn't need to do anything here
+    }
+
     result<renderpass_t*> vk_render_engine::create_renderpass(const shaderpack::render_pass_create_info_t& data) {
         VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
 

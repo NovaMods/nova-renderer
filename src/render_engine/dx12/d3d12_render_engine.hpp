@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <nova_renderer/render_engine_t.hpp>
+#include "nova_renderer/render_engine_t.hpp"
 
 #include <d3d12.h>
 
@@ -27,10 +27,15 @@ namespace nova::renderer::rhi {
         d3d12_render_engine(const d3d12_render_engine& other) = delete;
         d3d12_render_engine& operator=(const d3d12_render_engine& other) = delete;
 
+        virtual ~d3d12_render_engine() = default;
+
         // Inherited via render_engine
         std::shared_ptr<window_t> get_window() const override final;
+
+        void set_num_renderpasses(uint32_t num_renderpasses) override final;
+
         result<renderpass_t*> create_renderpass(const shaderpack::render_pass_create_info_t& data) override final;
-                
+
         framebuffer_t* create_framebuffer(const renderpass_t* renderpass,
                                           const std::vector<image_t*>& attachments,
                                           const glm::uvec2& framebuffer_size) override final;
@@ -52,7 +57,9 @@ namespace nova::renderer::rhi {
         void destroy_texture(image_t* resource) override final;
         void destroy_semaphores(const std::vector<semaphore_t*>& semaphores) override final;
         void destroy_fences(const std::vector<fence_t*>& fences) override final;
-        command_list_t* allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list_t::level level) override final;
+        command_list_t* allocate_command_list(uint32_t thread_idx,
+                                              queue_type needed_queue_type,
+                                              command_list_t::level level) override final;
         void submit_command_list(command_list_t* cmds,
                                  queue_type queue,
                                  fence_t* fence_to_signal = nullptr,
@@ -72,13 +79,12 @@ namespace nova::renderer::rhi {
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> copy_command_queue;
 
         Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap;
+        uint32_t rtv_descriptor_size = 0;
 
 #pragma region Initialization
         void create_device();
 
         void create_queues();
-
-        void create_rtv_descriptor_heap();
 #pragma endregion
     };
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi

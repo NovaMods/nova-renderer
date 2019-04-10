@@ -22,10 +22,23 @@ namespace nova::renderer::rhi {
 
         create_queues();
 
-        create_rtv_descriptor_heap();
+        rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     }
 
     std::shared_ptr<window_t> d3d12_render_engine::get_window() const { return window; }
+
+    void d3d12_render_engine::set_num_renderpasses(const uint32_t num_renderpasses) {
+        D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_descriptor = {};
+        rtv_heap_descriptor.NumDescriptors = num_renderpasses * 8;
+        rtv_heap_descriptor.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+        rtv_heap_descriptor.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+
+        const HRESULT hr = device->CreateDescriptorHeap(&rtv_heap_descriptor, IID_PPV_ARGS(&rtv_descriptor_heap));
+        if(FAILED(hr)) {
+            NOVA_LOG(FATAL) << "Could not create descriptor heap for the RTV";
+            throw render_engine_initialization_exception("Could not create descriptor head for the RTV");
+        }
+    }
 
     result<renderpass_t*> d3d12_render_engine::create_renderpass(const shaderpack::render_pass_create_info_t& data) {
         return result<renderpass_t*>(new d3d12_renderpass_t);
@@ -37,9 +50,7 @@ namespace nova::renderer::rhi {
         const size_t attachment_count = attachments.size();
         d3d12_framebuffer_t* framebuffer = new d3d12_framebuffer_t;
         framebuffer->render_targets.reserve(attachment_count);
-        
-        const uint32_t rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-        
+
         std::vector<ID3D12Resource*> rendertargets;
         rendertargets.reserve(attachment_count);
 

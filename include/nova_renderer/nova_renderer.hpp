@@ -3,20 +3,20 @@
 #include <memory>
 #include <string>
 
-#include <nova_renderer/nova_settings.hpp>
-#include <nova_renderer/render_engine_t.hpp>
-#include <nova_renderer/renderdoc_app.h>
+#include "nova_renderer/nova_settings.hpp"
+#include "nova_renderer/render_engine_t.hpp"
+#include "nova_renderer/renderdoc_app.h"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(already_initialized_exception);
     NOVA_EXCEPTION(uninitialized_exception);
 
-#pragma region Runtime-optimized data
-    template<typename RenderableType>
+#pragma region Runtime optimized data
+    template <typename RenderableType>
     struct mesh_batch_t {
         rhi::resource_t* vertex_buffer;
         rhi::resource_t* index_buffer;
-                
+
         std::vector<RenderableType> renderables;
     };
 
@@ -60,7 +60,7 @@ namespace nova::renderer {
         nova_renderer& operator=(const nova_renderer& other) = delete;
 
         ~nova_renderer();
-        
+
         /*!
          * \brief Loads the shaderpack with the given name
          *
