@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "../../src/render_engine/dx12/win32_window.hpp"
+#include "../../src/windowing/win32_window.hpp"
 #include "nova_renderer/command_list.hpp"
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/renderables.hpp"

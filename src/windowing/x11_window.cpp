@@ -1,4 +1,8 @@
-#include "nova_renderer/util/platform.hpp"
+//
+// Created by jannis on 01.09.18.
+//
+
+#include "../../include/nova_renderer/util/platform.hpp"
 
 #ifdef NOVA_LINUX
 

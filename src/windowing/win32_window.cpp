@@ -1,22 +1,22 @@
 #include <string>
 #include <strsafe.h>
 
-#include "../../util/logger.hpp"
-#include "../../util/windows_utils.hpp"
+#include "../util/logger.hpp"
+#include "../util/windows_utils.hpp"
 #include "win32_window.hpp"
 
 #ifdef SUPPORT_DX12
 
 namespace nova::renderer {
-    win32_window::win32_window(const uint32_t width, const uint32_t height)
-        : window_class_name(const_cast<WCHAR*>(L"NovaWindowClass")), window_should_close(false), size{width, height} {
+    win32_window::win32_window(const nova_settings::window_options& settings)
+        : window_class_name(const_cast<WCHAR*>(L"NovaWindowClass")), window_should_close(false), size{settings.width, settings.height} {
         // Very strongly inspired by GLFW's Win32 variant of createNativeWindow - but GLFW is strictly geared towards
         // OpenGL/Vulkan so I don't want to try and fit it into here
 
         register_window_class();
 
         // create_window initializes window_handle. The warning MSVC gives here are false positives
-        create_window(width, height);
+        create_window(settings.width, settings.height);
 
         ShowWindow(window_handle, SW_SHOWNA);
         BringWindowToTop(window_handle);

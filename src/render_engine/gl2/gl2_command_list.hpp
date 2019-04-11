@@ -22,7 +22,7 @@ namespace nova::renderer::rhi {
         DRAW_INDEXED_MESH,
     };
 
-    struct buffer_copy_command {
+    struct gl2_buffer_copy_command {
         GLuint destination_buffer;
         uint64_t destination_offset;
 
@@ -32,37 +32,39 @@ namespace nova::renderer::rhi {
         uint64_t num_bytes;
     };
 
-    struct execute_command_lists_command {
+    struct gl2_execute_command_lists_command {
         std::vector<command_list_t*> lists_to_execute;
     };
 
-    struct bind_renderpass_command {
+    struct gl2_begin_renderpass_command {
         GLuint framebuffer;
     };
 
-    struct bind_pipeline_command {};
+    struct gl2_bind_pipeline_command {};
 
-    struct bind_material_command {};
+    struct gl2_bind_material_command {};
 
-    struct bind_vertex_buffers_command {};
+    struct gl2_bind_vertex_buffers_command {};
 
-    struct bind_index_buffer_command {};
+    struct gl2_bind_index_buffer_command {};
 
-    struct draw_indexed_mesh_command {};
+    struct gl2_draw_indexed_mesh_command {};
 
-    struct gl_command {
+    struct gl2_command {
         gl2_command_type type;
 
         union {
-            buffer_copy_command buffer_copy;
-            execute_command_lists_command execute_command_lists;
-            bind_renderpass_command bind_renderpass;
-            bind_pipeline_command bind_pipeline;
-            bind_material_command bind_material;
-            bind_vertex_buffers_command bind_vertex_buffers;
-            bind_index_buffer_command bind_index_buffer;
-            draw_indexed_mesh_command draw_indexed_mesh;
+            gl2_buffer_copy_command buffer_copy;
+            gl2_execute_command_lists_command execute_command_lists;
+            gl2_begin_renderpass_command begin_renderpass;
+            gl2_bind_pipeline_command bind_pipeline;
+            gl2_bind_material_command bind_material;
+            gl2_bind_vertex_buffers_command bind_vertex_buffers;
+            gl2_bind_index_buffer_command bind_index_buffer;
+            gl2_draw_indexed_mesh_command draw_indexed_mesh;
         };
+
+        ~gl2_command();
     };
 
     /*!
@@ -82,6 +84,12 @@ namespace nova::renderer::rhi {
     class gl2_command_list : public command_list_t {
     public:
         gl2_command_list();
+
+		gl2_command_list(gl2_command_list&& old) noexcept = default;
+		gl2_command_list& operator=(gl2_command_list&& old) noexcept = default;
+
+		gl2_command_list(const gl2_command_list& other) = delete;
+		gl2_command_list& operator=(const gl2_command_list& other) = delete;
 
         void resource_barriers([[maybe_unused]] pipeline_stage_flags stages_before_barrier,
                               [[maybe_unused]] pipeline_stage_flags stages_after_barrier,
@@ -114,10 +122,10 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Provides access to the actual command list, so that the GL2 render engine can process the commands
          */
-        std::vector<gl_command> get_commands() const;
+        std::vector<gl2_command> get_commands() const;
 
     private:
-        std::vector<gl_command> commands;
+        std::vector<gl2_command> commands;
     };
 } // namespace nova::renderer
 

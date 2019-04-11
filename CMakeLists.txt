@@ -132,7 +132,12 @@ set(NOVA_SOURCE
         src/render_engine/gl2/gl2_command_list.cpp 
         src/render_engine/gl2/gl2_command_list.hpp 
         src/render_engine/gl2/glad.h 
-        src/render_engine/gl2/glad.c src/render_engine/gl2/gl2_structs.hpp src/render_engine/vulkan/vk_structs.hpp include/nova_renderer/rhi_types.hpp src/render_engine/vulkan/vulkan_render_engine.cpp src/render_engine/vulkan/vulkan_render_engine.hpp)
+        src/render_engine/gl2/glad.c 
+		src/render_engine/gl2/gl2_structs.hpp 
+		src/render_engine/vulkan/vk_structs.hpp 
+		include/nova_renderer/rhi_types.hpp 
+		src/render_engine/vulkan/vulkan_render_engine.cpp 
+		src/render_engine/vulkan/vulkan_render_engine.hpp)
 
 ####################
 # Add Nova headers #
@@ -158,13 +163,17 @@ set(WINDOWS_NOVA_SOURCE
     src/util/windows_utils.hpp
         src/render_engine/dx12/dx12_utils.cpp
     src/render_engine/dx12/dx12_utils.hpp
-    src/render_engine/dx12/win32_window.hpp
-    src/render_engine/dx12/win32_window.cpp
+        src/windowing/win32_window.hpp
+        src/windowing/win32_window.cpp
         src/render_engine/dx12/d3dx12.h
-        src/render_engine/dx12/d3d12_command_list.cpp src/render_engine/dx12/d3d12_command_list.hpp src/render_engine/dx12/d3d12_structs.hpp src/render_engine/dx12/d3d12_render_engine.cpp src/render_engine/dx12/d3d12_render_engine.hpp)
+        src/render_engine/dx12/d3d12_command_list.cpp 
+		src/render_engine/dx12/d3d12_command_list.hpp 
+		src/render_engine/dx12/d3d12_structs.hpp
+		src/render_engine/dx12/d3d12_render_engine.cpp
+		src/render_engine/dx12/d3d12_render_engine.hpp)
 set(UNIX_NOVA_SOURCE
-    src/render_engine/vulkan/x11_window.cpp
-    src/render_engine/vulkan/x11_window.hpp
+        src/windowing/x11_window.cpp
+        src/windowing/x11_window.hpp
     src/util/linux_utils.cpp
     src/util/linux_utils.hpp
 )
