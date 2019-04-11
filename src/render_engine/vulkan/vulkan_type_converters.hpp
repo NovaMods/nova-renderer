@@ -1,5 +1,11 @@
 #pragma once
 
+#if _WIN32
+#define VK_USE_PLATFORM_WIN32_KHR
+#elif defined(linux) || defined(__linux) || defined(__linux__)
+#define VK_USE_PLATFORM_XLIB_KHR
+#endif
+
 #include <vulkan/vulkan.h>
 
 #include "nova_renderer/shaderpack_data.hpp"

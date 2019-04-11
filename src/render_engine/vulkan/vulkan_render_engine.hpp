@@ -1,5 +1,11 @@
 #pragma once
 
+#if _WIN32
+#define VK_USE_PLATFORM_WIN32_KHR
+#elif defined(linux) || defined(__linux) || defined(__linux__)
+#define VK_USE_PLATFORM_XLIB_KHR
+#endif
+
 #include <condition_variable>
 #include <mutex>
 #include <queue>
@@ -7,27 +13,20 @@
 #include "nova_renderer/render_engine.hpp"
 
 #ifdef NOVA_LINUX
-#define VK_USE_PLATFORM_XLIB_KHR // Use X11 for window creating on Linux... TODO: Wayland?
 #define NOVA_VK_XLIB
 #include <X11/Xlib.h>
-#include <vulkan/vulkan_xlib.h>
 
 #include "../../util/linux_utils.hpp"
 #include "x11_window.hpp"
 #elif defined(NOVA_WINDOWS)
-#define VK_USE_PLATFORM_WIN32_KHR
 #define NOVA_USE_WIN32
-
-#ifdef ERROR
-#undef ERROR
-#endif
-#include <vulkan/vulkan_win32.h>
 
 #include "../../util/windows.hpp"
 #include "../dx12/win32_window.hpp"
 #endif
 
 #include <spirv_cross/spirv_glsl.hpp>
+
 #include <vulkan/vulkan.h>
 
 #include "nova_renderer/renderables.hpp"
