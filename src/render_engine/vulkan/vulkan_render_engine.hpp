@@ -4,7 +4,8 @@
 #include <mutex>
 #include <queue>
 
-#include "nova_renderer/render_engine.hpp"
+#include <spirv_cross/spirv_glsl.hpp>
+#include <vulkan/vulkan.h>
 
 #ifdef NOVA_LINUX
 #define VK_USE_PLATFORM_XLIB_KHR
@@ -21,11 +22,16 @@
 #include "../dx12/win32_window.hpp"
 #endif
 
-#include <spirv_cross/spirv_glsl.hpp>
-#include <vulkan/vulkan.h>
+#ifdef Always
+#undef Always
+#endif
+#ifdef None
+#undef None
+#endif
 
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/renderdoc_app.h"
+#include "nova_renderer/render_engine.hpp"
 
 #include "../../render_objects/uniform_structs.hpp"
 #include "../../util/vma_usage.hpp"
