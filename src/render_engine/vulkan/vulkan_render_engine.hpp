@@ -7,6 +7,10 @@
 #include <spirv_cross/spirv_glsl.hpp>
 #include <vulkan/vulkan.h>
 
+#include "nova_renderer/renderables.hpp"
+#include "nova_renderer/renderdoc_app.h"
+#include "nova_renderer/render_engine.hpp"
+
 #ifdef NOVA_LINUX
 #define VK_USE_PLATFORM_XLIB_KHR
 #define NOVA_VK_XLIB
@@ -14,13 +18,6 @@
 
 #include "../../util/linux_utils.hpp"
 #include "x11_window.hpp"
-#elif defined(NOVA_WINDOWS)
-#define VK_USE_PLATFORM_WIN32_KHR
-#define NOVA_USE_WIN32
-
-#include "../../util/windows.hpp"
-#include "../dx12/win32_window.hpp"
-#endif
 
 #ifdef Always
 #undef Always
@@ -28,10 +25,13 @@
 #ifdef None
 #undef None
 #endif
+#elif defined(NOVA_WINDOWS)
+#define VK_USE_PLATFORM_WIN32_KHR
+#define NOVA_USE_WIN32
 
-#include "nova_renderer/renderables.hpp"
-#include "nova_renderer/renderdoc_app.h"
-#include "nova_renderer/render_engine.hpp"
+#include "../../util/windows.hpp"
+#include "../dx12/win32_window.hpp"
+#endif
 
 #include "../../render_objects/uniform_structs.hpp"
 #include "../../util/vma_usage.hpp"
