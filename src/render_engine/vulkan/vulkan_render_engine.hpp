@@ -1,11 +1,5 @@
 #pragma once
 
-#if _WIN32
-#define VK_USE_PLATFORM_WIN32_KHR
-#elif defined(linux) || defined(__linux) || defined(__linux__)
-#define VK_USE_PLATFORM_XLIB_KHR
-#endif
-
 #include <condition_variable>
 #include <mutex>
 #include <queue>
@@ -13,12 +7,14 @@
 #include "nova_renderer/render_engine.hpp"
 
 #ifdef NOVA_LINUX
+#define VK_USE_PLATFORM_XLIB_KHR
 #define NOVA_VK_XLIB
 #include <X11/Xlib.h>
 
 #include "../../util/linux_utils.hpp"
 #include "x11_window.hpp"
 #elif defined(NOVA_WINDOWS)
+#define VK_USE_PLATFORM_WIN32_KHR
 #define NOVA_USE_WIN32
 
 #include "../../util/windows.hpp"
@@ -26,7 +22,6 @@
 #endif
 
 #include <spirv_cross/spirv_glsl.hpp>
-
 #include <vulkan/vulkan.h>
 
 #include "nova_renderer/renderables.hpp"
