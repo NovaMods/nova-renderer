@@ -185,10 +185,10 @@ namespace nova::renderer {
     void nova_renderer::create_render_passes(const std::vector<shaderpack::render_pass_create_info_t>& pass_create_infos,
                                              const std::vector<shaderpack::pipeline_create_info_t>& pipelines,
                                              const std::vector<shaderpack::material_data_t>& materials) {
-        rhi->set_num_renderpasses(pass_create_infos.size());
+        rhi->set_num_renderpasses(static_cast<uint32_t>(pass_create_infos.size()));
 
         for(const shaderpack::render_pass_create_info_t& create_info : pass_create_infos) {
-            auto create_framebuffer = std::bind(create_framebuffer_for_renderpass, create_info, std::placeholders::_1);
+            auto create_framebuffer = std::bind(&nova_renderer::create_framebuffer_for_renderpass, this, create_info, std::placeholders::_1);
             result<renderpass_t> renderpass_result = rhi->create_renderpass(create_info)
                                                          .flat_map(create_framebuffer);
         }

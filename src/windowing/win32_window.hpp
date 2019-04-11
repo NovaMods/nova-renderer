@@ -3,6 +3,7 @@
 
 #include <nova_renderer/util/platform.hpp>
 #include <nova_renderer/window.hpp>
+#include "nova_renderer/nova_settings.hpp"
 
 #ifdef SUPPORT_DX12
 
@@ -12,7 +13,7 @@
 
 #include <sdkddkver.h>
 
-#include "../../util/windows.hpp"
+#include "../util/windows.hpp"
 
 #include <DirectXMath.h>
 #include <dxgi1_2.h>
@@ -28,7 +29,7 @@ namespace nova::renderer {
      */
     class win32_window : public window_t {
     public:
-        win32_window(uint32_t width, uint32_t height);
+        win32_window(const nova_settings::window_options& settings);
         ~win32_window();
 
         /*

@@ -21,7 +21,7 @@
 #include "../../util/windows.hpp"
 #include <set>
 #include <vulkan/vulkan_win32.h>
-#include "../dx12/win32_window.hpp"
+#include "../../windowing/win32_window.hpp"
 #endif
 
 namespace nova::renderer::rhi {

@@ -11,7 +11,7 @@ namespace nova::renderer::rhi {
     /*!
      * \brief OpenGL 2.1 render engine because compatibility
      */
-    class gl2_render_engine : render_engine_t {
+    class gl2_render_engine : public render_engine_t {
     public:
         explicit gl2_render_engine(nova_settings& settings);
 
