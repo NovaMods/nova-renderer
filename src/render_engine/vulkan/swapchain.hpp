@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <glm/glm.hpp>
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 #include "nova_renderer/util/utils.hpp"
 

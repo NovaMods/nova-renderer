@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 namespace nova::renderer {
     std::string vk_result_to_string(VkResult result);

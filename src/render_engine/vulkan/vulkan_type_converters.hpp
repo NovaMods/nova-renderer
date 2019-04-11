@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 #include "nova_renderer/shaderpack_data.hpp"
 

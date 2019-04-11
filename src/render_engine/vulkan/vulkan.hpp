@@ -2,5 +2,19 @@
 
 #include "nova_renderer/util/platform.hpp"
 
-#if NOVA_WINDOWS
-#define VK_PLATFORK_WIN32_KHR
+#ifdef NOVA_LINUX
+#define VK_USE_PLATFORM_XLIB_KHR
+#elif defined(NOVA_WINDOWS)
+#define VK_USE_PLATFORM_WIN32_KHR
+#endif
+
+#include <vulkan/vulkan.h>
+
+
+// Fuck XLib
+#ifdef Always
+#undef Always
+#endif
+#ifdef None
+#undef None
+#endif

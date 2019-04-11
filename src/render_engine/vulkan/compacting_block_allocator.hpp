@@ -3,7 +3,7 @@
 #include <mutex>
 #include <vector>
 
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/util/utils.hpp"

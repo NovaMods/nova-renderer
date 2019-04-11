@@ -184,7 +184,7 @@ if(WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${WINDOWS_NOVA_SOURCE})
     set(OTHER_NOVA_SOURCE ${UNIX_NOVA_SOURCE})
 else()
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${UNIX_NOVA_SOURCE})
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${UNIX_NOVA_SOURCE} src/render_engine/vulkan/vulkan.hpp)
     set(OTHER_NOVA_SOURCE ${WINDOWS_NOVA_SOURCE})
 endif()
 

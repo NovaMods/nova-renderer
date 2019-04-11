@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 #include "nova_renderer/util/result.hpp"
 
