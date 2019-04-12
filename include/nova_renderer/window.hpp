@@ -1,14 +1,8 @@
-/*!
- * \author ddubois
- * \date 01-Sep-18.
- */
-
-#ifndef NOVA_RENDERER_WINDOW_HPP
-#define NOVA_RENDERER_WINDOW_HPP
-
-#include "util/utils.hpp"
+#pragma once
 
 #include <glm/glm.hpp>
+
+#include "util/utils.hpp"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(window_creation_error);
@@ -40,5 +34,3 @@ namespace nova::renderer {
         [[nodiscard]] virtual glm::uvec2 get_window_size() const = 0;
     };
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_WINDOW_HPP

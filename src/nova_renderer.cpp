@@ -1,24 +1,17 @@
-/*!
- * \author ddubois
- * \date 03-Sep-18.
- */
+#include "nova_renderer/nova_renderer.hpp"
 
 #include <array>
 #include <future>
 
-#include <nova_renderer/nova_renderer.hpp>
+#include <glslang/MachineIndependent/Initialize.h>
+#include <minitrace/minitrace.h>
 
-#include "glslang/MachineIndependent/Initialize.h"
 #include "loading/shaderpack/shaderpack_loading.hpp"
-
 #if defined(NOVA_WINDOWS)
 #include "render_engine/dx12/dx12_render_engine.hpp"
 #endif
-
 #include "debugging/renderdoc.hpp"
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
-
-#include <minitrace/minitrace.h>
 #include "util/logger.hpp"
 
 namespace nova::renderer {

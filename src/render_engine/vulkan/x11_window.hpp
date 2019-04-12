@@ -1,15 +1,12 @@
-//
-// Created by jannis on 01.09.18.
-//
-
-#ifndef NOVA_RENDERER_X_11_WINDOW_HPP
-#define NOVA_RENDERER_X_11_WINDOW_HPP
+#pragma once
 
 #ifdef NOVA_LINUX
 
-#include <X11/Xlib.h>
 #include <cstdint>
-#include <nova_renderer/window.hpp>
+
+#include <X11/Xlib.h>
+
+#include "nova_renderer/window.hpp"
 
 namespace nova::renderer {
     class x11_window : public iwindow {
@@ -55,5 +52,3 @@ namespace nova::renderer {
 #ifdef Bool
 #undef Bool
 #endif
-
-#endif // NOVA_RENDERER_X_11_WINDOW_HPP

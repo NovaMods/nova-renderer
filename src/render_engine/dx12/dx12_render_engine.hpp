@@ -1,24 +1,19 @@
-/*!
- * \author ddubois
- * \date 30-Aug-18.
- */
+#pragma once
 
-#ifndef NOVA_RENDERER_DX_12_RENDER_ENGINE_HPP
-#define NOVA_RENDERER_DX_12_RENDER_ENGINE_HPP
+#include "nova_renderer/render_engine.hpp"
 
-#include "../../../include/nova_renderer/render_engine.hpp"
+#include <memory>
+#include <mutex>
+#include <unordered_map>
 
+#include <spirv_hlsl.hpp>
+#include <wrl.h>
 #include <DirectXMath.h>
 #include <d3d12.h>
 #include <dxgi1_2.h>
 #include <dxgi1_4.h>
-#include "win32_window.hpp"
 
-#include <memory>
-#include <mutex>
-#include <spirv_hlsl.hpp>
-#include <unordered_map>
-#include <wrl.h>
+#include "win32_window.hpp"
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "dx12_texture.hpp"
 
@@ -224,5 +219,3 @@ namespace nova::renderer {
 
     bool operator==(const D3D12_ROOT_DESCRIPTOR1& lhs, const D3D12_ROOT_DESCRIPTOR1& rhs);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_DX_12_RENDER_ENGINE_HPP

@@ -1,20 +1,15 @@
 /*!
  * \brief Contains a bunch of utility functions which may or may not be actually used anywhere
- *
- * \author David
- * \date 18-May-16.
  */
 
-#ifndef RENDERER_UTILS_H
-#define RENDERER_UTILS_H
+#pragma once
 
 #include <algorithm>
 #include <exception>
+#include <fstream>
 #include <optional>
 #include <string>
 #include <vector>
-
-#include <fstream>
 
 #include "filesystem.hpp"
 
@@ -78,5 +73,3 @@ namespace nova::renderer {
 
     NOVA_EXCEPTION(out_of_gpu_memory);
 } // namespace nova::renderer
-
-#endif // RENDERER_UTILS_H

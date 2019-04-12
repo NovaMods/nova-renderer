@@ -1,12 +1,7 @@
-/*!
- * \author David
- * \date 22-May-16.
- */
-
-#ifndef RENDERER_GL_UNIFORM_BUFFER_H
-#define RENDERER_GL_UNIFORM_BUFFER_H
+#pragma once
 
 #include <string>
+
 #include "../../util/vma_usage.hpp"
 
 namespace nova::renderer {
@@ -101,5 +96,3 @@ namespace nova::renderer {
         VkFence dummy_fence = nullptr;
     };
 } // namespace nova::renderer
-
-#endif // RENDERER_GL_UNIFORM_BUFFER_H

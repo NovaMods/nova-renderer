@@ -1,4 +1,5 @@
 #include "cached_buffer.hpp"
+
 #include "../../util/logger.hpp"
 
 namespace nova::renderer {

@@ -1,9 +1,4 @@
-//
-// Created by jannis on 07.09.18.
-//
-
-#ifndef NOVA_RENDERER_GENERAL_TEST_SETUP_HPP
-#define NOVA_RENDERER_GENERAL_TEST_SETUP_HPP
+#pragma once
 
 #include <fstream>
 #include <iostream>
@@ -14,10 +9,12 @@
 #include "../../src/loading/zip_folder_accessor.hpp"
 #ifdef _WIN32
 #include <direct.h>
+
 #include "../../src/render_engine/dx12/dx12_render_engine.hpp"
 #define getcwd _getcwd
 #else
 #include <unistd.h>
+
 #include "../../src/render_engine/vulkan/vulkan_render_engine.hpp"
 #endif
 
@@ -69,5 +66,3 @@
         });                                                                                                                                \
     }
 #endif
-
-#endif // NOVA_RENDERER_GENERAL_TEST_SETUP_HPP

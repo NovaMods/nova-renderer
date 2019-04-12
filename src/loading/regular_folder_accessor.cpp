@@ -1,10 +1,7 @@
-/*!
- * \author ddubois
- * \date 14-Aug-18.
- */
-
 #include "regular_folder_accessor.hpp"
+
 #include <fstream>
+
 #include "../util/logger.hpp"
 
 namespace nova::renderer {

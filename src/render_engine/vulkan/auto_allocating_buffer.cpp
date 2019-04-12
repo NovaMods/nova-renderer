@@ -1,11 +1,8 @@
-/*!
- * \author ddubois
- * \date 12-Feb-18.
- */
-
 #include "auto_allocating_buffer.hpp"
+
+#include <fmt/format.h>
+
 #include "../../util/logger.hpp"
-#include "fmt/format.h"
 
 namespace nova::renderer {
     auto_buffer::auto_buffer(

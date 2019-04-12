@@ -1,12 +1,8 @@
 /*!
  * \brief Figures out what APIs are supported on the target platform
- *
- * \author ddubois
- * \date 17-Aug-18.
  */
 
-#ifndef NOVA_RENDERER_PLATFORM_H
-#define NOVA_RENDERER_PLATFORM_H
+#pragma once
 
 /*
  * Right now this is boring - but this will eventually determine the rendering API based on the platform we're compiling
@@ -24,5 +20,3 @@
 #if defined(linux) || defined(__linux) || defined(__linux__)
 #define NOVA_LINUX
 #endif
-
-#endif // NOVA_RENDERER_PLATFORM_H

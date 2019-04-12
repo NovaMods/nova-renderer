@@ -1,11 +1,8 @@
-/*!
- * \author ddubois
- * \date 10-Oct-18.
- */
-
 #include "windows_utils.hpp"
-#include "windows.hpp"
+
 #include <string>
+
+#include "windows.hpp"
 
 std::wstring s2ws(const std::string& s) {
     const int slength = static_cast<int>(s.length()) + 1;

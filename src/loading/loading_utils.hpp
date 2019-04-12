@@ -1,14 +1,8 @@
-/*!
- * \author ddubois
- * \date 21-Aug-18.
- */
-
-#ifndef NOVA_RENDERER_LOADING_UTILS_HPP
-#define NOVA_RENDERER_LOADING_UTILS_HPP
+#pragma once
 
 #include <string>
 
-#include "../../include/nova_renderer/util/filesystem.hpp"
+#include "nova_renderer/util/filesystem.hpp"
 
 namespace nova::renderer {
     /*!
@@ -18,5 +12,3 @@ namespace nova::renderer {
      */
     bool is_zip_folder(const fs::path& path_to_folder);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_LOADING_UTILS_HPP

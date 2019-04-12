@@ -1,26 +1,21 @@
 /*!
  * \brief Holds all the structs that correspond to the data in a shaderpack
- *
- * \author ddubois
- * \date 23-Aug-18.
  */
 
-#ifndef NOVA_RENDERER_SHADERPACK_DATA_HPP
-#define NOVA_RENDERER_SHADERPACK_DATA_HPP
+#pragma once
 
 #include <cstdint>
-#include <nlohmann/json.hpp>
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
-#include "util/filesystem.hpp"
-#include "util/utils.hpp"
-
-#include <vulkan/vulkan.h>
 
 #include <glm/glm.hpp>
-#include <unordered_set>
+#include <nlohmann/json.hpp>
+
+#include "nova_renderer/util/filesystem.hpp"
+#include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(validation_failure_exception);
@@ -542,17 +537,6 @@ namespace nova::renderer {
         std::string material_name;
         std::string pipeline;
         std::unordered_map<std::string, std::string> bindings;
-
-        /*!
-         * \brief All the descriptor sets needed to bind everything used by this material to its pipeline
-         *
-         * All the material's resources get bound to its descriptor sets when the material is created. Updating
-         * descriptor sets is allowed, although the result won't show up on screen for a couple frames because Nova
-         * (will) copies its descriptor sets to each in-flight frame
-         */
-        std::vector<VkDescriptorSet> descriptor_sets;
-
-        VkPipelineLayout layout = nullptr;
     };
 
     struct material_data {
@@ -603,5 +587,3 @@ namespace nova::renderer {
     std::string to_string(state_enum val);
     std::string to_string(vertex_field_enum val);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_SHADERPACK_DATA_HPP

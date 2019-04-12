@@ -1,14 +1,8 @@
-/*!
- * \author ddubois
- * \date 20-Oct-18.
- */
-
-#ifndef NOVA_RENDERER_DX_12_UTILS_HPP
-#define NOVA_RENDERER_DX_12_UTILS_HPP
+#pragma once
 
 #include <d3d12.h>
 
-#include <nova_renderer/shaderpack_data.hpp>
+#include "nova_renderer/shaderpack_data.hpp"
 
 namespace nova::renderer {
     enum class pixel_format_enum;
@@ -22,5 +16,3 @@ namespace nova::renderer {
 
     D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(primitive_topology_enum primitive_mode);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_DX_12_UTILS_HPP

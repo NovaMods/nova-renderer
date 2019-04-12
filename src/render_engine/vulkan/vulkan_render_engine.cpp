@@ -1,24 +1,30 @@
-//
-// Created by jannis on 30.08.18.
-//
-
 #include "vulkan_render_engine.hpp"
-#include <nova_renderer/util/platform.hpp>
-#include <spirv_cross/spirv_glsl.hpp>
+
 #include <vector>
-#include "../../loading/shaderpack/render_graph_builder.hpp"
-#include "../../loading/shaderpack/shaderpack_loading.hpp"
-#include "../../util/logger.hpp"
-#include "../dx12/win32_window.hpp"
-#include "vulkan_utils.hpp"
-#define VMA_IMPLEMENTATION
+
+#define VMA_IMPLEMENTATION // Recheck if good to be here
 #include <vk_mem_alloc.h>
 
 #ifdef NOVA_LINUX
 #include <cxxabi.h>
 #include <execinfo.h>
-
 #endif
+
+#include <spirv_cross/spirv_glsl.hpp>
+
+#include "nova_renderer/util/platform.hpp"
+
+#include "../../loading/shaderpack/render_graph_builder.hpp"
+#include "../../loading/shaderpack/shaderpack_loading.hpp"
+#include "../../util/logger.hpp"
+
+// TODO: Move windowing out of render engine folders
+//       its confusing to have a DX12 include in the Vulkan renderer and breaks encapsulation
+#ifdef NOVA_WINDOWS
+#include "../dx12/win32_window.hpp"
+#endif
+
+#include "vulkan_utils.hpp"
 
 namespace nova::renderer {
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }

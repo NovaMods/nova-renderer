@@ -1,11 +1,12 @@
-#ifndef RENDERER_AUTO_ALLOCATED_BUFFER_H
-#define RENDERER_AUTO_ALLOCATED_BUFFER_H
+#pragma once
 
-#include <nova_renderer/util/result.hpp>
 #include <string>
 #include <vector>
-#include <vulkan/vulkan.h>
+
+#include "nova_renderer/util/result.hpp"
+
 #include "cached_buffer.hpp"
+#include "vulkan.hpp"
 
 namespace nova::renderer {
     /*!
@@ -73,5 +74,3 @@ namespace nova::renderer {
 
     VkDeviceSize space_between(const auto_buffer_chunk& first, const auto_buffer_chunk& last);
 } // namespace nova::renderer
-
-#endif // RENDERER_AUTO_ALLOCATED_BUFFER_H

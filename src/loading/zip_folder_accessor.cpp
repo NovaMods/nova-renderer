@@ -1,14 +1,11 @@
-/*!
- * \author ddubois
- * \date 15-Aug-18.
- */
-
 #include "zip_folder_accessor.hpp"
-#include <nova_renderer/util/utils.hpp>
-#include "../util/logger.hpp"
 
 #include <array>
 #include <memory>
+
+#include "nova_renderer/util/utils.hpp"
+
+#include "../util/logger.hpp"
 
 namespace nova::renderer {
     zip_folder_accessor::zip_folder_accessor(const fs::path& folder) : folder_accessor_base(folder), files(new file_tree_node) {

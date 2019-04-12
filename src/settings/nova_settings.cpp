@@ -1,10 +1,6 @@
-/*!
- * \author David
- * \date 23-Jun-16.
- */
+#include "nova_renderer/nova_settings.hpp"
 
-#include <nova_renderer/nova_settings.hpp>
-#include <nova_renderer/util/utils.hpp>
+#include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
     void nova_settings::register_change_listener(iconfig_listener* new_listener) { config_change_listeners.push_back(new_listener); }

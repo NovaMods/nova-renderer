@@ -1,10 +1,6 @@
-/*!
- * \author ddubois
- * \date 29-Nov-18.
- */
-
 #include "vulkan_utils.hpp"
-#include <nova_renderer/render_engine.hpp>
+
+#include "nova_renderer/render_engine.hpp"
 
 namespace nova::renderer {
     std::string vk_result_to_string(VkResult result) {

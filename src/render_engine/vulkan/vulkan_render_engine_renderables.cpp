@@ -1,7 +1,9 @@
+#include <fmt/format.h>
 #include <glm/gtc/matrix_transform.hpp>
-#include <nova_renderer/renderables.hpp>
+
+#include "nova_renderer/renderables.hpp"
+
 #include "../../render_objects/uniform_structs.hpp"
-#include "fmt/format.h"
 #include "vulkan_render_engine.hpp"
 
 namespace nova::renderer {
@@ -48,20 +50,20 @@ namespace nova::renderer {
     }
 
     result<renderable_id_t> vulkan_render_engine::add_renderable(const static_mesh_renderable_data& data) {
-        return get_material_passes_for_renderable(data).flatMap([&](const std::vector<const material_pass*>& passes) {
+        return get_material_passes_for_renderable(data).flatMap([&](const std::vector<const vk_material_pass*>& passes) {
             return get_mesh_for_renderable(data).flatMap(
                 std::bind(&vulkan_render_engine::register_renderable, this, data, std::placeholders::_1, passes));
         });
     }
 
-    result<std::vector<const material_pass*>> vulkan_render_engine::get_material_passes_for_renderable(
+    result<std::vector<const vk_material_pass*>> vulkan_render_engine::get_material_passes_for_renderable(
         const static_mesh_renderable_data& data) {
-        std::vector<const material_pass*> passes;
+        std::vector<const vk_material_pass*> passes;
 
         for(const auto& [pipeline_name, materials] : material_passes_by_pipeline) {
             static_cast<void>(pipeline_name);
 
-            for(const material_pass& pass : materials) {
+            for(const vk_material_pass& pass : materials) {
                 if(pass.material_name == data.material_name) {
                     passes.push_back(&pass);
                 }
@@ -69,10 +71,10 @@ namespace nova::renderer {
         }
 
         if(passes.empty()) {
-            return result<std::vector<const material_pass*>>(
+            return result<std::vector<const vk_material_pass*>>(
                 nova_error(fmt::format(fmt("Could not find material {:s}"), data.material_name)));
         } else {
-            return result<std::vector<const material_pass*>>(std::move(passes));
+            return result<std::vector<const vk_material_pass*>>(std::move(passes));
         }
     }
 
@@ -86,10 +88,10 @@ namespace nova::renderer {
 
     result<renderable_id_t> vulkan_render_engine::register_renderable(const static_mesh_renderable_data& data,
                                                                       const vk_mesh* mesh,
-                                                                      const std::vector<const material_pass*>& passes) {
+                                                                      const std::vector<const vk_material_pass*>& passes) {
         renderable_metadata meta = {};
         meta.passes.reserve(passes.size());
-        for(const material_pass* m : passes) {
+        for(const vk_material_pass* m : passes) {
             meta.passes.push_back(m->name);
         }
 

@@ -1,22 +1,18 @@
-/*!
- * \author ddubois
- * \date 30-Aug-18.
- */
-
-#include "../../util/windows.hpp"
-#include <D3DCompiler.h>
-
-#include <algorithm>
-#include <d3d12sdklayers.h>
 #include "dx12_render_engine.hpp"
 
-#include <nova_renderer/nova_renderer.hpp>
+#include <algorithm>
+
+#include <D3DCompiler.h>
+#include <d3d12sdklayers.h>
 #include <spirv_cross.hpp>
+#include "d3dx12.h" // Can be identified as "external" header
+
+#include "nova_renderer/nova_renderer.hpp"
+#include "../../util/windows.hpp"
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "../../util/logger.hpp"
 #include "../../util/windows_utils.hpp"
-#include "d3dx12.h"
 #include "dx12_utils.hpp"
 #include "vertex_attributes.hpp"
 

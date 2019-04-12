@@ -1,10 +1,4 @@
-/*!
- * \author David
- * \date 23-Jun-16.
- */
-
-#ifndef RENDERER_CONFIG_H
-#define RENDERER_CONFIG_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -224,5 +218,3 @@ namespace nova::renderer {
         std::vector<iconfig_listener*> config_change_listeners;
     };
 } // namespace nova::renderer
-
-#endif // RENDERER_CONFIG_H

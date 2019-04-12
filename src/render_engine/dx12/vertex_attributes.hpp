@@ -1,14 +1,8 @@
-/*!
- * \author ddubois
- * \date 20-Oct-18.
- */
-
-#ifndef NOVA_RENDERER_VERTEX_ATTRIBUTES_HPP
-#define NOVA_RENDERER_VERTEX_ATTRIBUTES_HPP
+#pragma once
 
 #include <cstdint>
-#include <dxgi.h>
 #include <unordered_map>
+#include <dxgi.h>
 
 #include "../../util/logger.hpp"
 
@@ -61,5 +55,3 @@ namespace nova::renderer {
         return total_size;
     }
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_VERTEX_ATTRIBUTES_HPP

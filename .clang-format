@@ -59,16 +59,16 @@ ForEachMacros:
   - foreach
   - Q_FOREACH
   - BOOST_FOREACH
-IncludeBlocks:   Preserve
+IncludeBlocks:   Regroup
 IncludeCategories:
-  - Regex:           '[w|W]indows.h(pp)?'
-    Priority:        1
-  - Regex:           'x11'
-    Priority:        1
+  - Regex:           '^<.*.h(pp)?>'
+    Priority:        3
   - Regex:           '^<.*>'
     Priority:        2
+  - Regex:           '^"nova_renderer\/.*"'
+    Priority:        4
   - Regex:           '".*"'
-    Priority:        3
+    Priority:        5
 IncludeIsMainRegex: '(Test)?$'
 IndentCaseLabels: true
 IndentPPDirectives: None

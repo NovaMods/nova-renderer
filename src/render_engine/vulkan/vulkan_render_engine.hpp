@@ -1,43 +1,40 @@
-//
-// Created by jannis on 30.08.18.
-//
-
-#ifndef NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
-#define NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
-
-#include <nova_renderer/render_engine.hpp>
-#ifdef NOVA_LINUX
-#define VK_USE_PLATFORM_XLIB_KHR // Use X11 for window creating on Linux... TODO: Wayland?
-#define NOVA_VK_XLIB
-#include "x11_window.hpp"
-#include <vulkan/vulkan_xlib.h>
-#include "../../util/linux_utils.hpp"
-
-#elif defined(NOVA_WINDOWS)
-#define VK_USE_PLATFORM_WIN32_KHR
-#define NOVA_USE_WIN32
-#include "../../util/windows.hpp"
-#include <vulkan/vulkan_win32.h>
-#include "../dx12/win32_window.hpp"
-#endif
-
-#include <vulkan/vulkan.h>
-
-#include <queue>
-#include <spirv_cross/spirv_glsl.hpp>
-#include "../../util/vma_usage.hpp"
-#include "compacting_block_allocator.hpp"
+#pragma once
 
 #include <condition_variable>
 #include <mutex>
-#include <nova_renderer/renderables.hpp>
-#include "../../render_objects/uniform_structs.hpp"
-#include "auto_allocating_buffer.hpp"
-#include "fixed_size_buffer_allocator.hpp"
-#include "struct_uniform_buffer.hpp"
-#include "swapchain.hpp"
 
-#include <nova_renderer/renderdoc_app.h>
+#include "nova_renderer/render_engine.hpp"
+#include "nova_renderer/renderables.hpp"
+#include "nova_renderer/renderdoc_app.h"
+
+#include "vulkan.hpp"
+
+#ifdef NOVA_LINUX
+#define NOVA_VK_XLIB
+#include <X11/Xlib.h>
+
+#include "../../util/linux_utils.hpp"
+#include "x11_window.hpp"
+
+#ifdef Always
+#undef Always
+#endif
+#ifdef None
+#undef None
+#endif
+#elif defined(NOVA_WINDOWS)
+#define NOVA_USE_WIN32
+
+#include "../../util/windows.hpp"
+#include "../dx12/win32_window.hpp"
+#endif
+
+#include <spirv_cross/spirv_glsl.hpp>
+
+#include "../../util/vma_usage.hpp"
+#include "auto_allocating_buffer.hpp"
+#include "compacting_block_allocator.hpp"
+#include "swapchain.hpp"
 
 namespace nova::ttl {
     class task_scheduler;
@@ -182,6 +179,26 @@ namespace nova::renderer {
 
     struct vk_renderables {
         std::unordered_map<mesh_id_t, std::vector<vk_static_mesh_renderable>> static_meshes;
+    };
+
+    struct vk_material_pass : material_pass {
+        /*!
+         * \brief All the descriptor sets needed to bind everything used by this material to its pipeline
+         *
+         * All the material's resources get bound to its descriptor sets when the material is created. Updating
+         * descriptor sets is allowed, although the result won't show up on screen for a couple frames because Nova
+         * (will) copies its descriptor sets to each in-flight frame
+         */
+        std::vector<VkDescriptorSet> descriptor_sets;
+
+        VkPipelineLayout layout = nullptr;
+
+        vk_material_pass(const material_pass& pass) {
+            name = pass.name;
+            material_name = pass.material_name;
+            pipeline = pass.pipeline;
+            bindings = pass.bindings;
+        }
     };
 
     class vulkan_render_engine : public render_engine {
@@ -439,7 +456,7 @@ namespace nova::renderer {
          *
          * Prerequisite: This function must be run after create_material_descriptor_sets
          */
-        void update_material_descriptor_sets(const material_pass& mat,
+        void update_material_descriptor_sets(const vk_material_pass& mat,
                                              const std::unordered_map<std::string, vk_resource_binding>& name_to_descriptor);
 
         /*!
@@ -519,13 +536,13 @@ namespace nova::renderer {
          */
         std::unordered_map<renderable_id_t, renderable_metadata> metadata_for_renderables;
 
-        result<std::vector<const material_pass*>> get_material_passes_for_renderable(const static_mesh_renderable_data& data);
+        result<std::vector<const vk_material_pass*>> get_material_passes_for_renderable(const static_mesh_renderable_data& data);
 
         result<const vk_mesh*> get_mesh_for_renderable(const static_mesh_renderable_data& data);
 
         result<renderable_id_t> register_renderable(const static_mesh_renderable_data& data,
                                                     const vk_mesh* mesh,
-                                                    const std::vector<const material_pass*>& passes);
+                                                    const std::vector<const vk_material_pass*>& passes);
 #pragma endregion
 
 #pragma region Rendering
@@ -545,7 +562,7 @@ namespace nova::renderer {
         vk_buffer per_frame_data_buffer;
 
         std::unordered_map<std::string, std::vector<vk_pipeline>> pipelines_by_renderpass;
-        std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
+        std::unordered_map<std::string, std::vector<vk_material_pass>> material_passes_by_pipeline;
         std::unordered_map<std::string, vk_renderables> renderables_by_material;
 
         std::mutex rendering_mutex;
@@ -594,12 +611,12 @@ namespace nova::renderer {
          * \param pipeline The pipeline to get binding locations from
          * \param cmds The command buffer to bind things in
          */
-        void bind_material_resources(const material_pass& pass, const vk_pipeline& pipeline, VkCommandBuffer cmds);
+        void bind_material_resources(const vk_material_pass& pass, const vk_pipeline& pipeline, VkCommandBuffer cmds);
 
         /*!
          * \brief Renders all the things using the provided material
          */
-        void record_drawing_all_for_material(const material_pass& pass, VkCommandBuffer cmds);
+        void record_drawing_all_for_material(const vk_material_pass& pass, VkCommandBuffer cmds);
 
         /*!
          * \brief Submits the provided command buffer to the provided queue
@@ -636,5 +653,3 @@ namespace nova::renderer {
                                                          const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                                          void* pUserData);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP

@@ -1,16 +1,13 @@
-/*!
- * \author ddubois
- * \date 28-Apr-18.
- */
-
-#ifndef NOVA_RENDERER_FRAMEBUFFER_MANAGER_H
-#define NOVA_RENDERER_FRAMEBUFFER_MANAGER_H
+#pragma once
 
 #include <cstdint>
-#include <glm/glm.hpp>
-#include <nova_renderer/util/utils.hpp>
 #include <vector>
-#include <vulkan/vulkan.h>
+
+#include <glm/glm.hpp>
+
+#include "nova_renderer/util/utils.hpp"
+
+#include "vulkan.hpp"
 
 namespace nova::renderer {
     class vulkan_render_engine;
@@ -84,5 +81,3 @@ namespace nova::renderer {
         void transition_swapchain_images_into_correct_layout(const std::vector<VkImage>& images) const;
     };
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_FRAMEBUFFER_MANAGER_H

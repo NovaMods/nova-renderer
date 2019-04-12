@@ -1,13 +1,9 @@
-/*!
- * \author ddubois
- * \date 05-Sep-18.
- */
+#pragma once
 
-#ifndef NOVA_RENDERER_UTILS_HPP
-#define NOVA_RENDERER_UTILS_HPP
+#include <optional>
 
 #include <nlohmann/json.hpp>
-#include <optional>
+
 #include "../util/logger.hpp"
 
 namespace nova::renderer {
@@ -173,5 +169,3 @@ namespace nova::renderer {
         return std::vector<ValType>{};
     }
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_UTILS_HPP

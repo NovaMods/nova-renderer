@@ -1,11 +1,7 @@
-//
-// Created by jannis on 29.08.18.
-//
-
-#ifndef NOVA_RENDERER_RENDER_ENGINE_HPP
-#define NOVA_RENDERER_RENDER_ENGINE_HPP
+#pragma once
 
 #include <memory>
+
 #include "nova_settings.hpp"
 #include "renderables.hpp"
 #include "shaderpack_data.hpp"
@@ -127,5 +123,3 @@ namespace nova::renderer {
         nova_settings& settings;
     };
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_RENDER_ENGINE_HPP

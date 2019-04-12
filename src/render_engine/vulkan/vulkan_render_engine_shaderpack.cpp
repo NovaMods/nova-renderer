@@ -1,11 +1,6 @@
-/*!
- * \author ddubois
- * \date 06-Feb-19.
- */
-
-#include "../../../tests/src/general_test_setup.hpp"
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
+#include "../../util/logger.hpp"
 #include "swapchain.hpp"
 #include "vulkan_render_engine.hpp"
 #include "vulkan_type_converters.hpp"
@@ -32,7 +27,7 @@ namespace nova::renderer {
             materials[mat_data.name] = mat_data;
 
             for(const material_pass& mat : mat_data.passes) {
-                material_passes_by_pipeline[mat.pipeline].push_back(mat);
+                material_passes_by_pipeline[mat.pipeline].push_back(vk_material_pass(mat));
             }
         }
         NOVA_LOG(DEBUG) << "Materials saved";
@@ -737,8 +732,8 @@ namespace nova::renderer {
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
             (void) renderpass_name;
             for(const auto& pipeline : pipelines) {
-                std::vector<material_pass>& material_passes = material_passes_by_pipeline.at(pipeline.data.name);
-                for(material_pass& mat_pass : material_passes) {
+                std::vector<vk_material_pass>& material_passes = material_passes_by_pipeline.at(pipeline.data.name);
+                for(vk_material_pass& mat_pass : material_passes) {
                     if(pipeline.layouts.empty()) {
                         // If there's no layouts, we're done
                         NOVA_LOG(TRACE) << "No layouts for pipeline " << pipeline.data.name << ", which material pass " << mat_pass.name
@@ -780,7 +775,7 @@ namespace nova::renderer {
     }
 
     void vulkan_render_engine::update_material_descriptor_sets(
-        const material_pass& mat, const std::unordered_map<std::string, vk_resource_binding>& name_to_descriptor) {
+        const vk_material_pass& mat, const std::unordered_map<std::string, vk_resource_binding>& name_to_descriptor) {
         // for each resource:
         //  - Get its set and binding from the pipeline
         //  - Update its descriptor set

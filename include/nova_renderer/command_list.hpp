@@ -1,8 +1,3 @@
-/*!
- * \author ddubois 
- * \date 30-Mar-19.
- */
-
 #pragma once
 
 /*!

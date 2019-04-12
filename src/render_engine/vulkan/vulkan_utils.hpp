@@ -1,13 +1,9 @@
-//
-// Created by jannis on 30.08.18.
-//
-
-#ifndef NOVA_RENDERER_VULKAN_UTILS_HPP
-#define NOVA_RENDERER_VULKAN_UTILS_HPP
+#pragma once
 
 #include <string>
 #include <vector>
-#include <vulkan/vulkan.h>
+
+#include "vulkan.hpp"
 
 namespace nova::renderer {
     std::string vk_result_to_string(VkResult result);
@@ -33,4 +29,3 @@ namespace nova::renderer {
 #else
 #define NOVA_CHECK_RESULT(expr) expr
 #endif
-#endif // NOVA_RENDERER_VULKAN_UTILS_HPP

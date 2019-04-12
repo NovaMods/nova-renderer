@@ -1,18 +1,13 @@
-/*!
- * \author ddubois
- * \date 14-Aug-18.
- */
-
-#ifndef NOVA_RENDERER_RESOURCEPACK_H
-#define NOVA_RENDERER_RESOURCEPACK_H
+#pragma once
 
 #include <mutex>
-#include <nova_renderer/util/filesystem.hpp>
-#include <nova_renderer/util/utils.hpp>
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "nova_renderer/util/filesystem.hpp"
+#include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(resource_not_found_exception);
@@ -120,5 +115,3 @@ namespace nova::renderer {
      */
     bool has_root(const fs::path& path, const fs::path& root);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_RESOURCEPACK_H

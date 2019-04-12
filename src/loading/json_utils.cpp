@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 10-Sep-18.
- */
-
 #include "json_utils.hpp"
 
 namespace nova {

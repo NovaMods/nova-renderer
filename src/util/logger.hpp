@@ -1,19 +1,13 @@
-#include <utility>
-
-/*!
- * \author ddubois
- * \date 21-Aug-18.
- */
-
-#ifndef NOVA_RENDERER_LOGGER_HPP
-#define NOVA_RENDERER_LOGGER_HPP
+#pragma once
 
 #include <functional>
 #include <mutex>
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
+// Undefine ERROR because we use it as an enum name and windows.h defines it which messes with our code
 #ifdef ERROR
 #undef ERROR
 #endif
@@ -64,5 +58,3 @@ namespace nova::renderer {
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define NOVA_LOG(LEVEL) ::nova::renderer::logger::instance.log(::nova::renderer::log_level::LEVEL)
-
-#endif // NOVA_RENDERER_LOGGER_HPP
