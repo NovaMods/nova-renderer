@@ -19,7 +19,7 @@ If you want to see what we have planned, or what has already been done, check ou
 
 ## Developer setup
 
-Nova uses [vcpkg](https://github.com/Microsoft/vcpkg) for dependency management. You need to install it on your system PATH. Once `vcpkg` is on your path, run the appropriate setup script for your platform - run `setup-windows.ps1` from Powershell on Windows, run `setup-linux.sh` from Bash on Linux. This will install almost all of Nova's dependencies
+Nova uses [vcpkg](https://github.com/Microsoft/vcpkg) for dependency management. You need to install it on your system PATH. Once `vcpkg` is on your path, run the appropriate setup script for your platform - If you're on windows, run `setup-windows.ps1` in Powershell. Otherwise, on Linux, run `setup-linux.sh` in Bash. This will install almost all of Nova's dependencies. 
 
 Install the LunarG Vulkan SDK. Use the latest SDK for Vulkan 1.1. If you are on linux you must add `VULKAN_SDK` to your environment, pointing to the installation root of the package, most likely `/usr`.
 
@@ -32,7 +32,7 @@ cd build
 cmake -DCMAKE_TOOLCHAIN_FILE=C:/Users/DethRaid/Documents/vcpkg/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 15 2017 Win64" -Thost=x64 ..
 ```
 
-This will generate project files for Visual Studio 2017 to compile for a 64-bit machine, and it will use the `vcpkg` toolchain file in my local `vcpkg` repo
+This will generate project files for Visual Studio 2017 to compile for a 64-bit machine, and it will use the `vcpkg` toolchain file in my local `vcpkg` repo.
 
 That's it!
 
@@ -68,4 +68,4 @@ Nova lets shader developers define the passes that Nova makes over the scene. Th
 
 ## Installation
 
-[Do this](https://github.com/NovaMods/nova-renderer/wiki/Installing,-building,-and-running-on-Windows)
+[Do this.](https://github.com/NovaMods/nova-renderer/wiki/Installing,-building,-and-running-on-Windows)
