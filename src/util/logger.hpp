@@ -7,8 +7,7 @@
 #include <unordered_map>
 #include <utility>
 
-// Hope this fixes windows build for now, not sure where it comes from
-// TODO: Fix the root of this issue (@dethraid, @cwfitzgerald)
+// Undefine ERROR because we use it as an enum name and windows.h defines it which mess with our code
 #ifdef ERROR
 #undef ERROR
 #endif

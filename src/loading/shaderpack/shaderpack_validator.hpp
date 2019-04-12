@@ -1,9 +1,6 @@
 /*!
  * \brief Functions for determining if a JSON file from a shaderpack is reasonable, and telling the user if any fields
  * need to be filled in
- *
- * \author ddubois
- * \date 12-Sep-18.
  */
 
 #pragma once

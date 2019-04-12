@@ -18,7 +18,8 @@
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "../../util/logger.hpp"
 
-// TODO: Move windowing out of render engine folders to prevent things like this
+// TODO: Move windowing out of render engine folders
+//       its confusing to have a DX12 include in the Vulkan renderer and breaks encapsulation
 #ifdef NOVA_WINDOWS
 #include "../dx12/win32_window.hpp"
 #endif
