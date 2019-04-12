@@ -126,72 +126,120 @@ namespace nova::renderer {
         }
     }
 
-    result<renderpass_t> nova_renderer::create_framebuffer_for_renderpass(const shaderpack::render_pass_create_info_t& create_info,
-                                                                          rhi::renderpass_t* new_pass) {
-        renderpass_t renderpass;
-        renderpass.renderpass = new_pass;
-
-        std::vector<rhi::image_t*> output_images;
-        output_images.reserve(create_info.texture_outputs.size());
-
-        glm::uvec2 framebuffer_size(0);
-
-        std::vector<std::string> attachment_errors;
-        attachment_errors.reserve(create_info.texture_outputs.size());
-
-        for(const shaderpack::texture_attachment_info_t& attachment_info : create_info.texture_outputs) {
-            if(attachment_info.name == "Backbuffer") {
-                if(create_info.texture_outputs.size() == 1) {
-                    renderpass.writes_to_backbuffer = true;
-                    renderpass.framebuffer = nullptr; // Will be resolved when rendering
-
-                } else {
-                    return result<renderpass_t>(MAKE_ERROR(
-                        "Pass {:s} writes to the backbuffer and {:d} other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures",
-                        create_info.name,
-                        create_info.texture_outputs.size() - 1));
-                }
-
-            } else {
-                rhi::image_t* image = dynamic_textures.at(attachment_info.name);
-                output_images.push_back(image);
-
-                const shaderpack::texture_create_info_t& info = dynamic_texture_infos.at(attachment_info.name);
-                const glm::uvec2 attachment_size = info.format.get_size_in_pixels(
-                    {render_settings.window.width, render_settings.window.height});
-
-                if(framebuffer_size.x > 0) {
-                    if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {
-                        attachment_errors.push_back(fmt::format(
-                            fmt("Attachment {:s} has a size of {:d}x{:d}, but the framebuffer for pass {:s} has a size of {:d}x{:d} - these must match! All attachments of a single renderpass must have the same size"),
-                            attachment_info.name,
-                            attachment_size.x,
-                            attachment_size.y,
-                            create_info.name,
-                            framebuffer_size.x,
-                            framebuffer_size.y));
-                    }
-
-                } else {
-                    framebuffer_size = attachment_size;
-                }
-            }
-        }
-
-        renderpass.framebuffer = rhi->create_framebuffer(new_pass, output_images, framebuffer_size);
-        return result(renderpass);
-    }
-
     void nova_renderer::create_render_passes(const std::vector<shaderpack::render_pass_create_info_t>& pass_create_infos,
                                              const std::vector<shaderpack::pipeline_create_info_t>& pipelines,
                                              const std::vector<shaderpack::material_data_t>& materials) {
         rhi->set_num_renderpasses(static_cast<uint32_t>(pass_create_infos.size()));
 
         for(const shaderpack::render_pass_create_info_t& create_info : pass_create_infos) {
-            auto create_framebuffer = std::bind(&nova_renderer::create_framebuffer_for_renderpass, this, create_info, std::placeholders::_1);
-            result<renderpass_t> renderpass_result = rhi->create_renderpass(create_info)
-                                                         .flat_map(create_framebuffer);
+            renderpass_t renderpass;
+            renderpass_metadata_t metadata;
+            metadata.data = create_info;
+
+            result<rhi::renderpass_t*> renderpass_result = rhi->create_renderpass(create_info);
+            if(!renderpass_result.has_value) {
+                NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name << ": " << renderpass_result.error.to_string();
+            }
+
+            renderpass.renderpass = renderpass_result.value;
+
+            std::vector<rhi::image_t*> output_images;
+            output_images.reserve(create_info.texture_outputs.size());
+
+            glm::uvec2 framebuffer_size(0);
+
+            std::vector<std::string> attachment_errors;
+            attachment_errors.reserve(create_info.texture_outputs.size());
+
+            for(const shaderpack::texture_attachment_info_t& attachment_info : create_info.texture_outputs) {
+                if(attachment_info.name == "Backbuffer") {
+                    if(create_info.texture_outputs.size() == 1) {
+                        renderpass.writes_to_backbuffer = true;
+                        renderpass.framebuffer = nullptr; // Will be resolved when rendering
+
+                    } else {
+                        attachment_errors.push_back(fmt::format(
+                            fmt("Pass {:s} writes to the backbuffer and {:d} other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures"),
+                            create_info.name,
+                            create_info.texture_outputs.size() - 1));
+                    }
+
+                } else {
+                    rhi::image_t* image = dynamic_textures.at(attachment_info.name);
+                    output_images.push_back(image);
+
+                    const shaderpack::texture_create_info_t& info = dynamic_texture_infos.at(attachment_info.name);
+                    const glm::uvec2 attachment_size = info.format.get_size_in_pixels(
+                        {render_settings.window.width, render_settings.window.height});
+
+                    if(framebuffer_size.x > 0) {
+                        if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {
+                            attachment_errors.push_back(fmt::format(
+                                fmt("Attachment {:s} has a size of {:d}x{:d}, but the framebuffer for pass {:s} has a size of {:d}x{:d} - these must match! All attachments of a single renderpass must have the same size"),
+                                attachment_info.name,
+                                attachment_size.x,
+                                attachment_size.y,
+                                create_info.name,
+                                framebuffer_size.x,
+                                framebuffer_size.y));
+                        }
+
+                    } else {
+                        framebuffer_size = attachment_size;
+                    }
+                }
+            }
+
+            if(!attachment_errors.empty()) {
+                for(const std::string& err : attachment_errors) {
+                    NOVA_LOG(ERROR) << err;
+                }
+                rhi->destroy_renderpass(renderpass.renderpass);
+
+                NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name
+                                << " because there were errors in the attachment specification. Look above this message for details";
+                continue;
+            }
+
+            renderpass.framebuffer = rhi->create_framebuffer(renderpass.renderpass, output_images, framebuffer_size);
+
+            renderpass.pipelines.reserve(pipelines.size());
+            for(const shaderpack::pipeline_create_info_t& pipeline_create_info : pipelines) {
+                if(pipeline_create_info.pass == create_info.name) {
+                    auto [pipeline, pipeline_metadata] = create_pipeline(materials, pipeline_create_info);
+                    renderpass.pipelines.push_back(pipeline);
+
+					metadata.pipeline_metadata.emplace(pipeline_create_info.name, pipeline_metadata);
+                }
+            }
         }
+    }
+
+    std::tuple<pipeline_t, pipeline_metadata_t> nova_renderer::create_pipeline(
+        const std::vector<shaderpack::material_data_t>& materials, const shaderpack::pipeline_create_info_t& pipeline_create_info) const {
+
+        pipeline_t pipeline;
+		pipeline_metadata_t metadata;
+
+		metadata.data = pipeline_create_info;
+
+        rhi::pipeline_t* rhi_pipeline = rhi->create_pipeline(pipeline_create_info);
+        pipeline.pipeline = rhi_pipeline;
+
+        // Incredibly rough estimate, but hopefully an overestimate
+        pipeline.passes.reserve(materials.size());
+
+        for(const shaderpack::material_data_t& material_data : materials) {
+            for(const shaderpack::material_pass_t& pass_data : material_data.passes) {
+                if(pass_data.pipeline == pipeline_create_info.name) {
+                    material_pass_t pass = {};
+
+                    pipeline.passes.push_back(pass);
+                }
+            }
+        }
+
+		return { pipeline, metadata };
     }
 
     void nova_renderer::destroy_render_passes() {
