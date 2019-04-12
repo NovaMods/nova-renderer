@@ -10,7 +10,6 @@
 
 #include <vulkan/vulkan.h>
 
-
 // Fuck XLib
 #ifdef Always
 #undef Always

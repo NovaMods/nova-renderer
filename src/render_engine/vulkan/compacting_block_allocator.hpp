@@ -3,12 +3,11 @@
 #include <mutex>
 #include <vector>
 
-#include "vulkan.hpp"
-
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/util/utils.hpp"
 
 #include "../../util/vma_usage.hpp"
+#include "vulkan.hpp"
 
 namespace ftl {
     class TaskScheduler;

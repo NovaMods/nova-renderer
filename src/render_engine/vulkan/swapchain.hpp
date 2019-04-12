@@ -4,9 +4,10 @@
 #include <vector>
 
 #include <glm/glm.hpp>
-#include "vulkan.hpp"
 
 #include "nova_renderer/util/utils.hpp"
+
+#include "vulkan.hpp"
 
 namespace nova::renderer {
     class vulkan_render_engine;

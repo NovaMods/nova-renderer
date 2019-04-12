@@ -3,11 +3,11 @@
 #include <condition_variable>
 #include <mutex>
 
-#include "vulkan.hpp"
-
 #include "nova_renderer/render_engine.hpp"
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/renderdoc_app.h"
+
+#include "vulkan.hpp"
 
 #ifdef NOVA_LINUX
 #define NOVA_VK_XLIB

@@ -2,10 +2,9 @@
 
 #include <fmt/format.h>
 
-#include "vulkan.hpp"
-
 #include "../../util/logger.hpp"
 #include "swapchain.hpp"
+#include "vulkan.hpp"
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
 

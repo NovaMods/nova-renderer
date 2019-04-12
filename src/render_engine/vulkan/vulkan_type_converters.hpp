@@ -1,8 +1,8 @@
 #pragma once
 
-#include "vulkan.hpp"
-
 #include "nova_renderer/shaderpack_data.hpp"
+
+#include "vulkan.hpp"
 
 #ifdef Always // RIP X11 and its macros
 #undef Always
