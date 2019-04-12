@@ -63,5 +63,5 @@ namespace nova::renderer {
         glm::mat4 model_matrix = glm::mat4(1);
     };
 
-    struct static_mesh_renderable_t : renderable_base_t {};
+    struct static_mesh_render_command_t : renderable_base_t {};
 } // namespace nova::renderer
