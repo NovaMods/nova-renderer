@@ -91,7 +91,7 @@ namespace nova::renderer::rhi {
                                                                 const std::vector<image_t*>& attachments,
                                                                 const glm::uvec2& framebuffer_size) = 0;
 
-        [[nodiscard]] virtual pipeline_t* create_pipeline(const shaderpack::pipeline_create_info_t& data) = 0;
+        [[nodiscard]] virtual pipeline_t* create_pipeline(const renderpass_t* renderpass, const shaderpack::pipeline_create_info_t& data) = 0;
 
         [[nodiscard]] virtual buffer_t* create_buffer(const buffer_create_info_t& info) = 0;
 
