@@ -105,6 +105,8 @@ set(NOVA_SOURCE
         src/loading/shaderpack/shaderpack_validator.hpp 
         src/loading/shaderpack/render_graph_builder.cpp 
         src/loading/shaderpack/render_graph_builder.hpp
+
+        src/render_engine/vulkan/vulkan.hpp
         src/render_engine/vulkan/vulkan_render_engine.hpp
         src/render_engine/vulkan/vulkan_render_engine.cpp
         src/render_engine/vulkan/vulkan_render_engine_init.cpp
@@ -184,7 +186,7 @@ if(WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${WINDOWS_NOVA_SOURCE})
     set(OTHER_NOVA_SOURCE ${UNIX_NOVA_SOURCE})
 else()
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${UNIX_NOVA_SOURCE} src/render_engine/vulkan/vulkan.hpp)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${UNIX_NOVA_SOURCE})
     set(OTHER_NOVA_SOURCE ${WINDOWS_NOVA_SOURCE})
 endif()
 
