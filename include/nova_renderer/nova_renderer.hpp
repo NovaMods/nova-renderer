@@ -1,7 +1,3 @@
-/*!
- * \brief Main class for Nova. This class exists as a singleton so it's always available
- */
-
 #pragma once
 
 #include <memory>
@@ -17,6 +13,7 @@ namespace nova::renderer {
 
     /*!
      * \brief Main class for Nova. Owns all of Nova's resources and provides a way to access them
+     * This class exists as a singleton so it's always available
      */
     class nova_renderer {
     public:
