@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include <nova_renderer/render_engine_t.hpp>
-
 namespace nova::renderer::rhi {
     struct vk_image_t : image_t {
         VkImage image;
@@ -31,6 +29,10 @@ namespace nova::renderer::rhi {
     struct vk_framebuffer_t : framebuffer_t {
         VkFramebuffer framebuffer;
     };
+
+	struct vk_pipeline_t : pipeline_t {
+		VkPipeline pipeline;
+	};
 
     struct vk_gpu_info {
         VkPhysicalDevice phys_device{};

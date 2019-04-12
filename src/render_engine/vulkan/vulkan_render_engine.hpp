@@ -59,8 +59,9 @@ namespace nova::renderer::rhi {
         framebuffer_t* create_framebuffer(const renderpass_t* renderpass,
                                           const std::vector<image_t*>& attachments,
                                           const glm::uvec2& framebuffer_size) override final;
+        
+        pipeline_t* create_pipeline(const renderpass_t* renderpass, const shaderpack::pipeline_create_info_t& data) override final;
 
-        pipeline_t* create_pipeline(const shaderpack::pipeline_create_info_t& data) override final;
         buffer_t* create_buffer(const buffer_create_info_t& info) override final;
         image_t* create_texture(const shaderpack::texture_create_info_t& info) override final;
         semaphore_t* create_semaphore() override final;
@@ -136,5 +137,7 @@ namespace nova::renderer::rhi {
                                                                     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                                                     void* pUserData);
 #pragma endregion
+
+		VkShaderModule create_shader_module(const std::vector<uint32_t>& spirv);
     };
 } // namespace nova::renderer
