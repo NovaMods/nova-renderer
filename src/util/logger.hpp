@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <utility>
 
-// Undefine ERROR because we use it as an enum name and windows.h defines it which mess with our code
+// Undefine ERROR because we use it as an enum name and windows.h defines it which messes with our code
 #ifdef ERROR
 #undef ERROR
 #endif
