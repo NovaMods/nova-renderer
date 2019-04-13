@@ -12,7 +12,7 @@
 #include <string>
 
 #include "nova_renderer/nova_settings.hpp"
-#include "nova_renderer/render_engine_t.hpp"
+#include "nova_renderer/render_engine.hpp"
 #include "nova_renderer/renderdoc_app.h"
 
 namespace nova::renderer {
@@ -21,68 +21,68 @@ namespace nova::renderer {
 
 #pragma region Runtime optimized data
     template <typename RenderableType>
-    struct mesh_batch_t {
-        rhi::resource_t* vertex_buffer = nullptr;
-        rhi::resource_t* index_buffer = nullptr;
+    struct MeshBatch {
+        rhi::Resource* vertex_buffer = nullptr;
+        rhi::Resource* index_buffer = nullptr;
 
         std::vector<RenderableType> renderables;
     };
 
-    struct material_pass_t {
+    struct MaterialPass {
         // Descriptors for the material pass
 
-        std::vector<mesh_batch_t<static_mesh_render_command_t>> static_mesh_draws;
+        std::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
     };
 
-    struct pipeline_t {
-        rhi::pipeline_t* pipeline = nullptr;
+    struct Pipeline {
+        rhi::Pipeline* pipeline = nullptr;
 
-        std::vector<material_pass_t> passes;
+        std::vector<MaterialPass> passes;
     };
 
-    struct renderpass_t {
-        rhi::renderpass_t* renderpass = nullptr;
-        rhi::framebuffer_t* framebuffer = nullptr;
+    struct Renderpass {
+        rhi::Renderpass* renderpass = nullptr;
+        rhi::Framebuffer* framebuffer = nullptr;
 
-        std::vector<pipeline_t> pipelines;
+        std::vector<Pipeline> pipelines;
 
         bool writes_to_backbuffer;
     };
 #pragma endregion
 
-    struct material_pass_metadata_t {
-        shaderpack::material_pass_t data;
+    struct MaterialPassMetadata {
+        shaderpack::MaterialPass data;
     };
 
-    struct pipeline_metadata_t {
-        shaderpack::pipeline_create_info_t data;
+    struct PipelineMetadata {
+        shaderpack::PipelineCreateInfo data;
 
-        std::unordered_map<std::string, material_pass_metadata_t> material_metadatas;
+        std::unordered_map<std::string, MaterialPassMetadata> material_metadatas;
     };
 
-    struct renderpass_metadata_t {
-        shaderpack::render_pass_create_info_t data;
+    struct RenderpassMetadata {
+        shaderpack::RenderPassCreateInfo data;
 
-        std::unordered_map<std::string, pipeline_metadata_t> pipeline_metadata;
+        std::unordered_map<std::string, PipelineMetadata> pipeline_metadata;
     };
 
     /*!
      * \brief Main class for Nova. Owns all of Nova's resources and provides a way to access them
      */
-    class nova_renderer {
+    class NovaRenderer {
     public:
         /*!
          * \brief Initializes the Nova Renderer
          */
-        explicit nova_renderer(nova_settings settings);
+        explicit NovaRenderer(NovaSettings settings);
 
-        nova_renderer(nova_renderer&& other) noexcept = delete;
-        nova_renderer& operator=(nova_renderer&& other) noexcept = delete;
+        NovaRenderer(NovaRenderer&& other) noexcept = delete;
+        NovaRenderer& operator=(NovaRenderer&& other) noexcept = delete;
 
-        nova_renderer(const nova_renderer& other) = delete;
-        nova_renderer& operator=(const nova_renderer& other) = delete;
+        NovaRenderer(const NovaRenderer& other) = delete;
+        NovaRenderer& operator=(const NovaRenderer& other) = delete;
 
-        ~nova_renderer();
+        ~NovaRenderer();
 
         /*!
          * \brief Loads the shaderpack with the given name
@@ -100,22 +100,22 @@ namespace nova::renderer {
          */
         void execute_frame() const;
 
-        nova_settings& get_settings();
+        NovaSettings& get_settings();
 
-        [[nodiscard]] rhi::render_engine_t* get_engine() const;
+        [[nodiscard]] rhi::RenderEngine* get_engine() const;
 
-        static nova_renderer* initialize(const nova_settings& settings);
+        static NovaRenderer* initialize(const NovaSettings& settings);
 
-        static nova_renderer* get_instance();
+        static NovaRenderer* get_instance();
 
         static void deinitialize();
 
     private:
-        nova_settings render_settings;
-        std::unique_ptr<rhi::render_engine_t> rhi;
+        NovaSettings render_settings;
+        std::unique_ptr<rhi::RenderEngine> rhi;
 
         RENDERDOC_API_1_3_0* render_doc;
-        static std::unique_ptr<nova_renderer> instance;
+        static std::unique_ptr<NovaRenderer> instance;
 
 #pragma region Shaderpack
         bool shaderpack_loaded = false;
@@ -123,21 +123,21 @@ namespace nova::renderer {
         /*!
          * \brief The renderpasses in the shaderpack, in submission order
          */
-        std::vector<renderpass_t> renderpasses;
+        std::vector<Renderpass> renderpasses;
 
-        std::unordered_map<std::string, rhi::image_t*> dynamic_textures;
-        std::unordered_map<std::string, shaderpack::texture_create_info_t> dynamic_texture_infos;
+        std::unordered_map<std::string, rhi::Image*> dynamic_textures;
+        std::unordered_map<std::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
 
-        std::unordered_map<std::string, renderpass_metadata_t> renderpass_metadatas;
+        std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
 
-        void create_dynamic_textures(const std::vector<shaderpack::texture_create_info_t>& texture_create_infos);
+        void create_dynamic_textures(const std::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
 
-        void create_render_passes(const std::vector<shaderpack::render_pass_create_info_t>& pass_create_infos,
-                                  const std::vector<shaderpack::pipeline_create_info_t>& pipelines,
-                                  const std::vector<shaderpack::material_data_t>& materials);
+        void create_render_passes(const std::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
+                                  const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
+                                  const std::vector<shaderpack::MaterialData>& materials);
 
-        std::tuple<pipeline_t, pipeline_metadata_t> create_pipeline(const std::vector<shaderpack::material_data_t>& materials,
-                                                                    const shaderpack::pipeline_create_info_t& pipeline_create_info) const;
+        std::tuple<Pipeline, PipelineMetadata> create_pipeline(const std::vector<shaderpack::MaterialData>& materials,
+                                                                    const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
 
         void destroy_render_passes();
 

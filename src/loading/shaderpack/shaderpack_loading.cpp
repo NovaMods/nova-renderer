@@ -119,15 +119,15 @@ namespace nova::renderer::shaderpack {
 
     std::shared_ptr<folder_accessor_base> get_shaderpack_accessor(const fs::path& shaderpack_name);
 
-    shaderpack_resources_data_t load_dynamic_resources_file(const std::shared_ptr<folder_accessor_base>& folder_access);
+    ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<folder_accessor_base>& folder_access);
 
-    result<std::vector<render_pass_create_info_t>> load_passes_file(const std::shared_ptr<folder_accessor_base>& folder_access);
+    result<std::vector<RenderPassCreateInfo>> load_passes_file(const std::shared_ptr<folder_accessor_base>& folder_access);
 
-    std::vector<pipeline_create_info_t> load_pipeline_files(const std::shared_ptr<folder_accessor_base>& folder_access);
-    pipeline_create_info_t load_single_pipeline(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& pipeline_path);
+    std::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<folder_accessor_base>& folder_access);
+    PipelineCreateInfo load_single_pipeline(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& pipeline_path);
 
-    std::vector<material_data_t> load_material_files(const std::shared_ptr<folder_accessor_base>& folder_access);
-    material_data_t load_single_material(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& material_path);
+    std::vector<MaterialData> load_material_files(const std::shared_ptr<folder_accessor_base>& folder_access);
+    MaterialData load_single_material(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& material_path);
 
     std::vector<uint32_t> load_shader_file(const fs::path& filename,
                                            const std::shared_ptr<folder_accessor_base>& folder_access,
@@ -136,7 +136,7 @@ namespace nova::renderer::shaderpack {
 
     bool loading_failed = false;
 
-    shaderpack_data_t load_shaderpack_data(const fs::path& shaderpack_name) {
+    ShaderpackData load_shaderpack_data(const fs::path& shaderpack_name) {
         loading_failed = false;
         const std::shared_ptr<folder_accessor_base> folder_access = get_shaderpack_accessor(shaderpack_name);
 
@@ -149,7 +149,7 @@ namespace nova::renderer::shaderpack {
         //
         // All these things are loaded from the filesystem
 
-        shaderpack_data_t data{};
+        ShaderpackData data{};
         data.resources = load_dynamic_resources_file(folder_access);
         data.passes = load_passes_file(folder_access).value;
         data.pipelines = load_pipeline_files(folder_access);
@@ -175,7 +175,7 @@ namespace nova::renderer::shaderpack {
         throw resource_not_found_exception(shaderpack_name.string());
     }
 
-    shaderpack_resources_data_t load_dynamic_resources_file(const std::shared_ptr<folder_accessor_base>& folder_access) {
+    ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<folder_accessor_base>& folder_access) {
         NOVA_LOG(TRACE) << "load_dynamic_resource_file called";
         std::string resources_string = folder_access->read_text_file("resources.json");
         try {
@@ -187,7 +187,7 @@ namespace nova::renderer::shaderpack {
                 return {};
             }
 
-            return json_resources.get<shaderpack_resources_data_t>();
+            return json_resources.get<ShaderpackResourcesData>();
         }
         catch(resource_not_found_exception&) {
             // No resources defined.. I guess they think they don't need any?
@@ -206,22 +206,22 @@ namespace nova::renderer::shaderpack {
         return {};
     }
 
-    result<std::vector<render_pass_create_info_t>> load_passes_file(const std::shared_ptr<folder_accessor_base>& folder_access) {
+    result<std::vector<RenderPassCreateInfo>> load_passes_file(const std::shared_ptr<folder_accessor_base>& folder_access) {
         NOVA_LOG(TRACE) << "load_passes_file called";
         const auto passes_bytes = folder_access->read_text_file("passes.json");
         try {
             auto json_passes = nlohmann::json::parse(passes_bytes);
-            const auto passes = json_passes.get<std::vector<render_pass_create_info_t>>();
+            const auto passes = json_passes.get<std::vector<RenderPassCreateInfo>>();
 
             return order_passes(passes);
 
         } catch(nlohmann::json::parse_error& err) {
-            return result<std::vector<render_pass_create_info_t>>(
+            return result<std::vector<RenderPassCreateInfo>>(
                 MAKE_ERROR("Could not parse your shaderpack's passes.json: {:s}", err.what()));
         }
     }
 
-    std::vector<pipeline_create_info_t> load_pipeline_files(const std::shared_ptr<folder_accessor_base>& folder_access) {
+    std::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<folder_accessor_base>& folder_access) {
         NOVA_LOG(TRACE) << "load_pipeline_files called";
         std::vector<fs::path> potential_pipeline_files;
         try {
@@ -231,7 +231,7 @@ namespace nova::renderer::shaderpack {
             throw pipeline_load_failed("Materials folder does not exist", exception);
         }
 
-        std::vector<pipeline_create_info_t> output;
+        std::vector<PipelineCreateInfo> output;
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
@@ -240,7 +240,7 @@ namespace nova::renderer::shaderpack {
         for(const fs::path& potential_file : potential_pipeline_files) {
             if(potential_file.extension() == ".pipeline") {
                 // Pipeline file!
-                const pipeline_create_info_t& pipeline = load_single_pipeline(folder_access, potential_file);
+                const PipelineCreateInfo& pipeline = load_single_pipeline(folder_access, potential_file);
                 output.push_back(pipeline);
             }
         }
@@ -248,7 +248,7 @@ namespace nova::renderer::shaderpack {
         return output;
     }
 
-    pipeline_create_info_t load_single_pipeline(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& pipeline_path) {
+    PipelineCreateInfo load_single_pipeline(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& pipeline_path) {
         NOVA_LOG(TRACE) << "Task to load pipeline " << pipeline_path << " started";
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
@@ -263,7 +263,7 @@ namespace nova::renderer::shaderpack {
             return {};
         }
 
-        auto new_pipeline = json_pipeline.get<pipeline_create_info_t>();
+        auto new_pipeline = json_pipeline.get<PipelineCreateInfo>();
         NOVA_LOG(TRACE) << "Parsed JSON into pipeline_data for pipeline " << pipeline_path;
         new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename,
                                                              folder_access,
@@ -463,7 +463,7 @@ namespace nova::renderer::shaderpack {
         throw resource_not_found_exception("Could not find shader " + filename.string());
     }
 
-    std::vector<material_data_t> load_material_files(const std::shared_ptr<folder_accessor_base>& folder_access) {
+    std::vector<MaterialData> load_material_files(const std::shared_ptr<folder_accessor_base>& folder_access) {
         std::vector<fs::path> potential_material_files;
         try {
             potential_material_files = folder_access->get_all_items_in_folder("materials");
@@ -474,12 +474,12 @@ namespace nova::renderer::shaderpack {
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
-        std::vector<material_data_t> output;
+        std::vector<MaterialData> output;
         output.reserve(potential_material_files.size());
 
         for(const fs::path& potential_file : potential_material_files) {
             if(potential_file.extension() == ".mat") {
-                const material_data_t& material = load_single_material(folder_access, potential_file);
+                const MaterialData& material = load_single_material(folder_access, potential_file);
                 output.push_back(material);
             }
         }
@@ -487,7 +487,7 @@ namespace nova::renderer::shaderpack {
         return output;
     }
 
-    material_data_t load_single_material(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& material_path) {
+    MaterialData load_single_material(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& material_path) {
         const std::string material_text = folder_access->read_text_file(material_path);
 
         auto json_material = nlohmann::json::parse(material_text);
@@ -500,7 +500,7 @@ namespace nova::renderer::shaderpack {
             return {};
         }
 
-        auto material = json_material.get<material_data_t>();
+        auto material = json_material.get<MaterialData>();
         material.name = material_path.stem().string();
         NOVA_LOG(TRACE) << "Load of material " << material_path << " succeeded";
         return material;

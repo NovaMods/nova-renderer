@@ -10,93 +10,93 @@
 
 namespace nova::renderer::rhi {
 #pragma region Enums
-    enum class resource_state {
-        UNDEFINED,
-        GENERAL,
+    enum class ResourceState {
+        Undefined,
+        General,
 
-        COLOR_ATTACHMENT,
-        DEPTH_STENCIL_ATTACHMENT,
-        DEPTH_READ_ONLY_STENCIL_ATTACHMENT,
-        DEPTH_ATTACHMENT_STENCIL_READ_ONLY,
-        DEPTH_STENCIL_READ_ONLY_ATTACHMENT,
+        ColorAttachment,
+        DepthStencilAttachment,
+        DepthReadOnlyStencilAttachment,
+        DepthAttachmentStencilReadOnly,
+        DepthStencilReadOnlyAttachment,
 
-        PRESENT_SOURCE,
+        PresentSource,
 
-        NON_FRAGMENT_SHADER_READ_ONLY,
-        FRAGMENT_SHADER_READ_ONLY,
+        NonFragmentShaderReadOnly,
+        FragmentShaderReadOnly,
 
-        TRANSFER_SOURCE,
-        TRANSFER_DESTINATION,
+        TransferSource,
+        TransferDestination,
     };
 
-    enum resource_access_flags {
-        INDEX_READ_BIT = 0x00000002,
-        VERTEX_ATTRIBUTE_READ_BIT = 0x00000004,
-        UNIFORM_READ_BIT = 0x00000008,
-        INPUT_ATTACHMENT_READ_BIT = 0x00000010,
-        SHADER_READ_BIT = 0x00000020,
-        SHADER_WRITE_BIT = 0x00000040,
-        COLOR_ATTACHMENT_READ_BIT = 0x00000080,
-        COLOR_ATTACHMENT_WRITE_BIT = 0x00000100,
-        DEPTH_STENCIL_ATTACHMENT_READ_BIT = 0x00000200,
-        DEPTH_STENCIL_ATTACHMENT_WRITE_BIT = 0x00000400,
-        TRANSFER_READ_BIT = 0x00000800,
-        TRANSFER_WRITE_BIT = 0x00001000,
-        HOST_READ_BIT = 0x00002000,
-        HOST_WRITE_BIT = 0x00004000,
-        MEMORY_READ_BIT = 0x00008000,
-        MEMORY_WRITE_BIT = 0x00010000,
+    enum ResourceAccessFlags {
+        IndexReadBit = 0x00000002,
+        VertexAttributeReadBit = 0x00000004,
+        UniformReadBit = 0x00000008,
+        InputAttachmentReadBit = 0x00000010,
+        ShaderReadBit = 0x00000020,
+        ShaderWriteBit = 0x00000040,
+        ColorAttachmentReadBit = 0x00000080,
+        ColorAttachmentWriteBit = 0x00000100,
+        DepthStencilAttachmentReadBit = 0x00000200,
+        DepthStencilAttachmentWriteBit = 0x00000400,
+        TransferReadBit = 0x00000800,
+        TransferWriteBit = 0x00001000,
+        HostReadBit = 0x00002000,
+        HostWriteBit = 0x00004000,
+        MemoryReadBit = 0x00008000,
+        MemoryWriteBit = 0x00010000,
     };
 
-    enum image_aspect_flags {
-        COLOR = 0x00000001,
-        DEPTH = 0x00000002,
-        STENCIL = 0x00000004,
+    enum ImageAspectFlags {
+        Color = 0x00000001,
+        Depth = 0x00000002,
+        Stencil = 0x00000004,
     };
 
-    enum pipeline_stage_flags {
-        TOP_OF_PIPE = 0x00000001,
-        DRAW_INDIRECT = 0x00000002,
-        VERTEX_INPUT = 0x00000004,
-        VERTEX_SHADER = 0x00000008,
-        TESSELLATION_CONTROL_SHADER = 0x00000010,
-        TESSELLATION_EVALUATION_SHADER = 0x00000020,
-        GEOMETRY_SHADER = 0x00000040,
-        FRAGMENT_SHADER = 0x00000080,
-        EARLY_FRAGMENT_TESTS = 0x00000100,
-        LATE_FRAGMENT_TESTS = 0x00000200,
-        COLOR_ATTACHMENT_OUTPUT = 0x00000400,
-        COMPUTE_SHADER = 0x00000800,
-        TRANSFER = 0x00001000,
-        BOTTOM_OF_PIPE = 0x00002000,
-        HOST = 0x00004000,
-        ALL_GRAPHICS = 0x00008000,
-        ALL_COMMANDS = 0x00010000,
-        SHADING_RATE_IMAGE = 0x00400000,
-        RAY_TRACING_SHADER = 0x00200000,
-        ACCELERATION_STRUCTURE_BUILD = 0x02000000,
-        TASK_SHADER = 0x00080000,
-        MESH_SHADER = 0x00100000,
-        FRAGMENT_DENSITY_PROCESS = 0x00800000,
+    enum PipelineStageFlags {
+        TopOfPipe = 0x00000001,
+        DrawIndirect = 0x00000002,
+        VertexInput = 0x00000004,
+        VertexShader = 0x00000008,
+        TessellationControlShader = 0x00000010,
+        TessellationEvaluationShader = 0x00000020,
+        GeometryShader = 0x00000040,
+        FragmentShader = 0x00000080,
+        EarlyFragmentTests = 0x00000100,
+        LateFragmentTests = 0x00000200,
+        ColorAttachmentOutput = 0x00000400,
+        ComputeShader = 0x00000800,
+        Transfer = 0x00001000,
+        BottomOfPipe = 0x00002000,
+        Host = 0x00004000,
+        AllGraphics = 0x00008000,
+        AllCommands = 0x00010000,
+        ShadingRateImage = 0x00400000,
+        RayTracingShader = 0x00200000,
+        AccelerationStructureBuild = 0x02000000,
+        TaskShader = 0x00080000,
+        MeshShader = 0x00100000,
+        FragmentDensityProcess = 0x00800000,
     };
 #pragma endregion
 
 #pragma region Structs
-    struct resource_barrier_t {
-        resource_t* resource_to_barrier;
+    struct ResourceBarrier {
+        Resource* resource_to_barrier;
 
-        resource_state initial_state;
-        resource_state final_state;
+        ResourceState initial_state;
+        ResourceState final_state;
 
-        resource_access_flags access_before_barrier;
-        resource_access_flags access_after_barrier;
+        ResourceAccessFlags access_before_barrier;
+        ResourceAccessFlags access_after_barrier;
 
-        queue_type source_queue;
-        queue_type destination_queue;
+        QueueType source_queue;
+        QueueType destination_queue;
 
         union {
             struct {
-                image_aspect_flags aspect;
+                ImageAspectFlags aspect;
             } image_memory_barrier;
 
             struct {
@@ -123,20 +123,20 @@ namespace nova::renderer::rhi {
      *
      * Command lists are fully bound to ChaiScript
      */
-    class command_list_t {
+    class CommandList {
     public:
-        enum class level {
-            PRIMARY,
-            SECONDARY,
+        enum class Level {
+            Primary,
+            Secondary,
         };
 
-        command_list_t() = default;
+        CommandList() = default;
 
-        command_list_t(command_list_t&& old) noexcept = default;
-        command_list_t& operator=(command_list_t&& old) noexcept = default;
+        CommandList(CommandList&& old) noexcept = default;
+        CommandList& operator=(CommandList&& old) noexcept = default;
 
-        command_list_t(const command_list_t& other) = delete;
-        command_list_t& operator=(const command_list_t& other) = delete;
+        CommandList(const CommandList& other) = delete;
+        CommandList& operator=(const CommandList& other) = delete;
 
         /*!
          * \brief Inserts a barrier so that all access to a resource before the barrier is resolved before any access
@@ -146,9 +146,9 @@ namespace nova::renderer::rhi {
          * \param stages_after_barrier The pipeline stages that must wait for the barrier
          * \param barriers All the resource barriers to use
          */
-        virtual void resource_barriers(pipeline_stage_flags stages_before_barrier,
-                                      pipeline_stage_flags stages_after_barrier,
-                                      const std::vector<resource_barrier_t>& barriers) = 0;
+        virtual void resource_barriers(PipelineStageFlags stages_before_barrier,
+                                       PipelineStageFlags stages_after_barrier,
+                                       const std::vector<ResourceBarrier>& barriers) = 0;
 
         /*!
          * \brief Records a command to copy one region of a buffer to another buffer
@@ -168,21 +168,18 @@ namespace nova::renderer::rhi {
          * \pre destination_offset plus num_bytes is less than the size of destination_buffer
          * \pre destination_offset plus num_bytes is less than the size of source_buffer
          */
-        virtual void copy_buffer(buffer_t* destination_buffer,
-                                 uint64_t destination_offset,
-                                 buffer_t* source_buffer,
-                                 uint64_t source_offset,
-                                 uint64_t num_bytes) = 0;
+        virtual void copy_buffer(
+            Buffer* destination_buffer, uint64_t destination_offset, Buffer* source_buffer, uint64_t source_offset, uint64_t num_bytes) = 0;
 
         /*!
          * \brief Executed a number of command lists
-         * 
+         *
          * These command lists should be secondary command lists. Nova doesn't validate this because yolo but you need
          * to be nice - the API-specific validation layers _will_ yell at you
          */
-        virtual void execute_command_lists(const std::vector<command_list_t*>& lists) = 0;
+        virtual void execute_command_lists(const std::vector<CommandList*>& lists) = 0;
 
-        virtual void begin_renderpass(renderpass_t* renderpass, framebuffer_t* framebuffer) = 0;
+        virtual void begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) = 0;
         virtual void end_renderpass() = 0;
         virtual void bind_pipeline() = 0;
         virtual void bind_material() = 0;
@@ -191,7 +188,7 @@ namespace nova::renderer::rhi {
         virtual void bind_index_buffer() = 0;
         virtual void draw_indexed_mesh() = 0;
 
-        virtual ~command_list_t() = default;
+        virtual ~CommandList() = default;
     };
 #pragma endregion
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi

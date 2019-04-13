@@ -25,7 +25,7 @@ namespace nova::renderer::shaderpack {
      * passes, there's a circular dependency somewhere in the render graph. This is Bad and we hate it
      */
     void add_dependent_passes(const std::string& pass_name,
-                              const std::unordered_map<std::string, render_pass_create_info_t>& passes,
+                              const std::unordered_map<std::string, RenderPassCreateInfo>& passes,
                               std::vector<std::string>& ordered_passes,
                               const std::unordered_map<std::string, std::vector<std::string>>& resource_to_write_pass,
                               uint32_t depth);
@@ -76,14 +76,14 @@ namespace nova::renderer::shaderpack {
         return left || right;
     }
 
-    result<std::vector<render_pass_create_info_t>> order_passes(const std::vector<render_pass_create_info_t>& passes) {
+    result<std::vector<RenderPassCreateInfo>> order_passes(const std::vector<RenderPassCreateInfo>& passes) {
         MTR_SCOPE("Renderpass", "order_passes");
 
         NOVA_LOG(DEBUG) << "Executing Pass Scheduler";
 
-        std::unordered_map<std::string, render_pass_create_info_t> render_passes_to_order;
+        std::unordered_map<std::string, RenderPassCreateInfo> render_passes_to_order;
         render_passes_to_order.reserve(passes.size());
-        for(const render_pass_create_info_t& create_info : passes) {
+        for(const RenderPassCreateInfo& create_info : passes) {
             render_passes_to_order.emplace(create_info.name, create_info);
         }
 
@@ -118,7 +118,7 @@ namespace nova::renderer::shaderpack {
         if(resource_to_write_pass.find("Backbuffer") == resource_to_write_pass.end()) {
             NOVA_LOG(ERROR)
                 << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
-            return result<std::vector<render_pass_create_info_t>>(nova_error("Failed to order passes because no backbuffer was found"));
+            return result<std::vector<RenderPassCreateInfo>>(nova_error("Failed to order passes because no backbuffer was found"));
         }
 
         auto backbuffer_writes = resource_to_write_pass["Backbuffer"];
@@ -152,7 +152,7 @@ namespace nova::renderer::shaderpack {
         // Granite does some reordering to try and find a submission order that has the fewest pipeline barriers. Not
         // gonna worry about that now
 
-        std::vector<render_pass_create_info_t> passes_in_submission_order;
+        std::vector<RenderPassCreateInfo> passes_in_submission_order;
         passes_in_submission_order.reserve(ordered_passes.size());
 
         for(const std::string& pass_name : ordered_passes) {
@@ -163,7 +163,7 @@ namespace nova::renderer::shaderpack {
     }
 
     void add_dependent_passes(const std::string& pass_name,
-                              const std::unordered_map<std::string, render_pass_create_info_t>& passes,
+                              const std::unordered_map<std::string, RenderPassCreateInfo>& passes,
                               std::vector<std::string>& ordered_passes,
                               const std::unordered_map<std::string, std::vector<std::string>>& resource_to_write_pass,
                               const uint32_t depth) {
@@ -208,7 +208,7 @@ namespace nova::renderer::shaderpack {
         }
     }
 
-    void determine_usage_order_of_textures(const std::vector<render_pass_create_info_t>& passes,
+    void determine_usage_order_of_textures(const std::vector<RenderPassCreateInfo>& passes,
                                            std::unordered_map<std::string, range>& resource_used_range,
                                            std::vector<std::string>& resources_in_order) {
         uint32_t pass_idx = 0;
@@ -249,7 +249,7 @@ namespace nova::renderer::shaderpack {
     }
 
     std::unordered_map<std::string, std::string> determine_aliasing_of_textures(
-        const std::unordered_map<std::string, texture_create_info_t>& textures,
+        const std::unordered_map<std::string, TextureCreateInfo>& textures,
         const std::unordered_map<std::string, range>& resource_used_range,
         const std::vector<std::string>& resources_in_order) {
         std::unordered_map<std::string, std::string> aliases;

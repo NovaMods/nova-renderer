@@ -10,28 +10,28 @@
 #include <vulkan/vulkan.h>
 
 namespace nova::renderer::rhi {
-    class vk_render_engine;
+    class VulkanRenderEngine;
 
     /*!
      * \brief Vulkan implementation of `command_list`
      */
-    class vulkan_command_list : public command_list_t {
+    class VulkanCommandList : public CommandList {
     public:
-        explicit vulkan_command_list(VkCommandBuffer cmds, const vk_render_engine& render_engine);
+        explicit VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine& render_engine);
 
-        void resource_barriers(pipeline_stage_flags stages_before_barrier,
-                              pipeline_stage_flags stages_after_barrier,
-                              const std::vector<resource_barrier_t>& barriers) override final;
+        void resource_barriers(PipelineStageFlags stages_before_barrier,
+                              PipelineStageFlags stages_after_barrier,
+                              const std::vector<ResourceBarrier>& barriers) override final;
 
-        void copy_buffer(buffer_t* destination_buffer,
+        void copy_buffer(Buffer* destination_buffer,
                          uint64_t destination_offset,
-                         buffer_t* source_buffer,
+                         Buffer* source_buffer,
                          uint64_t source_offset,
                          uint64_t num_bytes) override final;
 
-        void execute_command_lists(const std::vector<command_list_t*>& lists) override final;
+        void execute_command_lists(const std::vector<CommandList*>& lists) override final;
 
-        void begin_renderpass(renderpass_t* renderpass, framebuffer_t* framebuffer) override final;
+        void begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) override final;
         void end_renderpass() override final;
         void bind_pipeline() override final;
         void bind_material() override final;
@@ -42,6 +42,6 @@ namespace nova::renderer::rhi {
 
     private:
         VkCommandBuffer cmds;
-        const vk_render_engine& render_engine;
+        const VulkanRenderEngine& render_engine;
     };
 } // namespace nova::renderer

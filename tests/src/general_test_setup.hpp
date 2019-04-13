@@ -8,13 +8,13 @@
 #include <fstream>
 #include <iostream>
 
-#include "../../include/nova_renderer/nova_renderer.hpp"
-#include "../../include/nova_renderer/nova_settings.hpp"
-#include "../../include/nova_renderer/util/platform.hpp"
 #include "../../src/loading/zip_folder_accessor.hpp"
+#include "nova_renderer/nova_renderer.hpp"
+#include "nova_renderer/nova_settings.hpp"
+#include "nova_renderer/util/platform.hpp"
 #ifdef _WIN32
 #include <direct.h>
-#include "../../src/render_engine/dx12/d3d12_render_engine.hpp"
+#include "../../src/render_engine/dx12/dx12_render_engine.hpp"
 #define getcwd _getcwd
 #else
 #include <unistd.h>

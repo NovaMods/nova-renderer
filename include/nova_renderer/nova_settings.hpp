@@ -11,24 +11,24 @@
 
 namespace nova::renderer {
 
-    struct semver {
+    struct Semver {
         uint32_t major;
         uint32_t minor;
         uint32_t patch;
     };
 
-    enum class graphics_api {
-        vulkan,
-        dx12,
-        gl2,
+    enum class GraphicsApi {
+        Vulkan,
+        Dx12,
+        Gl2,
     };
 
-    struct nova_settings;
+    struct NovaSettings;
 
     /*!
      * \brief Anything which inherits from this class wants to know about the configuration and any changes to it
      */
-    class iconfig_listener {
+    class ConfigListener {
     public:
         /*!
          * \brief Tells the listeners that there has been a change in the configuration
@@ -40,7 +40,7 @@ namespace nova::renderer {
          *
          * \param new_config The updated configuration
          */
-        virtual void on_config_change(const nova_settings& new_config) = 0;
+        virtual void on_config_change(const NovaSettings& new_config) = 0;
 
         /*!
          * \brief Tells listeners that the configuration has been loaded
@@ -56,17 +56,17 @@ namespace nova::renderer {
          *
          * \param config The configuration that was loaded
          */
-        virtual void on_config_loaded(const nova_settings& config) = 0;
+        virtual void on_config_loaded(const NovaSettings& config) = 0;
     };
 
-    struct nova_settings {
+    struct NovaSettings {
         /*!
          * \brief Options for configuring the way mesh memory is allocated
          *
          * Nova tries to be clever and optimize how it draws meshes with indirect rendering. It shoves everything into
          * a handful of giant buffers, to facilitate indirect rendering. These options are how you configure that
          */
-        struct block_allocator_settings {
+        struct BlockAllocatorSettings {
             /*!
              * \brief The total amount of memory that can be used
              *
@@ -95,7 +95,7 @@ namespace nova::renderer {
         /*!
          * \brief All options to turn on debugging functionality
          */
-        struct debug_options {
+        struct DebugOptions {
             /*!
              * \brief If false, all debugging behavior is disabled, even if individual options are turned on
              */
@@ -133,7 +133,7 @@ namespace nova::renderer {
         /*!
          * \brief Settings that Nova can change, but which are still stored in a config
          */
-        struct cache_options {
+        struct CacheOptions {
             /*!
              * \brief The shaderpack that was most recently loaded
              *
@@ -145,7 +145,7 @@ namespace nova::renderer {
         /*!
          * \brief Options about the window that Nova will live in
          */
-        struct window_options {
+        struct WindowOptions {
             /*!
              * \brief The title of the Window
              */
@@ -165,7 +165,7 @@ namespace nova::renderer {
         /*!
          * \brief Options that are specific to Nova's Vulkan rendering backend
          */
-        struct vulkan_options {
+        struct VulkanOptions {
             /*!
              * \brief The application name to pass to Vulkan
              */
@@ -174,13 +174,13 @@ namespace nova::renderer {
             /*!
              * \brief The application version to pass to Vulkan
              */
-            semver application_version = {0, 8, 4};
+            Semver application_version = {0, 8, 4};
         } vulkan;
 
         /*!
          * \brief Options that are specific to Nova's DirectX 12 backend
          */
-        struct dx12_options {
+        struct Dx12Options {
         } dx12;
 
         /*!
@@ -188,24 +188,24 @@ namespace nova::renderer {
          *
          * DirectX 12 is only supported on Windows 10. On other platforms Vulkan will be used, regardless of what you've chosen
          */
-        graphics_api api{};
+        GraphicsApi api{};
 
         uint32_t max_in_flight_frames = 3;
 
         /*!
          * \brief Settings for how Nova should allocate vertex memory
          */
-        block_allocator_settings vertex_memory_settings;
+        BlockAllocatorSettings vertex_memory_settings;
 
         /*!
          * \brief Settings for how Nova should allocate index memory
          */
-        block_allocator_settings index_memory_settings;
+        BlockAllocatorSettings index_memory_settings;
 
         /*!
          * \brief Registers the given iconfig_change_listener as an Observer
          */
-        void register_change_listener(iconfig_listener* new_listener);
+        void register_change_listener(ConfigListener* new_listener);
 
         /*!
          * \brief Updates all the change listeners with the current state of the settings
@@ -222,7 +222,7 @@ namespace nova::renderer {
          */
         void update_config_loaded();
 
-        std::vector<iconfig_listener*> config_change_listeners;
+        std::vector<ConfigListener*> config_change_listeners;
     };
 } // namespace nova::renderer
 

@@ -8,41 +8,41 @@
 #include <glm/glm.hpp>
 
 namespace nova::renderer::rhi {
-    enum class queue_type {
-        GRAPHICS,
-        TRANSFER,
-        ASYNC_COMPUTE,
+    enum class QueueType {
+        Graphics,
+        Transfer,
+        AsyncCompute,
     };
 
-    struct resource_t {
-        enum type_t {
-            BUFFER,
-            IMAGE,
+    struct Resource {
+        enum Type {
+            Buffer,
+            Image,
         };
 
-        type_t type;
+        Type type;
         bool is_dynamic = false;
     };
 
-    struct image_t : resource_t {
+    struct Image : Resource {
         bool is_depth_tex = false;
     };
 
-    struct buffer_t : resource_t {};
+    struct Buffer : Resource {};
 
-    struct framebuffer_t {
+    struct Framebuffer {
         glm::uvec2 size;
     };
 
-    struct renderpass_t {
+    struct Renderpass {
         bool writes_to_backbuffer = false;
     };
 
-    struct pipeline_t {};
+    struct Pipeline {};
 
-    struct semaphore_t {};
+    struct Semaphore {};
 
-    struct fence_t {};
+    struct Fence {};
 
-    struct descriptor_t {};
+    struct Descriptor {};
 } // namespace nova::renderer::rhi

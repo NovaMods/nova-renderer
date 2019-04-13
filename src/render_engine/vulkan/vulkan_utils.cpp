@@ -4,43 +4,43 @@
  */
 
 #include "vulkan_utils.hpp"
-#include <nova_renderer/render_engine_t.hpp>
+#include "nova_renderer/render_engine.hpp"
 
 namespace nova::renderer {
-    VkImageLayout to_vk_layout(const rhi::resource_state state) {
+    VkImageLayout to_vk_layout(const rhi::ResourceState state) {
         switch(state) {
-            case rhi::resource_state::UNDEFINED:
+            case rhi::ResourceState::Undefined:
                 return VK_IMAGE_LAYOUT_UNDEFINED;
 
-            case rhi::resource_state::GENERAL:
+            case rhi::ResourceState::General:
                 return VK_IMAGE_LAYOUT_GENERAL;
 
-            case rhi::resource_state::COLOR_ATTACHMENT:
+            case rhi::ResourceState::ColorAttachment:
                 return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-            case rhi::resource_state::DEPTH_STENCIL_ATTACHMENT:
+            case rhi::ResourceState::DepthStencilAttachment:
                 return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-            case rhi::resource_state::DEPTH_READ_ONLY_STENCIL_ATTACHMENT:
+            case rhi::ResourceState::DepthReadOnlyStencilAttachment:
                 return VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
 
-            case rhi::resource_state::DEPTH_ATTACHMENT_STENCIL_READ_ONLY:
+            case rhi::ResourceState::DepthAttachmentStencilReadOnly:
                 return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
 
-            case rhi::resource_state::DEPTH_STENCIL_READ_ONLY_ATTACHMENT:
+            case rhi::ResourceState::DepthStencilReadOnlyAttachment:
                 return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
 
-            case rhi::resource_state::PRESENT_SOURCE:
+            case rhi::ResourceState::PresentSource:
                 return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-            case rhi::resource_state::NON_FRAGMENT_SHADER_READ_ONLY:
-            case rhi::resource_state::FRAGMENT_SHADER_READ_ONLY:
+            case rhi::ResourceState::NonFragmentShaderReadOnly:
+            case rhi::ResourceState::FragmentShaderReadOnly:
                 return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-            case rhi::resource_state::TRANSFER_SOURCE:
+            case rhi::ResourceState::TransferSource:
                 return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
-            case rhi::resource_state::TRANSFER_DESTINATION:
+            case rhi::ResourceState::TransferDestination:
                 return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
             default:
@@ -48,66 +48,66 @@ namespace nova::renderer {
         }
     }
 
-    VkPrimitiveTopology to_primitive_topology(shaderpack::primitive_topology_enum topology) {
+    VkPrimitiveTopology to_primitive_topology(shaderpack::PrimitiveTopologyEnum topology) {
         switch(topology) {
-            case shaderpack::primitive_topology_enum::Lines:
+            case shaderpack::PrimitiveTopologyEnum::Lines:
                 return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-            case shaderpack::primitive_topology_enum::Triangles:
+            case shaderpack::PrimitiveTopologyEnum::Triangles:
                 return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         }
     }
 
-    VkBlendFactor to_blend_factor(shaderpack::blend_factor_enum factor) {
+    VkBlendFactor to_blend_factor(shaderpack::BlendFactorEnum factor) {
         switch(factor) {
-            case shaderpack::blend_factor_enum::DstAlpha:
+            case shaderpack::BlendFactorEnum::DstAlpha:
                 return VK_BLEND_FACTOR_DST_ALPHA;
-            case shaderpack::blend_factor_enum::DstColor:
+            case shaderpack::BlendFactorEnum::DstColor:
                 return VK_BLEND_FACTOR_DST_COLOR;
-            case shaderpack::blend_factor_enum::One:
+            case shaderpack::BlendFactorEnum::One:
                 return VK_BLEND_FACTOR_ONE;
-            case shaderpack::blend_factor_enum::OneMinusDstAlpha:
+            case shaderpack::BlendFactorEnum::OneMinusDstAlpha:
                 return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
-            case shaderpack::blend_factor_enum::OneMinusDstColor:
+            case shaderpack::BlendFactorEnum::OneMinusDstColor:
                 return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
-            case shaderpack::blend_factor_enum::OneMinusSrcAlpha:
+            case shaderpack::BlendFactorEnum::OneMinusSrcAlpha:
                 return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-            case shaderpack::blend_factor_enum::OneMinusSrcColor:
+            case shaderpack::BlendFactorEnum::OneMinusSrcColor:
                 return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
-            case shaderpack::blend_factor_enum::SrcAlpha:
+            case shaderpack::BlendFactorEnum::SrcAlpha:
                 return VK_BLEND_FACTOR_SRC_ALPHA;
-            case shaderpack::blend_factor_enum::SrcColor:
+            case shaderpack::BlendFactorEnum::SrcColor:
                 return VK_BLEND_FACTOR_SRC_COLOR;
-            case shaderpack::blend_factor_enum::Zero:
+            case shaderpack::BlendFactorEnum::Zero:
                 return VK_BLEND_FACTOR_ZERO;
             default:
                 return VK_BLEND_FACTOR_ZERO;
         }
     }
 
-    VkCompareOp to_compare_op(const shaderpack::compare_op_enum compare_op) {
+    VkCompareOp to_compare_op(const shaderpack::CompareOpEnum compare_op) {
         switch(compare_op) {
-            case shaderpack::compare_op_enum::Never:
+            case shaderpack::CompareOpEnum::Never:
                 return VK_COMPARE_OP_NEVER;
 
-            case shaderpack::compare_op_enum::Less:
+            case shaderpack::CompareOpEnum::Less:
                 return VK_COMPARE_OP_LESS;
 
-            case shaderpack::compare_op_enum::LessEqual:
+            case shaderpack::CompareOpEnum::LessEqual:
                 return VK_COMPARE_OP_LESS_OR_EQUAL;
 
-            case shaderpack::compare_op_enum::Greater:
+            case shaderpack::CompareOpEnum::Greater:
                 return VK_COMPARE_OP_GREATER;
 
-            case shaderpack::compare_op_enum::GreaterEqual:
+            case shaderpack::CompareOpEnum::GreaterEqual:
                 return VK_COMPARE_OP_GREATER_OR_EQUAL;
 
-            case shaderpack::compare_op_enum::Equal:
+            case shaderpack::CompareOpEnum::Equal:
                 return VK_COMPARE_OP_EQUAL;
 
-            case shaderpack::compare_op_enum::NotEqual:
+            case shaderpack::CompareOpEnum::NotEqual:
                 return VK_COMPARE_OP_NOT_EQUAL;
 
-            case shaderpack::compare_op_enum::Always:
+            case shaderpack::CompareOpEnum::Always:
                 return VK_COMPARE_OP_ALWAYS;
 
             default:
@@ -115,30 +115,30 @@ namespace nova::renderer {
         }
     }
 
-    VkStencilOp to_stencil_op(shaderpack::stencil_op_enum stencil_op) {
+    VkStencilOp to_stencil_op(shaderpack::StencilOpEnum stencil_op) {
         switch(stencil_op) {
-            case shaderpack::stencil_op_enum::Keep:
+            case shaderpack::StencilOpEnum::Keep:
                 return VK_STENCIL_OP_KEEP;
 
-            case shaderpack::stencil_op_enum::Zero:
+            case shaderpack::StencilOpEnum::Zero:
                 return VK_STENCIL_OP_ZERO;
 
-            case shaderpack::stencil_op_enum::Replace:
+            case shaderpack::StencilOpEnum::Replace:
                 return VK_STENCIL_OP_REPLACE;
 
-            case shaderpack::stencil_op_enum::Incr:
+            case shaderpack::StencilOpEnum::Incr:
                 return VK_STENCIL_OP_INCREMENT_AND_CLAMP;
 
-            case shaderpack::stencil_op_enum::IncrWrap:
+            case shaderpack::StencilOpEnum::IncrWrap:
                 return VK_STENCIL_OP_INCREMENT_AND_WRAP;
 
-            case shaderpack::stencil_op_enum::Decr:
+            case shaderpack::StencilOpEnum::Decr:
                 return VK_STENCIL_OP_DECREMENT_AND_CLAMP;
 
-            case shaderpack::stencil_op_enum::DecrWrap:
+            case shaderpack::StencilOpEnum::DecrWrap:
                 return VK_STENCIL_OP_DECREMENT_AND_WRAP;
 
-            case shaderpack::stencil_op_enum::Invert:
+            case shaderpack::StencilOpEnum::Invert:
                 return VK_STENCIL_OP_INVERT;
 
             default:
@@ -146,21 +146,21 @@ namespace nova::renderer {
         }
     }
 
-    VkFormat to_vk_format(const shaderpack::pixel_format_enum format) {
+    VkFormat to_vk_format(const shaderpack::PixelFormatEnum format) {
         switch(format) {
-            case shaderpack::pixel_format_enum::RGBA8:
+            case shaderpack::PixelFormatEnum::RGBA8:
                 return VK_FORMAT_R8G8B8A8_UNORM;
 
-            case shaderpack::pixel_format_enum::RGBA16F:
+            case shaderpack::PixelFormatEnum::RGBA16F:
                 return VK_FORMAT_R16G16B16A16_SFLOAT;
 
-            case shaderpack::pixel_format_enum::RGBA32F:
+            case shaderpack::PixelFormatEnum::RGBA32F:
                 return VK_FORMAT_R32G32B32A32_SFLOAT;
 
-            case shaderpack::pixel_format_enum::Depth:
+            case shaderpack::PixelFormatEnum::Depth:
                 return VK_FORMAT_D32_SFLOAT;
 
-            case shaderpack::pixel_format_enum::DepthStencil:
+            case shaderpack::PixelFormatEnum::DepthStencil:
                 return VK_FORMAT_D24_UNORM_S8_UINT;
         }
 
@@ -325,37 +325,37 @@ namespace nova::renderer {
         static std::vector<VkVertexInputBindingDescription> input_descriptions = {
             VkVertexInputBindingDescription{
                 0,                          // binding
-                sizeof(full_vertex_t),      // stride
+                sizeof(FullVertex),      // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 1,                          // binding
-                sizeof(full_vertex_t),      // stride
+                sizeof(FullVertex),      // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 2,                          // binding
-                sizeof(full_vertex_t),      // stride
+                sizeof(FullVertex),      // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 3,                          // binding
-                sizeof(full_vertex_t),      // stride
+                sizeof(FullVertex),      // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 4,                          // binding
-                sizeof(full_vertex_t),      // stride
+                sizeof(FullVertex),      // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 5,                          // binding
-                sizeof(full_vertex_t),      // stride
+                sizeof(FullVertex),      // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 6,                          // binding
-                sizeof(full_vertex_t),      // stride
+                sizeof(FullVertex),      // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
         };

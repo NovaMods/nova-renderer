@@ -3,20 +3,20 @@
  * \date 23-Jun-16.
  */
 
-#include <nova_renderer/nova_settings.hpp>
-#include <nova_renderer/util/utils.hpp>
+#include "nova_renderer/nova_settings.hpp"
+#include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
-    void nova_settings::register_change_listener(iconfig_listener* new_listener) { config_change_listeners.push_back(new_listener); }
+    void NovaSettings::register_change_listener(ConfigListener* new_listener) { config_change_listeners.push_back(new_listener); }
 
-    void nova_settings::update_config_changed() {
-        for(iconfig_listener* l : config_change_listeners) {
+    void NovaSettings::update_config_changed() {
+        for(ConfigListener* l : config_change_listeners) {
             l->on_config_change(*this);
         }
     }
 
-    void nova_settings::update_config_loaded() {
-        for(iconfig_listener* l : config_change_listeners) {
+    void NovaSettings::update_config_loaded() {
+        for(ConfigListener* l : config_change_listeners) {
             l->on_config_loaded(*this);
         }
     }

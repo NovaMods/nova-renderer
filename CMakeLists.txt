@@ -160,11 +160,11 @@ set(WINDOWS_NOVA_SOURCE
         src/windowing/win32_window.hpp
         src/windowing/win32_window.cpp
         src/render_engine/dx12/d3dx12.h
-        src/render_engine/dx12/d3d12_command_list.cpp 
-		src/render_engine/dx12/d3d12_command_list.hpp 
-		src/render_engine/dx12/d3d12_structs.hpp
-		src/render_engine/dx12/d3d12_render_engine.cpp
-		src/render_engine/dx12/d3d12_render_engine.hpp)
+        src/render_engine/dx12/dx12_command_list.cpp 
+		src/render_engine/dx12/dx12_command_list.hpp 
+		src/render_engine/dx12/dx12_structs.hpp
+		src/render_engine/dx12/dx12_render_engine.cpp
+		src/render_engine/dx12/dx12_render_engine.hpp)
 set(UNIX_NOVA_SOURCE
         src/windowing/x11_window.cpp
         src/windowing/x11_window.hpp

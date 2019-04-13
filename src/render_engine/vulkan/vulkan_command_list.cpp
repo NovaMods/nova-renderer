@@ -10,22 +10,22 @@
 #include "vk_structs.hpp"
 
 namespace nova::renderer::rhi {
-	vulkan_command_list::vulkan_command_list(VkCommandBuffer cmds, const vk_render_engine& render_engine)
+	VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine& render_engine)
 		: cmds(cmds), render_engine(render_engine) {}
 
-	void vulkan_command_list::resource_barriers(const pipeline_stage_flags stages_before_barrier,
-		const pipeline_stage_flags stages_after_barrier,
-		const std::vector<resource_barrier_t>& barriers) {
+	void VulkanCommandList::resource_barriers(const PipelineStageFlags stages_before_barrier,
+		const PipelineStageFlags stages_after_barrier,
+		const std::vector<ResourceBarrier>& barriers) {
 		std::vector<VkBufferMemoryBarrier> buffer_barriers;
 		buffer_barriers.reserve(barriers.size());
 
 		std::vector<VkImageMemoryBarrier> image_barriers;
 		image_barriers.reserve(barriers.size());
 
-		for (const resource_barrier_t& barrier : barriers) {
+		for (const ResourceBarrier& barrier : barriers) {
 			switch (barrier.resource_to_barrier->type) {
-			case resource_t::type_t::IMAGE: {
-				vk_image_t* image = static_cast<vk_image_t*>(barrier.resource_to_barrier);
+			case Resource::Type::Image: {
+				VulkanImage* image = static_cast<VulkanImage*>(barrier.resource_to_barrier);
 
 				VkImageMemoryBarrier image_barrier = {};
 				image_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -45,8 +45,8 @@ namespace nova::renderer::rhi {
 				image_barriers.push_back(image_barrier);
 			} break;
 
-			case resource_t::type_t::BUFFER: {
-				vk_buffer_t* buffer = static_cast<vk_buffer_t*>(barrier.resource_to_barrier);
+			case Resource::Type::Buffer: {
+				VulkanBuffer* buffer = static_cast<VulkanBuffer*>(barrier.resource_to_barrier);
 
 				VkBufferMemoryBarrier buffer_barrier = {};
 				buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -75,9 +75,9 @@ namespace nova::renderer::rhi {
 			image_barriers.data());
 	}
 
-	void vulkan_command_list::copy_buffer(buffer_t* destination_buffer,
+	void VulkanCommandList::copy_buffer(Buffer* destination_buffer,
 		const uint64_t destination_offset,
-		buffer_t* source_buffer,
+		Buffer* source_buffer,
 		const uint64_t source_offset,
 		const uint64_t num_bytes) {
 		VkBufferCopy copy = {};
@@ -85,27 +85,27 @@ namespace nova::renderer::rhi {
 		copy.dstOffset = destination_offset;
 		copy.size = num_bytes;
 
-		vk_buffer_t* vk_destination_buffer = static_cast<vk_buffer_t*>(destination_buffer);
-		vk_buffer_t* vk_source_buffer = static_cast<vk_buffer_t*>(source_buffer);
+		VulkanBuffer* vk_destination_buffer = static_cast<VulkanBuffer*>(destination_buffer);
+		VulkanBuffer* vk_source_buffer = static_cast<VulkanBuffer*>(source_buffer);
 
 		vkCmdCopyBuffer(cmds, vk_source_buffer->buffer, vk_destination_buffer->buffer, 1, &copy);
 	}
 
-	void vulkan_command_list::execute_command_lists(const std::vector<command_list_t*>& lists) {
+	void VulkanCommandList::execute_command_lists(const std::vector<CommandList*>& lists) {
 		std::vector<VkCommandBuffer> buffers;
 		buffers.reserve(lists.size());
 
-		for (command_list_t* list : lists) {
-			vulkan_command_list* vk_list = dynamic_cast<vulkan_command_list*>(list);
+		for (CommandList* list : lists) {
+			VulkanCommandList* vk_list = dynamic_cast<VulkanCommandList*>(list);
 			buffers.push_back(vk_list->cmds);
 		}
 
 		vkCmdExecuteCommands(cmds, static_cast<uint32_t>(buffers.size()), buffers.data());
 	}
 
-	void vulkan_command_list::begin_renderpass(renderpass_t* renderpass, framebuffer_t* framebuffer) {
-		vk_renderpass_t* vk_renderpass = static_cast<vk_renderpass_t*>(renderpass);
-		vk_framebuffer_t* vk_framebuffer = static_cast<vk_framebuffer_t*>(framebuffer);
+	void VulkanCommandList::begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) {
+		VulkanRenderpass* vk_renderpass = static_cast<VulkanRenderpass*>(renderpass);
+		VulkanFramebuffer* vk_framebuffer = static_cast<VulkanFramebuffer*>(framebuffer);
 
 		VkRenderPassBeginInfo begin_info = {};
 		begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

@@ -7,15 +7,16 @@
 
 #include "../../util/logger.hpp"
 #include "../../util/windows_utils.hpp"
-#include "d3d12_render_engine.hpp"
-#include "d3d12_structs.hpp"
 #include "d3dx12.h"
+#include "dx12_command_list.hpp"
+#include "dx12_render_engine.hpp"
+#include "dx12_structs.hpp"
 #include "dx12_utils.hpp"
 
 using Microsoft::WRL::ComPtr;
 
 namespace nova::renderer::rhi {
-    d3d12_render_engine::d3d12_render_engine(nova_settings& settings) : render_engine_t(settings) {
+    DX12RenderEngine::DX12RenderEngine(NovaSettings& settings) : RenderEngine(settings) {
         create_device();
 
         open_window_and_create_surface(settings.window);
@@ -25,9 +26,9 @@ namespace nova::renderer::rhi {
         rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     }
 
-    std::shared_ptr<window_t> d3d12_render_engine::get_window() const { return window; }
+    std::shared_ptr<window_t> DX12RenderEngine::get_window() const { return window; }
 
-    void d3d12_render_engine::set_num_renderpasses(const uint32_t num_renderpasses) {
+    void DX12RenderEngine::set_num_renderpasses(const uint32_t num_renderpasses) {
         D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_descriptor = {};
         rtv_heap_descriptor.NumDescriptors = num_renderpasses * 8;
         rtv_heap_descriptor.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
@@ -40,23 +41,23 @@ namespace nova::renderer::rhi {
         }
     }
 
-    result<renderpass_t*> d3d12_render_engine::create_renderpass(const shaderpack::render_pass_create_info_t& data) {
-        return result<renderpass_t*>(new d3d12_renderpass_t);
+    result<Renderpass*> DX12RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
+        return result<Renderpass*>(new DX12Renderpass);
     }
 
-    framebuffer_t* d3d12_render_engine::create_framebuffer(const renderpass_t* renderpass,
-                                                           const std::vector<image_t*>& attachments,
-                                                           const glm::uvec2& framebuffer_size) {
+    Framebuffer* DX12RenderEngine::create_framebuffer(const Renderpass* renderpass,
+                                                      const std::vector<Image*>& attachments,
+                                                      const glm::uvec2& framebuffer_size) {
         const size_t attachment_count = attachments.size();
-        d3d12_framebuffer_t* framebuffer = new d3d12_framebuffer_t;
+        DX12Framebuffer* framebuffer = new DX12Framebuffer;
         framebuffer->render_targets.reserve(attachment_count);
 
         std::vector<ID3D12Resource*> rendertargets;
         rendertargets.reserve(attachment_count);
 
         for(uint32_t i = 0; i < attachments.size(); i++) {
-            const image_t* attachment = attachments.at(i);
-            const d3d12_image_t* d3d12_image = static_cast<const d3d12_image_t*>(attachment);
+            const Image* attachment = attachments.at(i);
+            const DX12Image* d3d12_image = static_cast<const DX12Image*>(attachment);
 
             rendertargets.emplace_back(d3d12_image->resource);
 
@@ -74,17 +75,19 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-    pipeline_t* d3d12_render_engine::create_pipeline(const shaderpack::pipeline_create_info_t& data) { return nullptr; }
+    Pipeline* DX12RenderEngine::create_pipeline(const Renderpass* renderpass, const shaderpack::PipelineCreateInfo& data) {
+        return nullptr;
+    }
 
-    buffer_t* d3d12_render_engine::create_buffer(const buffer_create_info_t& info) { return nullptr; }
+    Buffer* DX12RenderEngine::create_buffer(const BufferCreateInfo& info) { return nullptr; }
 
-    image_t* d3d12_render_engine::create_texture(const shaderpack::texture_create_info_t& info) {
-        d3d12_image_t* image = new d3d12_image_t;
+    Image* DX12RenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
+        DX12Image* image = new DX12Image;
 
-        const shaderpack::texture_format& format = info.format;
+        const shaderpack::TextureFormat& format = info.format;
 
         glm::uvec2 dimensions;
-        if(format.dimension_type == shaderpack::texture_dimension_type_enum::Absolute) {
+        if(format.dimension_type == shaderpack::TextureDimensionTypeEnum::Absolute) {
             dimensions.x = static_cast<uint32_t>(format.width);
             dimensions.y = static_cast<uint32_t>(format.height);
         } else {
@@ -111,8 +114,7 @@ namespace nova::renderer::rhi {
         texture_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
         texture_desc.SampleDesc = sample_desc;
 
-        if(format.pixel_format == shaderpack::pixel_format_enum::Depth ||
-           format.pixel_format == shaderpack::pixel_format_enum::DepthStencil) {
+        if(format.pixel_format == shaderpack::PixelFormatEnum::Depth || format.pixel_format == shaderpack::PixelFormatEnum::DepthStencil) {
             texture_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
         }
 
@@ -138,8 +140,8 @@ namespace nova::renderer::rhi {
                     break;
             }
 
-            NOVA_LOG(ERROR) << "Could not create texture " << info.name << ": Error code " << hr << ", Error description '"
-                            << error_description << ", Windows error: '" << get_last_windows_error() << "'";
+            NOVA_LOG(ERROR) << "Could not create texture " << info.name << ": Error code " << hr
+                            << ", Error description: " << error_description << ", Windows error: '" << get_last_windows_error() << "'";
 
             return nullptr;
         }
@@ -148,51 +150,49 @@ namespace nova::renderer::rhi {
         return image;
     }
 
-    semaphore_t* d3d12_render_engine::create_semaphore() { return nullptr; }
+    Semaphore* DX12RenderEngine::create_semaphore() { return nullptr; }
 
-    std::vector<semaphore_t*> d3d12_render_engine::create_semaphores(uint32_t num_semaphores) { return std::vector<semaphore_t*>(); }
+    std::vector<Semaphore*> DX12RenderEngine::create_semaphores(uint32_t num_semaphores) { return std::vector<Semaphore*>(); }
 
-    fence_t* d3d12_render_engine::create_fence(bool signaled) { return nullptr; }
+    Fence* DX12RenderEngine::create_fence(bool signaled) { return nullptr; }
 
-    std::vector<fence_t*> d3d12_render_engine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<fence_t*>(); }
+    std::vector<Fence*> DX12RenderEngine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<Fence*>(); }
 
-    void d3d12_render_engine::destroy_renderpass(renderpass_t* pass) { delete pass; }
+    void DX12RenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
 
-    void d3d12_render_engine::destroy_framebuffer(const framebuffer_t* framebuffer) {
-        const d3d12_framebuffer_t* d3d12_framebuffer = static_cast<const d3d12_framebuffer_t*>(framebuffer);
+    void DX12RenderEngine::destroy_framebuffer(const Framebuffer* framebuffer) {
+        const DX12Framebuffer* d3d12_framebuffer = static_cast<const DX12Framebuffer*>(framebuffer);
         d3d12_framebuffer->descriptor_heap->Release();
 
         delete d3d12_framebuffer;
     }
 
-    void d3d12_render_engine::destroy_pipeline(pipeline_t* pipeline) {}
+    void DX12RenderEngine::destroy_pipeline(Pipeline* pipeline) {}
 
-    void d3d12_render_engine::destroy_texture(image_t* resource) {
-        const d3d12_image_t* d3d12_framebuffer = static_cast<const d3d12_image_t*>(resource);
+    void DX12RenderEngine::destroy_texture(Image* resource) {
+        const DX12Image* d3d12_framebuffer = static_cast<const DX12Image*>(resource);
         d3d12_framebuffer->resource->Release();
 
         delete d3d12_framebuffer;
     }
 
-    void d3d12_render_engine::destroy_semaphores(const std::vector<semaphore_t*>& semaphores) {}
+    void DX12RenderEngine::destroy_semaphores(const std::vector<Semaphore*>& semaphores) {}
 
-    void d3d12_render_engine::destroy_fences(const std::vector<fence_t*>& fences) {}
+    void DX12RenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
 
-    command_list_t* d3d12_render_engine::allocate_command_list(uint32_t thread_idx,
-                                                               queue_type needed_queue_type,
-                                                               command_list_t::level level) {
+    CommandList* DX12RenderEngine::allocate_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) {
         return nullptr;
     }
 
-    void d3d12_render_engine::submit_command_list(command_list_t* cmds,
-                                                  queue_type queue,
-                                                  fence_t* fence_to_signal,
-                                                  const std::vector<semaphore_t*>& wait_semaphores,
-                                                  const std::vector<semaphore_t*>& signal_semaphores) {}
+    void DX12RenderEngine::submit_command_list(CommandList* cmds,
+                                               QueueType queue,
+                                               Fence* fence_to_signal,
+                                               const std::vector<Semaphore*>& wait_semaphores,
+                                               const std::vector<Semaphore*>& signal_semaphores) {}
 
-    void d3d12_render_engine::open_window_and_create_surface(const nova_settings::window_options& options) {}
+    void DX12RenderEngine::open_window_and_create_surface(const NovaSettings::WindowOptions& options) {}
 
-    void d3d12_render_engine::create_device() {
+    void DX12RenderEngine::create_device() {
         if(settings.debug.enabled && settings.debug.enable_validation_layers) {
             ComPtr<ID3D12Debug> debug_controller;
             D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
@@ -237,7 +237,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void d3d12_render_engine::create_queues() {
+    void DX12RenderEngine::create_queues() {
         D3D12_COMMAND_QUEUE_DESC rtv_queue_desc = {};
         rtv_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
         CHECK_ERROR(device->CreateCommandQueue(&rtv_queue_desc, IID_PPV_ARGS(&direct_command_queue)),

@@ -34,7 +34,7 @@ namespace nova::renderer::shaderpack {
      * \param shaderpack_name The name of the shaderpack to loads
      * \return The shaderpack, if it can be loaded, or an empty optional if it cannot
      */
-    shaderpack_data_t load_shaderpack_data(const fs::path& shaderpack_name);
+    ShaderpackData load_shaderpack_data(const fs::path& shaderpack_name);
 } // namespace nova::renderer
 
 #endif // NOVA_RENDERER_SHADERPACK_LOADING_HPP

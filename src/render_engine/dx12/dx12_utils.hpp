@@ -14,17 +14,17 @@
 #include "../../util/logger.hpp"
 
 namespace nova::renderer::rhi {
-    D3D12_RESOURCE_STATES to_dx12_state(resource_state state);
+    D3D12_RESOURCE_STATES to_dx12_state(ResourceState state);
 
-    DXGI_FORMAT to_dxgi_format(shaderpack::pixel_format_enum pixel_format);
+    DXGI_FORMAT to_dxgi_format(shaderpack::PixelFormatEnum pixel_format);
 
-    enum D3D12_BLEND to_dx12_blend(shaderpack::blend_factor_enum blend_factor);
+    enum D3D12_BLEND to_dx12_blend(shaderpack::BlendFactorEnum blend_factor);
 
-    D3D12_COMPARISON_FUNC to_dx12_compare_func(shaderpack::compare_op_enum depth_func);
+    D3D12_COMPARISON_FUNC to_dx12_compare_func(shaderpack::CompareOpEnum depth_func);
 
-    D3D12_STENCIL_OP to_dx12_stencil_op(shaderpack::stencil_op_enum op);
+    D3D12_STENCIL_OP to_dx12_stencil_op(shaderpack::StencilOpEnum op);
 
-    D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(shaderpack::primitive_topology_enum primitive_mode);
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(shaderpack::PrimitiveTopologyEnum primitive_mode);
 
 #ifndef NDEBUG
 #define CHECK_ERROR(expr, msg)                                                                                                             \
