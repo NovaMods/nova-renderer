@@ -1,36 +1,36 @@
 #include "dx12_utils.hpp"
 
 namespace nova::renderer {
-    D3D12_RESOURCE_STATES to_dx12_state(rhi::resource_state state) {
+    D3D12_RESOURCE_STATES to_dx12_state(rhi::ResourceState state) {
         switch(state) {
-            case rhi::resource_state::UNDEFINED:
-            case rhi::resource_state::GENERAL:
+            case rhi::ResourceState::Undefined:
+            case rhi::ResourceState::General:
                 return D3D12_RESOURCE_STATE_COMMON;
 
-            case rhi::resource_state::COLOR_ATTACHMENT:
+            case rhi::ResourceState::ColorAttachment:
                 return D3D12_RESOURCE_STATE_RENDER_TARGET;
 
-            case rhi::resource_state::DEPTH_STENCIL_ATTACHMENT:
-            case rhi::resource_state::DEPTH_ATTACHMENT_STENCIL_READ_ONLY:
+            case rhi::ResourceState::DepthStencilAttachment:
+            case rhi::ResourceState::DepthAttachmentStencilReadOnly:
                 return D3D12_RESOURCE_STATE_DEPTH_WRITE;
 
-            case rhi::resource_state::DEPTH_READ_ONLY_STENCIL_ATTACHMENT:
-            case rhi::resource_state::DEPTH_STENCIL_READ_ONLY_ATTACHMENT:
+            case rhi::ResourceState::DepthReadOnlyStencilAttachment:
+            case rhi::ResourceState::DepthStencilReadOnlyAttachment:
                 return D3D12_RESOURCE_STATE_DEPTH_READ;
 
-            case rhi::resource_state::PRESENT_SOURCE:
+            case rhi::ResourceState::PresentSource:
                 return D3D12_RESOURCE_STATE_PRESENT;
 
-            case rhi::resource_state::NON_FRAGMENT_SHADER_READ_ONLY:
+            case rhi::ResourceState::NonFragmentShaderReadOnly:
                 return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 
-            case rhi::resource_state::FRAGMENT_SHADER_READ_ONLY:
+            case rhi::ResourceState::FragmentShaderReadOnly:
                 return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
-            case rhi::resource_state::TRANSFER_SOURCE:
+            case rhi::ResourceState::TransferSource:
                 return D3D12_RESOURCE_STATE_COPY_SOURCE;
 
-            case rhi::resource_state::TRANSFER_DESTINATION:
+            case rhi::ResourceState::TransferDestination:
                 return D3D12_RESOURCE_STATE_COPY_DEST;
 
             default:
@@ -38,36 +38,36 @@ namespace nova::renderer {
         }
     }
 
-    D3D12_BLEND to_dx12_blend(const shaderpack::blend_factor_enum blend_factor) {
+    D3D12_BLEND to_dx12_blend(const shaderpack::BlendFactorEnum blend_factor) {
         switch(blend_factor) {
-            case shaderpack::blend_factor_enum::One:
+            case shaderpack::BlendFactorEnum::One:
                 return D3D12_BLEND_ONE;
 
-            case shaderpack::blend_factor_enum::Zero:
+            case shaderpack::BlendFactorEnum::Zero:
                 return D3D12_BLEND_ZERO;
 
-            case shaderpack::blend_factor_enum::SrcColor:
+            case shaderpack::BlendFactorEnum::SrcColor:
                 return D3D12_BLEND_SRC_COLOR;
 
-            case shaderpack::blend_factor_enum::DstColor:
+            case shaderpack::BlendFactorEnum::DstColor:
                 return D3D12_BLEND_DEST_COLOR;
 
-            case shaderpack::blend_factor_enum::OneMinusSrcColor:
+            case shaderpack::BlendFactorEnum::OneMinusSrcColor:
                 return D3D12_BLEND_INV_SRC_COLOR;
 
-            case shaderpack::blend_factor_enum::OneMinusDstColor:
+            case shaderpack::BlendFactorEnum::OneMinusDstColor:
                 return D3D12_BLEND_INV_DEST_COLOR;
 
-            case shaderpack::blend_factor_enum::SrcAlpha:
+            case shaderpack::BlendFactorEnum::SrcAlpha:
                 return D3D12_BLEND_SRC_ALPHA;
 
-            case shaderpack::blend_factor_enum::DstAlpha:
+            case shaderpack::BlendFactorEnum::DstAlpha:
                 return D3D12_BLEND_DEST_ALPHA;
 
-            case shaderpack::blend_factor_enum::OneMinusSrcAlpha:
+            case shaderpack::BlendFactorEnum::OneMinusSrcAlpha:
                 return D3D12_BLEND_INV_SRC_ALPHA;
 
-            case shaderpack::blend_factor_enum::OneMinusDstAlpha:
+            case shaderpack::BlendFactorEnum::OneMinusDstAlpha:
                 return D3D12_BLEND_INV_DEST_ALPHA;
 
             default:
@@ -75,30 +75,30 @@ namespace nova::renderer {
         }
     }
 
-    D3D12_COMPARISON_FUNC to_dx12_compare_func(const shaderpack::compare_op_enum depth_func) {
+    D3D12_COMPARISON_FUNC to_dx12_compare_func(const shaderpack::CompareOpEnum depth_func) {
         switch(depth_func) {
-            case shaderpack::compare_op_enum::Never:
+            case shaderpack::CompareOpEnum::Never:
                 return D3D12_COMPARISON_FUNC_NEVER;
 
-            case shaderpack::compare_op_enum::Less:
+            case shaderpack::CompareOpEnum::Less:
                 return D3D12_COMPARISON_FUNC_LESS;
 
-            case shaderpack::compare_op_enum::LessEqual:
+            case shaderpack::CompareOpEnum::LessEqual:
                 return D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
-            case shaderpack::compare_op_enum::Greater:
+            case shaderpack::CompareOpEnum::Greater:
                 return D3D12_COMPARISON_FUNC_GREATER;
 
-            case shaderpack::compare_op_enum::GreaterEqual:
+            case shaderpack::CompareOpEnum::GreaterEqual:
                 return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
 
-            case shaderpack::compare_op_enum::Equal:
+            case shaderpack::CompareOpEnum::Equal:
                 return D3D12_COMPARISON_FUNC_EQUAL;
 
-            case shaderpack::compare_op_enum::NotEqual:
+            case shaderpack::CompareOpEnum::NotEqual:
                 return D3D12_COMPARISON_FUNC_NOT_EQUAL;
 
-            case shaderpack::compare_op_enum::Always:
+            case shaderpack::CompareOpEnum::Always:
                 return D3D12_COMPARISON_FUNC_ALWAYS;
 
             default:
@@ -106,35 +106,35 @@ namespace nova::renderer {
         }
     }
 
-    D3D12_STENCIL_OP to_dx12_stencil_op(const shaderpack::stencil_op_enum op) {
+    D3D12_STENCIL_OP to_dx12_stencil_op(const shaderpack::StencilOpEnum op) {
         switch(op) {
-            case shaderpack::stencil_op_enum::Keep:
+            case shaderpack::StencilOpEnum::Keep:
                 return D3D12_STENCIL_OP_KEEP;
-            case shaderpack::stencil_op_enum::Zero:
+            case shaderpack::StencilOpEnum::Zero:
                 return D3D12_STENCIL_OP_ZERO;
-            case shaderpack::stencil_op_enum::Replace:
+            case shaderpack::StencilOpEnum::Replace:
                 return D3D12_STENCIL_OP_REPLACE;
-            case shaderpack::stencil_op_enum::Incr:
+            case shaderpack::StencilOpEnum::Incr:
                 return D3D12_STENCIL_OP_INCR;
-            case shaderpack::stencil_op_enum::IncrWrap:
+            case shaderpack::StencilOpEnum::IncrWrap:
                 return D3D12_STENCIL_OP_INCR_SAT;
-            case shaderpack::stencil_op_enum::Decr:
+            case shaderpack::StencilOpEnum::Decr:
                 return D3D12_STENCIL_OP_DECR;
-            case shaderpack::stencil_op_enum::DecrWrap:
+            case shaderpack::StencilOpEnum::DecrWrap:
                 return D3D12_STENCIL_OP_DECR_SAT;
-            case shaderpack::stencil_op_enum::Invert:
+            case shaderpack::StencilOpEnum::Invert:
                 return D3D12_STENCIL_OP_INVERT;
             default:
                 return D3D12_STENCIL_OP_KEEP;
         }
     }
 
-    D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(const shaderpack::primitive_topology_enum primitive_mode) {
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(const shaderpack::PrimitiveTopologyEnum primitive_mode) {
         switch(primitive_mode) {
-            case shaderpack::primitive_topology_enum::Triangles:
+            case shaderpack::PrimitiveTopologyEnum::Triangles:
                 return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
-            case shaderpack::primitive_topology_enum::Lines:
+            case shaderpack::PrimitiveTopologyEnum::Lines:
                 return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
 
             default:
@@ -142,23 +142,23 @@ namespace nova::renderer {
         }
     }
 
-    enum DXGI_FORMAT to_dxgi_format(const shaderpack::pixel_format_enum pixel_format) {
+    enum DXGI_FORMAT to_dxgi_format(const shaderpack::PixelFormatEnum pixel_format) {
         switch(pixel_format) {
-            case shaderpack::pixel_format_enum::RGBA8:
+            case shaderpack::PixelFormatEnum::RGBA8:
                 return DXGI_FORMAT_R8G8B8A8_UNORM;
 
-            case shaderpack::pixel_format_enum::RGBA16F:
+            case shaderpack::PixelFormatEnum::RGBA16F:
                 return DXGI_FORMAT_R16G16B16A16_FLOAT;
 
                 return DXGI_FORMAT_R32G32B32_FLOAT;
 
-            case shaderpack::pixel_format_enum::RGBA32F:
+            case shaderpack::PixelFormatEnum::RGBA32F:
                 return DXGI_FORMAT_R32G32B32A32_FLOAT;
 
-            case shaderpack::pixel_format_enum::Depth:
+            case shaderpack::PixelFormatEnum::Depth:
                 return DXGI_FORMAT_D32_FLOAT;
 
-            case shaderpack::pixel_format_enum::DepthStencil:
+            case shaderpack::PixelFormatEnum::DepthStencil:
                 return DXGI_FORMAT_D24_UNORM_S8_UINT;
 
             default:

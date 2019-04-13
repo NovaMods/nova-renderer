@@ -2,34 +2,33 @@
 
 #include <memory>
 
-#include <nova_renderer/command_list.hpp>
-#include <nova_renderer/nova_settings.hpp>
-#include <nova_renderer/renderables.hpp>
-#include <nova_renderer/rhi_types.hpp>
-#include <nova_renderer/shaderpack_data.hpp>
-#include <nova_renderer/util/platform.hpp>
-#include <nova_renderer/util/result.hpp>
-#include <nova_renderer/util/utils.hpp>
-#include <nova_renderer/window.hpp>
+#include "nova_renderer/nova_settings.hpp"
+#include "nova_renderer/command_list.hpp"
+#include "nova_renderer/renderables.hpp"
+#include "nova_renderer/rhi_types.hpp"
+#include "nova_renderer/shaderpack_data.hpp"
+#include "nova_renderer/util/platform.hpp"
+#include "nova_renderer/util/result.hpp"
+#include "nova_renderer/util/utils.hpp"
+#include "nova_renderer/window.hpp"
+#include "../../src/windowing/win32_window.hpp"
 
-namespace nova::renderer {
-    struct buffer_create_info_t {
-        enum class usage {
-            UNIFORM_BUFFER,
-            INDEX_BUFFER,
-            VERTEX_BUFFER,
+namespace nova::renderer::rhi {
+    struct BufferCreateInfo {
+        enum class Usage {
+            UniformBuffer,
+            IndexBuffer,
+            VertexBuffer,
         };
 
-        enum class residency { HOST_LOCAL, HOST_VISIBLE, DEVICE_VISIBLE, DEVICE_LOCAL };
+        enum class Residency { HostLocal, HostVisible, DeviceVisible, DeviceLocal };
 
         uint64_t size;
 
-        usage buffer_usage;
+        Usage buffer_usage;
 
-        residency buffer_residency;
+        Residency buffer_residency;
     };
-
-    struct texture2d_create_info_t {};
 
     NOVA_EXCEPTION(render_engine_initialization_exception);
     NOVA_EXCEPTION(render_engine_rendering_exception);
@@ -43,20 +42,22 @@ namespace nova::renderer {
      * All functions must be called after init(nova::settings) has been called except
      *   explicitly marked in the documentation
      */
-    class render_engine_t {
+    class RenderEngine {
     public:
-        render_engine_t(render_engine_t&& other) = delete;
-        render_engine_t& operator=(render_engine_t&& other) noexcept = delete;
+        RenderEngine(RenderEngine&& other) = delete;
+        RenderEngine& operator=(RenderEngine&& other) noexcept = delete;
 
-        render_engine_t(const render_engine_t& other) = delete;
-        render_engine_t& operator=(const render_engine_t& other) = delete;
+        RenderEngine(const RenderEngine& other) = delete;
+        RenderEngine& operator=(const RenderEngine& other) = delete;
 
         /*!
          * \brief Needed to make destructor of subclasses called
          */
-        virtual ~render_engine_t() = default;
+        virtual ~RenderEngine() = default;
 
         [[nodiscard]] virtual std::shared_ptr<window_t> get_window() const = 0;
+
+        virtual void set_num_renderpasses(uint32_t num_renderpasses) = 0;
 
         /*!
          * \brief Creates a renderpass from the provided data
@@ -68,33 +69,37 @@ namespace nova::renderer {
          *
          * \return The newly created renderpass
          */
-        [[nodiscard]] virtual result<renderpass_t*> create_renderpass(const render_pass_create_info_t& data) = 0;
+        [[nodiscard]] virtual result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) = 0;
 
-		[[nodiscard]] virtual framebuffer_t* create_framebuffer(const std::vector<resource_t*>& attachments) = 0;
+        [[nodiscard]] virtual Framebuffer* create_framebuffer(const Renderpass* renderpass,
+                                                              const std::vector<Image*>& attachments,
+                                                              const glm::uvec2& framebuffer_size) = 0;
 
-        [[nodiscard]] virtual pipeline_t* create_pipeline(const pipeline_create_info_t& data) = 0;
+        [[nodiscard]] virtual Pipeline* create_pipeline(const Renderpass* renderpass, const shaderpack::PipelineCreateInfo& data) = 0;
 
-        [[nodiscard]] virtual resource_t* create_buffer(const buffer_create_info_t& info) = 0;
+        [[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info) = 0;
 
-        [[nodiscard]] virtual resource_t* create_texture(const texture2d_create_info_t& info) = 0;
+        [[nodiscard]] virtual Image* create_texture(const shaderpack::TextureCreateInfo& info) = 0;
 
-        [[nodiscard]] virtual semaphore_t* create_semaphore() = 0;
+        [[nodiscard]] virtual Semaphore* create_semaphore() = 0;
 
-        [[nodiscard]] virtual std::vector<semaphore_t*> create_semaphores(uint32_t num_semaphores) = 0;
+        [[nodiscard]] virtual std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) = 0;
 
-        [[nodiscard]] virtual fence_t* create_fence(bool signaled = false) = 0;
+        [[nodiscard]] virtual Fence* create_fence(bool signaled = false) = 0;
 
-        [[nodiscard]] virtual std::vector<fence_t*> create_fences(uint32_t num_fences, bool signaled = false) = 0;
+        [[nodiscard]] virtual std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) = 0;
 
-        virtual void destroy_renderpass(renderpass_t* pass) = 0;
+        virtual void destroy_renderpass(Renderpass* pass) = 0;
 
-        virtual void destroy_pipeline(pipeline_t* pipeline) = 0;
+        virtual void destroy_framebuffer(const Framebuffer* framebuffer) = 0;
 
-        virtual void destroy_resource(resource_t* resource) = 0;
+        virtual void destroy_pipeline(Pipeline* pipeline) = 0;
 
-        virtual void destroy_semaphores(const std::vector<semaphore_t*>& semaphores) = 0;
+        virtual void destroy_texture(Image* resource) = 0;
 
-        virtual void destroy_fences(const std::vector<fence_t*>& fences) = 0;
+        virtual void destroy_semaphores(const std::vector<Semaphore*>& semaphores) = 0;
+
+        virtual void destroy_fences(const std::vector<Fence*>& fences) = 0;
 
         /*!
          * \brief Allocates a new command list that can be used from the provided thread and has the desired type
@@ -110,16 +115,16 @@ namespace nova::renderer {
          * Command lists allocated by this method are returned ready to record commands into - the caller doess't need
          * to begin the command list
          */
-        virtual command_list_t* allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list_t::level level) = 0;
+        virtual CommandList* allocate_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) = 0;
 
-        virtual void submit_command_list(command_list_t* cmds,
-                                         queue_type queue,
-                                         fence_t* fence_to_signal = nullptr,
-                                         const std::vector<semaphore_t*>& wait_semaphores = {},
-                                         const std::vector<semaphore_t*>& signal_semaphores = {}) = 0;
+        virtual void submit_command_list(CommandList* cmds,
+                                         QueueType queue,
+                                         Fence* fence_to_signal = nullptr,
+                                         const std::vector<Semaphore*>& wait_semaphores = {},
+                                         const std::vector<Semaphore*>& signal_semaphores = {}) = 0;
 
     protected:
-        nova_settings& settings;
+        NovaSettings& settings;
 
 #ifdef NOVA_LINUX
         std::shared_ptr<x11_window> window;
@@ -136,14 +141,19 @@ namespace nova::renderer {
          *
          * \attention Called by nova
          */
-        explicit render_engine_t(nova_settings& settings) : settings(settings){};
+        explicit RenderEngine(NovaSettings& settings) : settings(settings){};
 
         /*!
          * \brief Initializes the window with the given size, and creates the swapchain for that window
          * \param width The width, in pixels, of the desired window
          * \param height The height, in pixels of the desired window
          */
-        virtual void open_window_and_create_surface(const nova_settings::window_options& options) = 0;
-
+        virtual void open_window_and_create_surface(const NovaSettings::WindowOptions& options) = 0;
     };
+<<<<<<< HEAD
 } // namespace nova::renderer
+=======
+} // namespace nova::renderer::rhi
+
+#endif // NOVA_RENDERER_RENDER_ENGINE_HPP
+>>>>>>> Renamed a lot of things yolo

@@ -11,17 +11,17 @@
 #include "d3dx12.h"
 
 namespace nova::renderer::rhi {
-    struct d3d12_renderpass_t : renderpass_t {};
+    struct DX12Renderpass : Renderpass {};
 
-    struct d3d12_buffer_t : buffer_t {
+    struct DX12Buffer : Buffer {
         ID3D12Resource* resource;
     };
 
-    struct d3d12_image_t : image_t {
+    struct DX12Image : Image {
         ID3D12Resource* resource;
     };
 
-    struct d3d12_framebuffer_t : framebuffer_t {
+    struct DX12Framebuffer : Framebuffer {
         std::vector<CD3DX12_CPU_DESCRIPTOR_HANDLE> render_targets;
 
         bool has_depth_stencil = false;

@@ -52,19 +52,19 @@ namespace nova::renderer::rhi {
 		commands.reserve(128);
 	}
 
-	void gl2_command_list::resource_barriers([[maybe_unused]] pipeline_stage_flags stages_before_barrier,
-		[[maybe_unused]] pipeline_stage_flags stages_after_barrier,
-		[[maybe_unused]] const std::vector<resource_barrier_t>& barriers) {
+	void gl2_command_list::resource_barriers([[maybe_unused]] PipelineStageFlags stages_before_barrier,
+		[[maybe_unused]] PipelineStageFlags stages_after_barrier,
+		[[maybe_unused]] const std::vector<ResourceBarrier>& barriers) {
 		// Don't need to do anything whoop
 	}
 
-	void gl2_command_list::copy_buffer(buffer_t* destination_buffer,
+	void gl2_command_list::copy_buffer(Buffer* destination_buffer,
 		const uint64_t destination_offset,
-		buffer_t* source_buffer,
+		Buffer* source_buffer,
 		const uint64_t source_offset,
 		const uint64_t num_bytes) {
-		gl2_buffer_t* dst_buf = reinterpret_cast<gl2_buffer_t*>(destination_buffer);
-		gl2_buffer_t* src_buf = reinterpret_cast<gl2_buffer_t*>(source_buffer);
+		GL2Buffer* dst_buf = reinterpret_cast<GL2Buffer*>(destination_buffer);
+		GL2Buffer* src_buf = reinterpret_cast<GL2Buffer*>(source_buffer);
 
 		commands.emplace_back();
 
@@ -77,15 +77,15 @@ namespace nova::renderer::rhi {
 		copy_command.buffer_copy.num_bytes = num_bytes;
 	}
 
-	void gl2_command_list::execute_command_lists(const std::vector<command_list_t*>& lists) {
+	void gl2_command_list::execute_command_lists(const std::vector<CommandList*>& lists) {
 		commands.emplace_back();
 
 		gl2_command& execute_lists_command = commands.front();
 		execute_lists_command.execute_command_lists.lists_to_execute = lists;
 	}
 
-	void gl2_command_list::begin_renderpass([[maybe_unused]] renderpass_t* renderpass, framebuffer_t* framebuffer) {
-		gl2_framebuffer_t* gl_framebuffer = reinterpret_cast<gl2_framebuffer_t*>(framebuffer);
+	void gl2_command_list::begin_renderpass([[maybe_unused]] Renderpass* renderpass, Framebuffer* framebuffer) {
+		GL2Framebuffer* gl_framebuffer = reinterpret_cast<GL2Framebuffer*>(framebuffer);
 
 		commands.emplace_back();
 

@@ -7,7 +7,7 @@
 #include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer::rhi {
-    class vk_render_engine;
+    class VulkanRenderEngine;
 
     NOVA_EXCEPTION(swapchain_creation_failed);
     NOVA_EXCEPTION(present_failed);
@@ -22,7 +22,7 @@ namespace nova::renderer::rhi {
     class vk_swapchain_manager {
     public:
         vk_swapchain_manager(uint32_t num_swapchain_images,
-                             vk_render_engine& render_engine,
+                             VulkanRenderEngine& render_engine,
                              glm::ivec2 window_dimensions,
                              const std::vector<VkPresentModeKHR>& present_modes);
 
@@ -53,7 +53,7 @@ namespace nova::renderer::rhi {
         [[nodiscard]] uint32_t get_num_images() const;
 
     private:
-        vk_render_engine& render_engine;
+        VulkanRenderEngine& render_engine;
 
         VkSwapchainKHR swapchain{};
         VkExtent2D swapchain_extent;

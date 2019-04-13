@@ -4,13 +4,12 @@
  */
 
 #include "gl2_render_engine.hpp"
-#include "gl2_command_list.hpp"
 
 #include "../../util/logger.hpp"
 #include "gl2_structs.hpp"
 
 namespace nova::renderer::rhi {
-    gl2_render_engine::gl2_render_engine(nova_settings& settings) : render_engine_t(settings) {
+    GL2RenderEngine::GL2RenderEngine(NovaSettings& settings) : RenderEngine(settings) {
         const bool loaded_opengl = gladLoadGL() != 0;
         if(!loaded_opengl) {
             NOVA_LOG(FATAL) << "Could not load OpenGL 2.1 functions, sorry bro";
@@ -22,34 +21,35 @@ namespace nova::renderer::rhi {
         set_initial_state();
     }
 
-    void gl2_render_engine::set_initial_state() {
+    void GL2RenderEngine::set_initial_state() {
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
     }
 
-    void gl2_render_engine::set_num_renderpasses([[maybe_unused]] uint32_t num_renderpasses) {
+    void GL2RenderEngine::set_num_renderpasses([[maybe_unused]] uint32_t num_renderpasses) {
         // GL2 doesn't need to do anything either
     }
 
-    result<renderpass_t*> gl2_render_engine::create_renderpass(const shaderpack::render_pass_create_info_t& data) {
-        return result<renderpass_t*>(new renderpass_t);
+    result<Renderpass*> GL2RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
+        return result<Renderpass*>(new Renderpass);
     }
 
-    framebuffer_t* gl2_render_engine::create_framebuffer(const renderpass_t* renderpass,
-                                                         const std::vector<image_t*>& attachments,
-                                                         const glm::uvec2& framebuffer_size) {
-        gl2_framebuffer_t* framebuffer = new gl2_framebuffer_t;
+    Framebuffer* GL2RenderEngine::create_framebuffer(const Renderpass* renderpass,
+                                                     const std::vector<Image*>& attachments,
+                                                     const glm::uvec2& framebuffer_size) {
+        GL2Framebuffer* framebuffer = new GL2Framebuffer;
 
         return framebuffer;
     }
 
-    pipeline_t* gl2_render_engine::create_pipeline(const shaderpack::pipeline_create_info_t& data) { return nullptr; }
-    buffer_t* gl2_render_engine::create_buffer(const buffer_create_info_t& info) { return nullptr; }
+    Pipeline* GL2RenderEngine::create_pipeline(const Renderpass* renderpass, const shaderpack::PipelineCreateInfo& data) { return nullptr; }
 
-    image_t* gl2_render_engine::create_texture(const shaderpack::texture_create_info_t& info) {
-        gl2_image_t* image = new gl2_image_t;
+    Buffer* GL2RenderEngine::create_buffer(const BufferCreateInfo& info) { return nullptr; }
+
+    Image* GL2RenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
+        GL2Image* image = new GL2Image;
 
         glGenTextures(1, &image->id);
         glBindTexture(GL_TEXTURE_2D, image->id);
@@ -58,28 +58,28 @@ namespace nova::renderer::rhi {
         GLint internal_format = GL_RGBA8;
         GLint type = GL_UNSIGNED_BYTE;
         switch(info.format.pixel_format) {
-            case shaderpack::pixel_format_enum::RGBA8:
+            case shaderpack::PixelFormatEnum::RGBA8:
                 format = GL_RGBA;
                 internal_format = GL_RGBA8;
                 type = GL_UNSIGNED_BYTE;
                 break;
 
-            case shaderpack::pixel_format_enum::RGBA32F:
+            case shaderpack::PixelFormatEnum::RGBA32F:
                 NOVA_LOG(WARN) << "[GL2] 32-bits per channel texture requested, but GL2 only supports 16 bits per channel";
                 [[fallthrough]];
-            case shaderpack::pixel_format_enum::RGBA16F:
+            case shaderpack::PixelFormatEnum::RGBA16F:
                 format = GL_RGBA;
                 internal_format = GL_RGBA16;
                 type = GL_FLOAT;
                 break;
 
-            case shaderpack::pixel_format_enum::Depth:
+            case shaderpack::PixelFormatEnum::Depth:
                 format = GL_RED;
                 internal_format = GL_DEPTH_COMPONENT32;
                 type = GL_INT;
                 break;
 
-            case shaderpack::pixel_format_enum::DepthStencil:
+            case shaderpack::PixelFormatEnum::DepthStencil:
                 format = GL_RED;
                 internal_format = GL_DEPTH_COMPONENT24;
                 type = GL_INT;
@@ -98,27 +98,27 @@ namespace nova::renderer::rhi {
         return image;
     }
 
-    semaphore_t* gl2_render_engine::create_semaphore() { return nullptr; }
-    std::vector<semaphore_t*> gl2_render_engine::create_semaphores(uint32_t num_semaphores) { return std::vector<semaphore_t*>(); }
-    fence_t* gl2_render_engine::create_fence(bool signaled) { return nullptr; }
-    std::vector<fence_t*> gl2_render_engine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<fence_t*>(); }
+    Semaphore* GL2RenderEngine::create_semaphore() { return nullptr; }
+    std::vector<Semaphore*> GL2RenderEngine::create_semaphores(uint32_t num_semaphores) { return std::vector<Semaphore*>(); }
+    Fence* GL2RenderEngine::create_fence(bool signaled) { return nullptr; }
+    std::vector<Fence*> GL2RenderEngine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<Fence*>(); }
 
-    void gl2_render_engine::destroy_renderpass(renderpass_t* pass) { delete pass; }
+    void GL2RenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
 
-    void gl2_render_engine::destroy_pipeline(pipeline_t* pipeline) {}
+    void GL2RenderEngine::destroy_pipeline(Pipeline* pipeline) {}
 
-    void gl2_render_engine::destroy_texture(image_t* resource) {
-        gl2_image_t* gl_image = static_cast<gl2_image_t*>(resource);
+    void GL2RenderEngine::destroy_texture(Image* resource) {
+        GL2Image* gl_image = static_cast<GL2Image*>(resource);
         glDeleteTextures(1, &gl_image->id);
 
         delete gl_image;
     }
 
-    void gl2_render_engine::destroy_semaphores(const std::vector<semaphore_t*>& semaphores) {}
-    void gl2_render_engine::destroy_fences(const std::vector<fence_t*>& fences) {}
-    void gl2_render_engine::submit_command_list(command_list_t* cmds,
-                                                queue_type queue,
-                                                fence_t* fence_to_signal,
-                                                const std::vector<semaphore_t*>& wait_semaphores,
-                                                const std::vector<semaphore_t*>& signal_semaphores) {}
+    void GL2RenderEngine::destroy_semaphores(const std::vector<Semaphore*>& semaphores) {}
+    void GL2RenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
+    void GL2RenderEngine::submit_command_list(CommandList* cmds,
+                                              QueueType queue,
+                                              Fence* fence_to_signal,
+                                              const std::vector<Semaphore*>& wait_semaphores,
+                                              const std::vector<Semaphore*>& signal_semaphores) {}
 } // namespace nova::renderer::rhi

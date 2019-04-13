@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "nova_renderer/render_engine_t.hpp"
+#include "nova_renderer/render_engine.hpp"
 
 #include "swapchain.hpp"
 
@@ -18,7 +18,7 @@ namespace nova::renderer::rhi {
     /*!
      * \brief Vulkan implementation of a render engine
      */
-    class vk_render_engine final : public render_engine_t {
+    class VulkanRenderEngine final : public RenderEngine {
     public:
         // Global Vulkan objects
         VkInstance instance;
@@ -39,59 +39,59 @@ namespace nova::renderer::rhi {
         // Info about the hardware
         vk_gpu_info gpu;
 
-        vk_render_engine(nova_settings& settings);
+        VulkanRenderEngine(NovaSettings& settings);
 
-        vk_render_engine(vk_render_engine&& old) noexcept = delete;
-        vk_render_engine& operator=(vk_render_engine&& old) noexcept = delete;
+        VulkanRenderEngine(VulkanRenderEngine&& old) noexcept = delete;
+        VulkanRenderEngine& operator=(VulkanRenderEngine&& old) noexcept = delete;
 
-        vk_render_engine(const vk_render_engine& other) = delete;
-        vk_render_engine& operator=(const vk_render_engine& other) = delete;
+        VulkanRenderEngine(const VulkanRenderEngine& other) = delete;
+        VulkanRenderEngine& operator=(const VulkanRenderEngine& other) = delete;
 
-        ~vk_render_engine() = default;
+        ~VulkanRenderEngine() = default;
 
-        #pragma region Render engine interface
+#pragma region Render engine interface
         std::shared_ptr<window_t> get_window() const override final;
 
         void set_num_renderpasses(uint32_t num_renderpasses) override final;
 
-        result<renderpass_t*> create_renderpass(const shaderpack::render_pass_create_info_t& data) override final;
+        result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
 
-        framebuffer_t* create_framebuffer(const renderpass_t* renderpass,
-                                          const std::vector<image_t*>& attachments,
-                                          const glm::uvec2& framebuffer_size) override final;
-        
-        pipeline_t* create_pipeline(const renderpass_t* renderpass, const shaderpack::pipeline_create_info_t& data) override final;
+        Framebuffer* create_framebuffer(const Renderpass* renderpass,
+                                        const std::vector<Image*>& attachments,
+                                        const glm::uvec2& framebuffer_size) override final;
 
-        buffer_t* create_buffer(const buffer_create_info_t& info) override final;
-        image_t* create_texture(const shaderpack::texture_create_info_t& info) override final;
-        semaphore_t* create_semaphore() override final;
-        std::vector<semaphore_t*> create_semaphores(uint32_t num_semaphores) override final;
-        fence_t* create_fence(bool signaled = false) override final;
-        std::vector<fence_t*> create_fences(uint32_t num_fences, bool signaled = false) override final;
+        Pipeline* create_pipeline(const Renderpass* renderpass, const shaderpack::PipelineCreateInfo& data) override final;
 
-        void destroy_renderpass(renderpass_t* pass) override final;
+        Buffer* create_buffer(const BufferCreateInfo& info) override final;
+        Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
+        Semaphore* create_semaphore() override final;
+        std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override final;
+        Fence* create_fence(bool signaled = false) override final;
+        std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override final;
 
-        void destroy_framebuffer(const framebuffer_t* framebuffer) override final;
+        void destroy_renderpass(Renderpass* pass) override final;
 
-        void destroy_pipeline(pipeline_t* pipeline) override final;
-        void destroy_texture(image_t* resource) override final;
-        void destroy_semaphores(const std::vector<semaphore_t*>& semaphores) override final;
-        void destroy_fences(const std::vector<fence_t*>& fences) override final;
+        void destroy_framebuffer(const Framebuffer* framebuffer) override final;
 
-        command_list_t* allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list_t::level level) override final;
-        void submit_command_list(command_list_t* cmds,
-                                 queue_type queue,
-                                 fence_t* fence_to_signal = nullptr,
-                                 const std::vector<semaphore_t*>& wait_semaphores = {},
-                                 const std::vector<semaphore_t*>& signal_semaphores = {}) override final;
-        #pragma endregion
+        void destroy_pipeline(Pipeline* pipeline) override final;
+        void destroy_texture(Image* resource) override final;
+        void destroy_semaphores(const std::vector<Semaphore*>& semaphores) override final;
+        void destroy_fences(const std::vector<Fence*>& fences) override final;
+
+        CommandList* allocate_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override final;
+        void submit_command_list(CommandList* cmds,
+                                 QueueType queue,
+                                 Fence* fence_to_signal = nullptr,
+                                 const std::vector<Semaphore*>& wait_semaphores = {},
+                                 const std::vector<Semaphore*>& signal_semaphores = {}) override final;
+#pragma endregion
 
         VkCommandPool get_command_pool_for_thread(uint32_t thread_idx, uint32_t queue_family_index);
 
-        uint32_t get_queue_family_index(queue_type type) const;
+        uint32_t get_queue_family_index(QueueType type) const;
 
     protected:
-        void open_window_and_create_surface(const nova_settings::window_options& options) override final;
+        void open_window_and_create_surface(const NovaSettings::WindowOptions& options) override final;
 
     private:
         std::unique_ptr<vk_swapchain_manager> swapchain;
@@ -101,7 +101,7 @@ namespace nova::renderer::rhi {
          * The index in the vector is the thread index, the key in the map is the queue family index
          */
         std::vector<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
-        
+
         // Debugging things
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
@@ -138,6 +138,6 @@ namespace nova::renderer::rhi {
                                                                     void* pUserData);
 #pragma endregion
 
-		VkShaderModule create_shader_module(const std::vector<uint32_t>& spirv);
+        VkShaderModule create_shader_module(const std::vector<uint32_t>& spirv);
     };
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi

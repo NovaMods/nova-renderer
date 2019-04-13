@@ -27,7 +27,7 @@ namespace nova::renderer {
      */
     class win32_window : public window_t {
     public:
-        win32_window(const nova_settings::window_options& settings);
+        win32_window(const NovaSettings::WindowOptions& settings);
         ~win32_window();
 
         /*

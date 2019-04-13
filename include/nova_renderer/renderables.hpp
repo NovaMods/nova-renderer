@@ -5,7 +5,7 @@
 #include <nova_renderer/shaderpack_data.hpp>
 
 namespace nova::renderer {
-    struct full_vertex_t {
+    struct FullVertex {
         glm::vec3 position;          // 12 bytes
         glm::vec3 normal;            // 12 bytes
         glm::vec3 tangent;           // 12 bytes
@@ -15,7 +15,7 @@ namespace nova::renderer {
         glm::vec4 additional_stuff;  // 16 bytes
     };
 
-    static_assert(sizeof(full_vertex_t) % 16 == 0, "full_vertex struct is not aligned to 16 bytes!");
+    static_assert(sizeof(FullVertex) % 16 == 0, "full_vertex struct is not aligned to 16 bytes!");
 
     /*!
      * \brief All the data needed to make a single mesh
@@ -24,20 +24,20 @@ namespace nova::renderer {
      * particles, etc will probably have FAR fewer vertices than chunks, meaning that there's not a huge savings by
      * making them use special vertex formats
      */
-    struct mesh_data_t {
-        std::vector<full_vertex_t> vertex_data;
+    struct MeshData {
+        std::vector<FullVertex> vertex_data;
         std::vector<uint32_t> indices;
     };
 
-    using mesh_id_t = uint32_t;
+    using MeshId = uint32_t;
 
-    struct static_mesh_renderable_update_data_t {
+    struct StaticMeshRenderableUpdateData {
         std::string material_name;
 
-        mesh_id_t mesh;
+        MeshId mesh;
     };
 
-    struct static_mesh_renderable_data_t : static_mesh_renderable_update_data_t {
+    struct StaticMeshRenderableData : StaticMeshRenderableUpdateData {
         glm::vec3 initial_position;
         glm::vec3 initial_rotation;
         glm::vec3 initial_scale = glm::vec3(1);
@@ -45,23 +45,23 @@ namespace nova::renderer {
         bool is_static = true;
     };
 
-    using renderable_id_t = uint64_t;
+    using RenderableId = uint64_t;
 
-    static std::atomic<renderable_id_t> next_renderable_id;
+    static std::atomic<RenderableId> next_renderable_id;
 
-    struct renderable_metadata_t {
-        renderable_id_t id = 0;
+    struct RenderableMetadata {
+        RenderableId id = 0;
 
         std::vector<std::string> passes;
     };
 
-    struct renderable_base_t {
-        renderable_id_t id = 0;
+    struct RenderableBase {
+        RenderableId id = 0;
 
         bool is_visible = true;
 
         glm::mat4 model_matrix = glm::mat4(1);
     };
 
-    struct static_mesh_render_command_t : renderable_base_t {};
+    struct StaticMeshRenderCommand : RenderableBase {};
 } // namespace nova::renderer

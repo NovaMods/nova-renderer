@@ -9,28 +9,28 @@
 #include <wrl/client.h>
 #include <nova_renderer/command_list.hpp>
 
-#include "d3d12_structs.hpp"
+#include "dx12_structs.hpp"
 
 namespace nova::renderer::rhi {
     using namespace Microsoft::WRL;
 
-    class d3d12_command_list : public command_list_t {
+    class DX12CommandList : public CommandList {
     public:
-        explicit d3d12_command_list(ComPtr<ID3D12GraphicsCommandList> cmds);
+        explicit DX12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds);
 
-        void resource_barriers([[maybe_unused]] pipeline_stage_flags stages_before_barrier,
-                              [[maybe_unused]] pipeline_stage_flags stages_after_barrier,
-                              const std::vector<resource_barrier_t>& barriers) override final;
+        void resource_barriers([[maybe_unused]] PipelineStageFlags stages_before_barrier,
+                              [[maybe_unused]] PipelineStageFlags stages_after_barrier,
+                              const std::vector<ResourceBarrier>& barriers) override final;
 
-        void copy_buffer(buffer_t* destination_buffer,
+        void copy_buffer(Buffer* destination_buffer,
                          uint64_t destination_offset,
-                         buffer_t* source_buffer,
+                         Buffer* source_buffer,
                          uint64_t source_offset,
                          uint64_t num_bytes) override final;
 
-        void execute_command_lists(const std::vector<command_list_t*>& lists) override final;
+        void execute_command_lists(const std::vector<CommandList*>& lists) override final;
 
-        void begin_renderpass([[maybe_unused]] renderpass_t* renderpass, framebuffer_t* framebuffer) override final;
+        void begin_renderpass([[maybe_unused]] Renderpass* renderpass, Framebuffer* framebuffer) override final;
         void end_renderpass() override final;
         void bind_pipeline() override final;
         void bind_material() override final;

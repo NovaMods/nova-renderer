@@ -7,32 +7,37 @@
 
 #pragma once
 
+#include <vulkan/vulkan.hpp>
+#include <vk_mem_alloc.h>
+
+#include "nova_renderer/rhi_types.hpp"
+
 namespace nova::renderer::rhi {
-    struct vk_image_t : image_t {
+    struct VulkanImage : Image {
         VkImage image;
         VkImageView image_view;
         VmaAllocation allocation;
         VmaAllocationInfo vma_info{};
     };
 
-    struct vk_buffer_t : buffer_t {
+    struct VulkanBuffer : Buffer {
         VkBuffer buffer;
         VmaAllocation allocation;
         VmaAllocationInfo vma_info{};
     };
 
-    struct vk_renderpass_t : renderpass_t {
+    struct VulkanRenderpass : Renderpass {
         VkRenderPass pass;
         VkRect2D render_area{};
     };
 
-    struct vk_framebuffer_t : framebuffer_t {
+    struct VulkanFramebuffer : Framebuffer {
         VkFramebuffer framebuffer;
     };
 
-	struct vk_pipeline_t : pipeline_t {
-		VkPipeline pipeline;
-	};
+    struct vk_pipeline_t : Pipeline {
+        VkPipeline pipeline;
+    };
 
     struct vk_gpu_info {
         VkPhysicalDevice phys_device{};
