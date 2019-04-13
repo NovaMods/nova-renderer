@@ -12,13 +12,13 @@
 namespace nova::renderer {
     NOVA_EXCEPTION(resource_not_found_exception);
 
-    class filesystem_exception : public std::exception { // Convert fs::filesystem_error into a nova class
+    class FilesystemException : public std::exception { // Convert fs::filesystem_error into a nova class
     private:
         const std::string message;
         const std::error_code error_code;
 
     public:
-        explicit filesystem_exception(const fs::filesystem_error& error) : message(error.what()), error_code(error.code()) {}
+        explicit FilesystemException(const fs::filesystem_error& error) : message(error.what()), error_code(error.code()) {}
 
         [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
 
@@ -32,21 +32,21 @@ namespace nova::renderer {
      * can be, sure, but it can also be a pure shaderpack. Ths main point is to abstract away loading resources from a
      * folder or a zip file - the calling code shouldn't care how the data is stored on the filesystem
      */
-    class folder_accessor_base {
+    class FolderAccessorBase {
     public:
         /*!
          * \brief Initializes this resourcepack to load resources from the folder/zip file with the provided name
          * \param folder The name of the folder or zip file to load resources from, relative to Nova's working directory
          */
-        explicit folder_accessor_base(const fs::path& folder);
+        explicit FolderAccessorBase(const fs::path& folder);
 
-        folder_accessor_base(folder_accessor_base&& other) noexcept = default;
-        folder_accessor_base& operator=(folder_accessor_base&& other) noexcept = default;
+        FolderAccessorBase(FolderAccessorBase&& other) noexcept = default;
+        FolderAccessorBase& operator=(FolderAccessorBase&& other) noexcept = default;
 
-        folder_accessor_base(const folder_accessor_base& other) = delete;
-        folder_accessor_base& operator=(const folder_accessor_base& other) = delete;
+        FolderAccessorBase(const FolderAccessorBase& other) = delete;
+        FolderAccessorBase& operator=(const FolderAccessorBase& other) = delete;
 
-        virtual ~folder_accessor_base() = default;
+        virtual ~FolderAccessorBase() = default;
 
         /*!
          * \brief Checks if the given resource exists

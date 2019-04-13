@@ -53,7 +53,7 @@ namespace nova::renderer {
 
                     return 0;
                 })
-                .on_error([](const nova_error& error) { NOVA_LOG(ERROR) << error.to_string(); });
+                .on_error([](const NovaError& error) { NOVA_LOG(ERROR) << error.to_string(); });
         }
 
         switch(settings.api) {
@@ -61,7 +61,7 @@ namespace nova::renderer {
 #if defined(NOVA_WINDOWS)
             {
                 MTR_SCOPE("Init", "InitDirect3D12RenderEngine");
-                rhi = std::make_unique<rhi::dx12_render_engine>(render_settings);
+                rhi = std::make_unique<rhi::DX12RenderEngine>(render_settings);
             } break;
 #else
                 NOVA_LOG(WARN) << "You selected the DX12 graphics API, but your system doesn't support it. Defaulting to Vulkan";
@@ -74,7 +74,7 @@ namespace nova::renderer {
 
             case GraphicsApi::Gl2: {
                 MTR_SCOPE("Init", "InitGL2RenderEngine");
-                rhi = std::make_unique<rhi::GL2RenderEngine>(render_settings);
+                rhi = std::make_unique<rhi::Gl2RenderEngine>(render_settings);
             } break;
         }
     }
@@ -131,7 +131,7 @@ namespace nova::renderer {
             RenderpassMetadata metadata;
             metadata.data = create_info;
 
-            result<rhi::Renderpass*> renderpass_result = rhi->create_renderpass(create_info);
+            Result<rhi::Renderpass*> renderpass_result = rhi->create_renderpass(create_info);
             if(!renderpass_result.has_value) {
                 NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name << ": " << renderpass_result.error.to_string();
             }
@@ -201,7 +201,7 @@ namespace nova::renderer {
             renderpass.pipelines.reserve(pipelines.size());
             for(const shaderpack::PipelineCreateInfo& pipeline_create_info : pipelines) {
                 if(pipeline_create_info.pass == create_info.name) {
-                    auto [pipeline, pipeline_metadata] = create_pipeline(materials, pipeline_create_info);
+                    auto [pipeline, pipeline_metadata] = create_pipeline(renderpass.renderpass, materials, pipeline_create_info);
                     renderpass.pipelines.push_back(pipeline);
 
                     metadata.pipeline_metadata.emplace(pipeline_create_info.name, pipeline_metadata);
@@ -210,7 +210,8 @@ namespace nova::renderer {
         }
     }
 
-    std::tuple<Pipeline, PipelineMetadata> NovaRenderer::create_pipeline(const std::vector<shaderpack::MaterialData>& materials,
+    std::tuple<Pipeline, PipelineMetadata> NovaRenderer::create_pipeline(const rhi::Renderpass* renderpass,
+                                                                         const std::vector<shaderpack::MaterialData>& materials,
                                                                          const shaderpack::PipelineCreateInfo& pipeline_create_info) const {
 
         Pipeline pipeline;
@@ -218,7 +219,7 @@ namespace nova::renderer {
 
         metadata.data = pipeline_create_info;
 
-        rhi::Pipeline* rhi_pipeline = rhi->create_pipeline(pipeline_create_info);
+        rhi::Pipeline* rhi_pipeline = rhi->create_pipeline(renderpass, pipeline_create_info);
         pipeline.pipeline = rhi_pipeline;
 
         // Determine the pipeline layout so the material can create descriptors for the pipeline

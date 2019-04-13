@@ -6,9 +6,9 @@ namespace nova::renderer::shaderpack {
     void from_json(const nlohmann::json& j, TextureFormat& format) {
         format.pixel_format = get_json_value<PixelFormatEnum>(j, "pixelFormat", PixelFormatEnum::RGBA8, pixel_format_enum_from_string);
         format.dimension_type = get_json_value<TextureDimensionTypeEnum>(j,
-                                                                            "dimensionType",
-                                                                            TextureDimensionTypeEnum::ScreenRelative,
-                                                                            texture_dimension_type_enum_from_string);
+                                                                         "dimensionType",
+                                                                         TextureDimensionTypeEnum::ScreenRelative,
+                                                                         texture_dimension_type_enum_from_string);
         format.width = get_json_value<float>(j, "width").value_or(0);
         format.height = get_json_value<float>(j, "height").value_or(0);
     }
@@ -69,24 +69,21 @@ namespace nova::renderer::shaderpack {
         pipeline.stencil_write_mask = get_json_value<uint32_t>(j, "stencilWriteMask", 0);
         pipeline.msaa_support = get_json_value<MsaaSupportEnum>(j, "msaaSupport", MsaaSupportEnum::None, msaa_support_enum_from_string);
         pipeline.primitive_mode = get_json_value<PrimitiveTopologyEnum>(j,
-                                                                          "primitiveMode",
-                                                                          PrimitiveTopologyEnum::Triangles,
-                                                                          primitive_topology_enum_from_string);
+                                                                        "primitiveMode",
+                                                                        PrimitiveTopologyEnum::Triangles,
+                                                                        primitive_topology_enum_from_string);
         pipeline.source_blend_factor = get_json_value<BlendFactorEnum>(j,
-                                                                         "sourceBlendFactor",
-                                                                         BlendFactorEnum::One,
-                                                                         blend_factor_enum_from_string);
+                                                                       "sourceBlendFactor",
+                                                                       BlendFactorEnum::One,
+                                                                       blend_factor_enum_from_string);
         pipeline.destination_blend_factor = get_json_value<BlendFactorEnum>(j,
-                                                                              "destBlendFactor",
-                                                                              BlendFactorEnum::Zero,
-                                                                              blend_factor_enum_from_string);
+                                                                            "destBlendFactor",
+                                                                            BlendFactorEnum::Zero,
+                                                                            blend_factor_enum_from_string);
         pipeline.alpha_src = get_json_value<BlendFactorEnum>(j, "alphaSrc", BlendFactorEnum::One, blend_factor_enum_from_string);
         pipeline.alpha_dst = get_json_value<BlendFactorEnum>(j, "alphaDest", BlendFactorEnum::Zero, blend_factor_enum_from_string);
         pipeline.depth_func = get_json_value<CompareOpEnum>(j, "depthFunc", CompareOpEnum::Less, compare_op_enum_from_string);
-        pipeline.render_queue = get_json_value<RenderQueueEnum>(j,
-                                                                  "renderQueue",
-                                                                  RenderQueueEnum::Opaque,
-                                                                  render_queue_enum_from_string);
+        pipeline.render_queue = get_json_value<RenderQueueEnum>(j, "renderQueue", RenderQueueEnum::Opaque, render_queue_enum_from_string);
 
         pipeline.vertex_shader.filename = get_json_value<std::string>(j, "vertexShader").value_or("<NAME_MISSING>");
 
@@ -141,4 +138,4 @@ namespace nova::renderer::shaderpack {
             passes.push_back(node.get<RenderPassCreateInfo>());
         }
     }
-} // namespace nova::renderer
+} // namespace nova::renderer::shaderpack

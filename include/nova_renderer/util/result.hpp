@@ -9,41 +9,41 @@
 #include "utils.hpp"
 
 namespace nova::renderer {
-    struct nova_error {
+    struct NovaError {
         std::string message = "";
 
-        std::unique_ptr<nova_error> cause;
+        std::unique_ptr<NovaError> cause;
 
-        nova_error() = default;
+        NovaError() = default;
 
-        explicit nova_error(std::string message);
+        explicit NovaError(std::string message);
 
-        nova_error(std::string message, nova_error cause);
+        NovaError(std::string message, NovaError cause);
 
         [[nodiscard]] std::string to_string() const;
     };
 
-    inline nova_error operator""_err(const char* str, std::size_t size) { return nova_error(std::string(str, size)); }
+    inline NovaError operator""_err(const char* str, std::size_t size) { return NovaError(std::string(str, size)); }
 
     template <typename ValueType>
-    struct result {
+    struct Result {
         union {
             ValueType value;
-            nova_error error;
+            NovaError error;
         };
 
         bool has_value = false;
 
-        explicit result(ValueType&& value) : value(value), has_value(true) {}
+        explicit Result(ValueType&& value) : value(value), has_value(true) {}
 
-        explicit result(const ValueType& value) : value(value), has_value(true) {}
+        explicit Result(const ValueType& value) : value(value), has_value(true) {}
 
-        explicit result(nova_error error) : error(std::move(error)) {}
+        explicit Result(NovaError error) : error(std::move(error)) {}
 
-        result(const result<ValueType>& other) = delete;
-        result<ValueType>& operator=(const result<ValueType>& other) = delete;
+        Result(const Result<ValueType>& other) = delete;
+        Result<ValueType>& operator=(const Result<ValueType>& other) = delete;
 
-        result(result<ValueType>&& old) noexcept {
+        Result(Result<ValueType>&& old) noexcept {
             if(old.has_value) {
                 value = std::move(old.value);
                 old.value = {};
@@ -55,7 +55,7 @@ namespace nova::renderer {
             }
         };
 
-        result<ValueType>& operator=(result<ValueType>&& old) noexcept {
+        Result<ValueType>& operator=(Result<ValueType>&& old) noexcept {
             if(old.has_value) {
                 value = old.value;
                 old.value = {};
@@ -69,33 +69,33 @@ namespace nova::renderer {
             return *this;
         };
 
-        ~result() {
+        ~Result() {
             if(has_value) {
                 value.~ValueType();
             } else {
-                error.~nova_error();
+                error.~NovaError();
             }
         }
 
         template <typename FuncType>
-        auto map(FuncType&& func) -> result<decltype(func(value))> {
+        auto map(FuncType&& func) -> Result<decltype(func(value))> {
             using RetVal = decltype(func(value));
 
             if(has_value) {
-                return result<RetVal>(func(value));
+                return Result<RetVal>(func(value));
             } else {
-                return result<RetVal>(std::move(error));
+                return Result<RetVal>(std::move(error));
             }
         }
 
         template <typename FuncType>
-        auto flat_map(FuncType&& func) -> result<decltype(func(value).value)> {
+        auto flat_map(FuncType&& func) -> Result<decltype(func(value).value)> {
             using RetVal = decltype(func(value).value);
 
             if(has_value) {
                 return func(value);
             } else {
-                return result<RetVal>(std::move(error));
+                return Result<RetVal>(std::move(error));
             }
         }
 
@@ -106,7 +106,7 @@ namespace nova::renderer {
             }
         }
 
-        void on_error(std::function<void(const nova_error&)> error_func) const {
+        void on_error(std::function<void(const NovaError&)> error_func) const {
             if(!has_value) {
                 error_func(error);
             }
@@ -116,7 +116,7 @@ namespace nova::renderer {
     };
 
     template <typename ValueType>
-    result(ValueType value)->result<ValueType>;
+    Result(ValueType value)->Result<ValueType>;
 
-#define MAKE_ERROR(s, ...) nova_error(fmt::format(fmt(s), __VA_ARGS__))
+#define MAKE_ERROR(s, ...) NovaError(fmt::format(fmt(s), __VA_ARGS__))
 } // namespace nova::renderer

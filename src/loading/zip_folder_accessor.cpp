@@ -8,7 +8,7 @@
 #include "../util/logger.hpp"
 
 namespace nova::renderer {
-    zip_folder_accessor::zip_folder_accessor(const fs::path& folder) : folder_accessor_base(folder), files(new file_tree_node) {
+    ZipFolderAccessor::ZipFolderAccessor(const fs::path& folder) : FolderAccessorBase(folder), files(new FileTreeNode) {
         const auto folder_string = folder.string();
 
         if(mz_zip_reader_init_file(&zip_archive, folder_string.c_str(), 0) == 0) {
@@ -19,14 +19,14 @@ namespace nova::renderer {
         build_file_tree();
     }
 
-    zip_folder_accessor::~zip_folder_accessor() {
+    ZipFolderAccessor::~ZipFolderAccessor() {
         mz_zip_reader_end(&zip_archive);
         delete_file_tree(files);
     }
 
-    void zip_folder_accessor::delete_file_tree(std::unique_ptr<file_tree_node>& node) { node = nullptr; }
+    void ZipFolderAccessor::delete_file_tree(std::unique_ptr<FileTreeNode>& node) { node = nullptr; }
 
-    std::string zip_folder_accessor::read_text_file(const fs::path& resource_path) {
+    std::string ZipFolderAccessor::read_text_file(const fs::path& resource_path) {
         const fs::path full_path = *root_folder / resource_path;
 
         const std::string resource_string = full_path.string();
@@ -66,15 +66,15 @@ namespace nova::renderer {
         return std::string{resource_buffer.data()};
     }
 
-    std::vector<fs::path> zip_folder_accessor::get_all_items_in_folder(const fs::path& folder) {
+    std::vector<fs::path> ZipFolderAccessor::get_all_items_in_folder(const fs::path& folder) {
         std::string folder_stringname = folder.string();
         std::vector<std::string> folder_path_parts = split(folder.string(), '/');
 
-        file_tree_node* cur_node = files.get();
+        FileTreeNode* cur_node = files.get();
         // Get the node at this path
         for(const std::string& part : folder_path_parts) {
             bool found_node = false;
-            for(std::unique_ptr<file_tree_node>& child : cur_node->children) {
+            for(std::unique_ptr<FileTreeNode>& child : cur_node->children) {
                 if(child->name == part) {
                     cur_node = child.get();
                     found_node = true;
@@ -89,7 +89,7 @@ namespace nova::renderer {
 
         std::vector<fs::path> children_paths;
         children_paths.reserve(cur_node->children.size());
-        for(const std::unique_ptr<file_tree_node>& child : cur_node->children) {
+        for(const std::unique_ptr<FileTreeNode>& child : cur_node->children) {
             std::string s = child->get_full_path();
             children_paths.emplace_back(s);
         }
@@ -97,7 +97,7 @@ namespace nova::renderer {
         return children_paths;
     }
 
-    void zip_folder_accessor::build_file_tree() {
+    void ZipFolderAccessor::build_file_tree() {
         uint32_t num_files = mz_zip_reader_get_num_files(&zip_archive);
 
         std::vector<std::string> all_filenames;
@@ -131,7 +131,7 @@ namespace nova::renderer {
                 }
 
                 // We didn't find a node for the current part of the path, so let's add one
-                auto new_node = std::make_unique<file_tree_node>();
+                auto new_node = std::make_unique<FileTreeNode>();
                 new_node->name = part;
                 new_node->parent = cur_node;
 
@@ -143,7 +143,7 @@ namespace nova::renderer {
         }
     }
 
-    bool zip_folder_accessor::does_resource_exist_on_filesystem(const fs::path& resource_path) {
+    bool ZipFolderAccessor::does_resource_exist_on_filesystem(const fs::path& resource_path) {
         const auto resource_string = resource_path.string();
         const auto existence_maybe = does_resource_exist_in_map(resource_string);
         if(existence_maybe) {
@@ -162,7 +162,7 @@ namespace nova::renderer {
         return false;
     }
 
-    void print_file_tree(const std::unique_ptr<file_tree_node>& folder, uint32_t depth) {
+    void print_file_tree(const std::unique_ptr<FileTreeNode>& folder, uint32_t depth) {
         if(folder == nullptr) {
             return;
         }
@@ -180,9 +180,9 @@ namespace nova::renderer {
         }
     }
 
-    std::string file_tree_node::get_full_path() const {
+    std::string FileTreeNode::get_full_path() const {
         std::vector<std::string> names;
-        const file_tree_node* cur_node = this;
+        const FileTreeNode* cur_node = this;
         while(cur_node != nullptr) {
             names.push_back(cur_node->name);
             cur_node = cur_node->parent;

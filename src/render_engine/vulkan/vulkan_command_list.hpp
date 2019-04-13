@@ -15,7 +15,7 @@ namespace nova::renderer::rhi {
     /*!
      * \brief Vulkan implementation of `command_list`
      */
-    class VulkanCommandList : public CommandList {
+    class VulkanCommandList final : public CommandList {
     public:
         explicit VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine& render_engine);
 

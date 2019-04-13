@@ -55,7 +55,7 @@ namespace nova::renderer::rhi {
          */
         virtual ~RenderEngine() = default;
 
-        [[nodiscard]] virtual std::shared_ptr<window_t> get_window() const = 0;
+        [[nodiscard]] virtual std::shared_ptr<Window> get_window() const = 0;
 
         virtual void set_num_renderpasses(uint32_t num_renderpasses) = 0;
 
@@ -69,7 +69,7 @@ namespace nova::renderer::rhi {
          *
          * \return The newly created renderpass
          */
-        [[nodiscard]] virtual result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) = 0;
+        [[nodiscard]] virtual Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) = 0;
 
         [[nodiscard]] virtual Framebuffer* create_framebuffer(const Renderpass* renderpass,
                                                               const std::vector<Image*>& attachments,
@@ -132,6 +132,8 @@ namespace nova::renderer::rhi {
         std::shared_ptr<win32_window> window;
 #endif
 
+		glm::uvec2 swapchain_size;
+
         /*!
          * \brief Initializes the engine, does **NOT** open any window
          * \param settings The settings passed to nova
@@ -141,7 +143,7 @@ namespace nova::renderer::rhi {
          *
          * \attention Called by nova
          */
-        explicit RenderEngine(NovaSettings& settings) : settings(settings){};
+        explicit RenderEngine(NovaSettings& settings) : settings(settings), swapchain_size(settings.window.width, settings.window.height) {};
 
         /*!
          * \brief Initializes the window with the given size, and creates the swapchain for that window

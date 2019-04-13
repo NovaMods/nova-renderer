@@ -9,7 +9,7 @@
 #include "gl2_structs.hpp"
 
 namespace nova::renderer::rhi {
-    GL2RenderEngine::GL2RenderEngine(NovaSettings& settings) : RenderEngine(settings) {
+    Gl2RenderEngine::Gl2RenderEngine(NovaSettings& settings) : RenderEngine(settings) {
         const bool loaded_opengl = gladLoadGL() != 0;
         if(!loaded_opengl) {
             NOVA_LOG(FATAL) << "Could not load OpenGL 2.1 functions, sorry bro";
@@ -21,22 +21,22 @@ namespace nova::renderer::rhi {
         set_initial_state();
     }
 
-    void GL2RenderEngine::set_initial_state() {
+    void Gl2RenderEngine::set_initial_state() {
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
     }
 
-    void GL2RenderEngine::set_num_renderpasses([[maybe_unused]] uint32_t num_renderpasses) {
+    void Gl2RenderEngine::set_num_renderpasses([[maybe_unused]] uint32_t num_renderpasses) {
         // GL2 doesn't need to do anything either
     }
 
-    result<Renderpass*> GL2RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
-        return result<Renderpass*>(new Renderpass);
+    Result<Renderpass*> Gl2RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
+        return Result<Renderpass*>(new Renderpass);
     }
 
-    Framebuffer* GL2RenderEngine::create_framebuffer(const Renderpass* renderpass,
+    Framebuffer* Gl2RenderEngine::create_framebuffer(const Renderpass* renderpass,
                                                      const std::vector<Image*>& attachments,
                                                      const glm::uvec2& framebuffer_size) {
         GL2Framebuffer* framebuffer = new GL2Framebuffer;
@@ -44,11 +44,11 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-    Pipeline* GL2RenderEngine::create_pipeline(const Renderpass* renderpass, const shaderpack::PipelineCreateInfo& data) { return nullptr; }
+    Pipeline* Gl2RenderEngine::create_pipeline(const Renderpass* renderpass, const shaderpack::PipelineCreateInfo& data) { return nullptr; }
 
-    Buffer* GL2RenderEngine::create_buffer(const BufferCreateInfo& info) { return nullptr; }
+    Buffer* Gl2RenderEngine::create_buffer(const BufferCreateInfo& info) { return nullptr; }
 
-    Image* GL2RenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
+    Image* Gl2RenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
         GL2Image* image = new GL2Image;
 
         glGenTextures(1, &image->id);
@@ -98,25 +98,25 @@ namespace nova::renderer::rhi {
         return image;
     }
 
-    Semaphore* GL2RenderEngine::create_semaphore() { return nullptr; }
-    std::vector<Semaphore*> GL2RenderEngine::create_semaphores(uint32_t num_semaphores) { return std::vector<Semaphore*>(); }
-    Fence* GL2RenderEngine::create_fence(bool signaled) { return nullptr; }
-    std::vector<Fence*> GL2RenderEngine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<Fence*>(); }
+    Semaphore* Gl2RenderEngine::create_semaphore() { return nullptr; }
+    std::vector<Semaphore*> Gl2RenderEngine::create_semaphores(uint32_t num_semaphores) { return std::vector<Semaphore*>(); }
+    Fence* Gl2RenderEngine::create_fence(bool signaled) { return nullptr; }
+    std::vector<Fence*> Gl2RenderEngine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<Fence*>(); }
 
-    void GL2RenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
+    void Gl2RenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
 
-    void GL2RenderEngine::destroy_pipeline(Pipeline* pipeline) {}
+    void Gl2RenderEngine::destroy_pipeline(Pipeline* pipeline) {}
 
-    void GL2RenderEngine::destroy_texture(Image* resource) {
+    void Gl2RenderEngine::destroy_texture(Image* resource) {
         GL2Image* gl_image = static_cast<GL2Image*>(resource);
         glDeleteTextures(1, &gl_image->id);
 
         delete gl_image;
     }
 
-    void GL2RenderEngine::destroy_semaphores(const std::vector<Semaphore*>& semaphores) {}
-    void GL2RenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
-    void GL2RenderEngine::submit_command_list(CommandList* cmds,
+    void Gl2RenderEngine::destroy_semaphores(const std::vector<Semaphore*>& semaphores) {}
+    void Gl2RenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
+    void Gl2RenderEngine::submit_command_list(CommandList* cmds,
                                               QueueType queue,
                                               Fence* fence_to_signal,
                                               const std::vector<Semaphore*>& wait_semaphores,

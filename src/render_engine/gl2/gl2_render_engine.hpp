@@ -11,24 +11,24 @@ namespace nova::renderer::rhi {
     /*!
      * \brief OpenGL 2.1 render engine because compatibility
      */
-    class GL2RenderEngine final : public RenderEngine {
+    class Gl2RenderEngine final : public RenderEngine {
     public:
-        explicit GL2RenderEngine(NovaSettings& settings);
+        explicit Gl2RenderEngine(NovaSettings& settings);
 
-        GL2RenderEngine(GL2RenderEngine&& other) = delete;
-        GL2RenderEngine& operator=(GL2RenderEngine&& other) noexcept = delete;
+        Gl2RenderEngine(Gl2RenderEngine&& other) = delete;
+        Gl2RenderEngine& operator=(Gl2RenderEngine&& other) noexcept = delete;
 
-        GL2RenderEngine(const GL2RenderEngine& other) = delete;
-        GL2RenderEngine& operator=(const GL2RenderEngine& other) = delete;
+        Gl2RenderEngine(const Gl2RenderEngine& other) = delete;
+        Gl2RenderEngine& operator=(const Gl2RenderEngine& other) = delete;
 
-        ~GL2RenderEngine() override final = default;
+        ~Gl2RenderEngine() override final = default;
 
-        std::shared_ptr<window_t> get_window() const override final;
+        std::shared_ptr<Window> get_window() const override final;
 
         void set_num_renderpasses(uint32_t num_renderpasses) override final;
 
         // Inherited via render_engine
-        result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
+        Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
                                         const std::vector<Image*>& attachments,
                                         const glm::uvec2& framebuffer_size) override final;
@@ -56,7 +56,7 @@ namespace nova::renderer::rhi {
     protected:
         static void set_initial_state();
 
-        std::unique_ptr<window_t> window;
+        std::unique_ptr<Window> window;
 
         void open_window_and_create_surface(const NovaSettings::WindowOptions& options) override final;
 

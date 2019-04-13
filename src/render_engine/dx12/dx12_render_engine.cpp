@@ -26,7 +26,7 @@ namespace nova::renderer::rhi {
         rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     }
 
-    std::shared_ptr<window_t> DX12RenderEngine::get_window() const { return window; }
+    std::shared_ptr<Window> DX12RenderEngine::get_window() const { return window; }
 
     void DX12RenderEngine::set_num_renderpasses(const uint32_t num_renderpasses) {
         D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_descriptor = {};
@@ -41,8 +41,8 @@ namespace nova::renderer::rhi {
         }
     }
 
-    result<Renderpass*> DX12RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
-        return result<Renderpass*>(new DX12Renderpass);
+    Result<Renderpass*> DX12RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
+        return Result<Renderpass*>(new DX12Renderpass);
     }
 
     Framebuffer* DX12RenderEngine::create_framebuffer(const Renderpass* renderpass,

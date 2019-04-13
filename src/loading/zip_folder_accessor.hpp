@@ -5,10 +5,10 @@
 #include "folder_accessor.hpp"
 
 namespace nova::renderer {
-    struct file_tree_node {
+    struct FileTreeNode {
         std::string name;
-        std::vector<std::unique_ptr<file_tree_node>> children;
-        file_tree_node* parent = nullptr;
+        std::vector<std::unique_ptr<FileTreeNode>> children;
+        FileTreeNode* parent = nullptr;
 
         [[nodiscard]] std::string get_full_path() const;
     };
@@ -16,17 +16,17 @@ namespace nova::renderer {
     /*!
      * \brief Allows access to a zip folder
      */
-    class zip_folder_accessor : public folder_accessor_base {
+    class ZipFolderAccessor : public FolderAccessorBase {
     public:
-        explicit zip_folder_accessor(const fs::path& folder);
+        explicit ZipFolderAccessor(const fs::path& folder);
 
-        zip_folder_accessor(zip_folder_accessor&& other) noexcept = default;
-        zip_folder_accessor& operator=(zip_folder_accessor&& other) noexcept = default;
+        ZipFolderAccessor(ZipFolderAccessor&& other) noexcept = default;
+        ZipFolderAccessor& operator=(ZipFolderAccessor&& other) noexcept = default;
 
-        zip_folder_accessor(const zip_folder_accessor& other) = delete;
-        zip_folder_accessor& operator=(const zip_folder_accessor& other) = delete;
+        ZipFolderAccessor(const ZipFolderAccessor& other) = delete;
+        ZipFolderAccessor& operator=(const ZipFolderAccessor& other) = delete;
 
-        ~zip_folder_accessor() override final;
+        ~ZipFolderAccessor() override final;
 
         std::string read_text_file(const fs::path& resource_path) override final;
 
@@ -40,9 +40,9 @@ namespace nova::renderer {
 
         mz_zip_archive zip_archive = {};
 
-        std::unique_ptr<file_tree_node> files = nullptr;
+        std::unique_ptr<FileTreeNode> files = nullptr;
 
-        void delete_file_tree(std::unique_ptr<file_tree_node>& node);
+        void delete_file_tree(std::unique_ptr<FileTreeNode>& node);
 
         void build_file_tree();
 
@@ -52,5 +52,5 @@ namespace nova::renderer {
     /*!
      * \brief Prints out the nodes in a depth-first fashion
      */
-    void print_file_tree(const std::unique_ptr<file_tree_node>& folder, uint32_t depth);
+    void print_file_tree(const std::unique_ptr<FileTreeNode>& folder, uint32_t depth);
 } // namespace nova::renderer

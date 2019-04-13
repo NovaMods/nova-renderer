@@ -30,11 +30,11 @@ namespace nova::renderer::rhi {
         virtual ~DX12RenderEngine() = default;
 
         // Inherited via render_engine
-        std::shared_ptr<window_t> get_window() const override final;
+        std::shared_ptr<Window> get_window() const override final;
 
         void set_num_renderpasses(uint32_t num_renderpasses) override final;
 
-        result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
+        Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
                                         const std::vector<Image*>& attachments,

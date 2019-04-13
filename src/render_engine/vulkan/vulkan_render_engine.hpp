@@ -50,11 +50,11 @@ namespace nova::renderer::rhi {
         ~VulkanRenderEngine() = default;
 
 #pragma region Render engine interface
-        std::shared_ptr<window_t> get_window() const override final;
+        std::shared_ptr<Window> get_window() const override final;
 
         void set_num_renderpasses(uint32_t num_renderpasses) override final;
 
-        result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
+        Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
                                         const std::vector<Image*>& attachments,
@@ -94,7 +94,7 @@ namespace nova::renderer::rhi {
         void open_window_and_create_surface(const NovaSettings::WindowOptions& options) override final;
 
     private:
-        std::unique_ptr<vk_swapchain_manager> swapchain;
+        std::unique_ptr<VulkanSwapchainManager> swapchain;
         uint32_t max_in_flight_frames = 3;
 
         /*!

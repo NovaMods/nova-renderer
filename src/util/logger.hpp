@@ -13,26 +13,27 @@
 #endif
 
 namespace nova::renderer {
-    enum log_level { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, MAX_LEVEL };
+    // ReSharper disable CppInconsistentNaming
+    enum LogLevel { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, MAX_LEVEL };
 
     class _log_stream;
     /*!
      * \brief A logger interface that can be implemented for whatever game Nova uses
      */
-    class logger {
+    class Logger {
     public:
-        static logger instance;
+        static Logger instance;
 
-        explicit logger() = default;
+        explicit Logger() = default;
 
-        void add_log_handler(log_level level, const std::function<void(std::string)>& log_handler);
+        void add_log_handler(LogLevel level, const std::function<void(std::string)>& log_handler);
 
-        void log(log_level level, const std::string& msg);
+        void log(LogLevel level, const std::string& msg);
 
-        _log_stream log(log_level level) const;
+        _log_stream log(LogLevel level) const;
 
     private:
-        std::unordered_map<log_level, std::function<void(std::string)>> log_handlers;
+        std::unordered_map<LogLevel, std::function<void(std::string)>> log_handlers;
         std::mutex log_lock;
     };
 
@@ -40,10 +41,10 @@ namespace nova::renderer {
     // Todo: Fix this junk
     class _log_stream : public std::stringstream {
     private:
-        log_level level;
+		LogLevel level;
 
     public:
-        explicit _log_stream(log_level level);
+        explicit _log_stream(LogLevel level);
 
         _log_stream(const _log_stream& other) = delete;
         _log_stream& operator=(const _log_stream& other) = delete;
@@ -54,7 +55,9 @@ namespace nova::renderer {
         ~_log_stream() override;
     };
 
+    // ReSharper enable CppInconsistentNaming
+
 } // namespace nova::renderer
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define NOVA_LOG(LEVEL) ::nova::renderer::logger::instance.log(::nova::renderer::log_level::LEVEL)
+#define NOVA_LOG(LEVEL) ::nova::renderer::Logger::instance.log(::nova::renderer::LogLevel::LEVEL)
