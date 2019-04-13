@@ -16,7 +16,7 @@ namespace nova::renderer {
     /*!
      * \brief A platform-independent window interface
      */
-    class window_t {
+    class Window {
     public:
         /*!
          * \brief Handles what should happen when the frame is done. This includes telling the operating system that

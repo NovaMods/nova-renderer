@@ -25,9 +25,9 @@ namespace nova::renderer::rhi {
      *
      * You can even get the framebuffer constructed from the current swapchain. Wow!
      */
-    class vk_swapchain_manager {
+    class VulkanSwapchainManager {
     public:
-        vk_swapchain_manager(uint32_t num_swapchain_images,
+        VulkanSwapchainManager(uint32_t num_swapchain_images,
                              VulkanRenderEngine& render_engine,
                              glm::ivec2 window_dimensions,
                              const std::vector<VkPresentModeKHR>& present_modes);

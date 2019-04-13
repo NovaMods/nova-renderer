@@ -68,7 +68,7 @@ namespace nova::renderer {
         window_class_id = RegisterClassExW(&window_class);
         if(window_class_id == 0) {
             const std::string windows_err = get_last_windows_error();
-            logger::instance.log(FATAL) << "Could not register window class: " << windows_err;
+            NOVA_LOG(FATAL) << "Could not register window class: " << windows_err;
 
             throw window_creation_error("Could not register window class");
         }

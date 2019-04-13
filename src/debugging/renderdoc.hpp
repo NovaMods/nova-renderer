@@ -12,7 +12,7 @@
 #include <nova_renderer/util/result.hpp>
 
 namespace nova::renderer {
-    result<RENDERDOC_API_1_3_0*> load_renderdoc(const std::string& renderdoc_dll_path);
+    Result<RENDERDOC_API_1_3_0*> load_renderdoc(const std::string& renderdoc_dll_path);
 } // namespace nova::renderer
 
 #endif // NOVA_RENDERER_RENDERDOC_HPP

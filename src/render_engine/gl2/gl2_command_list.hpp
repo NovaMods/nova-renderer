@@ -10,19 +10,19 @@
 #include "glad.h"
 
 namespace nova::renderer::rhi {
-    enum class gl2_command_type {
-        BUFFER_COPY,
-        EXECUTE_COMMAND_LISTS,
-        BEGIN_RENDERPASS,
-        END_RENDERPASS,
-        BIND_PIPELINE,
-        BIND_MATERIAL,
-        BIND_VERTEX_BUFFERS,
-        BIND_INDEX_BUFFER,
-        DRAW_INDEXED_MESH,
+    enum class Gl2CommandType {
+        BufferCopy,
+        ExecuteCommandLists,
+        BeginRenderpass,
+        EndRenderpass,
+        BindPipeline,
+        BindMaterial,
+        BindVertexBuffers,
+        BindIndexBuffer,
+        DrawIndexedMesh,
     };
 
-    struct gl2_buffer_copy_command {
+    struct Gl2BufferCopyCommand {
         GLuint destination_buffer;
         uint64_t destination_offset;
 
@@ -32,39 +32,39 @@ namespace nova::renderer::rhi {
         uint64_t num_bytes;
     };
 
-    struct gl2_execute_command_lists_command {
+    struct Gl2ExecuteCommandListsCommand {
         std::vector<CommandList*> lists_to_execute;
     };
 
-    struct gl2_begin_renderpass_command {
+    struct Gl2BeginRenderpassCommand {
         GLuint framebuffer;
     };
 
-    struct gl2_bind_pipeline_command {};
+    struct Gl2BindPipelineCommand {};
 
-    struct gl2_bind_material_command {};
+    struct Gl2BindMaterialCommand {};
 
-    struct gl2_bind_vertex_buffers_command {};
+    struct Gl2BindVertexBuffersCommand {};
 
-    struct gl2_bind_index_buffer_command {};
+    struct Gl2BindIndexBufferCommand {};
 
-    struct gl2_draw_indexed_mesh_command {};
+    struct Gl2DrawIndexedMeshCommand {};
 
-    struct gl2_command {
-        gl2_command_type type;
+    struct Gl2Command {
+        Gl2CommandType type;
 
         union {
-            gl2_buffer_copy_command buffer_copy;
-            gl2_execute_command_lists_command execute_command_lists;
-            gl2_begin_renderpass_command begin_renderpass;
-            gl2_bind_pipeline_command bind_pipeline;
-            gl2_bind_material_command bind_material;
-            gl2_bind_vertex_buffers_command bind_vertex_buffers;
-            gl2_bind_index_buffer_command bind_index_buffer;
-            gl2_draw_indexed_mesh_command draw_indexed_mesh;
+            Gl2BufferCopyCommand buffer_copy;
+            Gl2ExecuteCommandListsCommand execute_command_lists;
+            Gl2BeginRenderpassCommand begin_renderpass;
+            Gl2BindPipelineCommand bind_pipeline;
+            Gl2BindMaterialCommand bind_material;
+            Gl2BindVertexBuffersCommand bind_vertex_buffers;
+            Gl2BindIndexBufferCommand bind_index_buffer;
+            Gl2DrawIndexedMeshCommand draw_indexed_mesh;
         };
 
-        ~gl2_command();
+        ~Gl2Command();
     };
 
     /*!
@@ -81,15 +81,15 @@ namespace nova::renderer::rhi {
      *
      * On the other hand, OpenGL has no concept of a resource barrier...
      */
-    class gl2_command_list : public CommandList {
+    class Gl2CommandList final : public CommandList {
     public:
-        gl2_command_list();
+        Gl2CommandList();
 
-		gl2_command_list(gl2_command_list&& old) noexcept = default;
-		gl2_command_list& operator=(gl2_command_list&& old) noexcept = default;
+		Gl2CommandList(Gl2CommandList&& old) noexcept = default;
+		Gl2CommandList& operator=(Gl2CommandList&& old) noexcept = default;
 
-		gl2_command_list(const gl2_command_list& other) = delete;
-		gl2_command_list& operator=(const gl2_command_list& other) = delete;
+		Gl2CommandList(const Gl2CommandList& other) = delete;
+		Gl2CommandList& operator=(const Gl2CommandList& other) = delete;
 
         void resource_barriers([[maybe_unused]] PipelineStageFlags stages_before_barrier,
                               [[maybe_unused]] PipelineStageFlags stages_after_barrier,
@@ -117,15 +117,15 @@ namespace nova::renderer::rhi {
 
         void draw_indexed_mesh() override final;
 
-        ~gl2_command_list() override final;
+        ~Gl2CommandList() override final;
 
         /*!
          * \brief Provides access to the actual command list, so that the GL2 render engine can process the commands
          */
-        std::vector<gl2_command> get_commands() const;
+        std::vector<Gl2Command> get_commands() const;
 
     private:
-        std::vector<gl2_command> commands;
+        std::vector<Gl2Command> commands;
     };
 } // namespace nova::renderer
 

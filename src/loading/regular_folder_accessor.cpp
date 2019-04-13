@@ -8,9 +8,9 @@
 #include "../util/logger.hpp"
 
 namespace nova::renderer {
-    regular_folder_accessor::regular_folder_accessor(const fs::path& folder) : folder_accessor_base(folder) {}
+    RegularFolderAccessor::RegularFolderAccessor(const fs::path& folder) : FolderAccessorBase(folder) {}
 
-    std::string regular_folder_accessor::read_text_file(const fs::path& resource_path) {
+    std::string RegularFolderAccessor::read_text_file(const fs::path& resource_path) {
         std::lock_guard l(*resource_existence_mutex);
         fs::path full_resource_path;
         if(has_root(resource_path, *root_folder)) {
@@ -51,7 +51,7 @@ namespace nova::renderer {
         return file_string;
     }
 
-    std::vector<fs::path> regular_folder_accessor::get_all_items_in_folder(const fs::path& folder) {
+    std::vector<fs::path> RegularFolderAccessor::get_all_items_in_folder(const fs::path& folder) {
         const fs::path full_path = *root_folder / folder;
         std::vector<fs::path> paths = {};
 
@@ -62,13 +62,13 @@ namespace nova::renderer {
             }
         }
         catch(const fs::filesystem_error& error) {
-            throw filesystem_exception(error);
+            throw FilesystemException(error);
         }
 
         return paths;
     }
 
-    bool regular_folder_accessor::does_resource_exist_on_filesystem(const fs::path& resource_path) {
+    bool RegularFolderAccessor::does_resource_exist_on_filesystem(const fs::path& resource_path) {
         // NOVA_LOG(TRACE) << "Checking resource existence for " << resource_path;
         const auto resource_string = resource_path.string();
         const auto existence_maybe = does_resource_exist_in_map(resource_string);

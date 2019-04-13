@@ -43,13 +43,13 @@ namespace nova::renderer::rhi {
         create_per_thread_command_pools();
     }
 
-    std::shared_ptr<window_t> VulkanRenderEngine::get_window() const { return window; }
+    std::shared_ptr<Window> VulkanRenderEngine::get_window() const { return window; }
 
     void VulkanRenderEngine::set_num_renderpasses([[maybe_unused]] uint32_t num_renderpasses) {
         // Pretty sure Vulkan doesn't need to do anything here
     }
 
-    result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
+    Result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
         VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
 
         VulkanRenderpass* renderpass = new VulkanRenderpass;
@@ -169,19 +169,19 @@ namespace nova::renderer::rhi {
         }
 
         if(framebuffer_width == 0) {
-            return result<Renderpass*>(MAKE_ERROR(
+            return Result<Renderpass*>(MAKE_ERROR(
                 "Framebuffer width for pass {:s} is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero width",
                 data.name));
         }
 
         if(framebuffer_height == 0) {
-            return result<Renderpass*>(MAKE_ERROR(
+            return Result<Renderpass*>(MAKE_ERROR(
                 "Framebuffer height for pass {:s} is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero height",
                 data.name));
         }
 
         if(framebuffer_attachments.size() > gpu.props.limits.maxColorAttachments) {
-            return result<Renderpass*>(MAKE_ERROR(
+            return Result<Renderpass*>(MAKE_ERROR(
                 "Framebuffer for pass {:s} has {:d} color attachments, but your GPU only supports {:d}. Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures",
                 data.name,
                 data.texture_outputs.size(),
@@ -215,7 +215,7 @@ namespace nova::renderer::rhi {
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
         }
 
-        return result(static_cast<Renderpass*>(renderpass));
+        return Result(static_cast<Renderpass*>(renderpass));
     }
 
     Framebuffer* VulkanRenderEngine::create_framebuffer(const Renderpass* renderpass,
@@ -579,7 +579,7 @@ namespace nova::renderer::rhi {
                                                  const std::vector<Semaphore*>& wait_semaphores,
                                                  const std::vector<Semaphore*>& signal_semaphores) {}
 
-    void VulkanRenderEngine::open_window_and_create_surface(const nova_settings::window_options& options) {
+    void VulkanRenderEngine::open_window_and_create_surface(const NovaSettings::WindowOptions& options) {
 #ifdef NOVA_LINUX
         window = std::make_shared<x11_window>(options);
 
@@ -819,7 +819,7 @@ namespace nova::renderer::rhi {
         NOVA_CHECK_RESULT(
             vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, present_modes.data()));
 
-        swapchain = std::make_unique<vk_swapchain_manager>(max_in_flight_frames, *this, window->get_window_size(), present_modes);
+        swapchain = std::make_unique<VulkanSwapchainManager>(max_in_flight_frames, *this, window->get_window_size(), present_modes);
 
         const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
         swapchain_size.x = swapchain_extent.width;

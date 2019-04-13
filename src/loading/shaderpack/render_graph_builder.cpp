@@ -30,18 +30,18 @@ namespace nova::renderer::shaderpack {
                               const std::unordered_map<std::string, std::vector<std::string>>& resource_to_write_pass,
                               uint32_t depth);
 
-    bool range::has_writer() const { return first_write_pass <= last_write_pass; }
+    bool Range::has_writer() const { return first_write_pass <= last_write_pass; }
 
-    bool range::has_reader() const { return first_read_pass <= last_read_pass; }
+    bool Range::has_reader() const { return first_read_pass <= last_read_pass; }
 
-    bool range::is_used() const { return has_writer() || has_reader(); }
+    bool Range::is_used() const { return has_writer() || has_reader(); }
 
-    bool range::can_alias() const {
+    bool Range::can_alias() const {
         // If we read before we have completely written to a resource we need to preserve it, so no alias is possible.
         return !(has_reader() && has_writer() && first_read_pass <= first_write_pass);
     }
 
-    unsigned range::last_used_pass() const {
+    unsigned Range::last_used_pass() const {
         unsigned last_pass = 0;
         if(has_writer()) {
             last_pass = std::max(last_pass, last_write_pass);
@@ -52,7 +52,7 @@ namespace nova::renderer::shaderpack {
         return last_pass;
     }
 
-    unsigned range::first_used_pass() const {
+    unsigned Range::first_used_pass() const {
         unsigned first_pass = ~0U;
         if(has_writer()) {
             first_pass = std::min(first_pass, first_write_pass);
@@ -63,7 +63,7 @@ namespace nova::renderer::shaderpack {
         return first_pass;
     }
 
-    bool range::is_disjoint_with(const range& other) const {
+    bool Range::is_disjoint_with(const Range& other) const {
         if(!is_used() || !other.is_used()) {
             return false;
         }
@@ -76,7 +76,7 @@ namespace nova::renderer::shaderpack {
         return left || right;
     }
 
-    result<std::vector<RenderPassCreateInfo>> order_passes(const std::vector<RenderPassCreateInfo>& passes) {
+    Result<std::vector<RenderPassCreateInfo>> order_passes(const std::vector<RenderPassCreateInfo>& passes) {
         MTR_SCOPE("Renderpass", "order_passes");
 
         NOVA_LOG(DEBUG) << "Executing Pass Scheduler";
@@ -118,7 +118,7 @@ namespace nova::renderer::shaderpack {
         if(resource_to_write_pass.find("Backbuffer") == resource_to_write_pass.end()) {
             NOVA_LOG(ERROR)
                 << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
-            return result<std::vector<RenderPassCreateInfo>>(nova_error("Failed to order passes because no backbuffer was found"));
+            return Result<std::vector<RenderPassCreateInfo>>(NovaError("Failed to order passes because no backbuffer was found"));
         }
 
         auto backbuffer_writes = resource_to_write_pass["Backbuffer"];
@@ -159,7 +159,7 @@ namespace nova::renderer::shaderpack {
             passes_in_submission_order.push_back(render_passes_to_order.at(pass_name));
         }
 
-        return result(passes_in_submission_order);
+        return Result(passes_in_submission_order);
     }
 
     void add_dependent_passes(const std::string& pass_name,
@@ -209,7 +209,7 @@ namespace nova::renderer::shaderpack {
     }
 
     void determine_usage_order_of_textures(const std::vector<RenderPassCreateInfo>& passes,
-                                           std::unordered_map<std::string, range>& resource_used_range,
+                                           std::unordered_map<std::string, Range>& resource_used_range,
                                            std::vector<std::string>& resources_in_order) {
         uint32_t pass_idx = 0;
         for(const auto& pass : passes) {
@@ -250,7 +250,7 @@ namespace nova::renderer::shaderpack {
 
     std::unordered_map<std::string, std::string> determine_aliasing_of_textures(
         const std::unordered_map<std::string, TextureCreateInfo>& textures,
-        const std::unordered_map<std::string, range>& resource_used_range,
+        const std::unordered_map<std::string, Range>& resource_used_range,
         const std::vector<std::string>& resources_in_order) {
         std::unordered_map<std::string, std::string> aliases;
         aliases.reserve(resources_in_order.size());

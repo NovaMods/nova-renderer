@@ -117,20 +117,20 @@ namespace nova::renderer::shaderpack {
             /* .generalConstantMatrixVectorIndexing = */ true,
         }};
 
-    std::shared_ptr<folder_accessor_base> get_shaderpack_accessor(const fs::path& shaderpack_name);
+    std::shared_ptr<FolderAccessorBase> get_shaderpack_accessor(const fs::path& shaderpack_name);
 
-    ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<folder_accessor_base>& folder_access);
+    ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
 
-    result<std::vector<RenderPassCreateInfo>> load_passes_file(const std::shared_ptr<folder_accessor_base>& folder_access);
+    Result<std::vector<RenderPassCreateInfo>> load_passes_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
 
-    std::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<folder_accessor_base>& folder_access);
-    PipelineCreateInfo load_single_pipeline(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& pipeline_path);
+    std::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<FolderAccessorBase>& folder_access);
+    PipelineCreateInfo load_single_pipeline(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& pipeline_path);
 
-    std::vector<MaterialData> load_material_files(const std::shared_ptr<folder_accessor_base>& folder_access);
-    MaterialData load_single_material(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& material_path);
+    std::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access);
+    MaterialData load_single_material(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& material_path);
 
     std::vector<uint32_t> load_shader_file(const fs::path& filename,
-                                           const std::shared_ptr<folder_accessor_base>& folder_access,
+                                           const std::shared_ptr<FolderAccessorBase>& folder_access,
                                            EShLanguage stage,
                                            const std::vector<std::string>& defines);
 
@@ -138,7 +138,7 @@ namespace nova::renderer::shaderpack {
 
     ShaderpackData load_shaderpack_data(const fs::path& shaderpack_name) {
         loading_failed = false;
-        const std::shared_ptr<folder_accessor_base> folder_access = get_shaderpack_accessor(shaderpack_name);
+        const std::shared_ptr<FolderAccessorBase> folder_access = get_shaderpack_accessor(shaderpack_name);
 
         // The shaderpack has a number of items: There's the shaders themselves, of course, but there's so, so much more
         // What else is there?
@@ -158,29 +158,29 @@ namespace nova::renderer::shaderpack {
         return data;
     }
 
-    std::shared_ptr<folder_accessor_base> get_shaderpack_accessor(const fs::path& shaderpack_name) {
+    std::shared_ptr<FolderAccessorBase> get_shaderpack_accessor(const fs::path& shaderpack_name) {
         fs::path path_to_shaderpack = shaderpack_name;
 
         // Where is the shaderpack, and what kind of folder is it in?
         if(is_zip_folder(path_to_shaderpack)) {
             // zip folder in shaderpacks folder
             path_to_shaderpack.replace_extension(".zip");
-            return std::make_shared<zip_folder_accessor>(path_to_shaderpack);
+            return std::make_shared<ZipFolderAccessor>(path_to_shaderpack);
         }
         if(fs::exists(path_to_shaderpack)) {
             // regular folder in shaderpacks folder
-            return std::make_shared<regular_folder_accessor>(path_to_shaderpack);
+            return std::make_shared<RegularFolderAccessor>(path_to_shaderpack);
         }
 
         throw resource_not_found_exception(shaderpack_name.string());
     }
 
-    ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<folder_accessor_base>& folder_access) {
+    ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         NOVA_LOG(TRACE) << "load_dynamic_resource_file called";
         std::string resources_string = folder_access->read_text_file("resources.json");
         try {
             auto json_resources = nlohmann::json::parse(resources_string.c_str());
-            const validation_report report = validate_shaderpack_resources_data(json_resources);
+            const ValidationReport report = validate_shaderpack_resources_data(json_resources);
             print(report);
             if(!report.errors.empty()) {
                 loading_failed = true;
@@ -206,7 +206,7 @@ namespace nova::renderer::shaderpack {
         return {};
     }
 
-    result<std::vector<RenderPassCreateInfo>> load_passes_file(const std::shared_ptr<folder_accessor_base>& folder_access) {
+    Result<std::vector<RenderPassCreateInfo>> load_passes_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         NOVA_LOG(TRACE) << "load_passes_file called";
         const auto passes_bytes = folder_access->read_text_file("passes.json");
         try {
@@ -216,18 +216,18 @@ namespace nova::renderer::shaderpack {
             return order_passes(passes);
 
         } catch(nlohmann::json::parse_error& err) {
-            return result<std::vector<RenderPassCreateInfo>>(
+            return Result<std::vector<RenderPassCreateInfo>>(
                 MAKE_ERROR("Could not parse your shaderpack's passes.json: {:s}", err.what()));
         }
     }
 
-    std::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<folder_accessor_base>& folder_access) {
+    std::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         NOVA_LOG(TRACE) << "load_pipeline_files called";
         std::vector<fs::path> potential_pipeline_files;
         try {
             potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
 
-        } catch(const filesystem_exception& exception) {
+        } catch(const FilesystemException& exception) {
             throw pipeline_load_failed("Materials folder does not exist", exception);
         }
 
@@ -248,13 +248,13 @@ namespace nova::renderer::shaderpack {
         return output;
     }
 
-    PipelineCreateInfo load_single_pipeline(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& pipeline_path) {
+    PipelineCreateInfo load_single_pipeline(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& pipeline_path) {
         NOVA_LOG(TRACE) << "Task to load pipeline " << pipeline_path << " started";
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
         auto json_pipeline = nlohmann::json::parse(pipeline_bytes);
         NOVA_LOG(TRACE) << "Parsed JSON from disk for pipeline " << pipeline_path;
-        const validation_report report = validate_graphics_pipeline(json_pipeline);
+        const ValidationReport report = validate_graphics_pipeline(json_pipeline);
         NOVA_LOG(TRACE) << "Finished validating JSON for pipeline " << pipeline_path;
         print(report);
         if(!report.errors.empty()) {
@@ -304,7 +304,7 @@ namespace nova::renderer::shaderpack {
     }
 
     std::vector<uint32_t> load_shader_file(const fs::path& filename,
-                                           const std::shared_ptr<folder_accessor_base>& folder_access,
+                                           const std::shared_ptr<FolderAccessorBase>& folder_access,
                                            const EShLanguage stage,
                                            const std::vector<std::string>& defines) {
         static std::unordered_map<EShLanguage, std::vector<fs::path>> extensions_by_shader_stage = {{EShLangVertex,
@@ -463,12 +463,12 @@ namespace nova::renderer::shaderpack {
         throw resource_not_found_exception("Could not find shader " + filename.string());
     }
 
-    std::vector<MaterialData> load_material_files(const std::shared_ptr<folder_accessor_base>& folder_access) {
+    std::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         std::vector<fs::path> potential_material_files;
         try {
             potential_material_files = folder_access->get_all_items_in_folder("materials");
         }
-        catch(filesystem_exception& exception) {
+        catch(FilesystemException& exception) {
             throw material_load_failed("Materials folder does not exist", exception);
         }
 
@@ -487,7 +487,7 @@ namespace nova::renderer::shaderpack {
         return output;
     }
 
-    MaterialData load_single_material(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& material_path) {
+    MaterialData load_single_material(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& material_path) {
         const std::string material_text = folder_access->read_text_file(material_path);
 
         auto json_material = nlohmann::json::parse(material_text);

@@ -2,7 +2,7 @@
 #include <glm/glm.hpp>
 
 namespace nova::renderer {
-    struct per_frame_uniforms {
+    struct PerFrameUniforms {
         glm::mat4 gbufferModelView;
         glm::mat4 gbufferModelViewInverse;
         glm::mat4 gbufferPreviousModelView;

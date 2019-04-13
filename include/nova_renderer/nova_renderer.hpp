@@ -136,8 +136,9 @@ namespace nova::renderer {
                                   const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
                                   const std::vector<shaderpack::MaterialData>& materials);
 
-        std::tuple<Pipeline, PipelineMetadata> create_pipeline(const std::vector<shaderpack::MaterialData>& materials,
-                                                                    const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
+        std::tuple<Pipeline, PipelineMetadata> create_pipeline(const rhi::Renderpass* renderpass,
+                                                               const std::vector<shaderpack::MaterialData>& materials,
+                                                               const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
 
         void destroy_render_passes();
 

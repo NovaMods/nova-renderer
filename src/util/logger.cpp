@@ -6,20 +6,20 @@
 #include "logger.hpp"
 
 namespace nova::renderer {
-    logger logger::instance;
+	Logger Logger::instance;
 
-    void logger::add_log_handler(log_level level, const std::function<void(std::string)>& log_handler) {
+    void Logger::add_log_handler(LogLevel level, const std::function<void(std::string)>& log_handler) {
         log_handlers.emplace(level, log_handler);
     }
 
-    void logger::log(const log_level level, const std::string& msg) {
+    void Logger::log(const LogLevel level, const std::string& msg) {
         if(log_handlers.at(level)) {
             std::lock_guard<std::mutex> lock(log_lock);
             log_handlers.at(level)(msg);
         }
     }
 
-    _log_stream::_log_stream(log_level level) : level(level) {}
+    _log_stream::_log_stream(LogLevel level) : level(level) {}
 
     _log_stream::_log_stream(_log_stream&& other) noexcept : std::stringstream(std::move(other)), level(other.level) {}
 
@@ -29,7 +29,7 @@ namespace nova::renderer {
         return *this;
     }
 
-    _log_stream::~_log_stream() { logger::instance.log(level, str()); }
+    _log_stream::~_log_stream() { Logger::instance.log(level, str()); }
 
-    _log_stream logger::log(log_level level) const { return _log_stream(level); }
+    _log_stream Logger::log(LogLevel level) const { return _log_stream(level); }
 } // namespace nova::renderer

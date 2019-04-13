@@ -12,9 +12,9 @@ namespace nova::renderer {
     /*!
      * \brief Allows access to resources in a regular folder
      */
-    class regular_folder_accessor : public folder_accessor_base {
+    class RegularFolderAccessor : public FolderAccessorBase {
     public:
-        explicit regular_folder_accessor(const fs::path& folder);
+        explicit RegularFolderAccessor(const fs::path& folder);
 
         std::string read_text_file(const fs::path& resource_path) override final;
 
