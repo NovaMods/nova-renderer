@@ -137,13 +137,14 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/vulkan_command_list.cpp
         src/render_engine/vulkan/vulkan_command_list.hpp 
 
-        src/render_engine/gl2/gl2_render_engine.cpp
-        src/render_engine/gl2/gl2_render_engine.hpp 
-        src/render_engine/gl2/gl2_command_list.cpp 
-        src/render_engine/gl2/gl2_command_list.hpp 
-        src/render_engine/gl2/glad.h 
-        src/render_engine/gl2/glad.c 
-		src/render_engine/gl2/gl2_structs.hpp 
+        src/render_engine/gl3/gl3_render_engine.cpp
+        src/render_engine/gl3/gl3_render_engine.hpp 
+        src/render_engine/gl3/gl3_command_list.cpp 
+        src/render_engine/gl3/gl3_command_list.hpp 
+        src/render_engine/gl3/KHR/khrplatform.h
+        src/render_engine/gl3/glad/glad.h 
+        src/render_engine/gl3/glad.c 
+		src/render_engine/gl3/gl3_structs.hpp 
 		src/render_engine/vulkan/vk_structs.hpp 
 		include/nova_renderer/rhi_types.hpp 
 		src/render_engine/vulkan/vulkan_render_engine.cpp 
@@ -322,6 +323,7 @@ if(WIN32)
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler glslang::HLSL spirv-cross-hlsl)
     target_include_directories(nova-renderer PRIVATE ${WinSDK_DIRS})
     target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING NOMINMAX)
+	target_compile_definitions(nova-renderer PRIVATE NOVA_EXPORT)
 
     # Visual Studio is stupid. Is it really that hard to use filesystem directories to organize code like literally
     # everyone else?

@@ -21,7 +21,7 @@
 
 #include <minitrace/minitrace.h>
 #include "loading/shaderpack/render_graph_builder.hpp"
-#include "render_engine/gl2/gl2_render_engine.hpp"
+#include "render_engine/gl3/gl3_render_engine.hpp"
 #include "util/logger.hpp"
 
 namespace nova::renderer {
@@ -79,8 +79,8 @@ namespace nova::renderer {
             } break;
 
             case GraphicsApi::Gl2: {
-                MTR_SCOPE("Init", "InitGL2RenderEngine");
-                rhi = std::make_unique<rhi::Gl2RenderEngine>(render_settings);
+                MTR_SCOPE("Init", "InitGL3RenderEngine");
+                rhi = std::make_unique<rhi::Gl3RenderEngine>(render_settings);
             } break;
         }
     }
@@ -207,6 +207,8 @@ namespace nova::renderer {
             renderpass.pipelines.reserve(pipelines.size());
             for(const shaderpack::PipelineCreateInfo& pipeline_create_info : pipelines) {
                 if(pipeline_create_info.pass == create_info.name) {
+					std::unordered_map<std::string, ResourceBinding> bindings;
+
                     auto [pipeline, pipeline_metadata] = create_pipeline(renderpass.renderpass, materials, pipeline_create_info);
                     renderpass.pipelines.push_back(pipeline);
 

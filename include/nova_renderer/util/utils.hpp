@@ -18,6 +18,12 @@
 
 #include "filesystem.hpp"
 
+#if defined(NOVA_EXPORT)
+#define NOVA_API __declspec(dllexport)
+#else
+#define NOVA_API __declspec(dllimport)
+#endif
+
 namespace nova::renderer {
     template <int Num>
     struct placeholder;
