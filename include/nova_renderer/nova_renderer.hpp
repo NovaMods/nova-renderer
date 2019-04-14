@@ -38,7 +38,7 @@ namespace nova::renderer {
 
         std::vector<Pipeline> pipelines;
 
-        bool writes_to_backbuffer;
+        bool writes_to_backbuffer = false;
     };
 #pragma endregion
 
@@ -56,6 +56,10 @@ namespace nova::renderer {
         shaderpack::RenderPassCreateInfo data;
 
         std::unordered_map<std::string, PipelineMetadata> pipeline_metadata;
+    };
+
+    struct ResourceBinding {
+        
     };
 
     /*!

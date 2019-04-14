@@ -4,24 +4,24 @@
  */
 
 #pragma once
-#include "glad.h"
+#include "glad/glad.h"
 #include "nova_renderer/render_engine.hpp"
 
 namespace nova::renderer::rhi {
     /*!
-     * \brief OpenGL 2.1 render engine because compatibility
+     * \brief OpenGL 3.1 render engine because compatibility
      */
-    class Gl2RenderEngine final : public RenderEngine {
+    class Gl3RenderEngine final : public RenderEngine {
     public:
-        explicit Gl2RenderEngine(NovaSettings& settings);
+        explicit Gl3RenderEngine(NovaSettings& settings);
 
-        Gl2RenderEngine(Gl2RenderEngine&& other) = delete;
-        Gl2RenderEngine& operator=(Gl2RenderEngine&& other) noexcept = delete;
+        Gl3RenderEngine(Gl3RenderEngine&& other) = delete;
+        Gl3RenderEngine& operator=(Gl3RenderEngine&& other) noexcept = delete;
 
-        Gl2RenderEngine(const Gl2RenderEngine& other) = delete;
-        Gl2RenderEngine& operator=(const Gl2RenderEngine& other) = delete;
+        Gl3RenderEngine(const Gl3RenderEngine& other) = delete;
+        Gl3RenderEngine& operator=(const Gl3RenderEngine& other) = delete;
 
-        ~Gl2RenderEngine() override final = default;
+        ~Gl3RenderEngine() override final = default;
 
         std::shared_ptr<Window> get_window() const override final;
 
