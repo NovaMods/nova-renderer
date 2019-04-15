@@ -201,9 +201,9 @@ namespace nova::renderer {
             renderpass.pipelines.reserve(pipelines.size());
             for(const shaderpack::PipelineCreateInfo& pipeline_create_info : pipelines) {
                 if(pipeline_create_info.pass == create_info.name) {
-					std::unordered_map<std::string, ResourceBinding> bindings;
+                    std::unordered_map<std::string, ResourceBinding> bindings;
 
-                    auto [pipeline, pipeline_metadata] = create_pipeline(renderpass.renderpass, materials, pipeline_create_info);
+                    auto [pipeline, pipeline_metadata] = create_graphics_pipeline(renderpass.renderpass, materials, pipeline_create_info);
                     renderpass.pipelines.push_back(pipeline);
 
                     metadata.pipeline_metadata.emplace(pipeline_create_info.name, pipeline_metadata);
@@ -212,16 +212,38 @@ namespace nova::renderer {
         }
     }
 
-    std::tuple<Pipeline, PipelineMetadata> NovaRenderer::create_pipeline(const rhi::Renderpass* renderpass,
-                                                                         const std::vector<shaderpack::MaterialData>& materials,
-                                                                         const shaderpack::PipelineCreateInfo& pipeline_create_info) const {
-
+    std::tuple<Pipeline, PipelineMetadata> NovaRenderer::create_graphics_pipeline(
+        const rhi::Renderpass* renderpass,
+        const std::vector<shaderpack::MaterialData>& materials,
+        const shaderpack::PipelineCreateInfo& pipeline_create_info) const {
         Pipeline pipeline;
         PipelineMetadata metadata;
 
         metadata.data = pipeline_create_info;
 
-        rhi::Pipeline* rhi_pipeline = rhi->create_pipeline(renderpass, pipeline_create_info);
+        std::unordered_map<std::string, rhi::ResourceBindingDescription> bindings;
+        bindings.reserve(32); // Probably a good estimate
+
+        get_shader_module_descriptors(pipeline_create_info.vertex_shader.source, rhi::ShaderStageFlags::Vertex, bindings);
+
+        if(pipeline_create_info.tessellation_control_shader) {
+            get_shader_module_descriptors(pipeline_create_info.tessellation_control_shader->source,
+                                          rhi::ShaderStageFlags::TessellationControl,
+                                          bindings);
+        }
+        if(pipeline_create_info.tessellation_evaluation_shader) {
+            get_shader_module_descriptors(pipeline_create_info.tessellation_evaluation_shader->source,
+                                          rhi::ShaderStageFlags::TessellationEvaluation,
+                                          bindings);
+        }
+        if(pipeline_create_info.geometry_shader) {
+            get_shader_module_descriptors(pipeline_create_info.geometry_shader->source, rhi::ShaderStageFlags::Geometry, bindings);
+        }
+        if(pipeline_create_info.fragment_shader) {
+            get_shader_module_descriptors(pipeline_create_info.fragment_shader->source, rhi::ShaderStageFlags::Fragment, bindings);
+        }
+
+        rhi::Pipeline* rhi_pipeline = rhi->create_pipeline(renderpass, pipeline_create_info, bindings);
         pipeline.pipeline = rhi_pipeline;
 
         // Determine the pipeline layout so the material can create descriptors for the pipeline
@@ -241,50 +263,50 @@ namespace nova::renderer {
 
         return {pipeline, metadata};
     }
-    /*
-    void nova_renderer::get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
-                                                      const VkShaderStageFlags shader_stage,
-                                                      std::unordered_map<std::string, vk_resource_binding>& bindings) {
+
+    void NovaRenderer::get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
+                                                     const rhi::ShaderStageFlags shader_stage,
+                                                     std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings) {
         const spirv_cross::CompilerGLSL shader_compiler(spirv);
         const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
 
         for(const spirv_cross::Resource& resource : resources.sampled_images) {
             NOVA_LOG(TRACE) << "Found a texture resource named " << resource.name;
-            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::CombinedImageSampler);
         }
 
         for(const spirv_cross::Resource& resource : resources.uniform_buffers) {
             NOVA_LOG(TRACE) << "Found a UBO resource named " << resource.name;
-            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::UniformBuffer);
         }
 
         for(const spirv_cross::Resource& resource : resources.storage_buffers) {
             NOVA_LOG(TRACE) << "Found a SSBO resource named " << resource.name;
-            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::StorageBuffer);
         }
     }
 
-    void nova_renderer::add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings,
-                                                 const VkShaderStageFlags shader_stage,
-                                                 const spirv_cross::CompilerGLSL& shader_compiler,
-                                                 const spirv_cross::Resource& resource,
-                                                 const VkDescriptorType type) {
+    void NovaRenderer::add_resource_to_bindings(std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings,
+                                                const rhi::ShaderStageFlags shader_stage,
+                                                const spirv_cross::CompilerGLSL& shader_compiler,
+                                                const spirv_cross::Resource& resource,
+                                                const rhi::DescriptorType type) {
         const uint32_t set = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         const uint32_t binding = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
 
-        vk_resource_binding new_binding = {};
+        rhi::ResourceBindingDescription new_binding = {};
         new_binding.set = set;
         new_binding.binding = binding;
-        new_binding.descriptorType = type;
-        new_binding.descriptorCount = 1;
-        new_binding.stageFlags = shader_stage;
+        new_binding.type = type;
+        new_binding.count = 1;
+        new_binding.stages = shader_stage;
 
         if(bindings.find(resource.name) == bindings.end()) {
             // Totally new binding!
             bindings[resource.name] = new_binding;
         } else {
             // Existing binding. Is it the same as our binding?
-            vk_resource_binding& existing_binding = bindings.at(resource.name);
+            rhi::ResourceBindingDescription& existing_binding = bindings.at(resource.name);
             if(existing_binding != new_binding) {
                 // They have two different bindings with the same name. Not allowed
                 NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name
@@ -292,11 +314,11 @@ namespace nova::renderer {
 
             } else {
                 // Same binding, probably at different stages - let's fix that
-                existing_binding.stageFlags |= shader_stage;
+                existing_binding.stages |= shader_stage;
             }
         }
     }
-    */
+
     void NovaRenderer::destroy_render_passes() {
         for(Renderpass& renderpass : renderpasses) {
             rhi->destroy_renderpass(renderpass.renderpass);

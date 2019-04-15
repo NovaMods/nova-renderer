@@ -4,105 +4,6 @@
 #include "nova_renderer/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
-#pragma region Enums
-    enum class ResourceState {
-        Undefined,
-        General,
-
-        ColorAttachment,
-        DepthStencilAttachment,
-        DepthReadOnlyStencilAttachment,
-        DepthAttachmentStencilReadOnly,
-        DepthStencilReadOnlyAttachment,
-
-        PresentSource,
-
-        NonFragmentShaderReadOnly,
-        FragmentShaderReadOnly,
-
-        TransferSource,
-        TransferDestination,
-    };
-
-    enum ResourceAccessFlags {
-        IndexReadBit = 0x00000002,
-        VertexAttributeReadBit = 0x00000004,
-        UniformReadBit = 0x00000008,
-        InputAttachmentReadBit = 0x00000010,
-        ShaderReadBit = 0x00000020,
-        ShaderWriteBit = 0x00000040,
-        ColorAttachmentReadBit = 0x00000080,
-        ColorAttachmentWriteBit = 0x00000100,
-        DepthStencilAttachmentReadBit = 0x00000200,
-        DepthStencilAttachmentWriteBit = 0x00000400,
-        TransferReadBit = 0x00000800,
-        TransferWriteBit = 0x00001000,
-        HostReadBit = 0x00002000,
-        HostWriteBit = 0x00004000,
-        MemoryReadBit = 0x00008000,
-        MemoryWriteBit = 0x00010000,
-    };
-
-    enum ImageAspectFlags {
-        Color = 0x00000001,
-        Depth = 0x00000002,
-        Stencil = 0x00000004,
-    };
-
-    enum PipelineStageFlags {
-        TopOfPipe = 0x00000001,
-        DrawIndirect = 0x00000002,
-        VertexInput = 0x00000004,
-        VertexShader = 0x00000008,
-        TessellationControlShader = 0x00000010,
-        TessellationEvaluationShader = 0x00000020,
-        GeometryShader = 0x00000040,
-        FragmentShader = 0x00000080,
-        EarlyFragmentTests = 0x00000100,
-        LateFragmentTests = 0x00000200,
-        ColorAttachmentOutput = 0x00000400,
-        ComputeShader = 0x00000800,
-        Transfer = 0x00001000,
-        BottomOfPipe = 0x00002000,
-        Host = 0x00004000,
-        AllGraphics = 0x00008000,
-        AllCommands = 0x00010000,
-        ShadingRateImage = 0x00400000,
-        RayTracingShader = 0x00200000,
-        AccelerationStructureBuild = 0x02000000,
-        TaskShader = 0x00080000,
-        MeshShader = 0x00100000,
-        FragmentDensityProcess = 0x00800000,
-    };
-#pragma endregion
-
-#pragma region Structs
-    struct ResourceBarrier {
-        Resource* resource_to_barrier;
-
-        ResourceState initial_state;
-        ResourceState final_state;
-
-        ResourceAccessFlags access_before_barrier;
-        ResourceAccessFlags access_after_barrier;
-
-        QueueType source_queue;
-        QueueType destination_queue;
-
-        union {
-            struct {
-                ImageAspectFlags aspect;
-            } image_memory_barrier;
-
-            struct {
-                uint64_t offset;
-                uint64_t size;
-            } buffer_memory_barrier;
-        };
-    };
-#pragma endregion
-
-#pragma region Command list API
     /*!
      * \brief An API-agnostic command list
      *
@@ -185,5 +86,4 @@ namespace nova::renderer::rhi {
 
         virtual ~CommandList() = default;
     };
-#pragma endregion
 } // namespace nova::renderer::rhi

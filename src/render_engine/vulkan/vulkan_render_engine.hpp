@@ -60,7 +60,9 @@ namespace nova::renderer::rhi {
                                         const std::vector<Image*>& attachments,
                                         const glm::uvec2& framebuffer_size) override final;
 
-        Pipeline* create_pipeline(const Renderpass* renderpass, const shaderpack::PipelineCreateInfo& data) override final;
+        Pipeline* create_pipeline(const Renderpass* renderpass,
+                                  const shaderpack::PipelineCreateInfo& data,
+                                  const std::unordered_map<std::string, ResourceBindingDescription>& bindings) override final;
 
         Buffer* create_buffer(const BufferCreateInfo& info) override final;
         Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
@@ -129,6 +131,13 @@ namespace nova::renderer::rhi {
         VkDescriptorPool make_new_descriptor_pool() const;
 #pragma endregion
 
+#pragma region Helpers
+		VkShaderModule create_shader_module(const std::vector<uint32_t>& spirv) const;
+
+        std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
+            const std::unordered_map<std::string, ResourceBindingDescription>& all_bindings) const;
+#pragma endregion
+
 #pragma region Debugging
         VkDebugUtilsMessengerEXT debug_callback{};
 
@@ -137,7 +146,5 @@ namespace nova::renderer::rhi {
                                                                     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                                                     void* pUserData);
 #pragma endregion
-
-        VkShaderModule create_shader_module(const std::vector<uint32_t>& spirv);
     };
 } // namespace nova::renderer::rhi

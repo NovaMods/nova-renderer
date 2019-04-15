@@ -6,6 +6,12 @@
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/render_engine.hpp"
 #include "nova_renderer/renderdoc_app.h"
+#include "renderables.hpp"
+
+namespace spirv_cross {
+    class CompilerGLSL;
+    struct Resource;
+} // namespace spirv_cross
 
 namespace nova::renderer {
     NOVA_EXCEPTION(already_initialized_exception);
@@ -58,9 +64,7 @@ namespace nova::renderer {
         std::unordered_map<std::string, PipelineMetadata> pipeline_metadata;
     };
 
-    struct ResourceBinding {
-        
-    };
+    struct ResourceBinding {};
 
     /*!
      * \brief Main class for Nova. Owns all of Nova's resources and provides a way to access them
@@ -133,9 +137,19 @@ namespace nova::renderer {
                                   const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
                                   const std::vector<shaderpack::MaterialData>& materials);
 
-        std::tuple<Pipeline, PipelineMetadata> create_pipeline(const rhi::Renderpass* renderpass,
-                                                               const std::vector<shaderpack::MaterialData>& materials,
-                                                               const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
+        std::tuple<Pipeline, PipelineMetadata> create_graphics_pipeline(const rhi::Renderpass* renderpass,
+                                                                        const std::vector<shaderpack::MaterialData>& materials,
+                                                                        const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
+
+        static void get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
+                                                  const rhi::ShaderStageFlags shader_stage,
+                                                  std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings);
+
+        static void add_resource_to_bindings(std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings,
+                                             const rhi::ShaderStageFlags shader_stage,
+                                             const spirv_cross::CompilerGLSL& shader_compiler,
+                                             const spirv_cross::Resource& resource,
+                                             const rhi::DescriptorType type);
 
         void destroy_render_passes();
 

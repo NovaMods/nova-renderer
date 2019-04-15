@@ -279,7 +279,9 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-    Pipeline* VulkanRenderEngine::create_pipeline(const Renderpass* renderpass, const shaderpack::PipelineCreateInfo& data) {
+    Pipeline* VulkanRenderEngine::create_pipeline(const Renderpass* renderpass,
+                                                  const shaderpack::PipelineCreateInfo& data,
+                                                  const std::unordered_map<std::string, ResourceBindingDescription>& bindings) {
         NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name;
 
         vk_pipeline_t* vk_pipeline = new vk_pipeline_t;
@@ -316,8 +318,8 @@ namespace nova::renderer::rhi {
         pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipeline_layout_create_info.pNext = nullptr;
         pipeline_layout_create_info.flags = 0;
-        pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(nova_pipeline.layouts.size());
-        pipeline_layout_create_info.pSetLayouts = nova_pipeline.layouts.data();
+        pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(layouts.size());
+        pipeline_layout_create_info.pSetLayouts = layouts.data();
         pipeline_layout_create_info.pushConstantRangeCount = 0;
         pipeline_layout_create_info.pPushConstantRanges = nullptr;
 
@@ -911,6 +913,55 @@ namespace nova::renderer::rhi {
         return pool;
     }
 
+    std::vector<VkDescriptorSetLayout> VulkanRenderEngine::create_descriptor_set_layouts(
+        const std::unordered_map<std::string, ResourceBindingDescription>& all_bindings) const {
+
+        /*
+         * A few tasks to accomplish:
+         * - Take the unordered map of descriptor sets (all_bindings) and convert it into
+         *      VkDescriptorSetLayoutCreateInfo structs, ordering everything along the way
+         * -
+         */
+
+        std::vector<std::vector<VkDescriptorSetLayoutBinding>> bindings_by_set;
+        bindings_by_set.resize(all_bindings.size());
+
+        for(const auto& named_binding : all_bindings) {
+            const ResourceBindingDescription& binding = named_binding.second;
+            if(binding.set >= bindings_by_set.size()) {
+                NOVA_LOG(ERROR) << "You've skipped one or more descriptor sets! Don't do that, Nova can't handle it";
+                continue;
+            }
+
+			VkDescriptorSetLayoutBinding descriptor_binding = {};
+			descriptor_binding.binding = binding.binding;
+			descriptor_binding.descriptorType = to_vk_descriptor_type(binding.type);
+			descriptor_binding.descriptorCount = binding.count;
+			descriptor_binding.stageFlags = to_vk_shader_stage_flags(binding.stages);
+
+            bindings_by_set[binding.set].push_back(descriptor_binding);
+        }
+
+        std::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos = {};
+        dsl_create_infos.reserve(bindings_by_set.size());
+        for(const auto& bindings : bindings_by_set) {
+            VkDescriptorSetLayoutCreateInfo create_info = {};
+            create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            create_info.bindingCount = static_cast<uint32_t>(bindings.size());
+            create_info.pBindings = bindings.data();
+
+            dsl_create_infos.push_back(create_info);
+        }
+
+        std::vector<VkDescriptorSetLayout> layouts;
+        layouts.resize(dsl_create_infos.size());
+        for(size_t i = 0; i < dsl_create_infos.size(); i++) {
+            vkCreateDescriptorSetLayout(device, &dsl_create_infos[i], nullptr, &layouts[i]);
+        }
+
+        return layouts;
+    }
+
     VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderEngine::debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                                              VkDebugUtilsMessageTypeFlagsEXT messageTypes,
                                                                              const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -994,7 +1045,7 @@ namespace nova::renderer::rhi {
         return VK_FALSE;
     }
 
-    VkShaderModule VulkanRenderEngine::create_shader_module(const std::vector<uint32_t>& spirv) {
+    VkShaderModule VulkanRenderEngine::create_shader_module(const std::vector<uint32_t>& spirv) const {
         VkShaderModuleCreateInfo shader_module_create_info;
         shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         shader_module_create_info.pNext = nullptr;

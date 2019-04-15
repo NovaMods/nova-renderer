@@ -2,16 +2,15 @@
 
 #include <memory>
 
-#include "nova_renderer/nova_settings.hpp"
+#include "../../src/windowing/win32_window.hpp"
 #include "nova_renderer/command_list.hpp"
-#include "nova_renderer/renderables.hpp"
+#include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/platform.hpp"
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/util/utils.hpp"
 #include "nova_renderer/window.hpp"
-#include "../../src/windowing/win32_window.hpp"
 
 namespace nova::renderer::rhi {
     struct BufferCreateInfo {
@@ -75,7 +74,10 @@ namespace nova::renderer::rhi {
                                                               const std::vector<Image*>& attachments,
                                                               const glm::uvec2& framebuffer_size) = 0;
 
-        [[nodiscard]] virtual Pipeline* create_pipeline(const Renderpass* renderpass, const shaderpack::PipelineCreateInfo& data) = 0;
+        [[nodiscard]] virtual Pipeline* create_pipeline(
+            const Renderpass* renderpass,
+            const shaderpack::PipelineCreateInfo& data,
+            const std::unordered_map<std::string, ResourceBindingDescription>& bindings) = 0;
 
         [[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info) = 0;
 
@@ -132,7 +134,7 @@ namespace nova::renderer::rhi {
         std::shared_ptr<win32_window> window;
 #endif
 
-		glm::uvec2 swapchain_size;
+        glm::uvec2 swapchain_size;
 
         /*!
          * \brief Initializes the engine, does **NOT** open any window
@@ -143,7 +145,7 @@ namespace nova::renderer::rhi {
          *
          * \attention Called by nova
          */
-        explicit RenderEngine(NovaSettings& settings) : settings(settings), swapchain_size(settings.window.width, settings.window.height) {};
+        explicit RenderEngine(NovaSettings& settings) : settings(settings), swapchain_size(settings.window.width, settings.window.height){};
 
         /*!
          * \brief Initializes the window with the given size, and creates the swapchain for that window
