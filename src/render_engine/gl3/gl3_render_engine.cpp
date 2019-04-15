@@ -32,19 +32,42 @@ namespace nova::renderer::rhi {
         // Gl3 doesn't need to do anything either
     }
 
-    Result<Renderpass*> Gl3RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
+    Result<Renderpass*> Gl3RenderEngine::create_renderpass([[maybe_unused]] const shaderpack::RenderPassCreateInfo& data) {
         return Result<Renderpass*>(new Renderpass);
     }
 
-    Framebuffer* Gl3RenderEngine::create_framebuffer(const Renderpass* renderpass,
+    Framebuffer* Gl3RenderEngine::create_framebuffer([[maybe_unused]] const Renderpass* renderpass,
                                                      const std::vector<Image*>& attachments,
-                                                     const glm::uvec2& framebuffer_size) {
+                                                     [[maybe_unused]] const glm::uvec2& framebuffer_size) {
         Gl3Framebuffer* framebuffer = new Gl3Framebuffer;
+
+        glGenFramebuffers(1, &framebuffer->id);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->id);
+
+        uint32_t attachment_idx = 0;
+        for(const Image* attachment : attachments) {
+            const Gl3Image* gl_attachment = static_cast<const Gl3Image*>(attachment);
+
+            GLenum attachment_slot = GL_COLOR_ATTACHMENT0 + attachment_idx;
+            if(gl_attachment->is_depth_tex) {
+                attachment_slot = GL_DEPTH_ATTACHMENT;
+
+            } else {
+                attachment_idx++;
+            }
+
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment_slot, GL_TEXTURE_2D, gl_attachment->id, 0);
+        }
 
         return framebuffer;
     }
 
-    Pipeline* Gl3RenderEngine::create_pipeline(const Renderpass* renderpass, const shaderpack::PipelineCreateInfo& data) { return nullptr; }
+    Pipeline* Gl3RenderEngine::create_pipeline(const Renderpass* renderpass,
+                                               const shaderpack::PipelineCreateInfo& data,
+                                               const std::unordered_map<std::string, ResourceBindingDescription> bindings) {
+        // TODO
+        return nullptr;
+    }
 
     Buffer* Gl3RenderEngine::create_buffer(const BufferCreateInfo& info) { return nullptr; }
 
@@ -104,6 +127,8 @@ namespace nova::renderer::rhi {
     std::vector<Fence*> Gl3RenderEngine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<Fence*>(); }
 
     void Gl3RenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
+
+    void Gl3RenderEngine::destroy_framebuffer(const Framebuffer* framebuffer) {}
 
     void Gl3RenderEngine::destroy_pipeline(Pipeline* pipeline) {}
 

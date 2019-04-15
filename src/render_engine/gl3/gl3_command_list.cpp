@@ -91,7 +91,7 @@ namespace nova::renderer::rhi {
 
 		Gl3Command& renderpass_command = commands.front();
 		renderpass_command.type = Gl3CommandType::BeginRenderpass;
-		renderpass_command.begin_renderpass.framebuffer = gl_framebuffer->framebuffer;
+		renderpass_command.begin_renderpass.framebuffer = gl_framebuffer->id;
 	}
 
 	std::vector<Gl3Command> Gl3CommandList::get_commands() const { return commands; }

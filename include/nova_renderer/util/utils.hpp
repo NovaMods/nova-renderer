@@ -73,13 +73,13 @@ namespace nova::renderer {
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define NOVA_EXCEPTION(name)                                                                                                               \
     /* NOLINTNEXTLINE(bugprone-macro-parentheses)*/                                                                                        \
-    class name : public ::nova::renderer::NovaException {                                                                                 \
+    class name : public ::nova::renderer::NovaException {                                                                                  \
     public:                                                                                                                                \
         name(){};                                                                                                                          \
-        explicit name(const std::string& msg) : ::nova::renderer::NovaException(msg){};                                                   \
+        explicit name(const std::string& msg) : ::nova::renderer::NovaException(msg){};                                                    \
                                                                                                                                            \
-        explicit name(const std::exception& cause) : ::nova::renderer::NovaException(cause){};                                            \
-        name(const std::string& msg, const std::exception& cause) : ::nova::renderer::NovaException(msg, cause){};                        \
+        explicit name(const std::exception& cause) : ::nova::renderer::NovaException(cause){};                                             \
+        name(const std::string& msg, const std::exception& cause) : ::nova::renderer::NovaException(msg, cause){};                         \
     }
 
     NOVA_EXCEPTION(out_of_gpu_memory);

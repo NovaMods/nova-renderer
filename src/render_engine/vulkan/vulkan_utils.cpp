@@ -6,41 +6,41 @@
 #include "vulkan_utils.hpp"
 #include "nova_renderer/render_engine.hpp"
 
-namespace nova::renderer {
-    VkImageLayout to_vk_layout(const rhi::ResourceState state) {
+namespace nova::renderer::rhi {
+    VkImageLayout to_vk_layout(const ResourceState state) {
         switch(state) {
-            case rhi::ResourceState::Undefined:
+            case ResourceState::Undefined:
                 return VK_IMAGE_LAYOUT_UNDEFINED;
 
-            case rhi::ResourceState::General:
+            case ResourceState::General:
                 return VK_IMAGE_LAYOUT_GENERAL;
 
-            case rhi::ResourceState::ColorAttachment:
+            case ResourceState::ColorAttachment:
                 return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-            case rhi::ResourceState::DepthStencilAttachment:
+            case ResourceState::DepthStencilAttachment:
                 return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-            case rhi::ResourceState::DepthReadOnlyStencilAttachment:
+            case ResourceState::DepthReadOnlyStencilAttachment:
                 return VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
 
-            case rhi::ResourceState::DepthAttachmentStencilReadOnly:
+            case ResourceState::DepthAttachmentStencilReadOnly:
                 return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
 
-            case rhi::ResourceState::DepthStencilReadOnlyAttachment:
+            case ResourceState::DepthStencilReadOnlyAttachment:
                 return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
 
-            case rhi::ResourceState::PresentSource:
+            case ResourceState::PresentSource:
                 return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-            case rhi::ResourceState::NonFragmentShaderReadOnly:
-            case rhi::ResourceState::FragmentShaderReadOnly:
+            case ResourceState::NonFragmentShaderReadOnly:
+            case ResourceState::FragmentShaderReadOnly:
                 return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-            case rhi::ResourceState::TransferSource:
+            case ResourceState::TransferSource:
                 return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
-            case rhi::ResourceState::TransferDestination:
+            case ResourceState::TransferDestination:
                 return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
             default:
@@ -165,6 +165,68 @@ namespace nova::renderer {
         }
 
         return VK_FORMAT_R10X6G10X6_UNORM_2PACK16;
+    }
+
+    VkDescriptorType to_vk_descriptor_type(const DescriptorType type) {
+        switch(type) {
+            case DescriptorType::CombinedImageSampler:
+                return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
+            case DescriptorType::UniformBuffer:
+                return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+            case DescriptorType::StorageBuffer:
+                return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+
+            default:
+                return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        }
+    }
+
+    VkShaderStageFlags to_vk_shader_stage_flags(const ShaderStageFlags flags) {
+        VkShaderStageFlags vk_flags = 0;
+
+        if(flags & Vertex) {
+            vk_flags |= VK_SHADER_STAGE_VERTEX_BIT;
+        }
+        if(flags & TessellationControl) {
+            vk_flags |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+        }
+        if(flags & TessellationEvaluation) {
+            vk_flags |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+        }
+        if(flags & Geometry) {
+            vk_flags |= VK_SHADER_STAGE_GEOMETRY_BIT;
+        }
+        if(flags & Fragment) {
+            vk_flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+        }
+        if(flags & Compute) {
+            vk_flags |= VK_SHADER_STAGE_COMPUTE_BIT;
+        }
+        if(flags & Raygen) {
+            vk_flags |= VK_SHADER_STAGE_RAYGEN_BIT_NV;
+        }
+        if(flags & AnyHit) {
+            vk_flags |= VK_SHADER_STAGE_ANY_HIT_BIT_NV;
+        }
+        if(flags & ClosestHit) {
+            vk_flags |= VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV;
+        }
+        if(flags & Miss) {
+            vk_flags |= VK_SHADER_STAGE_MISS_BIT_NV;
+        }
+        if(flags & Intersection) {
+            vk_flags |= VK_SHADER_STAGE_INTERSECTION_BIT_NV;
+        }
+        if(flags & Task) {
+            vk_flags |= VK_SHADER_STAGE_TASK_BIT_NV;
+        }
+        if(flags & Mesh) {
+            vk_flags |= VK_SHADER_STAGE_MESH_BIT_NV;
+        }
+
+        return vk_flags;
     }
 
     std::string vk_result_to_string(VkResult result) {
@@ -325,37 +387,37 @@ namespace nova::renderer {
         static std::vector<VkVertexInputBindingDescription> input_descriptions = {
             VkVertexInputBindingDescription{
                 0,                          // binding
-                sizeof(FullVertex),      // stride
+                sizeof(FullVertex),         // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 1,                          // binding
-                sizeof(FullVertex),      // stride
+                sizeof(FullVertex),         // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 2,                          // binding
-                sizeof(FullVertex),      // stride
+                sizeof(FullVertex),         // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 3,                          // binding
-                sizeof(FullVertex),      // stride
+                sizeof(FullVertex),         // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 4,                          // binding
-                sizeof(FullVertex),      // stride
+                sizeof(FullVertex),         // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 5,                          // binding
-                sizeof(FullVertex),      // stride
+                sizeof(FullVertex),         // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 6,                          // binding
-                sizeof(FullVertex),      // stride
+                sizeof(FullVertex),         // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
         };
@@ -424,4 +486,4 @@ namespace nova::renderer {
 
         return attribute_descriptions;
     }
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi

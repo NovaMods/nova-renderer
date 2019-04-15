@@ -147,8 +147,11 @@ set(NOVA_SOURCE
 		src/render_engine/gl3/gl3_structs.hpp 
 		src/render_engine/vulkan/vk_structs.hpp 
 		include/nova_renderer/rhi_types.hpp 
+		src/render_engine/rhi_types.cpp
 		src/render_engine/vulkan/vulkan_render_engine.cpp 
-		src/render_engine/vulkan/vulkan_render_engine.hpp)
+		src/render_engine/vulkan/vulkan_render_engine.hpp
+
+		)
 
 ##################################
 # Select platform dependent code #

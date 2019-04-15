@@ -13,8 +13,8 @@
 
 #include "nova_renderer/shaderpack_data.hpp"
 
-namespace nova::renderer {
-    VkImageLayout to_vk_layout(rhi::ResourceState state);
+namespace nova::renderer::rhi {
+    VkImageLayout to_vk_layout(ResourceState state);
 
 	VkPrimitiveTopology to_primitive_topology(shaderpack::PrimitiveTopologyEnum topology);
 
@@ -25,6 +25,10 @@ namespace nova::renderer {
 	VkStencilOp to_stencil_op(shaderpack::StencilOpEnum stencil_op);
 
 	VkFormat to_vk_format(const shaderpack::PixelFormatEnum format);
+
+	VkDescriptorType to_vk_descriptor_type(const DescriptorType type);
+
+	VkShaderStageFlags to_vk_shader_stage_flags(const ShaderStageFlags flags);
 
     std::string vk_result_to_string(VkResult result);
 

@@ -21,6 +21,6 @@ namespace nova::renderer::rhi {
     struct Gl3Renderpass : Renderpass {};
 
     struct Gl3Framebuffer : Framebuffer {
-        GLuint framebuffer;
+        GLuint id;
     };
 }
