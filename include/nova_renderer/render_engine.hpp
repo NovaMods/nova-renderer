@@ -119,7 +119,7 @@ namespace nova::renderer::rhi {
          * reset at the beginning of a frame that renders to that swapchain image. This means that any command list
          * allocated in one frame will not be valid in the next frame. DO NOT hold on to command lists
          *
-         * Command lists allocated by this method are returned ready to record commands into - the caller doess't need
+         * Command lists allocated by this method are returned ready to record commands into - the caller doesn't need
          * to begin the command list
          */
         virtual CommandList* allocate_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) = 0;

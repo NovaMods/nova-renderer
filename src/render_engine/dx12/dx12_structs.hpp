@@ -29,4 +29,6 @@ namespace nova::renderer::rhi {
 
         ID3D12DescriptorHeap* descriptor_heap;
     };
+
+    struct DX12Pipeline : Pipeline {};
 }

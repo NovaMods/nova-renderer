@@ -4,6 +4,9 @@
  */
 
 #include <d3d12sdklayers.h>
+#include <D3DCompiler.h>
+
+#include <spirv_cross/spirv_hlsl.hpp>
 
 #include "../../util/logger.hpp"
 #include "../../util/windows_utils.hpp"
@@ -12,6 +15,7 @@
 #include "dx12_render_engine.hpp"
 #include "dx12_structs.hpp"
 #include "dx12_utils.hpp"
+#include "../../loading/shaderpack/shaderpack_loading.hpp"
 
 using Microsoft::WRL::ComPtr;
 
@@ -75,8 +79,207 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-    Pipeline* DX12RenderEngine::create_pipeline(const Renderpass* renderpass, const shaderpack::PipelineCreateInfo& data) {
-        return nullptr;
+    Pipeline* DX12RenderEngine::create_pipeline(const Renderpass* renderpass,
+                                                const shaderpack::PipelineCreateInfo& data,
+                                                const std::unordered_map<std::string, ResourceBindingDescription>& bindings) {
+        DX12Pipeline* pipeline = new DX12Pipeline;
+
+        const auto states_begin = data.states.begin();
+        const auto states_end = data.states.end();
+
+        D3D12_GRAPHICS_PIPELINE_STATE_DESC pipeline_state_desc = {};
+
+        /*
+         * Compile all shader stages
+         */
+
+        std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>> shader_inputs;
+        spirv_cross::CompilerHLSL::Options options = {};
+        options.shader_model = 51;
+
+        ComPtr<ID3DBlob> vertex_blob = compile_shader(data.vertex_shader, "vs_5_1", options, shader_inputs);
+        pipeline_state_desc.VS.BytecodeLength = vertex_blob->GetBufferSize();
+        pipeline_state_desc.VS.pShaderBytecode = vertex_blob->GetBufferPointer();
+
+        if(data.geometry_shader) {
+            ComPtr<ID3DBlob> geometry_blob = compile_shader(*data.geometry_shader, "gs_5_1", options, shader_inputs);
+            pipeline_state_desc.GS.BytecodeLength = geometry_blob->GetBufferSize();
+            pipeline_state_desc.GS.pShaderBytecode = geometry_blob->GetBufferPointer();
+        }
+
+        if(data.tessellation_control_shader) {
+            ComPtr<ID3DBlob> tessellation_control_blob = compile_shader(*data.tessellation_control_shader,
+                                                                        "hs_5_1",
+                                                                        options,
+                                                                        shader_inputs);
+            pipeline_state_desc.HS.BytecodeLength = tessellation_control_blob->GetBufferSize();
+            pipeline_state_desc.HS.pShaderBytecode = tessellation_control_blob->GetBufferPointer();
+        }
+        if(data.tessellation_evaluation_shader) {
+            ComPtr<ID3DBlob> tessellation_evaluation_blob = compile_shader(*data.tessellation_evaluation_shader,
+                                                                           "ds_5_1",
+                                                                           options,
+                                                                           shader_inputs);
+            pipeline_state_desc.DS.BytecodeLength = tessellation_evaluation_blob->GetBufferSize();
+            pipeline_state_desc.DS.pShaderBytecode = tessellation_evaluation_blob->GetBufferPointer();
+        }
+
+        if(data.fragment_shader) {
+            ComPtr<ID3DBlob> fragment_blob = compile_shader(*data.fragment_shader, "ps_5_1", options, shader_inputs);
+            pipeline_state_desc.PS.BytecodeLength = fragment_blob->GetBufferSize();
+            pipeline_state_desc.PS.pShaderBytecode = fragment_blob->GetBufferPointer();
+        }
+
+        output.root_signature = create_root_signature(shader_inputs);
+        pipeline_state_desc.pRootSignature = output.root_signature.Get();
+
+        /*
+         * Blend state
+         */
+
+        pipeline_state_desc.BlendState.AlphaToCoverageEnable = std::find(states_begin, states_end, shaderpack::StateEnum::EnableAlphaToCoverage) !=
+                                                               states_end;
+        pipeline_state_desc.BlendState.IndependentBlendEnable = false;
+        D3D12_RENDER_TARGET_BLEND_DESC& blend_state = pipeline_state_desc.BlendState.RenderTarget[0];
+        blend_state.BlendEnable = std::find(states_begin, states_end, shaderpack::StateEnum::Blending) != states_end;
+        blend_state.SrcBlend = to_dx12_blend(data.source_blend_factor);
+        blend_state.DestBlend = to_dx12_blend(data.destination_blend_factor);
+        blend_state.BlendOp = D3D12_BLEND_OP_ADD;
+        blend_state.SrcBlendAlpha = to_dx12_blend(data.source_blend_factor);
+        blend_state.DestBlendAlpha = to_dx12_blend(data.destination_blend_factor);
+        blend_state.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+        blend_state.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+        pipeline_state_desc.SampleMask = 0xFFFFFFFF;
+
+        /*
+         * Rasterizer state
+         */
+
+        D3D12_RASTERIZER_DESC& raster_desc = pipeline_state_desc.RasterizerState;
+        raster_desc.FillMode = D3D12_FILL_MODE_SOLID;
+        if(std::find(states_begin, states_end, shaderpack::StateEnum::InvertCulling) != states_end) {
+            raster_desc.CullMode = D3D12_CULL_MODE_FRONT;
+        } else if(std::find(states_begin, states_end, shaderpack::StateEnum::DisableCulling) != states_end) {
+            raster_desc.CullMode = D3D12_CULL_MODE_NONE;
+        } else {
+            raster_desc.CullMode = D3D12_CULL_MODE_BACK;
+        }
+        raster_desc.FrontCounterClockwise = true;
+        raster_desc.DepthBias = static_cast<UINT>(std::round(data.depth_bias));
+        raster_desc.SlopeScaledDepthBias = data.slope_scaled_depth_bias;
+        raster_desc.DepthClipEnable = true;
+        if(data.msaa_support != shaderpack::MsaaSupportEnum::None) {
+            raster_desc.MultisampleEnable = true;
+        }
+        raster_desc.ForcedSampleCount = 0;
+        raster_desc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_ON;
+
+        /*
+         * Depth and Stencil
+         */
+
+        D3D12_DEPTH_STENCIL_DESC& ds_desc = pipeline_state_desc.DepthStencilState;
+        ds_desc.DepthEnable = std::find(states_begin, states_end, shaderpack::StateEnum::DisableDepthTest) == states_end;
+        if(std::find(states_begin, states_end, shaderpack::StateEnum::DisableDepthWrite) != states_end) {
+            ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+        } else {
+            ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+        }
+
+        ds_desc.DepthFunc = to_dx12_compare_func(data.depth_func);
+        ds_desc.StencilEnable = std::find(states_begin, states_end, shaderpack::StateEnum::EnableStencilTest) != states_end;
+        ds_desc.StencilReadMask = data.stencil_read_mask;
+        ds_desc.StencilWriteMask = data.stencil_write_mask;
+        if(data.front_face) {
+            const shaderpack::StencilOpState& front_face = *data.front_face;
+            ds_desc.FrontFace.StencilFailOp = to_dx12_stencil_op(front_face.fail_op);
+            ds_desc.FrontFace.StencilDepthFailOp = to_dx12_stencil_op(front_face.depth_fail_op);
+            ds_desc.FrontFace.StencilPassOp = to_dx12_stencil_op(front_face.pass_op);
+            ds_desc.FrontFace.StencilFunc = to_dx12_compare_func(front_face.compare_op);
+        }
+        if(data.back_face) {
+            const shaderpack::StencilOpState& back_face = *data.back_face;
+            ds_desc.BackFace.StencilFailOp = to_dx12_stencil_op(back_face.fail_op);
+            ds_desc.BackFace.StencilDepthFailOp = to_dx12_stencil_op(back_face.depth_fail_op);
+            ds_desc.BackFace.StencilPassOp = to_dx12_stencil_op(back_face.pass_op);
+            ds_desc.BackFace.StencilFunc = to_dx12_compare_func(back_face.compare_op);
+        }
+
+        /*
+         * Input description
+         */
+
+        const std::unordered_map<vertex_field_enum, vertex_attribute> all_formats = get_all_vertex_attributes();
+
+        std::vector<D3D12_INPUT_ELEMENT_DESC> input_descs;
+        input_descs.reserve(data.vertex_fields.size());
+        for(const vertex_field_data& vertex_field : data.vertex_fields) {
+            const vertex_attribute& attr = all_formats.at(vertex_field.field);
+
+            D3D12_INPUT_ELEMENT_DESC desc = {};
+            desc.SemanticName = vertex_field.semantic_name.data();
+            desc.Format = attr.format;
+            desc.InputSlot = 0;
+            desc.AlignedByteOffset = attr.offset;
+            desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+            desc.InstanceDataStepRate = 0;
+
+            input_descs.push_back(desc);
+        }
+
+        pipeline_state_desc.InputLayout.NumElements = static_cast<UINT>(input_descs.size());
+        pipeline_state_desc.InputLayout.pInputElementDescs = input_descs.data();
+
+        /*
+         * Index buffer strip cut and primitive topology
+         */
+
+        pipeline_state_desc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
+        pipeline_state_desc.PrimitiveTopologyType = to_dx12_topology(data.primitive_mode);
+
+        /*
+         * Render targets
+         */
+
+        uint32_t i = 0;
+        for(i = 0; i < render_pass.texture_outputs.size(); i++) {
+            const texture_attachment& attachment = render_pass.texture_outputs.at(i);
+            const dx12_texture& tex = dynamic_textures.at(attachment.name);
+            if(tex.is_depth_texture()) {
+                pipeline_state_desc.DSVFormat = tex.get_dxgi_format();
+            } else {
+                pipeline_state_desc.RTVFormats[i] = to_dxgi_format(tex.get_data().format.pixel_format);
+            }
+        }
+        pipeline_state_desc.NumRenderTargets = i;
+
+        /*
+         * Multisampling
+         */
+
+        if(data.msaa_support != msaa_support_enum::None) {
+            pipeline_state_desc.SampleDesc.Count = 4;
+            pipeline_state_desc.SampleDesc.Quality = 1;
+        }
+
+        /*
+         * Debugging
+         */
+
+        if(nova_renderer::get_instance()->get_settings().debug.enabled) {
+            pipeline_state_desc.Flags = D3D12_PIPELINE_STATE_FLAG_TOOL_DEBUG;
+        }
+
+        /*
+         * PSO creation!
+         */
+
+        const HRESULT hr = device->CreateGraphicsPipelineState(&pipeline_state_desc, IID_PPV_ARGS(&output.pso));
+        if(FAILED(hr)) {
+            throw shaderpack::shader_compilation_failed("Could not create PSO");
+        }
+
+        return output;
     }
 
     Buffer* DX12RenderEngine::create_buffer(const BufferCreateInfo& info) { return nullptr; }
@@ -252,4 +455,122 @@ namespace nova::renderer::rhi {
         copy_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
         CHECK_ERROR(device->CreateCommandQueue(&copy_queue_desc, IID_PPV_ARGS(&copy_command_queue)), "Could not create copy command queue");
     }
+
+    ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,
+                                    const std::string& target,
+                                    const spirv_cross::CompilerHLSL::Options& options,
+                                    std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
+
+        spirv_cross::CompilerHLSL shader_compiler(shader.source);
+        shader_compiler.set_hlsl_options(options);
+
+        const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
+
+        // Make maps of all the types of things we care about
+        std::unordered_map<std::string, spirv_cross::Resource> spirv_sampled_images;
+        spirv_sampled_images.reserve(resources.sampled_images.size());
+        for(const spirv_cross::Resource& sampled_image : resources.sampled_images) {
+            spirv_sampled_images[sampled_image.name] = sampled_image;
+        }
+
+        std::unordered_map<std::string, spirv_cross::Resource> spirv_uniform_buffers;
+        spirv_uniform_buffers.reserve(resources.uniform_buffers.size());
+        for(const spirv_cross::Resource& uniform_buffer : resources.uniform_buffers) {
+            spirv_uniform_buffers[uniform_buffer.name] = uniform_buffer;
+        }
+
+        std::string shader_hlsl = shader_compiler.compile();
+
+        const fs::path& filename = shader.filename;
+        fs::path debug_path = filename.filename();
+        debug_path.replace_extension(target + ".generated.hlsl");
+        write_to_file(shader_hlsl, debug_path);
+
+        ComPtr<ID3DBlob> shader_blob;
+        ComPtr<ID3DBlob> shader_compile_errors;
+        HRESULT hr = D3DCompile2(shader_hlsl.data(),
+                                 shader_hlsl.size(),
+                                 filename.string().c_str(),
+                                 nullptr,
+                                 D3D_COMPILE_STANDARD_FILE_INCLUDE,
+                                 "main",
+                                 target.c_str(),
+                                 D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_IEEE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3,
+                                 0,
+                                 0,
+                                 nullptr,
+                                 0,
+                                 &shader_blob,
+                                 &shader_compile_errors);
+        if(FAILED(hr)) {
+            std::stringstream ss;
+            ss << "Could not compile vertex shader for pipeline " << filename.string() << ": "
+               << static_cast<char*>(shader_compile_errors->GetBufferPointer());
+            throw shaderpack::shader_compilation_failed(ss.str());
+        }
+
+        ComPtr<ID3D12ShaderReflection> shader_reflector;
+        hr = D3DReflect(shader_blob->GetBufferPointer(), shader_blob->GetBufferSize(), IID_PPV_ARGS(&shader_reflector));
+        if(FAILED(hr)) {
+            throw shaderpack::shader_reflection_failed("Could not create reflector, error code " + std::to_string(hr));
+        }
+
+        D3D12_SHADER_DESC shader_desc;
+        hr = shader_reflector->GetDesc(&shader_desc);
+        if(FAILED(hr)) {
+            throw shaderpack::shader_reflection_failed("Could not get shader description");
+        }
+
+        std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC> shader_inputs(shader_desc.BoundResources);
+        // For each resource in the DX12 shader, find its set and binding in SPIR-V. Translate the sets and bindings into places in
+        // descriptor tables
+        for(uint32_t i = 0; i < shader_desc.BoundResources; i++) {
+            D3D12_SHADER_INPUT_BIND_DESC bind_desc;
+            hr = shader_reflector->GetResourceBindingDesc(i, &bind_desc);
+            if(FAILED(hr)) {
+                throw shaderpack::shader_reflection_failed("Could not get description for bind point " + std::to_string(i));
+            }
+
+            D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type = {};
+            spirv_cross::Resource spirv_resource = {};
+            uint32_t set = 0;
+
+            switch(bind_desc.Type) {
+                case D3D_SIT_CBUFFER:
+                    descriptor_type = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+                    spirv_resource = spirv_uniform_buffers.at(bind_desc.Name);
+                    set = shader_compiler.get_decoration(spirv_resource.id, spv::DecorationDescriptorSet);
+                    add_resource_to_descriptor_table(descriptor_type, bind_desc, set, tables);
+                    break;
+
+                case D3D_SIT_TEXTURE:
+                case D3D_SIT_TBUFFER:
+                    descriptor_type = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+                    spirv_resource = spirv_sampled_images.at(bind_desc.Name);
+                    set = shader_compiler.get_decoration(spirv_resource.id, spv::DecorationDescriptorSet);
+                    add_resource_to_descriptor_table(descriptor_type, bind_desc, set, tables);
+
+                    // Also add a descriptor table entry for the sampler
+                    add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, bind_desc, set, tables);
+                    break;
+
+                case D3D_SIT_SAMPLER:
+                    descriptor_type = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+                    break;
+
+                case D3D_SIT_STRUCTURED:
+                case D3D_SIT_UAV_RWTYPED:
+                case D3D_SIT_UAV_RWSTRUCTURED:
+                case D3D_SIT_UAV_RWBYTEADDRESS:
+                case D3D_SIT_UAV_APPEND_STRUCTURED:
+                case D3D_SIT_UAV_CONSUME_STRUCTURED:
+                case D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER:
+                    descriptor_type = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+                    break;
+            }
+        }
+
+        return shader_blob;
+    }
+
 } // namespace nova::renderer::rhi
