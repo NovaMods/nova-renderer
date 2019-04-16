@@ -34,7 +34,7 @@ namespace nova::renderer::rhi {
                                         const std::vector<Image*>& attachments,
                                         const glm::uvec2& framebuffer_size) override final;
 
-        Pipeline* create_pipeline(const Renderpass* renderpass,
+        Result<Pipeline*> create_pipeline(const Renderpass* renderpass,
                                   const shaderpack::PipelineCreateInfo& data,
                                   const std::unordered_map<std::string, ResourceBindingDescription>& bindings) override final;
 
@@ -71,4 +71,6 @@ namespace nova::renderer::rhi {
 
         std::unordered_map<std::string, shaderpack::SamplerCreateInfo> samplers;
     };
+
+	Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, GLenum shader_type);
 } // namespace nova::renderer::rhi
