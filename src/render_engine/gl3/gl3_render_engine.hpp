@@ -36,7 +36,7 @@ namespace nova::renderer::rhi {
 
         Pipeline* create_pipeline(const Renderpass* renderpass,
                                   const shaderpack::PipelineCreateInfo& data,
-                                  const std::unordered_map<std::string, ResourceBindingDescription> bindings) override final;
+                                  const std::unordered_map<std::string, ResourceBindingDescription>& bindings) override final;
 
         Buffer* create_buffer(const BufferCreateInfo& info) override final;
         Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;

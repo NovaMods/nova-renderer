@@ -30,5 +30,8 @@ namespace nova::renderer::rhi {
         ID3D12DescriptorHeap* descriptor_heap;
     };
 
-    struct DX12Pipeline : Pipeline {};
+    struct DX12Pipeline : Pipeline {
+		ID3D12PipelineState* pso;
+		ID3D12RootSignature* root_signature;
+    };
 }
