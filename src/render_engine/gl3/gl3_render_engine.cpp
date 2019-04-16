@@ -3,6 +3,8 @@
  * \date 31-Mar-19.
  */
 
+#include <spirv_cross/spirv_glsl.hpp>
+
 #include "gl3_render_engine.hpp"
 
 #include "../../util/logger.hpp"
@@ -64,9 +66,12 @@ namespace nova::renderer::rhi {
 
     Pipeline* Gl3RenderEngine::create_pipeline(const Renderpass* renderpass,
                                                const shaderpack::PipelineCreateInfo& data,
-                                               const std::unordered_map<std::string, ResourceBindingDescription> bindings) {
-        // TODO
-        return nullptr;
+                                               const std::unordered_map<std::string, ResourceBindingDescription>& bindings) {
+		Gl3Pipeline* pipeline = new Gl3Pipeline;
+
+
+
+        return pipeline;
     }
 
     Buffer* Gl3RenderEngine::create_buffer(const BufferCreateInfo& info) { return nullptr; }

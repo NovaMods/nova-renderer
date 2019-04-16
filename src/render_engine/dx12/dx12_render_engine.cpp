@@ -130,8 +130,8 @@ namespace nova::renderer::rhi {
             pipeline_state_desc.PS.pShaderBytecode = fragment_blob->GetBufferPointer();
         }
 
-        output.root_signature = create_root_signature(shader_inputs);
-        pipeline_state_desc.pRootSignature = output.root_signature.Get();
+        pipeline->root_signature = create_root_signature(bindings);
+        pipeline_state_desc.pRootSignature = pipeline->root_signature;
 
         /*
          * Blend state
