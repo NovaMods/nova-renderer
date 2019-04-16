@@ -246,7 +246,7 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-    Pipeline* VulkanRenderEngine::create_pipeline(const Renderpass* renderpass,
+	Result<Pipeline*> VulkanRenderEngine::create_pipeline(const Renderpass* renderpass,
                                                   const shaderpack::PipelineCreateInfo& data,
                                                   const std::unordered_map<std::string, ResourceBindingDescription>& bindings) {
         NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name;
@@ -452,7 +452,10 @@ namespace nova::renderer::rhi {
         pipeline_create_info.subpass = 0;
         pipeline_create_info.basePipelineIndex = -1;
 
-        NOVA_CHECK_RESULT(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &vk_pipeline->pipeline));
+        VkResult result = vkCreateGraphicsPipelines(device, nullptr, 1, &pipeline_create_info, nullptr, &vk_pipeline->pipeline);
+        if(result != VK_SUCCESS) {
+			return Result<Pipeline*>(MAKE_ERROR("Could not compile pipeline {:s}", data.name));
+        }
 
         if(settings.debug.enabled) {
             VkDebugUtilsObjectNameInfoEXT object_name = {};
@@ -464,7 +467,7 @@ namespace nova::renderer::rhi {
             NOVA_LOG(INFO) << "Set pipeline " << vk_pipeline->pipeline << " to have name " << data.name;
         }
 
-        return vk_pipeline;
+        return Result(static_cast<Pipeline*>(vk_pipeline));
     }
 
     Buffer* VulkanRenderEngine::create_buffer(const BufferCreateInfo& info) { return nullptr; }

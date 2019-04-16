@@ -40,7 +40,7 @@ namespace nova::renderer::rhi {
                                         const std::vector<Image*>& attachments,
                                         const glm::uvec2& framebuffer_size) override final;
 
-        Pipeline* create_pipeline(const Renderpass* renderpass,
+		Result<Pipeline*> create_pipeline(const Renderpass* renderpass,
                                   const shaderpack::PipelineCreateInfo& data,
                                   const std::unordered_map<std::string, ResourceBindingDescription>& bindings) override final;
 

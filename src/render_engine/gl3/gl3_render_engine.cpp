@@ -64,14 +64,45 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-    Pipeline* Gl3RenderEngine::create_pipeline(const Renderpass* renderpass,
-                                               const shaderpack::PipelineCreateInfo& data,
-                                               const std::unordered_map<std::string, ResourceBindingDescription>& bindings) {
-		Gl3Pipeline* pipeline = new Gl3Pipeline;
+    Result<Pipeline*> Gl3RenderEngine::create_pipeline([[maybe_unused]] const Renderpass* renderpass,
+                                                       const shaderpack::PipelineCreateInfo& data,
+                                                       const std::unordered_map<std::string, ResourceBindingDescription>& bindings) {
+        Gl3Pipeline* pipeline = new Gl3Pipeline;
 
+        pipeline->id = glCreateProgram();
+        
+        const Result<GLuint> vertex_shader = compile_shader(data.vertex_shader.source, GL_VERTEX_SHADER);
+        if(vertex_shader) {
+            glAttachShader(pipeline->id, vertex_shader.value);
 
+        } else {
+            // TODO: Some way to accumulate errors
+        }
 
-        return pipeline;
+        if(data.fragment_shader) {
+            const Result<GLuint> fragment_shader = compile_shader(data.vertex_shader.source, GL_FRAGMENT_SHADER);
+            if(fragment_shader) {
+                glAttachShader(pipeline->id, fragment_shader.value);
+            }
+        }
+
+        glLinkProgram(pipeline->id);
+
+        GLint link_log_length;
+        glGetProgramiv(pipeline->id, GL_INFO_LOG_LENGTH, &link_log_length);
+        if(link_log_length > 0) {
+            std::string program_link_log;
+            program_link_log.reserve(link_log_length);
+            glGetProgramInfoLog(pipeline->id, link_log_length, nullptr, program_link_log.data());
+            return Result<Pipeline*>(NovaError(program_link_log));
+        }
+
+        for(const auto& binding : bindings) {
+			const GLuint uniform_location = glGetUniformLocation(pipeline->id, binding.first.c_str());
+			pipeline->uniform_cache.emplace(binding.first, uniform_location);
+        }
+
+        return Result(static_cast<Pipeline*>(pipeline));
     }
 
     Buffer* Gl3RenderEngine::create_buffer(const BufferCreateInfo& info) { return nullptr; }
@@ -151,4 +182,26 @@ namespace nova::renderer::rhi {
                                               Fence* fence_to_signal,
                                               const std::vector<Semaphore*>& wait_semaphores,
                                               const std::vector<Semaphore*>& signal_semaphores) {}
+
+    Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, const GLenum shader_type) {
+        spirv_cross::CompilerGLSL compiler(spirv);
+        const std::string glsl = compiler.compile();
+        const char* glsl_c = glsl.c_str();
+        const GLint len = glsl.size(); // SIGNED LENGTH WHOOOOOO
+
+        const GLuint shader = glCreateShader(shader_type);
+        glShaderSource(shader, 1, &glsl_c, &len);
+        glCompileShader(shader);
+
+        GLint compile_log_length;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &compile_log_length);
+        if(compile_log_length > 0) {
+            std::string compile_log;
+            compile_log.reserve(compile_log_length);
+            glGetShaderInfoLog(shader, compile_log_length, nullptr, compile_log.data());
+            return Result<GLuint>(NovaError(compile_log));
+        }
+
+        return Result(shader);
+    }
 } // namespace nova::renderer::rhi

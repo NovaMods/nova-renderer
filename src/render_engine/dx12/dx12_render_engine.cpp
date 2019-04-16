@@ -79,7 +79,7 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-    Pipeline* DX12RenderEngine::create_pipeline(const Renderpass* renderpass,
+	Result<Pipeline*> DX12RenderEngine::create_pipeline(const Renderpass* renderpass,
                                                 const shaderpack::PipelineCreateInfo& data,
                                                 const std::unordered_map<std::string, ResourceBindingDescription>& bindings) {
         DX12Pipeline* pipeline = new DX12Pipeline;
@@ -209,11 +209,11 @@ namespace nova::renderer::rhi {
          * Input description
          */
 
-        const std::unordered_map<vertex_field_enum, vertex_attribute> all_formats = get_all_vertex_attributes();
+        const std::unordered_map<shaderpack::VertexFieldEnum, vertex_attribute> all_formats = get_all_vertex_attributes();
 
         std::vector<D3D12_INPUT_ELEMENT_DESC> input_descs;
         input_descs.reserve(data.vertex_fields.size());
-        for(const vertex_field_data& vertex_field : data.vertex_fields) {
+        for(const shaderpack::VertexFieldData& vertex_field : data.vertex_fields) {
             const vertex_attribute& attr = all_formats.at(vertex_field.field);
 
             D3D12_INPUT_ELEMENT_DESC desc = {};
@@ -257,7 +257,7 @@ namespace nova::renderer::rhi {
          * Multisampling
          */
 
-        if(data.msaa_support != msaa_support_enum::None) {
+        if(data.msaa_support != shaderpack::MsaaSupportEnum::None) {
             pipeline_state_desc.SampleDesc.Count = 4;
             pipeline_state_desc.SampleDesc.Quality = 1;
         }
@@ -266,7 +266,7 @@ namespace nova::renderer::rhi {
          * Debugging
          */
 
-        if(nova_renderer::get_instance()->get_settings().debug.enabled) {
+        if(settings.debug.enabled) {
             pipeline_state_desc.Flags = D3D12_PIPELINE_STATE_FLAG_TOOL_DEBUG;
         }
 
@@ -274,12 +274,12 @@ namespace nova::renderer::rhi {
          * PSO creation!
          */
 
-        const HRESULT hr = device->CreateGraphicsPipelineState(&pipeline_state_desc, IID_PPV_ARGS(&output.pso));
+        const HRESULT hr = device->CreateGraphicsPipelineState(&pipeline_state_desc, IID_PPV_ARGS(&pipeline->pso));
         if(FAILED(hr)) {
-            throw shaderpack::shader_compilation_failed("Could not create PSO");
+            return Result<Pipeline*>(NovaError("Could not create PSO"));
         }
 
-        return output;
+        return Result(static_cast<Pipeline*>(pipeline));
     }
 
     Buffer* DX12RenderEngine::create_buffer(const BufferCreateInfo& info) { return nullptr; }
