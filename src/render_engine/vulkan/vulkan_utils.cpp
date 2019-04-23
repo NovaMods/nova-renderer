@@ -5,6 +5,7 @@
 
 #include "vulkan_utils.hpp"
 #include "nova_renderer/render_engine.hpp"
+#include "nova_renderer/renderables.hpp"
 
 namespace nova::renderer::rhi {
     VkImageLayout to_vk_layout(const ResourceState state) {
