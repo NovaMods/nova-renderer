@@ -13,6 +13,8 @@
 #include <dxgi1_4.h>
 #include <wrl.h>
 
+#include <spirv_cross/spirv_hlsl.hpp>
+
 namespace nova::renderer::rhi {
     /*!
      * \brief D3D12 implementation of a render engine
@@ -40,9 +42,9 @@ namespace nova::renderer::rhi {
                                         const std::vector<Image*>& attachments,
                                         const glm::uvec2& framebuffer_size) override final;
 
-		Result<Pipeline*> create_pipeline(const Renderpass* renderpass,
-                                  const shaderpack::PipelineCreateInfo& data,
-                                  const std::unordered_map<std::string, ResourceBindingDescription>& bindings) override final;
+        Result<Pipeline*> create_pipeline(const Renderpass* renderpass,
+                                          const shaderpack::PipelineCreateInfo& data,
+                                          const std::unordered_map<std::string, ResourceBindingDescription>& bindings) override final;
 
         Buffer* create_buffer(const BufferCreateInfo& info) override final;
         Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
@@ -93,8 +95,8 @@ namespace nova::renderer::rhi {
 #pragma endregion
     };
 
-    ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,
-                                    const std::string& target,
-                                    const spirv_cross::CompilerHLSL::Options& options,
-                                    std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
+    Microsoft::WRL::ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,
+                                                    const std::string& target,
+                                                    const spirv_cross::CompilerHLSL::Options& options,
+                                                    std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
 } // namespace nova::renderer::rhi
