@@ -3,11 +3,12 @@
  * \date 03-Apr-19.
  */
 
-#include <d3d12sdklayers.h>
 #include <D3DCompiler.h>
+#include <d3d12sdklayers.h>
 
 #include <spirv_cross/spirv_hlsl.hpp>
 
+#include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "../../util/logger.hpp"
 #include "../../util/windows_utils.hpp"
 #include "d3dx12.h"
@@ -15,7 +16,6 @@
 #include "dx12_render_engine.hpp"
 #include "dx12_structs.hpp"
 #include "dx12_utils.hpp"
-#include "../../loading/shaderpack/shaderpack_loading.hpp"
 
 using Microsoft::WRL::ComPtr;
 
@@ -79,9 +79,9 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-	Result<Pipeline*> DX12RenderEngine::create_pipeline(const Renderpass* renderpass,
-                                                const shaderpack::PipelineCreateInfo& data,
-                                                const std::unordered_map<std::string, ResourceBindingDescription>& bindings) {
+    Result<Pipeline*> DX12RenderEngine::create_pipeline(const Renderpass* renderpass,
+                                                        const shaderpack::PipelineCreateInfo& data,
+                                                        const std::unordered_map<std::string, ResourceBindingDescription>& bindings) {
         DX12Pipeline* pipeline = new DX12Pipeline;
 
         const auto states_begin = data.states.begin();
@@ -137,8 +137,9 @@ namespace nova::renderer::rhi {
          * Blend state
          */
 
-        pipeline_state_desc.BlendState.AlphaToCoverageEnable = std::find(states_begin, states_end, shaderpack::StateEnum::EnableAlphaToCoverage) !=
-                                                               states_end;
+        pipeline_state_desc.BlendState.AlphaToCoverageEnable = std::find(states_begin,
+                                                                         states_end,
+                                                                         shaderpack::StateEnum::EnableAlphaToCoverage) != states_end;
         pipeline_state_desc.BlendState.IndependentBlendEnable = false;
         D3D12_RENDER_TARGET_BLEND_DESC& blend_state = pipeline_state_desc.BlendState.RenderTarget[0];
         blend_state.BlendEnable = std::find(states_begin, states_end, shaderpack::StateEnum::Blending) != states_end;
@@ -159,8 +160,10 @@ namespace nova::renderer::rhi {
         raster_desc.FillMode = D3D12_FILL_MODE_SOLID;
         if(std::find(states_begin, states_end, shaderpack::StateEnum::InvertCulling) != states_end) {
             raster_desc.CullMode = D3D12_CULL_MODE_FRONT;
+
         } else if(std::find(states_begin, states_end, shaderpack::StateEnum::DisableCulling) != states_end) {
             raster_desc.CullMode = D3D12_CULL_MODE_NONE;
+
         } else {
             raster_desc.CullMode = D3D12_CULL_MODE_BACK;
         }
@@ -209,7 +212,7 @@ namespace nova::renderer::rhi {
          * Input description
          */
 
-        const std::unordered_map<shaderpack::VertexFieldEnum, vertex_attribute> all_formats = get_all_vertex_attributes();
+        const std::unordered_map<shaderpack::VertexFieldEnum, VertexAttribute> all_formats = get_all_vertex_attributes();
 
         std::vector<D3D12_INPUT_ELEMENT_DESC> input_descs;
         input_descs.reserve(data.vertex_fields.size());
@@ -242,13 +245,13 @@ namespace nova::renderer::rhi {
          */
 
         uint32_t i = 0;
-        for(i = 0; i < render_pass.texture_outputs.size(); i++) {
-            const texture_attachment& attachment = render_pass.texture_outputs.at(i);
-            const dx12_texture& tex = dynamic_textures.at(attachment.name);
-            if(tex.is_depth_texture()) {
-                pipeline_state_desc.DSVFormat = tex.get_dxgi_format();
+        for(i = 0; i < renderpass.texture_outputs.size(); i++) {
+            const shaderpack::TextureAttachmentInfo& attachment_info = renderpass.texture_outputs.at(i);
+            if(attachment_info.pixel_format == shaderpack::PixelFormatEnum::Depth || attachment_info.pixel_format == shaderpack::PixelFormatEnum::DepthStencil) {
+                pipeline_state_desc.DSVFormat = to_dxgi_format(attachment_info.pixel_format);
+
             } else {
-                pipeline_state_desc.RTVFormats[i] = to_dxgi_format(tex.get_data().format.pixel_format);
+                pipeline_state_desc.RTVFormats[i] = to_dxgi_format(attachment_info.pixel_format);
             }
         }
         pipeline_state_desc.NumRenderTargets = i;
@@ -455,6 +458,9 @@ namespace nova::renderer::rhi {
         copy_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
         CHECK_ERROR(device->CreateCommandQueue(&copy_queue_desc, IID_PPV_ARGS(&copy_command_queue)), "Could not create copy command queue");
     }
+
+    ID3D12RootSignature* DX12RenderEngine::create_root_signature(
+        const std::unordered_map<std::string, ResourceBindingDescription>& bindings) {}
 
     ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,
                                     const std::string& target,

@@ -91,7 +91,7 @@ namespace nova::renderer::rhi {
 #pragma endregion
 
 #pragma region Helpers
-
+        ID3D12RootSignature* create_root_signature(const std::unordered_map<std::string, ResourceBindingDescription>& bindings);
 #pragma endregion
     };
 

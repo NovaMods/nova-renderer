@@ -203,19 +203,29 @@ namespace nova::renderer {
                 if(pipeline_create_info.pass == create_info.name) {
                     std::unordered_map<std::string, ResourceBinding> bindings;
 
-                    auto [pipeline, pipeline_metadata] = create_graphics_pipeline(renderpass.renderpass, materials, pipeline_create_info);
-                    renderpass.pipelines.push_back(pipeline);
+                    Result<PipelineReturn> pipeline_result = create_graphics_pipeline(renderpass.renderpass,
+                                                                                      materials,
+                                                                                      pipeline_create_info);
+                    if(pipeline_result) {
+                        auto [pipeline, pipeline_metadata] = *pipeline_result;
+                        renderpass.pipelines.push_back(pipeline);
 
-                    metadata.pipeline_metadata.emplace(pipeline_create_info.name, pipeline_metadata);
+                        metadata.pipeline_metadata.emplace(pipeline_create_info.name, pipeline_metadata);
+
+                    } else {
+                        NOVA_LOG(ERROR) << "Could not create pipeline " << pipeline_create_info.name << ": "
+                                        << pipeline_result.error.to_string();
+                    }
                 }
             }
         }
     }
 
-    std::tuple<Pipeline, PipelineMetadata> NovaRenderer::create_graphics_pipeline(
+    Result<NovaRenderer::PipelineReturn> NovaRenderer::create_graphics_pipeline(
         const rhi::Renderpass* renderpass,
         const std::vector<shaderpack::MaterialData>& materials,
         const shaderpack::PipelineCreateInfo& pipeline_create_info) const {
+
         Pipeline pipeline;
         PipelineMetadata metadata;
 
@@ -243,8 +253,14 @@ namespace nova::renderer {
             get_shader_module_descriptors(pipeline_create_info.fragment_shader->source, rhi::ShaderStageFlags::Fragment, bindings);
         }
 
-        rhi::Pipeline* rhi_pipeline = rhi->create_pipeline(renderpass, pipeline_create_info, bindings);
-        pipeline.pipeline = rhi_pipeline;
+        Result<rhi::Pipeline*> rhi_pipeline = rhi->create_pipeline(renderpass, pipeline_create_info, bindings);
+        if(rhi_pipeline) {
+            pipeline.pipeline = *rhi_pipeline;
+
+        } else {
+            return Result<PipelineReturn>(
+                NovaError(fmt::format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name), rhi_pipeline.error));
+        }
 
         // Determine the pipeline layout so the material can create descriptors for the pipeline
 
@@ -261,7 +277,7 @@ namespace nova::renderer {
             }
         }
 
-        return {pipeline, metadata};
+        return Result(PipelineReturn{pipeline, metadata});
     }
 
     void NovaRenderer::get_shader_module_descriptors(const std::vector<uint32_t>& spirv,

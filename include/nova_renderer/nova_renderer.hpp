@@ -119,6 +119,8 @@ namespace nova::renderer {
         static std::unique_ptr<NovaRenderer> instance;
 
 #pragma region Shaderpack
+        using PipelineReturn = std::tuple<Pipeline, PipelineMetadata>;
+
         bool shaderpack_loaded = false;
 
         /*!
@@ -137,9 +139,9 @@ namespace nova::renderer {
                                   const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
                                   const std::vector<shaderpack::MaterialData>& materials);
 
-        std::tuple<Pipeline, PipelineMetadata> create_graphics_pipeline(const rhi::Renderpass* renderpass,
-                                                                        const std::vector<shaderpack::MaterialData>& materials,
-                                                                        const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
+        Result<PipelineReturn> create_graphics_pipeline(const rhi::Renderpass* renderpass,
+                                                        const std::vector<shaderpack::MaterialData>& materials,
+                                                        const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
 
         static void get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
                                                   const rhi::ShaderStageFlags shader_stage,
