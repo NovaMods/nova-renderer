@@ -46,7 +46,11 @@ namespace nova::renderer::rhi {
     }
 
     Result<Renderpass*> DX12RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
-        return Result<Renderpass*>(new DX12Renderpass);
+        DX12Renderpass* renderpass = new DX12Renderpass;
+
+        renderpass->texture_outputs = data.texture_outputs;
+
+        return Result<Renderpass*>(renderpass);
     }
 
     Framebuffer* DX12RenderEngine::create_framebuffer(const Renderpass* renderpass,
@@ -244,9 +248,10 @@ namespace nova::renderer::rhi {
          * Render targets
          */
 
+        const DX12Renderpass* dx12_renderpass = static_cast<const DX12Renderpass*>(renderpass);
         uint32_t i = 0;
-        for(i = 0; i < renderpass.texture_outputs.size(); i++) {
-            const shaderpack::TextureAttachmentInfo& attachment_info = renderpass.texture_outputs.at(i);
+        for(i = 0; i < dx12_renderpass->texture_outputs.size(); i++) {
+            const shaderpack::TextureAttachmentInfo& attachment_info = dx12_renderpass->texture_outputs.at(i);
             if(attachment_info.pixel_format == shaderpack::PixelFormatEnum::Depth || attachment_info.pixel_format == shaderpack::PixelFormatEnum::DepthStencil) {
                 pipeline_state_desc.DSVFormat = to_dxgi_format(attachment_info.pixel_format);
 

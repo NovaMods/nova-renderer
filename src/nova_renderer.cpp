@@ -258,8 +258,8 @@ namespace nova::renderer {
             pipeline.pipeline = *rhi_pipeline;
 
         } else {
-            return Result<PipelineReturn>(
-                NovaError(fmt::format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name), rhi_pipeline.error));
+            NovaError error = NovaError(fmt::format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name), rhi_pipeline.error);
+            return Result<PipelineReturn>(std::move(error));
         }
 
         // Determine the pipeline layout so the material can create descriptors for the pipeline
