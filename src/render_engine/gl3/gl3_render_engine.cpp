@@ -70,19 +70,35 @@ namespace nova::renderer::rhi {
         Gl3Pipeline* pipeline = new Gl3Pipeline;
 
         pipeline->id = glCreateProgram();
+
+		std::vector<std::string> pipeline_creation_errors;
+		pipeline_creation_errors.reserve(4);
         
         const Result<GLuint> vertex_shader = compile_shader(data.vertex_shader.source, GL_VERTEX_SHADER);
         if(vertex_shader) {
             glAttachShader(pipeline->id, vertex_shader.value);
 
         } else {
-            // TODO: Some way to accumulate errors
+			pipeline_creation_errors.push_back(vertex_shader.error.to_string());
+        }
+
+        if(supports_geometry_shaders && data.geometry_shader) {
+			const Result<GLuint> geometry_shader = compile_shader(data.geometry_shader->source, GL_GEOMETRY_SHADER_ARB);
+            if(geometry_shader) {
+				glAttachShader(pipeline->id, geometry_shader.value);
+
+            } else {
+				pipeline_creation_errors.push_back(geometry_shader.error.to_string());
+            }
         }
 
         if(data.fragment_shader) {
-            const Result<GLuint> fragment_shader = compile_shader(data.vertex_shader.source, GL_FRAGMENT_SHADER);
+            const Result<GLuint> fragment_shader = compile_shader(data.fragment_shader->source, GL_FRAGMENT_SHADER);
             if(fragment_shader) {
                 glAttachShader(pipeline->id, fragment_shader.value);
+
+            } else {
+				pipeline_creation_errors.push_back(fragment_shader.error.to_string());
             }
         }
 
@@ -94,6 +110,9 @@ namespace nova::renderer::rhi {
             std::string program_link_log;
             program_link_log.reserve(link_log_length);
             glGetProgramInfoLog(pipeline->id, link_log_length, nullptr, program_link_log.data());
+
+			pipeline_creation_errors.push_back(program_link_log);
+
             return Result<Pipeline*>(NovaError(program_link_log));
         }
 
