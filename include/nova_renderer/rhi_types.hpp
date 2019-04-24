@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 03-Apr-19.
- */
-
 #pragma once
 
 #include <glm/glm.hpp>
@@ -105,6 +100,12 @@ namespace nova::renderer::rhi {
         AsyncCompute,
     };
 
+    /*!
+     * \brief A resource
+     *
+     * Resources may by dynamic of static. Dynamic resources are updated after they are created, possibly by a shader,
+     * while static resources are loaded once and that's that
+     */
     struct Resource {
         enum Type {
             Buffer,
@@ -128,6 +129,11 @@ namespace nova::renderer::rhi {
     struct Renderpass {
         bool writes_to_backbuffer = false;
     };
+
+    /*!
+     * \brief The interface for a pipeline. Includes both inputs (descriptors) and outputs (framebuffers)
+     */
+    struct PipelineInterface {};
 
     struct Pipeline {};
 

@@ -1,27 +1,18 @@
-/*!
- * \brief D3D12 implementation of the structs forward-declared in render_engine.hpp
- *
- * \author ddubois
- * \date 01-Apr-19.
- */
-
 #pragma once
 
 #include "d3dx12.h"
-#include "nova_renderer/command_list.hpp"
+#include "nova_renderer/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 
 namespace nova::renderer::rhi {
-    struct DX12Renderpass : Renderpass {
-        std::vector<shaderpack::TextureAttachmentInfo> texture_outputs;
-    };
+    struct DX12Renderpass : Renderpass {};
 
     struct DX12Buffer : Buffer {
-        ID3D12Resource* resource;
+        ID3D12Resource* resource = nullptr;
     };
 
     struct DX12Image : Image {
-        ID3D12Resource* resource;
+        ID3D12Resource* resource = nullptr;
     };
 
     struct DX12Framebuffer : Framebuffer {
@@ -31,6 +22,12 @@ namespace nova::renderer::rhi {
         D3D12_CPU_DESCRIPTOR_HANDLE depth_stencil_image = {};
 
         ID3D12DescriptorHeap* descriptor_heap;
+    };
+
+    struct DX12PipelineInterface : PipelineInterface {
+        // TODO: Information about descriptors
+
+        std::vector<shaderpack::TextureAttachmentInfo> texture_outputs;
     };
 
     struct DX12Pipeline : Pipeline {
