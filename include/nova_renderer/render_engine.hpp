@@ -74,6 +74,10 @@ namespace nova::renderer::rhi {
                                                               const std::vector<Image*>& attachments,
                                                               const glm::uvec2& framebuffer_size) = 0;
 
+        [[nodiscard]] virtual PipelineInterface* create_pipeline_interface(
+            const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
+            const std::vector<shaderpack::TextureAttachmentInfo>& attachments) = 0;
+
         [[nodiscard]] virtual Result<Pipeline*> create_pipeline(
             const Renderpass* renderpass,
             const shaderpack::PipelineCreateInfo& data,
