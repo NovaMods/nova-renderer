@@ -113,6 +113,8 @@ namespace nova::renderer {
         }
 
         operator bool() const { return has_value; }
+
+        ValueType operator*() { return value; }
     };
 
     template <typename ValueType>
