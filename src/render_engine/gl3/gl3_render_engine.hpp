@@ -63,13 +63,16 @@ namespace nova::renderer::rhi {
                                  const std::vector<Semaphore*>& signal_semaphores = {}) override final;
 
     protected:
-        static void set_initial_state();
-
-        std::unique_ptr<Window> window;
-
         void open_window_and_create_surface(const NovaSettings::WindowOptions& options) override final;
 
-        std::unordered_map<std::string, shaderpack::SamplerCreateInfo> samplers;
+    private:
+		bool supports_geometry_shaders = false;
+
+		std::unique_ptr<Window> window;
+
+		std::unordered_map<std::string, shaderpack::SamplerCreateInfo> samplers;
+
+		static void set_initial_state();
     };
 
 	Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, GLenum shader_type);
