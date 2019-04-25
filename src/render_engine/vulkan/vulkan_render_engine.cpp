@@ -279,12 +279,35 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-	Result<Pipeline*> VulkanRenderEngine::create_pipeline(const Renderpass* renderpass,
-                                                  const shaderpack::PipelineCreateInfo& data,
-                                                  const std::unordered_map<std::string, ResourceBindingDescription>& bindings) {
+    PipelineInterface* VulkanRenderEngine::create_pipeline_interface(
+        const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
+        const std::vector<shaderpack::TextureAttachmentInfo>& attachments) {
+
+        VulkanPipelineInterface* pipeline_interface = new VulkanPipelineInterface;
+
+        std::vector<VkDescriptorSetLayout> layouts = create_descriptor_set_layouts(bindings);
+
+        VkPipelineLayoutCreateInfo pipeline_layout_create_info;
+        pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipeline_layout_create_info.pNext = nullptr;
+        pipeline_layout_create_info.flags = 0;
+        pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(layouts.size());
+        pipeline_layout_create_info.pSetLayouts = layouts.data();
+        pipeline_layout_create_info.pushConstantRangeCount = 0;
+        pipeline_layout_create_info.pPushConstantRanges = nullptr;
+
+        NOVA_CHECK_RESULT(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &pipeline_interface->pipeline_layout));
+
+        return pipeline_interface;
+    }
+
+    Result<Pipeline*> VulkanRenderEngine::create_pipeline(const PipelineInterface* pipeline_interface,
+                                                          const shaderpack::PipelineCreateInfo& data) {
         NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name;
 
-        vk_pipeline_t* vk_pipeline = new vk_pipeline_t;
+        const VulkanPipelineInterface* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
+
+        VulkanPipeline* vk_pipeline = new VulkanPipeline;
 
         std::vector<VkPipelineShaderStageCreateInfo> shader_stages;
         std::unordered_map<VkShaderStageFlags, VkShaderModule> shader_modules;
@@ -311,20 +334,6 @@ namespace nova::renderer::rhi {
             NOVA_LOG(TRACE) << "Compiling fragment module";
             shader_modules[VK_SHADER_STAGE_FRAGMENT_BIT] = create_shader_module(data.fragment_shader->source);
         }
-
-        std::vector<VkDescriptorSetLayout> layouts = create_descriptor_set_layouts(bindings);
-
-        VkPipelineLayoutCreateInfo pipeline_layout_create_info;
-        pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipeline_layout_create_info.pNext = nullptr;
-        pipeline_layout_create_info.flags = 0;
-        pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(layouts.size());
-        pipeline_layout_create_info.pSetLayouts = layouts.data();
-        pipeline_layout_create_info.pushConstantRangeCount = 0;
-        pipeline_layout_create_info.pPushConstantRanges = nullptr;
-
-        VkPipelineLayout layout;
-        NOVA_CHECK_RESULT(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &layout));
 
         for(const auto& [stage, shader_module] : shader_modules) {
             VkPipelineShaderStageCreateInfo shader_stage_create_info;
@@ -478,16 +487,15 @@ namespace nova::renderer::rhi {
         pipeline_create_info.pDepthStencilState = &depth_stencil_create_info;
         pipeline_create_info.pColorBlendState = &color_blend_create_info;
         pipeline_create_info.pDynamicState = nullptr;
-        pipeline_create_info.layout = layout;
+        pipeline_create_info.layout = vk_interface->pipeline_layout;
 
-        const VulkanRenderpass* vk_renderpass = static_cast<const VulkanRenderpass*>(renderpass);
-        pipeline_create_info.renderPass = vk_renderpass->pass;
+        pipeline_create_info.renderPass = vk_interface->pass;
         pipeline_create_info.subpass = 0;
         pipeline_create_info.basePipelineIndex = -1;
 
         VkResult result = vkCreateGraphicsPipelines(device, nullptr, 1, &pipeline_create_info, nullptr, &vk_pipeline->pipeline);
         if(result != VK_SUCCESS) {
-			return Result<Pipeline*>(MAKE_ERROR("Could not compile pipeline {:s}", data.name));
+            return Result<Pipeline*>(MAKE_ERROR("Could not compile pipeline {:s}", data.name));
         }
 
         if(settings.debug.enabled) {
@@ -936,11 +944,11 @@ namespace nova::renderer::rhi {
                 continue;
             }
 
-			VkDescriptorSetLayoutBinding descriptor_binding = {};
-			descriptor_binding.binding = binding.binding;
-			descriptor_binding.descriptorType = to_vk_descriptor_type(binding.type);
-			descriptor_binding.descriptorCount = binding.count;
-			descriptor_binding.stageFlags = to_vk_shader_stage_flags(binding.stages);
+            VkDescriptorSetLayoutBinding descriptor_binding = {};
+            descriptor_binding.binding = binding.binding;
+            descriptor_binding.descriptorType = to_vk_descriptor_type(binding.type);
+            descriptor_binding.descriptorCount = binding.count;
+            descriptor_binding.stageFlags = to_vk_shader_stage_flags(binding.stages);
 
             bindings_by_set[binding.set].push_back(descriptor_binding);
         }

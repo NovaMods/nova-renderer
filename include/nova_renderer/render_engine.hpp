@@ -78,10 +78,8 @@ namespace nova::renderer::rhi {
             const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
             const std::vector<shaderpack::TextureAttachmentInfo>& attachments) = 0;
 
-        [[nodiscard]] virtual Result<Pipeline*> create_pipeline(
-            const Renderpass* renderpass,
-            const shaderpack::PipelineCreateInfo& data,
-            const std::unordered_map<std::string, ResourceBindingDescription>& bindings) = 0;
+        [[nodiscard]] virtual Result<Pipeline*> create_pipeline(const PipelineInterface* pipeline_interface,
+                                                                const shaderpack::PipelineCreateInfo& data) = 0;
 
         [[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info) = 0;
 
@@ -98,6 +96,8 @@ namespace nova::renderer::rhi {
         virtual void destroy_renderpass(Renderpass* pass) = 0;
 
         virtual void destroy_framebuffer(const Framebuffer* framebuffer) = 0;
+
+        virtual void destroy_pipeline_interface(const PipelineInterface* pipeline_interface) = 0;
 
         virtual void destroy_pipeline(Pipeline* pipeline) = 0;
 

@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.h>
+#include <vulkan/vulkan.hpp>
 
 #include "nova_renderer/rhi_types.hpp"
 
@@ -35,11 +35,21 @@ namespace nova::renderer::rhi {
         VkFramebuffer framebuffer;
     };
 
-    struct vk_pipeline_t : Pipeline {
+    struct VulkanPipelineInterface : PipelineInterface {
+        /*!
+         * \brief Renderpass for the pipeline's output layouts because why _wouldn't_ that be married to the
+         * renderpass itself?
+         */
+        VkRenderPass pass;
+
+        VkPipelineLayout pipeline_layout;
+    };
+
+    struct VulkanPipeline : Pipeline {
         VkPipeline pipeline;
     };
 
-    struct vk_gpu_info {
+    struct VulkaGpuInfo {
         VkPhysicalDevice phys_device{};
         std::vector<VkQueueFamilyProperties> queue_family_props;
         std::vector<VkExtensionProperties> available_extensions;
