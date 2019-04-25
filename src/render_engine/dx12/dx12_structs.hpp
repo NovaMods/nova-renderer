@@ -21,17 +21,19 @@ namespace nova::renderer::rhi {
         bool has_depth_stencil = false;
         D3D12_CPU_DESCRIPTOR_HANDLE depth_stencil_image = {};
 
-        ID3D12DescriptorHeap* descriptor_heap;
+        ID3D12DescriptorHeap* descriptor_heap = nullptr;
     };
 
     struct DX12PipelineInterface : PipelineInterface {
-        // TODO: Information about descriptors
+        ID3D12RootSignature* root_signature = nullptr;
 
-        std::vector<shaderpack::TextureAttachmentInfo> texture_outputs;
+        std::vector<shaderpack::TextureAttachmentInfo> color_attachments;
+
+        std::optional<shaderpack::TextureAttachmentInfo> depth_texture;
     };
 
     struct DX12Pipeline : Pipeline {
-        ID3D12PipelineState* pso;
-        ID3D12RootSignature* root_signature;
+        ID3D12PipelineState* pso = nullptr;
+        ID3D12RootSignature* root_signature = nullptr;
     };
 } // namespace nova::renderer::rhi

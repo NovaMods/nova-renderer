@@ -48,8 +48,6 @@ namespace nova::renderer::rhi {
     Result<Renderpass*> DX12RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
         DX12Renderpass* renderpass = new DX12Renderpass;
 
-        renderpass->texture_outputs = data.texture_outputs;
-
         return Result<Renderpass*>(renderpass);
     }
 
@@ -83,9 +81,24 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-    Result<Pipeline*> DX12RenderEngine::create_pipeline(const Renderpass* renderpass,
-                                                        const shaderpack::PipelineCreateInfo& data,
-                                                        const std::unordered_map<std::string, ResourceBindingDescription>& bindings) {
+    PipelineInterface* DX12RenderEngine::create_pipeline_interface(
+        const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
+        const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+        const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
+
+        DX12PipelineInterface* pipeline_interface = new DX12PipelineInterface;
+
+        // TODO: Make the root signature
+        ID3D12RootSignature* root_dig
+
+        pipeline_interface->color_attachments = color_attachments;
+        pipeline_interface->depth_texture = depth_texture;
+
+        return pipeline_interface;
+    }
+
+    Result<Pipeline*> DX12RenderEngine::create_pipeline(const PipelineInterface* pipeline_interface,
+                                                        const shaderpack::PipelineCreateInfo& data) {
         DX12Pipeline* pipeline = new DX12Pipeline;
 
         const auto states_begin = data.states.begin();
@@ -250,9 +263,10 @@ namespace nova::renderer::rhi {
 
         const DX12Renderpass* dx12_renderpass = static_cast<const DX12Renderpass*>(renderpass);
         uint32_t i = 0;
-        for(i = 0; i < dx12_renderpass->texture_outputs.size(); i++) {
-            const shaderpack::TextureAttachmentInfo& attachment_info = dx12_renderpass->texture_outputs.at(i);
-            if(attachment_info.pixel_format == shaderpack::PixelFormatEnum::Depth || attachment_info.pixel_format == shaderpack::PixelFormatEnum::DepthStencil) {
+        for(i = 0; i < dx12_renderpass->color_attachments.size(); i++) {
+            const shaderpack::TextureAttachmentInfo& attachment_info = dx12_renderpass->color_attachments.at(i);
+            if(attachment_info.pixel_format == shaderpack::PixelFormatEnum::Depth ||
+               attachment_info.pixel_format == shaderpack::PixelFormatEnum::DepthStencil) {
                 pipeline_state_desc.DSVFormat = to_dxgi_format(attachment_info.pixel_format);
 
             } else {
