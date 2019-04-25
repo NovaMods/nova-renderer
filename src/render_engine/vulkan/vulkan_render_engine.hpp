@@ -37,7 +37,7 @@ namespace nova::renderer::rhi {
         VkQueue copy_queue;
 
         // Info about the hardware
-        vk_gpu_info gpu;
+        VulkaGpuInfo gpu;
 
         VulkanRenderEngine(NovaSettings& settings);
 
@@ -60,9 +60,11 @@ namespace nova::renderer::rhi {
                                         const std::vector<Image*>& attachments,
                                         const glm::uvec2& framebuffer_size) override final;
 
-		Result<Pipeline*> create_pipeline(const Renderpass* renderpass,
-                                  const shaderpack::PipelineCreateInfo& data,
-                                  const std::unordered_map<std::string, ResourceBindingDescription>& bindings) override final;
+        PipelineInterface* create_pipeline_interface(const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
+                                                     const std::vector<shaderpack::TextureAttachmentInfo>& attachments) override final;
+
+        Result<Pipeline*> create_pipeline(const PipelineInterface* pipeline_interface,
+                                          const shaderpack::PipelineCreateInfo& data) override final;
 
         Buffer* create_buffer(const BufferCreateInfo& info) override final;
         Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
@@ -132,7 +134,7 @@ namespace nova::renderer::rhi {
 #pragma endregion
 
 #pragma region Helpers
-		VkShaderModule create_shader_module(const std::vector<uint32_t>& spirv) const;
+        VkShaderModule create_shader_module(const std::vector<uint32_t>& spirv) const;
 
         std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
             const std::unordered_map<std::string, ResourceBindingDescription>& all_bindings) const;
