@@ -87,7 +87,7 @@ namespace nova::renderer::rhi {
 
         VulkanRenderpass* renderpass = new VulkanRenderpass;
 
-        VkSubpassDescription subpass_description;
+        VkSubpassDescription subpass_description = {};
         subpass_description.flags = 0;
         subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass_description.inputAttachmentCount = 0;
@@ -97,7 +97,7 @@ namespace nova::renderer::rhi {
         subpass_description.pResolveAttachments = nullptr;
         subpass_description.pDepthStencilAttachment = nullptr;
 
-        VkSubpassDependency image_available_dependency;
+        VkSubpassDependency image_available_dependency = {};
         image_available_dependency.dependencyFlags = 0;
         image_available_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
         image_available_dependency.dstSubpass = 0;
@@ -106,7 +106,7 @@ namespace nova::renderer::rhi {
         image_available_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         image_available_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-        VkRenderPassCreateInfo render_pass_create_info;
+        VkRenderPassCreateInfo render_pass_create_info = {};
         render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         render_pass_create_info.pNext = nullptr;
         render_pass_create_info.flags = 0;
@@ -281,7 +281,8 @@ namespace nova::renderer::rhi {
 
     PipelineInterface* VulkanRenderEngine::create_pipeline_interface(
         const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
-        const std::vector<shaderpack::TextureAttachmentInfo>& attachments) {
+        const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+        const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
 
         VulkanPipelineInterface* pipeline_interface = new VulkanPipelineInterface;
 
@@ -297,6 +298,123 @@ namespace nova::renderer::rhi {
         pipeline_layout_create_info.pPushConstantRanges = nullptr;
 
         NOVA_CHECK_RESULT(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &pipeline_interface->pipeline_layout));
+
+        VkSubpassDescription subpass_description;
+        subpass_description.flags = 0;
+        subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass_description.inputAttachmentCount = 0;
+        subpass_description.pInputAttachments = nullptr;
+        subpass_description.preserveAttachmentCount = 0;
+        subpass_description.pPreserveAttachments = nullptr;
+        subpass_description.pResolveAttachments = nullptr;
+        subpass_description.pDepthStencilAttachment = nullptr;
+
+        VkSubpassDependency image_available_dependency;
+        image_available_dependency.dependencyFlags = 0;
+        image_available_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+        image_available_dependency.dstSubpass = 0;
+        image_available_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        image_available_dependency.srcAccessMask = 0;
+        image_available_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        image_available_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+        VkRenderPassCreateInfo render_pass_create_info;
+        render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        render_pass_create_info.pNext = nullptr;
+        render_pass_create_info.flags = 0;
+        render_pass_create_info.subpassCount = 1;
+        render_pass_create_info.pSubpasses = &subpass_description;
+        render_pass_create_info.dependencyCount = 1;
+        render_pass_create_info.pDependencies = &image_available_dependency;
+
+        std::vector<VkAttachmentReference> attachment_references;
+        std::vector<VkAttachmentDescription> attachment_descriptions;
+        std::vector<VkImageView> framebuffer_attachments;
+        uint32_t framebuffer_width = 0;
+        uint32_t framebuffer_height = 0;
+
+        bool writes_to_backbuffer = false;
+        // Collect framebuffer size information from color output attachments
+        for(const shaderpack::TextureAttachmentInfo& attachment : color_attachments) {
+            if(attachment.name == "Backbuffer") {
+                // Handle backbuffer
+                // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip
+                // everything
+                writes_to_backbuffer = true;
+
+                VkAttachmentDescription desc = {};
+                desc.flags = 0;
+                desc.format = swapchain->get_swapchain_format();
+                desc.samples = VK_SAMPLE_COUNT_1_BIT;
+                desc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+                desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                desc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+                attachment_descriptions.push_back(desc);
+
+                VkAttachmentReference ref = {};
+
+                ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                ref.attachment = static_cast<uint32_t>(attachment_descriptions.size()) - 1;
+
+                attachment_references.push_back(ref);
+
+                break;
+            }
+
+            VkAttachmentDescription desc = {};
+            desc.flags = 0;
+            desc.format = to_vk_format(attachment.pixel_format);
+            desc.samples = VK_SAMPLE_COUNT_1_BIT;
+            desc.loadOp = attachment.clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+            desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            desc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+            attachment_descriptions.push_back(desc);
+
+            VkAttachmentReference ref = {};
+
+            ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            ref.attachment = static_cast<uint32_t>(attachment_descriptions.size()) - 1;
+
+            attachment_references.push_back(ref);
+        }
+
+        VkAttachmentReference depth_reference = {};
+        // Collect framebuffer size information from the depth attachment
+        if(depth_texture) {
+            VkAttachmentDescription desc = {};
+            desc.flags = 0;
+            desc.format = to_vk_format(depth_texture->pixel_format);
+            desc.samples = VK_SAMPLE_COUNT_1_BIT;
+            desc.loadOp = depth_texture->clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+            desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            desc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            desc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            attachment_descriptions.push_back(desc);
+
+            depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            depth_reference.attachment = static_cast<uint32_t>(attachment_descriptions.size()) - 1;
+
+            subpass_description.pDepthStencilAttachment = &depth_reference;
+        }
+
+        subpass_description.colorAttachmentCount = static_cast<uint32_t>(attachment_references.size());
+        subpass_description.pColorAttachments = attachment_references.data();
+
+        render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachment_descriptions.size());
+        render_pass_create_info.pAttachments = attachment_descriptions.data();
+
+        NOVA_CHECK_RESULT(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &pipeline_interface->pass));
 
         return pipeline_interface;
     }

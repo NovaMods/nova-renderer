@@ -49,7 +49,7 @@ namespace nova::renderer::rhi {
         VkPipeline pipeline;
     };
 
-    struct VulkaGpuInfo {
+    struct VulkanGpuInfo {
         VkPhysicalDevice phys_device{};
         std::vector<VkQueueFamilyProperties> queue_family_props;
         std::vector<VkExtensionProperties> available_extensions;

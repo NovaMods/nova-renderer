@@ -76,7 +76,8 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] virtual PipelineInterface* create_pipeline_interface(
             const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
-            const std::vector<shaderpack::TextureAttachmentInfo>& attachments) = 0;
+            const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) = 0;
 
         [[nodiscard]] virtual Result<Pipeline*> create_pipeline(const PipelineInterface* pipeline_interface,
                                                                 const shaderpack::PipelineCreateInfo& data) = 0;
