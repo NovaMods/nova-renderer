@@ -5,7 +5,7 @@
 
 #include "dx12_utils.hpp"
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     D3D12_RESOURCE_STATES to_dx12_state(rhi::ResourceState state) {
         switch(state) {
             case rhi::ResourceState::Undefined:
@@ -155,8 +155,6 @@ namespace nova::renderer {
             case shaderpack::PixelFormatEnum::RGBA16F:
                 return DXGI_FORMAT_R16G16B16A16_FLOAT;
 
-                return DXGI_FORMAT_R32G32B32_FLOAT;
-
             case shaderpack::PixelFormatEnum::RGBA32F:
                 return DXGI_FORMAT_R32G32B32A32_FLOAT;
 
@@ -168,8 +166,22 @@ namespace nova::renderer {
 
             default:
                 return DXGI_FORMAT_R8G8B8A8_UNORM;
-                ;
         }
     }
 
+    D3D12_DESCRIPTOR_RANGE_TYPE to_dx12_range_type(DescriptorType type) {
+        switch(type) {
+            case DescriptorType::CombinedImageSampler:
+                return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+            case DescriptorType::UniformBuffer:
+                return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+
+            case DescriptorType::StorageBuffer:
+                return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+
+            default:
+                return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+        }
+    }
 } // namespace nova::renderer

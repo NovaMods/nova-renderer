@@ -26,6 +26,8 @@ namespace nova::renderer::rhi {
 
     D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(shaderpack::PrimitiveTopologyEnum primitive_mode);
 
+    D3D12_DESCRIPTOR_RANGE_TYPE to_dx12_range_type(DescriptorType type);
+
 #ifndef NDEBUG
 #define CHECK_ERROR(expr, msg)                                                                                                             \
     {                                                                                                                                      \

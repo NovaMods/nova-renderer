@@ -87,9 +87,30 @@ namespace nova::renderer::rhi {
         const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
 
         DX12PipelineInterface* pipeline_interface = new DX12PipelineInterface;
+        pipeline_interface->table_layouts.reserve(16);
 
-        // TODO: Make the root signature
-        ID3D12RootSignature* root_dig
+        for(const auto& [binding_name, binding] : bindings) {
+            pipeline_interface->table_layouts[binding.set].reserve(16);
+            pipeline_interface->table_layouts[binding.set].push_back(binding);
+        }
+
+        // Make a descriptor table for each descriptor set
+        for(const auto& [set, descriptor_layouts] : pipeline_interface->table_layouts) {
+            D3D12_ROOT_DESCRIPTOR_TABLE1 table = {};
+            table.NumDescriptorRanges = static_cast<UINT>(descriptor_layouts.size());
+            table.pDescriptorRanges = new D3D12_DESCRIPTOR_RANGE1[descriptor_layouts.size()];
+
+            for(uint32_t i = 0; i < descriptor_layouts.size(); i++) {
+                const ResourceBindingDescription& desc = descriptor_layouts.at(i);
+
+                D3D12_DESCRIPTOR_RANGE1 descriptor_range = {};
+                descriptor_range.RangeType = to_dx12_range_type(desc.type);
+                descriptor_range.NumDescriptors = desc.count;
+                descriptor_range.BaseShaderRegister = desc.binding;
+
+                table.pDescriptorRanges[i] = std::move(descriptor_range);
+            }
+        }
 
         pipeline_interface->color_attachments = color_attachments;
         pipeline_interface->depth_texture = depth_texture;
