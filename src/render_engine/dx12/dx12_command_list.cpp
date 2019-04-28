@@ -11,8 +11,8 @@ namespace nova::renderer::rhi {
     DX12CommandList::DX12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds) : cmds(std::move(cmds)) {}
 
     void DX12CommandList::resource_barriers([[maybe_unused]] PipelineStageFlags stages_before_barrier,
-                                               [[maybe_unused]] PipelineStageFlags stages_after_barrier,
-                                               const std::vector<ResourceBarrier>& barriers) {
+                                            [[maybe_unused]] PipelineStageFlags stages_after_barrier,
+                                            const std::vector<ResourceBarrier>& barriers) {
         std::vector<D3D12_RESOURCE_BARRIER> dx12_barriers;
         dx12_barriers.reserve(barriers.size());
 
@@ -48,10 +48,10 @@ namespace nova::renderer::rhi {
     }
 
     void DX12CommandList::copy_buffer(Buffer* destination_buffer,
-                                         const uint64_t destination_offset,
-                                         Buffer* source_buffer,
-                                         const uint64_t source_offset,
-                                         const uint64_t num_bytes) {
+                                      const uint64_t destination_offset,
+                                      Buffer* source_buffer,
+                                      const uint64_t source_offset,
+                                      const uint64_t num_bytes) {
         DX12Buffer* dst_buf = reinterpret_cast<DX12Buffer*>(destination_buffer);
         DX12Buffer* src_buf = reinterpret_cast<DX12Buffer*>(source_buffer);
 
@@ -78,7 +78,11 @@ namespace nova::renderer::rhi {
         if(d3d12_framebuffer->has_depth_stencil) {
             depth_stencil = &d3d12_framebuffer->depth_stencil_image;
         }
-        cmds->OMSetRenderTargets(d3d12_framebuffer->render_targets.size(), d3d12_framebuffer->render_targets.data(), false, depth_stencil);
+
+        cmds->OMSetRenderTargets(static_cast<UINT>(d3d12_framebuffer->render_targets.size()),
+                                 d3d12_framebuffer->render_targets.data(),
+                                 false,
+                                 depth_stencil);
     }
 
 } // namespace nova::renderer::rhi

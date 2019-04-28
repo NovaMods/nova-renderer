@@ -25,7 +25,7 @@ namespace nova::renderer::rhi {
     };
 
     struct DX12PipelineInterface : PipelineInterface {
-        ID3D12RootSignature* root_signature = nullptr;
+        std::unordered_map<uint32_t, std::vector<ResourceBindingDescription>> table_layouts;
 
         std::vector<shaderpack::TextureAttachmentInfo> color_attachments;
 

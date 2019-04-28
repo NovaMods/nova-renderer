@@ -87,6 +87,12 @@ namespace nova::renderer::rhi {
         Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap;
         uint32_t rtv_descriptor_size = 0;
 
+        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> uav_descriptor_heap;
+        uint32_t uav_descriptor_size = 0;
+
+        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> texture_descriptor_heap;
+        uint32_t texture_descriptor_size = 0;
+
 #pragma region Initialization
         void create_device();
 
