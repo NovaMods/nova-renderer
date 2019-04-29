@@ -279,7 +279,7 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-    PipelineInterface* VulkanRenderEngine::create_pipeline_interface(
+    Result<PipelineInterface*> VulkanRenderEngine::create_pipeline_interface(
         const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
         const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
         const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
@@ -416,7 +416,7 @@ namespace nova::renderer::rhi {
 
         NOVA_CHECK_RESULT(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &pipeline_interface->pass));
 
-        return pipeline_interface;
+        return Result(static_cast<PipelineInterface*>(pipeline_interface));
     }
 
     Result<Pipeline*> VulkanRenderEngine::create_pipeline(const PipelineInterface* pipeline_interface,
