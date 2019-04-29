@@ -42,7 +42,7 @@ namespace nova::renderer::rhi {
                                         const std::vector<Image*>& attachments,
                                         const glm::uvec2& framebuffer_size) override final;
 
-        PipelineInterface* create_pipeline_interface(const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
+        Result<PipelineInterface*> create_pipeline_interface(const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
                                                      const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
                                                      const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override final;
 

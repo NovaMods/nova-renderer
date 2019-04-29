@@ -27,6 +27,8 @@ namespace nova::renderer::rhi {
     struct DX12PipelineInterface : PipelineInterface {
         std::unordered_map<uint32_t, std::vector<ResourceBindingDescription>> table_layouts;
 
+        D3D12_ROOT_SIGNATURE_DESC1 root_sig_desc = {};
+
         std::vector<shaderpack::TextureAttachmentInfo> color_attachments;
 
         std::optional<shaderpack::TextureAttachmentInfo> depth_texture;

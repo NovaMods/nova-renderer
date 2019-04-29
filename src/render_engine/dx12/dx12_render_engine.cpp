@@ -81,11 +81,11 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-    PipelineInterface* DX12RenderEngine::create_pipeline_interface(
+    Result<PipelineInterface*> DX12RenderEngine::create_pipeline_interface(
         const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
         const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
         const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
-
+        
         DX12PipelineInterface* pipeline_interface = new DX12PipelineInterface;
         pipeline_interface->table_layouts.reserve(16);
 
@@ -94,28 +94,44 @@ namespace nova::renderer::rhi {
             pipeline_interface->table_layouts[binding.set].push_back(binding);
         }
 
+        for(const auto& [set, bindings] : pipeline_interface->table_layouts) {
+            if(set > pipeline_interface->table_layouts.size()) {
+                return Result<PipelineInterface*>(NovaError("Pipeline interface doesn't use descriptor sets sequentially, but it needs to"));
+            }
+        }
+
+        const std::size_t num_sets = pipeline_interface->table_layouts.size();
+
+        pipeline_interface->root_sig_desc.NumParameters = num_sets;
+        pipeline_interface->root_sig_desc.pParameters = new D3D12_ROOT_PARAMETER1[num_sets];
+
         // Make a descriptor table for each descriptor set
-        for(const auto& [set, descriptor_layouts] : pipeline_interface->table_layouts) {
-            D3D12_ROOT_DESCRIPTOR_TABLE1 table = {};
-            table.NumDescriptorRanges = static_cast<UINT>(descriptor_layouts.size());
-            table.pDescriptorRanges = new D3D12_DESCRIPTOR_RANGE1[descriptor_layouts.size()];
+        for(uint32_t set = 0; set < num_sets; set++) {
+            std::vector<ResourceBindingDescription>& descriptor_layouts = pipeline_interface->table_layouts.at(set);
+            D3D12_ROOT_PARAMETER1& param = const_cast<D3D12_ROOT_PARAMETER1&>(pipeline_interface->root_sig_desc.pParameters[set]);
+            param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+
+            param.DescriptorTable.NumDescriptorRanges = static_cast<UINT>(descriptor_layouts.size());
+            param.DescriptorTable.pDescriptorRanges = new D3D12_DESCRIPTOR_RANGE1[descriptor_layouts.size()];
 
             for(uint32_t i = 0; i < descriptor_layouts.size(); i++) {
                 const ResourceBindingDescription& desc = descriptor_layouts.at(i);
 
-                D3D12_DESCRIPTOR_RANGE1 descriptor_range = {};
+                // Microsoft's sample DX12 renderer uses const_cast don't yell at me
+                D3D12_DESCRIPTOR_RANGE1& descriptor_range = const_cast<D3D12_DESCRIPTOR_RANGE1&>(
+                    param.DescriptorTable.pDescriptorRanges[i]);
                 descriptor_range.RangeType = to_dx12_range_type(desc.type);
                 descriptor_range.NumDescriptors = desc.count;
                 descriptor_range.BaseShaderRegister = desc.binding;
-
-                table.pDescriptorRanges[i] = std::move(descriptor_range);
+                descriptor_range.RegisterSpace = 0;
+                descriptor_range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
             }
         }
 
         pipeline_interface->color_attachments = color_attachments;
         pipeline_interface->depth_texture = depth_texture;
 
-        return pipeline_interface;
+        return Result(static_cast<PipelineInterface*>(pipeline_interface));
     }
 
     Result<Pipeline*> DX12RenderEngine::create_pipeline(const PipelineInterface* pipeline_interface,
