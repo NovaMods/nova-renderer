@@ -209,7 +209,16 @@ namespace nova::renderer {
                 if(pipeline_create_info.pass == create_info.name) {
                     std::unordered_map<std::string, ResourceBinding> bindings;
 
-                    Result<PipelineReturn> pipeline_result = create_graphics_pipeline(renderpass.renderpass,
+                    Result<rhi::PipelineInterface*> pipeline_interface = create_pipeline_interface(pipeline_create_info,
+                                                                                                   create_info.texture_outputs,
+                                                                                                   create_info.depth_texture);
+                    if(!pipeline_interface) {
+                        NOVA_LOG(ERROR) << "Pipeline " << create_info.name
+                                        << " has an invalid interface: " << pipeline_interface.error.to_string();
+                        continue;
+                    }
+
+                    Result<PipelineReturn> pipeline_result = create_graphics_pipeline(pipeline_interface.value,
                                                                                       materials,
                                                                                       pipeline_create_info);
                     if(pipeline_result) {
@@ -227,16 +236,10 @@ namespace nova::renderer {
         }
     }
 
-    Result<NovaRenderer::PipelineReturn> NovaRenderer::create_graphics_pipeline(
-        const rhi::Renderpass* renderpass,
-        const std::vector<shaderpack::MaterialData>& materials,
-        const shaderpack::PipelineCreateInfo& pipeline_create_info) const {
-
-        Pipeline pipeline;
-        PipelineMetadata metadata;
-
-        metadata.data = pipeline_create_info;
-
+    Result<rhi::PipelineInterface*> NovaRenderer::create_pipeline_interface(
+        const shaderpack::PipelineCreateInfo& pipeline_create_info,
+        const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+        const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const {
         std::unordered_map<std::string, rhi::ResourceBindingDescription> bindings;
         bindings.reserve(32); // Probably a good estimate
 
@@ -259,7 +262,20 @@ namespace nova::renderer {
             get_shader_module_descriptors(pipeline_create_info.fragment_shader->source, rhi::ShaderStageFlags::Fragment, bindings);
         }
 
-        Result<rhi::Pipeline*> rhi_pipeline = rhi->create_pipeline(renderpass, pipeline_create_info, bindings);
+        return rhi->create_pipeline_interface(bindings, color_attachments, depth_texture);
+    }
+
+    Result<NovaRenderer::PipelineReturn> NovaRenderer::create_graphics_pipeline(
+        const rhi::PipelineInterface* pipeline_interface,
+        const std::vector<shaderpack::MaterialData>& materials,
+        const shaderpack::PipelineCreateInfo& pipeline_create_info) const {
+
+        Pipeline pipeline;
+        PipelineMetadata metadata;
+
+        metadata.data = pipeline_create_info;
+
+        Result<rhi::Pipeline*> rhi_pipeline = rhi->create_pipeline(pipeline_interface, pipeline_create_info);
         if(rhi_pipeline) {
             pipeline.pipeline = *rhi_pipeline;
 
