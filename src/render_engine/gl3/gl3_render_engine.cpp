@@ -64,9 +64,18 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-    Result<Pipeline*> Gl3RenderEngine::create_pipeline([[maybe_unused]] const Renderpass* renderpass,
-                                                       const shaderpack::PipelineCreateInfo& data,
-                                                       const std::unordered_map<std::string, ResourceBindingDescription>& bindings) {
+    Result<PipelineInterface*> Gl3RenderEngine::create_pipeline_interface(
+        const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
+        [[maybe_unused]] const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+        [[maybe_unused]] const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
+        Gl3PipelineInterface* pipeline_interface = new Gl3PipelineInterface;
+        pipeline_interface->bindings = bindings;
+
+        return Result(static_cast<PipelineInterface*>(pipeline_interface));
+    }
+
+    Result<Pipeline*> Gl3RenderEngine::create_pipeline(const PipelineInterface* pipeline_interface,
+                                                       const shaderpack::PipelineCreateInfo& data) {
         Gl3Pipeline* pipeline = new Gl3Pipeline;
 
         pipeline->id = glCreateProgram();
@@ -116,7 +125,8 @@ namespace nova::renderer::rhi {
             return Result<Pipeline*>(NovaError(program_link_log));
         }
 
-        for(const auto& binding : bindings) {
+        const Gl3PipelineInterface* gl3_pipeline_interface = static_cast<const Gl3PipelineInterface*>(pipeline_interface);
+        for(const auto& binding : gl3_pipeline_interface->bindings) {
 			const GLuint uniform_location = glGetUniformLocation(pipeline->id, binding.first.c_str());
 			pipeline->uniform_cache.emplace(binding.first, uniform_location);
         }

@@ -23,11 +23,15 @@ namespace nova::renderer::rhi {
     struct Gl3Renderpass : Renderpass {};
 
     struct Gl3Framebuffer : Framebuffer {
-        GLuint id;
+        GLuint id = 0;
+    };
+
+    struct Gl3PipelineInterface : PipelineInterface {
+        std::unordered_map<std::string, ResourceBindingDescription> bindings;
     };
 
     struct Gl3Pipeline : Pipeline {
-		GLuint id;
+		GLuint id = 0;
 
 		std::unordered_map<ResourceBindingDescription, GLuint> uniform_cache;
     };

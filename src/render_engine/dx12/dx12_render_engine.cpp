@@ -85,7 +85,7 @@ namespace nova::renderer::rhi {
         const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
         const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
         const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
-        
+
         DX12PipelineInterface* pipeline_interface = new DX12PipelineInterface;
         pipeline_interface->table_layouts.reserve(16);
 
@@ -96,30 +96,31 @@ namespace nova::renderer::rhi {
 
         for(const auto& [set, bindings] : pipeline_interface->table_layouts) {
             if(set > pipeline_interface->table_layouts.size()) {
-                return Result<PipelineInterface*>(NovaError("Pipeline interface doesn't use descriptor sets sequentially, but it needs to"));
+                return Result<PipelineInterface*>(
+                    NovaError("Pipeline interface doesn't use descriptor sets sequentially, but it needs to"));
             }
         }
 
         const std::size_t num_sets = pipeline_interface->table_layouts.size();
 
-        pipeline_interface->root_sig_desc.NumParameters = num_sets;
-        pipeline_interface->root_sig_desc.pParameters = new D3D12_ROOT_PARAMETER1[num_sets];
+        D3D12_ROOT_SIGNATURE_DESC root_sig_desc = {};
+        root_sig_desc.NumParameters = num_sets;
+        root_sig_desc.pParameters = new D3D12_ROOT_PARAMETER[num_sets];
 
         // Make a descriptor table for each descriptor set
         for(uint32_t set = 0; set < num_sets; set++) {
             std::vector<ResourceBindingDescription>& descriptor_layouts = pipeline_interface->table_layouts.at(set);
-            D3D12_ROOT_PARAMETER1& param = const_cast<D3D12_ROOT_PARAMETER1&>(pipeline_interface->root_sig_desc.pParameters[set]);
+            D3D12_ROOT_PARAMETER& param = const_cast<D3D12_ROOT_PARAMETER&>(root_sig_desc.pParameters[set]);
             param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 
             param.DescriptorTable.NumDescriptorRanges = static_cast<UINT>(descriptor_layouts.size());
-            param.DescriptorTable.pDescriptorRanges = new D3D12_DESCRIPTOR_RANGE1[descriptor_layouts.size()];
+            param.DescriptorTable.pDescriptorRanges = new D3D12_DESCRIPTOR_RANGE[descriptor_layouts.size()];
 
             for(uint32_t i = 0; i < descriptor_layouts.size(); i++) {
                 const ResourceBindingDescription& desc = descriptor_layouts.at(i);
 
                 // Microsoft's sample DX12 renderer uses const_cast don't yell at me
-                D3D12_DESCRIPTOR_RANGE1& descriptor_range = const_cast<D3D12_DESCRIPTOR_RANGE1&>(
-                    param.DescriptorTable.pDescriptorRanges[i]);
+                D3D12_DESCRIPTOR_RANGE& descriptor_range = const_cast<D3D12_DESCRIPTOR_RANGE&>(param.DescriptorTable.pDescriptorRanges[i]);
                 descriptor_range.RangeType = to_dx12_range_type(desc.type);
                 descriptor_range.NumDescriptors = desc.count;
                 descriptor_range.BaseShaderRegister = desc.binding;
@@ -127,6 +128,23 @@ namespace nova::renderer::rhi {
                 descriptor_range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
             }
         }
+
+        ComPtr<ID3DBlob> root_sig_blob;
+        ComPtr<ID3DBlob> error_blob;
+
+        const HRESULT res = D3D12SerializeRootSignature(&root_sig_desc,
+                                                        D3D_ROOT_SIGNATURE_VERSION_1_1,
+                                                        root_sig_blob.GetAddressOf(),
+                                                        error_blob.GetAddressOf());
+        if(!SUCCEEDED(res)) {
+            const std::string err_str = static_cast<const char*>(error_blob->GetBufferPointer());
+            return Result<PipelineInterface*>(NovaError(err_str));
+        }
+
+        device->CreateRootSignature(1,
+                                    root_sig_blob->GetBufferPointer(),
+                                    root_sig_blob->GetBufferSize(),
+                                    IID_PPV_ARGS(&pipeline_interface->root_sig));
 
         pipeline_interface->color_attachments = color_attachments;
         pipeline_interface->depth_texture = depth_texture;
@@ -136,6 +154,8 @@ namespace nova::renderer::rhi {
 
     Result<Pipeline*> DX12RenderEngine::create_pipeline(const PipelineInterface* pipeline_interface,
                                                         const shaderpack::PipelineCreateInfo& data) {
+        const DX12PipelineInterface* dx12_pipeline_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
+
         DX12Pipeline* pipeline = new DX12Pipeline;
 
         const auto states_begin = data.states.begin();
@@ -184,7 +204,7 @@ namespace nova::renderer::rhi {
             pipeline_state_desc.PS.pShaderBytecode = fragment_blob->GetBufferPointer();
         }
 
-        pipeline->root_signature = create_root_signature(bindings);
+        pipeline->root_signature = dx12_pipeline_interface->root_sig.Get();
         pipeline_state_desc.pRootSignature = pipeline->root_signature;
 
         /*
