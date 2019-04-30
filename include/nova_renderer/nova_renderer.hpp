@@ -125,6 +125,12 @@ namespace nova::renderer {
 
         /*!
          * \brief The renderpasses in the shaderpack, in submission order
+         *
+         * Each renderpass contains all the pipelines that use it. Each pipeline has all the material passes that use
+         * it, and each material pass has all the meshes that are drawn with it, and each mesh has all the renderables
+         * that use it
+         *
+         * Basically this vector contains all the data you need to render a frame
          */
         std::vector<Renderpass> renderpasses;
 
@@ -139,9 +145,10 @@ namespace nova::renderer {
                                   const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
                                   const std::vector<shaderpack::MaterialData>& materials);
 
-        Result<rhi::PipelineInterface*> create_pipeline_interface(const shaderpack::PipelineCreateInfo& pipeline_create_info,
-                                                                  const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-                                                                  const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const;
+        Result<rhi::PipelineInterface*> create_pipeline_interface(
+            const shaderpack::PipelineCreateInfo& pipeline_create_info,
+            const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const;
 
         Result<PipelineReturn> create_graphics_pipeline(const rhi::PipelineInterface* pipeline_interface,
                                                         const std::vector<shaderpack::MaterialData>& materials,
