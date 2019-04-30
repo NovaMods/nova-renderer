@@ -34,9 +34,13 @@ namespace nova::renderer::rhi {
                                         const std::vector<Image*>& attachments,
                                         const glm::uvec2& framebuffer_size) override final;
 
-        Result<Pipeline*> create_pipeline(const Renderpass* renderpass,
-                                  const shaderpack::PipelineCreateInfo& data,
-                                  const std::unordered_map<std::string, ResourceBindingDescription>& bindings) override final;
+        Result<PipelineInterface*> create_pipeline_interface(
+            const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
+            const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override final;
+
+        Result<Pipeline*> create_pipeline(const PipelineInterface* pipeline_interface,
+                                          const shaderpack::PipelineCreateInfo& data) override final;
 
         Buffer* create_buffer(const BufferCreateInfo& info) override final;
         Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
@@ -66,14 +70,14 @@ namespace nova::renderer::rhi {
         void open_window_and_create_surface(const NovaSettings::WindowOptions& options) override final;
 
     private:
-		bool supports_geometry_shaders = false;
+        bool supports_geometry_shaders = false;
 
-		std::unique_ptr<Window> window;
+        std::unique_ptr<Window> window;
 
-		std::unordered_map<std::string, shaderpack::SamplerCreateInfo> samplers;
+        std::unordered_map<std::string, shaderpack::SamplerCreateInfo> samplers;
 
-		static void set_initial_state();
+        static void set_initial_state();
     };
 
-	Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, GLenum shader_type);
+    Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, GLenum shader_type);
 } // namespace nova::renderer::rhi
