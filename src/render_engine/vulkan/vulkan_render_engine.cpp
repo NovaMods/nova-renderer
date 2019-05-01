@@ -41,6 +41,8 @@ namespace nova::renderer::rhi {
         create_swapchain();
 
         create_per_thread_command_pools();
+
+        main_descriptor_pool = make_new_descriptor_pool();
     }
 
     std::shared_ptr<Window> VulkanRenderEngine::get_window() const { return window; }
@@ -253,14 +255,14 @@ namespace nova::renderer::rhi {
 
         VulkanPipelineInterface* pipeline_interface = new VulkanPipelineInterface;
 
-        std::vector<VkDescriptorSetLayout> layouts = create_descriptor_set_layouts(bindings);
+        pipeline_interface->layouts_by_set = create_descriptor_set_layouts(bindings);
 
         VkPipelineLayoutCreateInfo pipeline_layout_create_info;
         pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipeline_layout_create_info.pNext = nullptr;
         pipeline_layout_create_info.flags = 0;
-        pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(layouts.size());
-        pipeline_layout_create_info.pSetLayouts = layouts.data();
+        pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(pipeline_interface->layouts_by_set.size());
+        pipeline_layout_create_info.pSetLayouts = pipeline_interface->layouts_by_set.data();
         pipeline_layout_create_info.pushConstantRangeCount = 0;
         pipeline_layout_create_info.pPushConstantRanges = nullptr;
 
@@ -384,6 +386,30 @@ namespace nova::renderer::rhi {
         NOVA_CHECK_RESULT(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &pipeline_interface->pass));
 
         return Result(static_cast<PipelineInterface*>(pipeline_interface));
+    }
+
+    std::vector<DescriptorSet*> VulkanRenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface) {
+        const VulkanPipelineInterface* vk_pipeline_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
+
+        VkDescriptorSetAllocateInfo alloc_info = {};
+        alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        alloc_info.descriptorPool = main_descriptor_pool;
+        alloc_info.descriptorSetCount = vk_pipeline_interface->layouts_by_set.size();
+        alloc_info.pSetLayouts = vk_pipeline_interface->layouts_by_set.data();
+
+        std::vector<VkDescriptorSet> sets;
+        sets.resize(vk_pipeline_interface->layouts_by_set.size());
+        vkAllocateDescriptorSets(device, &alloc_info, sets.data());
+
+        std::vector<DescriptorSet*> final_sets;
+        final_sets.reserve(sets.size());
+        for(const VkDescriptorSet set : sets) {
+            VulkanDescriptorSet* vk_set = new VulkanDescriptorSet;
+            vk_set->descriptor_set = set;
+            final_sets.push_back(vk_set);
+        }
+
+        return final_sets;
     }
 
     Result<Pipeline*> VulkanRenderEngine::create_pipeline(const PipelineInterface* pipeline_interface,

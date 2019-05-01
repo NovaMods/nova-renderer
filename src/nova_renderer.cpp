@@ -292,7 +292,7 @@ namespace nova::renderer {
         for(const shaderpack::MaterialData& material_data : materials) {
             for(const shaderpack::MaterialPass& pass_data : material_data.passes) {
                 if(pass_data.pipeline == pipeline_create_info.name) {
-                    MaterialPass pass = {};
+                    MaterialPass pass = create_material_pass(pass_data, pipeline_interface);
 
                     pipeline.passes.push_back(pass);
                 }
@@ -300,6 +300,13 @@ namespace nova::renderer {
         }
 
         return Result(PipelineReturn{pipeline, metadata});
+    }
+
+    MaterialPass NovaRenderer::create_material_pass(const shaderpack::MaterialPass& pass_data,
+                                                    const rhi::PipelineInterface* layout) const {
+        MaterialPass pass = {};
+
+        std::vector<rhi::DescriptorSet> descriptor_sets = rhi->create_descriptor_sets(layout);
     }
 
     void NovaRenderer::get_shader_module_descriptors(const std::vector<uint32_t>& spirv,

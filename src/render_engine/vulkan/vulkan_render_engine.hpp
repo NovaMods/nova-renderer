@@ -65,6 +65,8 @@ namespace nova::renderer::rhi {
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override final;
 
+        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface) override final;
+
         Result<Pipeline*> create_pipeline(const PipelineInterface* pipeline_interface,
                                           const shaderpack::PipelineCreateInfo& data) override final;
 
@@ -112,6 +114,8 @@ namespace nova::renderer::rhi {
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
         PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;
+
+        VkDescriptorPool main_descriptor_pool;
 
 #pragma region Initialization
         std::vector<const char*> enabled_layer_names;

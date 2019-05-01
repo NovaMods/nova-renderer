@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <vector>
 
 namespace nova::renderer::rhi {
 #pragma region Enums
@@ -130,43 +131,6 @@ namespace nova::renderer::rhi {
         bool writes_to_backbuffer = false;
     };
 
-    /*!
-     * \brief The interface for a pipeline. Includes both inputs (descriptors) and outputs (framebuffers)
-     */
-    struct PipelineInterface {};
-
-    struct Pipeline {};
-
-    struct Semaphore {};
-
-    struct Fence {};
-
-    struct Descriptor {};
-
-    struct ResourceBarrier {
-        Resource* resource_to_barrier;
-
-        ResourceState initial_state;
-        ResourceState final_state;
-
-        ResourceAccessFlags access_before_barrier;
-        ResourceAccessFlags access_after_barrier;
-
-        QueueType source_queue;
-        QueueType destination_queue;
-
-        union {
-            struct {
-                ImageAspectFlags aspect;
-            } image_memory_barrier;
-
-            struct {
-                uint64_t offset;
-                uint64_t size;
-            } buffer_memory_barrier;
-        };
-    };
-
     struct ResourceBindingDescription {
         /*!
          * \brief Descriptor set that his binding belongs to
@@ -196,6 +160,43 @@ namespace nova::renderer::rhi {
         bool operator==(const ResourceBindingDescription& other);
 
         bool operator!=(const ResourceBindingDescription& other);
+    };
+
+    /*!
+     * \brief The interface for a pipeline. Includes both inputs (descriptors) and outputs (framebuffers)
+     */
+    struct PipelineInterface {    };
+
+    struct Pipeline {};
+
+    struct Semaphore {};
+
+    struct Fence {};
+
+    struct DescriptorSet {};
+
+    struct ResourceBarrier {
+        Resource* resource_to_barrier;
+
+        ResourceState initial_state;
+        ResourceState final_state;
+
+        ResourceAccessFlags access_before_barrier;
+        ResourceAccessFlags access_after_barrier;
+
+        QueueType source_queue;
+        QueueType destination_queue;
+
+        union {
+            struct {
+                ImageAspectFlags aspect;
+            } image_memory_barrier;
+
+            struct {
+                uint64_t offset;
+                uint64_t size;
+            } buffer_memory_barrier;
+        };
     };
 #pragma endregion
 

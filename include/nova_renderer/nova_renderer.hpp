@@ -156,10 +156,13 @@ namespace nova::renderer {
             const shaderpack::PipelineCreateInfo& pipeline_create_info,
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const;
-
+        
         Result<PipelineReturn> create_graphics_pipeline(const rhi::PipelineInterface* pipeline_interface,
                                                         const std::vector<shaderpack::MaterialData>& materials,
                                                         const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
+
+        MaterialPass create_material_pass(const shaderpack::MaterialPass& pass_data,
+                                          const rhi::PipelineInterface* layout) const;
 
         static void get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
                                                   const rhi::ShaderStageFlags shader_stage,
