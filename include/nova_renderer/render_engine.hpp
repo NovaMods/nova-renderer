@@ -86,6 +86,8 @@ namespace nova::renderer::rhi {
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) = 0;
 
+        [[nodiscard]] virtual std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface) = 0;
+
         [[nodiscard]] virtual Result<Pipeline*> create_pipeline(const PipelineInterface* pipeline_interface,
                                                                 const shaderpack::PipelineCreateInfo& data) = 0;
 

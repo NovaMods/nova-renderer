@@ -43,10 +43,21 @@ namespace nova::renderer::rhi {
         VkRenderPass pass;
 
         VkPipelineLayout pipeline_layout;
+
+        /*!
+         * \brief All the descriptor set layouts that this pipeline interface needs to create descriptor sets
+         * 
+         * The index in the vector is the index of the set
+         */
+        std::vector<VkDescriptorSetLayout> layouts_by_set;
     };
 
     struct VulkanPipeline : Pipeline {
         VkPipeline pipeline;
+    };
+
+    struct VulkanDescriptorSet : DescriptorSet {
+        VkDescriptorSet descriptor_set;
     };
 
     struct VulkanGpuInfo {
