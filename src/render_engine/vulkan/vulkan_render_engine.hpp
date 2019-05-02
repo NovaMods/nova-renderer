@@ -65,7 +65,12 @@ namespace nova::renderer::rhi {
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override final;
 
-        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface) override final;
+        DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
+                                               uint32_t num_samplers,
+                                               uint32_t num_uniform_buffers) override final;
+
+        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
+                                                           const DescriptorPool* pool) override final;
 
         Result<Pipeline*> create_pipeline(const PipelineInterface* pipeline_interface,
                                           const shaderpack::PipelineCreateInfo& data) override final;
@@ -94,8 +99,6 @@ namespace nova::renderer::rhi {
                                  const std::vector<Semaphore*>& signal_semaphores = {}) override final;
 #pragma endregion
 
-        VkCommandPool get_command_pool_for_thread(uint32_t thread_idx, uint32_t queue_family_index);
-
         uint32_t get_queue_family_index(QueueType type) const;
 
     protected:
@@ -114,9 +117,7 @@ namespace nova::renderer::rhi {
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
         PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;
-
-        VkDescriptorPool main_descriptor_pool;
-
+        
 #pragma region Initialization
         std::vector<const char*> enabled_layer_names;
 
@@ -135,8 +136,6 @@ namespace nova::renderer::rhi {
         void create_per_thread_command_pools();
 
         std::unordered_map<uint32_t, VkCommandPool> make_new_command_pools() const;
-
-        VkDescriptorPool make_new_descriptor_pool() const;
 #pragma endregion
 
 #pragma region Helpers

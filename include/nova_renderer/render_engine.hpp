@@ -91,7 +91,12 @@ namespace nova::renderer::rhi {
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) = 0;
 
-        [[nodiscard]] virtual std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface) = 0;
+        [[nodiscard]] virtual DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
+                                                                     uint32_t num_samplers,
+                                                                     uint32_t num_uniform_buffers) = 0;
+
+        [[nodiscard]] virtual std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
+                                                                                 const DescriptorPool* pool) = 0;
 
         [[nodiscard]] virtual Result<Pipeline*> create_pipeline(const PipelineInterface* pipeline_interface,
                                                                 const shaderpack::PipelineCreateInfo& data) = 0;
@@ -168,8 +173,7 @@ namespace nova::renderer::rhi {
 
         /*!
          * \brief Initializes the window with the given size, and creates the swapchain for that window
-         * \param width The width, in pixels, of the desired window
-         * \param height The height, in pixels of the desired window
+         * \param options The window options. Includes the size and title of the windows
          */
         virtual void open_window_and_create_surface(const NovaSettings::WindowOptions& options) = 0;
     };
