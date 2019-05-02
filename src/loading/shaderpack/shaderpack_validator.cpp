@@ -2,6 +2,8 @@
 
 #include <fmt/format.h>
 
+#include <WinNls.h>
+
 #include "nova_renderer/util/utils.hpp"
 
 #include "../json_utils.hpp"
@@ -40,6 +42,8 @@ namespace nova::renderer {
     std::vector<std::string> required_graphics_pipeline_fields = {"name", "pass", "vertexFields", "vertexShader"};
 
     nlohmann::json default_texture_format = {{"pixelFormat", "RGBA8"}, {"dimensionType", "Absolute"}};
+
+	LANGID defaultLanguage = GetUserDefaultLangID();
 
     void ensure_field_exists(nlohmann::json& j,
                              const std::string& field_name,

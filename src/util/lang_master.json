@@ -1,0 +1,12 @@
+{
+  "EN_US": {
+    "errors": {
+      "exampleerror": "this message is an example"
+    }
+  },
+  "FR_CA": {
+    "errors": {
+      "exampleerror": "ce message est une example"
+    }
+  }
+}
