@@ -173,6 +173,8 @@ namespace nova::renderer::rhi {
 
     struct Fence {};
 
+    struct DescriptorPool {};
+
     struct DescriptorSet {};
 
     struct ResourceBarrier {

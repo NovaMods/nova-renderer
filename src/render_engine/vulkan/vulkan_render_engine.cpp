@@ -421,12 +421,35 @@ namespace nova::renderer::rhi {
         return Result(static_cast<PipelineInterface*>(pipeline_interface));
     }
 
-    std::vector<DescriptorSet*> VulkanRenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface) {
+    DescriptorPool* VulkanRenderEngine::create_descriptor_pool(const uint32_t num_sampled_images,
+                                                               const uint32_t num_samplers,
+                                                               const uint32_t num_uniform_buffers) {
+        std::vector<VkDescriptorPoolSize> pool_sizes;
+        pool_sizes.emplace_back(
+            VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, num_sampled_images});
+        pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLER, num_samplers});
+        pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, num_uniform_buffers});
+
+        VkDescriptorPoolCreateInfo pool_create_info = {};
+        pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        pool_create_info.maxSets = num_sampled_images + num_samplers + num_uniform_buffers;
+        pool_create_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
+        pool_create_info.pPoolSizes = pool_sizes.data();
+
+        VulkanDescriptorPool* pool = new VulkanDescriptorPool;
+        NOVA_CHECK_RESULT(vkCreateDescriptorPool(device, &pool_create_info, nullptr, &pool->descriptor_pool));
+
+        return pool;
+    }
+
+    std::vector<DescriptorSet*> VulkanRenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
+                                                                           const DescriptorPool* pool) {
         const VulkanPipelineInterface* vk_pipeline_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
+        const VulkanDescriptorPool* vk_pool = static_cast<const VulkanDescriptorPool*>(pool);
 
         VkDescriptorSetAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        alloc_info.descriptorPool = main_descriptor_pool;
+        alloc_info.descriptorPool = vk_pool->descriptor_pool;
         alloc_info.descriptorSetCount = vk_pipeline_interface->layouts_by_set.size();
         alloc_info.pSetLayouts = vk_pipeline_interface->layouts_by_set.data();
 
@@ -1047,25 +1070,6 @@ namespace nova::renderer::rhi {
         }
 
         return pools_by_queue;
-    }
-
-    VkDescriptorPool VulkanRenderEngine::make_new_descriptor_pool() const {
-        std::vector<VkDescriptorPoolSize> pool_sizes;
-        pool_sizes.emplace_back(
-            VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 5}); // Virtual textures greatly reduces the number of total textures
-        pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLER, 5});
-        pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 5000});
-
-        VkDescriptorPoolCreateInfo pool_create_info = {};
-        pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        pool_create_info.maxSets = 5000;
-        pool_create_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
-        pool_create_info.pPoolSizes = pool_sizes.data();
-
-        VkDescriptorPool pool;
-        NOVA_CHECK_RESULT(vkCreateDescriptorPool(device, &pool_create_info, nullptr, &pool));
-
-        return pool;
     }
 
     std::vector<VkDescriptorSetLayout> VulkanRenderEngine::create_descriptor_set_layouts(

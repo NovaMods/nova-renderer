@@ -152,6 +152,8 @@ namespace nova::renderer::rhi {
         return Result(static_cast<PipelineInterface*>(pipeline_interface));
     }
 
+    std::vector<DescriptorSet*> DX12RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface) {}
+
     Result<Pipeline*> DX12RenderEngine::create_pipeline(const PipelineInterface* pipeline_interface,
                                                         const shaderpack::PipelineCreateInfo& data) {
         const DX12PipelineInterface* dx12_pipeline_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
