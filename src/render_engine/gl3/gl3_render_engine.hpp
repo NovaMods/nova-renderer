@@ -34,6 +34,13 @@ namespace nova::renderer::rhi {
                                         const std::vector<Image*>& attachments,
                                         const glm::uvec2& framebuffer_size) override final;
 
+        DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
+                                               uint32_t num_samplers,
+                                               uint32_t num_uniform_buffers) override final;
+
+        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
+                                                           const DescriptorPool* pool) override final;
+
         Result<PipelineInterface*> create_pipeline_interface(
             const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,

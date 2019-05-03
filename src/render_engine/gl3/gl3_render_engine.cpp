@@ -64,6 +64,19 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
+    DescriptorPool* Gl3RenderEngine::create_descriptor_pool(const uint32_t num_sampled_images,
+                                                            const uint32_t num_samplers,
+                                                            const uint32_t num_uniform_buffers) {
+        Gl3DescriptorPool* pool = new Gl3DescriptorPool;
+        pool->sets.resize(num_sampled_images + num_uniform_buffers);
+        pool->sampler_sets.resize(num_samplers);
+
+        return pool;
+    }
+
+    std::vector<DescriptorSet*> Gl3RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
+                                                                        const DescriptorPool* pool) {}
+
     Result<PipelineInterface*> Gl3RenderEngine::create_pipeline_interface(
         const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
         [[maybe_unused]] const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
@@ -80,24 +93,24 @@ namespace nova::renderer::rhi {
 
         pipeline->id = glCreateProgram();
 
-		std::vector<std::string> pipeline_creation_errors;
-		pipeline_creation_errors.reserve(4);
-        
+        std::vector<std::string> pipeline_creation_errors;
+        pipeline_creation_errors.reserve(4);
+
         const Result<GLuint> vertex_shader = compile_shader(data.vertex_shader.source, GL_VERTEX_SHADER);
         if(vertex_shader) {
             glAttachShader(pipeline->id, vertex_shader.value);
 
         } else {
-			pipeline_creation_errors.push_back(vertex_shader.error.to_string());
+            pipeline_creation_errors.push_back(vertex_shader.error.to_string());
         }
 
         if(supports_geometry_shaders && data.geometry_shader) {
-			const Result<GLuint> geometry_shader = compile_shader(data.geometry_shader->source, GL_GEOMETRY_SHADER_ARB);
+            const Result<GLuint> geometry_shader = compile_shader(data.geometry_shader->source, GL_GEOMETRY_SHADER_ARB);
             if(geometry_shader) {
-				glAttachShader(pipeline->id, geometry_shader.value);
+                glAttachShader(pipeline->id, geometry_shader.value);
 
             } else {
-				pipeline_creation_errors.push_back(geometry_shader.error.to_string());
+                pipeline_creation_errors.push_back(geometry_shader.error.to_string());
             }
         }
 
@@ -107,7 +120,7 @@ namespace nova::renderer::rhi {
                 glAttachShader(pipeline->id, fragment_shader.value);
 
             } else {
-				pipeline_creation_errors.push_back(fragment_shader.error.to_string());
+                pipeline_creation_errors.push_back(fragment_shader.error.to_string());
             }
         }
 
@@ -120,15 +133,15 @@ namespace nova::renderer::rhi {
             program_link_log.reserve(link_log_length);
             glGetProgramInfoLog(pipeline->id, link_log_length, nullptr, program_link_log.data());
 
-			pipeline_creation_errors.push_back(program_link_log);
+            pipeline_creation_errors.push_back(program_link_log);
 
             return Result<Pipeline*>(NovaError(program_link_log));
         }
 
         const Gl3PipelineInterface* gl3_pipeline_interface = static_cast<const Gl3PipelineInterface*>(pipeline_interface);
         for(const auto& binding : gl3_pipeline_interface->bindings) {
-			const GLuint uniform_location = glGetUniformLocation(pipeline->id, binding.first.c_str());
-			pipeline->uniform_cache.emplace(binding.first, uniform_location);
+            const GLuint uniform_location = glGetUniformLocation(pipeline->id, binding.first.c_str());
+            pipeline->uniform_cache.emplace(binding.first, uniform_location);
         }
 
         return Result(static_cast<Pipeline*>(pipeline));
