@@ -177,7 +177,7 @@ namespace nova::renderer::rhi {
 
     std::vector<DescriptorSet*> DX12RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                                          const DescriptorPool* pool) {
-
+        // TODO plz
     }
 
     Result<Pipeline*> DX12RenderEngine::create_pipeline(const PipelineInterface* pipeline_interface,
