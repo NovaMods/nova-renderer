@@ -2,7 +2,9 @@
 
 #include <fmt/format.h>
 
-#include <WinNls.h>
+#include <locale>
+
+#include <fstream>
 
 #include "nova_renderer/util/utils.hpp"
 
@@ -43,7 +45,13 @@ namespace nova::renderer {
 
     nlohmann::json default_texture_format = {{"pixelFormat", "RGBA8"}, {"dimensionType", "Absolute"}};
 
-	LANGID defaultLanguage = GetUserDefaultLangID();
+	
+    std::ifstream ifs("./../../utils/lang_master.json");
+    nlohmann::json j = nlohmann::json::parse(ifs);
+
+	std::locale l("");
+    std::string local = l.name();
+    
 
     void ensure_field_exists(nlohmann::json& j,
                              const std::string& field_name,

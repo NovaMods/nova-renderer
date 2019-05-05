@@ -1,12 +1,16 @@
 {
-  "EN_US": {
+  "en_US": {
     "errors": {
-      "exampleerror": "this message is an example"
+      "shadererrors": {
+        "exampleerror": "this message is an example"
+      }
     }
   },
-  "FR_CA": {
+  "fr_CA": {
     "errors": {
-      "exampleerror": "ce message est une example"
+      "shadererrors": {
+        "exampleerror": "ce message est une example"
+      }
     }
   }
 }
