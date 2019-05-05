@@ -152,32 +152,47 @@ namespace nova::renderer::rhi {
         return Result(static_cast<PipelineInterface*>(pipeline_interface));
     }
 
-    DescriptorPool* DX12RenderEngine::create_descriptor_pool(uint32_t num_sampled_images,
-                                                             uint32_t num_samplers,
-                                                             uint32_t num_uniform_buffers){
+    DescriptorPool* DX12RenderEngine::create_descriptor_pool([[maybe_unused]] uint32_t num_sampled_images,
+                                                             [[maybe_unused]] uint32_t num_samplers,
+                                                             [[maybe_unused]] uint32_t num_uniform_buffers) {
+
+        // TODO: A way to make CPU-only heaps that get copies to shader-visible heaps at the start of each frame
+        // And do that for every backend
         DX12DescriptorPool* pool = new DX12DescriptorPool;
-
-        D3D12_DESCRIPTOR_HEAP_DESC images_and_buffers_heap_desc = {};
-        images_and_buffers_heap_desc.NumDescriptors = num_sampled_images + num_uniform_buffers;
-        images_and_buffers_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        images_and_buffers_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-
-        device->CreateDescriptorHeap(&images_and_buffers_heap_desc, IID_PPV_ARGS(&pool->image_and_buffer_heap));
-
-        
-        D3D12_DESCRIPTOR_HEAP_DESC samplers_heap_desc = {};
-        samplers_heap_desc.NumDescriptors = num_samplers;
-        samplers_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-        samplers_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-
-        device->CreateDescriptorHeap(&samplers_heap_desc, IID_PPV_ARGS(&pool->sampler_heap));
-
         return pool;
     }
 
     std::vector<DescriptorSet*> DX12RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                                         const DescriptorPool* pool) {
-        // TODO plz
+                                                                         [[maybe_unused]] const DescriptorPool* pool) {
+        // Create a descriptor heap for each descriptor set
+        // This is kinda gross and maybe I'll move to something else eventually but I gotta get past this code
+
+        // send help
+
+        const DX12PipelineInterface* dx12_pipeline_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
+
+        const uint32_t num_sets = dx12_pipeline_interface->table_layouts.size();
+
+        std::vector<DescriptorSet*> descriptor_sets;
+        descriptor_sets.reserve(num_sets);
+
+        for(uint32_t i = 0; i < num_sets; i++) {
+            const std::vector<ResourceBindingDescription> bindings_for_set = dx12_pipeline_interface->table_layouts.at(i);
+
+            DX12DescriptorSet* set = new DX12DescriptorSet;
+
+            D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+            desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+            desc.NumDescriptors = bindings_for_set.size();
+            desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+            desc.NodeMask = 0;
+
+            device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&set->heap));
+
+            descriptor_sets.push_back(set);
+        }
+
+        return descriptor_sets;
     }
 
     Result<Pipeline*> DX12RenderEngine::create_pipeline(const PipelineInterface* pipeline_interface,

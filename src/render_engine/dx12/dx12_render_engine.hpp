@@ -51,6 +51,14 @@ namespace nova::renderer::rhi {
                                                uint32_t num_samplers,
                                                uint32_t num_uniform_buffers) override final;
 
+        /*!
+         * \brief Creates all the descriptor sets that are needed for this pipeline interface
+         * 
+         * Currently I create a separate descriptor heap for each descriptor set. This is fairly easy and closely 
+         * mimics what Vulkan does. However, I have no idea at all about how performant this is. I've heard that using
+         * a single descriptor heap is noticably better, but I've also heard that this only applies to XBox. Further
+         * research and testing is needed to resolve this
+         */
         std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                            const DescriptorPool* pool) override final;
 
