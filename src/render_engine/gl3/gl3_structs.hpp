@@ -53,7 +53,7 @@ namespace nova::renderer::rhi {
     };
 
     struct Gl3DescriptorPool : DescriptorPool {
-        std::vector<Gl3DescriptorSet> sets;
+        std::vector<Gl3Descriptor> descriptors;
         std::vector<Gl3SamplerDescriptor> sampler_sets;
     };
 
