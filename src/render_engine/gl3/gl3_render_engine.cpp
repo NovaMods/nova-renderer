@@ -68,7 +68,7 @@ namespace nova::renderer::rhi {
                                                             const uint32_t num_samplers,
                                                             const uint32_t num_uniform_buffers) {
         Gl3DescriptorPool* pool = new Gl3DescriptorPool;
-        pool->sets.resize(num_sampled_images + num_uniform_buffers);
+        pool->descriptors.resize(num_sampled_images + num_uniform_buffers);
         pool->sampler_sets.resize(num_samplers);
 
         return pool;
