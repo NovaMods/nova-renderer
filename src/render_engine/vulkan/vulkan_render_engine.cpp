@@ -74,8 +74,6 @@ namespace nova::renderer::rhi {
         create_swapchain();
 
         create_per_thread_command_pools();
-
-        main_descriptor_pool = make_new_descriptor_pool();
     }
 
     std::shared_ptr<Window> VulkanRenderEngine::get_window() const { return window; }
@@ -769,7 +767,10 @@ namespace nova::renderer::rhi {
         delete vk_framebuffer;
     }
 
-    void VulkanRenderEngine::destroy_pipeline(Pipeline* pipeline) {}
+    void VulkanRenderEngine::destroy_pipeline(Pipeline* pipeline) {
+        VulkanPipeline* vk_pipeline = static_cast<VulkanPipeline*>(pipeline);
+        vkDestroyPipeline(device, vk_pipeline->pipeline, nullptr);
+    }
 
     void VulkanRenderEngine::destroy_texture(Image* resource) {
         VulkanImage* vk_image = static_cast<VulkanImage*>(resource);
