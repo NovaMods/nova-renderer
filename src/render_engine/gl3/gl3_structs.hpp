@@ -6,7 +6,6 @@
  */
 
 #pragma once
-#include <string>
 #include <unordered_map>
 #include "glad/glad.h"
 #include "nova_renderer/rhi_types.hpp"
@@ -58,7 +57,8 @@ namespace nova::renderer::rhi {
     };
 
     struct Gl3PipelineInterface : PipelineInterface {
-        std::unordered_map<std::string, ResourceBindingDescription> bindings;
+        // GL3 is annoying. I need a compiled and linked program to get uniform locations, so I can't put the uniform
+        // locations in the pipeline interface even though that's conceptually what I should do :(
     };
 
     struct Gl3Pipeline : Pipeline {
