@@ -34,11 +34,13 @@ namespace nova::renderer::rhi {
     };
 
     struct DX12DescriptorPool : DescriptorPool {
-        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> image_and_buffer_heap;
-        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> sampler_heap;
+        // DX12 has a separate descriptor heap for each descriptor set in a material, meaning this struct can be
+        // completely empty
     };
 
-    struct DX12DescriptorSet : DescriptorSet {};
+    struct DX12DescriptorSet : DescriptorSet {
+        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
+    };
 
     struct DX12Pipeline : Pipeline {
         Microsoft::WRL::ComPtr<ID3D12PipelineState> pso = nullptr;
