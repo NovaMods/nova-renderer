@@ -121,6 +121,46 @@ namespace nova::renderer {
         }
     }
 
+    void NovaRenderer::create_materials_for_pipeline(Pipeline& pipeline,
+                                                     const std::vector<shaderpack::MaterialData>& materials,
+                                                     const std::string& pipeline_name,
+                                                     const rhi::PipelineInterface* pipeline_interface,
+                                                     const rhi::DescriptorPool* descriptor_pool,
+                                                     const MaterialPassKey& template_key) {
+
+        // Determine the pipeline layout so the material can create descriptors for the pipeline
+
+        // Large overestimate, but that's fine
+        pipeline.passes.reserve(materials.size());
+
+        for(const shaderpack::MaterialData& material_data : materials) {
+            for(const shaderpack::MaterialPass& pass_data : material_data.passes) {
+                if(pass_data.pipeline == pipeline_name) {
+                    MaterialPass pass = {};
+
+                    pass.descriptor_sets = rhi->create_descriptor_sets(pipeline_interface, descriptor_pool);
+                    bind_data_to_descriptor_sets(pass.descriptor_sets, pass.bindings, );
+                    pass.bindings = pass_data.bindings;
+
+                    FullMaterialPassName full_pass_name = {pass_data.material_name, pass_data.name};
+
+                    MaterialPassMetadata pass_metadata = {};
+                    pass_metadata.data = pass_data;
+                    metadata.material_metadatas.emplace(full_pass_name, pass_metadata);
+
+                    MaterialPassKey key = {};
+                    key.renderpass_index = renderpass_index;
+                    key.pipeline_index = pipeline_index;
+                    key.material_pass_index = pipeline.passes.size();
+
+                    material_pass_keys.emplace(full_pass_name, key);
+
+                    pipeline.passes.push_back(pass);
+                }
+            }
+        }
+    }
+
     void NovaRenderer::create_render_passes(const std::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
                                             const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
                                             const std::vector<shaderpack::MaterialData>& materials) {
@@ -221,8 +261,7 @@ namespace nova::renderer {
                         continue;
                     }
 
-                    Result<PipelineReturn> pipeline_result = create_graphics_pipeline(pipeline_interface.value,
-                                                                                      materials,
+                    Result<PipelineReturn> pipeline_result = create_graphics_pipeline(materials,
                                                                                       pipeline_create_info,
                                                                                       descriptor_pool,
                                                                                       renderpasses.size(),
@@ -232,6 +271,8 @@ namespace nova::renderer {
                         renderpass.pipelines.push_back(pipeline);
 
                         metadata.pipeline_metadata.emplace(pipeline_create_info.name, pipeline_metadata);
+
+                        create_materials_for_pipeline();
 
                     } else {
                         NOVA_LOG(ERROR) << "Could not create pipeline " << pipeline_create_info.name << ": "
@@ -289,37 +330,6 @@ namespace nova::renderer {
         } else {
             NovaError error = NovaError(fmt::format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name), rhi_pipeline.error);
             return Result<PipelineReturn>(std::move(error));
-        }
-
-        // Determine the pipeline layout so the material can create descriptors for the pipeline
-
-        // Large overestimate, but that's fine
-        pipeline.passes.reserve(materials.size());
-
-        for(const shaderpack::MaterialData& material_data : materials) {
-            for(const shaderpack::MaterialPass& pass_data : material_data.passes) {
-                if(pass_data.pipeline == pipeline_create_info.name) {
-                    MaterialPass pass = {};
-
-                    pass.descriptor_sets = rhi->create_descriptor_sets(pipeline_interface, descriptor_pool);
-                    pass.bindings = pass_data.bindings;
-
-                    FullMaterialPassName full_pass_name = {pass_data.material_name, pass_data.name};
-
-                    MaterialPassMetadata pass_metadata = {};
-                    pass_metadata.data = pass_data;
-                    metadata.material_metadatas.emplace(full_pass_name, pass_metadata);
-
-                    MaterialPassKey key = {};
-                    key.renderpass_index = renderpass_index;
-                    key.pipeline_index = pipeline_index;
-                    key.material_pass_index = pipeline.passes.size();
-
-                    material_pass_keys.emplace(full_pass_name, key);
-
-                    pipeline.passes.push_back(pass);
-                }
-            }
         }
 
         return Result(PipelineReturn{pipeline, metadata});

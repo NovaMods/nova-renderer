@@ -155,9 +155,6 @@ namespace nova::renderer::rhi {
     DescriptorPool* DX12RenderEngine::create_descriptor_pool([[maybe_unused]] uint32_t num_sampled_images,
                                                              [[maybe_unused]] uint32_t num_samplers,
                                                              [[maybe_unused]] uint32_t num_uniform_buffers) {
-
-        // TODO: A way to make CPU-only heaps that get copies to shader-visible heaps at the start of each frame
-        // And do that for every backend
         DX12DescriptorPool* pool = new DX12DescriptorPool;
         return pool;
     }

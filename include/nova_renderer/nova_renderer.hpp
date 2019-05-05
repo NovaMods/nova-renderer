@@ -159,6 +159,8 @@ namespace nova::renderer {
 
         void create_dynamic_textures(const std::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
 
+        void create_materials_for_pipeline();
+
         void create_render_passes(const std::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
                                   const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
                                   const std::vector<shaderpack::MaterialData>& materials);
