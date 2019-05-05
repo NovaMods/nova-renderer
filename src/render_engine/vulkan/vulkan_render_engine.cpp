@@ -254,6 +254,7 @@ namespace nova::renderer::rhi {
         const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
 
         VulkanPipelineInterface* pipeline_interface = new VulkanPipelineInterface;
+        pipeline_interface->bindings = bindings;
 
         pipeline_interface->layouts_by_set = create_descriptor_set_layouts(bindings);
 
@@ -392,8 +393,7 @@ namespace nova::renderer::rhi {
                                                                const uint32_t num_samplers,
                                                                const uint32_t num_uniform_buffers) {
         std::vector<VkDescriptorPoolSize> pool_sizes;
-        pool_sizes.emplace_back(
-            VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, num_sampled_images});
+        pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, num_sampled_images});
         pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLER, num_samplers});
         pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, num_uniform_buffers});
 

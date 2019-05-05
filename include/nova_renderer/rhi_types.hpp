@@ -1,7 +1,8 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <vector>
+#include <string>
+#include <unordered_map>
 
 namespace nova::renderer::rhi {
 #pragma region Enums
@@ -165,7 +166,9 @@ namespace nova::renderer::rhi {
     /*!
      * \brief The interface for a pipeline. Includes both inputs (descriptors) and outputs (framebuffers)
      */
-    struct PipelineInterface {    };
+    struct PipelineInterface {
+        std::unordered_map<std::string, ResourceBindingDescription> bindings;
+    };
 
     struct Pipeline {};
 

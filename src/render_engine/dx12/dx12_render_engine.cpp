@@ -87,8 +87,10 @@ namespace nova::renderer::rhi {
         const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
 
         DX12PipelineInterface* pipeline_interface = new DX12PipelineInterface;
-        pipeline_interface->table_layouts.reserve(16);
+        pipeline_interface->bindings = bindings;
 
+        pipeline_interface->table_layouts.reserve(16);
+        
         for(const auto& [binding_name, binding] : bindings) {
             pipeline_interface->table_layouts[binding.set].reserve(16);
             pipeline_interface->table_layouts[binding.set].push_back(binding);
@@ -245,7 +247,7 @@ namespace nova::renderer::rhi {
         }
 
         pipeline->root_signature = dx12_pipeline_interface->root_sig.Get();
-        pipeline_state_desc.pRootSignature = pipeline->root_signature;
+        pipeline_state_desc.pRootSignature = pipeline->root_signature.Get();
 
         /*
          * Blend state

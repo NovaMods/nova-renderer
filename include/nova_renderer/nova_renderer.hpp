@@ -166,23 +166,34 @@ namespace nova::renderer {
 
         void create_dynamic_textures(const std::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
 
-        void create_materials_for_pipeline();
-
         void create_render_passes(const std::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
                                   const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
                                   const std::vector<shaderpack::MaterialData>& materials);
 
-        Result<rhi::PipelineInterface*> create_pipeline_interface(
+        /*!
+         * \brief Binds the resources for one material to that material's descriptor sets
+         *
+         * \param material The material to bind resources to
+         * \param descriptor_descriptions A map from descriptor name to all the information you need to update that descriptor
+         */
+        void bind_data_to_material_descriptor_sets(
+            const MaterialPass& material, const std::unordered_map<std::string, rhi::ResourceBindingDescription>& descriptor_descriptions);
+
+        void create_materials_for_pipeline(Pipeline& pipeline,
+                                           std::unordered_map<FullMaterialPassName, MaterialPassMetadata>& material_metadatas,
+                                           const std::vector<shaderpack::MaterialData>& materials,
+                                           const std::string& pipeline_name,
+                                           const rhi::PipelineInterface* pipeline_interface,
+                                           const rhi::DescriptorPool* descriptor_pool,
+                                           const MaterialPassKey& template_key);
+
+        [[nodiscard]] Result<rhi::PipelineInterface*> create_pipeline_interface(
             const shaderpack::PipelineCreateInfo& pipeline_create_info,
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const;
 
-        Result<PipelineReturn> create_graphics_pipeline(const rhi::PipelineInterface* pipeline_interface,
-                                                        const std::vector<shaderpack::MaterialData>& materials,
-                                                        const shaderpack::PipelineCreateInfo& pipeline_create_info,
-                                                        const rhi::DescriptorPool* descriptor_pool,
-                                                        const uint32_t renderpass_index,
-                                                        const uint32_t pipeline_index);
+        [[nodiscard]] Result<PipelineReturn> create_graphics_pipeline(const rhi::PipelineInterface* pipeline_interface,
+                                                                      const shaderpack::PipelineCreateInfo& pipeline_create_info);
 
         static void get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
                                                   const rhi::ShaderStageFlags shader_stage,
