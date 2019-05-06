@@ -39,7 +39,6 @@ namespace nova::renderer {
 
         std::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
         std::vector<rhi::DescriptorSet*> descriptor_sets;
-        std::unordered_map<std::string, std::string> bindings;
     };
 
     struct Pipeline {
@@ -170,15 +169,6 @@ namespace nova::renderer {
                                   const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
                                   const std::vector<shaderpack::MaterialData>& materials);
 
-        /*!
-         * \brief Binds the resources for one material to that material's descriptor sets
-         *
-         * \param material The material to bind resources to
-         * \param descriptor_descriptions A map from descriptor name to all the information you need to update that descriptor
-         */
-        void bind_data_to_material_descriptor_sets(
-            const MaterialPass& material, const std::unordered_map<std::string, rhi::ResourceBindingDescription>& descriptor_descriptions);
-
         void create_materials_for_pipeline(Pipeline& pipeline,
                                            std::unordered_map<FullMaterialPassName, MaterialPassMetadata>& material_metadatas,
                                            const std::vector<shaderpack::MaterialData>& materials,
@@ -187,13 +177,31 @@ namespace nova::renderer {
                                            const rhi::DescriptorPool* descriptor_pool,
                                            const MaterialPassKey& template_key);
 
+        /*!
+         * \brief Binds the resources for one material to that material's descriptor sets
+         * 
+         * This method does not perform any validation. It assumes that descriptor_descriptions has a description for 
+         * every descriptor that the material wants to bind to, and it assumes that material has all the needed
+         * descriptors 
+         *
+         * \param material The material to bind resources to
+         * \param bindings What resources should be bound to what descriptor. The key is the descriptor name and the
+         * value is the resource name
+         * \param descriptor_descriptions A map from descriptor name to all the information you need to update that
+         * descriptor
+         */
+        void bind_data_to_material_descriptor_sets(
+            const MaterialPass& material,
+            const std::unordered_map<std::string, std::string>& bindings,
+            const std::unordered_map<std::string, rhi::ResourceBindingDescription>& descriptor_descriptions);
+
         [[nodiscard]] Result<rhi::PipelineInterface*> create_pipeline_interface(
             const shaderpack::PipelineCreateInfo& pipeline_create_info,
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const;
 
         [[nodiscard]] Result<PipelineReturn> create_graphics_pipeline(const rhi::PipelineInterface* pipeline_interface,
-                                                                      const shaderpack::PipelineCreateInfo& pipeline_create_info);
+                                                                      const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
 
         static void get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
                                                   const rhi::ShaderStageFlags shader_stage,

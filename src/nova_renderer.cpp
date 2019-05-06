@@ -275,9 +275,8 @@ namespace nova::renderer {
                     MaterialPass pass = {};
 
                     pass.descriptor_sets = rhi->create_descriptor_sets(pipeline_interface, descriptor_pool);
-                    pass.bindings = pass_data.bindings;
 
-                    bind_data_to_material_descriptor_sets(pass, pipeline_interface->bindings);
+                    bind_data_to_material_descriptor_sets(pass, pass_data.bindings, pipeline_interface->bindings);
 
                     FullMaterialPassName full_pass_name = {pass_data.material_name, pass_data.name};
 
@@ -293,6 +292,17 @@ namespace nova::renderer {
                     pipeline.passes.push_back(pass);
                 }
             }
+        }
+    }
+
+    void NovaRenderer::bind_data_to_material_descriptor_sets(
+        const MaterialPass& material,
+        const std::unordered_map<std::string, std::string>& bindings,
+        const std::unordered_map<std::string, rhi::ResourceBindingDescription>& descriptor_descriptions) {
+
+        for(const auto& [descriptor_name, resource_name] : bindings) {
+            const rhi::ResourceBindingDescription& binding_desc = descriptor_descriptions.at(descriptor_name);
+            const rhi::DescriptorSet* descriptor_set = material.descriptor_sets.at(binding_desc.set);
         }
     }
 
@@ -326,7 +336,7 @@ namespace nova::renderer {
     }
 
     Result<NovaRenderer::PipelineReturn> NovaRenderer::create_graphics_pipeline(
-        const rhi::PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& pipeline_create_info) {
+        const rhi::PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& pipeline_create_info) const {
         Pipeline pipeline;
         PipelineMetadata metadata;
 
