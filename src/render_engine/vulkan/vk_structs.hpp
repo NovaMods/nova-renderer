@@ -13,6 +13,10 @@
 #include "nova_renderer/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
+    struct VulkanSampler : Sampler {
+        VkSampler sampler;
+    };
+
     struct VulkanImage : Image {
         VkImage image = nullptr;
         VkImageView image_view = nullptr;

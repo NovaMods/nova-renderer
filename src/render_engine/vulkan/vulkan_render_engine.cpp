@@ -466,6 +466,49 @@ namespace nova::renderer::rhi {
         return final_sets;
     }
 
+    void VulkanRenderEngine::update_descriptor_sets(const std::vector<DescriptorSetWrite>& writes) {
+        std::vector<VkWriteDescriptorSet> vk_writes;
+        vk_writes.reserve(writes.size());
+
+        std::vector<VkDescriptorImageInfo> image_infos;
+        image_infos.reserve(writes.size());
+
+        for(const DescriptorSetWrite& write : writes) {
+            VkWriteDescriptorSet vk_write = {};
+            vk_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            vk_write.dstSet = static_cast<const VulkanDescriptorSet*>(write.set)->descriptor_set;
+            vk_write.dstBinding = write.binding;
+            vk_write.descriptorCount = 1;
+            vk_write.dstArrayElement = 0;
+
+            switch(write.type) {
+                case DescriptorType::CombinedImageSampler:
+                    VkDescriptorImageInfo vk_image_info = {};
+                    vk_image_info.imageView = image_view_for_image(write.image_infos->image);
+                    vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    vk_image_info.sampler = static_cast<VulkanSampler*>(write.image_infos->sampler)->sampler;
+
+                    image_infos.push_back(vk_image_info);
+
+                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    vk_write.pImageInfo = &image_infos.at(image_infos.size() - 1);
+
+                    vk_writes.push_back(vk_write);
+                    break;
+
+                case DescriptorType::UniformBuffer:
+                    break;
+
+                case DescriptorType::StorageBuffer:
+                    break;
+
+                default:;
+            }
+        }
+
+        vkUpdateDescriptorSets(device, vk_writes.size(), vk_writes.data(), 0, nullptr);
+    }
+
     Result<Pipeline*> VulkanRenderEngine::create_pipeline(const PipelineInterface* pipeline_interface,
                                                           const shaderpack::PipelineCreateInfo& data) {
         NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name;

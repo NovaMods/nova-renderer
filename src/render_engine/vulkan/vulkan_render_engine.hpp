@@ -71,6 +71,8 @@ namespace nova::renderer::rhi {
 
         std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                            const DescriptorPool* pool) override final;
+        
+        void update_descriptor_sets(const std::vector<DescriptorSetWrite>& writes) override final;
 
         Result<Pipeline*> create_pipeline(const PipelineInterface* pipeline_interface,
                                           const shaderpack::PipelineCreateInfo& data) override final;
@@ -117,7 +119,7 @@ namespace nova::renderer::rhi {
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
         PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;
-        
+
 #pragma region Initialization
         std::vector<const char*> enabled_layer_names;
 
@@ -143,6 +145,18 @@ namespace nova::renderer::rhi {
 
         std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
             const std::unordered_map<std::string, ResourceBindingDescription>& all_bindings) const;
+
+        /*!
+         * \brief Gets the image view associated with the given image
+         * 
+         * Nova simplifies things a lot and only has one image view for each image. This is maintained within the
+         * Vulkan backend, since neither DX12 nor OpenGL have a direct equivalent. I may or may not emulate image views
+         * for those APIs if the demand is there, but idk
+         * 
+         * The method checks an internal hash map. If there's already an image view for the given image then great,
+         * otherwise one is created on-demand
+         */
+        VkImageView image_view_for_image(const Image* image);
 #pragma endregion
 
 #pragma region Debugging
