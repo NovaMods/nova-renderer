@@ -294,10 +294,47 @@ namespace nova::renderer {
         const std::unordered_map<std::string, std::string>& bindings,
         const std::unordered_map<std::string, rhi::ResourceBindingDescription>& descriptor_descriptions) {
 
+        std::vector<rhi::DescriptorSetWrite> writes;
+        writes.reserve(bindings.size());
+
+        std::vector<rhi::DescriptorImageUpdate> image_updates;
+        image_updates.reserve(bindings.size());
+
         for(const auto& [descriptor_name, resource_name] : bindings) {
             const rhi::ResourceBindingDescription& binding_desc = descriptor_descriptions.at(descriptor_name);
             const rhi::DescriptorSet* descriptor_set = material.descriptor_sets.at(binding_desc.set);
+
+            rhi::DescriptorSetWrite write;
+            write.set = descriptor_set;
+            write.binding = binding_desc.binding;
+
+            bool is_known = true;
+            if(dynamic_textures.find(resource_name) != dynamic_textures.end()) {
+                const rhi::Image* image = dynamic_textures.at(resource_name);
+
+                rhi::DescriptorImageUpdate image_update;
+                image_update.image = image;
+                image_update.sampler = point_sampler;
+
+                image_updates.push_back(image_update);
+
+                write.image_infos = &(*image_updates.end());
+                write.type = rhi::DescriptorType::CombinedImageSampler;
+
+                writes.push_back(write);
+
+            } else {
+                is_known = false;
+            }
+
+            if(is_known) {
+
+            } else {
+                NOVA_LOG(ERROR) << "Resource " << resource_name << " is not known to Nova";
+            }
         }
+
+        rhi->update_descriptor_sets(writes);
     }
 
     Result<rhi::PipelineInterface*> NovaRenderer::create_pipeline_interface(

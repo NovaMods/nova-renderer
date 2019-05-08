@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <unordered_map>
+#include "nova_renderer.hpp"
 
 namespace nova::renderer::rhi {
 #pragma region Enums
@@ -118,6 +119,8 @@ namespace nova::renderer::rhi {
         bool is_dynamic = false;
     };
 
+    struct Sampler {};
+
     struct Image : Resource {
         bool is_depth_tex = false;
     };
@@ -202,6 +205,18 @@ namespace nova::renderer::rhi {
                 uint64_t size;
             } buffer_memory_barrier;
         };
+    };
+
+    struct DescriptorImageUpdate {
+        const Image* image;
+        Sampler* sampler;
+    };
+
+    struct DescriptorSetWrite {
+        const rhi::DescriptorSet* set;
+        uint32_t binding;
+        DescriptorImageUpdate* image_infos;
+        DescriptorType type;
     };
 #pragma endregion
 

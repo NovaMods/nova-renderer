@@ -134,6 +134,8 @@ namespace nova::renderer {
         RENDERDOC_API_1_3_0* render_doc;
         static std::unique_ptr<NovaRenderer> instance;
 
+        rhi::Sampler* point_sampler;
+
 #pragma region Shaderpack
         using PipelineReturn = std::tuple<Pipeline, PipelineMetadata>;
 
