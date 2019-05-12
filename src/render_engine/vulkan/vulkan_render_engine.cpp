@@ -484,9 +484,9 @@ namespace nova::renderer::rhi {
             switch(write.type) {
                 case DescriptorType::CombinedImageSampler:
                     VkDescriptorImageInfo vk_image_info = {};
-                    vk_image_info.imageView = image_view_for_image(write.image_infos->image);
+                    vk_image_info.imageView = image_view_for_image(write.image_info->image);
                     vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    vk_image_info.sampler = static_cast<VulkanSampler*>(write.image_infos->sampler)->sampler;
+                    vk_image_info.sampler = static_cast<VulkanSampler*>(write.image_info->sampler)->sampler;
 
                     image_infos.push_back(vk_image_info);
 

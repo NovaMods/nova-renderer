@@ -40,6 +40,8 @@ namespace nova::renderer::rhi {
 
     struct DX12DescriptorSet : DescriptorSet {
         Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
+
+        std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> descriptors;
     };
 
     struct DX12Pipeline : Pipeline {

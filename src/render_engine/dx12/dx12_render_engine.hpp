@@ -62,6 +62,8 @@ namespace nova::renderer::rhi {
         std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                            const DescriptorPool* pool) override final;
 
+        void update_descriptor_sets(const std::vector<DescriptorSetWrite>& writes) override final;
+
         Result<Pipeline*> create_pipeline(const PipelineInterface* pipeline_interface,
                                           const shaderpack::PipelineCreateInfo& data) override final;
 
@@ -103,11 +105,7 @@ namespace nova::renderer::rhi {
         Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap;
         uint32_t rtv_descriptor_size = 0;
 
-        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> uav_descriptor_heap;
-        uint32_t uav_descriptor_size = 0;
-
-        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> texture_descriptor_heap;
-        uint32_t texture_descriptor_size = 0;
+        uint32_t cbv_srv_uav_descriptor_size = 0;
 
 #pragma region Initialization
         void create_device();
@@ -116,7 +114,6 @@ namespace nova::renderer::rhi {
 #pragma endregion
 
 #pragma region Helpers
-        ID3D12RootSignature* create_root_signature(const std::unordered_map<std::string, ResourceBindingDescription>& bindings);
 #pragma endregion
     };
 
