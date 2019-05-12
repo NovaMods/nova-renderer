@@ -78,6 +78,7 @@ namespace nova::renderer::rhi {
                                           const shaderpack::PipelineCreateInfo& data) override final;
 
         Buffer* create_buffer(const BufferCreateInfo& info) override final;
+
         Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
         Semaphore* create_semaphore() override final;
         std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override final;

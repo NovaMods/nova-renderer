@@ -47,6 +47,13 @@ namespace nova::renderer {
 
         bool writes_to_backbuffer = false;
     };
+
+    struct Mesh {
+        rhi::Buffer vertex_buffer;
+        rhi::Buffer index_buffer;
+
+        uint32_t num_indices;
+    };
 #pragma endregion
 
 #pragma region metadata
@@ -117,6 +124,33 @@ namespace nova::renderer {
 
         NovaSettings& get_settings();
 
+#pragma region Meshes
+        /*!
+         * \brief Tells Nova how many meshes you expect to have in your scene
+         *
+         * Allows the Nova Renderer to preallocate space for your meshes
+         *
+         * \param num_meshes The number of meshes you expect to have
+         */
+        void set_num_meshes(uint32_t num_meshes);
+
+        /*!
+         * \brief Creates a new mesh and uploads its data to the GPU, returning the ID of the newly created mesh
+         *
+         * \param mesh_data The mesh's initial data
+         */
+        [[nodiscard]] MeshId create_mesh(const MeshData& mesh_data);
+
+        /*!
+         * \brief Destroys the mesh with the provided ID, freeing up whatever VRAM it was using
+         *
+         * In debug builds, this method checks that no renderables are using the mesh
+         *
+         * \param mesh_to_destroy The handle of the mesh you want to destroy
+         */
+        void destroy_mesh(MeshId mesh_to_destroy);
+#pragma endregion
+
         void add_renderable_for_material(const FullMaterialPassName& material_name, const StaticMeshRenderableData& renderable);
 
         [[nodiscard]] rhi::RenderEngine* get_engine() const;
@@ -174,10 +208,10 @@ namespace nova::renderer {
 
         /*!
          * \brief Binds the resources for one material to that material's descriptor sets
-         * 
-         * This method does not perform any validation. It assumes that descriptor_descriptions has a description for 
+         *
+         * This method does not perform any validation. It assumes that descriptor_descriptions has a description for
          * every descriptor that the material wants to bind to, and it assumes that material has all the needed
-         * descriptors 
+         * descriptors
          *
          * \param material The material to bind resources to
          * \param bindings What resources should be bound to what descriptor. The key is the descriptor name and the
@@ -211,6 +245,10 @@ namespace nova::renderer {
         void destroy_render_passes();
 
         void destroy_dynamic_resources();
+#pragma endregion
+
+#pragma region Meshes
+        std::vector<Mesh> meshes;
 #pragma endregion
     };
 } // namespace nova::renderer
