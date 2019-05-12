@@ -41,6 +41,8 @@ namespace nova::renderer::rhi {
         std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                            const DescriptorPool* pool) override final;
 
+        void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override final;
+
         Result<PipelineInterface*> create_pipeline_interface(
             const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,

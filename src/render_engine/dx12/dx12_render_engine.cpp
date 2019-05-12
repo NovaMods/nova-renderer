@@ -195,7 +195,7 @@ namespace nova::renderer::rhi {
         return descriptor_sets;
     }
 
-    void DX12RenderEngine::update_descriptor_sets(const std::vector<DescriptorSetWrite>& writes) {
+    void DX12RenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
         // We want to create descriptors in the heaps in the order of their bindings
         for(const DescriptorSetWrite& write : writes) {
             const DX12DescriptorSet* set = static_cast<const DX12DescriptorSet*>(write.set);

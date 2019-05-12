@@ -44,7 +44,7 @@ namespace nova::renderer::rhi {
 
     struct Gl3DescriptorSet : DescriptorSet {
         // The index in the array is the binding in the set
-        std::vector<Gl3Descriptor> descriptor;
+        std::vector<Gl3Descriptor> descriptors;
     };
 
     struct Gl3SamplerDescriptor : DescriptorSet {
