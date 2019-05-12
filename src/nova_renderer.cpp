@@ -318,13 +318,14 @@ namespace nova::renderer {
             if(dynamic_textures.find(resource_name) != dynamic_textures.end()) {
                 const rhi::Image* image = dynamic_textures.at(resource_name);
 
-                rhi::DescriptorImageUpdate image_update;
+                rhi::DescriptorImageUpdate image_update = {};
                 image_update.image = image;
                 image_update.sampler = point_sampler;
+                image_update.format = dynamic_texture_infos.at(resource_name).format;
 
                 image_updates.push_back(image_update);
 
-                write.image_infos = &(*image_updates.end());
+                write.image_info = &(*image_updates.end());
                 write.type = rhi::DescriptorType::CombinedImageSampler;
 
                 writes.push_back(write);

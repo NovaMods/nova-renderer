@@ -209,13 +209,14 @@ namespace nova::renderer::rhi {
 
     struct DescriptorImageUpdate {
         const Image* image;
+        shaderpack::TextureFormat format;
         Sampler* sampler;
     };
 
     struct DescriptorSetWrite {
         const rhi::DescriptorSet* set;
         uint32_t binding;
-        DescriptorImageUpdate* image_infos;
+        DescriptorImageUpdate* image_info;
         DescriptorType type;
     };
 #pragma endregion

@@ -28,6 +28,7 @@ namespace nova::renderer::rhi {
         create_queues();
 
         rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+        cbv_srv_uav_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     }
 
     std::shared_ptr<Window> DX12RenderEngine::get_window() const { return window; }
@@ -90,7 +91,7 @@ namespace nova::renderer::rhi {
         pipeline_interface->bindings = bindings;
 
         pipeline_interface->table_layouts.reserve(16);
-        
+
         for(const auto& [binding_name, binding] : bindings) {
             pipeline_interface->table_layouts[binding.set].reserve(16);
             pipeline_interface->table_layouts[binding.set].push_back(binding);
@@ -192,6 +193,40 @@ namespace nova::renderer::rhi {
         }
 
         return descriptor_sets;
+    }
+
+    void DX12RenderEngine::update_descriptor_sets(const std::vector<DescriptorSetWrite>& writes) {
+        // We want to create descriptors in the heaps in the order of their bindings
+        for(const DescriptorSetWrite& write : writes) {
+            const DX12DescriptorSet* set = static_cast<const DX12DescriptorSet*>(write.set);
+            CD3DX12_CPU_DESCRIPTOR_HANDLE write_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(set->heap->GetCPUDescriptorHandleForHeapStart(),
+                                                                                       cbv_srv_uav_descriptor_size * write.binding);
+
+            switch(write.type) {
+                case DescriptorType::CombinedImageSampler:
+                    const DescriptorImageUpdate* image_update = write.image_info;
+                    const DX12Image* image = static_cast<const DX12Image*>(image_update->image);
+                    D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+                    srv_desc.Format = to_dxgi_format(image_update->format.pixel_format);
+                    srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+                    srv_desc.Texture2D.MostDetailedMip = 0;
+                    srv_desc.Texture2D.MipLevels = 1;
+                    srv_desc.Texture2D.PlaneSlice = 0;
+                    srv_desc.Texture2D.ResourceMinLODClamp = 0;
+
+                    device->CreateShaderResourceView(image->resource.Get(), &srv_desc, write_handle);
+
+                    break;
+
+                case DescriptorType::UniformBuffer:
+                    break;
+                
+                case DescriptorType::StorageBuffer:
+                    break;
+                
+                default:;
+            }
+        }
     }
 
     Result<Pipeline*> DX12RenderEngine::create_pipeline(const PipelineInterface* pipeline_interface,
@@ -576,9 +611,6 @@ namespace nova::renderer::rhi {
         copy_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
         CHECK_ERROR(device->CreateCommandQueue(&copy_queue_desc, IID_PPV_ARGS(&copy_command_queue)), "Could not create copy command queue");
     }
-
-    ID3D12RootSignature* DX12RenderEngine::create_root_signature(
-        const std::unordered_map<std::string, ResourceBindingDescription>& bindings) {}
 
     ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,
                                     const std::string& target,
