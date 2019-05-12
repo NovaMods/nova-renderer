@@ -433,7 +433,7 @@ namespace nova::renderer::rhi {
         return final_sets;
     }
 
-    void VulkanRenderEngine::update_descriptor_sets(const std::vector<DescriptorSetWrite>& writes) {
+    void VulkanRenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
         std::vector<VkWriteDescriptorSet> vk_writes;
         vk_writes.reserve(writes.size());
 

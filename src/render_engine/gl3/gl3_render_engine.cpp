@@ -77,6 +77,30 @@ namespace nova::renderer::rhi {
     std::vector<DescriptorSet*> Gl3RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                                         const DescriptorPool* pool) {}
 
+    void Gl3RenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
+        for(DescriptorSetWrite& write : writes) {
+            Gl3DescriptorSet* set = static_cast<Gl3DescriptorSet*>(write.set);
+            Gl3Descriptor& descriptor = set->descriptors.at(write.binding);
+
+            switch(write.type) {
+
+                case DescriptorType::CombinedImageSampler:
+                    DescriptorImageUpdate* image_update = write.image_info;
+                    Gl3Image* image = static_cast<Gl3Image*>(image_update->image);
+                    descriptor.resource = image;
+                    break;
+
+                case DescriptorType::UniformBuffer:
+                    break;
+
+                case DescriptorType::StorageBuffer:
+                    break;
+
+                default:;
+            }
+        }
+    }
+
     Result<PipelineInterface*> Gl3RenderEngine::create_pipeline_interface(
         const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
         [[maybe_unused]] const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
