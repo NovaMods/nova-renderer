@@ -686,7 +686,37 @@ namespace nova::renderer::rhi {
         return Result(static_cast<Pipeline*>(vk_pipeline));
     }
 
-    Buffer* VulkanRenderEngine::create_buffer(const BufferCreateInfo& info) { return nullptr; }
+    Buffer* VulkanRenderEngine::create_buffer(const BufferCreateInfo& info) {
+        VulkanBuffer* buffer = new VulkanBuffer;
+
+        VkBufferCreateInfo vk_create_info = {};
+        vk_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        vk_create_info.size = info.size;
+        vk_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        VmaAllocationCreateInfo vma_create_info = {};
+
+        switch(info.buffer_usage) {
+            case BufferCreateInfo::Usage::UniformBuffer:
+                vk_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+                vma_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+                break;
+
+            case BufferCreateInfo::Usage::IndexBuffer:
+                vk_create_info.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+                vma_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+                break;
+
+            case BufferCreateInfo::Usage::VertexBuffer:
+                vk_create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+                vma_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+                break;
+        }
+
+        vmaCreateBuffer(vma_allocator, &vk_create_info, &vma_create_info, &buffer->buffer, &buffer->allocation, &buffer->vma_info);
+
+        return buffer;
+    }
 
     Image* VulkanRenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
         VulkanImage* texture = new VulkanImage;

@@ -95,6 +95,19 @@ namespace nova::renderer {
         MTR_SCOPE("RenderLoop", "execute_frame");
     }
 
+    void NovaRenderer::set_num_meshes(uint32_t num_meshes) { meshes.reserve(num_meshes); }
+
+    MeshId NovaRenderer::create_mesh(const MeshData& mesh_data) {
+        rhi::BufferCreateInfo vertex_buffer_create_info = {};
+        vertex_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::VertexBuffer;
+        vertex_buffer_create_info.size = mesh_data.vertex_data.size() * sizeof(FullVertex);
+        vertex_buffer_create_info.buffer_residency = rhi::BufferCreateInfo::Residency::DeviceLocal;
+
+        rhi::Buffer* vertex_buffer = rhi->create_buffer(vertex_buffer_create_info);
+
+        return MeshId();
+    }
+    
     void NovaRenderer::load_shaderpack(const std::string& shaderpack_name) {
         MTR_SCOPE("ShaderpackLoading", "load_shaderpack");
         glslang::InitializeProcess();
@@ -334,9 +347,7 @@ namespace nova::renderer {
                 is_known = false;
             }
 
-            if(is_known) {
-
-            } else {
+            if(!is_known) {
                 NOVA_LOG(ERROR) << "Resource " << resource_name << " is not known to Nova";
             }
         }
