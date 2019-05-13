@@ -438,7 +438,11 @@ namespace nova::renderer::rhi {
         return Result(static_cast<Pipeline*>(pipeline));
     }
 
-    Buffer* DX12RenderEngine::create_buffer(const BufferCreateInfo& info) { return nullptr; }
+    Buffer* DX12RenderEngine::create_buffer(const BufferCreateInfo& info) { 
+        DX12Buffer* buffer = new DX12Buffer;
+
+        return buffer;
+	}
 
     Image* DX12RenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
         DX12Image* image = new DX12Image;
@@ -477,7 +481,7 @@ namespace nova::renderer::rhi {
             texture_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
         }
 
-        // TODO: Info in shaderpack::texture_create_info_t about what heap to put the texture in
+        // TODO: Info in shaderpack::TextureCreateInfo about what heap to put the texture in
         ComPtr<ID3D12Resource> texture;
         auto heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
         const HRESULT hr = device->CreateCommittedResource(&heap_props,

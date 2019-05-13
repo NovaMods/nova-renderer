@@ -68,6 +68,7 @@ namespace nova::renderer::rhi {
                                           const shaderpack::PipelineCreateInfo& data) override final;
 
         Buffer* create_buffer(const BufferCreateInfo& info) override final;
+
         Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
         Semaphore* create_semaphore() override final;
         std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override final;
@@ -106,6 +107,11 @@ namespace nova::renderer::rhi {
         uint32_t rtv_descriptor_size = 0;
 
         uint32_t cbv_srv_uav_descriptor_size = 0;
+
+        /*!
+         * \brief Heap for all meshes
+         */
+        Microsoft::WRL::ComPtr<ID3D12Heap> mesh_heap;
 
 #pragma region Initialization
         void create_device();
