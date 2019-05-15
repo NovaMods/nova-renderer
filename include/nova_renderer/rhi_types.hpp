@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include "nova_renderer.hpp"
+#include "shaderpack_data.hpp"
 
 namespace nova::renderer::rhi {
 #pragma region Enums
@@ -102,6 +103,8 @@ namespace nova::renderer::rhi {
         Transfer,
         AsyncCompute,
     };
+
+    struct GpuHeap {};
 
     /*!
      * \brief A resource
@@ -214,7 +217,7 @@ namespace nova::renderer::rhi {
     };
 
     struct DescriptorSetWrite {
-        const rhi::DescriptorSet* set;
+        const DescriptorSet* set;
         uint32_t binding;
         DescriptorImageUpdate* image_info;
         DescriptorType type;
