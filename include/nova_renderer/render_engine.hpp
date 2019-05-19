@@ -8,14 +8,14 @@
 #include <memory>
 
 #include "../../src/windowing/win32_window.hpp"
+#include "nova_renderer/command_list.hpp"
 #include "nova_renderer/nova_settings.hpp"
+#include "nova_renderer/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/platform.hpp"
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/util/utils.hpp"
 #include "nova_renderer/window.hpp"
-#include "nova_renderer/rhi_types.hpp"
-#include "nova_renderer/command_list.hpp"
 
 namespace nova::renderer::rhi {
     NOVA_EXCEPTION(render_engine_initialization_exception);
