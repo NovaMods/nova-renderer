@@ -8,32 +8,16 @@
 #include <memory>
 
 #include "../../src/windowing/win32_window.hpp"
-#include "nova_renderer/command_list.hpp"
 #include "nova_renderer/nova_settings.hpp"
-#include "nova_renderer/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/platform.hpp"
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/util/utils.hpp"
 #include "nova_renderer/window.hpp"
+#include "nova_renderer/rhi_types.hpp"
+#include "nova_renderer/command_list.hpp"
 
 namespace nova::renderer::rhi {
-    struct BufferCreateInfo {
-        enum class Usage {
-            UniformBuffer,
-            IndexBuffer,
-            VertexBuffer,
-        };
-
-        enum class Residency { HostLocal, HostVisible, DeviceVisible, DeviceLocal };
-
-        uint64_t size;
-
-        Usage buffer_usage;
-
-        Residency buffer_residency;
-    };
-
     NOVA_EXCEPTION(render_engine_initialization_exception);
     NOVA_EXCEPTION(render_engine_rendering_exception);
 
@@ -69,6 +53,8 @@ namespace nova::renderer::rhi {
         virtual void set_shaderpack_data_allocator() = 0;
 
         virtual void set_num_renderpasses(uint32_t num_renderpasses) = 0;
+
+        [[nodiscard]] virtual DeviceMemory* create_gpu_memory(uint64_t size) = 0;
 
         /*!
          * \brief Creates a renderpass from the provided data

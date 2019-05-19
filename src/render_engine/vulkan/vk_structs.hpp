@@ -13,6 +13,10 @@
 #include "nova_renderer/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
+    struct VulkanGpuMemory : DeviceMemory {
+        VkDeviceMemory memory;
+    };
+
     struct VulkanSampler : Sampler {
         VkSampler sampler;
     };
@@ -76,5 +80,6 @@ namespace nova::renderer::rhi {
         std::vector<VkSurfaceFormatKHR> surface_formats;
         VkPhysicalDeviceProperties props{};
         VkPhysicalDeviceFeatures supported_features{};
+        VkPhysicalDeviceMemoryProperties memory_properties{};
     };
 } // namespace nova::renderer::rhi

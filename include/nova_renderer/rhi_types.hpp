@@ -1,13 +1,20 @@
 #pragma once
 
+#include <bvestl/polyalloc/polyalloc.hpp>
 #include <glm/glm.hpp>
 #include <string>
 #include <unordered_map>
-#include "nova_renderer.hpp"
 #include "shaderpack_data.hpp"
 
 namespace nova::renderer::rhi {
 #pragma region Enums
+    enum class MemoryType {
+        DeviceLocal,
+        HostVisible,
+        HostCoherent,
+        HostCached,
+    };
+
     enum class DescriptorType { CombinedImageSampler, UniformBuffer, StorageBuffer };
 
     enum class ResourceState {
@@ -98,13 +105,29 @@ namespace nova::renderer::rhi {
 #pragma endregion
 
 #pragma region Structs
+    struct BufferCreateInfo {
+        enum class Usage {
+            UniformBuffer,
+            IndexBuffer,
+            VertexBuffer,
+        };
+
+        enum class Residency { HostLocal, HostVisible, DeviceVisible, DeviceLocal };
+
+        uint64_t size;
+
+        Usage buffer_usage;
+
+        Residency buffer_residency;
+    };
+
     enum class QueueType {
         Graphics,
         Transfer,
         AsyncCompute,
     };
 
-    struct GpuHeap {};
+    struct DeviceMemory {};
 
     /*!
      * \brief A resource
@@ -211,13 +234,13 @@ namespace nova::renderer::rhi {
     };
 
     struct DescriptorImageUpdate {
-        const Image* image;
+        const struct Image* image;
         shaderpack::TextureFormat format;
         Sampler* sampler;
     };
 
     struct DescriptorSetWrite {
-        const DescriptorSet* set;
+        const struct DescriptorSet* set;
         uint32_t binding;
         DescriptorImageUpdate* image_info;
         DescriptorType type;
