@@ -49,14 +49,38 @@ namespace nova::renderer::rhi {
         // Pretty sure Vulkan doesn't need to do anything here
     }
 
-    DeviceMemory* VulkanRenderEngine::create_gpu_memory(uint64_t size) {
+    Result<DeviceMemory*> VulkanRenderEngine::create_gpu_memory(const uint64_t size, const MemoryAccessType type) {
         VulkanGpuMemory* memory = new VulkanGpuMemory;
 
         VkMemoryAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         alloc_info.allocationSize = size;
+        alloc_info.memoryTypeIndex = VK_MAX_MEMORY_TYPES;
 
-        return memory;
+        // Find a heap with enough space for the requested memory
+        std::vector<uint32_t>& memory_types = memory_types_by_access.at(type);
+
+        for(const uint32_t memory_type_idx : memory_types) {
+            const VkMemoryType& memory_type = gpu.memory_properties.memoryTypes[memory_type_idx];
+            const VkMemoryHeap& memory_heap = gpu.memory_properties.memoryHeaps[memory_type.heapIndex];
+            const uint64_t heap_usage = heap_usages.at(memory_type.heapIndex);
+            const uint64_t free_heap_space = memory_heap.size - heap_usage;
+
+            if(free_heap_space < size) {
+                continue;
+            }
+
+            alloc_info.memoryTypeIndex = memory_type_idx;
+            break;
+        }
+
+        if(alloc_info.memoryTypeIndex == VK_MAX_MEMORY_TYPES) {
+            return Result<DeviceMemory*>(NovaError("Could not find a GPU heap with enough space for your allocation"));
+        }
+
+        vkAllocateMemory(device, &alloc_info, nullptr, &memory->memory);
+
+        return Result<DeviceMemory*>(memory);
     }
 
     Result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
@@ -951,18 +975,20 @@ namespace nova::renderer::rhi {
             const VkMemoryType& memory = gpu.memory_properties.memoryTypes[i];
 
             if(memory.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) {
-                heaps_by_type[MemoryType::DeviceLocal].push_back(memory.heapIndex);
+                memory_types_by_access[MemoryAccessType::DeviceLocal].push_back(i);
             }
             if(memory.propertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) {
-                heaps_by_type[MemoryType::HostCoherent].push_back(memory.heapIndex);
+                memory_types_by_access[MemoryAccessType::HostCoherent].push_back(i);
             }
             if(memory.propertyFlags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT) {
-                heaps_by_type[MemoryType::HostCached].push_back(memory.heapIndex);
+                memory_types_by_access[MemoryAccessType::HostCached].push_back(i);
             }
             if(memory.propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
-                heaps_by_type[MemoryType::HostVisible].push_back(memory.heapIndex);
+                memory_types_by_access[MemoryAccessType::HostVisible].push_back(i);
             }
         }
+
+        heap_usages.resize(gpu.memory_properties.memoryHeapCount, 0);
     }
 
     void VulkanRenderEngine::create_device_and_queues() {
