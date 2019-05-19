@@ -58,7 +58,7 @@ namespace nova::renderer::rhi {
 
         void set_num_renderpasses(uint32_t num_renderpasses) override final;
 
-        Result<DeviceMemory*> create_gpu_memory(uint64_t size, const MemoryAccessType type) override final;
+        Result<DeviceMemory*> allocate_device_memory(uint64_t size, const MemoryUsage usage) override final;
 
         Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
 
@@ -123,15 +123,8 @@ namespace nova::renderer::rhi {
         std::vector<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
 
         /*!
-         * \brief A map from memory access type to the memory indexes of all memory that supports that type of access
-         *
-         * This map is from memory type to index into the memory types array that we got from Vulkan
-         */
-        std::unordered_map<MemoryAccessType, std::vector<uint32_t>> memory_types_by_access;
-
-        /*!
          * \brief Keeps track of how much has been allocated from each heap
-         * 
+         *
          * In the same order as VulkanGpuInfo::memory_properties::memoryHeaps
          */
         std::vector<uint32_t> heap_usages;
@@ -150,8 +143,6 @@ namespace nova::renderer::rhi {
 
         void initialize_vma();
 
-        void get_device_memory_properties(VkPhysicalDevice phys_device);
-
         void create_device_and_queues();
 
         static bool does_device_support_extensions(VkPhysicalDevice device);
@@ -160,13 +151,27 @@ namespace nova::renderer::rhi {
 
         void create_per_thread_command_pools();
 
-        std::unordered_map<uint32_t, VkCommandPool> make_new_command_pools() const;
+        [[nodiscard]] std::unordered_map<uint32_t, VkCommandPool> make_new_command_pools() const;
 #pragma endregion
 
 #pragma region Helpers
-        VkShaderModule create_shader_module(const std::vector<uint32_t>& spirv) const;
+        enum class MemorySearchMode { Exact, Fuzzy };
 
-        std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
+        /*!
+         * \brief Finds the index of the memory type with the desired flags
+         *
+         * \param[in] search_flags Flags to search for
+         * \param[in] search_mode What search mode to use. If search_mode is MemorySearchMode::Exact, this method will only return the index
+         * of a memory type whose flags exactly match search_flags. If search_mode is MemorySearchMode::Fuzzy, this method will return the
+         * index of the first memory type whose flags include search_flags
+         * 
+         * \return The index of the memory type with the desired flags, or VK_MAX_MEMORY_TYPES if no memory types match the given flags
+         */
+        [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags, MemorySearchMode search_mode) const;
+
+        [[nodiscard]] VkShaderModule create_shader_module(const std::vector<uint32_t>& spirv) const;
+
+        [[nodiscard]] std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
             const std::unordered_map<std::string, ResourceBindingDescription>& all_bindings) const;
 
         /*!
@@ -179,7 +184,7 @@ namespace nova::renderer::rhi {
          * The method checks an internal hash map. If there's already an image view for the given image then great,
          * otherwise one is created on-demand
          */
-        VkImageView image_view_for_image(const Image* image);
+        [[nodiscard]] VkImageView image_view_for_image(const Image* image);
 #pragma endregion
 
 #pragma region Debugging

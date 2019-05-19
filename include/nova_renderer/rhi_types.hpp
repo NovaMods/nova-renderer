@@ -8,11 +8,9 @@
 
 namespace nova::renderer::rhi {
 #pragma region Enums
-    enum class MemoryAccessType {
-        DeviceLocal,
-        HostVisible,
-        HostCoherent,
-        HostCached,
+    enum class MemoryUsage {
+        DeviceOnly,
+        LowFrequencyUpload,
     };
 
     enum class DescriptorType { CombinedImageSampler, UniformBuffer, StorageBuffer };

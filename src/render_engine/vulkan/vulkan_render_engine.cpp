@@ -82,7 +82,7 @@ namespace nova::renderer::rhi {
         // Pretty sure Vulkan doesn't need to do anything here
     }
 
-    Result<DeviceMemory*> VulkanRenderEngine::create_gpu_memory(const uint64_t size, const MemoryAccessType type) {
+    Result<DeviceMemory*> VulkanRenderEngine::allocate_device_memory(const uint64_t size, const MemoryUsage usage) {
         VulkanGpuMemory* memory = new VulkanGpuMemory;
 
         VkMemoryAllocateInfo alloc_info = {};
@@ -90,25 +90,26 @@ namespace nova::renderer::rhi {
         alloc_info.allocationSize = size;
         alloc_info.memoryTypeIndex = VK_MAX_MEMORY_TYPES;
 
-        // Find a heap with enough space for the requested memory
-        std::vector<uint32_t>& memory_types = memory_types_by_access.at(type);
+        // Find the memory type that we want
+        switch(usage) {
+            case MemoryUsage::DeviceOnly:
+                // Find a memory type that only has the device local bit set
+                // If none have only the device local bit set, find one with the device local but and maybe other things
+                alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, MemorySearchMode::Exact);
+                if(alloc_info.memoryTypeIndex == VK_MAX_MEMORY_TYPES) {
+                    alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, MemorySearchMode::Fuzzy);
+                }
+                break;
 
-        for(const uint32_t memory_type_idx : memory_types) {
-            const VkMemoryType& memory_type = gpu.memory_properties.memoryTypes[memory_type_idx];
-            const VkMemoryHeap& memory_heap = gpu.memory_properties.memoryHeaps[memory_type.heapIndex];
-            const uint64_t heap_usage = heap_usages.at(memory_type.heapIndex);
-            const uint64_t free_heap_space = memory_heap.size - heap_usage;
-
-            if(free_heap_space < size) {
-                continue;
-            }
-
-            alloc_info.memoryTypeIndex = memory_type_idx;
-            break;
-        }
-
-        if(alloc_info.memoryTypeIndex == VK_MAX_MEMORY_TYPES) {
-            return Result<DeviceMemory*>(NovaError("Could not find a GPU heap with enough space for your allocation"));
+            case MemoryUsage::LowFrequencyUpload:
+                // Find a memory type that's visible to both the device and the host. Memory that's both device local and host visible would
+                // be amazing, otherwise HOST_CACHED will work I guess
+                alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT |
+                                                                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                                                                         MemorySearchMode::Fuzzy);
+                if(alloc_info.memoryTypeIndex == VK_MAX_MEMORY_TYPES) {
+                    alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_HOST_CACHED_BIT, MemorySearchMode::Fuzzy);
+                }
         }
 
         vkAllocateMemory(device, &alloc_info, nullptr, &memory->memory);
@@ -1001,29 +1002,6 @@ namespace nova::renderer::rhi {
         NOVA_CHECK_RESULT(vmaCreateAllocator(&allocator_create_info, &vma_allocator));
     }
 
-    void VulkanRenderEngine::get_device_memory_properties(const VkPhysicalDevice phys_device) {
-        vkGetPhysicalDeviceMemoryProperties(phys_device, &gpu.memory_properties);
-
-        for(uint32_t i = 0; i < gpu.memory_properties.memoryTypeCount; i++) {
-            const VkMemoryType& memory = gpu.memory_properties.memoryTypes[i];
-
-            if(memory.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) {
-                memory_types_by_access[MemoryAccessType::DeviceLocal].push_back(i);
-            }
-            if(memory.propertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) {
-                memory_types_by_access[MemoryAccessType::HostCoherent].push_back(i);
-            }
-            if(memory.propertyFlags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT) {
-                memory_types_by_access[MemoryAccessType::HostCached].push_back(i);
-            }
-            if(memory.propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
-                memory_types_by_access[MemoryAccessType::HostVisible].push_back(i);
-            }
-        }
-
-        heap_usages.resize(gpu.memory_properties.memoryHeapCount, 0);
-    }
-
     void VulkanRenderEngine::create_device_and_queues() {
         uint32_t device_count;
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
@@ -1091,7 +1069,7 @@ namespace nova::renderer::rhi {
 
         vkGetPhysicalDeviceFeatures(gpu.phys_device, &gpu.supported_features);
 
-        get_device_memory_properties(gpu.phys_device);
+        vkGetPhysicalDeviceMemoryProperties(gpu.phys_device, &gpu.memory_properties);
 
         const float priority = 1.0;
 
@@ -1203,6 +1181,27 @@ namespace nova::renderer::rhi {
         }
 
         return pools_by_queue;
+    }
+
+    uint32_t VulkanRenderEngine::find_memory_type_with_flags(const uint32_t search_flags, const MemorySearchMode search_mode) const {
+        for(uint32_t i = 0; i < gpu.memory_properties.memoryTypeCount; i++) {
+            const VkMemoryType& memory_type = gpu.memory_properties.memoryTypes[i];
+            switch(search_mode) {
+                case MemorySearchMode::Exact:
+                    if(memory_type.propertyFlags == search_flags) {
+                        return i;
+                    }
+                    break;
+
+                case MemorySearchMode::Fuzzy:
+                    if(memory_type.propertyFlags & search_flags != 0) {
+                        return i;
+                    }
+                    break;
+            }
+        }
+
+        return VK_MAX_MEMORY_TYPES;
     }
 
     std::vector<VkDescriptorSetLayout> VulkanRenderEngine::create_descriptor_set_layouts(

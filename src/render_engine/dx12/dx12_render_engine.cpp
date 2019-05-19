@@ -46,6 +46,40 @@ namespace nova::renderer::rhi {
         }
     }
 
+    Result<DeviceMemory*> DX12RenderEngine::allocate_device_memory(const uint64_t size, const MemoryUsage type) {
+        DX12DeviceMemory* memory = new DX12DeviceMemory;
+
+        D3D12_HEAP_DESC desc = {};
+        desc.SizeInBytes = size;
+
+        switch(type) {
+            case MemoryUsage::DeviceOnly:
+                desc.Properties.Type = D3D12_HEAP_TYPE_DEFAULT;
+                break;
+                
+            case MemoryUsage::LowFrequencyUpload:
+                desc.Properties.Type = D3D12_HEAP_TYPE_UPLOAD;
+                break;
+
+            case MemoryUsage::Readback:
+            desc.Properties.Type = D3D12_HEAP_TYPE_READBACK;
+                break;
+
+            default:;
+        }
+        desc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+
+        if(type == MemoryUsage::DeviceOnly || type == MemoryUsage::HostCached) {
+            adapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &local_info);
+
+            if(size > local_info.AvailableForReservation) {
+                return Result<DeviceMemory*>(NovaError("Not enough space for memory allocation"));
+            }
+        }
+
+        return Result<DeviceMemory*>(memory);
+    }
+
     Result<Renderpass*> DX12RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
         DX12Renderpass* renderpass = new DX12Renderpass;
 
@@ -71,7 +105,7 @@ namespace nova::renderer::rhi {
             framebuffer->render_targets.emplace_back(framebuffer->descriptor_heap->GetCPUDescriptorHandleForHeapStart());
 
             // Create the Render Target View, which binds the swapchain buffer to the RTV handle
-            device->CreateRenderTargetView(d3d12_image->resource, nullptr, framebuffer->render_targets.at(i));
+            device->CreateRenderTargetView(d3d12_image->resource.Get(), nullptr, framebuffer->render_targets.at(i));
 
             // Increment the RTV handle
             framebuffer->render_targets.at(i).Offset(1, rtv_descriptor_size);
@@ -220,10 +254,10 @@ namespace nova::renderer::rhi {
 
                 case DescriptorType::UniformBuffer:
                     break;
-                
+
                 case DescriptorType::StorageBuffer:
                     break;
-                
+
                 default:;
             }
         }
@@ -438,11 +472,11 @@ namespace nova::renderer::rhi {
         return Result(static_cast<Pipeline*>(pipeline));
     }
 
-    Buffer* DX12RenderEngine::create_buffer(const BufferCreateInfo& info) { 
+    Buffer* DX12RenderEngine::create_buffer(const BufferCreateInfo& info) {
         DX12Buffer* buffer = new DX12Buffer;
 
         return buffer;
-	}
+    }
 
     Image* DX12RenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
         DX12Image* image = new DX12Image;
@@ -568,14 +602,14 @@ namespace nova::renderer::rhi {
 
         NOVA_LOG(TRACE) << "Device created";
 
-        ComPtr<IDXGIAdapter1> adapter;
+        ComPtr<IDXGIAdapter1> adapter1;
 
         uint32_t adapter_index = 0;
         bool adapter_found = false;
 
-        while(dxgi_factory->EnumAdapters1(adapter_index, &adapter) != DXGI_ERROR_NOT_FOUND) {
+        while(dxgi_factory->EnumAdapters1(adapter_index, &adapter1) != DXGI_ERROR_NOT_FOUND) {
             DXGI_ADAPTER_DESC1 desc;
-            adapter->GetDesc1(&desc);
+            adapter1->GetDesc1(&desc);
 
             if(desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
                 // Ignore software devices
@@ -586,9 +620,19 @@ namespace nova::renderer::rhi {
             // Direct3D 12 is feature level 11.
             //
             // cool
-            const HRESULT hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
+            const HRESULT hr = D3D12CreateDevice(adapter1.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
             if(SUCCEEDED(hr)) {
                 adapter_found = true;
+                adapter1->QueryInterface(IID_PPV_ARGS(&adapter));
+
+                if(adapter) {
+                    adapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &local_info);
+                    adapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &non_local_info);
+
+                } else {
+                    NOVA_LOG(ERROR) << "Needed adapter interface not supported";
+                }
+
                 break;
             }
 
