@@ -8,7 +8,7 @@
 
 namespace nova::renderer::rhi {
 #pragma region Enums
-    enum class MemoryType {
+    enum class MemoryAccessType {
         DeviceLocal,
         HostVisible,
         HostCoherent,
