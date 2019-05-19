@@ -121,11 +121,15 @@ namespace nova::renderer::rhi {
 
         enum class Residency { HostLocal, HostVisible, DeviceVisible, DeviceLocal };
 
-        uint64_t size;
+        uint64_t size = 0;
 
-        Usage buffer_usage;
+        Usage buffer_usage{};
 
-        Residency buffer_residency;
+        Residency buffer_residency{};
+
+        struct DeviceMemory* memory = nullptr;
+
+        uint64_t offset = 0;
     };
 
     enum class QueueType {

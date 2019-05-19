@@ -167,7 +167,8 @@ namespace nova::renderer::rhi {
          *
          * \return The index of the memory type with the desired flags, or VK_MAX_MEMORY_TYPES if no memory types match the given flags
          */
-        [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags, MemorySearchMode search_mode) const;
+        [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags,
+                                                           MemorySearchMode search_mode = MemorySearchMode::Fuzzy) const;
 
         [[nodiscard]] VkShaderModule create_shader_module(const std::vector<uint32_t>& spirv) const;
 
