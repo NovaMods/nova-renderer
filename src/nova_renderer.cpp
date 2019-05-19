@@ -142,7 +142,7 @@ namespace nova::renderer {
         uint32_t total_num_descriptors = 0;
         for(const shaderpack::MaterialData& material_data : materials) {
             for(const shaderpack::MaterialPass& material_pass : material_data.passes) {
-                total_num_descriptors += material_pass.bindings.size();
+                total_num_descriptors += static_cast<uint32_t>(material_pass.bindings.size());
             }
         }
 
@@ -239,8 +239,8 @@ namespace nova::renderer {
                         auto [pipeline, pipeline_metadata] = *pipeline_result;
 
                         MaterialPassKey template_key = {};
-                        template_key.renderpass_index = renderpasses.size();
-                        template_key.pipeline_index = renderpass.pipelines.size();
+                        template_key.renderpass_index = static_cast<uint32_t>(renderpasses.size());
+                        template_key.pipeline_index = static_cast<uint32_t>(renderpass.pipelines.size());
 
                         create_materials_for_pipeline(pipeline,
                                                       pipeline_metadata.material_metadatas,
@@ -292,7 +292,7 @@ namespace nova::renderer {
                     material_metadatas.emplace(full_pass_name, pass_metadata);
 
                     MaterialPassKey key = template_key;
-                    key.material_pass_index = pipeline.passes.size();
+                    key.material_pass_index = static_cast<uint32_t>(pipeline.passes.size());
 
                     material_pass_keys.emplace(full_pass_name, key);
 
@@ -390,7 +390,7 @@ namespace nova::renderer {
             pipeline.pipeline = *rhi_pipeline;
 
         } else {
-            NovaError error = NovaError(fmt::format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name), rhi_pipeline.error);
+            NovaError error = NovaError(fmt::format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name), std::move(rhi_pipeline.error));
             return Result<PipelineReturn>(std::move(error));
         }
 

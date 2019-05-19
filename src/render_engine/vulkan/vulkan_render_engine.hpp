@@ -54,6 +54,8 @@ namespace nova::renderer::rhi {
 
         void set_num_renderpasses(uint32_t num_renderpasses) override final;
 
+        DeviceMemory* create_gpu_memory(uint64_t size) override final;
+
         Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
@@ -116,6 +118,11 @@ namespace nova::renderer::rhi {
          */
         std::vector<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
 
+        /*!
+         * \brief A map from memory type to the memory indexes of all memory that supports that type of access
+         */
+        std::unordered_map<MemoryType, std::vector<uint64_t>> heaps_by_type;
+
         // Debugging things
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
@@ -129,6 +136,8 @@ namespace nova::renderer::rhi {
         void enable_debug_output();
 
         void initialize_vma();
+
+        void get_device_memory_properties(VkPhysicalDevice phys_device);
 
         void create_device_and_queues();
 

@@ -82,6 +82,16 @@ namespace nova::renderer::rhi {
         // Pretty sure Vulkan doesn't need to do anything here
     }
 
+    DeviceMemory* VulkanRenderEngine::create_gpu_memory(uint64_t size) {
+        VulkanGpuMemory* memory = new VulkanGpuMemory;
+
+        VkMemoryAllocateInfo alloc_info = {};
+        alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        alloc_info.allocationSize = size;
+
+        return memory;
+    }
+
     Result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
         VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
 
@@ -967,6 +977,27 @@ namespace nova::renderer::rhi {
         NOVA_CHECK_RESULT(vmaCreateAllocator(&allocator_create_info, &vma_allocator));
     }
 
+    void VulkanRenderEngine::get_device_memory_properties(const VkPhysicalDevice phys_device) {
+        vkGetPhysicalDeviceMemoryProperties(phys_device, &gpu.memory_properties);
+
+        for(uint32_t i = 0; i < gpu.memory_properties.memoryTypeCount; i++) {
+            const VkMemoryType& memory = gpu.memory_properties.memoryTypes[i];
+
+            if(memory.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) {
+                heaps_by_type[MemoryType::DeviceLocal].push_back(memory.heapIndex);
+            }
+            if(memory.propertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) {
+                heaps_by_type[MemoryType::HostCoherent].push_back(memory.heapIndex);
+            }
+            if(memory.propertyFlags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT) {
+                heaps_by_type[MemoryType::HostCached].push_back(memory.heapIndex);
+            }
+            if(memory.propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
+                heaps_by_type[MemoryType::HostVisible].push_back(memory.heapIndex);
+            }
+        }
+    }
+
     void VulkanRenderEngine::create_device_and_queues() {
         uint32_t device_count;
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
@@ -1033,6 +1064,8 @@ namespace nova::renderer::rhi {
         }
 
         vkGetPhysicalDeviceFeatures(gpu.phys_device, &gpu.supported_features);
+
+        get_device_memory_properties(gpu.phys_device);
 
         const float priority = 1.0;
 
