@@ -107,7 +107,7 @@ namespace nova::renderer::rhi {
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> copy_command_queue;
 
         Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap;
-        
+
         uint32_t rtv_descriptor_size = 0;
         uint32_t cbv_srv_uav_descriptor_size = 0;
 

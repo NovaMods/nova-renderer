@@ -34,6 +34,12 @@ namespace nova::renderer::rhi {
         // Gl3 doesn't need to do anything either
     }
 
+    Result<DeviceMemory*> Gl3RenderEngine::allocate_device_memory([[maybe_unused]] const uint64_t size,
+                                                                  [[maybe_unused]] const MemoryUsage type,
+                                                                  [[maybe_unused]] const ObjectType allowed_objects) {
+        return Result(new DeviceMemory);
+    }
+
     Result<Renderpass*> Gl3RenderEngine::create_renderpass([[maybe_unused]] const shaderpack::RenderPassCreateInfo& data) {
         return Result<Renderpass*>(new Renderpass);
     }

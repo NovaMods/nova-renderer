@@ -54,7 +54,7 @@ namespace nova::renderer::rhi {
 
         /*!
          * \brief All the descriptor set layouts that this pipeline interface needs to create descriptor sets
-         * 
+         *
          * The index in the vector is the index of the set
          */
         std::vector<VkDescriptorSetLayout> layouts_by_set;

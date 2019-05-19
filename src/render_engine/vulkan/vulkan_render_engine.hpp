@@ -164,7 +164,7 @@ namespace nova::renderer::rhi {
          * \param[in] search_mode What search mode to use. If search_mode is MemorySearchMode::Exact, this method will only return the index
          * of a memory type whose flags exactly match search_flags. If search_mode is MemorySearchMode::Fuzzy, this method will return the
          * index of the first memory type whose flags include search_flags
-         * 
+         *
          * \return The index of the memory type with the desired flags, or VK_MAX_MEMORY_TYPES if no memory types match the given flags
          */
         [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags, MemorySearchMode search_mode) const;
