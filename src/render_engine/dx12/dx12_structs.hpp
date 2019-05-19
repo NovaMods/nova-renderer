@@ -5,6 +5,10 @@
 #include "nova_renderer/shaderpack_data.hpp"
 
 namespace nova::renderer::rhi {
+    struct DX12DeviceMemory : DeviceMemory {
+        ID3D12Heap* heap;
+    };
+
     struct DX12Renderpass : Renderpass {};
 
     struct DX12Buffer : Buffer {

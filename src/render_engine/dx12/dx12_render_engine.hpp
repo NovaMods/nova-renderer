@@ -36,6 +36,8 @@ namespace nova::renderer::rhi {
 
         void set_num_renderpasses(uint32_t num_renderpasses) override final;
 
+        Result<DeviceMemory*> allocate_device_memory(uint64_t size, const MemoryUsage type) override final;
+
         Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
@@ -53,8 +55,8 @@ namespace nova::renderer::rhi {
 
         /*!
          * \brief Creates all the descriptor sets that are needed for this pipeline interface
-         * 
-         * Currently I create a separate descriptor heap for each descriptor set. This is fairly easy and closely 
+         *
+         * Currently I create a separate descriptor heap for each descriptor set. This is fairly easy and closely
          * mimics what Vulkan does. However, I have no idea at all about how performant this is. I've heard that using
          * a single descriptor heap is noticably better, but I've also heard that this only applies to XBox. Further
          * research and testing is needed to resolve this
@@ -93,8 +95,9 @@ namespace nova::renderer::rhi {
         void open_window_and_create_surface(const NovaSettings::WindowOptions& options) override final;
 
     private:
-        Microsoft::WRL::ComPtr<IDXGIFactory2> dxgi_factory;
+        Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi_factory;
 
+        Microsoft::WRL::ComPtr<IDXGIAdapter3> adapter;
         Microsoft::WRL::ComPtr<ID3D12Device> device; // direct3d device
 
         Microsoft::WRL::ComPtr<IDXGISwapChain3> swapchain; // swapchain used to switch between render targets
@@ -104,14 +107,12 @@ namespace nova::renderer::rhi {
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> copy_command_queue;
 
         Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap;
+        
         uint32_t rtv_descriptor_size = 0;
-
         uint32_t cbv_srv_uav_descriptor_size = 0;
 
-        /*!
-         * \brief Heap for all meshes
-         */
-        Microsoft::WRL::ComPtr<ID3D12Heap> mesh_heap;
+        DXGI_QUERY_VIDEO_MEMORY_INFO local_info;
+        DXGI_QUERY_VIDEO_MEMORY_INFO non_local_info;
 
 #pragma region Initialization
         void create_device();
