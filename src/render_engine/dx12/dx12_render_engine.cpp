@@ -46,30 +46,62 @@ namespace nova::renderer::rhi {
         }
     }
 
-    Result<DeviceMemory*> DX12RenderEngine::allocate_device_memory(const uint64_t size, const MemoryUsage type) {
+    Result<DeviceMemory*> DX12RenderEngine::allocate_device_memory(const uint64_t size,
+                                                                   const MemoryUsage type,
+                                                                   const ObjectType allowed_objects) {
         DX12DeviceMemory* memory = new DX12DeviceMemory;
 
         D3D12_HEAP_DESC desc = {};
         desc.SizeInBytes = size;
 
+        D3D12_MEMORY_POOL device_memory_pool = D3D12_MEMORY_POOL_L1;
+        if(settings.system_info.is_uma) {
+            device_memory_pool = D3D12_MEMORY_POOL_L0;
+        }
+
         switch(type) {
             case MemoryUsage::DeviceOnly:
                 desc.Properties.Type = D3D12_HEAP_TYPE_DEFAULT;
+                desc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_NOT_AVAILABLE;
+                desc.Properties.MemoryPoolPreference = device_memory_pool;
                 break;
-                
+
             case MemoryUsage::LowFrequencyUpload:
                 desc.Properties.Type = D3D12_HEAP_TYPE_UPLOAD;
+                desc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_COMBINE;
+                desc.Properties.MemoryPoolPreference = device_memory_pool;
                 break;
 
-            case MemoryUsage::Readback:
-            desc.Properties.Type = D3D12_HEAP_TYPE_READBACK;
-                break;
-
-            default:;
+            case MemoryUsage::StagingBuffer:
+                desc.Properties.Type = D3D12_HEAP_TYPE_UPLOAD;
+                desc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_COMBINE;
+                desc.Properties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
         }
+
         desc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
 
-        if(type == MemoryUsage::DeviceOnly || type == MemoryUsage::HostCached) {
+        switch(allowed_objects) {
+            case ObjectType::Buffer:
+                desc.Flags = D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES;
+                break;
+            
+            case ObjectType::Texture:
+                desc.Flags = D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES | D3D12_HEAP_FLAG_DENY_BUFFERS;
+                break;
+            
+            case ObjectType::RenderTexture:
+                desc.Flags = D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES;
+                break;
+            
+            case ObjectType::SwapchainSurface:
+                desc.Flags = D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES | D3D12_HEAP_FLAG_ALLOW_DISPLAY;
+                break;
+
+            case ObjectType::Any:
+                break;
+        }
+
+        if(type == MemoryUsage::DeviceOnly) {
             adapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &local_info);
 
             if(size > local_info.AvailableForReservation) {

@@ -11,6 +11,15 @@ namespace nova::renderer::rhi {
     enum class MemoryUsage {
         DeviceOnly,
         LowFrequencyUpload,
+        StagingBuffer,
+    };
+
+    enum class ObjectType {
+        Buffer,
+        Texture,
+        RenderTexture,
+        SwapchainSurface,
+        Any,
     };
 
     enum class DescriptorType { CombinedImageSampler, UniformBuffer, StorageBuffer };
