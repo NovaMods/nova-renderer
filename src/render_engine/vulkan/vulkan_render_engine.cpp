@@ -97,9 +97,9 @@ namespace nova::renderer::rhi {
             case MemoryUsage::DeviceOnly:
                 // Find a memory type that only has the device local bit set
                 // If none have only the device local bit set, find one with the device local but and maybe other things
-                alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, MemorySearchMode::Exact);
+                alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
                 if(alloc_info.memoryTypeIndex == VK_MAX_MEMORY_TYPES) {
-                    alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, MemorySearchMode::Fuzzy);
+                    alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
                 }
                 break;
 
@@ -107,11 +107,16 @@ namespace nova::renderer::rhi {
                 // Find a memory type that's visible to both the device and the host. Memory that's both device local and host visible would
                 // be amazing, otherwise HOST_CACHED will work I guess
                 alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT |
-                                                                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                                                                         MemorySearchMode::Fuzzy);
+                                                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
                 if(alloc_info.memoryTypeIndex == VK_MAX_MEMORY_TYPES) {
-                    alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_HOST_CACHED_BIT, MemorySearchMode::Fuzzy);
+                    alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_HOST_CACHED_BIT);
                 }
+                break;
+
+            case MemoryUsage::StagingBuffer:
+                alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                                         VK_MEMORY_PROPERTY_HOST_CACHED_BIT);
+                break;
         }
 
         vkAllocateMemory(device, &alloc_info, nullptr, &memory->memory);
