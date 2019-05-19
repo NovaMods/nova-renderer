@@ -1,0 +1,4 @@
+Source: bvestl
+Version: v0.1.0
+Description: Extention to EASTL with various useful vocabulary types including polymorphic allocators and non-exception error handling.
+Build-Depends: eastl
