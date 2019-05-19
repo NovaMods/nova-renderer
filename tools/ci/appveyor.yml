@@ -25,7 +25,7 @@ install:
   - cmd: cd C:\Tools\vcpkg
   - cmd: git pull
   - cmd: cd %APPVEYOR_BUILD_FOLDER%
-  - ps: .\setup-windows.ps1
+  - ps: C:\Python37-x64\python.exe tools\vcpkg\setup.py --vcpkg-dir=C:\tools\vcpkg
 
 before_build:
   - cmd: cd C:\projects\nova-renderer
