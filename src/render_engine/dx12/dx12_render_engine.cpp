@@ -84,15 +84,15 @@ namespace nova::renderer::rhi {
             case ObjectType::Buffer:
                 desc.Flags = D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES;
                 break;
-            
+
             case ObjectType::Texture:
                 desc.Flags = D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES | D3D12_HEAP_FLAG_DENY_BUFFERS;
                 break;
-            
+
             case ObjectType::RenderTexture:
                 desc.Flags = D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES;
                 break;
-            
+
             case ObjectType::SwapchainSurface:
                 desc.Flags = D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES | D3D12_HEAP_FLAG_ALLOW_DISPLAY;
                 break;
@@ -107,7 +107,16 @@ namespace nova::renderer::rhi {
             if(size > local_info.AvailableForReservation) {
                 return Result<DeviceMemory*>(NovaError("Not enough space for memory allocation"));
             }
+
+        } else {
+            adapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &non_local_info);
+
+            if(size < non_local_info.AvailableForReservation) {
+                return Result<DeviceMemory*>(NovaError("Not enough space for memory allocation"));
+            }
         }
+
+        device->CreateHeap(&desc, IID_PPV_ARGS(&memory->heap));
 
         return Result<DeviceMemory*>(memory);
     }
