@@ -49,7 +49,9 @@ namespace nova::renderer::rhi {
         // Pretty sure Vulkan doesn't need to do anything here
     }
 
-    Result<DeviceMemory*> VulkanRenderEngine::allocate_device_memory(const uint64_t size, const MemoryUsage usage) {
+    Result<DeviceMemory*> VulkanRenderEngine::allocate_device_memory(const uint64_t size,
+                                                                     const MemoryUsage usage,
+                                                                     [[maybe_unused]] const ObjectType allowed_objects) {
         VulkanGpuMemory* memory = new VulkanGpuMemory;
 
         VkMemoryAllocateInfo alloc_info = {};

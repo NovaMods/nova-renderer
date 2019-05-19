@@ -192,6 +192,16 @@ namespace nova::renderer {
          */
         GraphicsApi api{};
 
+        /*!
+         * \brief Information about the system we're running on
+         */
+        struct SystemInfo {
+            /*!
+             * \brief Whether we're on a Unified Memory Architecture
+             */
+            bool is_uma = false;
+        } system_info;
+
         uint32_t max_in_flight_frames = 3;
 
         /*!
