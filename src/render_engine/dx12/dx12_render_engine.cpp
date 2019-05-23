@@ -516,6 +516,32 @@ namespace nova::renderer::rhi {
     Buffer* DX12RenderEngine::create_buffer(const BufferCreateInfo& info) {
         DX12Buffer* buffer = new DX12Buffer;
 
+        D3D12_RESOURCE_STATES states = {};
+        switch(info.buffer_usage) {
+            case BufferCreateInfo::Usage::UniformBuffer:
+                states = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+                break;
+
+            case BufferCreateInfo::Usage::IndexBuffer:
+                states = D3D12_RESOURCE_STATE_INDEX_BUFFER;
+                break;
+            
+            case BufferCreateInfo::Usage::VertexBuffer:
+                states = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+                break;
+        }
+
+        D3D12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(info.size);
+
+        DX12DeviceMemory* memory = static_cast<DX12DeviceMemory*>(info.allocation.memory);
+
+        device->CreatePlacedResource(memory->heap,
+                                     info.allocation.allocation_info.offset.b_count(),
+                                     &resource_desc,
+                                     states,
+                                     nullptr,
+                                     IID_PPV_ARGS(&buffer->resource));
+
         return buffer;
     }
 
