@@ -173,9 +173,9 @@ namespace nova::renderer {
 
         rhi::Sampler* point_sampler;
 
-        std::unique_ptr<DeviceMemoryResource<foundational::allocation::BlockAllocator>> mesh_memory_pool;
+        std::unique_ptr<DeviceMemoryResource> mesh_memory_pool;
 
-        std::unique_ptr<DeviceMemoryResource<foundational::allocation::BumpPointAllocator>> ubo_memory_pool;
+        std::unique_ptr<DeviceMemoryResource> ubo_memory_pool;
 
 #pragma region Initialization
         /*!
