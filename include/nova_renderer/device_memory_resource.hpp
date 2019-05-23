@@ -24,14 +24,11 @@ namespace nova::renderer {
     class DeviceMemoryResource {
     public:
         DeviceMemoryResource(rhi::DeviceMemory* memory,
-                             foundational::allocation::SizeOnlyAllocator* allocation_strategy,
-                             bvestl::polyalloc::allocator_handle& host_allocator);
+                             foundational::allocation::SizeOnlyAllocator* allocation_strategy);
 
         [[nodiscard]] DeviceMemoryAllocation allocate(const foundational::allocation::Bytes size) const;
 
     private:
-        bvestl::polyalloc::allocator_handle& host_allocator;
-
         foundational::allocation::SizeOnlyAllocator* allocation_strategy;
 
         rhi::DeviceMemory* memory;
