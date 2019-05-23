@@ -177,7 +177,34 @@ namespace nova::renderer::rhi {
         return Result(static_cast<Pipeline*>(pipeline));
     }
 
-    Buffer* Gl3RenderEngine::create_buffer(const BufferCreateInfo& info) { return nullptr; }
+    Buffer* Gl3RenderEngine::create_buffer(const BufferCreateInfo& info) {
+        Gl3Buffer* buffer = new Gl3Buffer;
+
+        glGenBuffers(1, &buffer->id);
+
+        GLuint buffer_bind_target = 0;
+
+        switch(info.buffer_usage) {
+            case BufferCreateInfo::Usage::UniformBuffer:
+                buffer_bind_target = GL_UNIFORM_BUFFER;
+                break;
+            
+            case BufferCreateInfo::Usage::IndexBuffer:
+                buffer_bind_target = GL_ELEMENT_ARRAY_BUFFER;
+                break;
+            
+            case BufferCreateInfo::Usage::VertexBuffer:
+                buffer_bind_target = GL_ARRAY_BUFFER;
+                break;
+            
+            default:;
+        }
+
+        glBindBuffer(buffer_bind_target, buffer->id);
+        glBufferData(buffer_bind_target, info.size, nullptr, GL_STATIC_DRAW);
+
+        return buffer;
+    }
 
     Image* Gl3RenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
         Gl3Image* image = new Gl3Image;
