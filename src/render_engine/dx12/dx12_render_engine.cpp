@@ -443,7 +443,7 @@ namespace nova::renderer::rhi {
         std::vector<D3D12_INPUT_ELEMENT_DESC> input_descs;
         input_descs.reserve(data.vertex_fields.size());
         for(const shaderpack::VertexFieldData& vertex_field : data.vertex_fields) {
-            const vertex_attribute& attr = all_formats.at(vertex_field.field);
+            const VertexAttribute& attr = all_formats.at(vertex_field.field);
 
             D3D12_INPUT_ELEMENT_DESC desc = {};
             desc.SemanticName = vertex_field.semantic_name.data();

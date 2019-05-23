@@ -9,8 +9,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO NovaMods/foundational
-    REF v0.2.0
-    SHA512 680c3c002bc2b8ae5be0bb21f5b77b6ec912be71f214d0806e3ab121bf234d56ba324836e661c0266b1ef42a1306c447954f14cc7bb4c40c967eb6836dbaad47
+    REF v0.2.2
+    SHA512 6edde8cb803d0f619b244ecb2b587156f27b9365b0c7350a9f3a6775c6c26bd410d68a6e69d72cae911731664ce88a2d2cef540dae53882fd073b9bfdcd856bf
     HEAD_REF master
 )
 

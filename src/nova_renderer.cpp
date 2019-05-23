@@ -16,6 +16,7 @@
 #include <minitrace.h>
 #include "loading/shaderpack/render_graph_builder.hpp"
 #include "render_engine/gl3/gl3_render_engine.hpp"
+#include "render_objects/uniform_structs.hpp"
 #include "util/logger.hpp"
 
 namespace nova::renderer {
@@ -77,6 +78,8 @@ namespace nova::renderer {
                 rhi = std::make_unique<rhi::Gl3RenderEngine>(render_settings);
             } break;
         }
+
+        create_global_gpu_pools();
     }
 
     NovaRenderer::~NovaRenderer() { mtr_shutdown(); }
@@ -101,7 +104,7 @@ namespace nova::renderer {
 
         return MeshId();
     }
-    
+
     void NovaRenderer::load_shaderpack(const std::string& shaderpack_name) {
         MTR_SCOPE("ShaderpackLoading", "load_shaderpack");
         glslang::InitializeProcess();
@@ -390,7 +393,8 @@ namespace nova::renderer {
             pipeline.pipeline = *rhi_pipeline;
 
         } else {
-            NovaError error = NovaError(fmt::format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name), std::move(rhi_pipeline.error));
+            NovaError error = NovaError(fmt::format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name),
+                                        std::move(rhi_pipeline.error));
             return Result<PipelineReturn>(std::move(error));
         }
 
@@ -489,4 +493,42 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::deinitialize() { instance.reset(); }
+
+    void NovaRenderer::create_global_gpu_pools() {
+        const uint64_t mesh_memory_size = 512000000;
+        Result<std::unique_ptr<DeviceMemoryResource<foundational::allocation::BlockAllocator>>>
+            mesh_memory = rhi->allocate_device_memory(mesh_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
+                              .map([&](rhi::DeviceMemory* memory) {
+                                  return std::make_unique<DeviceMemoryResource<foundational::allocation::BlockAllocator>>(memory,
+                                                                                                                          nullptr,
+                                                                                                                          mesh_memory_size,
+                                                                                                                          64);
+                              });
+
+        if(mesh_memory) {
+            mesh_memory_pool = std::move(mesh_memory.value);
+
+        } else {
+            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << mesh_memory.error.to_string();
+        }
+
+        // Assume 65k things, plus we need space for the builtin ubos
+        const uint64_t ubo_memory_size = sizeof(PerFrameUniforms) + sizeof(glm::mat4) * 0xFFFF;
+        Result<std::unique_ptr<DeviceMemoryResource<foundational::allocation::BumpPointAllocator>>>
+            ubo_memory = rhi->allocate_device_memory(mesh_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
+                             .map([&](rhi::DeviceMemory* memory) {
+                                 return std::make_unique<
+                                     DeviceMemoryResource<foundational::allocation::BumpPointAllocator>>(memory,
+                                                                                                         nullptr,
+                                                                                                         mesh_memory_size,
+                                                                                                         sizeof(glm::mat4));
+                             });
+
+        if(ubo_memory) {
+            ubo_memory_pool = std::move(ubo_memory.value);
+
+        } else {
+            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << ubo_memory.error.to_string();
+        }
+    }
 } // namespace nova::renderer
