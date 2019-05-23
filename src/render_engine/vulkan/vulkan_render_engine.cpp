@@ -774,21 +774,21 @@ namespace nova::renderer::rhi {
         switch(info.buffer_usage) {
             case BufferCreateInfo::Usage::UniformBuffer:
                 vk_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-                vma_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
                 break;
 
             case BufferCreateInfo::Usage::IndexBuffer:
                 vk_create_info.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-                vma_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
                 break;
 
             case BufferCreateInfo::Usage::VertexBuffer:
                 vk_create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-                vma_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
                 break;
         }
 
-        vmaCreateBuffer(vma_allocator, &vk_create_info, &vma_create_info, &buffer->buffer, &buffer->allocation, &buffer->vma_info);
+        VulkanGpuMemory* vulkan_heap = static_cast<VulkanGpuMemory*>(info.allocation.memory);
+
+        vkCreateBuffer(device, &vk_create_info, nullptr, &buffer->buffer);
+        vkBindBufferMemory(device, buffer->buffer, vulkan_heap->memory, info.allocation.allocation_info.offset.b_count());
 
         return buffer;
     }

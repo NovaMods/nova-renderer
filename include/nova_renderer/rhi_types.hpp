@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include "shaderpack_data.hpp"
+#include "device_memory_resource.hpp"
 
 namespace nova::renderer::rhi {
 #pragma region Enums
@@ -130,6 +131,7 @@ namespace nova::renderer::rhi {
         struct DeviceMemory* memory = nullptr;
 
         uint64_t offset = 0;
+        DeviceMemoryAllocation allocation;
     };
 
     enum class QueueType {
