@@ -496,13 +496,13 @@ namespace nova::renderer {
 
     void NovaRenderer::create_global_gpu_pools() {
         const uint64_t mesh_memory_size = 512000000;
-        Result<std::unique_ptr<DeviceMemoryResource<foundational::allocation::BlockAllocator>>>
+        Result<std::unique_ptr<DeviceMemoryResource>>
             mesh_memory = rhi->allocate_device_memory(mesh_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
                               .map([&](rhi::DeviceMemory* memory) {
-                                  return std::make_unique<DeviceMemoryResource<foundational::allocation::BlockAllocator>>(memory,
-                                                                                                                          nullptr,
-                                                                                                                          mesh_memory_size,
-                                                                                                                          64);
+                                  return std::make_unique<
+                                      DeviceMemoryResource>(memory,
+                                                            new foundational::allocation::BlockAllocator(nullptr, foundational::allocation::Bytes(mesh_memory_size), 64_b),
+                                                            nullptr);
                               });
 
         if(mesh_memory) {
@@ -514,14 +514,15 @@ namespace nova::renderer {
 
         // Assume 65k things, plus we need space for the builtin ubos
         const uint64_t ubo_memory_size = sizeof(PerFrameUniforms) + sizeof(glm::mat4) * 0xFFFF;
-        Result<std::unique_ptr<DeviceMemoryResource<foundational::allocation::BumpPointAllocator>>>
-            ubo_memory = rhi->allocate_device_memory(mesh_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
+        Result<std::unique_ptr<DeviceMemoryResource>>
+            ubo_memory = rhi->allocate_device_memory(ubo_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
                              .map([&](rhi::DeviceMemory* memory) {
                                  return std::make_unique<
-                                     DeviceMemoryResource<foundational::allocation::BumpPointAllocator>>(memory,
-                                                                                                         nullptr,
-                                                                                                         mesh_memory_size,
-                                                                                                         sizeof(glm::mat4));
+                                     DeviceMemoryResource>(memory,
+                                                           new foundational::allocation::BumpPointAllocator(nullptr,
+                                                                                                            foundational::allocation::Bytes(ubo_memory_size),
+                                                                                                            foundational::allocation::Bytes(sizeof(glm::mat4))),
+                                                           nullptr);
                              });
 
         if(ubo_memory) {
