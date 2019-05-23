@@ -1,16 +1,19 @@
 #pragma once
 
 #include <bvestl/polyalloc/polyalloc.hpp>
-#include <foundational/allocation/bytes.hpp>
 #include <foundational/allocation/allocation_structs.hpp>
+#include <foundational/allocation/bytes.hpp>
 #include <foundational/allocation/size_only_allocator.hpp>
 
 using namespace foundational::allocation::operators;
 
 namespace nova::renderer {
+    namespace rhi {
+        struct DeviceMemory;
+    }
 
     struct DeviceMemoryAllocation {
-        struct DeviceMemory* memory = nullptr;
+        rhi::DeviceMemory* memory = nullptr;
         foundational::allocation::AllocationInfo allocation_info;
     };
 
@@ -20,15 +23,9 @@ namespace nova::renderer {
      */
     class DeviceMemoryResource {
     public:
-        template <typename AllocationStrategy>
-        DeviceMemoryResource(struct DeviceMemory* memory,
-                             bvestl::polyalloc::allocator_handle& host_allocator,
-                             const foundational::allocation::Bytes size,
-                             const foundational::allocation::Bytes alignment = 0_b)
-            : host_allocator(host_allocator), memory(memory) {
-            void* alloc_strat = host_allocator.allocate(sizeof(AllocationStrategy));
-            allocation_strategy = new(alloc_strat) AllocationStrategy(host_allocator, size, alignment);
-        }
+        DeviceMemoryResource(rhi::DeviceMemory* memory,
+                             foundational::allocation::SizeOnlyAllocator* allocation_strategy,
+                             bvestl::polyalloc::allocator_handle& host_allocator);
 
         [[nodiscard]] DeviceMemoryAllocation allocate(const foundational::allocation::Bytes size) const;
 
