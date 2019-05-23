@@ -108,6 +108,8 @@ namespace nova::renderer {
         vertex_buffer_create_info.size = mesh_data.vertex_data.size() * sizeof(FullVertex);
         vertex_buffer_create_info.buffer_residency = rhi::BufferCreateInfo::Residency::DeviceLocal;
 
+        vertex_buffer_create_info.allocation = mesh_memory_pool->allocate(Bytes(vertex_buffer_create_info.size));
+
         rhi::Buffer* vertex_buffer = rhi->create_buffer(vertex_buffer_create_info);
 
         return MeshId();

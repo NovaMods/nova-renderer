@@ -1,6 +1,5 @@
 #pragma once
 
-#include <bvestl/polyalloc/polyalloc.hpp>
 #include <foundational/allocation/allocation_structs.hpp>
 #include <foundational/allocation/bytes.hpp>
 #include <foundational/allocation/size_only_allocator.hpp>
@@ -23,8 +22,7 @@ namespace nova::renderer {
      */
     class DeviceMemoryResource {
     public:
-        DeviceMemoryResource(rhi::DeviceMemory* memory,
-                             foundational::allocation::SizeOnlyAllocator* allocation_strategy);
+        DeviceMemoryResource(rhi::DeviceMemory* memory, foundational::allocation::SizeOnlyAllocator* allocation_strategy);
 
         [[nodiscard]] DeviceMemoryAllocation allocate(const foundational::allocation::Bytes size) const;
 
