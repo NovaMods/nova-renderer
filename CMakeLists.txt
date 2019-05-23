@@ -150,6 +150,7 @@ set(NOVA_SOURCE
 		src/render_engine/rhi_types.cpp
 		src/render_engine/vulkan/vulkan_render_engine.cpp 
 		src/render_engine/vulkan/vulkan_render_engine.hpp
+		include/nova_renderer/device_memory_resource.hpp
 
 		)
 

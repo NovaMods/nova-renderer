@@ -64,7 +64,7 @@ namespace nova::renderer::rhi {
             case MemoryUsage::DeviceOnly:
                 // Find a memory type that only has the device local bit set
                 // If none have only the device local bit set, find one with the device local but and maybe other things
-                alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+                alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, MemorySearchMode::Exact);
                 if(alloc_info.memoryTypeIndex == VK_MAX_MEMORY_TYPES) {
                     alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
                 }

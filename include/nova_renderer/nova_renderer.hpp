@@ -11,6 +11,9 @@
 #include <memory>
 #include <string>
 
+#include <foundational/allocation/block_allocator.hpp>
+#include <foundational/allocation/bump_point_allocator.hpp>
+#include "nova_renderer/device_memory_resource.hpp"
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/render_engine.hpp"
 #include "nova_renderer/renderdoc_app.h"
@@ -57,10 +60,10 @@ namespace nova::renderer {
     };
 
     struct Mesh {
-        rhi::Buffer vertex_buffer;
-        rhi::Buffer index_buffer;
+        rhi::Buffer* vertex_buffer = nullptr;
+        rhi::Buffer* index_buffer = nullptr;
 
-        uint32_t num_indices;
+        uint32_t num_indices = 0;
     };
 #pragma endregion
 
@@ -83,13 +86,13 @@ namespace nova::renderer {
     struct PipelineMetadata {
         shaderpack::PipelineCreateInfo data;
 
-        std::unordered_map<FullMaterialPassName, MaterialPassMetadata> material_metadatas;
+        std::unordered_map<FullMaterialPassName, MaterialPassMetadata> material_metadatas{};
     };
 
     struct RenderpassMetadata {
         shaderpack::RenderPassCreateInfo data;
 
-        std::unordered_map<std::string, PipelineMetadata> pipeline_metadata;
+        std::unordered_map<std::string, PipelineMetadata> pipeline_metadata{};
     };
 #pragma endregion
 
@@ -176,6 +179,22 @@ namespace nova::renderer {
         static std::unique_ptr<NovaRenderer> instance;
 
         rhi::Sampler* point_sampler;
+
+        std::unique_ptr<DeviceMemoryResource<foundational::allocation::BlockAllocator>> mesh_memory_pool;
+
+        std::unique_ptr<DeviceMemoryResource<foundational::allocation::BumpPointAllocator>> ubo_memory_pool;
+
+#pragma region Initialization
+        /*!
+         * \brief Creates global GPU memory pools
+         *
+         * Creates pools for mesh data and for uniform buffers. The size of the mesh memory pool is a guess that might be true for some
+         * games, I'll get more accurate guesses when I have actual data. The size of the uniform buffer pool is the size of the builtin
+         * uniform buffers plus memory for the estimated number of renderables, which again will just be a guess and probably not a super
+         * good one
+         */
+        void create_global_gpu_pools();
+#pragma endregion
 
 #pragma region Shaderpack
         using PipelineReturn = std::tuple<Pipeline, PipelineMetadata>;
