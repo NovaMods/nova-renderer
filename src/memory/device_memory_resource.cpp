@@ -1,7 +1,7 @@
 #include "nova_renderer/device_memory_resource.hpp"
 
 namespace nova::renderer {
-    DeviceMemoryResource::DeviceMemoryResource(DeviceMemory* memory,
+    DeviceMemoryResource::DeviceMemoryResource(rhi::DeviceMemory* memory,
                                                foundational::allocation::SizeOnlyAllocator* allocation_strategy,
                                                bvestl::polyalloc::allocator_handle& host_allocator)
         : host_allocator(host_allocator), allocation_strategy(allocation_strategy), memory(memory) {}

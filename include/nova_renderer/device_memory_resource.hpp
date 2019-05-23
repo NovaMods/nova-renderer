@@ -34,6 +34,6 @@ namespace nova::renderer {
 
         foundational::allocation::SizeOnlyAllocator* allocation_strategy;
 
-        struct DeviceMemory* memory;
+        rhi::DeviceMemory* memory;
     };
 } // namespace nova::renderer
