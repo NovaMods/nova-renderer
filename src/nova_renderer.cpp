@@ -19,6 +19,8 @@
 #include "render_objects/uniform_structs.hpp"
 #include "util/logger.hpp"
 
+using namespace foundational::allocation;
+
 namespace nova::renderer {
     std::unique_ptr<NovaRenderer> NovaRenderer::instance;
 
@@ -499,10 +501,8 @@ namespace nova::renderer {
         Result<std::unique_ptr<DeviceMemoryResource>>
             mesh_memory = rhi->allocate_device_memory(mesh_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
                               .map([&](rhi::DeviceMemory* memory) {
-                                  return std::make_unique<
-                                      DeviceMemoryResource>(memory,
-                                                            new foundational::allocation::BlockAllocator(nullptr, foundational::allocation::Bytes(mesh_memory_size), 64_b),
-                                                            nullptr);
+                                  auto* allocator = new BlockAllocator(nullptr, Bytes(mesh_memory_size), 64_b);
+                                  return std::make_unique<DeviceMemoryResource>(memory, allocator);
                               });
 
         if(mesh_memory) {
@@ -517,12 +517,8 @@ namespace nova::renderer {
         Result<std::unique_ptr<DeviceMemoryResource>>
             ubo_memory = rhi->allocate_device_memory(ubo_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
                              .map([&](rhi::DeviceMemory* memory) {
-                                 return std::make_unique<
-                                     DeviceMemoryResource>(memory,
-                                                           new foundational::allocation::BumpPointAllocator(nullptr,
-                                                                                                            foundational::allocation::Bytes(ubo_memory_size),
-                                                                                                            foundational::allocation::Bytes(sizeof(glm::mat4))),
-                                                           nullptr);
+                                 auto* allocator = new BumpPointAllocator(Bytes(ubo_memory_size), Bytes(sizeof(glm::mat4)));
+                                 return std::make_unique<DeviceMemoryResource>(memory, allocator);
                              });
 
         if(ubo_memory) {
