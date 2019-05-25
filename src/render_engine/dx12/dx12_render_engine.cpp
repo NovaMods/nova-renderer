@@ -121,13 +121,21 @@ namespace nova::renderer::rhi {
         return Result<DeviceMemory*>(memory);
     }
 
+    void* DX12RenderEngine::map_memory(const DeviceMemory* memory) {
+        const DX12DeviceMemory* dx12_memory = static_cast<const DX12DeviceMemory*>(memory);
+
+        void* mapped_data;
+
+        return mapped_data;
+    }
+
     Result<Renderpass*> DX12RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
         DX12Renderpass* renderpass = new DX12Renderpass;
 
         return Result<Renderpass*>(renderpass);
     }
 
-    Framebuffer* DX12RenderEngine::create_framebuffer(const Renderpass* renderpass,
+    Framebuffer* DX12RenderEngine::create_framebuffer([[maybe_unused]] const Renderpass* renderpass,
                                                       const std::vector<Image*>& attachments,
                                                       const glm::uvec2& framebuffer_size) {
         const size_t attachment_count = attachments.size();
