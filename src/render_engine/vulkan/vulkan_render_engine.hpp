@@ -60,6 +60,8 @@ namespace nova::renderer::rhi {
 
         Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage usage, ObjectType allowed_objects) override final;
 
+        void* map_memory(DeviceMemory* memory) override final;
+
         Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,

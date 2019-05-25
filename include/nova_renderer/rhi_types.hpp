@@ -118,6 +118,7 @@ namespace nova::renderer::rhi {
             UniformBuffer,
             IndexBuffer,
             VertexBuffer,
+            StagingBuffer,
         };
 
         enum class Residency { HostLocal, HostVisible, DeviceVisible, DeviceLocal };
