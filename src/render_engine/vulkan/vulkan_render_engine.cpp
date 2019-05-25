@@ -85,7 +85,7 @@ namespace nova::renderer::rhi {
     Result<DeviceMemory*> VulkanRenderEngine::allocate_device_memory(const uint64_t size,
                                                                      const MemoryUsage usage,
                                                                      [[maybe_unused]] const ObjectType allowed_objects) {
-        VulkanGpuMemory* memory = new VulkanGpuMemory;
+        VulkanDeviceMemory* memory = new VulkanDeviceMemory;
 
         VkMemoryAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -122,6 +122,16 @@ namespace nova::renderer::rhi {
         vkAllocateMemory(device, &alloc_info, nullptr, &memory->memory);
 
         return Result<DeviceMemory*>(memory);
+    }
+
+    void* VulkanRenderEngine::map_memory(const DeviceMemory* memory) { 
+        const VulkanDeviceMemory* vulkan_memory = static_cast<const VulkanDeviceMemory*>(memory);
+
+        void* mapped_data;
+
+        vkMapMemory(device, vulkan_memory->memory, 0, VK_WHOLE_SIZE, 0, &mapped_data);
+
+        return mapped_data;
     }
 
     Result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
@@ -785,7 +795,7 @@ namespace nova::renderer::rhi {
                 break;
         }
 
-        VulkanGpuMemory* vulkan_heap = static_cast<VulkanGpuMemory*>(info.allocation.memory);
+        VulkanDeviceMemory* vulkan_heap = static_cast<VulkanDeviceMemory*>(info.allocation.memory);
 
         vkCreateBuffer(device, &vk_create_info, nullptr, &buffer->buffer);
         vkBindBufferMemory(device, buffer->buffer, vulkan_heap->memory, info.allocation.allocation_info.offset.b_count());

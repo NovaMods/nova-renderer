@@ -20,13 +20,11 @@ namespace nova::renderer {
      * \brief Couples an allocation strategy with a device memory object, allowing you to subdivide the device memory for use in individual
      * buffers, textures, etc
      */
-    class DeviceMemoryResource {
-    public:
+    struct DeviceMemoryResource {
         DeviceMemoryResource(rhi::DeviceMemory* memory, foundational::allocation::SizeOnlyAllocator* allocation_strategy);
 
         [[nodiscard]] DeviceMemoryAllocation allocate(const foundational::allocation::Bytes size) const;
 
-    private:
         foundational::allocation::SizeOnlyAllocator* allocation_strategy;
 
         rhi::DeviceMemory* memory;

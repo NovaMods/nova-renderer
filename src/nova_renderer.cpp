@@ -20,6 +20,7 @@
 #include "util/logger.hpp"
 
 using namespace foundational::allocation;
+using namespace foundational::allocation::operators;
 
 namespace nova::renderer {
     std::unique_ptr<NovaRenderer> NovaRenderer::instance;
@@ -94,17 +95,28 @@ namespace nova::renderer {
         MTR_SCOPE("RenderLoop", "execute_frame");
     }
 
-    void NovaRenderer::set_num_meshes(uint32_t num_meshes) { meshes.reserve(num_meshes); }
+    void NovaRenderer::set_num_meshes(const uint32_t num_meshes) { meshes.reserve(num_meshes); }
 
     MeshId NovaRenderer::create_mesh(const MeshData& mesh_data) {
         rhi::BufferCreateInfo vertex_buffer_create_info = {};
         vertex_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::VertexBuffer;
         vertex_buffer_create_info.size = mesh_data.vertex_data.size() * sizeof(FullVertex);
         vertex_buffer_create_info.buffer_residency = rhi::BufferCreateInfo::Residency::DeviceLocal;
-
-        vertex_buffer_create_info.allocation = mesh_memory_pool->allocate(Bytes(vertex_buffer_create_info.size));
+        vertex_buffer_create_info.allocation = mesh_memory->allocate(Bytes(vertex_buffer_create_info.size));
 
         rhi::Buffer* vertex_buffer = rhi->create_buffer(vertex_buffer_create_info);
+
+        rhi::BufferCreateInfo staging_vertex_buffer_create_info = vertex_buffer_create_info;
+        staging_vertex_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::StagingBuffer;
+        rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info);
+
+        rhi::BufferCreateInfo index_buffer_create_info = {};
+        index_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::IndexBuffer;
+        index_buffer_create_info.size = mesh_data.indices.size() * sizeof(uint32_t);
+        index_buffer_create_info.buffer_residency = rhi::BufferCreateInfo::Residency::DeviceLocal;
+        index_buffer_create_info.allocation = mesh_memory->allocate(Bytes(index_buffer_create_info.size));
+
+        rhi::Buffer* index_buffer = rhi->create_buffer(index_buffer_create_info);
 
         return MeshId();
     }
@@ -501,33 +513,53 @@ namespace nova::renderer {
     void NovaRenderer::create_global_gpu_pools() {
         const uint64_t mesh_memory_size = 512000000;
         Result<std::unique_ptr<DeviceMemoryResource>>
-            mesh_memory = rhi->allocate_device_memory(mesh_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
-                              .map([&](rhi::DeviceMemory* memory) {
-                                  auto* allocator = new BlockAllocator(nullptr, Bytes(mesh_memory_size), 64_b);
-                                  return std::make_unique<DeviceMemoryResource>(memory, allocator);
-                              });
+            mesh_memory_result = rhi->allocate_device_memory(mesh_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
+                                     .map([&](rhi::DeviceMemory* memory) {
+                                         auto* allocator = new BlockAllocator(nullptr, Bytes(mesh_memory_size), 64_b);
+                                         return std::make_unique<DeviceMemoryResource>(memory, allocator);
+                                     });
 
-        if(mesh_memory) {
-            mesh_memory_pool = std::move(mesh_memory.value);
+        if(mesh_memory_result) {
+            mesh_memory = std::move(mesh_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << mesh_memory.error.to_string();
+            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << mesh_memory_result.error.to_string();
         }
 
         // Assume 65k things, plus we need space for the builtin ubos
         const uint64_t ubo_memory_size = sizeof(PerFrameUniforms) + sizeof(glm::mat4) * 0xFFFF;
         Result<std::unique_ptr<DeviceMemoryResource>>
-            ubo_memory = rhi->allocate_device_memory(ubo_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
-                             .map([&](rhi::DeviceMemory* memory) {
-                                 auto* allocator = new BumpPointAllocator(Bytes(ubo_memory_size), Bytes(sizeof(glm::mat4)));
-                                 return std::make_unique<DeviceMemoryResource>(memory, allocator);
-                             });
+            ubo_memory_result = rhi->allocate_device_memory(ubo_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
+                                    .map([&](rhi::DeviceMemory* memory) {
+                                        auto* allocator = new BumpPointAllocator(Bytes(ubo_memory_size), Bytes(sizeof(glm::mat4)));
+                                        return std::make_unique<DeviceMemoryResource>(memory, allocator);
+                                    });
 
-        if(ubo_memory) {
-            ubo_memory_pool = std::move(ubo_memory.value);
+        if(ubo_memory_result) {
+            ubo_memory = std::move(ubo_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << ubo_memory.error.to_string();
+            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << ubo_memory_result.error.to_string();
+        }
+
+        // Staging buffers will be pooled, so we don't need a _ton_ of memory for them
+        const Bytes staging_memory_size = 256_kb;
+        Result<std::unique_ptr<DeviceMemoryResource>>
+            staging_memory_result = rhi->allocate_device_memory(staging_memory_size.b_count(),
+                                                                rhi::MemoryUsage::StagingBuffer,
+                                                                rhi::ObjectType::Buffer)
+                                        .map([&](rhi::DeviceMemory* memory) {
+                                            auto* allocator = new BumpPointAllocator(staging_memory_size, 64_b);
+                                            return std::make_unique<DeviceMemoryResource>(memory, allocator);
+                                        });
+
+        if(staging_memory_result) {
+            staging_buffer_memory = std::move(staging_memory_result.value);
+
+            staging_buffer_memory_ptr = rhi->map_memory(staging_buffer_memory->memory);
+
+        } else {
+            NOVA_LOG(ERROR) << "Could not create staging buffer memory pool: " << staging_memory_result.error.to_string();
         }
     }
 } // namespace nova::renderer

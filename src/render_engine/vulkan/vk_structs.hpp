@@ -13,7 +13,7 @@
 #include "nova_renderer/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
-    struct VulkanGpuMemory : DeviceMemory {
+    struct VulkanDeviceMemory : DeviceMemory {
         VkDeviceMemory memory;
     };
 

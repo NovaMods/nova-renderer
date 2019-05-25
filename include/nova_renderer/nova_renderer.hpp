@@ -173,9 +173,11 @@ namespace nova::renderer {
 
         rhi::Sampler* point_sampler;
 
-        std::unique_ptr<DeviceMemoryResource> mesh_memory_pool;
+        std::unique_ptr<DeviceMemoryResource> mesh_memory;
 
-        std::unique_ptr<DeviceMemoryResource> ubo_memory_pool;
+        std::unique_ptr<DeviceMemoryResource> ubo_memory;
+        std::unique_ptr<DeviceMemoryResource> staging_buffer_memory;
+        void* staging_buffer_memory_ptr;
 
 #pragma region Initialization
         /*!
@@ -183,8 +185,8 @@ namespace nova::renderer {
          *
          * Creates pools for mesh data and for uniform buffers. The size of the mesh memory pool is a guess that might be true for some
          * games, I'll get more accurate guesses when I have actual data. The size of the uniform buffer pool is the size of the builtin
-         * uniform buffers plus memory for the estimated number of renderables, which again will just be a guess and probably not a super
-         * good one
+         * uniform buffers plus memory for the estimated number of renderables, which again will just be a guess and probably not a
+         * super good one
          */
         void create_global_gpu_pools();
 #pragma endregion
