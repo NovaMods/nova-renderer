@@ -51,7 +51,10 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] virtual Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage type, ObjectType allowed_objects) = 0;
 
-        [[nodiscard]] virtual void* map_memory(DeviceMemory* memory) = 0;
+        /*!
+         * \brief Maps the entire memory allocation to a CPU-addressable pointer
+         */
+        [[nodiscard]] virtual void* map_memory(const DeviceMemory* memory) = 0;
 
         /*!
          * \brief Creates a renderpass from the provided data
