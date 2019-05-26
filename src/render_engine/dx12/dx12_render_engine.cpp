@@ -121,12 +121,17 @@ namespace nova::renderer::rhi {
         return Result<DeviceMemory*>(memory);
     }
 
-    void* DX12RenderEngine::map_buffer(const DeviceMemory* memory) {
-        const DX12DeviceMemory* dx12_memory = static_cast<const DX12DeviceMemory*>(memory);
+    void DX12RenderEngine::upload_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) {
+        const DX12Buffer* dx_buffer = static_cast<const DX12Buffer*>(buffer);
 
-        void* mapped_data;
+        D3D12_RANGE mapped_range = {};
+        mapped_range.Begin = 0;
+        mapped_range.End = num_bytes;
 
-        return mapped_data;
+        void* mapped_buffer;
+        dx_buffer->resource->Map(0, &mapped_range, &mapped_buffer);
+        std::memcpy(mapped_buffer, data, num_bytes);
+        dx_buffer->resource->Unmap(0, &mapped_range);
     }
 
     Result<Renderpass*> DX12RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
@@ -533,7 +538,7 @@ namespace nova::renderer::rhi {
             case BufferCreateInfo::Usage::IndexBuffer:
                 states = D3D12_RESOURCE_STATE_INDEX_BUFFER;
                 break;
-            
+
             case BufferCreateInfo::Usage::VertexBuffer:
                 states = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
                 break;

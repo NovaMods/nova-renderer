@@ -121,6 +121,12 @@ namespace nova::renderer::rhi {
 
         vkAllocateMemory(device, &alloc_info, nullptr, &memory->memory);
 
+        if(usage == MemoryUsage::LowFrequencyUpload || usage == MemoryUsage::StagingBuffer) {
+            void* mapped_memory;
+            vkMapMemory(device, memory->memory, 0, VK_WHOLE_SIZE, 0, &mapped_memory);
+            heap_mappings.emplace(memory->memory, mapped_memory);
+        }
+
         return Result<DeviceMemory*>(memory);
     }
 
@@ -130,11 +136,8 @@ namespace nova::renderer::rhi {
         const foundational::allocation::AllocationInfo& allocation_info = vulkan_buffer->memory.allocation_info;
         const VulkanDeviceMemory* memory = static_cast<const VulkanDeviceMemory*>(vulkan_buffer->memory.memory);
 
-        void* mapped_data;
-
-        vkMapMemory(device, memory->memory, allocation_info.offset.b_count(), allocation_info.size.b_count(), 0, &mapped_data);
-        std::memcpy(mapped_data, data, num_bytes);
-        vkUnmapMemory(device, memory->memory);
+        uint8_t* mapped_bytes = static_cast<uint8_t*>(heap_mappings.at(memory->memory)) + allocation_info.offset.b_count();
+        memcpy(mapped_bytes, data, num_bytes);
     }
 
     Result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
