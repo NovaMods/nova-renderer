@@ -656,8 +656,37 @@ namespace nova::renderer::rhi {
 
     void DX12RenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
 
-    CommandList* DX12RenderEngine::get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) {
-        return nullptr;
+    CommandList* DX12RenderEngine::get_command_list(const uint32_t thread_idx,
+                                                    const QueueType needed_queue_type,
+                                                    const CommandList::Level level) {
+        D3D12_COMMAND_LIST_TYPE command_list_type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+        if(level == CommandList::Level::Secondary) {
+            command_list_type = D3D12_COMMAND_LIST_TYPE_BUNDLE;
+
+        } else {
+            switch(needed_queue_type) {
+                case QueueType::Graphics:
+                    break;
+
+                case QueueType::Transfer:
+                    command_list_type = D3D12_COMMAND_LIST_TYPE_COPY;
+                    break;
+
+                case QueueType::AsyncCompute:
+                    command_list_type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+                    break;
+            }
+        }
+
+        ID3D12CommandAllocator* command_allocator = command_allocators.at(thread_idx).at(command_list_type);
+
+        ComPtr<ID3D12CommandList> list;
+        device->CreateCommandList(0, command_list_type, command_allocator, nullptr, IID_PPV_ARGS(&list));
+
+        ComPtr<ID3D12GraphicsCommandList> graphics_list;
+        list->QueryInterface(IID_PPV_ARGS(&graphics_list));
+
+        return new Dx12CommandList(graphics_list);
     }
 
     void DX12RenderEngine::submit_command_list(CommandList* cmds,
