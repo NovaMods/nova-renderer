@@ -104,7 +104,7 @@ namespace nova::renderer::rhi {
          * \param num_bytes The number of bytes to write
          * \param buffer The buffer to write to
          */
-        [[nodiscard]] virtual void write_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) = 0;
+        virtual void write_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) = 0;
 
         [[nodiscard]] virtual Image* create_texture(const shaderpack::TextureCreateInfo& info) = 0;
 
@@ -144,7 +144,9 @@ namespace nova::renderer::rhi {
          * Command lists allocated by this method are returned ready to record commands into - the caller doesn't need
          * to begin the command list
          */
-        virtual CommandList* allocate_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) = 0;
+        virtual CommandList* allocate_command_list(uint32_t thread_idx,
+                                                   QueueType needed_queue_type,
+                                                   CommandList::Level level = CommandList::Level::Primary) = 0;
 
         virtual void submit_command_list(CommandList* cmds,
                                          QueueType queue,
