@@ -206,6 +206,13 @@ namespace nova::renderer::rhi {
         return buffer;
     }
 
+    void Gl3RenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) {
+        const Gl3Buffer* gl_buffer = static_cast<const Gl3Buffer*>(buffer);
+
+        glBindBuffer(GL_COPY_READ_BUFFER, gl_buffer->id);
+        glBufferSubData(GL_COPY_READ_BUFFER, 0, num_bytes, data);
+    }
+
     Image* Gl3RenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
         Gl3Image* image = new Gl3Image;
 

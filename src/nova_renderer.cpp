@@ -115,7 +115,7 @@ namespace nova::renderer {
         rhi::BufferCreateInfo staging_vertex_buffer_create_info = vertex_buffer_create_info;
         staging_vertex_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::StagingBuffer;
         rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info);
-        rhi->upload_data_to_buffer(mesh_data.vertex_data.data(), mesh_data.vertex_data.size(), staging_vertex_buffer);
+        rhi->write_data_to_buffer(mesh_data.vertex_data.data(), mesh_data.vertex_data.size(), staging_vertex_buffer);
 
         rhi::BufferCreateInfo index_buffer_create_info = {};
         index_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::IndexBuffer;

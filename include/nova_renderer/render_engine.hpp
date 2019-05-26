@@ -56,8 +56,6 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] virtual Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage type, ObjectType allowed_objects) = 0;
 
-        [[nodiscard]] virtual void upload_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) = 0;
-
         /*!
          * \brief Creates a renderpass from the provided data
          *
@@ -92,6 +90,21 @@ namespace nova::renderer::rhi {
                                                                 const shaderpack::PipelineCreateInfo& data) = 0;
 
         [[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info) = 0;
+
+        /*!
+         * \brief Writes data to a buffer
+         *
+         * This method always writes the data from byte 0 to byte num_bytes. It does not let you use an offset for either reading from the
+         * data or writing to the buffer
+         *
+         * The CPU must be able to write directly to the buffer for this method to work. If the buffer is device local, this method will
+         * fail in a horrible way
+         *
+         * \param data The data to upload
+         * \param num_bytes The number of bytes to write
+         * \param buffer The buffer to write to
+         */
+        [[nodiscard]] virtual void write_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) = 0;
 
         [[nodiscard]] virtual Image* create_texture(const shaderpack::TextureCreateInfo& info) = 0;
 
