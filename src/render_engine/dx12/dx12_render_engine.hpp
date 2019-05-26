@@ -119,6 +119,11 @@ namespace nova::renderer::rhi {
         DXGI_QUERY_VIDEO_MEMORY_INFO local_info;
         DXGI_QUERY_VIDEO_MEMORY_INFO non_local_info;
 
+        /*!
+         * \brief The index in the vector is the thread index
+         */
+        std::vector<std::unordered_map<D3D12_COMMAND_LIST_TYPE, ID3D12CommandAllocator*>> command_allocators;
+
 #pragma region Initialization
         void create_device();
 
