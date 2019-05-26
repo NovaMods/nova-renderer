@@ -70,6 +70,14 @@ namespace nova::renderer::rhi {
         VkDescriptorSet descriptor_set;
     };
 
+    struct VulkanSemaphore : Semaphore {
+        VkSemaphore semaphore;
+    };
+
+    struct VulkanFence : Fence {
+        VkFence fence;
+    };
+
     struct VulkanGpuInfo {
         VkPhysicalDevice phys_device{};
         std::vector<VkQueueFamilyProperties> queue_family_props;

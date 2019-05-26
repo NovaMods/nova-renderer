@@ -52,4 +52,12 @@ namespace nova::renderer::rhi {
         Microsoft::WRL::ComPtr<ID3D12PipelineState> pso = nullptr;
         Microsoft::WRL::ComPtr<ID3D12RootSignature> root_signature = nullptr;
     };
+
+    struct DX12Fence : Fence {
+        Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+    };
+
+    struct DX12Semaphore : Semaphore {
+        Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+    };
 } // namespace nova::renderer::rhi

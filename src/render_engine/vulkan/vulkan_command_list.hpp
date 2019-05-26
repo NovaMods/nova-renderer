@@ -17,6 +17,8 @@ namespace nova::renderer::rhi {
      */
     class VulkanCommandList final : public CommandList {
     public:
+        VkCommandBuffer cmds;
+
         VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine& render_engine);
 
         void resource_barriers(PipelineStageFlags stages_before_barrier,
@@ -41,7 +43,6 @@ namespace nova::renderer::rhi {
         void draw_indexed_mesh() override final;
 
     private:
-        VkCommandBuffer cmds;
         const VulkanRenderEngine& render_engine;
     };
 } // namespace nova::renderer
