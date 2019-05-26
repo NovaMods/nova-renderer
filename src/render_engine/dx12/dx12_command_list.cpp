@@ -8,9 +8,9 @@
 #include "dx12_utils.hpp"
 
 namespace nova::renderer::rhi {
-    DX12CommandList::DX12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds) : cmds(std::move(cmds)) {}
+    Dx12CommandList::Dx12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds) : cmds(std::move(cmds)) {}
 
-    void DX12CommandList::resource_barriers([[maybe_unused]] PipelineStageFlags stages_before_barrier,
+    void Dx12CommandList::resource_barriers([[maybe_unused]] PipelineStageFlags stages_before_barrier,
                                             [[maybe_unused]] PipelineStageFlags stages_after_barrier,
                                             const std::vector<ResourceBarrier>& barriers) {
         std::vector<D3D12_RESOURCE_BARRIER> dx12_barriers;
@@ -21,12 +21,12 @@ namespace nova::renderer::rhi {
             switch(barrier.resource_to_barrier->type) {
                 case Resource::Buffer: {
                     DX12Buffer* d3d12_buffer = static_cast<DX12Buffer*>(barrier.resource_to_barrier);
-                    resource_to_barrier = d3d12_buffer->resource;
+                    resource_to_barrier = d3d12_buffer->resource.Get();
                 } break;
 
                 case Resource::Image: {
                     DX12Image* d3d12_image = static_cast<DX12Image*>(barrier.resource_to_barrier);
-                    resource_to_barrier = d3d12_image->resource;
+                    resource_to_barrier = d3d12_image->resource.Get();
                 } break;
                 default:;
             }
@@ -47,7 +47,7 @@ namespace nova::renderer::rhi {
         cmds->ResourceBarrier(static_cast<UINT>(dx12_barriers.size()), dx12_barriers.data());
     }
 
-    void DX12CommandList::copy_buffer(Buffer* destination_buffer,
+    void Dx12CommandList::copy_buffer(Buffer* destination_buffer,
                                       const uint64_t destination_offset,
                                       Buffer* source_buffer,
                                       const uint64_t source_offset,
@@ -55,10 +55,10 @@ namespace nova::renderer::rhi {
         DX12Buffer* dst_buf = reinterpret_cast<DX12Buffer*>(destination_buffer);
         DX12Buffer* src_buf = reinterpret_cast<DX12Buffer*>(source_buffer);
 
-        cmds->CopyBufferRegion(dst_buf->resource, destination_offset, src_buf->resource, source_offset, num_bytes);
+        cmds->CopyBufferRegion(dst_buf->resource.Get(), destination_offset, src_buf->resource.Get(), source_offset, num_bytes);
     }
 
-    void DX12CommandList::execute_command_lists(const std::vector<CommandList*>& lists) {
+    void Dx12CommandList::execute_command_lists(const std::vector<CommandList*>& lists) {
         // Apparently D3D12 can only execute bundles from another command list, meaning that the strategy I use to
         // record command buffers in Vulkan won't work here...
         //
@@ -66,12 +66,12 @@ namespace nova::renderer::rhi {
         //
 
         for(CommandList* list : lists) {
-            DX12CommandList* d3d12_list = dynamic_cast<DX12CommandList*>(list);
+            Dx12CommandList* d3d12_list = dynamic_cast<Dx12CommandList*>(list);
             cmds->ExecuteBundle(d3d12_list->cmds.Get());
         }
     }
 
-    void DX12CommandList::begin_renderpass([[maybe_unused]] Renderpass* renderpass, Framebuffer* framebuffer) {
+    void Dx12CommandList::begin_renderpass([[maybe_unused]] Renderpass* renderpass, Framebuffer* framebuffer) {
         DX12Framebuffer* d3d12_framebuffer = reinterpret_cast<DX12Framebuffer*>(framebuffer);
 
         D3D12_CPU_DESCRIPTOR_HANDLE* depth_stencil = nullptr;
