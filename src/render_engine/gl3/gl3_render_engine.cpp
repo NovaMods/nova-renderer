@@ -9,6 +9,7 @@
 
 #include "../../util/logger.hpp"
 #include "gl3_structs.hpp"
+#include "gl3_command_list.hpp"
 
 namespace nova::renderer::rhi {
     Gl3RenderEngine::Gl3RenderEngine(NovaSettings& settings) : RenderEngine(settings) {
@@ -284,9 +285,12 @@ namespace nova::renderer::rhi {
     void Gl3RenderEngine::destroy_semaphores(const std::vector<Semaphore*>& semaphores) {}
     void Gl3RenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
 
-    CommandList* Gl3RenderEngine::get_command_list(uint32_t thread_idx,
-                                                        QueueType needed_queue_type,
-                                                        CommandList::Level command_list_type) {}
+    CommandList* Gl3RenderEngine::get_command_list([[maybe_unused]] uint32_t thread_idx,
+                                                   [[maybe_unused]] QueueType needed_queue_type,
+                                                   [[maybe_unused]] CommandList::Level command_list_type) {
+        // TODO: Something useful for custom memory allocation
+        return new Gl3CommandList();
+    }
 
     void Gl3RenderEngine::submit_command_list(CommandList* cmds,
                                               QueueType queue,
