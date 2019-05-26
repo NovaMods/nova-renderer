@@ -144,7 +144,7 @@ namespace nova::renderer::rhi {
          * Command lists allocated by this method are returned ready to record commands into - the caller doesn't need
          * to begin the command list
          */
-        virtual CommandList* allocate_command_list(uint32_t thread_idx,
+        virtual CommandList* get_command_list(uint32_t thread_idx,
                                                    QueueType needed_queue_type,
                                                    CommandList::Level level = CommandList::Level::Primary) = 0;
 

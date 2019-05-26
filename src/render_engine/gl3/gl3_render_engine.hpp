@@ -57,10 +57,10 @@ namespace nova::renderer::rhi {
 
         /*!
          * \inheritdoc
-         * 
+         *
          * This method assume you're going to use the buffer as a copy source
          */
-         void write_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) override final;
+        void write_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) override final;
 
         Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
         Semaphore* create_semaphore() override final;
@@ -76,9 +76,11 @@ namespace nova::renderer::rhi {
         void destroy_texture(Image* resource) override final;
         void destroy_semaphores(const std::vector<Semaphore*>& semaphores) override final;
         void destroy_fences(const std::vector<Fence*>& fences) override final;
-        CommandList* allocate_command_list(uint32_t thread_idx,
+
+        CommandList* get_command_list(uint32_t thread_idx,
                                            QueueType needed_queue_type,
                                            CommandList::Level command_list_type) override final;
+
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
                                  Fence* fence_to_signal = nullptr,

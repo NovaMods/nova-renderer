@@ -557,7 +557,6 @@ namespace nova::renderer::rhi {
         dx_buffer->resource->Unmap(0, &mapped_range);
     }
 
-
     Image* DX12RenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
         DX12Image* image = new DX12Image;
 
@@ -657,7 +656,7 @@ namespace nova::renderer::rhi {
 
     void DX12RenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
 
-    CommandList* DX12RenderEngine::allocate_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) {
+    CommandList* DX12RenderEngine::get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) {
         return nullptr;
     }
 

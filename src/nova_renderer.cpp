@@ -118,7 +118,7 @@ namespace nova::renderer {
             rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info);
             rhi->write_data_to_buffer(mesh_data.vertex_data.data(), mesh_data.vertex_data.size(), staging_vertex_buffer);
 
-            rhi::CommandList* vertex_upload_cmds = rhi->allocate_command_list(0, rhi::QueueType::Transfer);
+            rhi::CommandList* vertex_upload_cmds = rhi->get_command_list(0, rhi::QueueType::Transfer);
             vertex_upload_cmds->copy_buffer(vertex_buffer, 0, staging_vertex_buffer, 0, vertex_buffer_create_info.size);
             rhi->submit_command_list(vertex_upload_cmds, rhi::QueueType::Transfer);
         }
@@ -137,7 +137,7 @@ namespace nova::renderer {
             rhi::Buffer* staging_index_buffer = rhi->create_buffer(staging_index_buffer_create_info);
             rhi->write_data_to_buffer(mesh_data.indices.data(), mesh_data.indices.size(), staging_index_buffer);
 
-            rhi::CommandList* indices_upload_cmds = rhi->allocate_command_list(0, rhi::QueueType::Transfer);
+            rhi::CommandList* indices_upload_cmds = rhi->get_command_list(0, rhi::QueueType::Transfer);
             indices_upload_cmds->copy_buffer(index_buffer, 0, staging_index_buffer, 0, index_buffer_create_info.size);
             rhi->submit_command_list(indices_upload_cmds, rhi::QueueType::Transfer);
         }
