@@ -896,7 +896,7 @@ namespace nova::renderer::rhi {
         VkCommandBuffer new_buffer;
         vkAllocateCommandBuffers(device, &create_info, &new_buffer);
 
-        VulkanCommandList* list = new VulkanCommandList(new_buffer, this);
+        VulkanCommandList* list = new VulkanCommandList(new_buffer, *this);
 
         return list;
     }
