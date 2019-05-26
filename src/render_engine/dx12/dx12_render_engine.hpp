@@ -38,8 +38,6 @@ namespace nova::renderer::rhi {
 
         Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage type, ObjectType allowed_objects) override final;
 
-        void* map_buffer(const DeviceMemory* memory) override final;
-
         Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
@@ -72,6 +70,8 @@ namespace nova::renderer::rhi {
                                           const shaderpack::PipelineCreateInfo& data) override final;
 
         Buffer* create_buffer(const BufferCreateInfo& info) override final;
+
+        void write_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) override final;
 
         Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
         Semaphore* create_semaphore() override final;

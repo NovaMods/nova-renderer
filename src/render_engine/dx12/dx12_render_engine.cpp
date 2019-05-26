@@ -120,20 +120,6 @@ namespace nova::renderer::rhi {
 
         return Result<DeviceMemory*>(memory);
     }
-
-    void DX12RenderEngine::upload_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) {
-        const DX12Buffer* dx_buffer = static_cast<const DX12Buffer*>(buffer);
-
-        D3D12_RANGE mapped_range = {};
-        mapped_range.Begin = 0;
-        mapped_range.End = num_bytes;
-
-        void* mapped_buffer;
-        dx_buffer->resource->Map(0, &mapped_range, &mapped_buffer);
-        std::memcpy(mapped_buffer, data, num_bytes);
-        dx_buffer->resource->Unmap(0, &mapped_range);
-    }
-
     Result<Renderpass*> DX12RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
         DX12Renderpass* renderpass = new DX12Renderpass;
 
@@ -557,6 +543,20 @@ namespace nova::renderer::rhi {
 
         return buffer;
     }
+
+    void DX12RenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) {
+        const DX12Buffer* dx_buffer = static_cast<const DX12Buffer*>(buffer);
+
+        D3D12_RANGE mapped_range = {};
+        mapped_range.Begin = 0;
+        mapped_range.End = num_bytes;
+
+        void* mapped_buffer;
+        dx_buffer->resource->Map(0, &mapped_range, &mapped_buffer);
+        std::memcpy(mapped_buffer, data, num_bytes);
+        dx_buffer->resource->Unmap(0, &mapped_range);
+    }
+
 
     Image* DX12RenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
         DX12Image* image = new DX12Image;

@@ -55,6 +55,13 @@ namespace nova::renderer::rhi {
 
         Buffer* create_buffer(const BufferCreateInfo& info) override final;
 
+        /*!
+         * \inheritdoc
+         * 
+         * This method assume you're going to use the buffer as a copy source
+         */
+         void write_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) override final;
+
         Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
         Semaphore* create_semaphore() override final;
         std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override final;
