@@ -121,7 +121,7 @@ namespace nova::renderer::rhi {
         return Result<DeviceMemory*>(memory);
     }
 
-    void* DX12RenderEngine::map_memory(const DeviceMemory* memory) {
+    void* DX12RenderEngine::map_buffer(const DeviceMemory* memory) {
         const DX12DeviceMemory* dx12_memory = static_cast<const DX12DeviceMemory*>(memory);
 
         void* mapped_data;

@@ -24,14 +24,12 @@ namespace nova::renderer::rhi {
     struct VulkanImage : Image {
         VkImage image = nullptr;
         VkImageView image_view = nullptr;
-        VmaAllocation allocation{};
-        VmaAllocationInfo vma_info{};
+        VulkanDeviceMemory* memory = nullptr;
     };
 
     struct VulkanBuffer : Buffer {
         VkBuffer buffer = nullptr;
-        VmaAllocation allocation{};
-        VmaAllocationInfo vma_info{};
+        DeviceMemoryAllocation memory{};
     };
 
     struct VulkanRenderpass : Renderpass {
