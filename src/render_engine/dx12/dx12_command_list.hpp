@@ -16,6 +16,8 @@ namespace nova::renderer::rhi {
 
     class Dx12CommandList final : public CommandList {
     public:
+        ComPtr<ID3D12GraphicsCommandList> cmds;
+
         explicit Dx12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds);
 
         void resource_barriers(PipelineStageFlags stages_before_barrier,
@@ -39,9 +41,6 @@ namespace nova::renderer::rhi {
         void bind_vertex_buffers() override final;
         void bind_index_buffer() override final;
         void draw_indexed_mesh() override final;
-
-    private:
-        ComPtr<ID3D12GraphicsCommandList> cmds;
     };
 } // namespace nova::renderer::rhi
 

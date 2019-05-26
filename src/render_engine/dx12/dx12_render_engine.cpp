@@ -19,6 +19,9 @@
 
 using Microsoft::WRL::ComPtr;
 
+#define CPU_FENCE_SIGNALLED 16
+#define GPU_FENCE_SIGNALED 32
+
 namespace nova::renderer::rhi {
     DX12RenderEngine::DX12RenderEngine(NovaSettings& settings) : RenderEngine(settings) {
         create_device();
@@ -690,10 +693,46 @@ namespace nova::renderer::rhi {
     }
 
     void DX12RenderEngine::submit_command_list(CommandList* cmds,
-                                               QueueType queue,
+                                               const QueueType queue,
                                                Fence* fence_to_signal,
                                                const std::vector<Semaphore*>& wait_semaphores,
-                                               const std::vector<Semaphore*>& signal_semaphores) {}
+                                               const std::vector<Semaphore*>& signal_semaphores) {
+        Dx12CommandList* dx_cmds = static_cast<Dx12CommandList*>(cmds);
+        dx_cmds->cmds->Close();
+
+        ComPtr<ID3D12CommandQueue> dx_queue;
+        switch(queue) {
+            case QueueType::Graphics:
+                dx_queue = direct_command_queue;
+                break;
+
+            case QueueType::Transfer:
+                dx_queue = copy_command_queue;
+                break;
+
+            case QueueType::AsyncCompute:
+                dx_queue = compute_command_queue;
+                break;
+        }
+
+        ID3D12GraphicsCommandList* gfx_cmds = dx_cmds->cmds.Get();
+        ID3D12CommandList* submittable_cmds;
+        gfx_cmds->QueryInterface(IID_PPV_ARGS(&submittable_cmds));
+
+        for(const Semaphore* semaphore : wait_semaphores) {
+            const DX12Semaphore* dx_semaphore = static_cast<const DX12Semaphore*>(semaphore);
+            dx_queue->Wait(dx_semaphore->fence.Get(), GPU_FENCE_SIGNALED);
+        }
+        dx_queue->ExecuteCommandLists(1, &submittable_cmds);
+
+        for(const Semaphore* semaphore : signal_semaphores) {
+            const DX12Semaphore* dx_semaphore = static_cast<const DX12Semaphore*>(semaphore);
+            dx_queue->Signal(dx_semaphore->fence.Get(), GPU_FENCE_SIGNALED);
+        }
+
+        const DX12Fence* dx_signal_fence = static_cast<const DX12Fence*>(fence_to_signal);
+        dx_queue->Signal(dx_signal_fence->fence.Get(), CPU_FENCE_SIGNALLED);
+    }
 
     void DX12RenderEngine::open_window_and_create_surface(const NovaSettings::WindowOptions& options) {}
 

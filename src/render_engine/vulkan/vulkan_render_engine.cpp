@@ -6,8 +6,8 @@
 #include "vulkan_render_engine.hpp"
 #include "../../util/logger.hpp"
 #include "vk_structs.hpp"
-#include "vulkan_utils.hpp"
 #include "vulkan_command_list.hpp"
+#include "vulkan_utils.hpp"
 
 #ifdef NOVA_LINUX
 #define VK_USE_PLATFORM_XLIB_KHR // Use X11 for window creating on Linux... TODO: Wayland?
@@ -902,10 +902,59 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderEngine::submit_command_list(CommandList* cmds,
-                                                 QueueType queue,
+                                                 const QueueType queue,
                                                  Fence* fence_to_signal,
                                                  const std::vector<Semaphore*>& wait_semaphores,
-                                                 const std::vector<Semaphore*>& signal_semaphores) {}
+                                                 const std::vector<Semaphore*>& signal_semaphores) {
+        VulkanCommandList* vk_list = static_cast<VulkanCommandList*>(cmds);
+        vkEndCommandBuffer(vk_list->cmds);
+
+        VkQueue queue_to_submit_to;
+
+        switch(queue) {
+            case QueueType::Graphics:
+                queue_to_submit_to = graphics_queue;
+                break;
+
+            case QueueType::Transfer:
+                queue_to_submit_to = copy_queue;
+                break;
+
+            case QueueType::AsyncCompute:
+                queue_to_submit_to = compute_queue;
+                break;
+
+            default:
+                queue_to_submit_to = graphics_queue;
+        }
+
+        std::vector<VkSemaphore> vk_wait_semaphores;
+        vk_wait_semaphores.reserve(wait_semaphores.size());
+        for(const Semaphore* semaphore : wait_semaphores) {
+            const VulkanSemaphore* vk_semaphore = static_cast<const VulkanSemaphore*>(semaphore);
+            vk_wait_semaphores.push_back(vk_semaphore->semaphore);
+        }
+
+        std::vector<VkSemaphore> vk_signal_semaphores;
+        vk_signal_semaphores.reserve(signal_semaphores.size());
+        for(const Semaphore* semaphore : signal_semaphores) {
+            const VulkanSemaphore* vk_semaphore = static_cast<const VulkanSemaphore*>(semaphore);
+            vk_signal_semaphores.push_back(vk_semaphore->semaphore);
+        }
+
+        VkSubmitInfo submit_info = {};
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.waitSemaphoreCount = vk_wait_semaphores.size();
+        submit_info.pWaitSemaphores = vk_wait_semaphores.data();
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = &vk_list->cmds;
+        submit_info.signalSemaphoreCount = vk_signal_semaphores.size();
+        submit_info.pSignalSemaphores = vk_signal_semaphores.data();
+
+        const VulkanFence* vk_fence = static_cast<const VulkanFence*>(fence_to_signal);
+
+        vkQueueSubmit(queue_to_submit_to, 1, &submit_info, vk_fence->fence);
+    }
 
     void VulkanRenderEngine::open_window_and_create_surface(const NovaSettings::WindowOptions& options) {
 #ifdef NOVA_LINUX
