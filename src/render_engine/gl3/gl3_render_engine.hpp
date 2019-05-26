@@ -78,8 +78,8 @@ namespace nova::renderer::rhi {
         void destroy_fences(const std::vector<Fence*>& fences) override final;
 
         CommandList* get_command_list(uint32_t thread_idx,
-                                           QueueType needed_queue_type,
-                                           CommandList::Level command_list_type) override final;
+                                      QueueType needed_queue_type,
+                                      CommandList::Level command_list_type) override final;
 
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
