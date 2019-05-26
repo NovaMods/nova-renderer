@@ -91,14 +91,17 @@ namespace nova::renderer::rhi {
         return Result<DeviceMemory*>(memory);
     }
 
-    void* VulkanRenderEngine::map_memory(const DeviceMemory* memory) { 
-        const VulkanDeviceMemory* vulkan_memory = static_cast<const VulkanDeviceMemory*>(memory);
+    void VulkanRenderEngine::upload_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) { 
+        const VulkanBuffer* vulkan_buffer = static_cast<const VulkanBuffer*>(buffer);
+
+        const foundational::allocation::AllocationInfo& allocation_info = vulkan_buffer->memory.allocation_info;
+        const VulkanDeviceMemory* memory = static_cast<const VulkanDeviceMemory*>(vulkan_buffer->memory.memory);
 
         void* mapped_data;
 
-        vkMapMemory(device, vulkan_memory->memory, 0, VK_WHOLE_SIZE, 0, &mapped_data);
-
-        return mapped_data;
+        vkMapMemory(device, memory->memory, allocation_info.offset.b_count(), allocation_info.size.b_count(), 0, &mapped_data);
+        std::memcpy(mapped_data, data, num_bytes);
+        vkUnmapMemory(device, memory->memory);
     }
 
     Result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {

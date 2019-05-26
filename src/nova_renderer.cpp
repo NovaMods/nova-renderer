@@ -115,6 +115,7 @@ namespace nova::renderer {
         rhi::BufferCreateInfo staging_vertex_buffer_create_info = vertex_buffer_create_info;
         staging_vertex_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::StagingBuffer;
         rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info);
+        rhi->upload_data_to_buffer(mesh_data.vertex_data.data(), mesh_data.vertex_data.size(), staging_vertex_buffer);
 
         rhi::BufferCreateInfo index_buffer_create_info = {};
         index_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::IndexBuffer;
@@ -561,8 +562,6 @@ namespace nova::renderer {
 
         if(staging_memory_result) {
             staging_buffer_memory = std::move(staging_memory_result.value);
-
-            staging_buffer_memory_ptr = rhi->map_memory(staging_buffer_memory->memory);
 
         } else {
             NOVA_LOG(ERROR) << "Could not create staging buffer memory pool: " << staging_memory_result.error.to_string();

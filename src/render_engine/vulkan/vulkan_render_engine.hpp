@@ -11,7 +11,6 @@
 
 #include "swapchain.hpp"
 
-#include "../../util/vma_usage.hpp"
 #include "vk_structs.hpp"
 
 namespace nova::renderer::rhi {
@@ -60,7 +59,7 @@ namespace nova::renderer::rhi {
 
         Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage usage, ObjectType allowed_objects) override final;
 
-        void* map_memory(const DeviceMemory* memory) override final;
+        void upload_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) override final;
 
         Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
 
@@ -130,6 +129,14 @@ namespace nova::renderer::rhi {
          * In the same order as VulkanGpuInfo::memory_properties::memoryHeaps
          */
         std::vector<uint32_t> heap_usages;
+
+        /*!
+         * \brief Map from HOST_VISIBLE memory allocations to the memory address they're mapped to
+         * 
+         * The Vulkan render engine maps memory when it's allocated, if the memory is for a uniform or a staging
+         * buffer.
+         */
+        std::unordered_map<VkDeviceMemory, void*> heap_mappings;
 
         // Debugging things
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
