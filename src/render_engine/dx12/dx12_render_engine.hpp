@@ -88,12 +88,15 @@ namespace nova::renderer::rhi {
         void destroy_texture(Image* resource) override final;
         void destroy_semaphores(const std::vector<Semaphore*>& semaphores) override final;
         void destroy_fences(const std::vector<Fence*>& fences) override final;
-        CommandList* allocate_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override final;
+        
+        CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override final;
+        
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
                                  Fence* fence_to_signal = nullptr,
                                  const std::vector<Semaphore*>& wait_semaphores = {},
                                  const std::vector<Semaphore*>& signal_semaphores = {}) override final;
+        
         void open_window_and_create_surface(const NovaSettings::WindowOptions& options) override final;
 
     private:

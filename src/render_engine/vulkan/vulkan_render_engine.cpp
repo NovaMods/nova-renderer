@@ -1,45 +1,8 @@
-<<<<<<< HEAD
-#include "vulkan_render_engine.hpp"
-
-#include <vector>
-
-#define VMA_IMPLEMENTATION // Recheck if good to be here
-#include <vk_mem_alloc.h>
-#include "vulkan_command_list.hpp"
-
-#include "vulkan_utils.hpp"
-
-#ifdef NOVA_LINUX
-#include <cxxabi.h>
-#include <execinfo.h>
-#endif
-
-#include <spirv_cross/spirv_glsl.hpp>
-
-#include "nova_renderer/util/platform.hpp"
-
-#include "../../loading/shaderpack/render_graph_builder.hpp"
-#include "../../loading/shaderpack/shaderpack_loading.hpp"
-#include "../../util/logger.hpp"
-
-// TODO: Move windowing out of render engine folders
-//       its confusing to have a DX12 include in the Vulkan renderer and breaks encapsulation
-#ifdef NOVA_WINDOWS
-#include "../dx12/win32_window.hpp"
-#endif
-=======
-/*!
- * \author ddubois
- * \date 03-Apr-19.
- */
-
 #include "vulkan_render_engine.hpp"
 #include "../../util/logger.hpp"
 #include "vk_structs.hpp"
 #include "vulkan_utils.hpp"
->>>>>>> Vulkan implementation of renderpass creation
-
-#include "vulkan_utils.hpp"
+#include "vulkan_command_list.hpp"
 
 #ifdef NOVA_LINUX
 #define VK_USE_PLATFORM_XLIB_KHR // Use X11 for window creating on Linux... TODO: Wayland?
@@ -808,7 +771,6 @@ namespace nova::renderer::rhi {
         memcpy(mapped_bytes, data, num_bytes);
     }
 
-
     Image* VulkanRenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
         VulkanImage* texture = new VulkanImage;
 
@@ -914,8 +876,24 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
 
-    CommandList* VulkanRenderEngine::allocate_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) {
-        return nullptr;
+    CommandList* VulkanRenderEngine::get_command_list(const uint32_t thread_idx,
+                                                      const QueueType needed_queue_type,
+                                                      const CommandList::Level level) {
+        const uint32_t queue_family_index = get_queue_family_index(needed_queue_type);
+        const VkCommandPool pool = command_pools_by_thread_idx.at(thread_idx).at(queue_family_index);
+
+        VkCommandBufferAllocateInfo create_info = {};
+        create_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        create_info.commandPool = pool;
+        create_info.level = to_vk_command_buffer_level(level);
+        create_info.commandBufferCount = 1;
+
+        VkCommandBuffer new_buffer;
+        vkAllocateCommandBuffers(device, &create_info, &new_buffer);
+
+        VulkanCommandList* list = new VulkanCommandList(new_buffer, this);
+
+        return list;
     }
 
     void VulkanRenderEngine::submit_command_list(CommandList* cmds,
@@ -1274,6 +1252,18 @@ namespace nova::renderer::rhi {
         }
 
         return layouts;
+    }
+
+    VkCommandBufferLevel VulkanRenderEngine::to_vk_command_buffer_level(const CommandList::Level level) {
+        switch(level) {
+            case CommandList::Level::Primary:
+                return VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+            case CommandList::Level::Secondary:
+                return VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+        }
+
+        return VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderEngine::debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,

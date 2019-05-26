@@ -188,15 +188,15 @@ namespace nova::renderer::rhi {
             case BufferCreateInfo::Usage::UniformBuffer:
                 buffer_bind_target = GL_UNIFORM_BUFFER;
                 break;
-            
+
             case BufferCreateInfo::Usage::IndexBuffer:
                 buffer_bind_target = GL_ELEMENT_ARRAY_BUFFER;
                 break;
-            
+
             case BufferCreateInfo::Usage::VertexBuffer:
                 buffer_bind_target = GL_ARRAY_BUFFER;
                 break;
-            
+
             default:;
         }
 
@@ -283,6 +283,11 @@ namespace nova::renderer::rhi {
 
     void Gl3RenderEngine::destroy_semaphores(const std::vector<Semaphore*>& semaphores) {}
     void Gl3RenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
+
+    CommandList* Gl3RenderEngine::get_command_list(uint32_t thread_idx,
+                                                        QueueType needed_queue_type,
+                                                        CommandList::Level command_list_type) {}
+
     void Gl3RenderEngine::submit_command_list(CommandList* cmds,
                                               QueueType queue,
                                               Fence* fence_to_signal,

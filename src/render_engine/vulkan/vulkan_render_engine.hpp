@@ -100,8 +100,9 @@ namespace nova::renderer::rhi {
         void destroy_texture(Image* resource) override final;
         void destroy_semaphores(const std::vector<Semaphore*>& semaphores) override final;
         void destroy_fences(const std::vector<Fence*>& fences) override final;
+        
+        CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override final;
 
-        CommandList* allocate_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override final;
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
                                  Fence* fence_to_signal = nullptr,
@@ -132,7 +133,7 @@ namespace nova::renderer::rhi {
 
         /*!
          * \brief Map from HOST_VISIBLE memory allocations to the memory address they're mapped to
-         * 
+         *
          * The Vulkan render engine maps memory when it's allocated, if the memory is for a uniform or a staging
          * buffer.
          */
@@ -195,6 +196,8 @@ namespace nova::renderer::rhi {
          * otherwise one is created on-demand
          */
         [[nodiscard]] VkImageView image_view_for_image(const Image* image);
+
+        [[nodiscard]] static VkCommandBufferLevel to_vk_command_buffer_level(const CommandList::Level level);
 #pragma endregion
 
 #pragma region Debugging
