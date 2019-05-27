@@ -288,6 +288,14 @@ namespace nova::renderer::rhi {
         return fences;
     }
 
+    void Gl3RenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
+        for(Fence* fence : fences) {
+            Gl3Fence* gl_fence = static_cast<Gl3Fence*>(fence);
+            std::unique_lock lck(gl_fence->mutex);
+            gl_fence->cv.wait(lck, [&gl_fence] { return gl_fence->signaled; });
+        }
+    }
+
     void Gl3RenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
 
     void Gl3RenderEngine::destroy_framebuffer(const Framebuffer* framebuffer) {}
@@ -323,9 +331,7 @@ namespace nova::renderer::rhi {
         for(Semaphore* semaphore : wait_semaphores) {
             Gl3Semaphore* gl_semaphore = static_cast<Gl3Semaphore*>(semaphore);
             std::unique_lock lck(gl_semaphore->mutex);
-            while(!gl_semaphore->signaled) {
-                gl_semaphore->cv.wait(lck);
-            }
+            gl_semaphore->cv.wait(lck, [&gl_semaphore] { return gl_semaphore->signaled; });
         }
 
         Gl3CommandList* gl_cmds = static_cast<Gl3CommandList*>(cmds);
