@@ -116,6 +116,13 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] virtual std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) = 0;
 
+        /*!
+         * \blocks the fence until all fences are signaled
+         * 
+         * Fences are waited on for an infinite time
+         * 
+         * \param fences All the fences to wait for
+         */
         virtual void wait_for_fences(const std::vector<Fence*> fences) = 0;
 
         virtual void destroy_renderpass(Renderpass* pass) = 0;
