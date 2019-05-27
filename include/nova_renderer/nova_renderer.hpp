@@ -19,6 +19,7 @@
 #include "nova_renderer/render_engine.hpp"
 #include "nova_renderer/renderdoc_app.h"
 
+#include "../../src/render_engine/configuration.hpp"
 #include "renderables.hpp"
 
 namespace spirv_cross {
@@ -132,7 +133,7 @@ namespace nova::renderer {
         /*!
          * \brief Executes a single frame
          */
-        void execute_frame() const;
+        void execute_frame();
 
         NovaSettings& get_settings();
 
@@ -198,6 +199,8 @@ namespace nova::renderer {
          * super good one
          */
         void create_global_gpu_pools();
+
+        void create_global_sync_objects();
 #pragma endregion
 
 #pragma region Shaderpack
@@ -218,9 +221,6 @@ namespace nova::renderer {
 
         std::unordered_map<std::string, rhi::Image*> dynamic_textures;
         std::unordered_map<std::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
-
-        std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
-        std::unordered_map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
 
         void create_dynamic_textures(const std::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
 
@@ -282,6 +282,17 @@ namespace nova::renderer {
 
         std::unordered_map<MeshId, Mesh> meshes;
 #pragma endregion
+
+#pragma region Rendering
+        uint64_t frame_count = 0;
+        uint8_t cur_frame_idx = 0;
+
+        std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;
+
+        std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
+        std::unordered_map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
+
+#endif
     };
 } // namespace nova::renderer
 

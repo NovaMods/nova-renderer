@@ -849,9 +849,39 @@ namespace nova::renderer::rhi {
 
     std::vector<Semaphore*> VulkanRenderEngine::create_semaphores(uint32_t num_semaphores) { return std::vector<Semaphore*>(); }
 
-    Fence* VulkanRenderEngine::create_fence(bool signaled) { return nullptr; }
+    Fence* VulkanRenderEngine::create_fence(const bool signaled) {
+        VulkanFence* fence = new VulkanFence;
 
-    std::vector<Fence*> VulkanRenderEngine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<Fence*>(); }
+        VkFenceCreateInfo fence_create_info = {};
+        fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        if(signaled) {
+            fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        }
+
+        vkCreateFence(device, &fence_create_info, nullptr, &fence->fence);
+
+        return fence;
+    }
+
+    std::vector<Fence*> VulkanRenderEngine::create_fences(const uint32_t num_fences, const bool signaled) {
+        std::vector<Fence*> fences;
+        fences.reserve(num_fences);
+
+        VkFenceCreateInfo fence_create_info = {};
+        fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        if(signaled) {
+            fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        }
+
+        for(uint32_t i = 0; i < num_fences; i++) {
+            VulkanFence* fence = new VulkanFence;
+            vkCreateFence(device, &fence_create_info, nullptr, &fence->fence);
+
+            fences.push_back(fence);
+        }
+
+        return fences;
+    }
 
     void VulkanRenderEngine::destroy_renderpass(Renderpass* pass) {
         VulkanRenderpass* vk_renderpass = static_cast<VulkanRenderpass*>(pass);
