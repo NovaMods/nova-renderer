@@ -35,19 +35,19 @@ namespace nova::renderer::rhi {
         // Gl3 doesn't need to do anything either
     }
 
-    Result<DeviceMemory*> Gl3RenderEngine::allocate_device_memory([[maybe_unused]] const uint64_t size,
-                                                                  [[maybe_unused]] const MemoryUsage type,
-                                                                  [[maybe_unused]] const ObjectType allowed_objects) {
+    Result<DeviceMemory*> Gl3RenderEngine::allocate_device_memory(const uint64_t /* size */,
+                                                                  const MemoryUsage /* type */,
+                                                                  const ObjectType /* allowed_objects */) {
         return Result(new DeviceMemory);
     }
 
-    Result<Renderpass*> Gl3RenderEngine::create_renderpass([[maybe_unused]] const shaderpack::RenderPassCreateInfo& data) {
+    Result<Renderpass*> Gl3RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& /* data */) {
         return Result<Renderpass*>(new Renderpass);
     }
 
-    Framebuffer* Gl3RenderEngine::create_framebuffer([[maybe_unused]] const Renderpass* renderpass,
+    Framebuffer* Gl3RenderEngine::create_framebuffer(const Renderpass* /* renderpass */,
                                                      const std::vector<Image*>& attachments,
-                                                     [[maybe_unused]] const glm::uvec2& framebuffer_size) {
+                                                     const glm::uvec2& /* framebuffer_size */) {
         Gl3Framebuffer* framebuffer = new Gl3Framebuffer;
 
         glGenFramebuffers(1, &framebuffer->id);
@@ -110,8 +110,8 @@ namespace nova::renderer::rhi {
 
     Result<PipelineInterface*> Gl3RenderEngine::create_pipeline_interface(
         const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
-        [[maybe_unused]] const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-        [[maybe_unused]] const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
+        const std::vector<shaderpack::TextureAttachmentInfo>& /* color_attachments */,
+        const std::optional<shaderpack::TextureAttachmentInfo>& /* depth_texture */) {
         Gl3PipelineInterface* pipeline_interface = new Gl3PipelineInterface;
         pipeline_interface->bindings = bindings;
 
@@ -285,15 +285,15 @@ namespace nova::renderer::rhi {
     void Gl3RenderEngine::destroy_semaphores(const std::vector<Semaphore*>& semaphores) {}
     void Gl3RenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
 
-    CommandList* Gl3RenderEngine::get_command_list([[maybe_unused]] uint32_t thread_idx,
-                                                   [[maybe_unused]] QueueType needed_queue_type,
-                                                   [[maybe_unused]] CommandList::Level command_list_type) {
+    CommandList* Gl3RenderEngine::get_command_list(uint32_t /* thread_idx */,
+                                                   QueueType /* needed_queue_type */,
+                                                   CommandList::Level /* command_list_type */) {
         // TODO: Something useful for custom memory allocation
         return new Gl3CommandList();
     }
 
     void Gl3RenderEngine::submit_command_list(CommandList* cmds,
-                                              [[maybe_unused]] QueueType queue,
+                                              QueueType /* queue */,
                                               Fence* fence_to_signal,
                                               const std::vector<Semaphore*>& wait_semaphores,
                                               const std::vector<Semaphore*>& signal_semaphores) {

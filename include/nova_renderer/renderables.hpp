@@ -2,7 +2,7 @@
 
 #include <atomic>
 
-#include <nova_renderer/shaderpack_data.hpp>
+#include <glm/glm.hpp>
 
 namespace nova::renderer {
     struct FullVertex {
@@ -32,8 +32,6 @@ namespace nova::renderer {
     using MeshId = uint64_t;
 
     struct StaticMeshRenderableUpdateData {
-        std::string material_name;
-
         MeshId mesh;
     };
 

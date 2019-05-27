@@ -5,10 +5,12 @@
 
 #include <foundational/allocation/block_allocator.hpp>
 #include <foundational/allocation/bump_point_allocator.hpp>
+
 #include "nova_renderer/device_memory_resource.hpp"
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/render_engine.hpp"
 #include "nova_renderer/renderdoc_app.h"
+
 #include "renderables.hpp"
 
 namespace spirv_cross {
@@ -154,7 +156,7 @@ namespace nova::renderer {
         void destroy_mesh(MeshId mesh_to_destroy);
 #pragma endregion
 
-        void add_renderable_for_material(const FullMaterialPassName& material_name, const StaticMeshRenderableData& renderable);
+        RenderableId add_renderable_for_material(const FullMaterialPassName& material_name, const StaticMeshRenderableData& renderable);
 
         [[nodiscard]] rhi::RenderEngine* get_engine() const;
 
@@ -269,8 +271,9 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Meshes
-        std::unordered_map<MeshId, Mesh> meshes;
         MeshId next_mesh_id = 0;
+
+        std::unordered_map<MeshId, Mesh> meshes;
 #pragma endregion
     };
 } // namespace nova::renderer
