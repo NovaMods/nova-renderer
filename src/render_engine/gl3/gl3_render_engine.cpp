@@ -266,8 +266,27 @@ namespace nova::renderer::rhi {
 
     Semaphore* Gl3RenderEngine::create_semaphore() { return nullptr; }
     std::vector<Semaphore*> Gl3RenderEngine::create_semaphores(uint32_t num_semaphores) { return std::vector<Semaphore*>(); }
-    Fence* Gl3RenderEngine::create_fence(bool signaled) { return nullptr; }
-    std::vector<Fence*> Gl3RenderEngine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<Fence*>(); }
+
+    Fence* Gl3RenderEngine::create_fence(const bool signaled) {
+        Gl3Fence* fence = new Gl3Fence;
+        fence->signaled = signaled;
+
+        return fence;
+    }
+
+    std::vector<Fence*> Gl3RenderEngine::create_fences(const uint32_t num_fences, const bool signaled) {
+        std::vector<Fence*> fences;
+        fences.reserve(num_fences);
+
+        for(uint32_t i = 0; i < num_fences; i++) {
+            Gl3Fence* fence = new Gl3Fence;
+            fence->signaled = signaled;
+
+            fences.emplace_back(fence);
+        }
+
+        return fences;
+    }
 
     void Gl3RenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
 

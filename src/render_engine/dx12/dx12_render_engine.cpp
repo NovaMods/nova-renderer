@@ -651,7 +651,6 @@ namespace nova::renderer::rhi {
 
         const uint32_t initial_value = signaled ? CPU_FENCE_SIGNALED : 0;
         for(uint32_t i = 0; i < num_fences; i++) {
-
             DX12Fence* fence = new DX12Fence;
 
             device->CreateFence(initial_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence->fence.GetAddressOf()));
