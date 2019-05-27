@@ -19,7 +19,7 @@
 
 using Microsoft::WRL::ComPtr;
 
-#define CPU_FENCE_SIGNALLED 16
+#define CPU_FENCE_SIGNALED 16
 #define GPU_FENCE_SIGNALED 32
 
 namespace nova::renderer::rhi {
@@ -633,9 +633,36 @@ namespace nova::renderer::rhi {
 
     std::vector<Semaphore*> DX12RenderEngine::create_semaphores(uint32_t num_semaphores) { return std::vector<Semaphore*>(); }
 
-    Fence* DX12RenderEngine::create_fence(bool signaled) { return nullptr; }
+    Fence* DX12RenderEngine::create_fence(const bool signaled) {
+        DX12Fence* fence = new DX12Fence;
 
-    std::vector<Fence*> DX12RenderEngine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<Fence*>(); }
+        const uint32_t initial_value = signaled ? CPU_FENCE_SIGNALED : 0;
+
+        device->CreateFence(initial_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence->fence.GetAddressOf()));
+        fence->event = CreateEvent(nullptr, false, signaled, nullptr);
+        fence->fence->SetEventOnCompletion(CPU_FENCE_SIGNALED, fence->event);
+
+        return fence;
+    }
+
+    std::vector<Fence*> DX12RenderEngine::create_fences(const uint32_t num_fences, const bool signaled) {
+        std::vector<Fence*> fences;
+        fences.reserve(num_fences);
+
+        const uint32_t initial_value = signaled ? CPU_FENCE_SIGNALED : 0;
+        for(uint32_t i = 0; i < num_fences; i++) {
+
+            DX12Fence* fence = new DX12Fence;
+
+            device->CreateFence(initial_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence->fence.GetAddressOf()));
+            fence->event = CreateEvent(nullptr, false, signaled, nullptr);
+            fence->fence->SetEventOnCompletion(CPU_FENCE_SIGNALED, fence->event);
+
+            fences.emplace_back(fence);
+        }
+
+        return fences;
+    }
 
     void DX12RenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
 
@@ -731,7 +758,7 @@ namespace nova::renderer::rhi {
         }
 
         const DX12Fence* dx_signal_fence = static_cast<const DX12Fence*>(fence_to_signal);
-        dx_queue->Signal(dx_signal_fence->fence.Get(), CPU_FENCE_SIGNALLED);
+        dx_queue->Signal(dx_signal_fence->fence.Get(), CPU_FENCE_SIGNALED);
     }
 
     void DX12RenderEngine::open_window_and_create_surface(const NovaSettings::WindowOptions& options) {}

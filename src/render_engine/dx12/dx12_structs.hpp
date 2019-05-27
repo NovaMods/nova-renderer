@@ -55,6 +55,7 @@ namespace nova::renderer::rhi {
 
     struct DX12Fence : Fence {
         Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+        HANDLE event;
     };
 
     struct DX12Semaphore : Semaphore {
