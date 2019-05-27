@@ -46,13 +46,13 @@ namespace nova::renderer::rhi {
 
     std::shared_ptr<Window> VulkanRenderEngine::get_window() const { return window; }
 
-    void VulkanRenderEngine::set_num_renderpasses([[maybe_unused]] uint32_t num_renderpasses) {
+    void VulkanRenderEngine::set_num_renderpasses(uint32_t /* num_renderpasses */) {
         // Pretty sure Vulkan doesn't need to do anything here
     }
 
     Result<DeviceMemory*> VulkanRenderEngine::allocate_device_memory(const uint64_t size,
                                                                      const MemoryUsage usage,
-                                                                     [[maybe_unused]] const ObjectType allowed_objects) {
+                                                                     const ObjectType /* allowed_objects */) {
         VulkanDeviceMemory* memory = new VulkanDeviceMemory;
 
         VkMemoryAllocateInfo alloc_info = {};

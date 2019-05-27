@@ -533,6 +533,37 @@ namespace nova::renderer {
         // TODO: Also destroy dynamic buffers, when we have support for those
     }
 
+    RenderableId NovaRenderer::add_renderable_for_material(const FullMaterialPassName& material_name,
+                                                           const StaticMeshRenderableData& renderable) {
+        const RenderableId id = next_renderable_id.load();
+        next_renderable_id.fetch_add(1);
+
+        // Figure out where to put the renderable
+        const MaterialPassKey& pass_key = material_pass_keys.at(material_name);
+
+        Renderpass& renderpass = renderpasses.at(pass_key.renderpass_index);
+        Pipeline& pipeline = renderpass.pipelines.at(pass_key.pipeline_index);
+        MaterialPass& material = pipeline.passes.at(pass_key.material_pass_index);
+
+        const Mesh& mesh = meshes.at(renderable.mesh);
+
+        if(renderable.is_static) {
+            for(MeshBatch<StaticMeshRenderCommand>& batch : material.static_mesh_draws) {
+                if(batch.vertex_buffer == mesh.vertex_buffer) {
+                    StaticMeshRenderCommand command = {};
+                    command.id = id;
+                    command.is_visible = true;
+                    // TODO: Make sure this is accurate
+                    command.model_matrix = renderable.initial_position * renderable.initial_rotation * renderable.initial_scale;
+
+                    batch.renderables.emplace_back(command);
+                }
+            }
+        }
+
+        return id;
+    }
+
     rhi::RenderEngine* NovaRenderer::get_engine() const { return rhi.get(); }
 
     NovaRenderer* NovaRenderer::get_instance() { return instance.get(); }

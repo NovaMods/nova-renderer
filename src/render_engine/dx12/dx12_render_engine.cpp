@@ -129,7 +129,7 @@ namespace nova::renderer::rhi {
         return Result<Renderpass*>(renderpass);
     }
 
-    Framebuffer* DX12RenderEngine::create_framebuffer([[maybe_unused]] const Renderpass* renderpass,
+    Framebuffer* DX12RenderEngine::create_framebuffer(const Renderpass* /* renderpass */,
                                                       const std::vector<Image*>& attachments,
                                                       const glm::uvec2& framebuffer_size) {
         const size_t attachment_count = attachments.size();
@@ -232,15 +232,15 @@ namespace nova::renderer::rhi {
         return Result(static_cast<PipelineInterface*>(pipeline_interface));
     }
 
-    DescriptorPool* DX12RenderEngine::create_descriptor_pool([[maybe_unused]] uint32_t num_sampled_images,
-                                                             [[maybe_unused]] uint32_t num_samplers,
-                                                             [[maybe_unused]] uint32_t num_uniform_buffers) {
+    DescriptorPool* DX12RenderEngine::create_descriptor_pool(uint32_t /* num_sampled_images */,
+                                                             uint32_t /* num_samplers */,
+                                                             uint32_t /* num_uniform_buffers */) {
         DX12DescriptorPool* pool = new DX12DescriptorPool;
         return pool;
     }
 
     std::vector<DescriptorSet*> DX12RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                                         [[maybe_unused]] const DescriptorPool* pool) {
+                                                                         const DescriptorPool* /* pool */) {
         // Create a descriptor heap for each descriptor set
         // This is kinda gross and maybe I'll move to something else eventually but I gotta get past this code
 
