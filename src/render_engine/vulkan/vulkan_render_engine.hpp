@@ -89,7 +89,9 @@ namespace nova::renderer::rhi {
         Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
         Semaphore* create_semaphore() override final;
         std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override final;
+
         Fence* create_fence(bool signaled = false) override final;
+
         std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override final;
 
         void destroy_renderpass(Renderpass* pass) override final;

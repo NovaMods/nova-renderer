@@ -83,16 +83,24 @@ namespace nova::renderer {
         }
 
         create_global_gpu_pools();
+
+        create_global_sync_objects();
     }
 
     NovaRenderer::~NovaRenderer() { mtr_shutdown(); }
 
     NovaSettings& NovaRenderer::get_settings() { return render_settings; }
 
-    void NovaRenderer::execute_frame() const {
-        mtr_flush();
-
+    void NovaRenderer::execute_frame() {
         MTR_SCOPE("RenderLoop", "execute_frame");
+        frame_count++;
+        cur_frame_idx = frame_count % 3;
+
+        NOVA_LOG(DEBUG) << "\n***********************\n        FRAME START        \n***********************";
+
+        rhi->wait_for_fences({frame_fences.at(cur_frame_idx)});
+
+        mtr_flush();
     }
 
     void NovaRenderer::set_num_meshes(const uint32_t num_meshes) { meshes.reserve(num_meshes); }
@@ -616,6 +624,13 @@ namespace nova::renderer {
 
         } else {
             NOVA_LOG(ERROR) << "Could not create staging buffer memory pool: " << staging_memory_result.error.to_string();
+        }
+    }
+
+    void NovaRenderer::create_global_sync_objects() { 
+        const std::vector<rhi::Fence*>& fences = rhi->create_fences(NUM_IN_FLIGHT_FRAMES, true);
+        for(uint32_t i = i; i < NUM_IN_FLIGHT_FRAMES; i++) {
+            frame_fences[i] = fences.at(i);
         }
     }
 } // namespace nova::renderer
