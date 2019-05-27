@@ -4,6 +4,7 @@
  */
 
 #pragma once
+#include "gl3_command_list.hpp"
 #include "glad/glad.h"
 #include "nova_renderer/render_engine.hpp"
 
@@ -98,6 +99,10 @@ namespace nova::renderer::rhi {
         std::unordered_map<std::string, shaderpack::SamplerCreateInfo> samplers;
 
         static void set_initial_state();
+
+#pragma region Command list execution
+        static void copy_buffers_impl(const Gl3BufferCopyCommand& buffer_copy);
+#pragma endregion
     };
 
     Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, GLenum shader_type);

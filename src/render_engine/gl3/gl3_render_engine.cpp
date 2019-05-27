@@ -8,8 +8,8 @@
 #include "gl3_render_engine.hpp"
 
 #include "../../util/logger.hpp"
-#include "gl3_structs.hpp"
 #include "gl3_command_list.hpp"
+#include "gl3_structs.hpp"
 
 namespace nova::renderer::rhi {
     Gl3RenderEngine::Gl3RenderEngine(NovaSettings& settings) : RenderEngine(settings) {
@@ -293,10 +293,72 @@ namespace nova::renderer::rhi {
     }
 
     void Gl3RenderEngine::submit_command_list(CommandList* cmds,
-                                              QueueType queue,
+                                              [[maybe_unused]] QueueType queue,
                                               Fence* fence_to_signal,
                                               const std::vector<Semaphore*>& wait_semaphores,
-                                              const std::vector<Semaphore*>& signal_semaphores) {}
+                                              const std::vector<Semaphore*>& signal_semaphores) {
+        // GL is F U N
+        // No equivalent for queues. Hope yalls like waiting for things
+        // No equivalent for fences or semaphores. Mutexes, anyone?
+
+        for(Semaphore* semaphore : wait_semaphores) {
+            Gl3Semaphore* gl_semaphore = static_cast<Gl3Semaphore*>(semaphore);
+            std::unique_lock lck(gl_semaphore->mutex);
+            while(!gl_semaphore->signaled) {
+                gl_semaphore->cv.wait(lck);
+            }
+        }
+
+        Gl3CommandList* gl_cmds = static_cast<Gl3CommandList*>(cmds);
+        const std::vector<Gl3Command>& commands = gl_cmds->get_commands();
+        for(const Gl3Command& command : commands) {
+            switch(command.type) {
+                case Gl3CommandType::BufferCopy:
+                    copy_buffers_impl(command.buffer_copy);
+                    break;
+
+                case Gl3CommandType::ExecuteCommandLists:
+                    break;
+                case Gl3CommandType::BeginRenderpass:
+                    break;
+                case Gl3CommandType::EndRenderpass:
+                    break;
+                case Gl3CommandType::BindPipeline:
+                    break;
+                case Gl3CommandType::BindMaterial:
+                    break;
+                case Gl3CommandType::BindVertexBuffers:
+                    break;
+                case Gl3CommandType::BindIndexBuffer:
+                    break;
+                case Gl3CommandType::DrawIndexedMesh:
+                    break;
+            }
+        }
+
+        for(Semaphore* semaphore : signal_semaphores) {
+            Gl3Semaphore* gl_semaphore = static_cast<Gl3Semaphore*>(semaphore);
+            std::unique_lock lck(gl_semaphore->mutex);
+            gl_semaphore->signaled = true;
+            gl_semaphore->cv.notify_all();
+        }
+
+        Gl3Fence* fence = static_cast<Gl3Fence*>(fence_to_signal);
+        std::unique_lock lck(fence->mutex);
+        fence->signaled = true;
+        fence->cv.notify_all();
+    }
+
+    void Gl3RenderEngine::copy_buffers_impl(const Gl3BufferCopyCommand& buffer_copy) {
+        glBindBuffer(GL_COPY_READ_BUFFER, buffer_copy.source_buffer);
+        glBindBuffer(GL_COPY_WRITE_BUFFER, buffer_copy.destination_buffer);
+
+        glCopyBufferSubData(GL_COPY_READ_BUFFER,
+                            GL_COPY_WRITE_BUFFER,
+                            buffer_copy.source_offset,
+                            buffer_copy.destination_offset,
+                            buffer_copy.num_bytes);
+    }
 
     Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, const GLenum shader_type) {
         spirv_cross::CompilerGLSL compiler(spirv);
