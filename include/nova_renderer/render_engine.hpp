@@ -116,6 +116,8 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] virtual std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) = 0;
 
+        virtual void wait_for_fences(const std::vector<Fence*> fences) = 0;
+
         virtual void destroy_renderpass(Renderpass* pass) = 0;
 
         virtual void destroy_framebuffer(const Framebuffer* framebuffer) = 0;
