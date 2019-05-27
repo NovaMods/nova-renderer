@@ -269,7 +269,8 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Meshes
-        std::vector<Mesh> meshes;
+        std::unordered_map<MeshId, Mesh> meshes;
+        MeshId next_mesh_id = 0;
 #pragma endregion
     };
 } // namespace nova::renderer

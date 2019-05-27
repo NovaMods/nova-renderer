@@ -29,7 +29,7 @@ namespace nova::renderer {
         std::vector<uint32_t> indices;
     };
 
-    using MeshId = uint32_t;
+    using MeshId = uint64_t;
 
     struct StaticMeshRenderableUpdateData {
         std::string material_name;
