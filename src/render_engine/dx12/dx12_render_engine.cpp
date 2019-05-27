@@ -663,6 +663,13 @@ namespace nova::renderer::rhi {
         return fences;
     }
 
+    void DX12RenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
+        for(const Fence* fence : fences) {
+            const DX12Fence* dx_fence = static_cast<const DX12Fence*>(fence);
+            WaitForSingleObject(dx_fence->event, INFINITE);
+        }
+    }
+
     void DX12RenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
 
     void DX12RenderEngine::destroy_framebuffer(const Framebuffer* framebuffer) {
