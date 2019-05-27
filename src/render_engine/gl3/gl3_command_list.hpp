@@ -85,15 +85,15 @@ namespace nova::renderer::rhi {
     public:
         Gl3CommandList();
 
-		Gl3CommandList(Gl3CommandList&& old) noexcept = default;
-		Gl3CommandList& operator=(Gl3CommandList&& old) noexcept = default;
+        Gl3CommandList(Gl3CommandList&& old) noexcept = default;
+        Gl3CommandList& operator=(Gl3CommandList&& old) noexcept = default;
 
-		Gl3CommandList(const Gl3CommandList& other) = delete;
-		Gl3CommandList& operator=(const Gl3CommandList& other) = delete;
+        Gl3CommandList(const Gl3CommandList& other) = delete;
+        Gl3CommandList& operator=(const Gl3CommandList& other) = delete;
 
         void resource_barriers([[maybe_unused]] PipelineStageFlags stages_before_barrier,
-                              [[maybe_unused]] PipelineStageFlags stages_after_barrier,
-                              [[maybe_unused]] const std::vector<ResourceBarrier>& barriers) override final;
+                               [[maybe_unused]] PipelineStageFlags stages_after_barrier,
+                               [[maybe_unused]] const std::vector<ResourceBarrier>& barriers) override final;
 
         void copy_buffer(Buffer* destination_buffer,
                          uint64_t destination_offset,
@@ -120,13 +120,13 @@ namespace nova::renderer::rhi {
         ~Gl3CommandList() override final;
 
         /*!
-         * \brief Provides access to the actual command list, so that the GL2 render engine can process the commands
+         * \brief Provides access to the actual command list, so that the GL3 render engine can process the commands
          */
         std::vector<Gl3Command> get_commands() const;
 
     private:
         std::vector<Gl3Command> commands;
     };
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi
 
 #endif // NOVA_RENDERER_GL_2_COMMAND_LIST_HPP

@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include "glad/glad.h"
 #include "nova_renderer/rhi_types.hpp"
+#include <atomic>
 
 namespace nova::renderer::rhi {
     // Holds all the state for an OpenGL sampler object, which may or may not be an actual thing in 3.1
@@ -65,5 +66,17 @@ namespace nova::renderer::rhi {
         GLuint id = 0;
 
         std::unordered_map<ResourceBindingDescription, GLuint> uniform_cache;
+    };
+
+    struct Gl3Fence : Fence {
+        std::mutex mutex;
+        std::condition_variable cv;
+        bool signaled = false;
+    };
+
+    struct Gl3Semaphore : Semaphore {
+        std::mutex mutex;
+        std::condition_variable cv;
+        bool signaled = false;
     };
 } // namespace nova::renderer::rhi
