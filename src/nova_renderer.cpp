@@ -142,7 +142,16 @@ namespace nova::renderer {
             rhi->submit_command_list(indices_upload_cmds, rhi::QueueType::Transfer);
         }
 
-        return MeshId();
+        Mesh mesh = {};
+        mesh.vertex_buffer = vertex_buffer;
+        mesh.index_buffer = index_buffer;
+        mesh.num_indices = mesh_data.indices.size();
+
+        MeshId new_mesh_id = next_mesh_id;
+        next_mesh_id++;
+        meshes.emplace(new_mesh_id, mesh);
+
+        return new_mesh_id;
     }
 
     void NovaRenderer::load_shaderpack(const std::string& shaderpack_name) {
