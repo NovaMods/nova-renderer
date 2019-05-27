@@ -629,7 +629,7 @@ namespace nova::renderer {
 
     void NovaRenderer::create_global_sync_objects() { 
         const std::vector<rhi::Fence*>& fences = rhi->create_fences(NUM_IN_FLIGHT_FRAMES, true);
-        for(uint32_t i = i; i < NUM_IN_FLIGHT_FRAMES; i++) {
+        for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
             frame_fences[i] = fences.at(i);
         }
     }

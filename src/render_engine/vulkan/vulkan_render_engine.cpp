@@ -878,6 +878,14 @@ namespace nova::renderer::rhi {
         return fences;
     }
 
+    void VulkanRenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
+        vkWaitForFences(device,
+                        fences.size(),
+                        &(static_cast<VulkanFence*>(fences[0])->fence),
+                        VK_TRUE,
+                        std::numeric_limits<uint64_t>::max());
+    }
+
     void VulkanRenderEngine::destroy_renderpass(Renderpass* pass) {
         VulkanRenderpass* vk_renderpass = static_cast<VulkanRenderpass*>(pass);
         vkDestroyRenderPass(device, vk_renderpass->pass, nullptr);
