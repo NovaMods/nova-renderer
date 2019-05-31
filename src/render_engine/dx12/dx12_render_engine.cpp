@@ -692,6 +692,13 @@ namespace nova::renderer::rhi {
 
     void DX12RenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
 
+    Image* DX12RenderEngine::get_swapchain_image(const uint32_t frame_index) {
+        DX12Image* image = new DX12Image;
+        swapchain->GetBuffer(frame_index, IID_PPV_ARGS(&image->resource));
+
+        return image;
+    }
+
     CommandList* DX12RenderEngine::get_command_list(const uint32_t thread_idx,
                                                     const QueueType needed_queue_type,
                                                     const CommandList::Level level) {

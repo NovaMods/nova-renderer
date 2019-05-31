@@ -878,6 +878,12 @@ namespace nova::renderer::rhi {
         return fences;
     }
 
+    Image* VulkanRenderEngine::get_swapchain_image(const uint32_t frame_index) {
+        VulkanImage* image = new VulkanImage;
+        image->image = swapchain->get_image(frame_index);
+        return image;
+    }
+
     void VulkanRenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
         vkWaitForFences(device,
                         fences.size(),
@@ -1231,7 +1237,7 @@ namespace nova::renderer::rhi {
         NOVA_CHECK_RESULT(
             vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, present_modes.data()));
 
-        swapchain = std::make_unique<VulkanSwapchainManager>(max_in_flight_frames, *this, window->get_window_size(), present_modes);
+        swapchain = std::make_unique<VulkanSwapchainManager>(NUM_IN_FLIGHT_FRAMES, *this, window->get_window_size(), present_modes);
 
         const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
         swapchain_size.x = swapchain_extent.width;

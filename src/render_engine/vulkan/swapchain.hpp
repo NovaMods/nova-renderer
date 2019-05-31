@@ -38,11 +38,11 @@ namespace nova::renderer::rhi {
 
         void set_current_layout(VkImageLayout new_layout);
 
-        VkFramebuffer get_current_framebuffer();
-        VkFence get_current_frame_fence();
+        VkFramebuffer get_framebuffer(uint32_t frame_idx);
+        VkFence get_frame_fence(uint32_t frame_idx);
 
-        VkImage get_current_image();
-        VkImageLayout get_current_layout();
+        VkImage get_image(uint32_t frame_idx);
+        VkImageLayout get_layout(uint32_t frame_idx);
         [[nodiscard]] VkExtent2D get_swapchain_extent() const;
         [[nodiscard]] VkFormat get_swapchain_format() const;
 

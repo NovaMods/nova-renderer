@@ -111,6 +111,8 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] virtual std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) = 0;
 
+        [[nodiscard]] virtual Image* get_swapchain_image(uint32_t frame_index) = 0;
+
         /*!
          * \blocks the fence until all fences are signaled
          * 

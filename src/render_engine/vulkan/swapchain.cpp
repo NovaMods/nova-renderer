@@ -309,18 +309,19 @@ namespace nova::renderer::rhi {
 
     void VulkanSwapchainManager::set_current_layout(VkImageLayout new_layout) { swapchain_image_layouts[cur_swapchain_index] = new_layout; }
 
-    VkFramebuffer VulkanSwapchainManager::get_current_framebuffer() {
-        NOVA_LOG(TRACE) << "Getting swapchain framebuffer " << cur_swapchain_index << " out of " << framebuffers.size();
-        return framebuffers[cur_swapchain_index];
+    VkFramebuffer VulkanSwapchainManager::get_framebuffer(const uint32_t frame_idx) {
+        return framebuffers[frame_idx];
     }
 
-    VkImage VulkanSwapchainManager::get_current_image() { return swapchain_images[cur_swapchain_index]; }
+    VkImage VulkanSwapchainManager::get_image(const uint32_t frame_idx) { return swapchain_images[frame_idx]; }
 
-    VkImageLayout VulkanSwapchainManager::get_current_layout() { return swapchain_image_layouts[cur_swapchain_index]; }
+    VkImageLayout VulkanSwapchainManager::get_layout(const uint32_t frame_idx) {
+        return swapchain_image_layouts[frame_idx];
+    }
 
     VkExtent2D VulkanSwapchainManager::get_swapchain_extent() const { return swapchain_extent; }
 
     VkFormat VulkanSwapchainManager::get_swapchain_format() const { return swapchain_format; }
 
-    VkFence VulkanSwapchainManager::get_current_frame_fence() { return fences[cur_swapchain_index]; }
+    VkFence VulkanSwapchainManager::get_frame_fence(const uint32_t frame_idx) { return fences[frame_idx]; }
 } // namespace nova::renderer::rhi

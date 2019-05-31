@@ -100,6 +100,12 @@ namespace nova::renderer {
 
         rhi->wait_for_fences({frame_fences.at(cur_frame_idx)});
 
+        rhi::CommandList* cmds = rhi->get_command_list(0, rhi::QueueType::Graphics);
+
+        for(const Renderpass& renderpass : renderpasses) {
+            record_renderpass(renderpass, cmds);
+        }
+
         mtr_flush();
     }
 
@@ -535,6 +541,38 @@ namespace nova::renderer {
         // TODO: Also destroy dynamic buffers, when we have support for those
     }
 
+    void NovaRenderer::record_renderpass(const Renderpass& renderpass, rhi::CommandList* cmds) {
+        cmds->begin_renderpass(renderpass.renderpass, renderpass.framebuffer);
+
+        if(!renderpass.read_texture_barriers.empty()) {
+            cmds->resource_barriers(rhi::PipelineStageFlags::ColorAttachmentOutput,
+                                    rhi::PipelineStageFlags::FragmentShader,
+                                    renderpass.read_texture_barriers);
+        }
+
+        if(!renderpass.write_texture_barriers.empty()) {
+            cmds->resource_barriers(rhi::PipelineStageFlags::ColorAttachmentOutput,
+                                    rhi::PipelineStageFlags::FragmentShader,
+                                    renderpass.write_texture_barriers);
+        }
+
+        if(renderpass.writes_to_backbuffer) {
+            rhi::ResourceBarrier backbuffer_barrier = {};
+            backbuffer_barrier.resource_to_barrier = rhi->get_swapchain_image(cur_frame_idx);
+            backbuffer_barrier.initial_state = rhi::ResourceState::PresentSource;
+            backbuffer_barrier.final_state = rhi::ResourceState::ColorAttachment;
+            backbuffer_barrier.access_before_barrier = rhi::ResourceAccessFlags::ColorAttachmentWriteBit;
+            backbuffer_barrier.access_after_barrier = rhi::ResourceAccessFlags::ColorAttachmentWriteBit;
+            backbuffer_barrier.source_queue = rhi::QueueType::Graphics;
+            backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
+            backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspectFlags::Color;
+
+            cmds->resource_barriers(rhi::PipelineStageFlags::BottomOfPipe,
+                                    rhi::PipelineStageFlags::ColorAttachmentOutput,
+                                    {backbuffer_barrier});
+        }
+    }
+
     RenderableId NovaRenderer::add_renderable_for_material(const FullMaterialPassName& material_name,
                                                            const StaticMeshRenderableData& renderable) {
         const RenderableId id = next_renderable_id.load();
@@ -627,7 +665,7 @@ namespace nova::renderer {
         }
     }
 
-    void NovaRenderer::create_global_sync_objects() { 
+    void NovaRenderer::create_global_sync_objects() {
         const std::vector<rhi::Fence*>& fences = rhi->create_fences(NUM_IN_FLIGHT_FRAMES, true);
         for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
             frame_fences[i] = fences.at(i);

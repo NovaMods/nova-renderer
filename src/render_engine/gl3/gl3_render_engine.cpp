@@ -312,6 +312,8 @@ namespace nova::renderer::rhi {
     void Gl3RenderEngine::destroy_semaphores(const std::vector<Semaphore*>& semaphores) {}
     void Gl3RenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
 
+    Image* Gl3RenderEngine::get_swapchain_image(uint32_t frame_index) { return new Gl3Image; }
+
     CommandList* Gl3RenderEngine::get_command_list(uint32_t /* thread_idx */,
                                                    QueueType /* needed_queue_type */,
                                                    CommandList::Level /* command_list_type */) {
