@@ -571,6 +571,30 @@ namespace nova::renderer {
                                     rhi::PipelineStageFlags::ColorAttachmentOutput,
                                     {backbuffer_barrier});
         }
+
+        cmds->begin_renderpass(renderpass.renderpass, renderpass.framebuffer);
+
+        for(const Pipeline& pipeline : renderpass.pipelines) {
+            record_pipeline(pipeline, cmds);
+        }
+
+        cmds->end_renderpass();
+
+        if(renderpass.writes_to_backbuffer) {
+            rhi::ResourceBarrier backbuffer_barrier = {};
+            backbuffer_barrier.resource_to_barrier = rhi->get_swapchain_image(cur_frame_idx);
+            backbuffer_barrier.initial_state = rhi::ResourceState::ColorAttachment;
+            backbuffer_barrier.final_state = rhi::ResourceState::PresentSource;
+            backbuffer_barrier.access_before_barrier = rhi::ResourceAccessFlags::ColorAttachmentWriteBit;
+            backbuffer_barrier.access_after_barrier = rhi::ResourceAccessFlags::ColorAttachmentWriteBit;
+            backbuffer_barrier.source_queue = rhi::QueueType::Graphics;
+            backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
+            backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspectFlags::Color;
+
+            cmds->resource_barriers(rhi::PipelineStageFlags::ColorAttachmentOutput,
+                                    rhi::PipelineStageFlags::BottomOfPipe,
+                                    {backbuffer_barrier});
+        }
     }
 
     RenderableId NovaRenderer::add_renderable_for_material(const FullMaterialPassName& material_name,
