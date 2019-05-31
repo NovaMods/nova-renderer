@@ -603,6 +603,10 @@ namespace nova::renderer {
         }
     }
 
+    void NovaRenderer::record_pipeline(const Pipeline& pipeline, rhi::CommandList* cmds) {
+        
+    }
+
     RenderableId NovaRenderer::add_renderable_for_material(const FullMaterialPassName& material_name,
                                                            const StaticMeshRenderableData& renderable) {
         const RenderableId id = next_renderable_id.load();
