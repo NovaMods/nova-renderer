@@ -289,8 +289,10 @@ namespace nova::renderer {
         std::unordered_map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
         
         void record_renderpass(const Renderpass& renderpass, rhi::CommandList* cmds);
-
+        
         void record_pipeline(const Pipeline& pipeline, rhi::CommandList* cmds);
+
+        void record_material_pass(const MaterialPass& pass, rhi::CommandList* cmds);
 #endif
     };
 } // namespace nova::renderer

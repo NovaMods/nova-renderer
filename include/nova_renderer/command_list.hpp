@@ -75,9 +75,18 @@ namespace nova::renderer::rhi {
          */
         virtual void execute_command_lists(const std::vector<CommandList*>& lists) = 0;
 
+        /*!
+         * \brief Begins a renderpass
+         * 
+         * \param renderpass The renderpass to begin
+         * \param framebuffer The framebuffer to render to
+         */
         virtual void begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) = 0;
+
         virtual void end_renderpass() = 0;
-        virtual void bind_pipeline() = 0;
+
+        virtual void bind_pipeline(const rhi::Pipeline* pipeline) = 0;
+
         virtual void bind_material() = 0;
 
         virtual void bind_vertex_buffers() = 0;

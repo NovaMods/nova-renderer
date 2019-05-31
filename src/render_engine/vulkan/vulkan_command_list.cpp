@@ -10,110 +10,117 @@
 #include "vk_structs.hpp"
 
 namespace nova::renderer::rhi {
-	VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine& render_engine)
-		: cmds(cmds), render_engine(render_engine) {}
+    VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine& render_engine)
+        : cmds(cmds), render_engine(render_engine) {}
 
-	void VulkanCommandList::resource_barriers(const PipelineStageFlags stages_before_barrier,
-		const PipelineStageFlags stages_after_barrier,
-		const std::vector<ResourceBarrier>& barriers) {
-		std::vector<VkBufferMemoryBarrier> buffer_barriers;
-		buffer_barriers.reserve(barriers.size());
+    void VulkanCommandList::resource_barriers(const PipelineStageFlags stages_before_barrier,
+                                              const PipelineStageFlags stages_after_barrier,
+                                              const std::vector<ResourceBarrier>& barriers) {
+        std::vector<VkBufferMemoryBarrier> buffer_barriers;
+        buffer_barriers.reserve(barriers.size());
 
-		std::vector<VkImageMemoryBarrier> image_barriers;
-		image_barriers.reserve(barriers.size());
+        std::vector<VkImageMemoryBarrier> image_barriers;
+        image_barriers.reserve(barriers.size());
 
-		for (const ResourceBarrier& barrier : barriers) {
-			switch (barrier.resource_to_barrier->type) {
-			case Resource::Type::Image: {
-				VulkanImage* image = static_cast<VulkanImage*>(barrier.resource_to_barrier);
+        for(const ResourceBarrier& barrier : barriers) {
+            switch(barrier.resource_to_barrier->type) {
+                case Resource::Type::Image: {
+                    VulkanImage* image = static_cast<VulkanImage*>(barrier.resource_to_barrier);
 
-				VkImageMemoryBarrier image_barrier = {};
-				image_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				image_barrier.srcAccessMask = barrier.access_before_barrier;
-				image_barrier.dstAccessMask = barrier.access_after_barrier;
-				image_barrier.oldLayout = to_vk_layout(barrier.initial_state);
-				image_barrier.newLayout = to_vk_layout(barrier.final_state);
-				image_barrier.srcQueueFamilyIndex = render_engine.get_queue_family_index(barrier.source_queue);
-				image_barrier.dstQueueFamilyIndex = render_engine.get_queue_family_index(barrier.destination_queue);
-				image_barrier.image = image->image;
-				image_barrier.subresourceRange.aspectMask = barrier.image_memory_barrier.aspect;
-				image_barrier.subresourceRange.baseMipLevel = 0; // TODO: Something smarter with mips
-				image_barrier.subresourceRange.levelCount = 1;
-				image_barrier.subresourceRange.baseArrayLayer = 0;
-				image_barrier.subresourceRange.layerCount = 1;
+                    VkImageMemoryBarrier image_barrier = {};
+                    image_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                    image_barrier.srcAccessMask = barrier.access_before_barrier;
+                    image_barrier.dstAccessMask = barrier.access_after_barrier;
+                    image_barrier.oldLayout = to_vk_layout(barrier.initial_state);
+                    image_barrier.newLayout = to_vk_layout(barrier.final_state);
+                    image_barrier.srcQueueFamilyIndex = render_engine.get_queue_family_index(barrier.source_queue);
+                    image_barrier.dstQueueFamilyIndex = render_engine.get_queue_family_index(barrier.destination_queue);
+                    image_barrier.image = image->image;
+                    image_barrier.subresourceRange.aspectMask = barrier.image_memory_barrier.aspect;
+                    image_barrier.subresourceRange.baseMipLevel = 0; // TODO: Something smarter with mips
+                    image_barrier.subresourceRange.levelCount = 1;
+                    image_barrier.subresourceRange.baseArrayLayer = 0;
+                    image_barrier.subresourceRange.layerCount = 1;
 
-				image_barriers.push_back(image_barrier);
-			} break;
+                    image_barriers.push_back(image_barrier);
+                } break;
 
-			case Resource::Type::Buffer: {
-				VulkanBuffer* buffer = static_cast<VulkanBuffer*>(barrier.resource_to_barrier);
+                case Resource::Type::Buffer: {
+                    VulkanBuffer* buffer = static_cast<VulkanBuffer*>(barrier.resource_to_barrier);
 
-				VkBufferMemoryBarrier buffer_barrier = {};
-				buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-				buffer_barrier.srcAccessMask = barrier.access_before_barrier;
-				buffer_barrier.dstAccessMask = barrier.access_after_barrier;
-				buffer_barrier.srcQueueFamilyIndex = render_engine.get_queue_family_index(barrier.source_queue);
-				buffer_barrier.dstQueueFamilyIndex = render_engine.get_queue_family_index(barrier.destination_queue);
-				buffer_barrier.buffer = buffer->buffer;
-				buffer_barrier.offset = barrier.buffer_memory_barrier.offset;
-				buffer_barrier.size = barrier.buffer_memory_barrier.size;
+                    VkBufferMemoryBarrier buffer_barrier = {};
+                    buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+                    buffer_barrier.srcAccessMask = barrier.access_before_barrier;
+                    buffer_barrier.dstAccessMask = barrier.access_after_barrier;
+                    buffer_barrier.srcQueueFamilyIndex = render_engine.get_queue_family_index(barrier.source_queue);
+                    buffer_barrier.dstQueueFamilyIndex = render_engine.get_queue_family_index(barrier.destination_queue);
+                    buffer_barrier.buffer = buffer->buffer;
+                    buffer_barrier.offset = barrier.buffer_memory_barrier.offset;
+                    buffer_barrier.size = barrier.buffer_memory_barrier.size;
 
-				buffer_barriers.push_back(buffer_barrier);
-			} break;
-			}
-		}
+                    buffer_barriers.push_back(buffer_barrier);
+                } break;
+            }
+        }
 
-		vkCmdPipelineBarrier(cmds,
-			stages_before_barrier,
-			stages_after_barrier,
-			0,
-			0,
-			nullptr,
-			static_cast<uint32_t>(buffer_barriers.size()),
-			buffer_barriers.data(),
-			static_cast<uint32_t>(image_barriers.size()),
-			image_barriers.data());
-	}
+        vkCmdPipelineBarrier(cmds,
+                             stages_before_barrier,
+                             stages_after_barrier,
+                             0,
+                             0,
+                             nullptr,
+                             static_cast<uint32_t>(buffer_barriers.size()),
+                             buffer_barriers.data(),
+                             static_cast<uint32_t>(image_barriers.size()),
+                             image_barriers.data());
+    }
 
-	void VulkanCommandList::copy_buffer(Buffer* destination_buffer,
-		const uint64_t destination_offset,
-		Buffer* source_buffer,
-		const uint64_t source_offset,
-		const uint64_t num_bytes) {
-		VkBufferCopy copy = {};
-		copy.srcOffset = source_offset;
-		copy.dstOffset = destination_offset;
-		copy.size = num_bytes;
+    void VulkanCommandList::copy_buffer(Buffer* destination_buffer,
+                                        const uint64_t destination_offset,
+                                        Buffer* source_buffer,
+                                        const uint64_t source_offset,
+                                        const uint64_t num_bytes) {
+        VkBufferCopy copy = {};
+        copy.srcOffset = source_offset;
+        copy.dstOffset = destination_offset;
+        copy.size = num_bytes;
 
-		VulkanBuffer* vk_destination_buffer = static_cast<VulkanBuffer*>(destination_buffer);
-		VulkanBuffer* vk_source_buffer = static_cast<VulkanBuffer*>(source_buffer);
+        VulkanBuffer* vk_destination_buffer = static_cast<VulkanBuffer*>(destination_buffer);
+        VulkanBuffer* vk_source_buffer = static_cast<VulkanBuffer*>(source_buffer);
 
-		vkCmdCopyBuffer(cmds, vk_source_buffer->buffer, vk_destination_buffer->buffer, 1, &copy);
-	}
+        vkCmdCopyBuffer(cmds, vk_source_buffer->buffer, vk_destination_buffer->buffer, 1, &copy);
+    }
 
-	void VulkanCommandList::execute_command_lists(const std::vector<CommandList*>& lists) {
-		std::vector<VkCommandBuffer> buffers;
-		buffers.reserve(lists.size());
+    void VulkanCommandList::execute_command_lists(const std::vector<CommandList*>& lists) {
+        std::vector<VkCommandBuffer> buffers;
+        buffers.reserve(lists.size());
 
-		for (CommandList* list : lists) {
-			VulkanCommandList* vk_list = dynamic_cast<VulkanCommandList*>(list);
-			buffers.push_back(vk_list->cmds);
-		}
+        for(CommandList* list : lists) {
+            VulkanCommandList* vk_list = dynamic_cast<VulkanCommandList*>(list);
+            buffers.push_back(vk_list->cmds);
+        }
 
-		vkCmdExecuteCommands(cmds, static_cast<uint32_t>(buffers.size()), buffers.data());
-	}
+        vkCmdExecuteCommands(cmds, static_cast<uint32_t>(buffers.size()), buffers.data());
+    }
 
-	void VulkanCommandList::begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) {
-		VulkanRenderpass* vk_renderpass = static_cast<VulkanRenderpass*>(renderpass);
-		VulkanFramebuffer* vk_framebuffer = static_cast<VulkanFramebuffer*>(framebuffer);
+    void VulkanCommandList::begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) {
+        VulkanRenderpass* vk_renderpass = static_cast<VulkanRenderpass*>(renderpass);
+        VulkanFramebuffer* vk_framebuffer = static_cast<VulkanFramebuffer*>(framebuffer);
 
-		VkRenderPassBeginInfo begin_info = {};
-		begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		begin_info.renderPass = vk_renderpass->pass;
-		begin_info.framebuffer = vk_framebuffer->framebuffer;
-		begin_info.renderArea = { 0, 0, static_cast<uint32_t>(framebuffer->size.x), static_cast<uint32_t>(framebuffer->size.y) };
+        VkRenderPassBeginInfo begin_info = {};
+        begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        begin_info.renderPass = vk_renderpass->pass;
+        begin_info.framebuffer = vk_framebuffer->framebuffer;
+        begin_info.renderArea = {0, 0, static_cast<uint32_t>(framebuffer->size.x), static_cast<uint32_t>(framebuffer->size.y)};
 
-		// Nova _always_ records command lists in parallel for each renderpass
-		vkCmdBeginRenderPass(cmds, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
-	}
+        // Nova _always_ records command lists in parallel for each renderpass
+        vkCmdBeginRenderPass(cmds, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
+    }
+
+    void VulkanCommandList::end_renderpass() { vkCmdEndRenderPass(cmds); }
+
+    void VulkanCommandList::bind_pipeline(const rhi::Pipeline* pipeline) {
+        const VulkanPipeline* vk_pipeline = static_cast<const VulkanPipeline*>(pipeline);
+        vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline->pipeline);
+    }
 } // namespace nova::renderer::rhi
