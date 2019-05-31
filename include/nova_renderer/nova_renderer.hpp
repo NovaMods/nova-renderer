@@ -60,6 +60,9 @@ namespace nova::renderer {
         std::vector<Pipeline> pipelines;
 
         bool writes_to_backbuffer = false;
+
+        std::vector<rhi::ResourceBarrier> read_texture_barriers;
+        std::vector<rhi::ResourceBarrier> write_texture_barriers;
     };
 
     struct Mesh {
@@ -292,6 +295,7 @@ namespace nova::renderer {
         std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
         std::unordered_map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
 
+        void record_renderpass(const Renderpass& renderpass, rhi::CommandList* cmds);
 #endif
     };
 } // namespace nova::renderer

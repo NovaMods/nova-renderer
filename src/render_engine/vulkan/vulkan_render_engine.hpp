@@ -12,6 +12,7 @@
 #include "swapchain.hpp"
 
 #include "vk_structs.hpp"
+#include "../configuration.hpp"
 
 namespace nova::renderer::rhi {
     struct VulkanMemoryHeap : VkMemoryHeap {
@@ -104,6 +105,8 @@ namespace nova::renderer::rhi {
         void destroy_texture(Image* resource) override final;
         void destroy_semaphores(const std::vector<Semaphore*>& semaphores) override final;
         void destroy_fences(const std::vector<Fence*>& fences) override final;
+
+        Image* get_swapchain_image(uint32_t frame_index) override final;
         
         CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override final;
 
@@ -121,7 +124,6 @@ namespace nova::renderer::rhi {
 
     private:
         std::unique_ptr<VulkanSwapchainManager> swapchain;
-        uint32_t max_in_flight_frames = 3;
 
         /*!
          * The index in the vector is the thread index, the key in the map is the queue family index
