@@ -604,7 +604,14 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::record_pipeline(const Pipeline& pipeline, rhi::CommandList* cmds) {
-        
+        cmds->bind_pipeline(pipeline.pipeline);
+
+        for(const MaterialPass& pass : pipeline.passes) {
+            record_material_pass(pass, cmds);
+        }
+    }
+
+    void NovaRenderer::record_material_pass(const MaterialPass& pass, rhi::CommandList* cmds) { cmds->bind_material();
     }
 
     RenderableId NovaRenderer::add_renderable_for_material(const FullMaterialPassName& material_name,

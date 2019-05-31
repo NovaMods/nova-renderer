@@ -22,8 +22,8 @@ namespace nova::renderer::rhi {
         VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine& render_engine);
 
         void resource_barriers(PipelineStageFlags stages_before_barrier,
-                              PipelineStageFlags stages_after_barrier,
-                              const std::vector<ResourceBarrier>& barriers) override final;
+                               PipelineStageFlags stages_after_barrier,
+                               const std::vector<ResourceBarrier>& barriers) override final;
 
         void copy_buffer(Buffer* destination_buffer,
                          uint64_t destination_offset,
@@ -34,8 +34,11 @@ namespace nova::renderer::rhi {
         void execute_command_lists(const std::vector<CommandList*>& lists) override final;
 
         void begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) override final;
+
         void end_renderpass() override final;
-        void bind_pipeline() override final;
+
+        void bind_pipeline(const rhi::Pipeline* pipeline) override final;
+
         void bind_material() override final;
 
         void bind_vertex_buffers() override final;
@@ -45,4 +48,4 @@ namespace nova::renderer::rhi {
     private:
         const VulkanRenderEngine& render_engine;
     };
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi
