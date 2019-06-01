@@ -91,9 +91,9 @@ namespace nova::renderer::rhi {
         Gl3CommandList(const Gl3CommandList& other) = delete;
         Gl3CommandList& operator=(const Gl3CommandList& other) = delete;
 
-        void resource_barriers([[maybe_unused]] PipelineStageFlags stages_before_barrier,
-                               [[maybe_unused]] PipelineStageFlags stages_after_barrier,
-                               [[maybe_unused]] const std::vector<ResourceBarrier>& barriers) override final;
+        void resource_barriers(PipelineStageFlags stages_before_barrier,
+                               PipelineStageFlags stages_after_barrier,
+                               const std::vector<ResourceBarrier>& barriers) override final;
 
         void copy_buffer(Buffer* destination_buffer,
                          uint64_t destination_offset,
@@ -103,11 +103,11 @@ namespace nova::renderer::rhi {
 
         void execute_command_lists(const std::vector<CommandList*>& lists) override final;
 
-        void begin_renderpass([[maybe_unused]] Renderpass* renderpass, Framebuffer* framebuffer) override final;
+        void begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) override final;
 
         void end_renderpass() override final;
 
-        void bind_pipeline() override final;
+        void bind_pipeline(const Pipeline* pipeline) override final;
 
         void bind_material() override final;
 
