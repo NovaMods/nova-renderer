@@ -85,4 +85,11 @@ namespace nova::renderer::rhi {
                                  depth_stencil);
     }
 
+    void Dx12CommandList::end_renderpass() {}
+
+    void Dx12CommandList::bind_pipeline(const Pipeline* pipeline) {
+        const DX12Pipeline* dx_pipeline = static_cast<const DX12Pipeline*>(pipeline);
+        cmds->SetPipelineState(dx_pipeline->pso.Get());
+    }
+
 } // namespace nova::renderer::rhi

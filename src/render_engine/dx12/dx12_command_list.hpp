@@ -35,7 +35,9 @@ namespace nova::renderer::rhi {
         void begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) override final;
 
         void end_renderpass() override final;
-        void bind_pipeline() override final;
+
+        void bind_pipeline(const Pipeline* pipeline) override final;
+
         void bind_material() override final;
 
         void bind_vertex_buffers() override final;
