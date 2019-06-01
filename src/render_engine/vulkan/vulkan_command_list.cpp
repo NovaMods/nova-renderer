@@ -119,8 +119,25 @@ namespace nova::renderer::rhi {
 
     void VulkanCommandList::end_renderpass() { vkCmdEndRenderPass(cmds); }
 
-    void VulkanCommandList::bind_pipeline(const rhi::Pipeline* pipeline) {
+    void VulkanCommandList::bind_pipeline(const Pipeline* pipeline) {
         const VulkanPipeline* vk_pipeline = static_cast<const VulkanPipeline*>(pipeline);
         vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline->pipeline);
+    }
+
+    void VulkanCommandList::bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
+                                                 const PipelineInterface* pipeline_interface) {
+        const VulkanPipelineInterface* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
+
+        for(uint32_t i = 0; i < descriptor_sets.size(); i++) {
+            const VulkanDescriptorSet* vk_set = static_cast<const VulkanDescriptorSet*>(descriptor_sets.at(i));
+            vkCmdBindDescriptorSets(cmds,
+                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    vk_interface->pipeline_layout,
+                                    i,
+                                    1,
+                                    &vk_set->descriptor_set,
+                                    0,
+                                    nullptr);
+        }
     }
 } // namespace nova::renderer::rhi

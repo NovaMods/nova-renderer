@@ -37,9 +37,10 @@ namespace nova::renderer::rhi {
 
         void end_renderpass() override final;
 
-        void bind_pipeline(const rhi::Pipeline* pipeline) override final;
+        void bind_pipeline(const Pipeline* pipeline) override final;
 
-        void bind_material() override final;
+        void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
+                                  const PipelineInterface* pipeline_interface) override final;
 
         void bind_vertex_buffers() override final;
         void bind_index_buffer() override final;

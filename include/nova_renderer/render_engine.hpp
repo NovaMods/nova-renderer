@@ -120,9 +120,9 @@ namespace nova::renderer::rhi {
 
         /*!
          * \blocks the fence until all fences are signaled
-         * 
+         *
          * Fences are waited on for an infinite time
-         * 
+         *
          * \param fences All the fences to wait for
          */
         virtual void wait_for_fences(const std::vector<Fence*> fences) = 0;
@@ -156,8 +156,8 @@ namespace nova::renderer::rhi {
          * to begin the command list
          */
         virtual CommandList* get_command_list(uint32_t thread_idx,
-                                                   QueueType needed_queue_type,
-                                                   CommandList::Level level = CommandList::Level::Primary) = 0;
+                                              QueueType needed_queue_type,
+                                              CommandList::Level level = CommandList::Level::Primary) = 0;
 
         virtual void submit_command_list(CommandList* cmds,
                                          QueueType queue,

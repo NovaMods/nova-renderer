@@ -82,7 +82,7 @@ namespace nova::renderer::rhi {
 
         /*!
          * \brief Begins a renderpass
-         * 
+         *
          * \param renderpass The renderpass to begin
          * \param framebuffer The framebuffer to render to
          */
@@ -92,7 +92,8 @@ namespace nova::renderer::rhi {
 
         virtual void bind_pipeline(const rhi::Pipeline* pipeline) = 0;
 
-        virtual void bind_material() = 0;
+        virtual void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
+                                          const PipelineInterface* pipeline_interface) = 0;
 
         virtual void bind_vertex_buffers() = 0;
         virtual void bind_index_buffer() = 0;

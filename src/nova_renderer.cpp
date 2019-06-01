@@ -611,7 +611,8 @@ namespace nova::renderer {
         }
     }
 
-    void NovaRenderer::record_material_pass(const MaterialPass& pass, rhi::CommandList* cmds) { cmds->bind_material();
+    void NovaRenderer::record_material_pass(const MaterialPass& pass, rhi::CommandList* cmds) {
+        cmds->bind_descriptor_sets(pass.descriptor_sets);
     }
 
     RenderableId NovaRenderer::add_renderable_for_material(const FullMaterialPassName& material_name,
