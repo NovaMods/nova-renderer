@@ -52,9 +52,13 @@ namespace nova::renderer::rhi {
         std::unordered_map<std::string, ResourceBindingDescription> pipeline_bindings;
     };
 
-    struct Gl3BindVertexBuffersCommand {};
+    struct Gl3BindVertexBuffersCommand {
+        std::vector<GLuint> buffers;
+    };
 
-    struct Gl3BindIndexBufferCommand {};
+    struct Gl3BindIndexBufferCommand {
+        GLuint buffer;
+    };
 
     struct Gl3DrawIndexedMeshCommand {};
 
@@ -120,9 +124,9 @@ namespace nova::renderer::rhi {
         void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
                                   const PipelineInterface* pipeline_interface) override final;
 
-        void bind_vertex_buffers() override final;
+        void bind_vertex_buffers(const std::vector<Buffer*>& buffers) override final;
 
-        void bind_index_buffer() override final;
+        void bind_index_buffer(const Buffer* buffer) override final;
 
         void draw_indexed_mesh() override final;
 
