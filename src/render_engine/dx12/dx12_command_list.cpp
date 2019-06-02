@@ -119,4 +119,16 @@ namespace nova::renderer::rhi {
 
         cmds->IASetVertexBuffers(0, views.size(), views.data());
     }
+
+    void Dx12CommandList::bind_index_buffer(const Buffer* buffer) {
+        const DX12Buffer* dx12_buffer = static_cast<const DX12Buffer*>(buffer);
+
+        D3D12_INDEX_BUFFER_VIEW view = {
+            dx12_buffer->resource->GetGPUVirtualAddress(),
+            dx12_buffer->size.b_count(),
+            DXGI_FORMAT_R32_UINT
+        };
+
+        cmds->IASetIndexBuffer(&view);
+    }
 } // namespace nova::renderer::rhi

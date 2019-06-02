@@ -128,5 +128,30 @@ namespace nova::renderer::rhi {
         }
     }
 
+    void Gl3CommandList::bind_vertex_buffers(const std::vector<Buffer*>& buffers) {
+        commands.emplace_back();
+
+        Gl3Command& command = commands.front();
+
+        command.type = Gl3CommandType::BindVertexBuffers;
+        command.bind_vertex_buffers.buffers.reserve(buffers.size());
+
+        for(const Buffer* buffer : buffers) {
+            const Gl3Buffer* gl_buffer = static_cast<const Gl3Buffer*>(buffer);
+
+            command.bind_vertex_buffers.buffers.push_back(gl_buffer->id);
+        }
+    }
+
+    void Gl3CommandList::bind_index_buffer(const Buffer* buffer) {
+        const Gl3Buffer* gl_buffer = static_cast<const Gl3Buffer*>(buffer);
+
+        commands.emplace_back();
+        Gl3Command& command = commands.front();
+
+        command.type = Gl3CommandType::BindIndexBuffer;
+        command.bind_index_buffer.buffer = gl_buffer->id;
+    }
+
     std::vector<Gl3Command> Gl3CommandList::get_commands() const { return commands; }
 } // namespace nova::renderer::rhi

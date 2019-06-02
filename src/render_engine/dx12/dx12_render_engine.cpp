@@ -543,6 +543,8 @@ namespace nova::renderer::rhi {
                                      nullptr,
                                      IID_PPV_ARGS(&buffer->resource));
 
+        buffer->size = foundational::allocation::Bytes(info.size);
+
         return buffer;
     }
 
