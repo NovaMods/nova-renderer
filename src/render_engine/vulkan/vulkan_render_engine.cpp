@@ -519,7 +519,7 @@ namespace nova::renderer::rhi {
         vkUpdateDescriptorSets(device, vk_writes.size(), vk_writes.data(), 0, nullptr);
     }
 
-    Result<Pipeline*> VulkanRenderEngine::create_pipeline(const PipelineInterface* pipeline_interface,
+    Result<Pipeline*> VulkanRenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
                                                           const shaderpack::PipelineCreateInfo& data) {
         NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name;
 

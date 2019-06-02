@@ -28,8 +28,8 @@ namespace nova::renderer::rhi {
                 bind_pipeline.~Gl3BindPipelineCommand();
                 break;
 
-            case Gl3CommandType::BindMaterial:
-                bind_material.~Gl3BindMaterialCommand();
+            case Gl3CommandType::BindDescriptorSets:
+                bind_descriptor_sets.~Gl3BindDescriptorSetsCommand();
                 break;
 
             case Gl3CommandType::BindVertexBuffers:
@@ -99,7 +99,33 @@ namespace nova::renderer::rhi {
     void Gl3CommandList::bind_pipeline(const Pipeline* pipeline) {
         const Gl3Pipeline* gl_pipeline = static_cast<const Gl3Pipeline*>(pipeline);
 
-        glUseProgram(gl_pipeline->id);
+        commands.emplace_back();
+
+        Gl3Command& command = commands.front();
+        command.type = Gl3CommandType::BindPipeline;
+        command.bind_pipeline.program = gl_pipeline->id;
+    }
+
+    void Gl3CommandList::bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
+                                              const PipelineInterface* pipeline_interface) {
+        // Alrighty here's where the fun happens
+        // For each descriptor, get its uniform binding from the pipeline interface
+        // Record a command to bind it
+
+        const Gl3PipelineInterface* gl_interface = static_cast<const Gl3PipelineInterface*>(pipeline_interface);
+
+        commands.emplace_back();
+
+        Gl3Command& command = commands.front();
+        command.type = Gl3CommandType::BindDescriptorSets;
+        command.bind_descriptor_sets.pipeline_bindings = gl_interface->bindings;
+        command.bind_descriptor_sets.uniform_cache = gl_interface->uniform_cache;
+        command.bind_descriptor_sets.sets.reserve(descriptor_sets.size());
+
+        for(const DescriptorSet* set : descriptor_sets) {
+            const Gl3DescriptorSet* gl_set = static_cast<const Gl3DescriptorSet*>(set);
+            command.bind_descriptor_sets.sets.emplace_back(gl_set);
+        }
     }
 
     std::vector<Gl3Command> Gl3CommandList::get_commands() const { return commands; }

@@ -66,7 +66,7 @@ namespace nova::renderer::rhi {
 
         void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override final;
 
-        Result<Pipeline*> create_pipeline(const PipelineInterface* pipeline_interface,
+        Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
                                           const shaderpack::PipelineCreateInfo& data) override final;
 
         Buffer* create_buffer(const BufferCreateInfo& info) override final;

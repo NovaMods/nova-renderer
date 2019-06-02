@@ -306,7 +306,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    Result<Pipeline*> DX12RenderEngine::create_pipeline(const PipelineInterface* pipeline_interface,
+    Result<Pipeline*> DX12RenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
                                                         const shaderpack::PipelineCreateInfo& data) {
         const DX12PipelineInterface* dx12_pipeline_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
 
