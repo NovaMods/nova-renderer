@@ -71,7 +71,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void Dx12CommandList::begin_renderpass([[maybe_unused]] Renderpass* renderpass, Framebuffer* framebuffer) {
+    void Dx12CommandList::begin_renderpass(Renderpass* /* renderpass */, Framebuffer* framebuffer) {
         DX12Framebuffer* d3d12_framebuffer = reinterpret_cast<DX12Framebuffer*>(framebuffer);
 
         D3D12_CPU_DESCRIPTOR_HANDLE* depth_stencil = nullptr;
@@ -92,4 +92,15 @@ namespace nova::renderer::rhi {
         cmds->SetPipelineState(dx_pipeline->pso.Get());
     }
 
+    void Dx12CommandList::bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
+                                               const PipelineInterface* pipeline_interface) {
+        const DX12PipelineInterface* dx_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
+
+        // Probably how this should work?
+        for(uint32_t i = 0; i < descriptor_sets.size(); i++) {
+            const DX12DescriptorSet* dx_set = static_cast<const DX12DescriptorSet*>(descriptor_sets.at(i));
+            cmds->SetDescriptorHeaps(1, dx_set->heap.GetAddressOf());
+            cmds->SetGraphicsRootDescriptorTable(i, dx_set->heap->GetGPUDescriptorHandleForHeapStart());
+        }
+    }
 } // namespace nova::renderer::rhi

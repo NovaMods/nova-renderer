@@ -8,6 +8,7 @@
 #include <nova_renderer/command_list.hpp>
 
 #include "glad/glad.h"
+#include "gl3_structs.hpp"
 
 namespace nova::renderer::rhi {
     enum class Gl3CommandType {
@@ -16,7 +17,7 @@ namespace nova::renderer::rhi {
         BeginRenderpass,
         EndRenderpass,
         BindPipeline,
-        BindMaterial,
+        BindDescriptorSets,
         BindVertexBuffers,
         BindIndexBuffer,
         DrawIndexedMesh,
@@ -40,9 +41,16 @@ namespace nova::renderer::rhi {
         GLuint framebuffer;
     };
 
-    struct Gl3BindPipelineCommand {};
+    struct Gl3BindPipelineCommand {
+        GLuint program;
+    };
 
-    struct Gl3BindMaterialCommand {};
+    struct Gl3BindDescriptorSetsCommand {
+        GLuint program;
+        std::vector<Gl3DescriptorSet*> sets;
+        std::unordered_map<std::string, GLuint> uniform_cache;
+        std::unordered_map<std::string, ResourceBindingDescription> pipeline_bindings;
+    };
 
     struct Gl3BindVertexBuffersCommand {};
 
@@ -58,7 +66,7 @@ namespace nova::renderer::rhi {
             Gl3ExecuteCommandListsCommand execute_command_lists;
             Gl3BeginRenderpassCommand begin_renderpass;
             Gl3BindPipelineCommand bind_pipeline;
-            Gl3BindMaterialCommand bind_material;
+            Gl3BindDescriptorSetsCommand bind_descriptor_sets;
             Gl3BindVertexBuffersCommand bind_vertex_buffers;
             Gl3BindIndexBufferCommand bind_index_buffer;
             Gl3DrawIndexedMeshCommand draw_indexed_mesh;
@@ -76,7 +84,7 @@ namespace nova::renderer::rhi {
      * list to OpenGL is _way_ more expensive than submitting a DirectX or Vulkan command list
      *
      * OpenGL also has a really fun property where it can't be multithreaded, especially since Nova has to use OpenGL
-     * 2.1. The OpenGL render engine will chew through OpenGL commands in a separate thread, and in that way mimic the
+     * 3.1. The OpenGL render engine will chew through OpenGL commands in a separate thread, and in that way mimic the
      * async nature of modern APIs, but still... it'll be rough
      *
      * On the other hand, OpenGL has no concept of a resource barrier...
@@ -109,7 +117,8 @@ namespace nova::renderer::rhi {
 
         void bind_pipeline(const Pipeline* pipeline) override final;
 
-        void bind_descriptor_sets() override final;
+        void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
+                                  const PipelineInterface* pipeline_interface) override final;
 
         void bind_vertex_buffers() override final;
 

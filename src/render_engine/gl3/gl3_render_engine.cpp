@@ -118,7 +118,7 @@ namespace nova::renderer::rhi {
         return Result(static_cast<PipelineInterface*>(pipeline_interface));
     }
 
-    Result<Pipeline*> Gl3RenderEngine::create_pipeline(const PipelineInterface* pipeline_interface,
+    Result<Pipeline*> Gl3RenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
                                                        const shaderpack::PipelineCreateInfo& data) {
         Gl3Pipeline* pipeline = new Gl3Pipeline;
 
@@ -169,10 +169,10 @@ namespace nova::renderer::rhi {
             return Result<Pipeline*>(NovaError(program_link_log));
         }
 
-        const Gl3PipelineInterface* gl3_pipeline_interface = static_cast<const Gl3PipelineInterface*>(pipeline_interface);
+        Gl3PipelineInterface* gl3_pipeline_interface = static_cast<Gl3PipelineInterface*>(pipeline_interface);
         for(const auto& binding : gl3_pipeline_interface->bindings) {
             const GLuint uniform_location = glGetUniformLocation(pipeline->id, binding.first.c_str());
-            pipeline->uniform_cache.emplace(binding.first, uniform_location);
+            gl3_pipeline_interface->uniform_cache.emplace(binding.first, uniform_location);
         }
 
         return Result(static_cast<Pipeline*>(pipeline));
@@ -352,7 +352,7 @@ namespace nova::renderer::rhi {
                     break;
                 case Gl3CommandType::BindPipeline:
                     break;
-                case Gl3CommandType::BindMaterial:
+                case Gl3CommandType::BindDescriptorSets:
                     break;
                 case Gl3CommandType::BindVertexBuffers:
                     break;

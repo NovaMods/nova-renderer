@@ -6,10 +6,13 @@
  */
 
 #pragma once
+
+#include <condition_variable>
+#include <mutex>
 #include <unordered_map>
+
 #include "glad/glad.h"
 #include "nova_renderer/rhi_types.hpp"
-#include <atomic>
 
 namespace nova::renderer::rhi {
     // Holds all the state for an OpenGL sampler object, which may or may not be an actual thing in 3.1
@@ -57,15 +60,12 @@ namespace nova::renderer::rhi {
         std::vector<Gl3SamplerDescriptor> sampler_sets;
     };
 
-    struct Gl3PipelineInterface : PipelineInterface {
-        // GL3 is annoying. I need a compiled and linked program to get uniform locations, so I can't put the uniform
-        // locations in the pipeline interface even though that's conceptually what I should do :(
-    };
-
     struct Gl3Pipeline : Pipeline {
         GLuint id = 0;
+    };
 
-        std::unordered_map<ResourceBindingDescription, GLuint> uniform_cache;
+    struct Gl3PipelineInterface : PipelineInterface {
+        std::unordered_map<std::string, GLuint> uniform_cache;
     };
 
     struct Gl3Fence : Fence {

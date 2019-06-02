@@ -86,7 +86,7 @@ namespace nova::renderer::rhi {
 
         virtual void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) = 0;
 
-        [[nodiscard]] virtual Result<Pipeline*> create_pipeline(const PipelineInterface* pipeline_interface,
+        [[nodiscard]] virtual Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
                                                                 const shaderpack::PipelineCreateInfo& data) = 0;
 
         [[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info) = 0;

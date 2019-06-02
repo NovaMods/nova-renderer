@@ -51,7 +51,7 @@ namespace nova::renderer::rhi {
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override final;
 
-        Result<Pipeline*> create_pipeline(const PipelineInterface* pipeline_interface,
+        Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
                                           const shaderpack::PipelineCreateInfo& data) override final;
 
         Buffer* create_buffer(const BufferCreateInfo& info) override final;
