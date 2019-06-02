@@ -46,7 +46,7 @@ namespace nova::renderer::rhi {
 
         void bind_index_buffer(const Buffer* buffer) override final;
 
-        void draw_indexed_mesh() override final;
+        void draw_indexed_mesh(uint64_t num_indices, uint64_t num_instances) override final;
 
     private:
         const VulkanRenderEngine& render_engine;

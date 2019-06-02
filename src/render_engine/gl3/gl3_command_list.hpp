@@ -60,7 +60,10 @@ namespace nova::renderer::rhi {
         GLuint buffer;
     };
 
-    struct Gl3DrawIndexedMeshCommand {};
+    struct Gl3DrawIndexedMeshCommand {
+        uint64_t num_indices;
+        uint64_t num_instances;
+    };
 
     struct Gl3Command {
         Gl3CommandType type;
@@ -128,7 +131,7 @@ namespace nova::renderer::rhi {
 
         void bind_index_buffer(const Buffer* buffer) override final;
 
-        void draw_indexed_mesh() override final;
+        void draw_indexed_mesh(uint64_t num_indices, uint64_t num_instances) override final;
 
         ~Gl3CommandList() override final;
 

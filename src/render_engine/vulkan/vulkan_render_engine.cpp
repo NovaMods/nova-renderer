@@ -741,7 +741,13 @@ namespace nova::renderer::rhi {
 
         switch(info.buffer_usage) {
             case BufferCreateInfo::Usage::UniformBuffer:
-                vk_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+                if(info.size < gpu.props.limits.maxUniformBufferRange) {
+                    vk_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+                } else {
+                    vk_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+                }
+                
                 break;
 
             case BufferCreateInfo::Usage::IndexBuffer:
@@ -761,13 +767,13 @@ namespace nova::renderer::rhi {
         return buffer;
     }
 
-    void VulkanRenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) {
+    void VulkanRenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const Buffer* buffer) {
         const VulkanBuffer* vulkan_buffer = static_cast<const VulkanBuffer*>(buffer);
 
         const foundational::allocation::AllocationInfo& allocation_info = vulkan_buffer->memory.allocation_info;
         const VulkanDeviceMemory* memory = static_cast<const VulkanDeviceMemory*>(vulkan_buffer->memory.memory);
 
-        uint8_t* mapped_bytes = static_cast<uint8_t*>(heap_mappings.at(memory->memory)) + allocation_info.offset.b_count();
+        uint8_t* mapped_bytes = static_cast<uint8_t*>(heap_mappings.at(memory->memory)) + allocation_info.offset.b_count() + offset;
         memcpy(mapped_bytes, data, num_bytes);
     }
 

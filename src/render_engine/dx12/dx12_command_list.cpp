@@ -131,4 +131,8 @@ namespace nova::renderer::rhi {
 
         cmds->IASetIndexBuffer(&view);
     }
+
+    void Dx12CommandList::draw_indexed_mesh(const uint64_t num_indices, const uint64_t num_instances) {
+        cmds->DrawInstanced(num_indices, num_instances, 0, 0);
+    }
 } // namespace nova::renderer::rhi
