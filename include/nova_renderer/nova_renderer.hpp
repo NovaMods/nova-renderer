@@ -34,8 +34,18 @@ namespace nova::renderer {
 #pragma region Runtime optimized data
     template <typename RenderableType>
     struct MeshBatch {
-        rhi::Resource* vertex_buffer = nullptr;
-        rhi::Resource* index_buffer = nullptr;
+        rhi::Buffer* vertex_buffer = nullptr;
+        rhi::Buffer* index_buffer = nullptr;
+
+        /*!
+         * \brief A buffer to hold all the per-draw data
+         *
+         * For example, a non-animated mesh just needs a mat4 for its model matrix
+         *
+         * This buffer gets re-written to every frame, since the number of renderables in this mesh batch might have changed. If there's
+         * more renderables than the buffer can hold, it gets reallocated from the RHI
+         */
+        rhi::Buffer* per_renderable_data = nullptr;
 
         std::vector<RenderableType> renderables;
     };
@@ -205,6 +215,8 @@ namespace nova::renderer {
         void create_global_gpu_pools();
 
         void create_global_sync_objects();
+
+        void create_uniform_buffers();
 #pragma endregion
 
 #pragma region Shaderpack
@@ -263,7 +275,7 @@ namespace nova::renderer {
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const;
 
-        [[nodiscard]] Result<PipelineReturn> create_graphics_pipeline(const rhi::PipelineInterface* pipeline_interface,
+        [[nodiscard]] Result<PipelineReturn> create_graphics_pipeline(rhi::PipelineInterface* pipeline_interface,
                                                                       const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
 
         static void get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
@@ -291,18 +303,22 @@ namespace nova::renderer {
         uint64_t frame_count = 0;
         uint8_t cur_frame_idx = 0;
 
+        rhi::Buffer* per_frame_data_buffer;
+        rhi::Buffer* model_matrix_buffer;
+        uint64_t cur_model_matrix_index = 0;
+
         std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;
 
         std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
         std::unordered_map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
-        
-        void record_renderpass(const Renderpass& renderpass, rhi::CommandList* cmds);
-        
-        void record_pipeline(const Pipeline& pipeline, rhi::CommandList* cmds);
 
-        void record_material_pass(const MaterialPass& pass, rhi::CommandList* cmds);
+        void record_renderpass(Renderpass& renderpass, rhi::CommandList* cmds);
 
-        void record_rendering_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
+        void record_pipeline(Pipeline& pipeline, rhi::CommandList* cmds);
+
+        void record_material_pass(MaterialPass& pass, rhi::CommandList* cmds);
+
+        void record_rendering_static_mesh_batch(MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
 #endif
     };
 } // namespace nova::renderer
