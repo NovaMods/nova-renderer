@@ -121,17 +121,10 @@ namespace nova::renderer::rhi {
             StagingBuffer,
         };
 
-        enum class Residency { HostLocal, HostVisible, DeviceVisible, DeviceLocal };
-
         uint64_t size = 0;
 
         Usage buffer_usage{};
 
-        Residency buffer_residency{};
-
-        struct DeviceMemory* memory = nullptr;
-
-        uint64_t offset = 0;
         DeviceMemoryAllocation allocation;
     };
 
@@ -165,7 +158,9 @@ namespace nova::renderer::rhi {
         bool is_depth_tex = false;
     };
 
-    struct Buffer : Resource {};
+    struct Buffer : Resource {
+        uint64_t size = 0;
+    };
 
     struct Framebuffer {
         glm::uvec2 size;
