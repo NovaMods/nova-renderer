@@ -95,8 +95,23 @@ namespace nova::renderer::rhi {
         virtual void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
                                           const PipelineInterface* pipeline_interface) = 0;
 
-        virtual void bind_vertex_buffers() = 0;
-        virtual void bind_index_buffer() = 0;
+        /*!
+         * \brief Binds the provided vertex buffers to the command list
+         *
+         * The buffers are always bound sequentially starting from binding 0. The first buffer in the vector is bound to binding 0, the
+         * second is bound to binding 1, etc
+         *
+         * \param buffers The buffers to bind
+         */
+        virtual void bind_vertex_buffers(const std::vector<Buffer*>& buffers) = 0;
+
+        /*!
+         * \brief Binds the provided index buffer to the command list
+         *
+         * The index buffer must use 32-bit indices. This will likely change in the future but for now it's a thing
+         */
+        virtual void bind_index_buffer(const Buffer* buffer) = 0;
+
         virtual void draw_indexed_mesh() = 0;
 
         virtual ~CommandList() = default;

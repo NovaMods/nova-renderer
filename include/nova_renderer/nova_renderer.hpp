@@ -45,6 +45,7 @@ namespace nova::renderer {
 
         std::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
         std::vector<rhi::DescriptorSet*> descriptor_sets;
+        const rhi::PipelineInterface* pipeline_interface;
     };
 
     struct Pipeline {
@@ -300,6 +301,8 @@ namespace nova::renderer {
         void record_pipeline(const Pipeline& pipeline, rhi::CommandList* cmds);
 
         void record_material_pass(const MaterialPass& pass, rhi::CommandList* cmds);
+
+        void record_rendering_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
 #endif
     };
 } // namespace nova::renderer

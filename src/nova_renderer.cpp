@@ -612,7 +612,18 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::record_material_pass(const MaterialPass& pass, rhi::CommandList* cmds) {
-        cmds->bind_descriptor_sets(pass.descriptor_sets);
+        cmds->bind_descriptor_sets(pass.descriptor_sets, pass.pipeline_interface);
+
+        for(const MeshBatch<StaticMeshRenderCommand>& batch : pass.static_mesh_draws) {
+            record_rendering_mesh_batch(batch, cmds);
+        }
+    }
+
+    void NovaRenderer::record_rendering_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds) {
+        cmds->bind_vertex_buffers(batch.vertex_buffer);
+        cmds->bind_index_buffer(batch.index_buffer);
+
+
     }
 
     RenderableId NovaRenderer::add_renderable_for_material(const FullMaterialPassName& material_name,
