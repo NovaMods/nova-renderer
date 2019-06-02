@@ -6,8 +6,11 @@
 #include "dx12_command_list.hpp"
 #include "d3dx12.h"
 #include "dx12_utils.hpp"
+#include "../../../tests/src/general_test_setup.hpp"
 
 namespace nova::renderer::rhi {
+    using namespace Microsoft::WRL;
+
     Dx12CommandList::Dx12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds) : cmds(std::move(cmds)) {}
 
     void Dx12CommandList::resource_barriers([[maybe_unused]] PipelineStageFlags stages_before_barrier,
@@ -102,5 +105,18 @@ namespace nova::renderer::rhi {
             cmds->SetDescriptorHeaps(1, dx_set->heap.GetAddressOf());
             cmds->SetGraphicsRootDescriptorTable(i, dx_set->heap->GetGPUDescriptorHandleForHeapStart());
         }
+    }
+
+    void Dx12CommandList::bind_vertex_buffers(const std::vector<Buffer*>& buffers) {
+        std::vector<D3D12_VERTEX_BUFFER_VIEW> views;
+        views.reserve(buffers.size());
+
+        for(const Buffer* buffer : buffers) {
+            const DX12Buffer* dx_buffer = static_cast<const DX12Buffer*>(buffer);
+
+            views.emplace_back(dx_buffer->resource->GetGPUVirtualAddress(), dx_buffer->size.b_count(), sizeof(FullVertex));
+        }
+
+        cmds->IASetVertexBuffers(0, views.size(), views.data());
     }
 } // namespace nova::renderer::rhi

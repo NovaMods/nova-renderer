@@ -140,4 +140,25 @@ namespace nova::renderer::rhi {
                                     nullptr);
         }
     }
+
+    void VulkanCommandList::bind_vertex_buffers(const std::vector<Buffer*>& buffers) {
+        std::vector<VkBuffer> vk_buffers;
+        vk_buffers.reserve(buffers.size());
+
+        std::vector<VkDeviceSize> offsets;
+        offsets.reserve(buffers.size());
+        for(uint32_t i = 0; i < buffers.size(); i++) {
+            offsets.push_back(i);
+            const VulkanBuffer* vk_buffer = static_cast<const VulkanBuffer*>(buffers.at(i));
+            vk_buffers.push_back(vk_buffer->buffer);
+        }
+
+        vkCmdBindVertexBuffers(cmds, 0, vk_buffers.size(), vk_buffers.data(), offsets.data());
+    }
+
+    void VulkanCommandList::bind_index_buffer(const Buffer* buffer) {
+        const VulkanBuffer* vk_buffer = static_cast<const VulkanBuffer*>(buffer);
+
+        vkCmdBindIndexBuffer(cmds, vk_buffer->buffer, 0, VK_INDEX_TYPE_UINT32);
+    }
 } // namespace nova::renderer::rhi

@@ -12,13 +12,11 @@
 #include "dx12_structs.hpp"
 
 namespace nova::renderer::rhi {
-    using namespace Microsoft::WRL;
-
     class Dx12CommandList final : public CommandList {
     public:
-        ComPtr<ID3D12GraphicsCommandList> cmds;
+        Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmds;
 
-        explicit Dx12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds);
+        explicit Dx12CommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmds);
 
         void resource_barriers(PipelineStageFlags stages_before_barrier,
                                PipelineStageFlags stages_after_barrier,
@@ -41,9 +39,14 @@ namespace nova::renderer::rhi {
         void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
                                   const PipelineInterface* pipeline_interface) override final;
 
-        void bind_vertex_buffers() override final;
-        void bind_index_buffer() override final;
-        void draw_indexed_mesh() override final;
+        void bind_vertex_buffers(const std::vector<Buffer*>& buffers) override final;
+        
+        void bind_index_buffer(const Buffer* buffer) override final;
+        
+		void draw_indexed_mesh() override final;
+
+    private:
+        Microsoft::WRL::ComPtr<ID3D12Device> device;
     };
 } // namespace nova::renderer::rhi
 
