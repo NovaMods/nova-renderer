@@ -102,9 +102,10 @@ namespace nova::renderer::rhi {
          *
          * \param data The data to upload
          * \param num_bytes The number of bytes to write
+         * \param offset The offset from the start of the buffer to write the data at
          * \param buffer The buffer to write to
          */
-        virtual void write_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) = 0;
+        virtual void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) = 0;
 
         [[nodiscard]] virtual Image* create_texture(const shaderpack::TextureCreateInfo& info) = 0;
 

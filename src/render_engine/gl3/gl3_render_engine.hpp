@@ -51,25 +51,24 @@ namespace nova::renderer::rhi {
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override final;
 
-        Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
-                                          const shaderpack::PipelineCreateInfo& data) override final;
+        Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override final;
 
         Buffer* create_buffer(const BufferCreateInfo& info) override final;
 
         /*!
          * \inheritdoc
          *
-         * This method assume you're going to use the buffer as a copy source
+         * This method assumes you're going to use the buffer as a copy source
          */
-        void write_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) override final;
+        void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) override final;
 
         Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
-        
+
         Semaphore* create_semaphore() override final;
         std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override final;
-      
-		Fence* create_fence(bool signaled = false) override final;
-        
+
+        Fence* create_fence(bool signaled = false) override final;
+
         std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override final;
 
         void wait_for_fences(const std::vector<Fence*> fences) override final;

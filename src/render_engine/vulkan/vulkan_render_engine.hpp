@@ -85,7 +85,7 @@ namespace nova::renderer::rhi {
 
         Buffer* create_buffer(const BufferCreateInfo& info) override final;
 
-        void write_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) override final;
+        void write_data_to_buffer(const void* data, const uint64_t num_bytes, uint64_t offset, const Buffer* buffer) override final;
 
         Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
         Semaphore* create_semaphore() override final;

@@ -153,5 +153,15 @@ namespace nova::renderer::rhi {
         command.bind_index_buffer.buffer = gl_buffer->id;
     }
 
+    void Gl3CommandList::draw_indexed_mesh(const uint64_t num_indices, const uint64_t num_instances) {
+        commands.emplace_back();
+
+        Gl3Command& command = commands.front();
+
+        command.type = Gl3CommandType::DrawIndexedMesh;
+        command.draw_indexed_mesh.num_indices = num_indices;
+        command.draw_indexed_mesh.num_instances = num_instances;
+    }
+
     std::vector<Gl3Command> Gl3CommandList::get_commands() const { return commands; }
 } // namespace nova::renderer::rhi

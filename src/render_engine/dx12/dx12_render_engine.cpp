@@ -548,12 +548,12 @@ namespace nova::renderer::rhi {
         return buffer;
     }
 
-    void DX12RenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const Buffer* buffer) {
+    void DX12RenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const Buffer* buffer) {
         const DX12Buffer* dx_buffer = static_cast<const DX12Buffer*>(buffer);
 
         D3D12_RANGE mapped_range = {};
-        mapped_range.Begin = 0;
-        mapped_range.End = num_bytes;
+        mapped_range.Begin = offset;
+        mapped_range.End = offset + num_bytes;
 
         void* mapped_buffer;
         dx_buffer->resource->Map(0, &mapped_range, &mapped_buffer);

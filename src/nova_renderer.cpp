@@ -20,6 +20,8 @@
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
 
 #include <minitrace/minitrace.h>
+#include <glm/glm.hpp>
+
 #include "loading/shaderpack/render_graph_builder.hpp"
 #include "render_engine/gl3/gl3_render_engine.hpp"
 #include "render_objects/uniform_structs.hpp"
@@ -622,22 +624,27 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::record_rendering_static_mesh_batch(MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds) {
-        const std::vector<rhi::Buffer*> vertex_buffers = {batch.vertex_buffer,
-                                                          batch.vertex_buffer,
-                                                          batch.vertex_buffer,
-                                                          batch.vertex_buffer,
-                                                          batch.vertex_buffer,
-                                                          batch.vertex_buffer,
-                                                          batch.vertex_buffer};
-        cmds->bind_vertex_buffers(vertex_buffers);
-        cmds->bind_index_buffer(batch.index_buffer);
-
         const uint64_t start_index = cur_model_matrix_index;
 
         for(const StaticMeshRenderCommand& command : batch.renderables) {
             if(command.is_visible) {
-                rhi->write_data_to_buffer(&command.model_matrix, sizeof(glm::mat4), );
+                rhi->write_data_to_buffer(&command.model_matrix, sizeof(glm::mat4), cur_model_matrix_index * sizeof(glm::mat4), model_matrix_buffer);
+                cur_model_matrix_index++;
             }
+        }
+
+        if(start_index != cur_model_matrix_index) {
+            const std::vector<rhi::Buffer*> vertex_buffers = {batch.vertex_buffer,
+                                                              batch.vertex_buffer,
+                                                              batch.vertex_buffer,
+                                                              batch.vertex_buffer,
+                                                              batch.vertex_buffer,
+                                                              batch.vertex_buffer,
+                                                              batch.vertex_buffer};
+            cmds->bind_vertex_buffers(vertex_buffers);
+            cmds->bind_index_buffer(batch.index_buffer);
+
+            cmds->draw_indexed_mesh(batch.index_buffer->size / sizeof(uint32_t), cur_model_matrix_index - start_index);
         }
     }
 
@@ -741,6 +748,7 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_uniform_buffers() {
+        // Buffer for per-frame uniform data
         rhi::BufferCreateInfo per_frame_data_create_info = {};
         per_frame_data_create_info.size = sizeof(PerFrameUniforms);
         per_frame_data_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::UniformBuffer;
@@ -748,6 +756,7 @@ namespace nova::renderer {
 
         per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info);
 
+        // Buffer for each drawcall's model matrix
         rhi::BufferCreateInfo model_matrix_buffer_create_info = {};
         model_matrix_buffer_create_info.size = sizeof(glm::mat4) * 0xFFFF;
         model_matrix_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::UniformBuffer;
