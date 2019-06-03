@@ -19,8 +19,8 @@
 #include "debugging/renderdoc.hpp"
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
 
-#include <minitrace/minitrace.h>
 #include <glm/glm.hpp>
+#include <minitrace/minitrace.h>
 
 #include "loading/shaderpack/render_graph_builder.hpp"
 #include "render_engine/gl3/gl3_render_engine.hpp"
@@ -112,9 +112,15 @@ namespace nova::renderer {
 
         rhi::CommandList* cmds = rhi->get_command_list(0, rhi::QueueType::Graphics);
 
-        for(const Renderpass& renderpass : renderpasses) {
+        shaderpack_loading_mutex.lock();
+
+        for(Renderpass& renderpass : renderpasses) {
             record_renderpass(renderpass, cmds);
         }
+
+        shaderpack_loading_mutex.unlock();
+
+        rhi->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences.at(cur_frame_idx));
 
         mtr_flush();
     }
@@ -628,7 +634,10 @@ namespace nova::renderer {
 
         for(const StaticMeshRenderCommand& command : batch.renderables) {
             if(command.is_visible) {
-                rhi->write_data_to_buffer(&command.model_matrix, sizeof(glm::mat4), cur_model_matrix_index * sizeof(glm::mat4), model_matrix_buffer);
+                rhi->write_data_to_buffer(&command.model_matrix,
+                                          sizeof(glm::mat4),
+                                          cur_model_matrix_index * sizeof(glm::mat4),
+                                          model_matrix_buffer);
                 cur_model_matrix_index++;
             }
         }

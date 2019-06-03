@@ -50,6 +50,7 @@ namespace nova::renderer::rhi {
         std::vector<Gl3DescriptorSet*> sets;
         std::unordered_map<std::string, GLuint> uniform_cache;
         std::unordered_map<std::string, ResourceBindingDescription> pipeline_bindings;
+        std::unordered_map<std::string, GLuint> uniform_block_indices;
     };
 
     struct Gl3BindVertexBuffersCommand {
@@ -138,7 +139,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Provides access to the actual command list, so that the GL3 render engine can process the commands
          */
-        std::vector<Gl3Command> get_commands() const;
+        [[nodiscard]] std::vector<Gl3Command> get_commands() const;
 
     private:
         std::vector<Gl3Command> commands;
