@@ -88,6 +88,8 @@ namespace nova::renderer::rhi {
                                       QueueType needed_queue_type,
                                       CommandList::Level command_list_type) override final;
 
+        void execute_command_lists_impl(const Gl3ExecuteCommandListsCommand& execute_command_lists);
+
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
                                  Fence* fence_to_signal = nullptr,
@@ -108,6 +110,19 @@ namespace nova::renderer::rhi {
 
 #pragma region Command list execution
         static void copy_buffers_impl(const Gl3BufferCopyCommand& buffer_copy);
+
+        static void begin_renderpass_impl(const Gl3BeginRenderpassCommand& begin_renderpass);
+
+        static void bind_pipeline_impl(const Gl3BindPipelineCommand& bind_pipeline);
+
+        static void bind_descriptor_sets_impl(const Gl3BindDescriptorSetsCommand& bind_descriptor_sets);
+
+        static void bind_vertex_buffers_impl(const Gl3BindVertexBuffersCommand& bind_vertex_buffers);
+
+        static void bind_index_buffer_impl(const Gl3BindIndexBufferCommand& bind_index_buffer);
+
+        static void draw_indexed_mesh_impl(const Gl3DrawIndexedMeshCommand& draw_indexed_mesh);
+
 #pragma endregion
     };
 

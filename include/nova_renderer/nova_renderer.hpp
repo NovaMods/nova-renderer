@@ -217,6 +217,8 @@ namespace nova::renderer {
 
         bool shaderpack_loaded = false;
 
+        std::mutex shaderpack_loading_mutex;
+
         /*!
          * \brief The renderpasses in the shaderpack, in submission order
          *

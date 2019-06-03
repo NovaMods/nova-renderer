@@ -7,6 +7,7 @@
 
 #include "gl3_render_engine.hpp"
 
+#include "../../../tests/src/general_test_setup.hpp"
 #include "../../util/logger.hpp"
 #include "gl3_command_list.hpp"
 #include "gl3_structs.hpp"
@@ -29,6 +30,14 @@ namespace nova::renderer::rhi {
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
+
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+        glEnableVertexAttribArray(3);
+        glEnableVertexAttribArray(4);
+        glEnableVertexAttribArray(5);
+        glEnableVertexAttribArray(6);
     }
 
     void Gl3RenderEngine::set_num_renderpasses([[maybe_unused]] uint32_t num_renderpasses) {
@@ -118,8 +127,7 @@ namespace nova::renderer::rhi {
         return Result(static_cast<PipelineInterface*>(pipeline_interface));
     }
 
-    Result<Pipeline*> Gl3RenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
-                                                       const shaderpack::PipelineCreateInfo& data) {
+    Result<Pipeline*> Gl3RenderEngine::create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) {
         Gl3Pipeline* pipeline = new Gl3Pipeline;
 
         pipeline->id = glCreateProgram();
@@ -264,8 +272,17 @@ namespace nova::renderer::rhi {
         return image;
     }
 
-    Semaphore* Gl3RenderEngine::create_semaphore() { return nullptr; }
-    std::vector<Semaphore*> Gl3RenderEngine::create_semaphores(uint32_t num_semaphores) { return std::vector<Semaphore*>(); }
+    Semaphore* Gl3RenderEngine::create_semaphore() { return new Gl3Semaphore; }
+
+    std::vector<Semaphore*> Gl3RenderEngine::create_semaphores(const uint32_t num_semaphores) {
+        std::vector<Semaphore*> semaphores(num_semaphores);
+
+        for(uint32_t i = 0; i < num_semaphores; i++) {
+            semaphores[i] = new Gl3Semaphore;
+        }
+
+        return semaphores;
+    }
 
     Fence* Gl3RenderEngine::create_fence(const bool signaled) {
         Gl3Fence* fence = new Gl3Fence;
@@ -345,20 +362,34 @@ namespace nova::renderer::rhi {
                     break;
 
                 case Gl3CommandType::ExecuteCommandLists:
+                    execute_command_lists_impl(command.execute_command_lists);
                     break;
+
                 case Gl3CommandType::BeginRenderpass:
+                    begin_renderpass_impl(command.begin_renderpass);
                     break;
+
                 case Gl3CommandType::EndRenderpass:
                     break;
+
                 case Gl3CommandType::BindPipeline:
+                    bind_pipeline_impl(command.bind_pipeline);
                     break;
+
                 case Gl3CommandType::BindDescriptorSets:
+                    bind_descriptor_sets_impl(command.bind_descriptor_sets);
                     break;
+
                 case Gl3CommandType::BindVertexBuffers:
+                    bind_vertex_buffers_impl(command.bind_vertex_buffers);
                     break;
+
                 case Gl3CommandType::BindIndexBuffer:
+                    bind_index_buffer_impl(command.bind_index_buffer);
                     break;
+
                 case Gl3CommandType::DrawIndexedMesh:
+                    draw_indexed_mesh_impl(command.draw_indexed_mesh);
                     break;
             }
         }
@@ -385,6 +416,95 @@ namespace nova::renderer::rhi {
                             buffer_copy.source_offset,
                             buffer_copy.destination_offset,
                             buffer_copy.num_bytes);
+    }
+
+    void Gl3RenderEngine::begin_renderpass_impl(const Gl3BeginRenderpassCommand& begin_renderpass) {
+        glBindFramebuffer(GL_FRAMEBUFFER, begin_renderpass.framebuffer);
+    }
+
+    void Gl3RenderEngine::bind_pipeline_impl(const Gl3BindPipelineCommand& bind_pipeline) { glUseProgram(bind_pipeline.program); }
+
+    void Gl3RenderEngine::bind_descriptor_sets_impl(const Gl3BindDescriptorSetsCommand& bind_descriptor_sets) {
+        for(uint32_t set_idx = 0; set_idx < bind_descriptor_sets.sets.size(); set_idx++) {
+            const Gl3DescriptorSet* set = bind_descriptor_sets.sets.at(set_idx);
+
+            for(uint32_t binding = 0; binding < set->descriptors.size(); binding++) {
+                const Gl3Descriptor& descriptor = set->descriptors.at(binding);
+
+                for(const auto& [binding_name, binding_desc] : bind_descriptor_sets.pipeline_bindings) {
+                    if(binding_desc.set == set_idx && binding_desc.binding == binding) {
+                        const GLuint uniform_id = bind_descriptor_sets.uniform_cache.at(binding_name);
+
+                        switch(binding_desc.type) {
+                            case DescriptorType::CombinedImageSampler:
+                                break;
+
+                            case DescriptorType::UniformBuffer:
+                                const GLuint block_index = bind_descriptor_sets.uniform_block_indices.at(binding_name);
+                                glBindBufferBase(GL_UNIFORM_BUFFER, block_index, descriptor.resource.id);
+                                break;
+
+                            case DescriptorType::StorageBuffer:
+                                // I don't know how to emulate this in GL3
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void Gl3RenderEngine::bind_vertex_buffers_impl(const Gl3BindVertexBuffersCommand& bind_vertex_buffers) {
+        // TODO: use std::array or something where this is implicitly true
+        assert(bind_vertex_buffers.buffers.size() == 7);
+
+        // All the bindings because there is no god
+
+        // Positions
+        glBindBuffer(GL_ARRAY_BUFFER, bind_vertex_buffers.buffers.at(0));
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(FullVertex), reinterpret_cast<void*>(offsetof(FullVertex, position)));
+
+        // Normals
+        glBindBuffer(GL_ARRAY_BUFFER, bind_vertex_buffers.buffers.at(1));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(FullVertex), reinterpret_cast<void*>(offsetof(FullVertex, normal)));
+
+        // Tangents
+        glBindBuffer(GL_ARRAY_BUFFER, bind_vertex_buffers.buffers.at(2));
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(FullVertex), reinterpret_cast<void*>(offsetof(FullVertex, tangent)));
+
+        // Main UVs
+        glBindBuffer(GL_ARRAY_BUFFER, bind_vertex_buffers.buffers.at(3));
+        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(FullVertex), reinterpret_cast<void*>(offsetof(FullVertex, main_uv)));
+
+        // Secondary UVs
+        glBindBuffer(GL_ARRAY_BUFFER, bind_vertex_buffers.buffers.at(4));
+        glVertexAttribPointer(4, 2, GL_SHORT, GL_FALSE, sizeof(FullVertex), reinterpret_cast<void*>(offsetof(FullVertex, secondary_uv)));
+
+        // Virtual texture ID
+        glBindBuffer(GL_ARRAY_BUFFER, bind_vertex_buffers.buffers.at(5));
+        glVertexAttribPointer(5,
+                              1,
+                              GL_INT,
+                              GL_FALSE,
+                              sizeof(FullVertex),
+                              reinterpret_cast<void*>(offsetof(FullVertex, virtual_texture_id)));
+
+        // Additional data
+        glBindBuffer(GL_ARRAY_BUFFER, bind_vertex_buffers.buffers.at(6));
+        glVertexAttribPointer(6,
+                              4,
+                              GL_FLOAT,
+                              GL_FALSE,
+                              sizeof(FullVertex),
+                              reinterpret_cast<void*>(offsetof(FullVertex, additional_stuff)));
+    }
+
+    void Gl3RenderEngine::bind_index_buffer_impl(const Gl3BindIndexBufferCommand& bind_index_buffer) {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bind_index_buffer.buffer);
+    }
+
+    void Gl3RenderEngine::draw_indexed_mesh_impl(const Gl3DrawIndexedMeshCommand& draw_indexed_mesh) {
+        glDrawArraysInstanced(GL_TRIANGLES, 0, draw_indexed_mesh.num_instances, draw_indexed_mesh.num_indices);
     }
 
     Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, const GLenum shader_type) {
