@@ -5,11 +5,12 @@
 
 #pragma once
 
+#include <vulkan/vulkan.h>
 #include <nova_renderer/command_list.hpp>
 
-#include <vulkan/vulkan.h>
 #include "vk_structs.hpp"
 
+#ifdef ENABLE_VULKAN
 namespace nova::renderer::rhi {
     class VulkanRenderEngine;
 
@@ -26,9 +27,9 @@ namespace nova::renderer::rhi {
                                PipelineStageFlags stages_after_barrier,
                                const std::vector<ResourceBarrier>& barriers) override final;
 
-        void copy_buffer(Buffer* destination_buffer,
+        void copy_buffer(struct Buffer* destination_buffer,
                          uint64_t destination_offset,
-                         Buffer* source_buffer,
+                         struct Buffer* source_buffer,
                          uint64_t source_offset,
                          uint64_t num_bytes) override final;
 
@@ -43,9 +44,9 @@ namespace nova::renderer::rhi {
         void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
                                   const PipelineInterface* pipeline_interface) override final;
 
-        void bind_vertex_buffers(const std::vector<VulkanBuffer*>& buffers) override final;
+        void bind_vertex_buffers(const std::vector<struct Buffer*>& buffers) override final;
 
-        void bind_index_buffer(const VulkanBuffer* buffer) override final;
+        void bind_index_buffer(const struct Buffer* buffer) override final;
 
         void draw_indexed_mesh(uint64_t num_indices, uint64_t num_instances) override final;
 
@@ -53,3 +54,4 @@ namespace nova::renderer::rhi {
         const VulkanRenderEngine& render_engine;
     };
 } // namespace nova::renderer::rhi
+#endif

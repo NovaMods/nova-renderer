@@ -14,10 +14,10 @@
 #include <foundational/allocation/block_allocator.hpp>
 #include <foundational/allocation/bump_point_allocator.hpp>
 
-#include "nova_renderer/device_memory_resource.hpp"
-#include "nova_renderer/nova_settings.hpp"
-#include "nova_renderer/render_engine.hpp"
-#include "nova_renderer/renderdoc_app.h"
+#include "device_memory_resource.hpp"
+#include "nova_settings.hpp"
+#include "render_engine.hpp"
+#include "renderdoc_app.h"
 
 #include "../../src/render_engine/configuration.hpp"
 #include "renderables.hpp"
@@ -78,8 +78,8 @@ namespace nova::renderer {
     };
 
     struct Mesh {
-        rhi::Buffer* vertex_buffer = nullptr;
-        rhi::Buffer* index_buffer = nullptr;
+        struct rhi::Buffer* vertex_buffer = nullptr;
+        struct rhi::Buffer* index_buffer = nullptr;
 
         uint32_t num_indices = 0;
     };
@@ -242,7 +242,7 @@ namespace nova::renderer {
          */
         std::vector<Renderpass> renderpasses;
 
-        std::unordered_map<std::string, rhi::Image*> dynamic_textures;
+        std::unordered_map<std::string, struct rhi::Image*> dynamic_textures;
         std::unordered_map<std::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
 
         void create_dynamic_textures(const std::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
@@ -310,8 +310,8 @@ namespace nova::renderer {
         uint64_t frame_count = 0;
         uint8_t cur_frame_idx = 0;
 
-        rhi::Buffer* per_frame_data_buffer;
-        rhi::Buffer* model_matrix_buffer;
+        struct rhi::Buffer* per_frame_data_buffer;
+        struct rhi::Buffer* model_matrix_buffer;
         uint64_t cur_model_matrix_index = 0;
 
         std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;

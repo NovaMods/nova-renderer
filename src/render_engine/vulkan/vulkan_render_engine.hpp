@@ -6,14 +6,13 @@
 #pragma once
 
 #include <memory>
-
-#include "nova_renderer/render_engine.hpp"
+#include <nova_renderer/render_engine.hpp>
 
 #include "swapchain.hpp"
-
 #include "vk_structs.hpp"
 #include "../configuration.hpp"
 
+#ifdef ENABLE_VULKAN
 namespace nova::renderer::rhi {
     struct VulkanMemoryHeap : VkMemoryHeap {
         VkDeviceSize amount_allocated = 0;
@@ -63,7 +62,7 @@ namespace nova::renderer::rhi {
         Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
-                                        const std::vector<Image*>& attachments,
+                                        const std::vector<struct Image*>& attachments,
                                         const glm::uvec2& framebuffer_size) override final;
 
         Result<PipelineInterface*> create_pipeline_interface(
@@ -80,14 +79,13 @@ namespace nova::renderer::rhi {
 
         void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override final;
 
-        Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
-                                          const shaderpack::PipelineCreateInfo& data) override final;
+        Result<struct Pipeline*> create_pipeline(struct PipelineInterface* pipeline_interface, shaderpack::PipelineCreateInfo& data) override final;
 
-        Buffer* create_buffer(const BufferCreateInfo& info) override final;
+        struct Buffer* create_buffer(const struct BufferCreateInfo& info) override final;
 
-        void write_data_to_buffer(const void* data, const uint64_t num_bytes, uint64_t offset, const Buffer* buffer) override final;
+        void write_data_to_buffer(const void* data, const uint64_t num_bytes, uint64_t offset, const struct Buffer* buffer) override final;
 
-        Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
+        struct Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
         Semaphore* create_semaphore() override final;
         std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override final;
 
@@ -102,11 +100,11 @@ namespace nova::renderer::rhi {
         void destroy_framebuffer(const Framebuffer* framebuffer) override final;
 
         void destroy_pipeline(Pipeline* pipeline) override final;
-        void destroy_texture(Image* resource) override final;
+        void destroy_texture(struct Image* resource) override final;
         void destroy_semaphores(const std::vector<Semaphore*>& semaphores) override final;
         void destroy_fences(const std::vector<Fence*>& fences) override final;
 
-        Image* get_swapchain_image(uint32_t frame_index) override final;
+        struct Image* get_swapchain_image(uint32_t frame_index) override final;
         
         CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override final;
 
@@ -201,7 +199,7 @@ namespace nova::renderer::rhi {
          * The method checks an internal hash map. If there's already an image view for the given image then great,
          * otherwise one is created on-demand
          */
-        [[nodiscard]] VkImageView image_view_for_image(const Image* image);
+        [[nodiscard]] VkImageView image_view_for_image(const struct Image* image);
 
         [[nodiscard]] static VkCommandBufferLevel to_vk_command_buffer_level(const CommandList::Level level);
 #pragma endregion
@@ -216,3 +214,4 @@ namespace nova::renderer::rhi {
 #pragma endregion
     };
 } // namespace nova::renderer::rhi
+#endif

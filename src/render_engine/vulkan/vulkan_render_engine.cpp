@@ -25,6 +25,7 @@
 #include "../../windowing/win32_window.hpp"
 #endif
 
+#ifdef ENABLE_VULKAN
 namespace nova::renderer::rhi {
     VulkanRenderEngine::VulkanRenderEngine(NovaSettings& settings) : RenderEngine(settings) {
         create_instance();
@@ -88,12 +89,12 @@ namespace nova::renderer::rhi {
                 break;
         }
 
-        vkAllocateMemory(device, &alloc_info, nullptr, &memory->memory);
+        vkAllocateMemory(device, &alloc_info, nullptr, &(VkDeviceMemory&)memory);
 
         if(usage == MemoryUsage::LowFrequencyUpload || usage == MemoryUsage::StagingBuffer) {
             void* mapped_memory;
-            vkMapMemory(device, memory->memory, 0, VK_WHOLE_SIZE, 0, &mapped_memory);
-            heap_mappings.emplace(memory->memory, mapped_memory);
+            vkMapMemory(device, *memory, 0, VK_WHOLE_SIZE, 0, &mapped_memory);
+            heap_mappings.emplace(*memory, mapped_memory);
         }
 
         return Result<DeviceMemory*>(memory);
@@ -269,13 +270,13 @@ namespace nova::renderer::rhi {
     }
 
     Framebuffer* VulkanRenderEngine::create_framebuffer(const Renderpass* renderpass,
-                                                        const std::vector<Image*>& attachments,
+                                                        const std::vector<struct Image*>& attachments,
                                                         const glm::uvec2& framebuffer_size) {
         const VulkanRenderpass* vk_renderpass = static_cast<const VulkanRenderpass*>(renderpass);
 
         std::vector<VkImageView> attachment_views;
         attachment_views.reserve(attachments.size());
-        for(const Image* attachment : attachments) {
+        for(const struct Image* attachment : attachments) {
             const VulkanImage* vk_image = static_cast<const VulkanImage*>(attachment);
             attachment_views.push_back(vk_image->image_view);
         }
@@ -526,8 +527,7 @@ namespace nova::renderer::rhi {
         vkUpdateDescriptorSets(device, vk_writes.size(), vk_writes.data(), 0, nullptr);
     }
 
-    Result<Pipeline*> VulkanRenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
-                                                          const shaderpack::PipelineCreateInfo& data) {
+    Result<struct Pipeline*> VulkanRenderEngine::create_pipeline(struct PipelineInterface* pipeline_interface, shaderpack::PipelineCreateInfo& data) {
         NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name;
 
         const VulkanPipelineInterface* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
@@ -736,7 +736,7 @@ namespace nova::renderer::rhi {
         return Result(static_cast<Pipeline*>(vk_pipeline));
     }
 
-    Buffer* VulkanRenderEngine::create_buffer(const BufferCreateInfo& info) {
+    struct Buffer* VulkanRenderEngine::create_buffer(const struct BufferCreateInfo& info) {
         VulkanBuffer* buffer = new VulkanBuffer;
 
         VkBufferCreateInfo vk_create_info = {};
@@ -748,7 +748,7 @@ namespace nova::renderer::rhi {
 
         switch(info.buffer_usage) {
             case BufferUsage::UniformBuffer:
-                if(info.size < gpu.props.limits.maxUniformBufferRange) {
+                if(info.size < gpu.properties.properties.limits.maxUniformBufferRange) {
                     vk_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
                 } else {
@@ -769,7 +769,7 @@ namespace nova::renderer::rhi {
         //if (info.allocation) // wanna be check allocation existence
         {
             // Vulkan memory should be re-usable
-            buffer->memory = static_cast<VulkanDeviceMemory*>(&info.allocation.memory);
+            buffer->memory = static_cast<struct VulkanDeviceMemory*>(&info.allocation.memory);
 
             vkCreateBuffer(device, &vk_create_info, nullptr, &buffer->buffer);
             vkBindBufferMemory(device, buffer->buffer, *(buffer->memory), info.allocation.allocation_info.offset.b_count());
@@ -782,15 +782,15 @@ namespace nova::renderer::rhi {
         return buffer;
     }
 
-    void VulkanRenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const Buffer* buffer) {
-        const VulkanBuffer* vulkan_buffer = static_cast<const VulkanBuffer*>(buffer);
+    void VulkanRenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const struct Buffer* buffer) {
+        const struct VulkanBuffer* vulkan_buffer = static_cast<const struct VulkanBuffer*>(buffer);
 
         //const foundational::allocation::AllocationInfo& allocation_info = vulkan_buffer->memory.allocation_info;
-        const VulkanDeviceMemory* memory = static_cast<const VulkanDeviceMemory*>(vulkan_buffer->memory);
-        memcpy(memory->info.pMappedData + memory->info.offset.memory + offset, data, num_bytes);
+        const struct VulkanDeviceMemory* memory = static_cast<const struct VulkanDeviceMemory*>(vulkan_buffer->memory);
+        memcpy(memory->info.pMappedData + memory->info.offset + offset, data, num_bytes);
     }
 
-    Image* VulkanRenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
+    struct Image* VulkanRenderEngine::create_texture(const struct shaderpack::TextureCreateInfo& info) {
         VulkanImage* texture = new VulkanImage;
 
         texture->is_dynamic = true;
@@ -826,7 +826,7 @@ namespace nova::renderer::rhi {
         alloc_create_info.pool = nullptr;
         alloc_create_info.pUserData = nullptr;
 
-        vmaCreateImage(vma_allocator, &image_create_info, &alloc_create_info, &texture->image, &texture->allocation, &texture->vma_info);
+        vmaCreateImage(vma_allocator, &image_create_info, &alloc_create_info, &texture->image, &(VmaAllocation&)texture->memory, &(VmaAllocationInfo&)texture->memory);
 
         VkImageViewCreateInfo image_view_create_info = {};
         image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -897,7 +897,7 @@ namespace nova::renderer::rhi {
         return fences;
     }
 
-    Image* VulkanRenderEngine::get_swapchain_image(const uint32_t frame_index) {
+    struct Image* VulkanRenderEngine::get_swapchain_image(const uint32_t frame_index) {
         VulkanImage* image = new VulkanImage;
         image->image = swapchain->get_image(frame_index);
         return image;
@@ -923,14 +923,14 @@ namespace nova::renderer::rhi {
         delete vk_framebuffer;
     }
 
-    void VulkanRenderEngine::destroy_pipeline(Pipeline* pipeline) {
+    void VulkanRenderEngine::destroy_pipeline(struct Pipeline* pipeline) {
         VulkanPipeline* vk_pipeline = static_cast<VulkanPipeline*>(pipeline);
         vkDestroyPipeline(device, vk_pipeline->pipeline, nullptr);
     }
 
-    void VulkanRenderEngine::destroy_texture(Image* resource) {
+    void VulkanRenderEngine::destroy_texture(struct Image* resource) {
         VulkanImage* vk_image = static_cast<VulkanImage*>(resource);
-        vmaDestroyImage(vma_allocator, vk_image->image, vk_image->allocation);
+        vmaDestroyImage(vma_allocator, vk_image->image, *(vk_image->memory));
 
         delete vk_image;
     }
@@ -1129,27 +1129,19 @@ namespace nova::renderer::rhi {
             graphics_family_idx = 0xFFFFFFFF;
             // NOLINTNEXTLINE(misc-misplaced-const)
             const VkPhysicalDevice current_device = physical_devices[device_idx];
-            vkGetPhysicalDeviceProperties(current_device, &gpu.props);
+            vkGetPhysicalDeviceProperties2(current_device, &gpu.properties);
 
-            if(gpu.props.vendorID == 0x8086 &&
-               device_count - 1 > device_idx) { // Intel GPU... they are not powerful and we have more available, so skip it
-                continue;
-            }
-
-            if(!does_device_support_extensions(current_device)) {
-                continue;
-            }
+            if (gpu.properties.properties.vendorID == 0x8086 && device_count - 1 > device_idx) { continue; } // Intel GPU... they are not powerful and we have more available, so skip it
+            if (!does_device_support_extensions(current_device)) { continue; }
 
             uint32_t queue_family_count;
             vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, nullptr);
             gpu.queue_family_props.resize(queue_family_count);
             vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, gpu.queue_family_props.data());
 
-            for(uint32_t queue_idx = 0; queue_idx < queue_family_count; queue_idx++) {
+            for (uint32_t queue_idx = 0; queue_idx < queue_family_count; queue_idx++) {
                 const VkQueueFamilyProperties current_properties = gpu.queue_family_props[queue_idx];
-                if(current_properties.queueCount < 1) {
-                    continue;
-                }
+                if (current_properties.queueCount < 1) { continue; }
 
                 VkBool32 supports_present = VK_FALSE;
                 NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(current_device, queue_idx, surface, &supports_present));
@@ -1170,7 +1162,7 @@ namespace nova::renderer::rhi {
             }
 
             if(graphics_family_idx != 0xFFFFFFFF) {
-                NOVA_LOG(INFO) << fmt::format(fmt("Selected GPU {:s}"), gpu.props.deviceName);
+                NOVA_LOG(INFO) << fmt::format("Selected GPU {:s}", gpu.properties.properties.deviceName);
                 gpu.phys_device = current_device;
                 break;
             }
@@ -1180,9 +1172,8 @@ namespace nova::renderer::rhi {
             throw render_engine_initialization_exception("Failed to find good GPU");
         }
 
-        vkGetPhysicalDeviceFeatures(gpu.phys_device, &gpu.supported_features);
-
-        vkGetPhysicalDeviceMemoryProperties(gpu.phys_device, &gpu.memory_properties);
+        vkGetPhysicalDeviceFeatures2(gpu.phys_device, &gpu.features);
+        vkGetPhysicalDeviceMemoryProperties2(gpu.phys_device, &gpu.memory_properties);
 
         const float priority = 1.0;
 
@@ -1297,8 +1288,8 @@ namespace nova::renderer::rhi {
     }
 
     uint32_t VulkanRenderEngine::find_memory_type_with_flags(const uint32_t search_flags, const MemorySearchMode search_mode) const {
-        for(uint32_t i = 0; i < gpu.memory_properties.memoryTypeCount; i++) {
-            const VkMemoryType& memory_type = gpu.memory_properties.memoryTypes[i];
+        for(uint32_t i = 0; i < gpu.memory_properties.memoryProperties.memoryTypeCount; i++) {
+            const VkMemoryType& memory_type = gpu.memory_properties.memoryProperties.memoryTypes[i];
             switch(search_mode) {
                 case MemorySearchMode::Exact:
                     if(memory_type.propertyFlags == search_flags) {
@@ -1475,3 +1466,4 @@ namespace nova::renderer::rhi {
         return module;
     }
 } // namespace nova::renderer::rhi
+#endif

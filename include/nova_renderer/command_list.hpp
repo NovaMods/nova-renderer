@@ -78,7 +78,7 @@ namespace nova::renderer::rhi {
          * \pre destination_offset plus num_bytes is less than the size of source_buffer
          */
         virtual void copy_buffer(
-            Buffer* destination_buffer, uint64_t destination_offset, Buffer* source_buffer, uint64_t source_offset, uint64_t num_bytes) = 0;
+            struct Buffer* destination_buffer, uint64_t destination_offset, struct Buffer* source_buffer, uint64_t source_offset, uint64_t num_bytes) = 0;
 
         /*!
          * \brief Executed a number of command lists
@@ -111,14 +111,14 @@ namespace nova::renderer::rhi {
          *
          * \param buffers The buffers to bind
          */
-        virtual void bind_vertex_buffers(const std::vector<Buffer*>& buffers) = 0;
+        virtual void bind_vertex_buffers(const std::vector<struct Buffer*>& buffers) = 0;
 
         /*!
          * \brief Binds the provided index buffer to the command list
          *
          * The index buffer must use 32-bit indices. This will likely change in the future but for now it's a thing
          */
-        virtual void bind_index_buffer(const Buffer* buffer) = 0;
+        virtual void bind_index_buffer(const struct Buffer* buffer) = 0;
 
         /*!
          * \brief Records rendering instances of an indexed mesh

@@ -4,12 +4,11 @@
  */
 
 #include "swapchain.hpp"
-
 #include "../../util/logger.hpp"
 #include "vulkan_utils.hpp"
-
 #include "vulkan_render_engine.hpp"
 
+#ifdef ENABLE_VULKAN
 namespace nova::renderer::rhi {
     VulkanSwapchainManager::VulkanSwapchainManager(const uint32_t requested_num_swapchain_images,
                                                VulkanRenderEngine& render_engine,
@@ -230,6 +229,7 @@ namespace nova::renderer::rhi {
             barriers.push_back(barrier);
         }
 
+        // function doesn't exist
         VkCommandPool command_pool = render_engine.get_command_pool_for_thread(0, render_engine.graphics_family_index);
 
         VkCommandBufferAllocateInfo alloc_info = {};
@@ -330,3 +330,4 @@ namespace nova::renderer::rhi {
 
     VkFence VulkanSwapchainManager::get_frame_fence(const uint32_t frame_idx) { return fences[frame_idx]; }
 } // namespace nova::renderer::rhi
+#endif

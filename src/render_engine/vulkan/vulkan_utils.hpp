@@ -9,10 +9,10 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-#include "nova_renderer/command_list.hpp"
+#include <nova_renderer/command_list.hpp>
+#include <nova_renderer/shaderpack_data.hpp>
 
-#include "nova_renderer/shaderpack_data.hpp"
-
+#ifdef ENABLE_VULKAN
 namespace nova::renderer::rhi {
     VkImageLayout to_vk_layout(ResourceState state);
 
@@ -54,3 +54,4 @@ namespace nova::renderer::rhi {
 #define NOVA_CHECK_RESULT(expr) expr
 #endif
 #endif // NOVA_RENDERER_VULKAN_UTILS_HPP
+#endif

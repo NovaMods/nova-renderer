@@ -9,9 +9,9 @@
 
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
+#include <nova_renderer/rhi_types.hpp>
 
-#include "nova_renderer/rhi_types.hpp"
-
+#ifdef ENABLE_VULKAN
 namespace nova::renderer::rhi {
 
     struct VulkanDeviceMemory : DeviceMemory {
@@ -149,3 +149,4 @@ namespace nova::renderer::rhi {
         std::vector<VkSurfaceFormatKHR> surface_formats;
     };
 } // namespace nova::renderer::rhi
+#endif

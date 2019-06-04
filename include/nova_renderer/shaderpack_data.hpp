@@ -18,7 +18,6 @@
 #include "util/utils.hpp"
 
 #include <vulkan/vulkan.h>
-
 #include <glm/glm.hpp>
 
 namespace nova::renderer::shaderpack {

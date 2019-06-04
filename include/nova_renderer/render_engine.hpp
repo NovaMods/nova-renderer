@@ -7,12 +7,12 @@
 
 #include <memory>
 
-#include "nova_renderer/command_list.hpp"
-#include "nova_renderer/nova_settings.hpp"
-#include "nova_renderer/shaderpack_data.hpp"
-#include "nova_renderer/util/platform.hpp"
-#include "nova_renderer/util/result.hpp"
-#include "nova_renderer/util/utils.hpp"
+#include "command_list.hpp"
+#include "nova_settings.hpp"
+#include "shaderpack_data.hpp"
+#include "util/platform.hpp"
+#include "util/result.hpp"
+#include "util/utils.hpp"
 #include "rhi_types.hpp"
 
 namespace nova::renderer::rhi {
@@ -74,9 +74,9 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] virtual class Framebuffer* create_framebuffer(const Renderpass* renderpass,
                                                                     const std::vector<struct Image*>& attachments,
-                                                                    const glm::uvec2& framebuffer_size) = 0;
+                                                                    const glm::uvec2& framebuffer_size);
 
-        [[nodiscard]] virtual Result<PipelineInterface*> create_pipeline_interface(
+        [[nodiscard]] virtual Result<struct PipelineInterface*> create_pipeline_interface(
             const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) = 0;
@@ -90,10 +90,9 @@ namespace nova::renderer::rhi {
 
         virtual void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) = 0;
 
-        [[nodiscard]] virtual Result<class Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
-                                                                      shaderpack::PipelineCreateInfo& data) = 0;
+        [[nodiscard]] virtual Result<struct Pipeline*> create_pipeline(struct PipelineInterface* pipeline_interface, shaderpack::PipelineCreateInfo& data) = 0;
 
-        [[nodiscard]] virtual class Buffer* create_buffer(const BufferCreateInfo& info) = 0;
+        [[nodiscard]] virtual struct Buffer* create_buffer(const BufferCreateInfo& info) = 0;
 
         /*!
          * \brief Writes data to a buffer
