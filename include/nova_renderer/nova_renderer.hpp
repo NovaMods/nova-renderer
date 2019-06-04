@@ -133,6 +133,10 @@ namespace nova::renderer {
          * shaderpack isn't found there, it'll try to load it from the `resourcepacks/` directory (mimicking Bedrock
          * shaders). If the shader can't be found at either place, a `nova::resource_not_found` exception will be thrown
          *
+         * Loading a shaderpack will cause a stall in the GPU. Nova will have to wait for all in-flight frames to finish, then replace the
+         * current shaderpack with the new one, then start rendering. Replacing the shaderpack might also require reloading all chunks, if
+         * the new shaderpack has different geometry filters then the current one
+         *
          * \param shaderpack_name The name of the shaderpack to load
          */
         void load_shaderpack(const std::string& shaderpack_name);

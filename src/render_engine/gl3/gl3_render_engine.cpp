@@ -194,15 +194,15 @@ namespace nova::renderer::rhi {
         GLuint buffer_bind_target = 0;
 
         switch(info.buffer_usage) {
-            case BufferCreateInfo::Usage::UniformBuffer:
+            case BufferCreateInfo::BufferUsage::UniformBuffer:
                 buffer_bind_target = GL_UNIFORM_BUFFER;
                 break;
 
-            case BufferCreateInfo::Usage::IndexBuffer:
+            case BufferCreateInfo::BufferUsage::IndexBuffer:
                 buffer_bind_target = GL_ELEMENT_ARRAY_BUFFER;
                 break;
 
-            case BufferCreateInfo::Usage::VertexBuffer:
+            case BufferCreateInfo::BufferUsage::VertexBuffer:
                 buffer_bind_target = GL_ARRAY_BUFFER;
                 break;
 
@@ -433,7 +433,6 @@ namespace nova::renderer::rhi {
 
                 for(const auto& [binding_name, binding_desc] : bind_descriptor_sets.pipeline_bindings) {
                     if(binding_desc.set == set_idx && binding_desc.binding == binding) {
-
                         switch(binding_desc.type) {
                             case DescriptorType::CombinedImageSampler:
                                 const GLuint uniform_id = bind_descriptor_sets.uniform_cache.at(binding_name);

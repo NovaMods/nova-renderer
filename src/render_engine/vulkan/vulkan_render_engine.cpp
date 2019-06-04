@@ -740,7 +740,7 @@ namespace nova::renderer::rhi {
         VmaAllocationCreateInfo vma_create_info = {};
 
         switch(info.buffer_usage) {
-            case BufferCreateInfo::Usage::UniformBuffer:
+            case BufferCreateInfo::BufferUsage::UniformBuffer:
                 if(info.size < gpu.props.limits.maxUniformBufferRange) {
                     vk_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
@@ -750,11 +750,11 @@ namespace nova::renderer::rhi {
                 
                 break;
 
-            case BufferCreateInfo::Usage::IndexBuffer:
+            case BufferCreateInfo::BufferUsage::IndexBuffer:
                 vk_create_info.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
                 break;
 
-            case BufferCreateInfo::Usage::VertexBuffer:
+            case BufferCreateInfo::BufferUsage::VertexBuffer:
                 vk_create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
                 break;
         }

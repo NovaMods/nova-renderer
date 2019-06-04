@@ -12,6 +12,7 @@
 #include "render_engine/dx12/dx12_render_engine.hpp"
 #endif
 #include "debugging/renderdoc.hpp"
+#include "nova_renderer/command_list.hpp"
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
 
 #include <glm/glm.hpp>
@@ -85,6 +86,8 @@ namespace nova::renderer {
             } break;
         }
 
+        swapchain = rhi->get_swapchain();
+
         create_global_gpu_pools();
 
         create_global_sync_objects();
@@ -103,17 +106,15 @@ namespace nova::renderer {
 
         NOVA_LOG(DEBUG) << "\n***********************\n        FRAME START        \n***********************";
 
+        // The frame fences tell us when the GPU is done working on the frame we need
         rhi->wait_for_fences({frame_fences.at(cur_frame_idx)});
+        rhi->reset_fences({frame_fences.at(cur_frame_idx)});
 
         rhi::CommandList* cmds = rhi->get_command_list(0, rhi::QueueType::Graphics);
-
-        shaderpack_loading_mutex.lock();
 
         for(Renderpass& renderpass : renderpasses) {
             record_renderpass(renderpass, cmds);
         }
-
-        shaderpack_loading_mutex.unlock();
 
         rhi->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences.at(cur_frame_idx));
 
@@ -124,7 +125,7 @@ namespace nova::renderer {
 
     MeshId NovaRenderer::create_mesh(const MeshData& mesh_data) {
         rhi::BufferCreateInfo vertex_buffer_create_info = {};
-        vertex_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::VertexBuffer;
+        vertex_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::BufferUsage::VertexBuffer;
         vertex_buffer_create_info.size = mesh_data.vertex_data.size() * sizeof(FullVertex);
         vertex_buffer_create_info.buffer_residency = rhi::BufferCreateInfo::Residency::DeviceLocal;
         vertex_buffer_create_info.allocation = mesh_memory->allocate(Bytes(vertex_buffer_create_info.size));
@@ -133,7 +134,7 @@ namespace nova::renderer {
 
         {
             rhi::BufferCreateInfo staging_vertex_buffer_create_info = vertex_buffer_create_info;
-            staging_vertex_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::StagingBuffer;
+            staging_vertex_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::BufferUsage::StagingBuffer;
             rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info);
             rhi->write_data_to_buffer(mesh_data.vertex_data.data(), mesh_data.vertex_data.size(), staging_vertex_buffer);
 
@@ -143,7 +144,7 @@ namespace nova::renderer {
         }
 
         rhi::BufferCreateInfo index_buffer_create_info = {};
-        index_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::IndexBuffer;
+        index_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::BufferUsage::IndexBuffer;
         index_buffer_create_info.size = mesh_data.indices.size() * sizeof(uint32_t);
         index_buffer_create_info.buffer_residency = rhi::BufferCreateInfo::Residency::DeviceLocal;
         index_buffer_create_info.allocation = mesh_memory->allocate(Bytes(index_buffer_create_info.size));
@@ -152,7 +153,7 @@ namespace nova::renderer {
 
         {
             rhi::BufferCreateInfo staging_index_buffer_create_info = index_buffer_create_info;
-            staging_index_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::StagingBuffer;
+            staging_index_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::BufferUsage::StagingBuffer;
             rhi::Buffer* staging_index_buffer = rhi->create_buffer(staging_index_buffer_create_info);
             rhi->write_data_to_buffer(mesh_data.indices.data(), mesh_data.indices.size(), staging_index_buffer);
 
@@ -755,7 +756,7 @@ namespace nova::renderer {
         // Buffer for per-frame uniform data
         rhi::BufferCreateInfo per_frame_data_create_info = {};
         per_frame_data_create_info.size = sizeof(PerFrameUniforms);
-        per_frame_data_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::UniformBuffer;
+        per_frame_data_create_info.buffer_usage = rhi::BufferCreateInfo::BufferUsage::UniformBuffer;
         per_frame_data_create_info.allocation = ubo_memory->allocate(Bytes(sizeof(PerFrameUniforms)));
 
         per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info);
@@ -763,7 +764,7 @@ namespace nova::renderer {
         // Buffer for each drawcall's model matrix
         rhi::BufferCreateInfo model_matrix_buffer_create_info = {};
         model_matrix_buffer_create_info.size = sizeof(glm::mat4) * 0xFFFF;
-        model_matrix_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::Usage::UniformBuffer;
+        model_matrix_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::BufferUsage::UniformBuffer;
         model_matrix_buffer_create_info.allocation = ubo_memory->allocate(Bytes(sizeof(glm::mat4) * 0xFFFF));
 
         model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info);
