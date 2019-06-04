@@ -433,15 +433,16 @@ namespace nova::renderer::rhi {
 
                 for(const auto& [binding_name, binding_desc] : bind_descriptor_sets.pipeline_bindings) {
                     if(binding_desc.set == set_idx && binding_desc.binding == binding) {
-                        const GLuint uniform_id = bind_descriptor_sets.uniform_cache.at(binding_name);
 
                         switch(binding_desc.type) {
                             case DescriptorType::CombinedImageSampler:
+                                const GLuint uniform_id = bind_descriptor_sets.uniform_cache.at(binding_name);
+                                glUniform1i(uniform_id, descriptor.resource->id);
                                 break;
 
                             case DescriptorType::UniformBuffer:
                                 const GLuint block_index = bind_descriptor_sets.uniform_block_indices.at(binding_name);
-                                glBindBufferBase(GL_UNIFORM_BUFFER, block_index, descriptor.resource.id);
+                                glBindBufferBase(GL_UNIFORM_BUFFER, block_index, descriptor.resource->id);
                                 break;
 
                             case DescriptorType::StorageBuffer:
