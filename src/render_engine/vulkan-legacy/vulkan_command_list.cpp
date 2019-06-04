@@ -9,6 +9,7 @@
 
 #include "vk_structs.hpp"
 
+#ifdef LEGACY_VULKAN
 namespace nova::renderer::rhi {
     VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine& render_engine)
         : cmds(cmds), render_engine(render_engine) {}
@@ -166,3 +167,5 @@ namespace nova::renderer::rhi {
         vkCmdDrawIndexed(cmds, num_indices, num_instances, 0, 0, 0);
     }
 } // namespace nova::renderer::rhi
+
+#endif

@@ -11,5 +11,7 @@
 #undef Always
 #endif
 
+#ifdef LEGACY_VULKAN
 namespace nova::renderer {
 } // namespace nova::renderer
+#endif

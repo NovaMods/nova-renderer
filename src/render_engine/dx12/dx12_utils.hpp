@@ -13,6 +13,7 @@
 
 #include "../../util/logger.hpp"
 
+#ifdef ENABLE_D3D12
 namespace nova::renderer::rhi {
     D3D12_RESOURCE_STATES to_dx12_state(ResourceState state);
 
@@ -40,5 +41,6 @@ namespace nova::renderer::rhi {
 #define CHECK_ERROR(expr, msg) expr;
 #endif
 } // namespace nova::renderer
+#endif
 
 #endif // NOVA_RENDERER_DX_12_UTILS_HPP

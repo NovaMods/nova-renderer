@@ -15,6 +15,8 @@
 namespace nova::renderer::rhi {
     struct VulkanDeviceMemory : DeviceMemory {
         VkDeviceMemory memory;
+        VmaAllocation allocation;
+        VmaAllocationInfo alloc_info;
     };
 
     struct VulkanSampler : Sampler {

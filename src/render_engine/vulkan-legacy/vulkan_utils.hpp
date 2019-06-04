@@ -13,6 +13,7 @@
 
 #include "nova_renderer/shaderpack_data.hpp"
 
+#ifdef LEGACY_VULKAN
 namespace nova::renderer::rhi {
     VkImageLayout to_vk_layout(ResourceState state);
 
@@ -54,3 +55,4 @@ namespace nova::renderer::rhi {
 #define NOVA_CHECK_RESULT(expr) expr
 #endif
 #endif // NOVA_RENDERER_VULKAN_UTILS_HPP
+#endif

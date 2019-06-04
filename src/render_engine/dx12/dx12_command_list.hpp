@@ -11,6 +11,7 @@
 
 #include "dx12_structs.hpp"
 
+#ifdef ENABLE_D3D12
 namespace nova::renderer::rhi {
     class Dx12CommandList final : public CommandList {
     public:
@@ -49,5 +50,6 @@ namespace nova::renderer::rhi {
         Microsoft::WRL::ComPtr<ID3D12Device> device;
     };
 } // namespace nova::renderer::rhi
+#endif
 
 #endif // NOVA_RENDERER_D3D12_COMMAND_LIST_HPP

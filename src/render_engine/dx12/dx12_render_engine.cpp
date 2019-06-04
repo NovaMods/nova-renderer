@@ -17,6 +17,7 @@
 #include "dx12_structs.hpp"
 #include "dx12_utils.hpp"
 
+#ifdef ENABLE_D3D12
 using Microsoft::WRL::ComPtr;
 
 #define CPU_FENCE_SIGNALED 16
@@ -966,3 +967,4 @@ namespace nova::renderer::rhi {
     }
 
 } // namespace nova::renderer::rhi
+#endif

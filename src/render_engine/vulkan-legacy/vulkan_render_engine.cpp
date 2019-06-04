@@ -25,6 +25,7 @@
 #include "../../windowing/win32_window.hpp"
 #endif
 
+#ifdef LEGACY_VULKAN
 namespace nova::renderer::rhi {
     VulkanRenderEngine::VulkanRenderEngine(NovaSettings& settings) : RenderEngine(settings) {
         create_instance();
@@ -496,9 +497,9 @@ namespace nova::renderer::rhi {
             vk_write.descriptorCount = 1;
             vk_write.dstArrayElement = 0;
 
+            VkDescriptorImageInfo vk_image_info = {};
             switch(write.type) {
                 case DescriptorType::CombinedImageSampler:
-                    VkDescriptorImageInfo vk_image_info = {};
                     vk_image_info.imageView = image_view_for_image(write.image_info->image);
                     vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     vk_image_info.sampler = static_cast<VulkanSampler*>(write.image_info->sampler)->sampler;
@@ -818,8 +819,8 @@ namespace nova::renderer::rhi {
         alloc_create_info.pool = nullptr;
         alloc_create_info.pUserData = nullptr;
 
-        vmaCreateImage(vma_allocator, &image_create_info, &alloc_create_info, &texture->image, &texture->allocation, &texture->vma_info);
-
+        vmaCreateImage(vma_allocator, &image_create_info, &alloc_create_info, &texture->image, &texture->memory->allocation, &texture->memory->alloc_info);
+         
         VkImageViewCreateInfo image_view_create_info = {};
         image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         image_view_create_info.image = texture->image;
@@ -922,7 +923,7 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderEngine::destroy_texture(Image* resource) {
         VulkanImage* vk_image = static_cast<VulkanImage*>(resource);
-        vmaDestroyImage(vma_allocator, vk_image->image, vk_image->allocation);
+        vmaDestroyImage(vma_allocator, vk_image->image, vk_image->memory->allocation);
 
         delete vk_image;
     }
@@ -1467,3 +1468,4 @@ namespace nova::renderer::rhi {
         return module;
     }
 } // namespace nova::renderer::rhi
+#endif

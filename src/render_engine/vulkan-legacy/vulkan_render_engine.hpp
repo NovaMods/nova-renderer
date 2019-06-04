@@ -14,6 +14,7 @@
 #include "vk_structs.hpp"
 #include "../configuration.hpp"
 
+#ifdef LEGACY_VULKAN
 namespace nova::renderer::rhi {
     struct VulkanMemoryHeap : VkMemoryHeap {
         VkDeviceSize amount_allocated = 0;
@@ -216,3 +217,4 @@ namespace nova::renderer::rhi {
 #pragma endregion
     };
 } // namespace nova::renderer::rhi
+#endif

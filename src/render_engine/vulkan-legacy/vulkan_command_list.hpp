@@ -9,6 +9,7 @@
 
 #include <vulkan/vulkan.h>
 
+#ifdef LEGACY_VULKAN
 namespace nova::renderer::rhi {
     class VulkanRenderEngine;
 
@@ -52,3 +53,4 @@ namespace nova::renderer::rhi {
         const VulkanRenderEngine& render_engine;
     };
 } // namespace nova::renderer::rhi
+#endif

@@ -4,6 +4,7 @@
 #include "nova_renderer/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 
+#ifdef ENABLE_D3D12
 namespace nova::renderer::rhi {
     struct DX12DeviceMemory : DeviceMemory {
         ID3D12Heap* heap;
@@ -63,3 +64,4 @@ namespace nova::renderer::rhi {
         Microsoft::WRL::ComPtr<ID3D12Fence> fence;
     };
 } // namespace nova::renderer::rhi
+#endif

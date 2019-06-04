@@ -15,6 +15,7 @@
 
 #include <spirv_cross/spirv_hlsl.hpp>
 
+#ifdef ENABLE_D3D12
 namespace nova::renderer::rhi {
     /*!
      * \brief D3D12 implementation of a render engine
@@ -146,3 +147,4 @@ namespace nova::renderer::rhi {
                                                     const spirv_cross::CompilerHLSL::Options& options,
                                                     std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
 } // namespace nova::renderer::rhi
+#endif

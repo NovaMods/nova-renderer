@@ -321,7 +321,8 @@ namespace nova::renderer {
         void record_material_pass(MaterialPass& pass, rhi::CommandList* cmds);
 
         void record_rendering_static_mesh_batch(MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
-#endif
+#pragma endregion
+//#endif // drunked coding?
     };
 } // namespace nova::renderer
 

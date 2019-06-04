@@ -8,6 +8,7 @@
 #include "dx12_utils.hpp"
 #include "../../../tests/src/general_test_setup.hpp"
 
+#ifdef ENABLE_D3D12
 namespace nova::renderer::rhi {
     using namespace Microsoft::WRL;
 
@@ -136,3 +137,4 @@ namespace nova::renderer::rhi {
         cmds->DrawInstanced(num_indices, num_instances, 0, 0);
     }
 } // namespace nova::renderer::rhi
+#endif

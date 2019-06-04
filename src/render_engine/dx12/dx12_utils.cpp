@@ -5,6 +5,7 @@
 
 #include "dx12_utils.hpp"
 
+#ifdef ENABLE_D3D12
 namespace nova::renderer::rhi {
     D3D12_RESOURCE_STATES to_dx12_state(rhi::ResourceState state) {
         switch(state) {
@@ -185,3 +186,4 @@ namespace nova::renderer::rhi {
         }
     }
 } // namespace nova::renderer
+#endif
