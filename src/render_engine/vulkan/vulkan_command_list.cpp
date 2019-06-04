@@ -24,7 +24,7 @@ namespace nova::renderer::rhi {
 
         for(const ResourceBarrier& barrier : barriers) {
             switch(barrier.resource_to_barrier->type) {
-                case Resource::Type::Image: {
+                case Resource::ResourceType::Image: {
                     VulkanImage* image = static_cast<VulkanImage*>(barrier.resource_to_barrier);
 
                     VkImageMemoryBarrier image_barrier = {};
@@ -45,7 +45,7 @@ namespace nova::renderer::rhi {
                     image_barriers.push_back(image_barrier);
                 } break;
 
-                case Resource::Type::Buffer: {
+                case Resource::ResourceType::Buffer: {
                     VulkanBuffer* buffer = static_cast<VulkanBuffer*>(barrier.resource_to_barrier);
 
                     VkBufferMemoryBarrier buffer_barrier = {};

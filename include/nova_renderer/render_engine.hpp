@@ -7,17 +7,21 @@
 
 #include <memory>
 
-#include "../../src/windowing/win32_window.hpp"
 #include "nova_renderer/command_list.hpp"
 #include "nova_renderer/nova_settings.hpp"
-#include "nova_renderer/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/platform.hpp"
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/util/utils.hpp"
-#include "nova_renderer/window.hpp"
+#include "rhi_types.hpp"
 
 namespace nova::renderer::rhi {
+    struct Fence;
+    struct Image;
+    struct Semaphore;
+    struct Swapchain;
+    struct Window;
+
     NOVA_EXCEPTION(render_engine_initialization_exception);
     NOVA_EXCEPTION(render_engine_rendering_exception);
 
@@ -66,30 +70,30 @@ namespace nova::renderer::rhi {
          *
          * \return The newly created renderpass
          */
-        [[nodiscard]] virtual Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) = 0;
+        [[nodiscard]] virtual Result<class Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) = 0;
 
-        [[nodiscard]] virtual Framebuffer* create_framebuffer(const Renderpass* renderpass,
-                                                              const std::vector<Image*>& attachments,
-                                                              const glm::uvec2& framebuffer_size) = 0;
+        [[nodiscard]] virtual class Framebuffer* create_framebuffer(const Renderpass* renderpass,
+                                                                    const std::vector<struct Image*>& attachments,
+                                                                    const glm::uvec2& framebuffer_size) = 0;
 
         [[nodiscard]] virtual Result<PipelineInterface*> create_pipeline_interface(
             const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) = 0;
 
-        [[nodiscard]] virtual DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
-                                                                     uint32_t num_samplers,
-                                                                     uint32_t num_uniform_buffers) = 0;
+        [[nodiscard]] virtual class DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
+                                                                           uint32_t num_samplers,
+                                                                           uint32_t num_uniform_buffers) = 0;
 
         [[nodiscard]] virtual std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                                                  const DescriptorPool* pool) = 0;
 
         virtual void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) = 0;
 
-        [[nodiscard]] virtual Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
-                                                                const shaderpack::PipelineCreateInfo& data) = 0;
+        [[nodiscard]] virtual Result<class Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
+                                                                      shaderpack::PipelineCreateInfo& data) = 0;
 
-        [[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info) = 0;
+        [[nodiscard]] virtual class Buffer* create_buffer(const BufferCreateInfo& info) = 0;
 
         /*!
          * \brief Writes data to a buffer
@@ -105,9 +109,9 @@ namespace nova::renderer::rhi {
          * \param offset The offset from the start of the buffer to write the data at
          * \param buffer The buffer to write to
          */
-        virtual void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) = 0;
+        virtual void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const struct Buffer* buffer) = 0;
 
-        [[nodiscard]] virtual Image* create_texture(const shaderpack::TextureCreateInfo& info) = 0;
+        [[nodiscard]] virtual struct Image* create_texture(const shaderpack::TextureCreateInfo& info) = 0;
 
         [[nodiscard]] virtual Semaphore* create_semaphore() = 0;
 
@@ -117,7 +121,7 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] virtual std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) = 0;
 
-        [[nodiscard]] virtual Image* get_swapchain_image(uint32_t frame_index) = 0;
+        [[nodiscard]] virtual struct Image* get_swapchain_image(uint32_t frame_index) = 0;
 
         /*!
          * \blocks the fence until all fences are signaled
@@ -128,7 +132,9 @@ namespace nova::renderer::rhi {
          */
         virtual void wait_for_fences(const std::vector<Fence*> fences) = 0;
 
-        virtual void destroy_renderpass(Renderpass* pass) = 0;
+        virtual void reset_fences(const std::vector<Fence*>& fences) = 0;
+
+        virtual void destroy_renderpass(class Renderpass* pass) = 0;
 
         virtual void destroy_framebuffer(const Framebuffer* framebuffer) = 0;
 
@@ -136,11 +142,13 @@ namespace nova::renderer::rhi {
 
         virtual void destroy_pipeline(Pipeline* pipeline) = 0;
 
-        virtual void destroy_texture(Image* resource) = 0;
+        virtual void destroy_texture(struct Image* resource) = 0;
 
         virtual void destroy_semaphores(const std::vector<Semaphore*>& semaphores) = 0;
 
         virtual void destroy_fences(const std::vector<Fence*>& fences) = 0;
+
+        virtual Swapchain* get_swapchain() = 0;
 
         /*!
          * \brief Allocates a new command list that can be used from the provided thread and has the desired type
@@ -163,8 +171,8 @@ namespace nova::renderer::rhi {
         virtual void submit_command_list(CommandList* cmds,
                                          QueueType queue,
                                          Fence* fence_to_signal = nullptr,
-                                         const std::vector<Semaphore*>& wait_semaphores = {},
-                                         const std::vector<Semaphore*>& signal_semaphores = {}) = 0;
+                                         const std::vector<class Semaphore*>& wait_semaphores = {},
+                                         const std::vector<class Semaphore*>& signal_semaphores = {}) = 0;
 
     protected:
         NovaSettings& settings;
@@ -172,7 +180,7 @@ namespace nova::renderer::rhi {
 #ifdef NOVA_LINUX
         std::shared_ptr<x11_window> window;
 #elif defined(NOVA_WINDOWS)
-        std::shared_ptr<win32_window> window;
+        std::shared_ptr<class win32_window> window;
 #endif
 
         glm::uvec2 swapchain_size;

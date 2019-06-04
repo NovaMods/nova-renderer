@@ -6,9 +6,16 @@
 #pragma once
 #include <vector>
 
-#include "nova_renderer/rhi_types.hpp"
+#include "nova_renderer/rhi_enums.hpp"
 
 namespace nova::renderer::rhi {
+    class Buffer;
+    class DescriptorSet;
+    class Framebuffer;
+    class Pipeline;
+    class PipelineInterface;
+    class Renderpass;
+
     /*!
      * \brief An API-agnostic command list
      *
@@ -90,7 +97,7 @@ namespace nova::renderer::rhi {
 
         virtual void end_renderpass() = 0;
 
-        virtual void bind_pipeline(const rhi::Pipeline* pipeline) = 0;
+        virtual void bind_pipeline(const Pipeline* pipeline) = 0;
 
         virtual void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
                                           const PipelineInterface* pipeline_interface) = 0;
@@ -114,7 +121,7 @@ namespace nova::renderer::rhi {
 
         /*!
          * \brief Records rendering instances of an indexed mesh
-         * 
+         *
          * \param num_indices The number of indices to read from the current index buffer
          * \param num_instances The number of instances of the current mesh to render
          */
