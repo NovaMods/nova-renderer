@@ -6,12 +6,10 @@
 #include "vulkan_command_list.hpp"
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
-
 #include "vk_structs.hpp"
 
 namespace nova::renderer::rhi {
-    VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine& render_engine)
-        : cmds(cmds), render_engine(render_engine) {}
+    VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine& render_engine) : cmds(cmds), render_engine(render_engine) {}
 
     void VulkanCommandList::resource_barriers(const PipelineStageFlags stages_before_barrier,
                                               const PipelineStageFlags stages_after_barrier,
@@ -24,7 +22,7 @@ namespace nova::renderer::rhi {
 
         for(const ResourceBarrier& barrier : barriers) {
             switch(barrier.resource_to_barrier->type) {
-                case Resource::ResourceType::Image: {
+                case ResourceType::Image: {
                     VulkanImage* image = static_cast<VulkanImage*>(barrier.resource_to_barrier);
 
                     VkImageMemoryBarrier image_barrier = {};
@@ -45,7 +43,7 @@ namespace nova::renderer::rhi {
                     image_barriers.push_back(image_barrier);
                 } break;
 
-                case Resource::ResourceType::Buffer: {
+                case ResourceType::Buffer: {
                     VulkanBuffer* buffer = static_cast<VulkanBuffer*>(barrier.resource_to_barrier);
 
                     VkBufferMemoryBarrier buffer_barrier = {};
@@ -141,7 +139,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void VulkanCommandList::bind_vertex_buffers(const std::vector<Buffer*>& buffers) {
+    void VulkanCommandList::bind_vertex_buffers(const std::vector<VulkanBuffer*>& buffers) {
         std::vector<VkBuffer> vk_buffers;
         vk_buffers.reserve(buffers.size());
 
@@ -156,7 +154,7 @@ namespace nova::renderer::rhi {
         vkCmdBindVertexBuffers(cmds, 0, vk_buffers.size(), vk_buffers.data(), offsets.data());
     }
 
-    void VulkanCommandList::bind_index_buffer(const Buffer* buffer) {
+    void VulkanCommandList::bind_index_buffer(const VulkanBuffer* buffer) {
         const VulkanBuffer* vk_buffer = static_cast<const VulkanBuffer*>(buffer);
 
         vkCmdBindIndexBuffer(cmds, vk_buffer->buffer, 0, VK_INDEX_TYPE_UINT32);

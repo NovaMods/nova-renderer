@@ -8,6 +8,7 @@
 #include <nova_renderer/command_list.hpp>
 
 #include <vulkan/vulkan.h>
+#include "vk_structs.hpp"
 
 namespace nova::renderer::rhi {
     class VulkanRenderEngine;
@@ -42,9 +43,9 @@ namespace nova::renderer::rhi {
         void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
                                   const PipelineInterface* pipeline_interface) override final;
 
-        void bind_vertex_buffers(const std::vector<Buffer*>& buffers) override final;
+        void bind_vertex_buffers(const std::vector<VulkanBuffer*>& buffers) override final;
 
-        void bind_index_buffer(const Buffer* buffer) override final;
+        void bind_index_buffer(const VulkanBuffer* buffer) override final;
 
         void draw_indexed_mesh(uint64_t num_indices, uint64_t num_instances) override final;
 

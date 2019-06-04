@@ -1,5 +1,5 @@
 /* This file is part of volk library; see volk.h for version/license details */
-#include "volk.h"
+#include "volk/volk.h" // MODIFIED
 
 #ifdef _WIN32
 #	include <windows.h>

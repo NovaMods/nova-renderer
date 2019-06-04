@@ -10,6 +10,7 @@
 #include "glad/glad.h"
 #include "gl3_structs.hpp"
 
+#ifdef ENABLE_OPENGL
 namespace nova::renderer::rhi {
     enum class Gl3CommandType {
         BufferCopy,
@@ -147,3 +148,4 @@ namespace nova::renderer::rhi {
 } // namespace nova::renderer::rhi
 
 #endif // NOVA_RENDERER_GL_2_COMMAND_LIST_HPP
+#endif

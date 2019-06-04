@@ -44,7 +44,7 @@ namespace nova::renderer::rhi {
         create_per_thread_command_pools();
     }
 
-    std::shared_ptr<Window> VulkanRenderEngine::get_window() const { return window; }
+    std::shared_ptr<Window> VulkanRenderEngine::get_window() const { return std::dynamic_pointer_cast<Window>(window); }
 
     void VulkanRenderEngine::set_num_renderpasses(uint32_t /* num_renderpasses */) {
         // Pretty sure Vulkan doesn't need to do anything here
@@ -745,7 +745,7 @@ namespace nova::renderer::rhi {
         VmaAllocationCreateInfo vma_create_info = {};
 
         switch(info.buffer_usage) {
-            case BufferCreateInfo::BufferUsage::UniformBuffer:
+            case BufferUsage::UniformBuffer:
                 if(info.size < gpu.props.limits.maxUniformBufferRange) {
                     vk_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
@@ -755,19 +755,27 @@ namespace nova::renderer::rhi {
                 
                 break;
 
-            case BufferCreateInfo::BufferUsage::IndexBuffer:
+            case BufferUsage::IndexBuffer:
                 vk_create_info.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
                 break;
 
-            case BufferCreateInfo::BufferUsage::VertexBuffer:
+            case BufferUsage::VertexBuffer:
                 vk_create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
                 break;
         }
 
-        VulkanDeviceMemory* vulkan_heap = static_cast<VulkanDeviceMemory*>(info.allocation.memory);
+        //if (info.allocation) // wanna be check allocation existence
+        {
+            // Vulkan memory should be re-usable
+            buffer->memory = static_cast<VulkanDeviceMemory*>(&info.allocation.memory);
 
-        vkCreateBuffer(device, &vk_create_info, nullptr, &buffer->buffer);
-        vkBindBufferMemory(device, buffer->buffer, vulkan_heap->memory, info.allocation.allocation_info.offset.b_count());
+            vkCreateBuffer(device, &vk_create_info, nullptr, &buffer->buffer);
+            vkBindBufferMemory(device, buffer->buffer, *(buffer->memory), info.allocation.allocation_info.offset.b_count());
+        }
+        //else 
+        { // TODO: allocate new memory for buffer
+            
+        }
 
         return buffer;
     }

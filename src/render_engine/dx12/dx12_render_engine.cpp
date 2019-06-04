@@ -520,15 +520,15 @@ namespace nova::renderer::rhi {
 
         D3D12_RESOURCE_STATES states = {};
         switch(info.buffer_usage) {
-            case BufferCreateInfo::Usage::UniformBuffer:
+            case BufferCreateInfo::BufferUsage::UniformBuffer:
                 states = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
                 break;
 
-            case BufferCreateInfo::Usage::IndexBuffer:
+            case BufferCreateInfo::BufferUsage::IndexBuffer:
                 states = D3D12_RESOURCE_STATE_INDEX_BUFFER;
                 break;
 
-            case BufferCreateInfo::Usage::VertexBuffer:
+            case BufferCreateInfo::BufferUsage::VertexBuffer:
                 states = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
                 break;
         }

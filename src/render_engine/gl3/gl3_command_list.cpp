@@ -7,6 +7,7 @@
 
 #include "gl3_structs.hpp"
 
+#ifdef ENABLE_OPENGL
 namespace nova::renderer::rhi {
     Gl3Command::~Gl3Command() {
         switch(type) {
@@ -165,3 +166,4 @@ namespace nova::renderer::rhi {
 
     std::vector<Gl3Command> Gl3CommandList::get_commands() const { return commands; }
 } // namespace nova::renderer::rhi
+#endif

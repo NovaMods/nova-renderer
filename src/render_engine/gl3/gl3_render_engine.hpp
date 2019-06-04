@@ -8,6 +8,7 @@
 #include "glad/glad.h"
 #include "nova_renderer/render_engine.hpp"
 
+#ifdef ENABLE_OPENGL
 namespace nova::renderer::rhi {
     /*!
      * \brief OpenGL 3.1 render engine because compatibility
@@ -128,3 +129,4 @@ namespace nova::renderer::rhi {
 
     Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, GLenum shader_type);
 } // namespace nova::renderer::rhi
+#endif

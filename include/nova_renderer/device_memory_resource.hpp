@@ -12,7 +12,9 @@ namespace nova::renderer {
     }
 
     struct DeviceMemoryAllocation {
-        rhi::DeviceMemory* memory = nullptr;
+        //rhi::DeviceMemory* memory = nullptr;
+        rhi::DeviceMemory memory{}; // I suppose should be it owner!
+        //rhi::DeviceMemoryUsage = ; // should to be MemoryUsageBuffer, MemoryUsageImage or MemoryUsageGlobal
         foundational::allocation::AllocationInfo allocation_info;
     };
 

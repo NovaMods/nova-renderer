@@ -12,6 +12,7 @@
 #include "gl3_command_list.hpp"
 #include "gl3_structs.hpp"
 
+#ifdef ENABLE_OPENGL
 namespace nova::renderer::rhi {
     Gl3RenderEngine::Gl3RenderEngine(NovaSettings& settings) : RenderEngine(settings) {
         const bool loaded_opengl = gladLoadGL() != 0;
@@ -194,15 +195,15 @@ namespace nova::renderer::rhi {
         GLuint buffer_bind_target = 0;
 
         switch(info.buffer_usage) {
-            case BufferCreateInfo::Usage::UniformBuffer:
+            case BufferCreateInfo::BufferUsage::UniformBuffer:
                 buffer_bind_target = GL_UNIFORM_BUFFER;
                 break;
 
-            case BufferCreateInfo::Usage::IndexBuffer:
+            case BufferCreateInfo::BufferUsage::IndexBuffer:
                 buffer_bind_target = GL_ELEMENT_ARRAY_BUFFER;
                 break;
 
-            case BufferCreateInfo::Usage::VertexBuffer:
+            case BufferCreateInfo::BufferUsage::VertexBuffer:
                 buffer_bind_target = GL_ARRAY_BUFFER;
                 break;
 
@@ -433,15 +434,15 @@ namespace nova::renderer::rhi {
 
                 for(const auto& [binding_name, binding_desc] : bind_descriptor_sets.pipeline_bindings) {
                     if(binding_desc.set == set_idx && binding_desc.binding == binding) {
-                        const GLuint uniform_id = bind_descriptor_sets.uniform_cache.at(binding_name);
-
                         switch(binding_desc.type) {
                             case DescriptorType::CombinedImageSampler:
+                                const GLuint uniform_id = bind_descriptor_sets.uniform_cache.at(binding_name);
+                                glUniform1i(uniform_id, descriptor.resource->id);
                                 break;
 
                             case DescriptorType::UniformBuffer:
                                 const GLuint block_index = bind_descriptor_sets.uniform_block_indices.at(binding_name);
-                                glBindBufferBase(GL_UNIFORM_BUFFER, block_index, descriptor.resource.id);
+                                glBindBufferBase(GL_UNIFORM_BUFFER, block_index, descriptor.resource->id);
                                 break;
 
                             case DescriptorType::StorageBuffer:
@@ -529,3 +530,4 @@ namespace nova::renderer::rhi {
         return Result(shader);
     }
 } // namespace nova::renderer::rhi
+#endif
