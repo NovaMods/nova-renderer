@@ -10,7 +10,6 @@
 
 #include "vulkan_render_engine.hpp"
 
-#ifdef LEGACY_VULKAN
 namespace nova::renderer::rhi {
     VulkanSwapchainManager::VulkanSwapchainManager(const uint32_t requested_num_swapchain_images,
                                                VulkanRenderEngine& render_engine,
@@ -331,4 +330,3 @@ namespace nova::renderer::rhi {
 
     VkFence VulkanSwapchainManager::get_frame_fence(const uint32_t frame_idx) { return fences[frame_idx]; }
 } // namespace nova::renderer::rhi
-#endif

@@ -7,7 +7,6 @@
 #include "nova_renderer/render_engine.hpp"
 #include "nova_renderer/renderables.hpp"
 
-#ifdef LEGACY_VULKAN
 namespace nova::renderer::rhi {
     VkImageLayout to_vk_layout(const ResourceState state) {
         switch(state) {
@@ -489,4 +488,3 @@ namespace nova::renderer::rhi {
         return attribute_descriptions;
     }
 } // namespace nova::renderer::rhi
-#endif

@@ -9,7 +9,6 @@
 
 #include "vk_structs.hpp"
 
-#ifdef LEGACY_VULKAN
 namespace nova::renderer::rhi {
     VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine& render_engine)
         : cmds(cmds), render_engine(render_engine) {}
@@ -25,7 +24,7 @@ namespace nova::renderer::rhi {
 
         for(const ResourceBarrier& barrier : barriers) {
             switch(barrier.resource_to_barrier->type) {
-                case Resource::Type::Image: {
+                case Resource::ResourceType::Image: {
                     VulkanImage* image = static_cast<VulkanImage*>(barrier.resource_to_barrier);
 
                     VkImageMemoryBarrier image_barrier = {};
@@ -46,7 +45,7 @@ namespace nova::renderer::rhi {
                     image_barriers.push_back(image_barrier);
                 } break;
 
-                case Resource::Type::Buffer: {
+                case Resource::ResourceType::Buffer: {
                     VulkanBuffer* buffer = static_cast<VulkanBuffer*>(barrier.resource_to_barrier);
 
                     VkBufferMemoryBarrier buffer_barrier = {};
@@ -167,5 +166,3 @@ namespace nova::renderer::rhi {
         vkCmdDrawIndexed(cmds, num_indices, num_instances, 0, 0, 0);
     }
 } // namespace nova::renderer::rhi
-
-#endif

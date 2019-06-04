@@ -12,7 +12,6 @@
 #include <vulkan/vulkan.h>
 #include "nova_renderer/util/utils.hpp"
 
-#ifdef LEGACY_VULKAN
 namespace nova::renderer::rhi {
     class VulkanRenderEngine;
 
@@ -85,6 +84,5 @@ namespace nova::renderer::rhi {
         void transition_swapchain_images_into_correct_layout(const std::vector<VkImage>& images) const;
     };
 } // namespace nova::renderer
-#endif
 
 #endif // NOVA_RENDERER_FRAMEBUFFER_MANAGER_H
