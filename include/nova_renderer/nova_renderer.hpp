@@ -21,6 +21,7 @@
 
 #include "../../src/render_engine/configuration.hpp"
 #include "renderables.hpp"
+#include "rhi_enums.hpp"
 #include "rhi_types.hpp"
 
 namespace spirv_cross {

@@ -34,7 +34,7 @@ namespace nova::renderer::rhi {
         TransferDestination,
     };
 
-    enum ResourceAccessFlags {
+    enum class ResourceAccessFlags {
         IndexReadBit = 0x00000002,
         VertexAttributeReadBit = 0x00000004,
         UniformReadBit = 0x00000008,
@@ -53,13 +53,13 @@ namespace nova::renderer::rhi {
         MemoryWriteBit = 0x00010000,
     };
 
-    enum ImageAspectFlags {
+    enum class ImageAspectFlags {
         Color = 0x00000001,
         Depth = 0x00000002,
         Stencil = 0x00000004,
     };
 
-    enum PipelineStageFlags {
+    enum class PipelineStageFlags {
         TopOfPipe = 0x00000001,
         DrawIndirect = 0x00000002,
         VertexInput = 0x00000004,
@@ -85,7 +85,7 @@ namespace nova::renderer::rhi {
         FragmentDensityProcess = 0x00800000,
     };
 
-    enum ShaderStageFlags {
+    enum class ShaderStageFlags {
         Vertex = 0x0001,
         TessellationControl = 0x0002,
         TessellationEvaluation = 0x0004,
@@ -106,13 +106,15 @@ namespace nova::renderer::rhi {
         Transfer,
         AsyncCompute,
     };
+    
     enum class BufferUsage {
         UniformBuffer,
         IndexBuffer,
         VertexBuffer,
         StagingBuffer,
     };
-    enum ResourceType {
+
+    enum class ResourceType {
         Buffer,
         Image,
     };

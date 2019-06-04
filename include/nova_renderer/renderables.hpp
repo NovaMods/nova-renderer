@@ -6,7 +6,6 @@
 #define NOVA_RENDERER_RENDER_OBJECT_HPP
 
 #include <atomic>
-
 #include <glm/glm.hpp>
 
 namespace nova::renderer {

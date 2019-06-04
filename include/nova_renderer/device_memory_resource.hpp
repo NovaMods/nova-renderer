@@ -3,13 +3,11 @@
 #include <foundational/allocation/allocation_structs.hpp>
 #include <foundational/allocation/bytes.hpp>
 #include <foundational/allocation/size_only_allocator.hpp>
+#include "rhi_types.hpp"
 
 using namespace foundational::allocation::operators;
 
 namespace nova::renderer {
-    namespace rhi {
-        struct DeviceMemory;
-    }
 
     struct DeviceMemoryAllocation {
         //rhi::DeviceMemory* memory = nullptr;
