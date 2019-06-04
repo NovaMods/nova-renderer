@@ -50,6 +50,7 @@ namespace nova::renderer::rhi {
         // Pretty sure Vulkan doesn't need to do anything here
     }
 
+    // You seriosly want to remove VMA???
     Result<DeviceMemory*> VulkanRenderEngine::allocate_device_memory(const uint64_t size,
                                                                      const MemoryUsage usage,
                                                                      const ObjectType /* allowed_objects */) {
@@ -97,6 +98,7 @@ namespace nova::renderer::rhi {
 
         return Result<DeviceMemory*>(memory);
     }
+
     Result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
         VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
 
@@ -783,11 +785,9 @@ namespace nova::renderer::rhi {
     void VulkanRenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const Buffer* buffer) {
         const VulkanBuffer* vulkan_buffer = static_cast<const VulkanBuffer*>(buffer);
 
-        const foundational::allocation::AllocationInfo& allocation_info = vulkan_buffer->memory.allocation_info;
-        const VulkanDeviceMemory* memory = static_cast<const VulkanDeviceMemory*>(vulkan_buffer->memory.memory);
-
-        uint8_t* mapped_bytes = static_cast<uint8_t*>(heap_mappings.at(memory->memory)) + allocation_info.offset.b_count() + offset;
-        memcpy(mapped_bytes, data, num_bytes);
+        //const foundational::allocation::AllocationInfo& allocation_info = vulkan_buffer->memory.allocation_info;
+        const VulkanDeviceMemory* memory = static_cast<const VulkanDeviceMemory*>(vulkan_buffer->memory);
+        memcpy(memory->info.pMappedData + memory->info.offset.memory + offset, data, num_bytes);
     }
 
     Image* VulkanRenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {

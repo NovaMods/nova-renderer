@@ -21,6 +21,7 @@
 
 #include "../../src/render_engine/configuration.hpp"
 #include "renderables.hpp"
+#include "rhi_types.hpp"
 
 namespace spirv_cross {
     class CompilerGLSL;
@@ -325,7 +326,7 @@ namespace nova::renderer {
         void record_material_pass(MaterialPass& pass, rhi::CommandList* cmds);
 
         void record_rendering_static_mesh_batch(MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
-#endif
+#pragma endregion
     };
 } // namespace nova::renderer
 

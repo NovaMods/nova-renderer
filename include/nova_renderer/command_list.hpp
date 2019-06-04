@@ -4,10 +4,10 @@
  */
 
 #pragma once
-#include <vector>
 
-#include "nova_renderer/rhi_enums.hpp"
-#include "nova_renderer/rhi_types.hpp"
+#include <vector>
+#include "rhi_enums.hpp"
+#include "rhi_types.hpp"
 
 namespace nova::renderer::rhi {
     class Buffer;

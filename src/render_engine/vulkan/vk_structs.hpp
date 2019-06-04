@@ -7,12 +7,13 @@
 
 #pragma once
 
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include "nova_renderer/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
+
     struct VulkanDeviceMemory : DeviceMemory {
         VmaAllocationInfo info{};
         VmaAllocation allocation{};
@@ -39,6 +40,7 @@ namespace nova::renderer::rhi {
         VkImage image = nullptr;
         VkImageView image_view = nullptr;
         VulkanDeviceMemory* memory = nullptr;
+        // also should to be have image info for manipulations with image
 
         operator VulkanDeviceMemory&() { return *memory; };
         operator const VulkanDeviceMemory&() const { return *memory; };
@@ -51,6 +53,7 @@ namespace nova::renderer::rhi {
     struct VulkanBuffer : Buffer {
         VkBuffer buffer = nullptr;
         VulkanDeviceMemory* memory = nullptr;
+        // also better to have range info and descriptor write buffer into (region)
 
         operator VulkanDeviceMemory&() { return *memory; };
         operator const VulkanDeviceMemory&() const { return *memory; };
@@ -99,7 +102,7 @@ namespace nova::renderer::rhi {
 
     struct VulkanPipeline : Pipeline {
         VkPipeline pipeline = nullptr;
-        VulkanPipelineInterface * pipeline_interface = nullptr;
+        VulkanPipelineInterface* pipeline_interface = nullptr; // added for simpler binding
 
         operator VkPipeline&() { return pipeline; };
         operator const VkPipeline&() const { return pipeline; };
