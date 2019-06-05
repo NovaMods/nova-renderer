@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <unordered_map>
+
 #include "shaderpack_data.hpp"
 #include "device_memory_resource.hpp"
 #include "rhi_enums.hpp"
@@ -37,7 +38,7 @@ namespace nova::renderer::rhi {
     };
 
     struct Buffer : Resource {
-        uint64_t size = 0;
+        uint64_t offset = 0u, size = 0u; // added offset, because Vulkan API may use different address in allocated memory
     };
 
     struct Framebuffer {

@@ -231,7 +231,7 @@ namespace nova::renderer::rhi {
                 data.name));
         }
 
-        if(framebuffer_attachments.size() > gpu.props.limits.maxColorAttachments) {
+        if(framebuffer_attachments.size() > gpu.properties.properties.limits.maxColorAttachments) {
             return Result<Renderpass*>(MAKE_ERROR(
                 "Framebuffer for pass {:s} has {:d} color attachments, but your GPU only supports {:d}. Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures",
                 data.name,
@@ -744,7 +744,7 @@ namespace nova::renderer::rhi {
         vk_create_info.size = info.size;
         vk_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        VmaAllocationCreateInfo vma_create_info = {};
+        //VmaAllocationCreateInfo vma_create_info = {};
 
         switch(info.buffer_usage) {
             case BufferUsage::UniformBuffer:
@@ -769,7 +769,7 @@ namespace nova::renderer::rhi {
         //if (info.allocation) // wanna be check allocation existence
         {
             // Vulkan memory should be re-usable
-            buffer->memory = static_cast<struct VulkanDeviceMemory*>(&info.allocation.memory);
+            buffer->memory = static_cast<VulkanDeviceMemory*>(info.allocation.memory);
 
             vkCreateBuffer(device, &vk_create_info, nullptr, &buffer->buffer);
             vkBindBufferMemory(device, buffer->buffer, *(buffer->memory), info.allocation.allocation_info.offset.b_count());
@@ -782,12 +782,14 @@ namespace nova::renderer::rhi {
         return buffer;
     }
 
-    void VulkanRenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const struct Buffer* buffer) {
-        const struct VulkanBuffer* vulkan_buffer = static_cast<const struct VulkanBuffer*>(buffer);
+    void VulkanRenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const Buffer* buffer) {
+        const class VulkanBuffer* vulkan_buffer = static_cast<const VulkanBuffer*>(buffer);
 
-        //const foundational::allocation::AllocationInfo& allocation_info = vulkan_buffer->memory.allocation_info;
-        const struct VulkanDeviceMemory* memory = static_cast<const struct VulkanDeviceMemory*>(vulkan_buffer->memory);
-        memcpy(memory->info.pMappedData + memory->info.offset + offset, data, num_bytes);
+        const foundational::allocation::AllocationInfo& allocation_info = vulkan_buffer->memory->allocation->allocation_info;
+        const VulkanDeviceMemory* memory = static_cast<const VulkanDeviceMemory*>(vulkan_buffer->memory);
+
+        uint8_t* mapped_bytes = static_cast<uint8_t*>(heap_mappings.at(memory->memory)) + allocation_info.offset.b_count() + offset;
+        memcpy(mapped_bytes, data, num_bytes);
     }
 
     struct Image* VulkanRenderEngine::create_texture(const struct shaderpack::TextureCreateInfo& info) {
@@ -817,6 +819,8 @@ namespace nova::renderer::rhi {
         image_create_info.pQueueFamilyIndices = &graphics_family_index;
         image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
+// TODO: add non-VMA image creation
+/* 
         VmaAllocationCreateInfo alloc_create_info = {};
         alloc_create_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
         alloc_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -827,6 +831,7 @@ namespace nova::renderer::rhi {
         alloc_create_info.pUserData = nullptr;
 
         vmaCreateImage(vma_allocator, &image_create_info, &alloc_create_info, &texture->image, &(VmaAllocation&)texture->memory, &(VmaAllocationInfo&)texture->memory);
+*/
 
         VkImageViewCreateInfo image_view_create_info = {};
         image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -930,7 +935,7 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderEngine::destroy_texture(struct Image* resource) {
         VulkanImage* vk_image = static_cast<VulkanImage*>(resource);
-        vmaDestroyImage(vma_allocator, vk_image->image, *(vk_image->memory));
+        //vmaDestroyImage(vma_allocator, vk_image->image, *(vk_image->memory));
 
         delete vk_image;
     }
@@ -1108,11 +1113,11 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderEngine::initialize_vma() {
-        VmaAllocatorCreateInfo allocator_create_info = {};
-        allocator_create_info.physicalDevice = gpu.phys_device;
-        allocator_create_info.device = device;
+        //VmaAllocatorCreateInfo allocator_create_info = {};
+        //allocator_create_info.physicalDevice = gpu.phys_device;
+        //allocator_create_info.device = device;
 
-        NOVA_CHECK_RESULT(vmaCreateAllocator(&allocator_create_info, &vma_allocator));
+        //NOVA_CHECK_RESULT(vmaCreateAllocator(&allocator_create_info, &vma_allocator));
     }
 
     void VulkanRenderEngine::create_device_and_queues() {

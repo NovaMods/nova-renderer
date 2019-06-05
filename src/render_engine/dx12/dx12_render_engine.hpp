@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "nova_renderer/render_engine.hpp"
-
 #include <d3d12.h>
 
 #include <DirectXMath.h>
@@ -14,6 +12,7 @@
 #include <wrl.h>
 
 #include <spirv_cross/spirv_hlsl.hpp>
+#include "nova_renderer/render_engine.hpp"
 
 #ifdef ENABLE_D3D12
 namespace nova::renderer::rhi {

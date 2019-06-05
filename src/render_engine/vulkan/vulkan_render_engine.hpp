@@ -6,8 +6,8 @@
 #pragma once
 
 #include <memory>
-#include <nova_renderer/render_engine.hpp>
 
+#include "nova_renderer/render_engine.hpp"
 #include "swapchain.hpp"
 #include "vk_structs.hpp"
 #include "../configuration.hpp"
@@ -27,7 +27,7 @@ namespace nova::renderer::rhi {
         VkInstance instance;
 
         VkDevice device;
-        VmaAllocator vma_allocator;
+        //VmaAllocator vma_allocator;
 
         VkSurfaceKHR surface{};
 

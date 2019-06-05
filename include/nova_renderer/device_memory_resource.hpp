@@ -3,6 +3,7 @@
 #include <foundational/allocation/allocation_structs.hpp>
 #include <foundational/allocation/bytes.hpp>
 #include <foundational/allocation/size_only_allocator.hpp>
+
 #include "rhi_types.hpp"
 
 using namespace foundational::allocation::operators;
@@ -11,7 +12,7 @@ namespace nova::renderer {
 
     struct DeviceMemoryAllocation {
         //rhi::DeviceMemory* memory = nullptr;
-        rhi::DeviceMemory memory{}; // I suppose should be it owner!
+        rhi::DeviceMemory* memory{}; // I suppose should be it owner!
         //rhi::DeviceMemoryUsage = ; // should to be MemoryUsageBuffer, MemoryUsageImage or MemoryUsageGlobal
         foundational::allocation::AllocationInfo allocation_info;
     };

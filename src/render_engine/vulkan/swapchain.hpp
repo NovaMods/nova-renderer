@@ -10,7 +10,8 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <vulkan/vulkan.h>
-#include <nova_renderer/util/utils.hpp>
+
+#include "nova_renderer/util/utils.hpp"
 
 #ifdef ENABLE_VULKAN
 namespace nova::renderer::rhi {

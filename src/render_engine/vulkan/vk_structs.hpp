@@ -7,30 +7,39 @@
 
 #pragma once
 
-#include <vma/vk_mem_alloc.h>
+//#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
-#include <nova_renderer/rhi_types.hpp>
+
+#include "nova_renderer/rhi_types.hpp"
 
 #ifdef ENABLE_VULKAN
 namespace nova::renderer::rhi {
 
     struct VulkanDeviceMemory : DeviceMemory {
-        VmaAllocationInfo info{};
-        VmaAllocation allocation{};
-        VmaMemoryUsage usage = VMA_MEMORY_USAGE_GPU_ONLY;
+        //VmaAllocationInfo info{};
+        //VmaAllocation allocation{};
+        //VmaMemoryUsage usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        operator VmaAllocation&() { return allocation; };
-        operator const VmaAllocation&() const { return allocation; };
-        operator VmaAllocationInfo&() { return info; };
-        operator const VmaAllocationInfo&() const { return info; };
+        //operator VmaAllocation&() { return allocation; };
+        //operator const VmaAllocation&() const { return allocation; };
+        //operator VmaAllocationInfo&() { return info; };
+        ///operator const VmaAllocationInfo&() const { return info; };
+
+        // vulkan API memory handler
+        VkDeviceMemory memory = nullptr;
+        DeviceMemoryAllocation *allocation = nullptr; // if has allocation 
 
         // implicit cast into VkDeviceMemory
-        operator VkDeviceMemory&() { return info.deviceMemory; };
-        operator const VkDeviceMemory&() const { return info.deviceMemory; };
+        operator VkDeviceMemory&() { return memory; };
+        operator const VkDeviceMemory&() const { return memory; };
+
+        // may fail 
+        operator DeviceMemoryAllocation&() { return *allocation; };
+        operator const DeviceMemoryAllocation&() const { return *allocation; };
     };
 
     struct VulkanSampler : Sampler {
-        VkSampler sampler;
+        VkSampler sampler = nullptr;
 
         operator VkSampler&() { return sampler; };
         operator const VkSampler&() const { return sampler; };

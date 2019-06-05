@@ -9,8 +9,8 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-#include <nova_renderer/command_list.hpp>
-#include <nova_renderer/shaderpack_data.hpp>
+#include "nova_renderer/command_list.hpp"
+#include "nova_renderer/shaderpack_data.hpp"
 
 #ifdef ENABLE_VULKAN
 namespace nova::renderer::rhi {

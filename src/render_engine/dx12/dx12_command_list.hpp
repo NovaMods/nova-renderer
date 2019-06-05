@@ -6,10 +6,10 @@
 #ifndef NOVA_RENDERER_D3D12_COMMAND_LIST_HPP
 #define NOVA_RENDERER_D3D12_COMMAND_LIST_HPP
 #include <d3d12.h>
-#include <nova_renderer/command_list.hpp>
 #include <wrl/client.h>
 
 #include "dx12_structs.hpp"
+#include "nova_renderer/command_list.hpp"
 
 #ifdef ENABLE_D3D12
 namespace nova::renderer::rhi {

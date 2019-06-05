@@ -28,14 +28,14 @@ namespace nova::renderer::rhi {
 
                     VkImageMemoryBarrier image_barrier = {};
                     image_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                    image_barrier.srcAccessMask = barrier.access_before_barrier;
-                    image_barrier.dstAccessMask = barrier.access_after_barrier;
+                    image_barrier.srcAccessMask = to_vk_access_mask(barrier.access_before_barrier); // TODO: to_vk_access_mask
+                    image_barrier.dstAccessMask = to_vk_access_mask(barrier.access_after_barrier);
                     image_barrier.oldLayout = to_vk_layout(barrier.initial_state);
                     image_barrier.newLayout = to_vk_layout(barrier.final_state);
                     image_barrier.srcQueueFamilyIndex = render_engine.get_queue_family_index(barrier.source_queue);
                     image_barrier.dstQueueFamilyIndex = render_engine.get_queue_family_index(barrier.destination_queue);
                     image_barrier.image = image->image;
-                    image_barrier.subresourceRange.aspectMask = barrier.image_memory_barrier.aspect;
+                    image_barrier.subresourceRange.aspectMask = to_vk_image_aspect(barrier.image_memory_barrier.aspect);
                     image_barrier.subresourceRange.baseMipLevel = 0; // TODO: Something smarter with mips
                     image_barrier.subresourceRange.levelCount = 1;
                     image_barrier.subresourceRange.baseArrayLayer = 0;
@@ -49,8 +49,8 @@ namespace nova::renderer::rhi {
 
                     VkBufferMemoryBarrier buffer_barrier = {};
                     buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-                    buffer_barrier.srcAccessMask = barrier.access_before_barrier;
-                    buffer_barrier.dstAccessMask = barrier.access_after_barrier;
+                    buffer_barrier.srcAccessMask = to_vk_access_mask(barrier.access_before_barrier);
+                    buffer_barrier.dstAccessMask = to_vk_access_mask(barrier.access_after_barrier);
                     buffer_barrier.srcQueueFamilyIndex = render_engine.get_queue_family_index(barrier.source_queue);
                     buffer_barrier.dstQueueFamilyIndex = render_engine.get_queue_family_index(barrier.destination_queue);
                     buffer_barrier.buffer = buffer->buffer;
@@ -63,8 +63,8 @@ namespace nova::renderer::rhi {
         }
 
         vkCmdPipelineBarrier(cmds,
-                             stages_before_barrier,
-                             stages_after_barrier,
+                             to_vk_shader_pipeline_flags(stages_before_barrier), // TODO: to_vk_shader_pipeline_flags
+                             to_vk_shader_pipeline_flags(stages_after_barrier),
                              0,
                              0,
                              nullptr,
