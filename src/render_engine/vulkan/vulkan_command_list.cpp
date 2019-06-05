@@ -49,7 +49,7 @@ namespace nova::renderer::rhi {
 
                     VkBufferMemoryBarrier buffer_barrier = {};
                     buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-                    buffer_barrier.srcAccessMask = to_vk_access_mask(barrier.access_before_barrier);
+                    buffer_barrier.srcAccessMask = to_vk_access_mask(barrier.access_before_barrier); // TODO: to_vk_access_mask
                     buffer_barrier.dstAccessMask = to_vk_access_mask(barrier.access_after_barrier);
                     buffer_barrier.srcQueueFamilyIndex = render_engine.get_queue_family_index(barrier.source_queue);
                     buffer_barrier.dstQueueFamilyIndex = render_engine.get_queue_family_index(barrier.destination_queue);

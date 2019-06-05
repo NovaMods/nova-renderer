@@ -236,7 +236,7 @@ namespace nova::renderer::rhi {
                 "Framebuffer for pass {:s} has {:d} color attachments, but your GPU only supports {:d}. Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures",
                 data.name,
                 data.texture_outputs.size(),
-                gpu.props.limits.maxColorAttachments));
+                gpu.properties.properties.limits.maxColorAttachments));
         }
 
         subpass_description.colorAttachmentCount = static_cast<uint32_t>(attachment_references.size());

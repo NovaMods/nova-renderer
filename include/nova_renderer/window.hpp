@@ -3,12 +3,13 @@
  * \date 01-Sep-18.
  */
 
+#pragma once
 #ifndef NOVA_RENDERER_WINDOW_HPP
 #define NOVA_RENDERER_WINDOW_HPP
 
-#include "util/utils.hpp"
-
 #include <glm/glm.hpp>
+
+#include "util/utils.hpp"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(window_creation_error);

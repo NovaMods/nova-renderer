@@ -5,6 +5,7 @@
  * \date 14-Aug-18.
  */
 
+#pragma once
 #ifndef NOVA_RENDERER_NOVA_RENDERER_H
 #define NOVA_RENDERER_NOVA_RENDERER_H
 

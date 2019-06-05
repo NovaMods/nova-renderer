@@ -3,6 +3,7 @@
  * \date 27-Jan-19.
  */
 
+#pragma once
 #ifndef NOVA_RENDERER_FILESYSTEM_UTIL_HPP
 #define NOVA_RENDERER_FILESYSTEM_UTIL_HPP
 

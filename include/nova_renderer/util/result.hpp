@@ -120,5 +120,5 @@ namespace nova::renderer {
     template <typename ValueType>
     Result(ValueType value)->Result<ValueType>;
 
-#define MAKE_ERROR(s, ...) NovaError(fmt::format(fmt(s), __VA_ARGS__))
+#define MAKE_ERROR(s, ...) NovaError(fmt::format(fmt::format(s), __VA_ARGS__))
 } // namespace nova::renderer

@@ -5,15 +5,16 @@
  * \date 23-Aug-18.
  */
 
+#pragma once
 #ifndef NOVA_RENDERER_SHADERPACK_DATA_HPP
 #define NOVA_RENDERER_SHADERPACK_DATA_HPP
 
 #include <cstdint>
-#include <nlohmann/json.hpp>
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <nlohmann/json.hpp>
 #include "util/filesystem.hpp"
 #include "util/utils.hpp"
 

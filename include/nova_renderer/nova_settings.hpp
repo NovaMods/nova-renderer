@@ -3,6 +3,7 @@
  * \date 23-Jun-16.
  */
 
+#pragma once
 #ifndef RENDERER_CONFIG_H
 #define RENDERER_CONFIG_H
 

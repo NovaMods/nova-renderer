@@ -5,6 +5,7 @@
  * \date 18-May-16.
  */
 
+#pragma once
 #ifndef RENDERER_UTILS_H
 #define RENDERER_UTILS_H
 

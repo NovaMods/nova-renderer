@@ -2,6 +2,7 @@
 // Created by jannis on 11.09.18.
 //
 
+#pragma once
 #ifndef NOVA_RENDERER_RENDER_OBJECT_HPP
 #define NOVA_RENDERER_RENDER_OBJECT_HPP
 
