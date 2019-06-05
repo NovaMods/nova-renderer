@@ -38,7 +38,9 @@ namespace nova::renderer::rhi {
     };
 
     struct Buffer : Resource {
-        uint64_t offset = 0u, size = 0u; // added offset, because Vulkan API may use different address in allocated memory
+        // prefer use sizing in derivated
+        [[nodiscard]] virtual uint64_t& size() = 0;
+        [[nodiscard]] virtual const uint64_t& size() const = 0;
     };
 
     struct Framebuffer {

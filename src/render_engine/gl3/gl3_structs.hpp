@@ -20,7 +20,9 @@ namespace nova::renderer::rhi {
     struct Gl3SamplerState {};
 
     struct Gl3Resource {
-        GLuint id = 0;
+        GLuint id = 0; GLsizei range = 0u; // OpenGL buffer also have sizes
+        virtual uint64_t& size() override final { return range; };
+        virtual const uint64_t& size() const override final { return range; };
     };
 
     struct Gl3Image : Image, Gl3Resource {};

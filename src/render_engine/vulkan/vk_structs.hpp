@@ -16,15 +16,6 @@
 namespace nova::renderer::rhi {
 
     struct VulkanDeviceMemory : DeviceMemory {
-        //VmaAllocationInfo info{};
-        //VmaAllocation allocation{};
-        //VmaMemoryUsage usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-        //operator VmaAllocation&() { return allocation; };
-        //operator const VmaAllocation&() const { return allocation; };
-        //operator VmaAllocationInfo&() { return info; };
-        ///operator const VmaAllocationInfo&() const { return info; };
-
         // vulkan API memory handler
         VkDeviceMemory memory = nullptr;
         DeviceMemoryAllocation *allocation = nullptr; // if has allocation 
@@ -60,9 +51,12 @@ namespace nova::renderer::rhi {
     };
 
     struct VulkanBuffer : Buffer {
-        VkBuffer buffer = nullptr;
+        VkBuffer buffer = nullptr; VkDeviceSize offset = 0u, range = 0u;
         VulkanDeviceMemory* memory = nullptr;
         // also better to have range info and descriptor write buffer into (region)
+
+        virtual uint64_t& size() override final { return range; };
+        virtual const uint64_t& size() const override final { return range; };
 
         operator VulkanDeviceMemory&() { return *memory; };
         operator const VulkanDeviceMemory&() const { return *memory; };
