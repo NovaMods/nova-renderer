@@ -5,7 +5,6 @@
  * \date 14-Aug-18.
  */
 
-#pragma once
 #ifndef NOVA_RENDERER_NOVA_RENDERER_H
 #define NOVA_RENDERER_NOVA_RENDERER_H
 
@@ -15,15 +14,13 @@
 #include <foundational/allocation/block_allocator.hpp>
 #include <foundational/allocation/bump_point_allocator.hpp>
 
-#include "device_memory_resource.hpp"
-#include "nova_settings.hpp"
-#include "render_engine.hpp"
-#include "renderdoc_app.h"
+#include "nova_renderer/device_memory_resource.hpp"
+#include "nova_renderer/nova_settings.hpp"
+#include "nova_renderer/render_engine.hpp"
+#include "nova_renderer/renderdoc_app.h"
 
 #include "../../src/render_engine/configuration.hpp"
 #include "renderables.hpp"
-#include "rhi_enums.hpp"
-#include "rhi_types.hpp"
 
 namespace spirv_cross {
     class CompilerGLSL;
@@ -80,8 +77,8 @@ namespace nova::renderer {
     };
 
     struct Mesh {
-        struct rhi::Buffer* vertex_buffer = nullptr;
-        struct rhi::Buffer* index_buffer = nullptr;
+        rhi::Buffer* vertex_buffer = nullptr;
+        rhi::Buffer* index_buffer = nullptr;
 
         uint32_t num_indices = 0;
     };
@@ -244,7 +241,7 @@ namespace nova::renderer {
          */
         std::vector<Renderpass> renderpasses;
 
-        std::unordered_map<std::string, struct rhi::Image*> dynamic_textures;
+        std::unordered_map<std::string, rhi::Image*> dynamic_textures;
         std::unordered_map<std::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
 
         void create_dynamic_textures(const std::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
@@ -312,8 +309,8 @@ namespace nova::renderer {
         uint64_t frame_count = 0;
         uint8_t cur_frame_idx = 0;
 
-        struct rhi::Buffer* per_frame_data_buffer;
-        struct rhi::Buffer* model_matrix_buffer;
+        rhi::Buffer* per_frame_data_buffer;
+        rhi::Buffer* model_matrix_buffer;
         uint64_t cur_model_matrix_index = 0;
 
         std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;
@@ -328,7 +325,7 @@ namespace nova::renderer {
         void record_material_pass(MaterialPass& pass, rhi::CommandList* cmds);
 
         void record_rendering_static_mesh_batch(MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
-#pragma endregion
+#endif
     };
 } // namespace nova::renderer
 

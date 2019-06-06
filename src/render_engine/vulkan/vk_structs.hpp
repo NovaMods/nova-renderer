@@ -143,8 +143,8 @@ namespace nova::renderer::rhi {
 
     struct VulkanGpuInfo {
         VkPhysicalDevice phys_device = nullptr;
-        VkPhysicalDeviceProperties2 properties{};
-        VkPhysicalDeviceFeatures2 features{};
+        VkPhysicalDeviceProperties2 props{};
+        VkPhysicalDeviceFeatures2 supported{};
         VkPhysicalDeviceMemoryProperties2 memory_properties{};
         VkSurfaceCapabilitiesKHR surface_capabilities{};
         std::vector<VkExtensionProperties> available_extensions;
