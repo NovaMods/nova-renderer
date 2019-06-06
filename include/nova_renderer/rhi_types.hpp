@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include "shaderpack_data.hpp"
 #include "device_memory_resource.hpp"
-#include "rhi_enums.h"
+#include "nova_renderer/rhi_enums.hpp"
 
 namespace nova::renderer::rhi {
 
@@ -29,7 +29,6 @@ namespace nova::renderer::rhi {
      * while static resources are loaded once and that's that
      */
     struct Resource {
-
         ResourceType type;
         bool is_dynamic = false;
     };

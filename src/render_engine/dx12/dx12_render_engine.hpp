@@ -58,7 +58,7 @@ namespace nova::renderer::rhi {
          *
          * Currently I create a separate descriptor heap for each descriptor set. This is fairly easy and closely
          * mimics what Vulkan does. However, I have no idea at all about how performant this is. I've heard that using
-         * a single descriptor heap is noticably better, but I've also heard that this only applies to XBox. Further
+         * a single descriptor heap is noticeably better, but I've also heard that this only applies to XBox. Further
          * research and testing is needed to resolve this
          */
         std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
@@ -66,20 +66,20 @@ namespace nova::renderer::rhi {
 
         void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override final;
 
-        Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
-                                          const shaderpack::PipelineCreateInfo& data) override final;
+        Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override final;
 
         Buffer* create_buffer(const BufferCreateInfo& info) override final;
 
-        void write_data_to_buffer(const void* data, const uint64_t num_bytes, uint64_t offset,const Buffer* buffer) override final;
+        void write_data_to_buffer(const void* data, const uint64_t num_bytes, uint64_t offset, const Buffer* buffer) override final;
 
         Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
-        
+
         Semaphore* create_semaphore() override final;
+
         std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override final;
 
         Fence* create_fence(bool signaled = false) override final;
-        
+
         std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override final;
 
         void wait_for_fences(const std::vector<Fence*> fences) override final;
@@ -95,15 +95,15 @@ namespace nova::renderer::rhi {
         void destroy_fences(const std::vector<Fence*>& fences) override final;
 
         Image* get_swapchain_image(uint32_t frame_index) override final;
-        
+
         CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override final;
-        
+
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
                                  Fence* fence_to_signal = nullptr,
                                  const std::vector<Semaphore*>& wait_semaphores = {},
                                  const std::vector<Semaphore*>& signal_semaphores = {}) override final;
-        
+
         void open_window_and_create_surface(const NovaSettings::WindowOptions& options) override final;
 
     private:
@@ -111,8 +111,6 @@ namespace nova::renderer::rhi {
 
         Microsoft::WRL::ComPtr<IDXGIAdapter3> adapter;
         Microsoft::WRL::ComPtr<ID3D12Device> device; // direct3d device
-
-        Microsoft::WRL::ComPtr<IDXGISwapChain3> swapchain; // swapchain used to switch between render targets
 
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> direct_command_queue;
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> compute_command_queue;

@@ -80,62 +80,65 @@ include(external)
 ########################
 set(NOVA_SOURCE
         include/nova_renderer/util/platform.hpp
+        include/nova_renderer/util/result.hpp
+        include/nova_renderer/util/utils.hpp
+		
+        include/nova_renderer/command_list.hpp
+		include/nova_renderer/device_memory_resource.hpp
+        include/nova_renderer/nova_renderer.hpp
+        include/nova_renderer/nova_settings.hpp
+        include/nova_renderer/render_engine.hpp
+        include/nova_renderer/renderables.hpp
+        include/nova_renderer/renderdoc_app.h 
+		include/nova_renderer/rhi_enums.hpp 
+		include/nova_renderer/rhi_types.hpp 
+        include/nova_renderer/shaderpack_data.hpp
+        include/nova_renderer/window.hpp
+		
+        src/nova_renderer.cpp
+
         src/loading/zip_folder_accessor.hpp
         src/loading/regular_folder_accessor.hpp
         src/loading/folder_accessor.hpp
-        include/nova_renderer/nova_renderer.hpp
-        src/nova_renderer.cpp
         src/loading/folder_accessor.cpp
         src/loading/regular_folder_accessor.cpp
         src/loading/zip_folder_accessor.cpp
-
-        src/loading/shaderpack/shaderpack_loading.cpp
-        src/loading/shaderpack/shaderpack_loading.hpp
         src/loading/loading_utils.cpp
         src/loading/loading_utils.hpp
-        include/nova_renderer/shaderpack_data.hpp
-        src/loading/shaderpack/shaderpack_data.cpp
-
+        src/loading/json_utils.hpp
+		
         src/settings/nova_settings.cpp
-        include/nova_renderer/nova_settings.hpp
+
+        src/render_objects/uniform_structs.hpp
+
         src/util/logger.cpp
         src/util/logger.hpp
-        include/nova_renderer/render_engine.hpp
-        include/nova_renderer/window.hpp
+        src/util/utils.cpp
+        src/util/result.cpp
+				
+        src/loading/shaderpack/shaderpack_loading.cpp
+        src/loading/shaderpack/shaderpack_loading.hpp
+        src/loading/shaderpack/shaderpack_data.cpp
         src/loading/shaderpack/json_interop.cpp
         src/loading/shaderpack/json_interop.hpp
-        src/loading/json_utils.hpp
-        include/nova_renderer/util/utils.hpp
-        src/util/utils.cpp
-        include/nova_renderer/renderables.hpp
-        src/render_objects/uniform_structs.hpp 
         src/loading/shaderpack/shaderpack_validator.cpp 
         src/loading/shaderpack/shaderpack_validator.hpp 
         src/loading/shaderpack/render_graph_builder.cpp 
         src/loading/shaderpack/render_graph_builder.hpp
+		 
+        src/render_engine/command_list.cpp
+		src/render_engine/rhi_types.cpp
+
+        src/render_engine/vulkan/vulkan_command_list.cpp
+        src/render_engine/vulkan/vulkan_command_list.hpp 
+		src/render_engine/vulkan/vulkan_render_engine.cpp 
+		src/render_engine/vulkan/vulkan_render_engine.hpp
+		src/render_engine/vulkan/vk_structs.hpp
         src/render_engine/vulkan/vulkan_utils.hpp
         src/render_engine/vulkan/vulkan_type_converters.hpp
         src/render_engine/vulkan/vulkan_utils.cpp
-        src/render_engine/vulkan/swapchain.cpp 
-        src/render_engine/vulkan/swapchain.hpp
-        src/tasks/task_scheduler.cpp
-        src/tasks/task_scheduler.hpp
-        src/tasks/task_graph.hpp
-        src/tasks/wait_free_queue.hpp
-        src/tasks/condition_counter.cpp
-        src/tasks/condition_counter.hpp
-
-        src/debugging/renderdoc.cpp
-        src/debugging/renderdoc.hpp
-        include/nova_renderer/renderdoc_app.h
-
-        include/nova_renderer/util/result.hpp
-        src/util/result.cpp
-
-        include/nova_renderer/command_list.hpp
-        src/render_engine/command_list.cpp
-        src/render_engine/vulkan/vulkan_command_list.cpp
-        src/render_engine/vulkan/vulkan_command_list.hpp 
+        src/render_engine/vulkan/vulkan_swapchain.cpp 
+        src/render_engine/vulkan/vulkan_swapchain.hpp
 
         src/render_engine/gl3/gl3_render_engine.cpp
         src/render_engine/gl3/gl3_render_engine.hpp 
@@ -145,13 +148,17 @@ set(NOVA_SOURCE
         src/render_engine/gl3/glad/glad.h 
         src/render_engine/gl3/glad.c 
 		src/render_engine/gl3/gl3_structs.hpp 
-		src/render_engine/vulkan/vk_structs.hpp 
-		include/nova_renderer/rhi_types.hpp 
-		include/nova_renderer/rhi_enums.hpp 
-		src/render_engine/rhi_types.cpp
-		src/render_engine/vulkan/vulkan_render_engine.cpp 
-		src/render_engine/vulkan/vulkan_render_engine.hpp
-		include/nova_renderer/device_memory_resource.hpp
+
+        src/tasks/task_scheduler.cpp
+        src/tasks/task_scheduler.hpp
+        src/tasks/task_graph.hpp
+        src/tasks/wait_free_queue.hpp
+        src/tasks/condition_counter.cpp
+        src/tasks/condition_counter.hpp
+
+        src/debugging/renderdoc.cpp
+        src/debugging/renderdoc.hpp
+		
 		src/memory/device_memory_resource.cpp
 
 		)
@@ -170,6 +177,8 @@ set(WINDOWS_NOVA_SOURCE
         src/render_engine/dx12/dx12_command_list.cpp 
 		src/render_engine/dx12/dx12_command_list.hpp 
 		src/render_engine/dx12/dx12_structs.hpp
+		src/render_engine/dx12/dx12_swapchain.cpp
+		src/render_engine/dx12/dx12_swapchain.hpp
 		src/render_engine/dx12/dx12_render_engine.cpp
 		src/render_engine/dx12/dx12_render_engine.hpp)
 set(UNIX_NOVA_SOURCE

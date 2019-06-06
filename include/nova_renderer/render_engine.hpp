@@ -70,30 +70,30 @@ namespace nova::renderer::rhi {
          *
          * \return The newly created renderpass
          */
-        [[nodiscard]] virtual Result<class Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) = 0;
+        [[nodiscard]] virtual Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) = 0;
 
-        [[nodiscard]] virtual class Framebuffer* create_framebuffer(const Renderpass* renderpass,
-                                                                    const std::vector<struct Image*>& attachments,
-                                                                    const glm::uvec2& framebuffer_size) = 0;
+        [[nodiscard]] virtual Framebuffer* create_framebuffer(const Renderpass* renderpass,
+                                                              const std::vector<Image*>& attachments,
+                                                              const glm::uvec2& framebuffer_size) = 0;
 
         [[nodiscard]] virtual Result<PipelineInterface*> create_pipeline_interface(
             const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) = 0;
 
-        [[nodiscard]] virtual class DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
-                                                                           uint32_t num_samplers,
-                                                                           uint32_t num_uniform_buffers) = 0;
+        [[nodiscard]] virtual DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
+                                                                     uint32_t num_samplers,
+                                                                     uint32_t num_uniform_buffers) = 0;
 
         [[nodiscard]] virtual std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                                                  const DescriptorPool* pool) = 0;
 
         virtual void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) = 0;
 
-        [[nodiscard]] virtual Result<class Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
-                                                                      shaderpack::PipelineCreateInfo& data) = 0;
+        [[nodiscard]] virtual Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
+                                                                const shaderpack::PipelineCreateInfo& data) = 0;
 
-        [[nodiscard]] virtual class Buffer* create_buffer(const BufferCreateInfo& info) = 0;
+        [[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info) = 0;
 
         /*!
          * \brief Writes data to a buffer
@@ -109,9 +109,9 @@ namespace nova::renderer::rhi {
          * \param offset The offset from the start of the buffer to write the data at
          * \param buffer The buffer to write to
          */
-        virtual void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const struct Buffer* buffer) = 0;
+        virtual void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) = 0;
 
-        [[nodiscard]] virtual struct Image* create_texture(const shaderpack::TextureCreateInfo& info) = 0;
+        [[nodiscard]] virtual Image* create_texture(const shaderpack::TextureCreateInfo& info) = 0;
 
         [[nodiscard]] virtual Semaphore* create_semaphore() = 0;
 
@@ -120,8 +120,6 @@ namespace nova::renderer::rhi {
         [[nodiscard]] virtual Fence* create_fence(bool signaled = false) = 0;
 
         [[nodiscard]] virtual std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) = 0;
-
-        [[nodiscard]] virtual struct Image* get_swapchain_image(uint32_t frame_index) = 0;
 
         /*!
          * \blocks the fence until all fences are signaled
@@ -142,7 +140,7 @@ namespace nova::renderer::rhi {
 
         virtual void destroy_pipeline(Pipeline* pipeline) = 0;
 
-        virtual void destroy_texture(struct Image* resource) = 0;
+        virtual void destroy_texture(Image* resource) = 0;
 
         virtual void destroy_semaphores(const std::vector<Semaphore*>& semaphores) = 0;
 
@@ -171,8 +169,8 @@ namespace nova::renderer::rhi {
         virtual void submit_command_list(CommandList* cmds,
                                          QueueType queue,
                                          Fence* fence_to_signal = nullptr,
-                                         const std::vector<class Semaphore*>& wait_semaphores = {},
-                                         const std::vector<class Semaphore*>& signal_semaphores = {}) = 0;
+                                         const std::vector<Semaphore*>& wait_semaphores = {},
+                                         const std::vector<Semaphore*>& signal_semaphores = {}) = 0;
 
     protected:
         NovaSettings& settings;
