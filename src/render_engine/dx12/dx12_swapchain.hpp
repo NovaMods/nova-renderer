@@ -2,22 +2,48 @@
 
 #include <wrl/client.h>
 
+#include <d3d12.h>
 #include <dxgi1_4.h>
+
+#include <glm/vec2.hpp>
 
 #include "nova_renderer/swapchain.hpp"
 
 namespace nova::renderer::rhi {
+    class RenderEngine;
+
     class DX12Swapchain final : public Swapchain {
     public:
+        DX12Swapchain(RenderEngine* rhi,
+			const IDXGIFactory4* dxgi,
+                      ID3D12Device* device,
+                      HWND window,
+                      const glm::uvec2& window_size,
+                      uint32_t num_images,
+                      ID3D12CommandQueue* direct_command_queue);
+
         ~DX12Swapchain() override = default;
 
-        void acquire_next_swapchain_image(const Semaphore* signal_semaphore) override;
+#pragma region Swapchain implementation
+        uint32_t acquire_next_swapchain_image(const Semaphore* signal_semaphore) override;
 
-        void present_current_image(const Semaphore* wait_semaphore) override;
-
-        Image* get_image(uint32_t index) override;
+        void present(uint32_t image_idx, const std::vector<Semaphore*> wait_semaphores) override;
+#pragma endregion
 
     private:
+        const uint32_t num_images;
+        const glm::uvec2 window_size;
+
+        const uint32_t rtv_descriptor_size = 0;
+
+        RenderEngine* rhi;
+
         Microsoft::WRL::ComPtr<IDXGISwapChain3> swapchain;
+
+        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap;
+
+        void create_swapchain(const IDXGIFactory4* dxgi, HWND window, ID3D12CommandQueue* direct_command_queue);
+
+        void create_per_frame_resources(ID3D12Device* device);
     };
 } // namespace nova::renderer::rhi

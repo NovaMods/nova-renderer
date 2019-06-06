@@ -94,8 +94,6 @@ namespace nova::renderer::rhi {
         void destroy_semaphores(const std::vector<Semaphore*>& semaphores) override final;
         void destroy_fences(const std::vector<Fence*>& fences) override final;
 
-        Image* get_swapchain_image(uint32_t frame_index) override final;
-
         CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override final;
 
         void submit_command_list(CommandList* cmds,
