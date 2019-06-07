@@ -4,9 +4,9 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <unordered_map>
-#include "shaderpack_data.hpp"
 #include "device_memory_resource.hpp"
 #include "nova_renderer/rhi_enums.hpp"
+#include "shaderpack_data.hpp"
 
 namespace nova::renderer::rhi {
 
@@ -92,6 +92,8 @@ namespace nova::renderer::rhi {
     struct Pipeline {};
 
     struct Semaphore {};
+
+    struct PresentSemaphore {};
 
     struct Fence {};
 

@@ -18,10 +18,15 @@ namespace nova::renderer::rhi {
         create_per_frame_resources(device);
     }
 
-    uint32_t DX12Swapchain::acquire_next_swapchain_image(const Semaphore* signal_semaphore) {
+    uint32_t DX12Swapchain::acquire_next_swapchain_image(const Semaphore* /* signal_semaphore */) {
+        const uint32_t ret_val = cur_frame_index;
+        cur_frame_index++;
+        return ret_val;
     }
 
-    void DX12Swapchain::present(uint32_t image_idx, const std::vector<Semaphore*> wait_semaphores) {}
+    void DX12Swapchain::present(uint32_t /* image_idx */, const std::vector<Semaphore*> wait_semaphores) {
+        swapchain->Present(0, DXGI_PRESENT_RESTRICT_TO_OUTPUT);
+    }
 
     void DX12Swapchain::create_swapchain(const IDXGIFactory4* dxgi, HWND window, ID3D12CommandQueue* direct_command_queue) {
         DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {};

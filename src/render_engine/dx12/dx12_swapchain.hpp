@@ -15,7 +15,7 @@ namespace nova::renderer::rhi {
     class DX12Swapchain final : public Swapchain {
     public:
         DX12Swapchain(RenderEngine* rhi,
-			const IDXGIFactory4* dxgi,
+                      const IDXGIFactory4* dxgi,
                       ID3D12Device* device,
                       HWND window,
                       const glm::uvec2& window_size,
@@ -35,6 +35,8 @@ namespace nova::renderer::rhi {
         const glm::uvec2 window_size;
 
         const uint32_t rtv_descriptor_size = 0;
+
+        uint32_t cur_frame_index = 0;
 
         RenderEngine* rhi;
 
