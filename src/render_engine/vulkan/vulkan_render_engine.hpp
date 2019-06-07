@@ -120,7 +120,7 @@ namespace nova::renderer::rhi {
         [[nodiscard]] uint32_t get_queue_family_index(QueueType type) const;
 
     protected:
-        void open_window_and_create_surface(const NovaSettings::WindowOptions& options) override final;
+        void open_window_and_create_surface(const NovaSettings::WindowOptions& options);
 
     private:
         std::unique_ptr<VulkanSwapchain> swapchain;

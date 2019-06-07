@@ -16,6 +16,7 @@
 #include "dx12_render_engine.hpp"
 #include "dx12_structs.hpp"
 #include "dx12_utils.hpp"
+#include "../../windowing/win32_window.hpp"
 
 using Microsoft::WRL::ComPtr;
 
@@ -26,7 +27,7 @@ namespace nova::renderer::rhi {
     DX12RenderEngine::DX12RenderEngine(NovaSettings& settings) : RenderEngine(settings) {
         create_device();
 
-        open_window_and_create_surface(settings.window);
+        open_window_and_create_swapchain(settings.window, settings.max_in_flight_frames);
 
         create_queues();
 
@@ -768,7 +769,18 @@ namespace nova::renderer::rhi {
         dx_queue->Signal(dx_signal_fence->fence.Get(), CPU_FENCE_SIGNALED);
     }
 
-    void DX12RenderEngine::open_window_and_create_surface(const NovaSettings::WindowOptions& options) {}
+    void DX12RenderEngine::open_window_and_create_swapchain(const NovaSettings::WindowOptions& options, uint32_t num_frames) {
+        window = std::make_shared<Win32Window>(options);
+
+        HWND window_handle = window->get_window_handle();
+
+        swapchain = std::make_unique<DX12Swapchain>(this,
+                                                    dxgi_factory.Get(),
+                                                    device.Get(),
+                                                    glm::uvec2{options.height, options.width},
+                                                    num_frames,
+                                                    direct_command_queue.Get());
+    }
 
     void DX12RenderEngine::create_device() {
         if(settings.debug.enabled && settings.debug.enable_validation_layers) {

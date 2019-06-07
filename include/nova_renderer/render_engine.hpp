@@ -9,6 +9,7 @@
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/util/utils.hpp"
 #include "rhi_types.hpp"
+#include "../../src/windowing/win32_window.hpp"
 
 namespace nova::renderer::rhi {
     struct Fence;
@@ -16,7 +17,7 @@ namespace nova::renderer::rhi {
     struct Semaphore;
     struct Swapchain;
     struct Window;
-
+    
     NOVA_EXCEPTION(render_engine_initialization_exception);
     NOVA_EXCEPTION(render_engine_rendering_exception);
 
@@ -173,7 +174,7 @@ namespace nova::renderer::rhi {
 #ifdef NOVA_LINUX
         std::shared_ptr<x11_window> window;
 #elif defined(NOVA_WINDOWS)
-        std::shared_ptr<class win32_window> window;
+        std::shared_ptr<Win32Window> window;
 #endif
 
         glm::uvec2 swapchain_size;
@@ -188,12 +189,6 @@ namespace nova::renderer::rhi {
          * \attention Called by nova
          */
         explicit RenderEngine(NovaSettings& settings) : settings(settings), swapchain_size(settings.window.width, settings.window.height){};
-
-        /*!
-         * \brief Initializes the window with the given size, and creates the swapchain for that window
-         * \param options The window options. Includes the size and title of the windows
-         */
-        virtual void open_window_and_create_surface(const NovaSettings::WindowOptions& options) = 0;
     };
 <<<<<<< HEAD
 } // namespace nova::renderer

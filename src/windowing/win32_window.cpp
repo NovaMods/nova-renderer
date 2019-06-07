@@ -8,7 +8,7 @@
 #ifdef SUPPORT_DX12
 
 namespace nova::renderer {
-    win32_window::win32_window(const NovaSettings::WindowOptions& settings)
+    Win32Window::Win32Window(const NovaSettings::WindowOptions& settings)
         : window_class_name(const_cast<WCHAR*>(L"NovaWindowClass")), window_should_close(false), size{settings.width, settings.height} {
         // Very strongly inspired by GLFW's Win32 variant of createNativeWindow - but GLFW is strictly geared towards
         // OpenGL/Vulkan so I don't want to try and fit it into here
@@ -25,9 +25,9 @@ namespace nova::renderer {
         UpdateWindow(window_handle);
     }
 
-    win32_window::~win32_window() { unregister_window_class(); }
+    Win32Window::~Win32Window() { unregister_window_class(); }
 
-    void win32_window::create_window(const uint32_t width, const uint32_t height) {
+    void Win32Window::create_window(const uint32_t width, const uint32_t height) {
         const DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP | WS_OVERLAPPEDWINDOW;
         const DWORD extended_style = WS_EX_APPWINDOW | WS_EX_TOPMOST;
 
@@ -52,7 +52,7 @@ namespace nova::renderer {
         }
     }
 
-    void win32_window::register_window_class() {
+    void Win32Window::register_window_class() {
         // Basically the same code as GLFW's `_glfwRegisterWindowClassWin32`
         WNDCLASSEXW window_class = {};
         window_class.cbSize = sizeof(window_class);
@@ -74,14 +74,14 @@ namespace nova::renderer {
         }
     }
 
-    void win32_window::unregister_window_class() const { UnregisterClassW(window_class_name, nullptr); }
+    void Win32Window::unregister_window_class() const { UnregisterClassW(window_class_name, nullptr); }
 
-    LRESULT win32_window::window_procedure_wrapper(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-        win32_window* view;
+    LRESULT Win32Window::window_procedure_wrapper(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+        Win32Window* view;
 
         if(message == WM_NCCREATE) {
             auto* cs = reinterpret_cast<CREATESTRUCT*>(lParam);
-            view = static_cast<win32_window*>(cs->lpCreateParams);
+            view = static_cast<Win32Window*>(cs->lpCreateParams);
 
             SetLastError(0);
             if(SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(view)) == 0) {
@@ -90,7 +90,7 @@ namespace nova::renderer {
                 }
             }
         } else {
-            view = reinterpret_cast<win32_window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+            view = reinterpret_cast<Win32Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
         }
 
         if(view) {
@@ -100,7 +100,7 @@ namespace nova::renderer {
         }
     }
 
-    LRESULT win32_window::window_procedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    LRESULT Win32Window::window_procedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
         // Handle window messages, passing input data to a theoretical input manager
         switch(message) {
             case WM_KEYDOWN:
@@ -118,11 +118,11 @@ namespace nova::renderer {
         }
     }
 
-    bool win32_window::should_close() const { return window_should_close; }
+    bool Win32Window::should_close() const { return window_should_close; }
 
-    HWND win32_window::get_window_handle() const { return window_handle; }
+    HWND Win32Window::get_window_handle() const { return window_handle; }
 
-    void win32_window::on_frame_end() {
+    void Win32Window::on_frame_end() {
         MSG msg = {};
         if(PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
             if(msg.message == WM_QUIT) {
@@ -134,7 +134,7 @@ namespace nova::renderer {
         }
     }
 
-    glm::uvec2 win32_window::get_window_size() const { return size; }
+    glm::uvec2 Win32Window::get_window_size() const { return size; }
 } // namespace nova::renderer
 
 #endif

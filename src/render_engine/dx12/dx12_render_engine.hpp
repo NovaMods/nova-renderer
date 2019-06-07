@@ -16,6 +16,8 @@
 #include <spirv_cross/spirv_hlsl.hpp>
 
 namespace nova::renderer::rhi {
+    class DX12Swapchain;
+
     /*!
      * \brief D3D12 implementation of a render engine
      */
@@ -102,10 +104,12 @@ namespace nova::renderer::rhi {
                                  const std::vector<Semaphore*>& wait_semaphores = {},
                                  const std::vector<Semaphore*>& signal_semaphores = {}) override final;
 
-        void open_window_and_create_surface(const NovaSettings::WindowOptions& options) override final;
+        void open_window_and_create_swapchain(const NovaSettings::WindowOptions& options, uint32_t num_frames);
 
     private:
         Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi_factory;
+
+        std::unique_ptr<DX12Swapchain> swapchain;
 
         Microsoft::WRL::ComPtr<IDXGIAdapter3> adapter;
         Microsoft::WRL::ComPtr<ID3D12Device> device; // direct3d device

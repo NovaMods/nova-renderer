@@ -82,14 +82,10 @@ namespace nova::renderer::rhi {
         void destroy_semaphores(const std::vector<Semaphore*>& semaphores) override final;
         void destroy_fences(const std::vector<Fence*>& fences) override final;
 
-        Image* get_swapchain_image(uint32_t frame_index) override final;
-
         CommandList* get_command_list(uint32_t thread_idx,
                                       QueueType needed_queue_type,
                                       CommandList::Level command_list_type) override final;
-
-        void execute_command_lists_impl(const Gl3ExecuteCommandListsCommand& execute_command_lists);
-
+        
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
                                  Fence* fence_to_signal = nullptr,
@@ -97,7 +93,7 @@ namespace nova::renderer::rhi {
                                  const std::vector<Semaphore*>& signal_semaphores = {}) override final;
 
     protected:
-        void open_window_and_create_surface(const NovaSettings::WindowOptions& options) override final;
+        void open_window_and_create_surface(const NovaSettings::WindowOptions& options);
 
     private:
         bool supports_geometry_shaders = false;
@@ -123,6 +119,7 @@ namespace nova::renderer::rhi {
 
         static void draw_indexed_mesh_impl(const Gl3DrawIndexedMeshCommand& draw_indexed_mesh);
 
+        static void execute_command_lists_impl(const Gl3ExecuteCommandListsCommand& execute_command_lists);
 #pragma endregion
     };
 
