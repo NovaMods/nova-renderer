@@ -19,7 +19,7 @@ namespace nova::renderer::rhi {
          * 
          * \return The index of the swapchain image we just acquired
          */
-        virtual uint32_t acquire_next_swapchain_image(const Semaphore* signal_semaphore) = 0;
+        virtual uint32_t acquire_next_swapchain_image(Semaphore* signal_semaphore) = 0;
         
         /*!
          * \brief Presents the specified swapchain image, telling the GPU to wait for the provided semaphore before presenting
