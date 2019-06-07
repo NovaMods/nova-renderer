@@ -13,7 +13,7 @@
 namespace nova::renderer::rhi {
     VulkanSwapchain::VulkanSwapchain(const uint32_t num_swapchain_images,
                                      VulkanRenderEngine& render_engine,
-                                     const glm::ivec2 window_dimensions,
+                                     const glm::uvec2 window_dimensions,
                                      const std::vector<VkPresentModeKHR>& present_modes)
         : render_engine(render_engine), num_swapchain_images(num_swapchain_images) {
 
@@ -152,17 +152,24 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanSwapchain::deinit() {
-        for(auto& i : swapchain_images) {
-            vkDestroyImage(render_engine.device, i, nullptr);
+        for(const Image* i : swapchain_images) {
+            const VulkanImage* vk_image = static_cast<const VulkanImage*>(i);
+            vkDestroyImage(render_engine.device, vk_image->image, nullptr);
+            delete i;
         }
+        swapchain_images.clear();
 
-        for(auto& iv : swapchain_image_views) {
+        for(const VkImageView& iv : swapchain_image_views) {
             vkDestroyImageView(render_engine.device, iv, nullptr);
         }
+        swapchain_image_views.clear();
 
-        for(auto& f : fences) {
-            vkDestroyFence(render_engine.device, f, nullptr);
+        for(const Fence* f : fences) {
+            const VulkanFence* vk_fence = static_cast<const VulkanFence*>(f);
+            vkDestroyFence(render_engine.device, vk_fence->fence, nullptr);
+            delete f;
         }
+        fences.clear();
     }
 
     uint32_t VulkanSwapchain::get_num_images() const { return num_swapchain_images; }

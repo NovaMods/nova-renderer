@@ -35,7 +35,7 @@ namespace nova::renderer::rhi {
     public:
         VulkanSwapchain(uint32_t num_swapchain_images,
                         VulkanRenderEngine& render_engine,
-                        glm::ivec2 window_dimensions,
+                        glm::uvec2 window_dimensions,
                         const std::vector<VkPresentModeKHR>& present_modes);
 
 #pragma region Swapchain implementation
