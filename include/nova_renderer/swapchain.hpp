@@ -12,19 +12,16 @@ namespace nova::renderer::rhi {
         virtual ~Swapchain() = default;
 
         /*!
-         * \brief Acquires the next image in the swapchain, signalling the provided semaphore when the image is ready
-         * to be rendered to
-         *
-         * \param signal_semaphore The semaphore to signal when the image is ready to be rendered to
+         * \brief Acquires the next image in the swapchain
          * 
          * \return The index of the swapchain image we just acquired
          */
-        virtual uint32_t acquire_next_swapchain_image(Semaphore* signal_semaphore) = 0;
+        virtual uint32_t acquire_next_swapchain_image() = 0;
         
         /*!
-         * \brief Presents the specified swapchain image, telling the GPU to wait for the provided semaphore before presenting
+         * \brief Presents the specified swapchain image
          */
-        virtual void present(uint32_t image_idx, const std::vector<Semaphore*> wait_semaphores) = 0;
+        virtual void present(uint32_t image_idx) = 0;
 
         [[nodiscard]] Framebuffer* get_framebuffer(uint32_t frame_idx) const;
 

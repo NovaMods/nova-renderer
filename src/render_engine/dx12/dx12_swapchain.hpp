@@ -25,9 +25,9 @@ namespace nova::renderer::rhi {
         ~DX12Swapchain() override = default;
 
 #pragma region Swapchain implementation
-        uint32_t acquire_next_swapchain_image(const Semaphore* signal_semaphore) override;
+        uint32_t acquire_next_swapchain_image() override;
 
-        void present(uint32_t image_idx, const std::vector<Semaphore*> wait_semaphores) override;
+        void present(uint32_t image_idx) override;
 #pragma endregion
 
     private:

@@ -39,9 +39,9 @@ namespace nova::renderer::rhi {
                         const std::vector<VkPresentModeKHR>& present_modes);
 
 #pragma region Swapchain implementation
-        uint32_t acquire_next_swapchain_image(const Semaphore* signal_semaphore) override;
+        uint32_t acquire_next_swapchain_image() override;
 
-        void present(uint32_t image_idx, const std::vector<Semaphore*> wait_semaphores) override;
+        void present(uint32_t image_idx) override;
 #pragma endregion
         
         [[nodiscard]] VkImageLayout get_layout(uint32_t frame_idx);

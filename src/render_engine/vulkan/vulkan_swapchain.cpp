@@ -45,14 +45,12 @@ namespace nova::renderer::rhi {
         transition_swapchain_images_into_color_attachment_layout(vk_images);
     }
 
-    uint32_t VulkanSwapchain::acquire_next_swapchain_image(const Semaphore* signal_semaphore) {
-        const VulkanSemaphore* vk_semaphore = static_cast<const VulkanSemaphore*>(signal_semaphore);
-
+    uint32_t VulkanSwapchain::acquire_next_swapchain_image() {
         uint32_t acquired_image_idx;
         const auto acquire_result = vkAcquireNextImageKHR(render_engine.device,
                                                           swapchain,
                                                           std::numeric_limits<uint64_t>::max(),
-                                                          vk_semaphore->semaphore,
+                                                          nullptr,
                                                           nullptr,
                                                           &acquired_image_idx);
         if(acquire_result == VK_ERROR_OUT_OF_DATE_KHR || acquire_result == VK_SUBOPTIMAL_KHR) {
@@ -67,21 +65,13 @@ namespace nova::renderer::rhi {
         return acquired_image_idx;
     }
 
-    void VulkanSwapchain::present(const uint32_t image_idx, const std::vector<Semaphore*> wait_semaphores) {
-        std::vector<VkSemaphore> vk_wait_semaphores;
-        vk_wait_semaphores.reserve(wait_semaphores.size());
-
-        for(const Semaphore* semaphore : wait_semaphores) {
-            const VulkanSemaphore* vk_semaphore = static_cast<const VulkanSemaphore*>(semaphore);
-            vk_wait_semaphores.push_back(vk_semaphore->semaphore);
-        }
-
+    void VulkanSwapchain::present(const uint32_t image_idx) {
         VkResult swapchain_result = {};
 
         VkPresentInfoKHR present_info = {};
         present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        present_info.waitSemaphoreCount = vk_wait_semaphores.size();
-        present_info.pWaitSemaphores = vk_wait_semaphores.data();
+        present_info.waitSemaphoreCount = 0;
+        present_info.pWaitSemaphores = nullptr;
         present_info.swapchainCount = 1;
         present_info.pSwapchains = &swapchain;
         present_info.pImageIndices = &image_idx;

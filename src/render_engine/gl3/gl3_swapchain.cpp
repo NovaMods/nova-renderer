@@ -10,12 +10,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    uint32_t Gl3Swapchain::acquire_next_swapchain_image(Semaphore* signal_semaphore) {
-        Gl3Semaphore* gl_semaphore = static_cast<Gl3Semaphore*>(signal_semaphore);
-        std::unique_lock lck(gl_semaphore->mutex);
-        gl_semaphore->signaled = true;
-        gl_semaphore->cv.notify_all();
-
+    uint32_t Gl3Swapchain::acquire_next_swapchain_image() {
         const uint32_t ret_val = cur_frame;
         cur_frame++;
         if(cur_frame >= num_frames) {
@@ -25,13 +20,7 @@ namespace nova::renderer::rhi {
         return ret_val;
     }
 
-    void Gl3Swapchain::present(uint32_t /* image_idx */, const std::vector<Semaphore*> wait_semaphores) {
-        for(Semaphore* semaphore : wait_semaphores) {
-            Gl3Semaphore* gl_semaphore = static_cast<Gl3Semaphore*>(semaphore);
-            std::unique_lock lck(gl_semaphore->mutex);
-            gl_semaphore->cv.wait(lck, [&gl_semaphore] { return gl_semaphore->signaled; });
-        }
-
+    void Gl3Swapchain::present(uint32_t /* image_idx */) {
         glFlush();
     }
 } // namespace nova::renderer::rhi

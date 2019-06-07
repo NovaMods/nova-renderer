@@ -8,9 +8,9 @@ namespace nova::renderer::rhi {
 
         ~Gl3Swapchain() override = default;
 
-        uint32_t acquire_next_swapchain_image(Semaphore* signal_semaphore) override;
+        uint32_t acquire_next_swapchain_image() override;
 
-        void present(uint32_t image_idx, const std::vector<Semaphore*> wait_semaphores) override;
+        void present(uint32_t image_idxs) override;
 
     private:
         const uint32_t num_frames;
