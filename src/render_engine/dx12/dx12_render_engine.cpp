@@ -11,12 +11,13 @@
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "../../util/logger.hpp"
 #include "../../util/windows_utils.hpp"
+#include "../../windowing/win32_window.hpp"
 #include "d3dx12.h"
 #include "dx12_command_list.hpp"
 #include "dx12_render_engine.hpp"
 #include "dx12_structs.hpp"
 #include "dx12_utils.hpp"
-#include "../../windowing/win32_window.hpp"
+#include "dx12_swapchain.hpp"
 
 using Microsoft::WRL::ComPtr;
 
@@ -281,7 +282,7 @@ namespace nova::renderer::rhi {
                                                                                        cbv_srv_uav_descriptor_size * write.binding);
 
             switch(write.type) {
-                case DescriptorType::CombinedImageSampler:
+                case DescriptorType::CombinedImageSampler: {
                     const DescriptorImageUpdate* image_update = write.image_info;
                     const DX12Image* image = static_cast<const DX12Image*>(image_update->image);
                     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
@@ -294,13 +295,13 @@ namespace nova::renderer::rhi {
 
                     device->CreateShaderResourceView(image->resource.Get(), &srv_desc, write_handle);
 
-                    break;
+                } break;
 
-                case DescriptorType::UniformBuffer:
-                    break;
+                case DescriptorType::UniformBuffer: {
+                } break;
 
-                case DescriptorType::StorageBuffer:
-                    break;
+                case DescriptorType::StorageBuffer: {
+                } break;
 
                 default:;
             }
@@ -472,10 +473,9 @@ namespace nova::renderer::rhi {
          * Render targets
          */
 
-        const DX12Renderpass* dx12_renderpass = static_cast<const DX12Renderpass*>(renderpass);
         uint32_t i = 0;
-        for(i = 0; i < dx12_renderpass->color_attachments.size(); i++) {
-            const shaderpack::TextureAttachmentInfo& attachment_info = dx12_renderpass->color_attachments.at(i);
+        for(i = 0; i < dx12_pipeline_interface->color_attachments.size(); i++) {
+            const shaderpack::TextureAttachmentInfo& attachment_info = dx12_pipeline_interface->color_attachments.at(i);
             if(attachment_info.pixel_format == shaderpack::PixelFormatEnum::Depth ||
                attachment_info.pixel_format == shaderpack::PixelFormatEnum::DepthStencil) {
                 pipeline_state_desc.DSVFormat = to_dxgi_format(attachment_info.pixel_format);
@@ -520,17 +520,19 @@ namespace nova::renderer::rhi {
 
         D3D12_RESOURCE_STATES states = {};
         switch(info.buffer_usage) {
-            case BufferCreateInfo::BufferUsage::UniformBuffer:
+            case BufferUsage::UniformBuffer: {
                 states = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-                break;
+            } break;
 
-            case BufferCreateInfo::BufferUsage::IndexBuffer:
+            case BufferUsage::IndexBuffer: {
                 states = D3D12_RESOURCE_STATE_INDEX_BUFFER;
-                break;
+            } break;
 
-            case BufferCreateInfo::BufferUsage::VertexBuffer:
+            case BufferUsage::VertexBuffer: {
                 states = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-                break;
+            } break;
+
+            default:;
         }
 
         D3D12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(info.size);
@@ -572,9 +574,7 @@ namespace nova::renderer::rhi {
             dimensions.x = static_cast<uint32_t>(format.width);
             dimensions.y = static_cast<uint32_t>(format.height);
         } else {
-            swapchain->GetSourceSize(&dimensions.x, &dimensions.y);
-            dimensions.x *= static_cast<uint32_t>(format.width);
-            dimensions.y *= static_cast<uint32_t>(format.height);
+            dimensions = swapchain->get_size();
         }
 
         const DXGI_FORMAT dx12_format = to_dxgi_format(format.pixel_format);
@@ -693,7 +693,7 @@ namespace nova::renderer::rhi {
     void DX12RenderEngine::destroy_semaphores(const std::vector<Semaphore*>& semaphores) {}
 
     void DX12RenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
-    
+
     CommandList* DX12RenderEngine::get_command_list(const uint32_t thread_idx,
                                                     const QueueType needed_queue_type,
                                                     const CommandList::Level level) {
@@ -772,7 +772,9 @@ namespace nova::renderer::rhi {
     void DX12RenderEngine::open_window_and_create_swapchain(const NovaSettings::WindowOptions& options, uint32_t num_frames) {
         window = std::make_shared<Win32Window>(options);
 
-        HWND window_handle = window->get_window_handle();
+        Win32Window* win32_window = static_cast<Win32Window*>(window.get());
+
+        HWND window_handle = win32_window->get_window_handle();
 
         swapchain = std::make_unique<DX12Swapchain>(this,
                                                     dxgi_factory.Get(),

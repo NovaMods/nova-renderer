@@ -13,7 +13,7 @@ namespace nova::renderer::rhi {
 
     struct DX12Buffer : Buffer {
         Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
-        foundational::allocation::Bytes size{};
+        foundational::allocation::Bytes size{0};
     };
 
     struct DX12Image : Image {

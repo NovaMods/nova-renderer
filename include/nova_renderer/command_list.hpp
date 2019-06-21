@@ -4,12 +4,13 @@
 #include "nova_renderer/rhi_enums.hpp"
 
 namespace nova::renderer::rhi {
-    class Buffer;
-    class DescriptorSet;
-    class Framebuffer;
-    class Pipeline;
-    class PipelineInterface;
-    class Renderpass;
+    struct Buffer;
+    struct DescriptorSet;
+    struct Framebuffer;
+    struct Pipeline;
+    struct PipelineInterface;
+    struct Renderpass;
+    struct ResourceBarrier;
 
     /*!
      * \brief An API-agnostic command list

@@ -10,6 +10,8 @@ void sigabrt_handler(int signal);
 #include "../../src/util/linux_utils.hpp"
 #endif
 
+#include "nova_renderer/window.hpp"
+
 namespace nova::renderer {
     int main() {
         // TODO: fil out this test when the RHI is stable
@@ -61,7 +63,7 @@ namespace nova::renderer {
             data.initial_position = glm::vec3(0, 0, -5);
 
             renderer->add_renderable_for_material(FullMaterialPassName{"gbuffers_terrain", "forward"}, data);
-            
+
             while(!window->should_close()) {
                 renderer->execute_frame();
                 window->on_frame_end();

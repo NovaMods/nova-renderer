@@ -33,6 +33,8 @@ namespace nova::renderer::rhi {
     std::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions();
 
     std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
+
+    bool operator&(const ShaderStageFlags& lhs, const ShaderStageFlags& rhs);
 } // namespace nova::renderer
 
 // Only validate errors in debug mode

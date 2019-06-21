@@ -37,6 +37,7 @@ namespace nova::renderer::rhi {
     };
 
     enum class ResourceAccessFlags {
+        NoFlags = 0x00000000,
         IndexReadBit = 0x00000002,
         VertexAttributeReadBit = 0x00000004,
         UniformReadBit = 0x00000008,

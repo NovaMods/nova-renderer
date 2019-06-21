@@ -8,6 +8,196 @@
 #include "gl3_structs.hpp"
 
 namespace nova::renderer::rhi {
+    Gl3Command::Gl3Command() : type(Gl3CommandType::None) {}
+
+    Gl3Command::Gl3Command(Gl3Command&& old) noexcept : type(old.type) {
+        switch(type) {
+            case Gl3CommandType::None:
+                break;
+
+            case Gl3CommandType::BufferCopy:
+                buffer_copy = old.buffer_copy;
+                break;
+
+            case Gl3CommandType::ExecuteCommandLists:
+                execute_command_lists = old.execute_command_lists;
+                break;
+
+            case Gl3CommandType::BeginRenderpass:
+                begin_renderpass = old.begin_renderpass;
+                break;
+
+            case Gl3CommandType::EndRenderpass:
+                break;
+
+            case Gl3CommandType::BindPipeline:
+                bind_pipeline = old.bind_pipeline;
+                break;
+
+            case Gl3CommandType::BindDescriptorSets:
+                bind_descriptor_sets = old.bind_descriptor_sets;
+                break;
+
+            case Gl3CommandType::BindVertexBuffers:
+                bind_vertex_buffers = old.bind_vertex_buffers;
+                break;
+
+            case Gl3CommandType::BindIndexBuffer:
+                bind_index_buffer = old.bind_index_buffer;
+                break;
+
+            case Gl3CommandType::DrawIndexedMesh:
+                draw_indexed_mesh = old.draw_indexed_mesh;
+                break;
+
+            default:;
+        }
+
+        old.type = Gl3CommandType::None;
+    }
+
+    Gl3Command& Gl3Command::operator=(Gl3Command&& old) noexcept {
+        type = old.type;
+
+        switch(type) {
+            case Gl3CommandType::None:
+                break;
+
+            case Gl3CommandType::BufferCopy:
+                buffer_copy = old.buffer_copy;
+                break;
+
+            case Gl3CommandType::ExecuteCommandLists:
+                execute_command_lists = old.execute_command_lists;
+                break;
+
+            case Gl3CommandType::BeginRenderpass:
+                begin_renderpass = old.begin_renderpass;
+                break;
+
+            case Gl3CommandType::EndRenderpass:
+                break;
+
+            case Gl3CommandType::BindPipeline:
+                bind_pipeline = old.bind_pipeline;
+                break;
+
+            case Gl3CommandType::BindDescriptorSets:
+                bind_descriptor_sets = old.bind_descriptor_sets;
+                break;
+
+            case Gl3CommandType::BindVertexBuffers:
+                bind_vertex_buffers = old.bind_vertex_buffers;
+                break;
+
+            case Gl3CommandType::BindIndexBuffer:
+                bind_index_buffer = old.bind_index_buffer;
+                break;
+
+            case Gl3CommandType::DrawIndexedMesh:
+                draw_indexed_mesh = old.draw_indexed_mesh;
+                break;
+
+            default:;
+        }
+
+        old.type = Gl3CommandType::None;
+
+        return *this;
+    }
+
+    Gl3Command::Gl3Command(const Gl3Command& other) : type(other.type) {
+        switch(type) {
+            case Gl3CommandType::None:
+                break;
+
+            case Gl3CommandType::BufferCopy:
+                buffer_copy = other.buffer_copy;
+                break;
+
+            case Gl3CommandType::ExecuteCommandLists:
+                execute_command_lists = other.execute_command_lists;
+                break;
+
+            case Gl3CommandType::BeginRenderpass:
+                begin_renderpass = other.begin_renderpass;
+                break;
+
+            case Gl3CommandType::EndRenderpass:
+                break;
+
+            case Gl3CommandType::BindPipeline:
+                bind_pipeline = other.bind_pipeline;
+                break;
+
+            case Gl3CommandType::BindDescriptorSets:
+                bind_descriptor_sets = other.bind_descriptor_sets;
+                break;
+
+            case Gl3CommandType::BindVertexBuffers:
+                bind_vertex_buffers = other.bind_vertex_buffers;
+                break;
+
+            case Gl3CommandType::BindIndexBuffer:
+                bind_index_buffer = other.bind_index_buffer;
+                break;
+
+            case Gl3CommandType::DrawIndexedMesh:
+                draw_indexed_mesh = other.draw_indexed_mesh;
+                break;
+
+            default:;
+        }
+    }
+
+    Gl3Command& Gl3Command::operator=(const Gl3Command& other) {
+        type = other.type;
+
+        switch(type) {
+            case Gl3CommandType::None:
+                break;
+
+            case Gl3CommandType::BufferCopy:
+                buffer_copy = other.buffer_copy;
+                break;
+
+            case Gl3CommandType::ExecuteCommandLists:
+                execute_command_lists = other.execute_command_lists;
+                break;
+
+            case Gl3CommandType::BeginRenderpass:
+                begin_renderpass = other.begin_renderpass;
+                break;
+
+            case Gl3CommandType::EndRenderpass:
+                break;
+
+            case Gl3CommandType::BindPipeline:
+                bind_pipeline = other.bind_pipeline;
+                break;
+
+            case Gl3CommandType::BindDescriptorSets:
+                bind_descriptor_sets = other.bind_descriptor_sets;
+                break;
+
+            case Gl3CommandType::BindVertexBuffers:
+                bind_vertex_buffers = other.bind_vertex_buffers;
+                break;
+
+            case Gl3CommandType::BindIndexBuffer:
+                bind_index_buffer = other.bind_index_buffer;
+                break;
+
+            case Gl3CommandType::DrawIndexedMesh:
+                draw_indexed_mesh = other.draw_indexed_mesh;
+                break;
+
+            default:;
+        }
+
+        return *this;
+    }
+
     Gl3Command::~Gl3Command() {
         switch(type) {
             case Gl3CommandType::BufferCopy:
@@ -124,7 +314,7 @@ namespace nova::renderer::rhi {
 
         for(const DescriptorSet* set : descriptor_sets) {
             const Gl3DescriptorSet* gl_set = static_cast<const Gl3DescriptorSet*>(set);
-            command.bind_descriptor_sets.sets.emplace_back(gl_set);
+            command.bind_descriptor_sets.sets.emplace_back(const_cast<Gl3DescriptorSet*>(gl_set));
         }
     }
 

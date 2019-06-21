@@ -24,19 +24,19 @@ namespace nova::renderer::rhi {
 
         for(const ResourceBarrier& barrier : barriers) {
             switch(barrier.resource_to_barrier->type) {
-                case Resource::ResourceType::Image: {
+                case ResourceType::Image: {
                     VulkanImage* image = static_cast<VulkanImage*>(barrier.resource_to_barrier);
 
                     VkImageMemoryBarrier image_barrier = {};
                     image_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                    image_barrier.srcAccessMask = barrier.access_before_barrier;
-                    image_barrier.dstAccessMask = barrier.access_after_barrier;
+                    image_barrier.srcAccessMask = static_cast<VkAccessFlags>(barrier.access_before_barrier);
+                    image_barrier.dstAccessMask = static_cast<VkAccessFlags>(barrier.access_after_barrier);
                     image_barrier.oldLayout = to_vk_layout(barrier.initial_state);
                     image_barrier.newLayout = to_vk_layout(barrier.final_state);
                     image_barrier.srcQueueFamilyIndex = render_engine.get_queue_family_index(barrier.source_queue);
                     image_barrier.dstQueueFamilyIndex = render_engine.get_queue_family_index(barrier.destination_queue);
                     image_barrier.image = image->image;
-                    image_barrier.subresourceRange.aspectMask = barrier.image_memory_barrier.aspect;
+                    image_barrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(barrier.image_memory_barrier.aspect);
                     image_barrier.subresourceRange.baseMipLevel = 0; // TODO: Something smarter with mips
                     image_barrier.subresourceRange.levelCount = 1;
                     image_barrier.subresourceRange.baseArrayLayer = 0;
@@ -45,13 +45,13 @@ namespace nova::renderer::rhi {
                     image_barriers.push_back(image_barrier);
                 } break;
 
-                case Resource::ResourceType::Buffer: {
+                case ResourceType::Buffer: {
                     VulkanBuffer* buffer = static_cast<VulkanBuffer*>(barrier.resource_to_barrier);
 
                     VkBufferMemoryBarrier buffer_barrier = {};
                     buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-                    buffer_barrier.srcAccessMask = barrier.access_before_barrier;
-                    buffer_barrier.dstAccessMask = barrier.access_after_barrier;
+                    buffer_barrier.srcAccessMask = static_cast<VkAccessFlags>(barrier.access_before_barrier);
+                    buffer_barrier.dstAccessMask = static_cast<VkAccessFlags>(barrier.access_after_barrier);
                     buffer_barrier.srcQueueFamilyIndex = render_engine.get_queue_family_index(barrier.source_queue);
                     buffer_barrier.dstQueueFamilyIndex = render_engine.get_queue_family_index(barrier.destination_queue);
                     buffer_barrier.buffer = buffer->buffer;
@@ -64,8 +64,8 @@ namespace nova::renderer::rhi {
         }
 
         vkCmdPipelineBarrier(cmds,
-                             stages_before_barrier,
-                             stages_after_barrier,
+                             static_cast<VkPipelineStageFlags>(stages_before_barrier),
+                             static_cast<VkPipelineStageFlags>(stages_after_barrier),
                              0,
                              0,
                              nullptr,

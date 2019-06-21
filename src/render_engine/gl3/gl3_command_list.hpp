@@ -7,11 +7,12 @@
 #define NOVA_RENDERER_GL_2_COMMAND_LIST_HPP
 #include <nova_renderer/command_list.hpp>
 
-#include "glad/glad.h"
 #include "gl3_structs.hpp"
+#include "glad/glad.h"
 
 namespace nova::renderer::rhi {
     enum class Gl3CommandType {
+        None,
         BufferCopy,
         ExecuteCommandLists,
         BeginRenderpass,
@@ -79,6 +80,14 @@ namespace nova::renderer::rhi {
             Gl3BindIndexBufferCommand bind_index_buffer;
             Gl3DrawIndexedMeshCommand draw_indexed_mesh;
         };
+
+        Gl3Command();
+
+        Gl3Command(Gl3Command&& old) noexcept;
+        Gl3Command& operator=(Gl3Command&& old) noexcept;
+
+        Gl3Command(const Gl3Command& other);
+        Gl3Command& operator=(const Gl3Command& other);
 
         ~Gl3Command();
     };

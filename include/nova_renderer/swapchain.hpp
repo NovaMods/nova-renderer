@@ -25,11 +25,16 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] Framebuffer* get_framebuffer(uint32_t frame_idx) const;
 
-        [[nodiscard]] Image* get_image(uint32_t index) const;
+        [[nodiscard]] Image* get_image(uint32_t frame_idx) const;
 
         [[nodiscard]] Fence* get_fence(uint32_t frame_idx) const;
 
+        [[nodiscard]] glm::uvec2 get_size() const;
+
     protected:
+        const uint32_t num_images;
+        const glm::uvec2 size;
+
         // Arrays of the per-frame swapchain resources. Each swapchain implementation is responsible for filling these arrays with
         // API-specific objects
 

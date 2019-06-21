@@ -10,6 +10,10 @@
 
 #include "vulkan_render_engine.hpp"
 
+#ifdef ERROR
+#undef ERROR
+#endif
+
 namespace nova::renderer::rhi {
     VulkanSwapchain::VulkanSwapchain(const uint32_t num_swapchain_images,
                                      VulkanRenderEngine& render_engine,
@@ -56,7 +60,7 @@ namespace nova::renderer::rhi {
         if(acquire_result == VK_ERROR_OUT_OF_DATE_KHR || acquire_result == VK_SUBOPTIMAL_KHR) {
             // TODO: Recreate the swapchain and all screen-relative textures
             NOVA_LOG(ERROR) << "Swapchain out of date! One day you'll write the code to recreate it";
-            return;
+            return 0;
         }
         if(acquire_result != VK_SUCCESS) {
             NOVA_LOG(ERROR) << __FILE__ << ":" << __LINE__ << "=> " << vk_result_to_string(acquire_result);
@@ -104,7 +108,12 @@ namespace nova::renderer::rhi {
             barriers.push_back(barrier);
         }
 
-        VkCommandPool command_pool = render_engine.get_command_pool_for_thread(0, render_engine.graphics_family_index);
+        VkCommandPool command_pool;
+
+        VkCommandPoolCreateInfo command_pool_create_info = {};
+        command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        command_pool_create_info.queueFamilyIndex = render_engine.graphics_family_index;
+        vkCreateCommandPool(render_engine.device, &command_pool_create_info, nullptr, &command_pool);
 
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

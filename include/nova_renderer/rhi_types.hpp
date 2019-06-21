@@ -126,13 +126,13 @@ namespace nova::renderer::rhi {
     };
 
     struct DescriptorImageUpdate {
-        const struct Image* image;
+        const Image* image;
         shaderpack::TextureFormat format;
         Sampler* sampler;
     };
 
     struct DescriptorSetWrite {
-        const struct DescriptorSet* set;
+        const DescriptorSet* set;
         uint32_t binding;
         DescriptorImageUpdate* image_info;
         DescriptorType type;

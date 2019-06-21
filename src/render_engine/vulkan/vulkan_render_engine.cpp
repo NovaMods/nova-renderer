@@ -492,7 +492,7 @@ namespace nova::renderer::rhi {
             vk_write.dstArrayElement = 0;
 
             switch(write.type) {
-                case DescriptorType::CombinedImageSampler:
+                case DescriptorType::CombinedImageSampler: {
                     VkDescriptorImageInfo vk_image_info = {};
                     vk_image_info.imageView = image_view_for_image(write.image_info->image);
                     vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -504,13 +504,13 @@ namespace nova::renderer::rhi {
                     vk_write.pImageInfo = &image_infos.at(image_infos.size() - 1);
 
                     vk_writes.push_back(vk_write);
-                    break;
+                } break;
 
-                case DescriptorType::UniformBuffer:
-                    break;
+                case DescriptorType::UniformBuffer: {
+                } break;
 
-                case DescriptorType::StorageBuffer:
-                    break;
+                case DescriptorType::StorageBuffer: {
+                } break;
 
                 default:;
             }
@@ -740,23 +740,22 @@ namespace nova::renderer::rhi {
         VmaAllocationCreateInfo vma_create_info = {};
 
         switch(info.buffer_usage) {
-            case BufferCreateInfo::BufferUsage::UniformBuffer:
+            case BufferUsage::UniformBuffer: {
                 if(info.size < gpu.props.limits.maxUniformBufferRange) {
                     vk_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
                 } else {
                     vk_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
                 }
+            } break;
 
-                break;
-
-            case BufferCreateInfo::BufferUsage::IndexBuffer:
+            case BufferUsage::IndexBuffer: {
                 vk_create_info.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-                break;
+            } break;
 
-            case BufferCreateInfo::BufferUsage::VertexBuffer:
+            case BufferUsage::VertexBuffer: {
                 vk_create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-                break;
+            } break;
         }
 
         VulkanDeviceMemory* vulkan_heap = static_cast<VulkanDeviceMemory*>(info.allocation.memory);
@@ -813,7 +812,8 @@ namespace nova::renderer::rhi {
         alloc_create_info.pool = nullptr;
         alloc_create_info.pUserData = nullptr;
 
-        vmaCreateImage(vma_allocator, &image_create_info, &alloc_create_info, &texture->image, &texture->allocation, &texture->vma_info);
+        // TODO: Actualy create the image
+        // vmaCreateImage(vma_allocator, &image_create_info, &alloc_create_info, &texture->image, &texture->allocation, &texture->vma_info);
 
         VkImageViewCreateInfo image_view_create_info = {};
         image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -884,12 +884,6 @@ namespace nova::renderer::rhi {
         return fences;
     }
 
-    Image* VulkanRenderEngine::get_swapchain_image(const uint32_t frame_index) {
-        VulkanImage* image = new VulkanImage;
-        image->image = swapchain->get_image(frame_index);
-        return image;
-    }
-
     Swapchain* VulkanRenderEngine::get_swapchain() { return swapchain.get(); }
 
     void VulkanRenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
@@ -919,7 +913,8 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderEngine::destroy_texture(Image* resource) {
         VulkanImage* vk_image = static_cast<VulkanImage*>(resource);
-        vmaDestroyImage(vma_allocator, vk_image->image, vk_image->allocation);
+        // TODO
+        // vmaDestroyImage(vma_allocator, vk_image->image, vk_image->allocation);
 
         delete vk_image;
     }
@@ -1021,7 +1016,9 @@ namespace nova::renderer::rhi {
 
         VkWin32SurfaceCreateInfoKHR win32_surface_create = {};
         win32_surface_create.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-        win32_surface_create.hwnd = window->get_window_handle();
+        Window* window_ptr = window.get();
+        Win32Window* win32_window_ptr = static_cast<Win32Window*>(window_ptr);
+        win32_surface_create.hwnd = win32_window_ptr->get_window_handle();
 
         NOVA_CHECK_RESULT(vkCreateWin32SurfaceKHR(instance, &win32_surface_create, nullptr, &surface));
 

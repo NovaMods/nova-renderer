@@ -95,22 +95,26 @@ namespace nova::renderer::rhi {
 
     void Gl3RenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
         for(DescriptorSetWrite& write : writes) {
-            Gl3DescriptorSet* set = static_cast<Gl3DescriptorSet*>(write.set);
+            const Gl3DescriptorSet* cset = static_cast<const Gl3DescriptorSet*>(write.set);
+            Gl3DescriptorSet* set = const_cast<Gl3DescriptorSet*>(cset);    // I have a few regrets
             Gl3Descriptor& descriptor = set->descriptors.at(write.binding);
 
             switch(write.type) {
 
-                case DescriptorType::CombinedImageSampler:
+                case DescriptorType::CombinedImageSampler: {
                     DescriptorImageUpdate* image_update = write.image_info;
-                    Gl3Image* image = static_cast<Gl3Image*>(image_update->image);
+                    const Gl3Image* cimage = static_cast<const Gl3Image*>(image_update->image);
+                    Gl3Image* image = const_cast<Gl3Image*>(cimage);
                     descriptor.resource = image;
-                    break;
+                } break;
 
-                case DescriptorType::UniformBuffer:
-                    break;
+                case DescriptorType::UniformBuffer: {
+                    NOVA_LOG(WARN) << __FILE__ << "(" << __LINE__ << "): Unimplemented";
+                } break;
 
-                case DescriptorType::StorageBuffer:
-                    break;
+                case DescriptorType::StorageBuffer: {
+                    NOVA_LOG(WARN) << __FILE__ << "(" << __LINE__ << "): Unimplemented";
+                } break;
 
                 default:;
             }
@@ -194,17 +198,17 @@ namespace nova::renderer::rhi {
         GLuint buffer_bind_target = 0;
 
         switch(info.buffer_usage) {
-            case BufferCreateInfo::BufferUsage::UniformBuffer:
+            case BufferUsage::UniformBuffer: {
                 buffer_bind_target = GL_UNIFORM_BUFFER;
-                break;
+            } break;
 
-            case BufferCreateInfo::BufferUsage::IndexBuffer:
+            case BufferUsage::IndexBuffer: {
                 buffer_bind_target = GL_ELEMENT_ARRAY_BUFFER;
-                break;
+            } break;
 
-            case BufferCreateInfo::BufferUsage::VertexBuffer:
+            case BufferUsage::VertexBuffer: {
                 buffer_bind_target = GL_ARRAY_BUFFER;
-                break;
+            } break;
 
             default:;
         }
@@ -329,8 +333,6 @@ namespace nova::renderer::rhi {
     void Gl3RenderEngine::destroy_semaphores(const std::vector<Semaphore*>& semaphores) {}
     void Gl3RenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
 
-    Image* Gl3RenderEngine::get_swapchain_image(uint32_t frame_index) { return new Gl3Image; }
-
     CommandList* Gl3RenderEngine::get_command_list(uint32_t /* thread_idx */,
                                                    QueueType /* needed_queue_type */,
                                                    CommandList::Level /* command_list_type */) {
@@ -434,19 +436,19 @@ namespace nova::renderer::rhi {
                 for(const auto& [binding_name, binding_desc] : bind_descriptor_sets.pipeline_bindings) {
                     if(binding_desc.set == set_idx && binding_desc.binding == binding) {
                         switch(binding_desc.type) {
-                            case DescriptorType::CombinedImageSampler:
+                            case DescriptorType::CombinedImageSampler: {
                                 const GLuint uniform_id = bind_descriptor_sets.uniform_cache.at(binding_name);
                                 glUniform1i(uniform_id, descriptor.resource->id);
-                                break;
+                            } break;
 
-                            case DescriptorType::UniformBuffer:
+                            case DescriptorType::UniformBuffer: {
                                 const GLuint block_index = bind_descriptor_sets.uniform_block_indices.at(binding_name);
                                 glBindBufferBase(GL_UNIFORM_BUFFER, block_index, descriptor.resource->id);
-                                break;
+                            } break;
 
-                            case DescriptorType::StorageBuffer:
+                            case DescriptorType::StorageBuffer: {
                                 // I don't know how to emulate this in GL3
-                                break;
+                            } break;
                         }
                     }
                 }

@@ -13,8 +13,10 @@
 #endif
 #include "debugging/renderdoc.hpp"
 #include "nova_renderer/command_list.hpp"
+#include "nova_renderer/swapchain.hpp"
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
 
+#include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <minitrace/minitrace.h>
 
@@ -125,18 +127,20 @@ namespace nova::renderer {
 
     MeshId NovaRenderer::create_mesh(const MeshData& mesh_data) {
         rhi::BufferCreateInfo vertex_buffer_create_info = {};
-        vertex_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::BufferUsage::VertexBuffer;
+        vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::VertexBuffer;
         vertex_buffer_create_info.size = mesh_data.vertex_data.size() * sizeof(FullVertex);
-        vertex_buffer_create_info.buffer_residency = rhi::BufferCreateInfo::Residency::DeviceLocal;
         vertex_buffer_create_info.allocation = mesh_memory->allocate(Bytes(vertex_buffer_create_info.size));
 
         rhi::Buffer* vertex_buffer = rhi->create_buffer(vertex_buffer_create_info);
 
         {
             rhi::BufferCreateInfo staging_vertex_buffer_create_info = vertex_buffer_create_info;
-            staging_vertex_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::BufferUsage::StagingBuffer;
+            staging_vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
             rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info);
-            rhi->write_data_to_buffer(mesh_data.vertex_data.data(), mesh_data.vertex_data.size(), staging_vertex_buffer);
+            rhi->write_data_to_buffer(mesh_data.vertex_data.data(),
+                                      mesh_data.vertex_data.size() * sizeof(FullVertex),
+                                      0,
+                                      staging_vertex_buffer);
 
             rhi::CommandList* vertex_upload_cmds = rhi->get_command_list(0, rhi::QueueType::Transfer);
             vertex_upload_cmds->copy_buffer(vertex_buffer, 0, staging_vertex_buffer, 0, vertex_buffer_create_info.size);
@@ -144,18 +148,17 @@ namespace nova::renderer {
         }
 
         rhi::BufferCreateInfo index_buffer_create_info = {};
-        index_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::BufferUsage::IndexBuffer;
+        index_buffer_create_info.buffer_usage = rhi::BufferUsage::IndexBuffer;
         index_buffer_create_info.size = mesh_data.indices.size() * sizeof(uint32_t);
-        index_buffer_create_info.buffer_residency = rhi::BufferCreateInfo::Residency::DeviceLocal;
         index_buffer_create_info.allocation = mesh_memory->allocate(Bytes(index_buffer_create_info.size));
 
         rhi::Buffer* index_buffer = rhi->create_buffer(index_buffer_create_info);
 
         {
             rhi::BufferCreateInfo staging_index_buffer_create_info = index_buffer_create_info;
-            staging_index_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::BufferUsage::StagingBuffer;
+            staging_index_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
             rhi::Buffer* staging_index_buffer = rhi->create_buffer(staging_index_buffer_create_info);
-            rhi->write_data_to_buffer(mesh_data.indices.data(), mesh_data.indices.size(), staging_index_buffer);
+            rhi->write_data_to_buffer(mesh_data.indices.data(), mesh_data.indices.size() * sizeof(uint32_t), 0, staging_index_buffer);
 
             rhi::CommandList* indices_upload_cmds = rhi->get_command_list(0, rhi::QueueType::Transfer);
             indices_upload_cmds->copy_buffer(index_buffer, 0, staging_index_buffer, 0, index_buffer_create_info.size);
@@ -389,7 +392,7 @@ namespace nova::renderer {
             const rhi::ResourceBindingDescription& binding_desc = descriptor_descriptions.at(descriptor_name);
             const rhi::DescriptorSet* descriptor_set = material.descriptor_sets.at(binding_desc.set);
 
-            rhi::DescriptorSetWrite write;
+            rhi::DescriptorSetWrite write = {};
             write.set = descriptor_set;
             write.binding = binding_desc.binding;
 
@@ -570,7 +573,7 @@ namespace nova::renderer {
 
         if(renderpass.writes_to_backbuffer) {
             rhi::ResourceBarrier backbuffer_barrier = {};
-            backbuffer_barrier.resource_to_barrier = rhi->get_swapchain_image(cur_frame_idx);
+            backbuffer_barrier.resource_to_barrier = swapchain->get_image(cur_frame_idx);
             backbuffer_barrier.initial_state = rhi::ResourceState::PresentSource;
             backbuffer_barrier.final_state = rhi::ResourceState::ColorAttachment;
             backbuffer_barrier.access_before_barrier = rhi::ResourceAccessFlags::ColorAttachmentWriteBit;
@@ -594,7 +597,7 @@ namespace nova::renderer {
 
         if(renderpass.writes_to_backbuffer) {
             rhi::ResourceBarrier backbuffer_barrier = {};
-            backbuffer_barrier.resource_to_barrier = rhi->get_swapchain_image(cur_frame_idx);
+            backbuffer_barrier.resource_to_barrier = swapchain->get_image(cur_frame_idx);
             backbuffer_barrier.initial_state = rhi::ResourceState::ColorAttachment;
             backbuffer_barrier.final_state = rhi::ResourceState::PresentSource;
             backbuffer_barrier.access_before_barrier = rhi::ResourceAccessFlags::ColorAttachmentWriteBit;
@@ -674,7 +677,11 @@ namespace nova::renderer {
                     command.id = id;
                     command.is_visible = true;
                     // TODO: Make sure this is accurate
-                    command.model_matrix = renderable.initial_position * renderable.initial_rotation * renderable.initial_scale;
+                    command.model_matrix = glm::translate(command.model_matrix, renderable.initial_position);
+                    command.model_matrix = glm::rotate(command.model_matrix, renderable.initial_rotation.x, {1, 0, 0});
+                    command.model_matrix = glm::rotate(command.model_matrix, renderable.initial_rotation.y, {0, 1, 0});
+                    command.model_matrix = glm::rotate(command.model_matrix, renderable.initial_rotation.z, {0, 0, 1});
+                    command.model_matrix = glm::scale(command.model_matrix, renderable.initial_scale);
 
                     batch.renderables.emplace_back(command);
                 }
@@ -756,7 +763,7 @@ namespace nova::renderer {
         // Buffer for per-frame uniform data
         rhi::BufferCreateInfo per_frame_data_create_info = {};
         per_frame_data_create_info.size = sizeof(PerFrameUniforms);
-        per_frame_data_create_info.buffer_usage = rhi::BufferCreateInfo::BufferUsage::UniformBuffer;
+        per_frame_data_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
         per_frame_data_create_info.allocation = ubo_memory->allocate(Bytes(sizeof(PerFrameUniforms)));
 
         per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info);
@@ -764,7 +771,7 @@ namespace nova::renderer {
         // Buffer for each drawcall's model matrix
         rhi::BufferCreateInfo model_matrix_buffer_create_info = {};
         model_matrix_buffer_create_info.size = sizeof(glm::mat4) * 0xFFFF;
-        model_matrix_buffer_create_info.buffer_usage = rhi::BufferCreateInfo::BufferUsage::UniformBuffer;
+        model_matrix_buffer_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
         model_matrix_buffer_create_info.allocation = ubo_memory->allocate(Bytes(sizeof(glm::mat4) * 0xFFFF));
 
         model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info);

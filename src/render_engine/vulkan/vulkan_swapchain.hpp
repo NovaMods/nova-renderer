@@ -31,7 +31,7 @@ namespace nova::renderer::rhi {
      *
      * You can even get the framebuffer constructed from the current swapchain. Wow!
      */
-    class VulkanSwapchain final : Swapchain {
+    class VulkanSwapchain final : public Swapchain {
     public:
         VulkanSwapchain(uint32_t num_swapchain_images,
                         VulkanRenderEngine& render_engine,

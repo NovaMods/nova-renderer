@@ -23,6 +23,10 @@ namespace nova::renderer {
     NOVA_EXCEPTION(already_initialized_exception);
     NOVA_EXCEPTION(uninitialized_exception);
 
+    namespace rhi {
+        class Swapchain;
+    }
+
 #pragma region Runtime optimized data
     template <typename RenderableType>
     struct MeshBatch {
@@ -188,6 +192,7 @@ namespace nova::renderer {
     private:
         NovaSettings render_settings;
         std::unique_ptr<rhi::RenderEngine> rhi;
+        rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
         static std::unique_ptr<NovaRenderer> instance;
@@ -318,6 +323,6 @@ namespace nova::renderer {
         void record_material_pass(MaterialPass& pass, rhi::CommandList* cmds);
 
         void record_rendering_static_mesh_batch(MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
-#endif
+#pragma endregion
     };
 } // namespace nova::renderer

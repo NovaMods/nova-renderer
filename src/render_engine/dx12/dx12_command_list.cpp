@@ -22,19 +22,19 @@ namespace nova::renderer::rhi {
         for(const ResourceBarrier& barrier : barriers) {
             ID3D12Resource* resource_to_barrier;
             switch(barrier.resource_to_barrier->type) {
-                case Resource::Buffer: {
+                case ResourceType::Buffer: {
                     DX12Buffer* d3d12_buffer = static_cast<DX12Buffer*>(barrier.resource_to_barrier);
                     resource_to_barrier = d3d12_buffer->resource.Get();
                 } break;
 
-                case Resource::Image: {
+                case ResourceType::Image: {
                     DX12Image* d3d12_image = static_cast<DX12Image*>(barrier.resource_to_barrier);
                     resource_to_barrier = d3d12_image->resource.Get();
                 } break;
                 default:;
             }
 
-            if(barrier.access_after_barrier == 0) {
+            if(barrier.access_after_barrier == ResourceAccessFlags::NoFlags) {
                 const D3D12_RESOURCE_STATES initial_state = to_dx12_state(barrier.initial_state);
                 const D3D12_RESOURCE_STATES final_state = to_dx12_state(barrier.final_state);
                 // ReSharper disable once CppLocalVariableMightNotBeInitialized

@@ -9,15 +9,18 @@
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/util/utils.hpp"
 #include "rhi_types.hpp"
-#include "../../src/windowing/win32_window.hpp"
+
+namespace nova::renderer {
+    class Window;
+}
 
 namespace nova::renderer::rhi {
     struct Fence;
     struct Image;
     struct Semaphore;
-    struct Swapchain;
-    struct Window;
-    
+
+    class Swapchain;
+
     NOVA_EXCEPTION(render_engine_initialization_exception);
     NOVA_EXCEPTION(render_engine_rendering_exception);
 
@@ -128,7 +131,7 @@ namespace nova::renderer::rhi {
 
         virtual void reset_fences(const std::vector<Fence*>& fences) = 0;
 
-        virtual void destroy_renderpass(class Renderpass* pass) = 0;
+        virtual void destroy_renderpass(Renderpass* pass) = 0;
 
         virtual void destroy_framebuffer(const Framebuffer* framebuffer) = 0;
 
@@ -171,11 +174,7 @@ namespace nova::renderer::rhi {
     protected:
         NovaSettings& settings;
 
-#ifdef NOVA_LINUX
-        std::shared_ptr<x11_window> window;
-#elif defined(NOVA_WINDOWS)
-        std::shared_ptr<Win32Window> window;
-#endif
+        std::shared_ptr<Window> window;
 
         glm::uvec2 swapchain_size;
 

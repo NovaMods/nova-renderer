@@ -1,7 +1,7 @@
 #pragma once
 
-#include <nova_renderer/util/platform.hpp>
-#include <nova_renderer/window.hpp>
+#include "nova_renderer/util/platform.hpp"
+#include "nova_renderer/window.hpp"
 #include "nova_renderer/nova_settings.hpp"
 
 #ifdef SUPPORT_DX12
@@ -28,7 +28,7 @@ namespace nova::renderer {
     class Win32Window final : public Window {
     public:
         Win32Window(const NovaSettings::WindowOptions& settings);
-        virtual ~Win32Window() = default;
+        virtual ~Win32Window();
 
         /*
          * Platform-agnostic window interface

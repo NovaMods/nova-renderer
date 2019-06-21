@@ -187,43 +187,43 @@ namespace nova::renderer::rhi {
     VkShaderStageFlags to_vk_shader_stage_flags(const ShaderStageFlags flags) {
         VkShaderStageFlags vk_flags = 0;
 
-        if(flags & Vertex) {
+        if(flags & ShaderStageFlags::Vertex) {
             vk_flags |= VK_SHADER_STAGE_VERTEX_BIT;
         }
-        if(flags & TessellationControl) {
+        if(flags & ShaderStageFlags::TessellationControl) {
             vk_flags |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
         }
-        if(flags & TessellationEvaluation) {
+        if(flags & ShaderStageFlags::TessellationEvaluation) {
             vk_flags |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
         }
-        if(flags & Geometry) {
+        if(flags & ShaderStageFlags::Geometry) {
             vk_flags |= VK_SHADER_STAGE_GEOMETRY_BIT;
         }
-        if(flags & Fragment) {
+        if(flags & ShaderStageFlags::Fragment) {
             vk_flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
         }
-        if(flags & Compute) {
+        if(flags & ShaderStageFlags::Compute) {
             vk_flags |= VK_SHADER_STAGE_COMPUTE_BIT;
         }
-        if(flags & Raygen) {
+        if(flags & ShaderStageFlags::Raygen) {
             vk_flags |= VK_SHADER_STAGE_RAYGEN_BIT_NV;
         }
-        if(flags & AnyHit) {
+        if(flags & ShaderStageFlags::AnyHit) {
             vk_flags |= VK_SHADER_STAGE_ANY_HIT_BIT_NV;
         }
-        if(flags & ClosestHit) {
+        if(flags & ShaderStageFlags::ClosestHit) {
             vk_flags |= VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV;
         }
-        if(flags & Miss) {
+        if(flags & ShaderStageFlags::Miss) {
             vk_flags |= VK_SHADER_STAGE_MISS_BIT_NV;
         }
-        if(flags & Intersection) {
+        if(flags & ShaderStageFlags::Intersection) {
             vk_flags |= VK_SHADER_STAGE_INTERSECTION_BIT_NV;
         }
-        if(flags & Task) {
+        if(flags & ShaderStageFlags::Task) {
             vk_flags |= VK_SHADER_STAGE_TASK_BIT_NV;
         }
-        if(flags & Mesh) {
+        if(flags & ShaderStageFlags::Mesh) {
             vk_flags |= VK_SHADER_STAGE_MESH_BIT_NV;
         }
 
@@ -486,5 +486,9 @@ namespace nova::renderer::rhi {
         };
 
         return attribute_descriptions;
+    }
+
+    bool operator&(const ShaderStageFlags& lhs, const ShaderStageFlags& rhs) {
+        return static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs);
     }
 } // namespace nova::renderer::rhi
