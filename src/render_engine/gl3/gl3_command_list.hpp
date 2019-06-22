@@ -63,8 +63,8 @@ namespace nova::renderer::rhi {
     };
 
     struct Gl3DrawIndexedMeshCommand {
-        uint64_t num_indices;
-        uint64_t num_instances;
+        uint32_t num_indices;
+        uint32_t num_instances;
     };
 
     struct Gl3Command {
@@ -141,7 +141,7 @@ namespace nova::renderer::rhi {
 
         void bind_index_buffer(const Buffer* buffer) override final;
 
-        void draw_indexed_mesh(uint64_t num_indices, uint64_t num_instances) override final;
+        void draw_indexed_mesh(uint32_t num_indices, uint32_t num_instances) override final;
 
         ~Gl3CommandList() override final;
 

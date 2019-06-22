@@ -4,7 +4,7 @@
 namespace nova::renderer::rhi {
     class Gl3Swapchain final : public Swapchain {
     public:
-        explicit Gl3Swapchain(uint32_t num_swapchain_images);
+        explicit Gl3Swapchain(uint32_t num_swapchain_images, const glm::uvec2& size);
 
         ~Gl3Swapchain() override = default;
 
@@ -13,8 +13,6 @@ namespace nova::renderer::rhi {
         void present(uint32_t image_idxs) override;
 
     private:
-        const uint32_t num_frames;
-
         uint32_t cur_frame = 0;
     };
 }

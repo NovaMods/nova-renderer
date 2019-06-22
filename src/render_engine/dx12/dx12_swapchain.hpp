@@ -15,7 +15,7 @@ namespace nova::renderer::rhi {
     class DX12Swapchain final : public Swapchain {
     public:
         DX12Swapchain(RenderEngine* rhi,
-                      const IDXGIFactory4* dxgi,
+                      IDXGIFactory4* dxgi,
                       ID3D12Device* device,
                       HWND window,
                       const glm::uvec2& window_size,
@@ -41,7 +41,7 @@ namespace nova::renderer::rhi {
 
         Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap;
 
-        void create_swapchain(const IDXGIFactory4* dxgi, HWND window, ID3D12CommandQueue* direct_command_queue);
+        void create_swapchain(IDXGIFactory4* dxgi, HWND window, ID3D12CommandQueue* direct_command_queue);
 
         void create_per_frame_resources(ID3D12Device* device);
     };

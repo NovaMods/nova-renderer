@@ -98,8 +98,6 @@ namespace nova::renderer::rhi {
     private:
         bool supports_geometry_shaders = false;
 
-        std::unique_ptr<Window> window;
-
         std::unordered_map<std::string, shaderpack::SamplerCreateInfo> samplers;
 
         static void set_initial_state();

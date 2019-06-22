@@ -22,6 +22,8 @@ namespace nova::renderer::rhi {
 
     D3D12_DESCRIPTOR_RANGE_TYPE to_dx12_range_type(DescriptorType type);
 
+    std::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions();
+
 #ifndef NDEBUG
 #define CHECK_ERROR(expr, msg)                                                                                                             \
     {                                                                                                                                      \

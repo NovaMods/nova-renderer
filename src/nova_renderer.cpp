@@ -168,7 +168,7 @@ namespace nova::renderer {
         Mesh mesh = {};
         mesh.vertex_buffer = vertex_buffer;
         mesh.index_buffer = index_buffer;
-        mesh.num_indices = mesh_data.indices.size();
+        mesh.num_indices = static_cast<uint32_t>(mesh_data.indices.size());
 
         MeshId new_mesh_id = next_mesh_id;
         next_mesh_id++;

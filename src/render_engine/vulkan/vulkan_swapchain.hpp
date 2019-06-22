@@ -88,7 +88,7 @@ namespace nova::renderer::rhi {
          */
         void create_swapchain(uint32_t requested_num_swapchain_images,
                               const std::vector<VkPresentModeKHR>& present_modes,
-                              const glm::ivec2& window_dimensions);
+                              const glm::uvec2& window_dimensions);
 
         /*!
          * \brief Gets the images from the swapchain, so we can create framebuffers and whatnot from them

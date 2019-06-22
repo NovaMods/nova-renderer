@@ -6,13 +6,13 @@
 
 namespace nova::renderer::rhi {
     DX12Swapchain::DX12Swapchain(RenderEngine* rhi,
-                                 const IDXGIFactory4* dxgi,
+                                 IDXGIFactory4* dxgi,
                                  ID3D12Device* device,
                                  HWND window,
                                  const glm::uvec2& window_size,
                                  const uint32_t num_images,
                                  ID3D12CommandQueue* direct_command_queue)
-        : num_images(num_images), window_size(window_size), rhi(rhi) {
+        : Swapchain(num_images, window_size), rhi(rhi) {
         create_swapchain(dxgi, window, direct_command_queue);
 
         create_per_frame_resources(device);
@@ -24,14 +24,12 @@ namespace nova::renderer::rhi {
         return ret_val;
     }
 
-    void DX12Swapchain::present(uint32_t /* image_idx */) {
-        swapchain->Present(0, DXGI_PRESENT_RESTRICT_TO_OUTPUT);
-    }
+    void DX12Swapchain::present(uint32_t /* image_idx */) { swapchain->Present(0, DXGI_PRESENT_RESTRICT_TO_OUTPUT); }
 
-    void DX12Swapchain::create_swapchain(const IDXGIFactory4* dxgi, HWND window, ID3D12CommandQueue* direct_command_queue) {
+    void DX12Swapchain::create_swapchain(IDXGIFactory4* dxgi, HWND window, ID3D12CommandQueue* direct_command_queue) {
         DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {};
-        swapchain_desc.Width = window_size.x;
-        swapchain_desc.Height = window_size.y;
+        swapchain_desc.Width = size.x;
+        swapchain_desc.Height = size.y;
         swapchain_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
         swapchain_desc.SampleDesc = {1};
@@ -42,7 +40,7 @@ namespace nova::renderer::rhi {
 
         Microsoft::WRL::ComPtr<IDXGISwapChain1> swapchain_uncast;
 
-        HRESULT hr = dxgi->CreateSwapChainForHwnd(direct_command_queue,
+        const HRESULT hr = dxgi->CreateSwapChainForHwnd(direct_command_queue,
                                                   window,
                                                   &swapchain_desc,
                                                   nullptr,
@@ -82,7 +80,7 @@ namespace nova::renderer::rhi {
             // Create the Render Target View, which binds the swapchain buffer to the RTV handle
             device->CreateRenderTargetView(rendertarget.Get(), nullptr, rtv_handle);
 
-            framebuffers.push_back(new DX12Framebuffer{{window_size}, {rtv_handle}, false, {}, nullptr});
+            framebuffers.push_back(new DX12Framebuffer{{size}, {rtv_handle}, false, {}, nullptr});
 
             fences.push_back(rhi->create_fence(true));
 

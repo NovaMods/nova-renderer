@@ -513,7 +513,7 @@ namespace nova::renderer::rhi {
         spirv_cross::CompilerGLSL compiler(spirv);
         const std::string glsl = compiler.compile();
         const char* glsl_c = glsl.c_str();
-        const GLint len = glsl.size(); // SIGNED LENGTH WHOOOOOO
+        const GLint len = static_cast<const GLint>(glsl.size()); // SIGNED LENGTH WHOOOOOO
 
         const GLuint shader = glCreateShader(shader_type);
         glShaderSource(shader, 1, &glsl_c, &len);

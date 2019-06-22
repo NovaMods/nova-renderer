@@ -145,4 +145,9 @@ namespace nova::renderer::rhi {
                                                     const std::string& target,
                                                     const spirv_cross::CompilerHLSL::Options& options,
                                                     std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
+
+    void add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type,
+                                          const D3D12_SHADER_INPUT_BIND_DESC& bind_desc,
+                                          const uint32_t set,
+                                          std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
 } // namespace nova::renderer::rhi

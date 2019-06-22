@@ -1,4 +1,5 @@
 #include "dx12_utils.hpp"
+#include "nova_renderer/renderables.hpp"
 
 namespace nova::renderer::rhi {
     D3D12_RESOURCE_STATES to_dx12_state(rhi::ResourceState state) {
@@ -179,4 +180,86 @@ namespace nova::renderer::rhi {
                 return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
         }
     }
-} // namespace nova::renderer
+
+    std::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions() {
+        static std::vector<D3D12_INPUT_ELEMENT_DESC> input_element_descriptions =
+            {// Position
+             D3D12_INPUT_ELEMENT_DESC{
+                 "POSITION",                                 // SemanticName
+                 0,                                          // SemanticIndex
+                 DXGI_FORMAT_R32G32B32_FLOAT,                // Format
+                 0,                                          // InputSlot
+                 sizeof(FullVertex),                         // AlignedByOffset
+                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
+                 0                                           // InstanceDataStepRate
+             },
+
+             // Normal
+             D3D12_INPUT_ELEMENT_DESC{
+                 "NORMAL",                                   // SemanticName
+                 0,                                          // SemanticIndex
+                 DXGI_FORMAT_R32G32B32_FLOAT,                // Format
+                 0,                                          // InputSlot
+                 sizeof(FullVertex),                         // AlignedByOffset
+                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
+                 0                                           // InstanceDataStepRate
+             },
+
+             // Tangent
+             D3D12_INPUT_ELEMENT_DESC{
+                 "TANGENT",                                  // SemanticName
+                 0,                                          // SemanticIndex
+                 DXGI_FORMAT_R32G32B32_FLOAT,                // Format
+                 0,                                          // InputSlot
+                 sizeof(FullVertex),                         // AlignedByOffset
+                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
+                 0                                           // InstanceDataStepRate
+             },
+
+             // Main UV
+             D3D12_INPUT_ELEMENT_DESC{
+                 "TEXCOORD",                                  // SemanticName
+                 0,                                          // SemanticIndex
+                 DXGI_FORMAT_R32G32_FLOAT,                // Format
+                 0,                                          // InputSlot
+                 sizeof(FullVertex),                         // AlignedByOffset
+                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
+                 0                                           // InstanceDataStepRate
+             },
+
+             // Lightmap UV
+             D3D12_INPUT_ELEMENT_DESC{
+                 "LMUV",                                  // SemanticName
+                 0,                                          // SemanticIndex
+                 DXGI_FORMAT_R16G16_FLOAT,                // Format
+                 0,                                          // InputSlot
+                 sizeof(FullVertex),                         // AlignedByOffset
+                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
+                 0                                           // InstanceDataStepRate
+             },
+
+             // Virtual texture ID
+             D3D12_INPUT_ELEMENT_DESC{
+                 "VTEX_ID",                                  // SemanticName
+                 0,                                          // SemanticIndex
+                 DXGI_FORMAT_R32_UINT,                // Format
+                 0,                                          // InputSlot
+                 sizeof(FullVertex),                         // AlignedByOffset
+                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
+                 0                                           // InstanceDataStepRate
+             },
+
+             // Additional Data
+             D3D12_INPUT_ELEMENT_DESC{
+                 "TANGENT",                                  // SemanticName
+                 0,                                          // SemanticIndex
+                 DXGI_FORMAT_R32G32B32A32_FLOAT,                // Format
+                 0,                                          // InputSlot
+                 sizeof(FullVertex),                         // AlignedByOffset
+                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
+                 0                                           // InstanceDataStepRate
+             }};
+
+        return input_element_descriptions;
+    }
+} // namespace nova::renderer::rhi

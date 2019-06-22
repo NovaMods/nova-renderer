@@ -121,7 +121,7 @@ namespace nova::renderer::rhi {
          * \param num_indices The number of indices to read from the current index buffer
          * \param num_instances The number of instances of the current mesh to render
          */
-        virtual void draw_indexed_mesh(uint64_t num_indices, uint64_t num_instances) = 0;
+        virtual void draw_indexed_mesh(uint32_t num_indices, uint32_t num_instances) = 0;
 
         virtual ~CommandList() = default;
     };

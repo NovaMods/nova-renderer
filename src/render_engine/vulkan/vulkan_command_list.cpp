@@ -162,7 +162,7 @@ namespace nova::renderer::rhi {
         vkCmdBindIndexBuffer(cmds, vk_buffer->buffer, 0, VK_INDEX_TYPE_UINT32);
     }
 
-    void VulkanCommandList::draw_indexed_mesh(const uint64_t num_indices, const uint64_t num_instances) {
+    void VulkanCommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t num_instances) {
         vkCmdDrawIndexed(cmds, num_indices, num_instances, 0, 0, 0);
     }
 } // namespace nova::renderer::rhi

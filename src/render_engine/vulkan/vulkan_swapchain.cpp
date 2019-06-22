@@ -19,7 +19,7 @@ namespace nova::renderer::rhi {
                                      VulkanRenderEngine& render_engine,
                                      const glm::uvec2 window_dimensions,
                                      const std::vector<VkPresentModeKHR>& present_modes)
-        : render_engine(render_engine), num_swapchain_images(num_swapchain_images) {
+        : Swapchain(num_swapchain_images, window_dimensions), render_engine(render_engine), num_swapchain_images(num_swapchain_images) {
 
         create_swapchain(num_swapchain_images, present_modes, window_dimensions);
 
@@ -238,7 +238,7 @@ namespace nova::renderer::rhi {
 
     void VulkanSwapchain::create_swapchain(const uint32_t requested_num_swapchain_images,
                                            const std::vector<VkPresentModeKHR>& present_modes,
-                                           const glm::ivec2& window_dimensions) {
+                                           const glm::uvec2& window_dimensions) {
 
         const auto surface_format = choose_surface_format(render_engine.gpu.surface_formats);
         const auto present_mode = choose_present_mode(present_modes);

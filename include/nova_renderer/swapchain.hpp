@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 
+#include <glm/glm.hpp>
+
 namespace nova::renderer::rhi {
     struct Fence;
     struct Framebuffer;
@@ -9,6 +11,8 @@ namespace nova::renderer::rhi {
 
     class Swapchain {
     public:
+        Swapchain(uint32_t num_images, const glm::uvec2& size);
+
         virtual ~Swapchain() = default;
 
         /*!

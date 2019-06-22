@@ -343,7 +343,7 @@ namespace nova::renderer::rhi {
         command.bind_index_buffer.buffer = gl_buffer->id;
     }
 
-    void Gl3CommandList::draw_indexed_mesh(const uint64_t num_indices, const uint64_t num_instances) {
+    void Gl3CommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t num_instances) {
         commands.emplace_back();
 
         Gl3Command& command = commands.front();

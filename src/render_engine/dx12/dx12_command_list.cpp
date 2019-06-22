@@ -4,9 +4,9 @@
  */
 
 #include "dx12_command_list.hpp"
+#include "../../../tests/src/general_test_setup.hpp"
 #include "d3dx12.h"
 #include "dx12_utils.hpp"
-#include "../../../tests/src/general_test_setup.hpp"
 
 namespace nova::renderer::rhi {
     using namespace Microsoft::WRL;
@@ -114,25 +114,24 @@ namespace nova::renderer::rhi {
         for(const Buffer* buffer : buffers) {
             const DX12Buffer* dx_buffer = static_cast<const DX12Buffer*>(buffer);
 
-            views.emplace_back(dx_buffer->resource->GetGPUVirtualAddress(), dx_buffer->size.b_count(), sizeof(FullVertex));
+            views.emplace_back(
+                D3D12_VERTEX_BUFFER_VIEW{dx_buffer->resource->GetGPUVirtualAddress(), static_cast<UINT>(dx_buffer->size.b_count()), sizeof(FullVertex)});
         }
 
-        cmds->IASetVertexBuffers(0, views.size(), views.data());
+        cmds->IASetVertexBuffers(0, static_cast<UINT>(views.size()), views.data());
     }
 
     void Dx12CommandList::bind_index_buffer(const Buffer* buffer) {
         const DX12Buffer* dx12_buffer = static_cast<const DX12Buffer*>(buffer);
 
-        D3D12_INDEX_BUFFER_VIEW view = {
-            dx12_buffer->resource->GetGPUVirtualAddress(),
-            dx12_buffer->size.b_count(),
-            DXGI_FORMAT_R32_UINT
-        };
+        D3D12_INDEX_BUFFER_VIEW view = {dx12_buffer->resource->GetGPUVirtualAddress(),
+                                        static_cast<UINT>(dx12_buffer->size.b_count()),
+                                        DXGI_FORMAT_R32_UINT};
 
         cmds->IASetIndexBuffer(&view);
     }
 
-    void Dx12CommandList::draw_indexed_mesh(const uint64_t num_indices, const uint64_t num_instances) {
+    void Dx12CommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t num_instances) {
         cmds->DrawInstanced(num_indices, num_instances, 0, 0);
     }
 } // namespace nova::renderer::rhi

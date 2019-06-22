@@ -43,7 +43,7 @@ namespace nova::renderer::rhi {
         
         void bind_index_buffer(const Buffer* buffer) override final;
         
-		void draw_indexed_mesh(uint64_t num_indices, uint64_t num_instances) override final;
+		void draw_indexed_mesh(uint32_t num_indices, uint32_t num_instances) override final;
 
     private:
         Microsoft::WRL::ComPtr<ID3D12Device> device;

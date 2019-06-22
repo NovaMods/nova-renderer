@@ -16,8 +16,8 @@
 #include "dx12_command_list.hpp"
 #include "dx12_render_engine.hpp"
 #include "dx12_structs.hpp"
-#include "dx12_utils.hpp"
 #include "dx12_swapchain.hpp"
+#include "dx12_utils.hpp"
 
 using Microsoft::WRL::ComPtr;
 
@@ -183,7 +183,7 @@ namespace nova::renderer::rhi {
             }
         }
 
-        const std::size_t num_sets = pipeline_interface->table_layouts.size();
+        const UINT num_sets = static_cast<UINT>(pipeline_interface->table_layouts.size());
 
         D3D12_ROOT_SIGNATURE_DESC root_sig_desc = {};
         root_sig_desc.NumParameters = num_sets;
@@ -441,24 +441,7 @@ namespace nova::renderer::rhi {
          * Input description
          */
 
-        const std::unordered_map<shaderpack::VertexFieldEnum, VertexAttribute> all_formats = get_all_vertex_attributes();
-
-        std::vector<D3D12_INPUT_ELEMENT_DESC> input_descs;
-        input_descs.reserve(data.vertex_fields.size());
-        for(const shaderpack::VertexFieldData& vertex_field : data.vertex_fields) {
-            const VertexAttribute& attr = all_formats.at(vertex_field.field);
-
-            D3D12_INPUT_ELEMENT_DESC desc = {};
-            desc.SemanticName = vertex_field.semantic_name.data();
-            desc.Format = attr.format;
-            desc.InputSlot = 0;
-            desc.AlignedByteOffset = attr.offset;
-            desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
-            desc.InstanceDataStepRate = 0;
-
-            input_descs.push_back(desc);
-        }
-
+        const std::vector<D3D12_INPUT_ELEMENT_DESC> input_descs = get_input_descriptions();
         pipeline_state_desc.InputLayout.NumElements = static_cast<UINT>(input_descs.size());
         pipeline_state_desc.InputLayout.pInputElementDescs = input_descs.data();
 
@@ -779,6 +762,7 @@ namespace nova::renderer::rhi {
         swapchain = std::make_unique<DX12Swapchain>(this,
                                                     dxgi_factory.Get(),
                                                     device.Get(),
+                                                    window_handle,
                                                     glm::uvec2{options.height, options.width},
                                                     num_frames,
                                                     direct_command_queue.Get());
@@ -972,4 +956,17 @@ namespace nova::renderer::rhi {
         return shader_blob;
     }
 
+    void add_resource_to_descriptor_table(const D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type,
+                                          const D3D12_SHADER_INPUT_BIND_DESC& bind_desc,
+                                          const uint32_t set,
+                                          std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
+        D3D12_DESCRIPTOR_RANGE1 range = {};
+        range.BaseShaderRegister = bind_desc.BindPoint;
+        range.RegisterSpace = bind_desc.Space;
+        range.NumDescriptors = 1;
+        range.RangeType = descriptor_type;
+        range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+        tables[set].push_back(range);
+    }
 } // namespace nova::renderer::rhi
