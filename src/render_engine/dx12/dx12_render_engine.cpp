@@ -145,7 +145,7 @@ namespace nova::renderer::rhi {
             const Image* attachment = attachments.at(i);
             const DX12Image* d3d12_image = static_cast<const DX12Image*>(attachment);
 
-            rendertargets.emplace_back(d3d12_image->resource);
+            rendertargets.emplace_back(d3d12_image->resource.Get());
 
             framebuffer->render_targets.emplace_back(framebuffer->descriptor_heap->GetCPUDescriptorHandleForHeapStart());
 
@@ -250,7 +250,7 @@ namespace nova::renderer::rhi {
 
         const DX12PipelineInterface* dx12_pipeline_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
 
-        const uint32_t num_sets = dx12_pipeline_interface->table_layouts.size();
+        const uint32_t num_sets = static_cast<const uint32_t>(dx12_pipeline_interface->table_layouts.size());
 
         std::vector<DescriptorSet*> descriptor_sets;
         descriptor_sets.reserve(num_sets);
@@ -262,7 +262,7 @@ namespace nova::renderer::rhi {
 
             D3D12_DESCRIPTOR_HEAP_DESC desc = {};
             desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-            desc.NumDescriptors = bindings_for_set.size();
+            desc.NumDescriptors = static_cast<uint32_t>(bindings_for_set.size());
             desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
             desc.NodeMask = 0;
 
