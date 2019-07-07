@@ -5,6 +5,8 @@
 
 #include "nova_renderer/nova_renderer.hpp"
 
+#include <bvestl/polyalloc/system_memory_allocator.hpp>
+
 #include <glslang/MachineIndependent/Initialize.h>
 #include <spirv_cross/spirv_glsl.hpp>
 #include "loading/shaderpack/shaderpack_loading.hpp"
@@ -28,10 +30,13 @@
 using namespace bvestl::polyalloc;
 using namespace bvestl::polyalloc::operators;
 
+const Bytes global_memory_pool_size = 1_gb;
+
 namespace nova::renderer {
     std::unique_ptr<NovaRenderer> NovaRenderer::instance;
 
     NovaRenderer::NovaRenderer(NovaSettings settings) : render_settings(settings) {
+        create_global_allocator();
 
         mtr_init("trace.json");
 
@@ -700,6 +705,13 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::deinitialize() { instance.reset(); }
+
+    void NovaRenderer::create_global_allocator() {
+        uint8_t* heap = new uint8_t[global_memory_pool_size.b_count()];
+        AllocationStrategy* strat = new BlockAllocationStrategy(new Mallocator, global_memory_pool_size);
+
+        SystemMemoryAllocator* system_allocator = new SystemMemoryAllocator(heap, global_memory_pool_size, strat);
+    }
 
     void NovaRenderer::create_global_gpu_pools() {
         const uint64_t mesh_memory_size = 512000000;

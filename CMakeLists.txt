@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 3.12)
 project(nova-renderer)
 
+# Hey lemme manually add the VCPKG include directories because why would a package manager make things work?
+if(VCPKG_TOOLCHAIN)
+	set(VCPKG_INSTALLED_PATH "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
+	set(VCPKG_INSTALLED_PATH_DEBUG "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug")
+    include_directories(SYSTEM "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
+endif()
+
 option(NOVA_PACKAGE "Build only the library, nothing else." OFF)
 
 ############################################################
@@ -188,18 +195,18 @@ set(NOVA_HEADERS
 set(WINDOWS_NOVA_SOURCE
     src/util/windows_utils.cpp
     src/util/windows_utils.hpp
-        src/render_engine/dx12/dx12_utils.cpp
+    src/render_engine/dx12/dx12_utils.cpp
     src/render_engine/dx12/dx12_utils.hpp
-        src/windowing/win32_window.hpp
-        src/windowing/win32_window.cpp
-        src/render_engine/dx12/d3dx12.h
-        src/render_engine/dx12/dx12_command_list.cpp 
-		src/render_engine/dx12/dx12_command_list.hpp 
-		src/render_engine/dx12/dx12_structs.hpp
-		src/render_engine/dx12/dx12_swapchain.cpp
-		src/render_engine/dx12/dx12_swapchain.hpp
-		src/render_engine/dx12/dx12_render_engine.cpp
-		src/render_engine/dx12/dx12_render_engine.hpp)
+    src/windowing/win32_window.hpp
+    src/windowing/win32_window.cpp
+    src/render_engine/dx12/d3dx12.h
+    src/render_engine/dx12/dx12_command_list.cpp 
+	src/render_engine/dx12/dx12_command_list.hpp 
+	src/render_engine/dx12/dx12_structs.hpp
+	src/render_engine/dx12/dx12_swapchain.cpp
+	src/render_engine/dx12/dx12_swapchain.hpp
+	src/render_engine/dx12/dx12_render_engine.cpp
+	src/render_engine/dx12/dx12_render_engine.hpp)
 set(UNIX_NOVA_SOURCE
         src/windowing/x11_window.cpp
         src/windowing/x11_window.hpp

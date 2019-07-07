@@ -199,6 +199,8 @@ namespace nova::renderer {
 
         rhi::Sampler* point_sampler;
 
+        bvestl::polyalloc::allocator_handle global_allocator;
+
         std::unique_ptr<DeviceMemoryResource> mesh_memory;
 
         std::unique_ptr<DeviceMemoryResource> ubo_memory;
@@ -206,6 +208,8 @@ namespace nova::renderer {
         void* staging_buffer_memory_ptr;
 
 #pragma region Initialization
+        void create_global_allocator();
+
         /*!
          * \brief Creates global GPU memory pools
          *
