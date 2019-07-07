@@ -1,10 +1,10 @@
 #pragma once
 
-#include <foundational/allocation/allocation_structs.hpp>
-#include <foundational/allocation/bytes.hpp>
-#include <foundational/allocation/size_only_allocator.hpp>
+#include <bvestl/polyalloc/allocation_structs.hpp>
+#include <bvestl/polyalloc/bytes.hpp>
+#include <bvestl/polyalloc/allocation_strategy.hpp>
 
-using namespace foundational::allocation::operators;
+using namespace bvestl::polyalloc::operators;
 
 namespace nova::renderer {
     namespace rhi {
@@ -13,7 +13,7 @@ namespace nova::renderer {
 
     struct DeviceMemoryAllocation {
         rhi::DeviceMemory* memory = nullptr;
-        foundational::allocation::AllocationInfo allocation_info;
+        bvestl::polyalloc::AllocationInfo allocation_info;
     };
 
     /*!
@@ -21,11 +21,11 @@ namespace nova::renderer {
      * buffers, textures, etc
      */
     struct DeviceMemoryResource {
-        DeviceMemoryResource(rhi::DeviceMemory* memory, foundational::allocation::SizeOnlyAllocator* allocation_strategy);
+        DeviceMemoryResource(rhi::DeviceMemory* memory, bvestl::polyalloc::AllocationStrategy* allocation_strategy);
 
-        [[nodiscard]] DeviceMemoryAllocation allocate(const foundational::allocation::Bytes size) const;
+        [[nodiscard]] DeviceMemoryAllocation allocate(const bvestl::polyalloc::Bytes size) const;
 
-        foundational::allocation::SizeOnlyAllocator* allocation_strategy;
+        bvestl::polyalloc::AllocationStrategy* allocation_strategy;
 
         rhi::DeviceMemory* memory;
     };

@@ -458,7 +458,7 @@ namespace nova::renderer::rhi {
         VkDescriptorSetAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         alloc_info.descriptorPool = vk_pool->descriptor_pool;
-        alloc_info.descriptorSetCount = vk_pipeline_interface->layouts_by_set.size();
+        alloc_info.descriptorSetCount = static_cast<uint32_t>(vk_pipeline_interface->layouts_by_set.size());
         alloc_info.pSetLayouts = vk_pipeline_interface->layouts_by_set.data();
 
         std::vector<VkDescriptorSet> sets;
@@ -516,7 +516,7 @@ namespace nova::renderer::rhi {
             }
         }
 
-        vkUpdateDescriptorSets(device, vk_writes.size(), vk_writes.data(), 0, nullptr);
+        vkUpdateDescriptorSets(device, static_cast<uint32_t>(vk_writes.size()), vk_writes.data(), 0, nullptr);
     }
 
     Result<Pipeline*> VulkanRenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
@@ -769,7 +769,7 @@ namespace nova::renderer::rhi {
     void VulkanRenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const Buffer* buffer) {
         const VulkanBuffer* vulkan_buffer = static_cast<const VulkanBuffer*>(buffer);
 
-        const foundational::allocation::AllocationInfo& allocation_info = vulkan_buffer->memory.allocation_info;
+        const bvestl::polyalloc::AllocationInfo& allocation_info = vulkan_buffer->memory.allocation_info;
         const VulkanDeviceMemory* memory = static_cast<const VulkanDeviceMemory*>(vulkan_buffer->memory.memory);
 
         uint8_t* mapped_bytes = static_cast<uint8_t*>(heap_mappings.at(memory->memory)) + allocation_info.offset.b_count() + offset;
@@ -888,7 +888,7 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
         vkWaitForFences(device,
-                        fences.size(),
+                        static_cast<uint32_t>(fences.size()),
                         &(static_cast<VulkanFence*>(fences[0])->fence),
                         VK_TRUE,
                         std::numeric_limits<uint64_t>::max());
@@ -986,11 +986,11 @@ namespace nova::renderer::rhi {
 
         VkSubmitInfo submit_info = {};
         submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submit_info.waitSemaphoreCount = vk_wait_semaphores.size();
+        submit_info.waitSemaphoreCount = static_cast<uint32_t>(vk_wait_semaphores.size());
         submit_info.pWaitSemaphores = vk_wait_semaphores.data();
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &vk_list->cmds;
-        submit_info.signalSemaphoreCount = vk_signal_semaphores.size();
+        submit_info.signalSemaphoreCount = static_cast<uint32_t>(vk_signal_semaphores.size());
         submit_info.pSignalSemaphores = vk_signal_semaphores.data();
 
         const VulkanFence* vk_fence = static_cast<const VulkanFence*>(fence_to_signal);
@@ -1292,7 +1292,7 @@ namespace nova::renderer::rhi {
                     break;
 
                 case MemorySearchMode::Fuzzy:
-                    if(memory_type.propertyFlags & search_flags != 0) {
+                    if((memory_type.propertyFlags & search_flags) != 0) {
                         return i;
                     }
                     break;

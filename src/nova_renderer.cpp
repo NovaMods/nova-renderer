@@ -25,8 +25,8 @@
 #include "render_objects/uniform_structs.hpp"
 #include "util/logger.hpp"
 
-using namespace foundational::allocation;
-using namespace foundational::allocation::operators;
+using namespace bvestl::polyalloc;
+using namespace bvestl::polyalloc::operators;
 
 namespace nova::renderer {
     std::unique_ptr<NovaRenderer> NovaRenderer::instance;
@@ -629,7 +629,7 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::record_rendering_static_mesh_batch(MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds) {
-        const uint64_t start_index = cur_model_matrix_index;
+        const uint32_t start_index = cur_model_matrix_index;
 
         for(const StaticMeshRenderCommand& command : batch.renderables) {
             if(command.is_visible) {
@@ -706,7 +706,7 @@ namespace nova::renderer {
         Result<std::unique_ptr<DeviceMemoryResource>>
             mesh_memory_result = rhi->allocate_device_memory(mesh_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
                                      .map([&](rhi::DeviceMemory* memory) {
-                                         auto* allocator = new BlockAllocator(nullptr, Bytes(mesh_memory_size), 64_b);
+                                         auto* allocator = new BlockAllocationStrategy(nullptr, Bytes(mesh_memory_size), 64_b);
                                          return std::make_unique<DeviceMemoryResource>(memory, allocator);
                                      });
 
@@ -722,7 +722,7 @@ namespace nova::renderer {
         Result<std::unique_ptr<DeviceMemoryResource>>
             ubo_memory_result = rhi->allocate_device_memory(ubo_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
                                     .map([&](rhi::DeviceMemory* memory) {
-                                        auto* allocator = new BumpPointAllocator(Bytes(ubo_memory_size), Bytes(sizeof(glm::mat4)));
+                                        auto* allocator = new BumpPointAllocationStrategy(Bytes(ubo_memory_size), Bytes(sizeof(glm::mat4)));
                                         return std::make_unique<DeviceMemoryResource>(memory, allocator);
                                     });
 
@@ -740,7 +740,7 @@ namespace nova::renderer {
                                                                 rhi::MemoryUsage::StagingBuffer,
                                                                 rhi::ObjectType::Buffer)
                                         .map([&](rhi::DeviceMemory* memory) {
-                                            auto* allocator = new BumpPointAllocator(staging_memory_size, 64_b);
+                                            auto* allocator = new BumpPointAllocationStrategy(staging_memory_size, 64_b);
                                             return std::make_unique<DeviceMemoryResource>(memory, allocator);
                                         });
 

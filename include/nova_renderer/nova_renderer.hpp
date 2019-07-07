@@ -3,8 +3,8 @@
 #include <memory>
 #include <string>
 
-#include <foundational/allocation/block_allocator.hpp>
-#include <foundational/allocation/bump_point_allocator.hpp>
+#include <bvestl/polyalloc/block_allocation_strategy.hpp>
+#include <bvestl/polyalloc/bump_point_allocation_strategy.hpp>
 
 #include "nova_renderer/device_memory_resource.hpp"
 #include "nova_renderer/nova_settings.hpp"
@@ -309,7 +309,7 @@ namespace nova::renderer {
 
         rhi::Buffer* per_frame_data_buffer;
         rhi::Buffer* model_matrix_buffer;
-        uint64_t cur_model_matrix_index = 0;
+        uint32_t cur_model_matrix_index = 0;
 
         std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;
 
