@@ -418,6 +418,11 @@ def enumerate_ports(ports_dir):
 
 def copy_port(port_dir, name, vcpkg_dir):
     copy_func = log_start(f"Copying {name} port")
+    dest_dir = os.path.join(vcpkg_dir, f"ports/{name}/")
+
+    if os.path.exists(dest_dir):
+        distutils.dir_util.remove_tree(dest_dir)
+
     try:
         distutils.dir_util.copy_tree(os.path.join(port_dir, name),
                                      os.path.join(vcpkg_dir, f"ports/{name}/"),
