@@ -516,6 +516,7 @@ cmake-build-release
 **.generated
 
 build/
+build-vcpkg/
 
 **.generated.hlsl
 /tests/resources

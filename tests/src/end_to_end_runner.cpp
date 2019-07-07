@@ -25,7 +25,7 @@ namespace nova::renderer {
         NovaSettings settings;
         settings.api = GraphicsApi::Vulkan;
         settings.vulkan.application_name = "Nova Renderer test";
-        settings.vulkan.application_version = {0, 8, 0};
+        settings.vulkan.application_version = {0, 9, 0};
         settings.debug.enabled = true;
         settings.debug.enable_validation_layers = true;
         settings.debug.renderdoc.enabled = true;
