@@ -5,7 +5,7 @@ vcpkg_from_gitlab(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO bve-reborn/bvestl
     REF v0.2.3
-    SHA512 ba8b9649f5bbdd5fc874eb8e439160a05e145d3325a9cf3c1f4380704cbb0eed1b1360d666e57f2de3ce02895870b93d7bb501f4ad99260f468ac26e16a1ffd9
+    SHA512 aefe57e042dba4aeb5edb84f1a4c762a64ee005116c4920d1f7dedaee506de255ca4205eec5d243020bf51fa7b09c67185853c9e9320ea188bce42ca6555650b
     HEAD_REF master
 )
 
