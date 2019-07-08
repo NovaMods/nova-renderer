@@ -153,7 +153,7 @@ namespace nova::renderer::rhi {
             vk_buffers.push_back(vk_buffer->buffer);
         }
 
-        vkCmdBindVertexBuffers(cmds, 0, vk_buffers.size(), vk_buffers.data(), offsets.data());
+        vkCmdBindVertexBuffers(cmds, 0, static_cast<uint32_t>(vk_buffers.size()), vk_buffers.data(), offsets.data());
     }
 
     void VulkanCommandList::bind_index_buffer(const Buffer* buffer) {

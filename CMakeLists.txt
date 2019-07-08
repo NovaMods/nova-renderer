@@ -101,6 +101,11 @@ set(NOVA_SOURCE
 		include/nova_renderer/rhi_types.hpp 
         include/nova_renderer/shaderpack_data.hpp
         include/nova_renderer/window.hpp
+		include/nova_renderer/bytes.hpp
+		include/nova_renderer/allocation_strategy.hpp
+		include/nova_renderer/allocation_structs.hpp
+		include/nova_renderer/bytes.hpp
+		include/nova_renderer/polyalloc.hpp
 		
         src/nova_renderer.cpp
 
@@ -170,6 +175,15 @@ set(NOVA_SOURCE
         src/debugging/renderdoc.hpp
 		
 		src/memory/device_memory_resource.cpp
+		src/memory/block_allocation_strategy.hpp
+		src/memory/bump_point_allocation_strategy.hpp
+		src/memory/mallocator.hpp
+		src/memory/system_memory_allocator.hpp
+		src/memory/block_allocation_strategy.cpp
+		src/memory/bump_point_allocation_strategy.cpp
+		src/memory/bytes.cpp
+		src/memory/mallocator.cpp
+		src/memory/system_memory_allocator.cpp
 
 		)
 
@@ -206,13 +220,16 @@ set(WINDOWS_NOVA_SOURCE
 	src/render_engine/dx12/dx12_swapchain.cpp
 	src/render_engine/dx12/dx12_swapchain.hpp
 	src/render_engine/dx12/dx12_render_engine.cpp
-	src/render_engine/dx12/dx12_render_engine.hpp)
+	src/render_engine/dx12/dx12_render_engine.hpp
+	)
+
 set(UNIX_NOVA_SOURCE
-        src/windowing/x11_window.cpp
-        src/windowing/x11_window.hpp
+    src/windowing/x11_window.cpp
+    src/windowing/x11_window.hpp
     src/util/linux_utils.cpp
     src/util/linux_utils.hpp
-)
+	)
+
 if(WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${WINDOWS_NOVA_SOURCE})
     set(OTHER_NOVA_SOURCE ${UNIX_NOVA_SOURCE})
@@ -332,7 +349,6 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      spirv-cross-reflect
                      spirv-cross-msl
                      spirv-cross-util
-                     unofficial::vulkan-memory-allocator::vulkan-memory-allocator
                      Vulkan::Vulkan
 )
 

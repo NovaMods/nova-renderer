@@ -3,11 +3,9 @@
 #include <memory>
 #include <string>
 
-#include <bvestl/polyalloc/block_allocation_strategy.hpp>
-#include <bvestl/polyalloc/bump_point_allocation_strategy.hpp>
-
 #include "nova_renderer/device_memory_resource.hpp"
 #include "nova_renderer/nova_settings.hpp"
+#include "nova_renderer/polyalloc.hpp"
 #include "nova_renderer/render_engine.hpp"
 #include "nova_renderer/renderdoc_app.h"
 
@@ -199,6 +197,14 @@ namespace nova::renderer {
 
         rhi::Sampler* point_sampler;
 
+        /*!
+         * \brief The allocator that all of Nova's memory will be allocated through
+         *
+         * Local allocators 0.1 uwu
+         *
+         * Right now I throw this allocator at the GPU memory allocators, because they need some way to allocate memory and I'm not about to
+         * try and band-aid aid things together
+         */
         bvestl::polyalloc::allocator_handle global_allocator;
 
         std::unique_ptr<DeviceMemoryResource> mesh_memory;

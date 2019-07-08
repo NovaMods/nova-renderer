@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bvestl/polyalloc/polyalloc.hpp>
+#include "nova_renderer/polyalloc.hpp"
 #include <glm/glm.hpp>
 #include <string>
 #include <unordered_map>

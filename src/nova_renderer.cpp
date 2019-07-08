@@ -5,7 +5,7 @@
 
 #include "nova_renderer/nova_renderer.hpp"
 
-#include <bvestl/polyalloc/system_memory_allocator.hpp>
+#include "memory/system_memory_allocator.hpp"
 
 #include <glslang/MachineIndependent/Initialize.h>
 #include <spirv_cross/spirv_glsl.hpp>
@@ -23,6 +23,8 @@
 #include <minitrace/minitrace.h>
 
 #include "loading/shaderpack/render_graph_builder.hpp"
+#include "memory/block_allocation_strategy.hpp"
+#include "memory/mallocator.hpp"
 #include "render_engine/gl3/gl3_render_engine.hpp"
 #include "render_objects/uniform_structs.hpp"
 #include "util/logger.hpp"
@@ -708,9 +710,11 @@ namespace nova::renderer {
 
     void NovaRenderer::create_global_allocator() {
         uint8_t* heap = new uint8_t[global_memory_pool_size.b_count()];
-        AllocationStrategy* strat = new BlockAllocationStrategy(new Mallocator, global_memory_pool_size);
+        allocator_handle handle(new Mallocator);
+        AllocationStrategy* allocation_strategy = new BlockAllocationStrategy(handle, global_memory_pool_size);
 
-        SystemMemoryAllocator* system_allocator = new SystemMemoryAllocator(heap, global_memory_pool_size, strat);
+        global_allocator = allocator_handle(
+            new SystemMemoryAllocator(heap, global_memory_pool_size, eastl::unique_ptr<AllocationStrategy>(allocation_strategy)));
     }
 
     void NovaRenderer::create_global_gpu_pools() {
