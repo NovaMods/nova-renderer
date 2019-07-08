@@ -1,7 +1,7 @@
-#include "bvestl/polyalloc/block_allocation_strategy.hpp"
-#include "bvestl/polyalloc/polyalloc.hpp"
-#include "bvestl/polyalloc/allocation_structs.hpp"
-#include "bvestl/util/memory_utils.hpp"
+#include "block_allocation_strategy.hpp"
+#include "nova_renderer/polyalloc.hpp"
+#include "nova_renderer/allocation_structs.hpp"
+#include "../util/memory_utils.hpp"
 
 using namespace bvestl::polyalloc::operators;
 

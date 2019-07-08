@@ -84,6 +84,10 @@ namespace nova::renderer {
         std::string pass_name;
     };
 
+    struct FullMaterialPassNameHasher {
+        std::size_t operator()(const FullMaterialPassName& name) const;
+    };
+
     struct MaterialPassKey {
         uint32_t renderpass_index;
         uint32_t pipeline_index;
@@ -324,7 +328,7 @@ namespace nova::renderer {
         std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;
 
         std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
-        std::unordered_map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
+        std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
 
         void record_renderpass(Renderpass& renderpass, rhi::CommandList* cmds);
 

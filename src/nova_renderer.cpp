@@ -28,6 +28,7 @@
 #include "render_engine/gl3/gl3_render_engine.hpp"
 #include "render_objects/uniform_structs.hpp"
 #include "util/logger.hpp"
+#include "memory/bump_point_allocation_strategy.hpp"
 
 using namespace bvestl::polyalloc;
 using namespace bvestl::polyalloc::operators;
@@ -36,6 +37,13 @@ const Bytes global_memory_pool_size = 1_gb;
 
 namespace nova::renderer {
     std::unique_ptr<NovaRenderer> NovaRenderer::instance;
+
+    std::size_t FullMaterialPassNameHasher::operator()(const FullMaterialPassName& name) const {
+        const std::size_t material_name_hash = std::hash<std::string>()(name.material_name);
+        const std::size_t pass_name_hash = std::hash<std::string>()(name.pass_name);
+
+        return material_name_hash ^ pass_name_hash;
+    }
 
     NovaRenderer::NovaRenderer(NovaSettings settings) : render_settings(settings) {
         create_global_allocator();
@@ -722,7 +730,7 @@ namespace nova::renderer {
         Result<std::unique_ptr<DeviceMemoryResource>>
             mesh_memory_result = rhi->allocate_device_memory(mesh_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
                                      .map([&](rhi::DeviceMemory* memory) {
-                                         auto* allocator = new BlockAllocationStrategy(nullptr, Bytes(mesh_memory_size), 64_b);
+                                         auto* allocator = new BlockAllocationStrategy(global_allocator, Bytes(mesh_memory_size), 64_b);
                                          return std::make_unique<DeviceMemoryResource>(memory, allocator);
                                      });
 

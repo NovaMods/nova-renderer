@@ -90,13 +90,25 @@ namespace nova::renderer::rhi {
         return pool;
     }
 
-    std::vector<DescriptorSet*> Gl3RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                                        const DescriptorPool* pool) {}
+    std::vector<DescriptorSet*> Gl3RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface, DescriptorPool* pool) {
+        Gl3DescriptorPool* gl_descriptor_pool = static_cast<Gl3DescriptorPool*>(pool);
+        std::vector<DescriptorSet*> sets;
+
+        for(const auto& [name, desc] : pipeline_interface->bindings) {
+            void* new_set_mem = gl_descriptor_pool->descriptor_allocator.allocate(sizeof(Gl3DescriptorSet));
+            Gl3DescriptorSet* new_set = new(new_set_mem) Gl3DescriptorSet;
+            sets.push_back(new_set);
+
+            new_set->descriptors.resize(desc.count);
+        }
+
+        return sets;
+    }
 
     void Gl3RenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
         for(DescriptorSetWrite& write : writes) {
             const Gl3DescriptorSet* cset = static_cast<const Gl3DescriptorSet*>(write.set);
-            Gl3DescriptorSet* set = const_cast<Gl3DescriptorSet*>(cset);    // I have a few regrets
+            Gl3DescriptorSet* set = const_cast<Gl3DescriptorSet*>(cset); // I have a few regrets
             Gl3Descriptor& descriptor = set->descriptors.at(write.binding);
 
             switch(write.type) {

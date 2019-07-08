@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bvestl/polyalloc/bytes.hpp"
+#include "nova_renderer/bytes.hpp"
 
 /*!
  * \brief Some useful utilities
