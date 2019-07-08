@@ -82,6 +82,8 @@ namespace nova::renderer {
     struct FullMaterialPassName {
         std::string material_name;
         std::string pass_name;
+
+        bool operator==(const FullMaterialPassName& other) const;
     };
 
     struct FullMaterialPassNameHasher {
@@ -101,7 +103,7 @@ namespace nova::renderer {
     struct PipelineMetadata {
         shaderpack::PipelineCreateInfo data;
 
-        std::unordered_map<FullMaterialPassName, MaterialPassMetadata> material_metadatas{};
+        std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher> material_metadatas{};
     };
 
     struct RenderpassMetadata {
@@ -262,13 +264,14 @@ namespace nova::renderer {
                                   const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
                                   const std::vector<shaderpack::MaterialData>& materials);
 
-        void create_materials_for_pipeline(Pipeline& pipeline,
-                                           std::unordered_map<FullMaterialPassName, MaterialPassMetadata>& material_metadatas,
-                                           const std::vector<shaderpack::MaterialData>& materials,
-                                           const std::string& pipeline_name,
-                                           const rhi::PipelineInterface* pipeline_interface,
-                                           const rhi::DescriptorPool* descriptor_pool,
-                                           const MaterialPassKey& template_key);
+        void create_materials_for_pipeline(
+            Pipeline& pipeline,
+            std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher>& material_metadatas,
+            const std::vector<shaderpack::MaterialData>& materials,
+            const std::string& pipeline_name,
+            const rhi::PipelineInterface* pipeline_interface,
+            rhi::DescriptorPool* descriptor_pool,
+            const MaterialPassKey& template_key);
 
         /*!
          * \brief Binds the resources for one material to that material's descriptor sets

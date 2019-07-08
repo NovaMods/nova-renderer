@@ -242,7 +242,7 @@ namespace nova::renderer::rhi {
     }
 
     std::vector<DescriptorSet*> DX12RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                                         const DescriptorPool* /* pool */) {
+                                                                         DescriptorPool* /* pool */) {
         // Create a descriptor heap for each descriptor set
         // This is kinda gross and maybe I'll move to something else eventually but I gotta get past this code
 

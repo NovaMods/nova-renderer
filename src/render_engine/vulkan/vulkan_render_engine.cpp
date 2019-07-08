@@ -451,7 +451,7 @@ namespace nova::renderer::rhi {
     }
 
     std::vector<DescriptorSet*> VulkanRenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                                           const DescriptorPool* pool) {
+                                                                           DescriptorPool* pool) {
         const VulkanPipelineInterface* vk_pipeline_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
         const VulkanDescriptorPool* vk_pool = static_cast<const VulkanDescriptorPool*>(pool);
 

@@ -14,10 +14,9 @@
 #include <wrl.h>
 
 #include <spirv_cross/spirv_hlsl.hpp>
+#include "dx12_swapchain.hpp"
 
 namespace nova::renderer::rhi {
-    class DX12Swapchain;
-
     /*!
      * \brief D3D12 implementation of a render engine
      */
@@ -64,7 +63,7 @@ namespace nova::renderer::rhi {
          * research and testing is needed to resolve this
          */
         std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                           const DescriptorPool* pool) override final;
+                                                           DescriptorPool* pool) override final;
 
         void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override final;
 

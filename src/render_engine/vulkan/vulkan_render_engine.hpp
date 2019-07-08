@@ -76,7 +76,7 @@ namespace nova::renderer::rhi {
                                                uint32_t num_uniform_buffers) override final;
 
         std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                           const DescriptorPool* pool) override final;
+                                                           DescriptorPool* pool) override final;
 
         void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override final;
 

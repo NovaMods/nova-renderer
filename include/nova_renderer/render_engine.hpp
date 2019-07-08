@@ -53,7 +53,7 @@ namespace nova::renderer::rhi {
          * be cleaned up wen a new shaderpack is loaded, so I don't need to worry about cleaning up my memory before
          * that
          */
-        virtual void set_shaderpack_data_allocator() = 0;
+        virtual void set_shaderpack_data_allocator(bvestl::polyalloc::allocator_handle allocator_handle) = 0;
 
         virtual void set_num_renderpasses(uint32_t num_renderpasses) = 0;
 

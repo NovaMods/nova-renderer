@@ -24,11 +24,11 @@
 
 #include "loading/shaderpack/render_graph_builder.hpp"
 #include "memory/block_allocation_strategy.hpp"
+#include "memory/bump_point_allocation_strategy.hpp"
 #include "memory/mallocator.hpp"
 #include "render_engine/gl3/gl3_render_engine.hpp"
 #include "render_objects/uniform_structs.hpp"
 #include "util/logger.hpp"
-#include "memory/bump_point_allocation_strategy.hpp"
 
 using namespace bvestl::polyalloc;
 using namespace bvestl::polyalloc::operators;
@@ -37,6 +37,10 @@ const Bytes global_memory_pool_size = 1_gb;
 
 namespace nova::renderer {
     std::unique_ptr<NovaRenderer> NovaRenderer::instance;
+
+    bool FullMaterialPassName::operator==(const FullMaterialPassName& other) const {
+        return material_name == other.material_name && pass_name == other.pass_name;
+    }
 
     std::size_t FullMaterialPassNameHasher::operator()(const FullMaterialPassName& name) const {
         const std::size_t material_name_hash = std::hash<std::string>()(name.material_name);
@@ -236,7 +240,7 @@ namespace nova::renderer {
             }
         }
 
-        const rhi::DescriptorPool* descriptor_pool = rhi->create_descriptor_pool(total_num_descriptors, 5, total_num_descriptors);
+        rhi::DescriptorPool* descriptor_pool = rhi->create_descriptor_pool(total_num_descriptors, 5, total_num_descriptors);
 
         for(const shaderpack::RenderPassCreateInfo& create_info : pass_create_infos) {
             Renderpass renderpass;
@@ -353,13 +357,14 @@ namespace nova::renderer {
         }
     }
 
-    void NovaRenderer::create_materials_for_pipeline(Pipeline& pipeline,
-                                                     std::unordered_map<FullMaterialPassName, MaterialPassMetadata>& material_metadatas,
-                                                     const std::vector<shaderpack::MaterialData>& materials,
-                                                     const std::string& pipeline_name,
-                                                     const rhi::PipelineInterface* pipeline_interface,
-                                                     const rhi::DescriptorPool* descriptor_pool,
-                                                     const MaterialPassKey& template_key) {
+    void NovaRenderer::create_materials_for_pipeline(
+        Pipeline& pipeline,
+        std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher>& material_metadatas,
+        const std::vector<shaderpack::MaterialData>& materials,
+        const std::string& pipeline_name,
+        const rhi::PipelineInterface* pipeline_interface,
+        rhi::DescriptorPool* descriptor_pool,
+        const MaterialPassKey& template_key) {
 
         // Determine the pipeline layout so the material can create descriptors for the pipeline
 
