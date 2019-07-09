@@ -339,8 +339,7 @@ namespace nova::renderer::rhi {
 
     void Gl3RenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
 
-    void Gl3RenderEngine::destroy_framebuffer(Framebuffer* framebuffer) { delete framebuffer;
-    }
+    void Gl3RenderEngine::destroy_framebuffer(Framebuffer* framebuffer) { delete framebuffer; }
 
     void Gl3RenderEngine::destroy_pipeline_interface(PipelineInterface* /* pipeline_interface */) {
         // No work needed, no GPU objects in Gl3PipelineInterface;
@@ -355,8 +354,13 @@ namespace nova::renderer::rhi {
         delete gl_image;
     }
 
-    void Gl3RenderEngine::destroy_semaphores(const std::vector<Semaphore*>& semaphores) {}
-    void Gl3RenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
+    void Gl3RenderEngine::destroy_semaphores(
+        std::vector<Semaphore*>& /* semaphores */) { // OpenGL semaphores have no GPU objects, so we don't need to do anything here
+    }
+
+    void Gl3RenderEngine::destroy_fences(
+        std::vector<Fence*>& /* fences */) { // OpenGL fences have no GPU objects, so we don't need to do anything here
+    }
 
     CommandList* Gl3RenderEngine::get_command_list(uint32_t /* thread_idx */,
                                                    QueueType /* needed_queue_type */,

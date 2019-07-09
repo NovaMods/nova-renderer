@@ -53,7 +53,7 @@ namespace nova::renderer::rhi {
          * be cleaned up wen a new shaderpack is loaded, so I don't need to worry about cleaning up my memory before
          * that
          */
-        void set_shaderpack_data_allocator(bvestl::polyalloc::allocator_handle allocator_handle);
+        void set_shaderpack_data_allocator(const bvestl::polyalloc::allocator_handle& allocator_handle);
 
         virtual void set_num_renderpasses(uint32_t num_renderpasses) = 0;
 
@@ -187,7 +187,7 @@ namespace nova::renderer::rhi {
          */
         virtual void destroy_fences(std::vector<Fence*>& fences) = 0;
 
-        virtual Swapchain* get_swapchain() = 0;
+        Swapchain* get_swapchain() const;
 
         /*!
          * \brief Allocates a new command list that can be used from the provided thread and has the desired type
@@ -219,6 +219,7 @@ namespace nova::renderer::rhi {
         std::shared_ptr<Window> window;
 
         glm::uvec2 swapchain_size;
+        Swapchain* swapchain;
 
         bvestl::polyalloc::allocator_handle shaderpack_allocator;
 

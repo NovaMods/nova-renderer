@@ -93,7 +93,8 @@ namespace nova::renderer::rhi {
         return Result<DeviceMemory*>(memory);
     }
     Result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
-        VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
+        VulkanSwapchain* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain);
+        VkExtent2D swapchain_extent = {swapchain_size.x, swapchain_size.y};
 
         VulkanRenderpass* renderpass = new_object<VulkanRenderpass>();
 
@@ -142,7 +143,7 @@ namespace nova::renderer::rhi {
 
                 VkAttachmentDescription desc = {};
                 desc.flags = 0;
-                desc.format = swapchain->get_swapchain_format();
+                desc.format = vk_swapchain->get_swapchain_format();
                 desc.samples = VK_SAMPLE_COUNT_1_BIT;
                 desc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
                 desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -294,6 +295,8 @@ namespace nova::renderer::rhi {
         const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
         const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
 
+        VulkanSwapchain* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain);
+
         VulkanPipelineInterface* pipeline_interface = new_object<VulkanPipelineInterface>();
         pipeline_interface->bindings = bindings;
 
@@ -355,7 +358,7 @@ namespace nova::renderer::rhi {
 
                 VkAttachmentDescription desc = {};
                 desc.flags = 0;
-                desc.format = swapchain->get_swapchain_format();
+                desc.format = vk_swapchain->get_swapchain_format();
                 desc.samples = VK_SAMPLE_COUNT_1_BIT;
                 desc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
                 desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -883,9 +886,7 @@ namespace nova::renderer::rhi {
 
         return fences;
     }
-
-    Swapchain* VulkanRenderEngine::get_swapchain() { return swapchain.get(); }
-
+    
     void VulkanRenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
         vkWaitForFences(device,
                         static_cast<uint32_t>(fences.size()),
@@ -1255,11 +1256,9 @@ namespace nova::renderer::rhi {
         std::vector<VkPresentModeKHR> present_modes(num_surface_present_modes);
         vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, present_modes.data());
 
-        swapchain = std::make_unique<VulkanSwapchain>(NUM_IN_FLIGHT_FRAMES, *this, window->get_window_size(), present_modes);
+        swapchain = new VulkanSwapchain(NUM_IN_FLIGHT_FRAMES, *this, window->get_window_size(), present_modes);
 
-        const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
-        swapchain_size.x = swapchain_extent.width;
-        swapchain_size.y = swapchain_extent.height;
+        swapchain_size = window->get_window_size();
     }
 
     void VulkanRenderEngine::create_per_thread_command_pools() {

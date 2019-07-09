@@ -114,8 +114,6 @@ namespace nova::renderer::rhi {
     private:
         Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi_factory;
 
-        std::unique_ptr<DX12Swapchain> swapchain;
-
         Microsoft::WRL::ComPtr<IDXGIAdapter3> adapter;
         Microsoft::WRL::ComPtr<ID3D12Device> device; // direct3d device
 

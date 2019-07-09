@@ -107,8 +107,6 @@ namespace nova::renderer::rhi {
         void destroy_texture(Image* resource) override final;
         void destroy_semaphores(std::vector<Semaphore*>& semaphores) override final;
         void destroy_fences(std::vector<Fence*>& fences) override final;
-
-        Swapchain* get_swapchain() override final;
         
         CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override final;
 
@@ -125,8 +123,6 @@ namespace nova::renderer::rhi {
         void open_window_and_create_surface(const NovaSettings::WindowOptions& options);
 
     private:
-        std::unique_ptr<VulkanSwapchain> swapchain;
-
         /*!
          * The index in the vector is the thread index, the key in the map is the queue family index
          */
