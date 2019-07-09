@@ -655,6 +655,13 @@ namespace nova::renderer::rhi {
         }
     }
 
+    void DX12RenderEngine::reset_fences(const std::vector<Fence*>& fences) {
+        for(Fence* fence : fences) {
+            DX12Fence* dx12_fence = static_cast<DX12Fence*>(fence);
+            ResetEvent(dx12_fence->event);
+        }
+    }
+
     void DX12RenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
 
     void DX12RenderEngine::destroy_framebuffer(const Framebuffer* framebuffer) {

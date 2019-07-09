@@ -894,6 +894,10 @@ namespace nova::renderer::rhi {
                         std::numeric_limits<uint64_t>::max());
     }
 
+    void VulkanRenderEngine::reset_fences(const std::vector<Fence*>& fences) {
+        vkResetFences(device, fences.size(), reinterpret_cast<const VkFence*>(fences.data()));
+    }
+
     void VulkanRenderEngine::destroy_renderpass(Renderpass* pass) {
         VulkanRenderpass* vk_renderpass = static_cast<VulkanRenderpass*>(pass);
         vkDestroyRenderPass(device, vk_renderpass->pass, nullptr);

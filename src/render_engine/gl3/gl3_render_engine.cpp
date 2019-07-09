@@ -329,6 +329,14 @@ namespace nova::renderer::rhi {
         }
     }
 
+    void Gl3RenderEngine::reset_fences(const std::vector<Fence*>& fences) {
+        for(Fence* fence : fences) {
+            Gl3Fence* gl_fence = static_cast<Gl3Fence*>(fence);
+            std::unique_lock guard(gl_fence->mutex);
+            gl_fence->signaled = false;
+        }
+    }
+
     void Gl3RenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
 
     void Gl3RenderEngine::destroy_framebuffer(const Framebuffer* framebuffer) {}

@@ -73,6 +73,8 @@ namespace nova::renderer::rhi {
 
         void wait_for_fences(const std::vector<Fence*> fences) override final;
 
+        void reset_fences(const std::vector<Fence*>& fences) override final;
+
         void destroy_renderpass(Renderpass* pass) override final;
 
         void destroy_framebuffer(const Framebuffer* framebuffer) override final;

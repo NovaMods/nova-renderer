@@ -108,6 +108,7 @@ set(NOVA_SOURCE
 		include/nova_renderer/polyalloc.hpp
 		
         src/nova_renderer.cpp
+        src/render_engine/render_engine.cpp
 
         src/loading/zip_folder_accessor.hpp
         src/loading/regular_folder_accessor.hpp
