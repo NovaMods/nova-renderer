@@ -232,6 +232,18 @@ namespace nova::renderer::rhi {
          * \attention Called by nova
          */
         explicit RenderEngine(NovaSettings& settings) : settings(settings), swapchain_size(settings.window.width, settings.window.height){};
+
+        template <typename AllocType>
+        AllocType* new_object() {
+            void* mem = shaderpack_allocator.allocate(sizeof(AllocType));
+            return new(mem) AllocType;
+        }
+
+        template <typename AllocType, typename... ArgTypes>
+        AllocType* new_object(ArgTypes... args) {
+            void* mem = shaderpack_allocator.allocate(sizeof(AllocType));
+            return new(mem) AllocType(std::forward(args...));
+        }
     };
 <<<<<<< HEAD
 } // namespace nova::renderer

@@ -311,7 +311,7 @@ namespace nova::renderer::rhi {
     Result<Pipeline*> DX12RenderEngine::create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) {
         const DX12PipelineInterface* dx12_pipeline_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
 
-        DX12Pipeline* pipeline = new DX12Pipeline;
+        DX12Pipeline* pipeline = new_object<DX12Pipeline>();
 
         const auto states_begin = data.states.begin();
         const auto states_end = data.states.end();
@@ -499,7 +499,7 @@ namespace nova::renderer::rhi {
     }
 
     Buffer* DX12RenderEngine::create_buffer(const BufferCreateInfo& info) {
-        DX12Buffer* buffer = new DX12Buffer;
+        DX12Buffer* buffer = new_object<DX12Buffer>();
 
         D3D12_RESOURCE_STATES states = {};
         switch(info.buffer_usage) {
@@ -548,7 +548,7 @@ namespace nova::renderer::rhi {
     }
 
     Image* DX12RenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
-        DX12Image* image = new DX12Image;
+        DX12Image* image = new_object<DX12Image>();
 
         const shaderpack::TextureFormat& format = info.format;
 
@@ -619,7 +619,7 @@ namespace nova::renderer::rhi {
     std::vector<Semaphore*> DX12RenderEngine::create_semaphores(uint32_t num_semaphores) { return std::vector<Semaphore*>(); }
 
     Fence* DX12RenderEngine::create_fence(const bool signaled) {
-        DX12Fence* fence = new DX12Fence;
+        DX12Fence* fence = new_object<DX12Fence>();
 
         const uint32_t initial_value = signaled ? CPU_FENCE_SIGNALED : 0;
 
@@ -636,7 +636,7 @@ namespace nova::renderer::rhi {
 
         const uint32_t initial_value = signaled ? CPU_FENCE_SIGNALED : 0;
         for(uint32_t i = 0; i < num_fences; i++) {
-            DX12Fence* fence = new DX12Fence;
+            DX12Fence* fence = new_object<DX12Fence>();
 
             device->CreateFence(initial_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence->fence.GetAddressOf()));
             fence->event = CreateEvent(nullptr, false, signaled, nullptr);
@@ -732,7 +732,7 @@ namespace nova::renderer::rhi {
         ComPtr<ID3D12GraphicsCommandList> graphics_list;
         list->QueryInterface(IID_PPV_ARGS(&graphics_list));
 
-        return new Dx12CommandList(graphics_list);
+        return new_object<Dx12CommandList>(graphics_list);
     }
 
     void DX12RenderEngine::submit_command_list(CommandList* cmds,

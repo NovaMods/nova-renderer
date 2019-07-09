@@ -895,7 +895,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderEngine::reset_fences(const std::vector<Fence*>& fences) {
-        vkResetFences(device, fences.size(), reinterpret_cast<const VkFence*>(fences.data()));
+        vkResetFences(device, static_cast<uint32_t>(fences.size()), reinterpret_cast<const VkFence*>(fences.data()));
     }
 
     void VulkanRenderEngine::destroy_renderpass(Renderpass* pass) {
@@ -903,7 +903,7 @@ namespace nova::renderer::rhi {
         vkDestroyRenderPass(device, vk_renderpass->pass, nullptr);
     }
 
-    void VulkanRenderEngine::destroy_framebuffer(const Framebuffer* framebuffer) {
+    void VulkanRenderEngine::destroy_framebuffer(Framebuffer* framebuffer) {
         const VulkanFramebuffer* vk_framebuffer = static_cast<const VulkanFramebuffer*>(framebuffer);
         vkDestroyFramebuffer(device, vk_framebuffer->framebuffer, nullptr);
 
@@ -923,9 +923,19 @@ namespace nova::renderer::rhi {
         delete vk_image;
     }
 
-    void VulkanRenderEngine::destroy_semaphores(const std::vector<Semaphore*>& semaphores) {}
+    void VulkanRenderEngine::destroy_semaphores(std::vector<Semaphore*>& semaphores) {
+        for(Semaphore* semaphore : semaphores) {
+            VulkanSemaphore* vk_semaphore = static_cast<VulkanSemaphore*>(semaphore);
+            vkDestroySemaphore(device, vk_semaphore->semaphore, nullptr);
+        }
+    }
 
-    void VulkanRenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
+    void VulkanRenderEngine::destroy_fences(std::vector<Fence*>& fences) {
+        for(Fence* fence : fences) {
+            VulkanFence* vk_fence = static_cast<VulkanFence*>(fence);
+            vkDestroyFence(device, vk_fence->fence, nullptr);
+        }
+    }
 
     CommandList* VulkanRenderEngine::get_command_list(const uint32_t thread_idx,
                                                       const QueueType needed_queue_type,

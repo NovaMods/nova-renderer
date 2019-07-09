@@ -101,12 +101,12 @@ namespace nova::renderer::rhi {
 
         void destroy_renderpass(Renderpass* pass) override final;
 
-        void destroy_framebuffer(const Framebuffer* framebuffer) override final;
+        void destroy_framebuffer(Framebuffer* framebuffer) override final;
 
         void destroy_pipeline(Pipeline* pipeline) override final;
         void destroy_texture(Image* resource) override final;
-        void destroy_semaphores(const std::vector<Semaphore*>& semaphores) override final;
-        void destroy_fences(const std::vector<Fence*>& fences) override final;
+        void destroy_semaphores(std::vector<Semaphore*>& semaphores) override final;
+        void destroy_fences(std::vector<Fence*>& fences) override final;
 
         Swapchain* get_swapchain() override final;
         
