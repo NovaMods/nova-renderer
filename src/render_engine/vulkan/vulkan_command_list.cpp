@@ -10,8 +10,8 @@
 #include "vk_structs.hpp"
 
 namespace nova::renderer::rhi {
-    VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine& render_engine)
-        : cmds(cmds), render_engine(render_engine) {}
+    VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine* render_engine)
+        : cmds(cmds), render_engine(*render_engine) {}
 
     void VulkanCommandList::resource_barriers(const PipelineStageFlags stages_before_barrier,
                                               const PipelineStageFlags stages_after_barrier,

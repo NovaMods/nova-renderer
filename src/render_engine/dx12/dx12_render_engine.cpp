@@ -784,13 +784,13 @@ namespace nova::renderer::rhi {
 
         HWND window_handle = win32_window->get_window_handle();
 
-        swapchain = std::make_unique<DX12Swapchain>(this,
-                                                    dxgi_factory.Get(),
-                                                    device.Get(),
-                                                    window_handle,
-                                                    glm::uvec2{options.height, options.width},
-                                                    num_frames,
-                                                    direct_command_queue.Get());
+        swapchain = new DX12Swapchain(this,
+                                      dxgi_factory.Get(),
+                                      device.Get(),
+                                      window_handle,
+                                      glm::uvec2{options.height, options.width},
+                                      num_frames,
+                                      direct_command_queue.Get());
     }
 
     void DX12RenderEngine::create_device() {

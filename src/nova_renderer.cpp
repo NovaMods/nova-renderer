@@ -223,7 +223,7 @@ namespace nova::renderer {
 
     void NovaRenderer::create_dynamic_textures(const std::vector<shaderpack::TextureCreateInfo>& texture_create_infos) {
         for(const shaderpack::TextureCreateInfo& create_info : texture_create_infos) {
-            rhi::Resource* new_texture = rhi->create_texture(create_info);
+            rhi::Image* new_texture = rhi->create_texture(create_info);
             dynamic_textures.emplace(create_info.name, new_texture);
         }
     }
@@ -732,15 +732,17 @@ namespace nova::renderer {
 
     void NovaRenderer::create_global_gpu_pools() {
         const uint64_t mesh_memory_size = 512000000;
-        Result<std::unique_ptr<DeviceMemoryResource>>
-            mesh_memory_result = rhi->allocate_device_memory(mesh_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
-                                     .map([&](rhi::DeviceMemory* memory) {
-                                         auto* allocator = new BlockAllocationStrategy(global_allocator, Bytes(mesh_memory_size), 64_b);
-                                         return std::make_unique<DeviceMemoryResource>(memory, allocator);
-                                     });
+        Result<rhi::DeviceMemory*> memory_result = rhi->allocate_device_memory(mesh_memory_size,
+                                                                               rhi::MemoryUsage::DeviceOnly,
+                                                                               rhi::ObjectType::Buffer);
+
+        Result<DeviceMemoryResource*> mesh_memory_result = memory_result.map([&](rhi::DeviceMemory* memory) {
+            auto* allocator = new BlockAllocationStrategy(global_allocator, Bytes(mesh_memory_size), 64_b);
+            return new DeviceMemoryResource(memory, allocator);
+        });
 
         if(mesh_memory_result) {
-            mesh_memory = std::move(mesh_memory_result.value);
+            mesh_memory = std::make_unique<DeviceMemoryResource>(*mesh_memory_result.value);
 
         } else {
             NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << mesh_memory_result.error.to_string();
@@ -748,15 +750,15 @@ namespace nova::renderer {
 
         // Assume 65k things, plus we need space for the builtin ubos
         const uint64_t ubo_memory_size = sizeof(PerFrameUniforms) + sizeof(glm::mat4) * 0xFFFF;
-        Result<std::unique_ptr<DeviceMemoryResource>>
+        Result<DeviceMemoryResource*>
             ubo_memory_result = rhi->allocate_device_memory(ubo_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
                                     .map([&](rhi::DeviceMemory* memory) {
                                         auto* allocator = new BumpPointAllocationStrategy(Bytes(ubo_memory_size), Bytes(sizeof(glm::mat4)));
-                                        return std::make_unique<DeviceMemoryResource>(memory, allocator);
+                                        return new DeviceMemoryResource(memory, allocator);
                                     });
 
         if(ubo_memory_result) {
-            ubo_memory = std::move(ubo_memory_result.value);
+            ubo_memory = std::make_unique<DeviceMemoryResource>(*ubo_memory_result.value);
 
         } else {
             NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << ubo_memory_result.error.to_string();
@@ -764,17 +766,17 @@ namespace nova::renderer {
 
         // Staging buffers will be pooled, so we don't need a _ton_ of memory for them
         const Bytes staging_memory_size = 256_kb;
-        Result<std::unique_ptr<DeviceMemoryResource>>
+        const Result<DeviceMemoryResource*>
             staging_memory_result = rhi->allocate_device_memory(staging_memory_size.b_count(),
                                                                 rhi::MemoryUsage::StagingBuffer,
                                                                 rhi::ObjectType::Buffer)
                                         .map([&](rhi::DeviceMemory* memory) {
                                             auto* allocator = new BumpPointAllocationStrategy(staging_memory_size, 64_b);
-                                            return std::make_unique<DeviceMemoryResource>(memory, allocator);
+                                            return new DeviceMemoryResource(memory, allocator);
                                         });
 
         if(staging_memory_result) {
-            staging_buffer_memory = std::move(staging_memory_result.value);
+            staging_buffer_memory = std::make_unique<DeviceMemoryResource>(*staging_memory_result.value);
 
         } else {
             NOVA_LOG(ERROR) << "Could not create staging buffer memory pool: " << staging_memory_result.error.to_string();

@@ -19,7 +19,7 @@ namespace nova::renderer::rhi {
     public:
         VkCommandBuffer cmds;
 
-        VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine& render_engine);
+        VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine* render_engine);
 
         void resource_barriers(PipelineStageFlags stages_before_barrier,
                                PipelineStageFlags stages_after_barrier,

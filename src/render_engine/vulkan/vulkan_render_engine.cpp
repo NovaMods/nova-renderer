@@ -886,7 +886,7 @@ namespace nova::renderer::rhi {
 
         return fences;
     }
-    
+
     void VulkanRenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
         vkWaitForFences(device,
                         static_cast<uint32_t>(fences.size()),
@@ -909,6 +909,12 @@ namespace nova::renderer::rhi {
         vkDestroyFramebuffer(device, vk_framebuffer->framebuffer, nullptr);
 
         delete vk_framebuffer;
+    }
+
+    void VulkanRenderEngine::destroy_pipeline_interface(PipelineInterface* pipeline_interface) {
+        VulkanPipelineInterface* vk_interface = static_cast<VulkanPipelineInterface*>(pipeline_interface);
+        vkDestroyRenderPass(device, vk_interface->pass, nullptr);
+        vkDestroyPipelineLayout(device, vk_interface->pipeline_layout, nullptr);
     }
 
     void VulkanRenderEngine::destroy_pipeline(Pipeline* pipeline) {
@@ -953,7 +959,7 @@ namespace nova::renderer::rhi {
         VkCommandBuffer new_buffer;
         vkAllocateCommandBuffers(device, &create_info, &new_buffer);
 
-        VulkanCommandList* list = new_object<VulkanCommandList>(new_buffer, *this);
+        VulkanCommandList* list = new_object<VulkanCommandList>(new_buffer, this);
 
         return list;
     }

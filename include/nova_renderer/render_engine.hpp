@@ -241,9 +241,9 @@ namespace nova::renderer::rhi {
         }
 
         template <typename AllocType, typename... ArgTypes>
-        AllocType* new_object(ArgTypes... args) {
+        AllocType* new_object(ArgTypes&&... args) {
             void* mem = shaderpack_allocator.allocate(sizeof(AllocType));
-            return new(mem) AllocType(std::forward(args...));
+            return new(mem) AllocType(std::forward<ArgTypes>(args)...);
         }
     };
 <<<<<<< HEAD
