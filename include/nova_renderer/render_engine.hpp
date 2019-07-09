@@ -131,19 +131,61 @@ namespace nova::renderer::rhi {
 
         virtual void reset_fences(const std::vector<Fence*>& fences) = 0;
 
+        /*!
+         * \brief Clean up any GPU objects a Renderpass may own
+         *
+         * While Renderpasses are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
+         * need to clean up their GPU objects
+         */
         virtual void destroy_renderpass(Renderpass* pass) = 0;
 
-        virtual void destroy_framebuffer(const Framebuffer* framebuffer) = 0;
+        /*!
+         * \brief Clean up any GPU objects a Framebuffer may own
+         *
+         * While Framebuffers are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
+         * need to clean up their GPU objects
+         */
+        virtual void destroy_framebuffer(Framebuffer* framebuffer) = 0;
 
-        virtual void destroy_pipeline_interface(const PipelineInterface* pipeline_interface) = 0;
+        /*!
+         * \brief Clean up any GPU objects a PipelineInterface may own
+         *
+         * While PipelineInterfaces are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we
+         * still need to clean up their GPU objects
+         */
+        virtual void destroy_pipeline_interface(PipelineInterface* pipeline_interface) = 0;
 
+        /*!
+         * \brief Clean up any GPU objects a Pipeline may own
+         *
+         * While Pipelines are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
+         * need to clean up their GPU objects
+         */
         virtual void destroy_pipeline(Pipeline* pipeline) = 0;
 
+        /*!
+         * \brief Clean up any GPU objects an Image may own
+         *
+         * While Images are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still need
+         * to clean up their GPU objects
+         */
         virtual void destroy_texture(Image* resource) = 0;
 
-        virtual void destroy_semaphores(const std::vector<Semaphore*>& semaphores) = 0;
+        /*!
+         * \brief Clean up any GPU objects a Semaphores may own
+         *
+         * While Semaphores are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
+         * need to clean up their GPU objects
+         */
+        virtual void destroy_semaphores(std::vector<Semaphore*>& semaphores) = 0;
 
-        virtual void destroy_fences(const std::vector<Fence*>& fences) = 0;
+        /*!
+         * \brief Clean up any GPU objects a Fence may own
+         *
+         * While Fence are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still need to
+         * clean up their GPU objects
+         */
+        virtual void destroy_fences(std::vector<Fence*>& fences) = 0;
 
         virtual Swapchain* get_swapchain() = 0;
 

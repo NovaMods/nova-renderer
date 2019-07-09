@@ -77,7 +77,9 @@ namespace nova::renderer::rhi {
 
         void destroy_renderpass(Renderpass* pass) override final;
 
-        void destroy_framebuffer(const Framebuffer* framebuffer) override final;
+        void destroy_framebuffer(Framebuffer* framebuffer) override final;
+
+        void destroy_pipeline_interface(PipelineInterface* pipeline_interface) override final;
 
         void destroy_pipeline(Pipeline* pipeline) override final;
         void destroy_texture(Image* resource) override final;

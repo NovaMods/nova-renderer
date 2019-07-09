@@ -339,7 +339,12 @@ namespace nova::renderer::rhi {
 
     void Gl3RenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
 
-    void Gl3RenderEngine::destroy_framebuffer(const Framebuffer* framebuffer) {}
+    void Gl3RenderEngine::destroy_framebuffer(Framebuffer* framebuffer) { delete framebuffer;
+    }
+
+    void Gl3RenderEngine::destroy_pipeline_interface(PipelineInterface* /* pipeline_interface */) {
+        // No work needed, no GPU objects in Gl3PipelineInterface;
+    }
 
     void Gl3RenderEngine::destroy_pipeline(Pipeline* pipeline) {}
 

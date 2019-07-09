@@ -662,27 +662,45 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void DX12RenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
-
-    void DX12RenderEngine::destroy_framebuffer(const Framebuffer* framebuffer) {
-        const DX12Framebuffer* d3d12_framebuffer = static_cast<const DX12Framebuffer*>(framebuffer);
-        d3d12_framebuffer->descriptor_heap->Release();
-
-        delete d3d12_framebuffer;
+    void DX12RenderEngine::destroy_renderpass(Renderpass* /* pass */) { // No work needed, DX12Renderpasses don't own any GPU objects
     }
 
-    void DX12RenderEngine::destroy_pipeline(Pipeline* pipeline) {}
+    void DX12RenderEngine::destroy_framebuffer(Framebuffer* framebuffer) {
+        DX12Framebuffer* d3d12_framebuffer = static_cast<DX12Framebuffer*>(framebuffer);
+        d3d12_framebuffer->descriptor_heap = nullptr;
+    }
+
+    void DX12RenderEngine::destroy_pipeline_interface(PipelineInterface* pipeline_interface) {
+        DX12PipelineInterface* dx12_interface = static_cast<DX12PipelineInterface*>(pipeline_interface);
+
+        dx12_interface->root_sig = nullptr;
+    }
+
+    void DX12RenderEngine::destroy_pipeline(Pipeline* pipeline) {
+        DX12Pipeline* dx_pipeline = static_cast<DX12Pipeline*>(pipeline);
+        dx_pipeline->pso = nullptr;
+        dx_pipeline->root_signature = nullptr;
+    }
 
     void DX12RenderEngine::destroy_texture(Image* resource) {
-        const DX12Image* d3d12_framebuffer = static_cast<const DX12Image*>(resource);
-        d3d12_framebuffer->resource->Release();
-
-        delete d3d12_framebuffer;
+        DX12Image* d3d12_framebuffer = static_cast<DX12Image*>(resource);
+        d3d12_framebuffer->resource = nullptr;
     }
 
-    void DX12RenderEngine::destroy_semaphores(const std::vector<Semaphore*>& semaphores) {}
+    void DX12RenderEngine::destroy_semaphores(std::vector<Semaphore*>& semaphores) {
+        for(Semaphore* semaphore : semaphores) {
+            DX12Semaphore* dx_semaphore = static_cast<DX12Semaphore*>(semaphore);
+            dx_semaphore->fence = nullptr;
+        }
+    }
 
-    void DX12RenderEngine::destroy_fences(const std::vector<Fence*>& fences) {}
+    void DX12RenderEngine::destroy_fences(std::vector<Fence*>& fences) {
+        for(Fence* fence : fences) {
+            DX12Fence* dx_fence = static_cast<DX12Fence*>(fence);
+            dx_fence->fence = nullptr;
+            CloseHandle(dx_fence->event);
+        }
+    }
 
     CommandList* DX12RenderEngine::get_command_list(const uint32_t thread_idx,
                                                     const QueueType needed_queue_type,
