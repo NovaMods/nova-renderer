@@ -25,7 +25,7 @@ install:
   - cmd: cd C:\Tools\vcpkg
   - cmd: git pull
   - cmd: cd %APPVEYOR_BUILD_FOLDER%
-  - ps: C:\Python37-x64\python.exe tools\vcpkg\setup.py --vcpkg-dir=C:\tools\vcpkg
+  - ps: C:\Python37-x64\python.exe build.py --vcpkg-dir=C:\tools\vcpkg
 
 before_build:
   - cmd: cd C:\projects\nova-renderer
@@ -44,7 +44,7 @@ test_script:
 
 cache: 
   - c:\tools\vcpkg\packages\ -> appveyor.yml
-  - c:\tools\vcpkg\installed\ -> setup-windows.ps1
+  - c:\tools\vcpkg\installed\ # This should be cleaned up by the build.py script
 
 on_success:
   - ps: Invoke-RestMethod https://raw.githubusercontent.com/DiscordHooks/appveyor-discord-webhook/master/send.ps1 -o send.ps1
