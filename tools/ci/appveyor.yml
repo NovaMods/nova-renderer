@@ -23,7 +23,11 @@ install:
   - cmd: curl --silent --show-error --output VulkanSDK.exe https://cwfitz.com/s/19028-082433-VulkanSDK-1.1.97.0-Installer.exe
   - cmd: .\VulkanSDK.exe /S
   - cmd: cd C:\Tools\vcpkg
+  - cmd: git fetch
   - cmd: git pull
+  - cmd: git reset --hard
+  - cmd: .\bootstrap-vcpkg.bat
+  - cmd: .\vcpkg.exe update
   - cmd: cd %APPVEYOR_BUILD_FOLDER%
   - ps: C:\Python37-x64\python.exe build.py --vcpkg-dir=C:\tools\vcpkg
 
