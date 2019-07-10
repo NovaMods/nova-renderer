@@ -41,7 +41,7 @@ namespace nova::renderer::shaderpack {
 
     nlohmann::json default_texture_format = {{"pixelFormat", "RGBA8"}, {"dimensionType", "Absolute"}};
 
-    void NOVA_API ensure_field_exists(nlohmann::json& j,
+    void ensure_field_exists(nlohmann::json& j,
                              const std::string& field_name,
                              const std::string& context,
                              const nlohmann::json& default_value,
@@ -51,7 +51,7 @@ namespace nova::renderer::shaderpack {
         return fmt::format(fmt("Pipeline {:s}: Missing field {:s}"), name, field_name);
     }
 
-    ValidationReport NOVA_API validate_graphics_pipeline(nlohmann::json& pipeline_json) {
+    ValidationReport validate_graphics_pipeline(nlohmann::json& pipeline_json) {
         ValidationReport report;
         const std::string name = get_json_value<std::string>(pipeline_json, "name").value_or("<NAME_MISSING>");
         // Don't need to check for the name's existence here, it'll be checked with the rest of the required fields
@@ -76,7 +76,7 @@ namespace nova::renderer::shaderpack {
 
     static std::string resources_msg(const std::string& msg) { return fmt::format(fmt("Resources file: {:s}"), msg); }
 
-    ValidationReport NOVA_API validate_shaderpack_resources_data(nlohmann::json& resources_json) {
+    ValidationReport validate_shaderpack_resources_data(nlohmann::json& resources_json) {
         ValidationReport report;
         bool missing_textures = false;
 
@@ -123,7 +123,7 @@ namespace nova::renderer::shaderpack {
 
     static std::string texture_msg(const std::string& name, const std::string& msg) { return fmt::format(fmt("Texture {:s}: {:s}"), name, msg); }
 
-    ValidationReport NOVA_API validate_texture_data(nlohmann::json& texture_json) {
+    ValidationReport validate_texture_data(nlohmann::json& texture_json) {
         ValidationReport report;
         const auto name_maybe = get_json_value<std::string>(texture_json, "name");
         std::string name;
@@ -150,7 +150,7 @@ namespace nova::renderer::shaderpack {
         return fmt::format(fmt("Format of texture {:s}: {:s}"), tex_name, msg);
     }
 
-    ValidationReport NOVA_API validate_texture_format(nlohmann::json& format_json, const std::string& texture_name) {
+    ValidationReport validate_texture_format(nlohmann::json& format_json, const std::string& texture_name) {
         ValidationReport report;
 
         const std::string context = fmt::format(fmt("Format of texture {:s}"), texture_name);
@@ -172,7 +172,7 @@ namespace nova::renderer::shaderpack {
 
     static std::string sampler_msg(const std::string& name, const std::string& msg) { return fmt::format(fmt("Sampler {:s}: {:s}"), name, msg); }
 
-    ValidationReport NOVA_API validate_sampler_data(nlohmann::json& sampler_json) {
+    ValidationReport validate_sampler_data(nlohmann::json& sampler_json) {
         ValidationReport report;
         const std::string name = get_json_value<std::string>(sampler_json, "name").value_or("<NAME_MISSING>");
         if(name == "<NAME_MISSING>") {
@@ -199,7 +199,7 @@ namespace nova::renderer::shaderpack {
         return fmt::format(fmt("Material pass {:s} in material {:s}: {:s}"), pass_name, mat_name, error);
     }
 
-    ValidationReport NOVA_API validate_material(nlohmann::json& material_json) {
+    ValidationReport validate_material(nlohmann::json& material_json) {
         ValidationReport report;
 
         const std::string name = get_json_value<std::string>(material_json, "name").value_or("<NAME_MISSING>");
@@ -252,7 +252,7 @@ namespace nova::renderer::shaderpack {
         return report;
     }
 
-    void NOVA_API ensure_field_exists(nlohmann::json& j,
+    void ensure_field_exists(nlohmann::json& j,
                              const std::string& field_name,
                              const std::string& context,
                              const nlohmann::json& default_value,
@@ -264,7 +264,7 @@ namespace nova::renderer::shaderpack {
         }
     }
 
-    void NOVA_API print(const ValidationReport& report) {
+    void print(const ValidationReport& report) {
         for(const auto& error : report.errors) {
             NOVA_LOG(ERROR) << error;
         }
@@ -274,7 +274,7 @@ namespace nova::renderer::shaderpack {
         }
     }
 
-    void NOVA_API ValidationReport::merge_in(const ValidationReport& other) {
+    void ValidationReport::merge_in(const ValidationReport& other) {
         errors.insert(errors.end(), other.errors.begin(), other.errors.end());
         warnings.insert(warnings.begin(), other.warnings.begin(), other.warnings.end());
     }

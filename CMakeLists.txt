@@ -6,6 +6,7 @@ if(VCPKG_TOOLCHAIN)
 	set(VCPKG_INSTALLED_PATH "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
 	set(VCPKG_INSTALLED_PATH_DEBUG "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug")
     include_directories(SYSTEM "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
+	link_directories(SYSTEM "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib")
 endif()
 
 option(NOVA_PACKAGE "Build only the library, nothing else." OFF)
@@ -333,6 +334,7 @@ add_coverage(nova-renderer)
 # Set libraries to link #
 #########################
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
+					 EASTL
                      fmt::fmt
                      glm
                      glslang::glslang

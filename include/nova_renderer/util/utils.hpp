@@ -14,8 +14,10 @@
 #include "filesystem.hpp"
 
 #if defined(NOVA_EXPORT)
+#pragma message("NOVA_EXPORT defined")
 #define NOVA_API __declspec(dllexport)
 #else
+#pragma message("No definition for NOVA_EXPORT found")
 #define NOVA_API __declspec(dllimport)
 #endif
 
