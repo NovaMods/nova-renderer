@@ -111,7 +111,7 @@ namespace nova::renderer::rhi {
         begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         begin_info.renderPass = vk_renderpass->pass;
         begin_info.framebuffer = vk_framebuffer->framebuffer;
-        begin_info.renderArea = {0, 0, static_cast<uint32_t>(framebuffer->size.x), static_cast<uint32_t>(framebuffer->size.y)};
+        begin_info.renderArea = {{0, 0}, {static_cast<uint32_t>(framebuffer->size.x), static_cast<uint32_t>(framebuffer->size.y)}};
 
         // Nova _always_ records command lists in parallel for each renderpass
         vkCmdBeginRenderPass(cmds, &begin_info, VK_SUBPASS_CONTENTS_INLINE);

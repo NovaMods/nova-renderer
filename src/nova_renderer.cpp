@@ -728,7 +728,7 @@ namespace nova::renderer {
         allocator_handle handle(new Mallocator);
         AllocationStrategy* allocation_strategy = new BlockAllocationStrategy(handle, global_memory_pool_size);
 
-        global_allocator = allocator_handle(
+        global_allocator = std::make_shared<allocator_handle>(
             new SystemMemoryAllocator(heap, global_memory_pool_size, eastl::unique_ptr<AllocationStrategy>(allocation_strategy)));
     }
 
@@ -739,7 +739,7 @@ namespace nova::renderer {
                                                                                rhi::ObjectType::Buffer);
 
         Result<DeviceMemoryResource*> mesh_memory_result = memory_result.map([&](rhi::DeviceMemory* memory) {
-            auto* allocator = new BlockAllocationStrategy(global_allocator, Bytes(mesh_memory_size), 64_b);
+            auto* allocator = new BlockAllocationStrategy(*global_allocator, Bytes(mesh_memory_size), 64_b);
             return new DeviceMemoryResource(memory, allocator);
         });
 
