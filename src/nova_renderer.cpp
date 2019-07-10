@@ -123,7 +123,7 @@ namespace nova::renderer {
     void NovaRenderer::execute_frame() {
         MTR_SCOPE("RenderLoop", "execute_frame");
         frame_count++;
-        cur_frame_idx = frame_count % 3;
+        cur_frame_idx = static_cast<uint8_t>(frame_count % 3);
 
         NOVA_LOG(DEBUG) << "\n***********************\n        FRAME START        \n***********************";
 
@@ -557,6 +557,7 @@ namespace nova::renderer {
                 rhi->destroy_pipeline(pipeline.pipeline);
 
                 for(MaterialPass& material_pass : pipeline.passes) {
+                    (void) material_pass;
                     // TODO: Destroy descriptors for material
                     // TODO: Have a way to save mesh data somewhere outside of the render graph, then process it cleanly here
                 }
@@ -672,7 +673,8 @@ namespace nova::renderer {
             cmds->bind_vertex_buffers(vertex_buffers);
             cmds->bind_index_buffer(batch.index_buffer);
 
-            cmds->draw_indexed_mesh(batch.index_buffer->size / sizeof(uint32_t), cur_model_matrix_index - start_index);
+            cmds->draw_indexed_mesh(static_cast<uint32_t>(batch.index_buffer->size / sizeof(uint32_t)),
+                    cur_model_matrix_index - start_index);
         }
     }
 

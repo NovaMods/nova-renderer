@@ -3,6 +3,8 @@
 #include "nova_renderer/allocation_structs.hpp"
 #include "../util/memory_utils.hpp"
 
+#include <new>
+
 using namespace bvestl::polyalloc::operators;
 
 namespace bvestl {

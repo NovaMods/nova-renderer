@@ -4,10 +4,12 @@
 #include "vulkan_command_list.hpp"
 #include "vulkan_utils.hpp"
 
+#include <set>
+
 #ifdef NOVA_LINUX
 #define VK_USE_PLATFORM_XLIB_KHR // Use X11 for window creating on Linux... TODO: Wayland?
 #define NOVA_VK_XLIB
-#include "x11_window.hpp"
+#include "../../windowing/x11_window.hpp"
 #include <vulkan/vulkan_xlib.h>
 #include "../../util/linux_utils.hpp"
 
@@ -759,6 +761,11 @@ namespace nova::renderer::rhi {
             case BufferUsage::VertexBuffer: {
                 vk_create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
             } break;
+
+            case BufferUsage::StagingBuffer: {
+                // TODO
+                NOVA_LOG(FATAL) << "Unimplemented: tried to create staging buffer";
+            } break;
         }
 
         VulkanDeviceMemory* vulkan_heap = static_cast<VulkanDeviceMemory*>(info.allocation.memory);
@@ -1021,16 +1028,18 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderEngine::open_window_and_create_surface(const NovaSettings::WindowOptions& options) {
 #ifdef NOVA_LINUX
-        window = std::make_shared<x11_window>(options);
+        window = std::make_shared<X11Window>(options);
 
         VkXlibSurfaceCreateInfoKHR x_surface_create_info;
         x_surface_create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
         x_surface_create_info.pNext = nullptr;
         x_surface_create_info.flags = 0;
-        x_surface_create_info.dpy = window->get_display();
-        x_surface_create_info.window = window->get_x11_window();
 
-        NOVA_CHECK_RESULT(vkCreateXlibSurfaceKHR(vk_instance, &x_surface_create_info, nullptr, &surface));
+        X11Window* x11_window_ptr = static_cast<X11Window *>(window.get());
+        x_surface_create_info.dpy = x11_window_ptr->get_display();
+        x_surface_create_info.window = x11_window_ptr->get_x11_window();
+
+        NOVA_CHECK_RESULT(vkCreateXlibSurfaceKHR(instance, &x_surface_create_info, nullptr, &surface));
 
 #elif defined(NOVA_WINDOWS)
         window = std::make_shared<Win32Window>(options);

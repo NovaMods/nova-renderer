@@ -38,13 +38,13 @@ namespace nova::renderer {
             // Try to load system-wide version of renderdoc
             renderdoc_so = dlopen("librenderdoc.so", RTLD_NOW);
             if(renderdoc_so == nullptr) {
-                return result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc DLL. Error: {:s}", dlerror()));
+                return Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc DLL. Error: {:s}", dlerror()));
             }
         }
 
         const auto get_api = reinterpret_cast<pRENDERDOC_GetAPI>(dlsym(renderdoc_so, "RENDERDOC_GetAPI"));
         if(get_api == nullptr) {
-            return result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not find the RenderDoc API loading function. Error: {:s}", dlerror()));
+            return Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not find the RenderDoc API loading function. Error: {:s}", dlerror()));
         }
 #endif
 

@@ -103,9 +103,16 @@ int open_gl(void) {
 #if defined(__APPLE__) || defined(__HAIKU__)
             return 1;
 #else
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
             gladGetProcAddressPtr = (PFNGLXGETPROCADDRESSPROC_PRIVATE)dlsym(libGL,
                 "glXGetProcAddressARB");
             return gladGetProcAddressPtr != NULL;
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 #endif
         }
     }
@@ -120,6 +127,11 @@ void close_gl(void) {
         libGL = NULL;
     }
 }
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
 #endif
 
 static
@@ -1697,3 +1709,6 @@ int gladLoadGLLoader(GLADloadproc load) {
 	return GLVersion.major != 0 || GLVersion.minor != 0;
 }
 
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif

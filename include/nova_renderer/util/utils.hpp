@@ -14,11 +14,27 @@
 #include "filesystem.hpp"
 
 #if defined(NOVA_EXPORT)
-#pragma message("NOVA_EXPORT defined")
+#if defined(__GNUC__)
+#pragma message("NOVA_EXPORT defined [GNUC/Clang]")
+#define NOVA_API __attribute__((visibility("default")))
+#elif defined(_MSC_VER)
+#pragma message("NOVA_EXPORT defined [MSVC]")
 #define NOVA_API __declspec(dllexport)
 #else
-#pragma message("No definition for NOVA_EXPORT found")
+#pragma message("NOVA_EXPORT defined [Unknown compiler]")
+#define NOVA_API
+#endif
+#else
+#if defined(__GNUC__)
+#pragma message("No definition for NOVA_EXPORT found [GNU/Clang]")
+#define NOVA_API __attribute__((visibility("default")))
+#elif defined(_MSC_VER)
+#pragma message("No definition for NOVA_EXPORT found [MSVC]")
 #define NOVA_API __declspec(dllimport)
+#else
+#pragma message("No definition for NOVA_EXPORT found [Unknown compiler]")
+#define NOVA_API
+#endif
 #endif
 
 namespace nova::renderer {

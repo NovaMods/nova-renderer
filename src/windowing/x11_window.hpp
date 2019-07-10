@@ -3,32 +3,30 @@
 #ifdef NOVA_LINUX
 
 #include <cstdint>
-
-#include <X11/Xlib.h>
-
 #include "nova_renderer/window.hpp"
+#include "nova_renderer/nova_settings.hpp"
 
 namespace nova::renderer {
-    class x11_window : public iwindow {
+    class X11Window final : public Window {
     private:
-        Window window;
+        ::Window window; // X11 window type!
         Display* display;
         bool should_window_close = false;
         Atom wm_protocols;
         Atom wm_delete_window;
 
     public:
-        explicit x11_window(uint32_t width, uint32_t height, const std::string& title);
+        explicit X11Window(const NovaSettings::WindowOptions &options);
 
-        x11_window(x11_window&& other) noexcept = delete;
-        x11_window& operator=(x11_window&& other) noexcept = delete;
+        X11Window(X11Window&& other) noexcept = delete;
+        X11Window& operator=(X11Window&& other) noexcept = delete;
 
-        x11_window(const x11_window& other) = delete;
-        x11_window& operator=(const x11_window& other) = delete;
+        X11Window(const X11Window& other) = delete;
+        X11Window& operator=(const X11Window& other) = delete;
 
-        virtual ~x11_window();
+        virtual ~X11Window();
 
-        Window& get_x11_window();
+        ::Window& get_x11_window();
         Display* get_display();
 
         void on_frame_end() override;

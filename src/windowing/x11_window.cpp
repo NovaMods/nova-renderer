@@ -9,7 +9,7 @@
 #include "x11_window.hpp"
 
 namespace nova::renderer {
-    x11_window::x11_window(uint32_t width, uint32_t height, const std::string& title) {
+    X11Window::X11Window(const NovaSettings::WindowOptions &options) {
         display = XOpenDisplay(nullptr);
         if(display == nullptr) {
             throw window_creation_error("Failed to open XDisplay");
@@ -22,13 +22,13 @@ namespace nova::renderer {
                                      RootWindow(display, screen), // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                                      50,
                                      50,
-                                     width,
-                                     height,
+                                     options.width,
+                                     options.height,
                                      1,
                                      BlackPixel(display, screen),  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                                      WhitePixel(display, screen)); // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 
-        XStoreName(display, window, title.c_str());
+        XStoreName(display, window, options.title.c_str());
 
         wm_protocols = XInternAtom(display, "WM_PROTOCOLS", 0);
         wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", 0);
@@ -38,17 +38,17 @@ namespace nova::renderer {
         XMapWindow(display, window);
     }
 
-    x11_window::~x11_window() {
+    X11Window::~X11Window() {
         XUnmapWindow(display, window);
         XDestroyWindow(display, window);
         XCloseDisplay(display);
     }
 
-    Window& x11_window::get_x11_window() { return window; }
+    ::Window& X11Window::get_x11_window() { return window; }
 
-    Display* x11_window::get_display() { return display; }
+    Display* X11Window::get_display() { return display; }
 
-    void x11_window::on_frame_end() {
+    void X11Window::on_frame_end() {
         XEvent event;
         while(XPending(display) != 0) {
             XNextEvent(display, &event);
@@ -66,10 +66,10 @@ namespace nova::renderer {
         }
     }
 
-    bool x11_window::should_close() const { return should_window_close; }
+    bool X11Window::should_close() const { return should_window_close; }
 
-    glm::uvec2 x11_window::get_window_size() const {
-        Window root_window;
+    glm::uvec2 X11Window::get_window_size() const {
+        ::Window root_window;
         int x_pos;
         int y_pos;
         uint32_t width;

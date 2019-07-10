@@ -54,6 +54,7 @@ namespace nova::renderer::rhi {
             case shaderpack::PrimitiveTopologyEnum::Lines:
                 return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
             case shaderpack::PrimitiveTopologyEnum::Triangles:
+            default: // else the compiler complains
                 return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         }
     }

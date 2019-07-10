@@ -1,4 +1,6 @@
 #pragma once
+
+#include <cstdint> // needed for uint****
 #include <vector>
 
 #include "nova_renderer/rhi_enums.hpp"

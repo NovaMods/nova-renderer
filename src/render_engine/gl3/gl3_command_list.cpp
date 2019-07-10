@@ -233,6 +233,10 @@ namespace nova::renderer::rhi {
             case Gl3CommandType::DrawIndexedMesh:
                 draw_indexed_mesh.~Gl3DrawIndexedMeshCommand();
                 break;
+
+            case Gl3CommandType::None:
+                // TODO
+                break;
         }
     }
 

@@ -255,7 +255,9 @@ if(NOVA_TREAT_WARNINGS_AS_ERRORS)
     if(MSVC)
         add_compile_options(/WX)
     else()
-        add_compile_options(-Werror)
+        # TODO: Consider removing the -Wno-error's when we are in a more complete state
+        add_compile_options(-Werror -Wno-error=unused-variable -Wno-error=unused-but-set-variable
+                -Wno-error=unused-parameter)
     endif()
 endif()
 

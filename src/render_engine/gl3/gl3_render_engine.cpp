@@ -422,6 +422,10 @@ namespace nova::renderer::rhi {
                 case Gl3CommandType::DrawIndexedMesh:
                     draw_indexed_mesh_impl(command.draw_indexed_mesh);
                     break;
+
+                case Gl3CommandType::None:
+                    NOVA_LOG(FATAL) << "Unimplemented: tried to submit none command buffer";
+                    break;
             }
         }
 
@@ -542,7 +546,7 @@ namespace nova::renderer::rhi {
         spirv_cross::CompilerGLSL compiler(spirv);
         const std::string glsl = compiler.compile();
         const char* glsl_c = glsl.c_str();
-        const GLint len = static_cast<const GLint>(glsl.size()); // SIGNED LENGTH WHOOOOOO
+        const GLint len = static_cast<GLint>(glsl.size()); // SIGNED LENGTH WHOOOOOO
 
         const GLuint shader = glCreateShader(shader_type);
         glShaderSource(shader, 1, &glsl_c, &len);
