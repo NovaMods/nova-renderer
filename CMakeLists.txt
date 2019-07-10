@@ -184,6 +184,8 @@ set(NOVA_SOURCE
 		src/memory/block_allocation_strategy.cpp
 		src/memory/bump_point_allocation_strategy.cpp
 		src/memory/bytes.cpp
+        src/memory/default_new.cpp
+        src/memory/default_new.hpp
 		src/memory/mallocator.cpp
 		src/memory/system_memory_allocator.cpp
 
