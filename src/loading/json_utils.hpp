@@ -12,7 +12,7 @@
 
 namespace nova::renderer {
     // Keeps the compiler happy
-    eastl::string to_string(const eastl::string& str);
+    std::string to_string(const eastl::string& str);
 
     /*!
      * \brief Retrieves an individual value from the provided JSON structure
@@ -23,9 +23,10 @@ namespace nova::renderer {
      */
     template <typename ValType, eastl::enable_if_t<!eastl::is_same_v<ValType, eastl::string>>** = nullptr>
     eastl::optional<ValType> get_json_value(const nlohmann::json& json_obj, const eastl::string& key) {
-        const auto& itr = json_obj.find(key.c_str());
+        const std::string key_std = key.c_str();
+        const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
-            auto& json_node = json_obj.at(key.c_str());
+            auto& json_node = json_obj.at(key_std);
             return eastl::optional<ValType>(json_node.get<ValType>());
         }
 
@@ -42,10 +43,11 @@ namespace nova::renderer {
      */
     template <typename ValType, eastl::enable_if_t<eastl::is_same_v<ValType, eastl::string>>** = nullptr>
     eastl::optional<ValType> get_json_value(const nlohmann::json& json_obj, const eastl::string& key, bool empty_means_not_present = false) {
-        const auto& itr = json_obj.find(key.c_str());
+        const std::string key_std = key.c_str();
+        const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
-            auto str = json_obj.at(key.c_str()).get<eastl::string>();
-            return (empty_means_not_present && str.empty()) ? eastl::optional<eastl::string>{} : eastl::optional<eastl::string>(str);
+            const auto str = json_obj.at(key_std).get<std::string>();
+            return (empty_means_not_present && str.empty()) ? eastl::optional<eastl::string>{} : eastl::optional<eastl::string>(str.c_str());
         }
 
         return eastl::optional<eastl::string>{};
@@ -61,13 +63,14 @@ namespace nova::renderer {
      */
     template <typename ValType>
     ValType get_json_value(const nlohmann::json& json_obj, const eastl::string& key, ValType default_value) {
-        const auto& itr = json_obj.find(ke.c_str() y);
+        const std::string key_std = key.c_str();
+        const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
-            auto& json_node = json_obj.at(key.c_str());
+            auto& json_node = json_obj.at(key_std);
             return json_node.get<ValType>();
         }
 
-        NOVA_LOG(DEBUG) << key.c_str() << " not found - using a default value";
+        NOVA_LOG(DEBUG) << key_std << " not found - using a default value";
         return default_value;
     }
 
@@ -82,8 +85,9 @@ namespace nova::renderer {
     template <typename ValType>
     eastl::optional<ValType> get_json_value(const nlohmann::json& json_obj,
                                           const eastl::string& key,
-                                          eastl::function<ValType(const nlohmann::json&)> deserializer) {
-        const auto& itr = json_obj.find(key.c_str());
+                                            eastl::function<ValType(const nlohmann::json&)> deserializer) {
+        const std::string key_std = key.c_str();
+        const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
             auto& json_node = json_obj.at(key.c_str());
             ValType val = deserializer(json_node);
@@ -107,9 +111,10 @@ namespace nova::renderer {
                            const eastl::string& key,
                            ValType default_value,
                            eastl::function<ValType(const nlohmann::json&)> deserializer) {
-        const auto& itr = json_obj.find(key.c_str());
+        const std::string key_std = key.c_str();
+        const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
-            auto& json_node = json_obj.at(key.c_str());
+            auto& json_node = json_obj.at(key_std);
             ValType value = deserializer(json_node);
             return value;
         }
@@ -129,9 +134,10 @@ namespace nova::renderer {
      */
     template <typename ValType>
     eastl::vector<ValType> get_json_array(const nlohmann::json& json_obj, const eastl::string& key) {
-        const auto& itr = json_obj.find(key.c_str());
+        const std::string key_std = key.c_str();
+        const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
-            auto& json_node = json_obj.at(key.c_str());
+            auto& json_node = json_obj.at(key_std);
             eastl::vector<ValType> vec;
             vec.reserve(json_node.size());
 
@@ -156,10 +162,11 @@ namespace nova::renderer {
     template <typename ValType>
     eastl::vector<ValType> get_json_array(const nlohmann::json& json_obj,
                                         const eastl::string& key,
-                                        eastl::function<ValType(const nlohmann::json&)> deserializer) {
-        const auto& itr = json_obj.find(key.c_str());
+                                          eastl::function<ValType(const nlohmann::json&)> deserializer) {
+        const std::string key_std = key.c_str();
+        const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
-            auto& json_node = json_obj.at(key.c_str());
+            auto& json_node = json_obj.at(key_std);
             eastl::vector<ValType> vec;
             vec.reserve(json_node.size());
 

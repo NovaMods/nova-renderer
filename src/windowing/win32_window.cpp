@@ -47,8 +47,7 @@ namespace nova::renderer {
                                         this);
         if(window_handle == nullptr) {
             const auto windows_error = get_last_windows_error();
-            NOVA_LOG(FATAL) << "Could not create window: " << windows_error;
-            throw window_creation_error("Could not create window: " + windows_error);
+            NOVA_LOG(FATAL) << "Could not create window: " << windows_error.c_str();
         }
     }
 
@@ -68,9 +67,7 @@ namespace nova::renderer {
         window_class_id = RegisterClassExW(&window_class);
         if(window_class_id == 0) {
             const eastl::string windows_err = get_last_windows_error();
-            NOVA_LOG(FATAL) << "Could not register window class: " << windows_err;
-
-            throw window_creation_error("Could not register window class");
+            NOVA_LOG(FATAL) << "Could not register window class: " << windows_err.c_str();
         }
     }
 

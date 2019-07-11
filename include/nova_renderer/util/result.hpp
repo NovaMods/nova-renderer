@@ -17,9 +17,9 @@ namespace nova::renderer {
 
         NovaError() = default;
 
-        explicit NovaError(eastl::string message);
+        explicit NovaError(const eastl::string& message);
 
-        NovaError(eastl::string message, NovaError cause);
+        NovaError(const eastl::string& message, NovaError cause);
 
         [[nodiscard]] eastl::string to_string() const;
     };

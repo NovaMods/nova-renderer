@@ -126,5 +126,5 @@ namespace nova::renderer::rhi {
 #pragma endregion
     };
 
-    Result<GLuint> compile_shader(const eastl::vector<uint32_t>& spirv, GLenum shader_type);
+    Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, GLenum shader_type);
 } // namespace nova::renderer::rhi

@@ -66,7 +66,7 @@ namespace nova::renderer::shaderpack {
         // Check required items
         report.errors.reserve(required_graphics_pipeline_fields.size());
         for(const eastl::string& field_name : required_graphics_pipeline_fields) {
-            const auto& itr = pipeline_json.find(field_name);
+            const auto& itr = pipeline_json.find(field_name.c_str());
             if(itr == pipeline_json.end()) {
                 report.errors.emplace_back(pipeline_msg(name, field_name));
             }

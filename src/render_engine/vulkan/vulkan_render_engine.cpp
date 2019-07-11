@@ -243,7 +243,7 @@ namespace nova::renderer::rhi {
         if(writes_to_backbuffer) {
             if(data.texture_outputs.size() > 1) {
                 NOVA_LOG(ERROR)
-                    << "Pass " << data.name
+                    << "Pass " << data.name.c_str()
                     << " writes to the backbuffer, and other textures. Passes that write to the backbuffer are not allowed to write to any other textures";
             }
         }
@@ -524,7 +524,7 @@ namespace nova::renderer::rhi {
 
     Result<Pipeline*> VulkanRenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
                                                           const shaderpack::PipelineCreateInfo& data) {
-        NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name;
+        NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name.c_str();
 
         const VulkanPipelineInterface* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
 
@@ -716,7 +716,7 @@ namespace nova::renderer::rhi {
 
         VkResult result = vkCreateGraphicsPipelines(device, nullptr, 1, &pipeline_create_info, nullptr, &vk_pipeline->pipeline);
         if(result != VK_SUCCESS) {
-            return Result<Pipeline*>(MAKE_ERROR("Could not compile pipeline {:s}", data.name));
+            return Result<Pipeline*>(MAKE_ERROR("Could not compile pipeline {:s}", data.name.c_str()));
         }
 
         if(settings.debug.enabled) {
@@ -726,7 +726,7 @@ namespace nova::renderer::rhi {
             object_name.objectHandle = reinterpret_cast<uint64_t>(vk_pipeline->pipeline);
             object_name.pObjectName = data.name.c_str();
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
-            NOVA_LOG(INFO) << "Set pipeline " << vk_pipeline->pipeline << " to have name " << data.name;
+            NOVA_LOG(INFO) << "Set pipeline " << vk_pipeline->pipeline << " to have name " << data.name.c_str();
         }
 
         return Result(static_cast<Pipeline*>(vk_pipeline));
@@ -847,7 +847,7 @@ namespace nova::renderer::rhi {
             object_name.objectHandle = reinterpret_cast<uint64_t>(texture->image);
             object_name.pObjectName = info.name.c_str();
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
-            NOVA_LOG(INFO) << "Set image " << texture->image << " to have name " << info.name;
+            NOVA_LOG(INFO) << "Set image " << texture->image << " to have name " << info.name.c_str();
         }
 
         return texture;
@@ -1182,7 +1182,8 @@ namespace nova::renderer::rhi {
         }
 
         if(gpu.phys_device == nullptr) {
-            throw render_engine_initialization_exception("Failed to find good GPU");
+           NOVA_LOG(ERROR) << "Failed to find good GPU";
+            return;
         }
 
         vkGetPhysicalDeviceFeatures(gpu.phys_device, &gpu.supported_features);
@@ -1384,14 +1385,14 @@ namespace nova::renderer::rhi {
                                                                              VkDebugUtilsMessageTypeFlagsEXT messageTypes,
                                                                              const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                                                              void* /* pUserData */) {
-        eastl::string type = "General";
+        std::string type = "General";
         if((messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) != 0U) {
             type = "Validation";
         } else if((messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) != 0U) {
             type = "Performance";
         }
 
-        eastl::stringstream ss;
+        std::stringstream ss;
         ss << "[" << type << "]";
         if(pCallbackData->queueLabelCount != 0) {
             ss << " Queues: ";
@@ -1431,7 +1432,7 @@ namespace nova::renderer::rhi {
             ss << pCallbackData->pMessage;
         }
 
-        const eastl::string msg = ss.str();
+        const std::string msg = ss.str();
 
         if((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
             NOVA_LOG(ERROR) << "[" << type << "] " << msg;

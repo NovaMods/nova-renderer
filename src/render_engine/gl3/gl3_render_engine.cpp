@@ -184,9 +184,11 @@ namespace nova::renderer::rhi {
         GLint link_log_length;
         glGetProgramiv(pipeline->id, GL_INFO_LOG_LENGTH, &link_log_length);
         if(link_log_length > 0) {
-            eastl::string program_link_log;
-            program_link_log.reserve(link_log_length);
-            glGetProgramInfoLog(pipeline->id, link_log_length, nullptr, program_link_log.data());
+            std::string program_link_log_std;
+            program_link_log_std.reserve(link_log_length);
+            glGetProgramInfoLog(pipeline->id, link_log_length, nullptr, program_link_log_std.data());
+
+            const eastl::string program_link_log = program_link_log_std.c_str();
 
             pipeline_creation_errors.push_back(program_link_log);
 
@@ -324,7 +326,7 @@ namespace nova::renderer::rhi {
     void Gl3RenderEngine::wait_for_fences(const eastl::vector<Fence*> fences) {
         for(Fence* fence : fences) {
             Gl3Fence* gl_fence = static_cast<Gl3Fence*>(fence);
-            eastl::unique_lock lck(gl_fence->mutex);
+            std::unique_lock lck(gl_fence->mutex);
             gl_fence->cv.wait(lck, [&gl_fence] { return gl_fence->signaled; });
         }
     }
@@ -332,7 +334,7 @@ namespace nova::renderer::rhi {
     void Gl3RenderEngine::reset_fences(const eastl::vector<Fence*>& fences) {
         for(Fence* fence : fences) {
             Gl3Fence* gl_fence = static_cast<Gl3Fence*>(fence);
-            eastl::unique_lock guard(gl_fence->mutex);
+            std::unique_lock guard(gl_fence->mutex);
             gl_fence->signaled = false;
         }
     }
@@ -380,7 +382,7 @@ namespace nova::renderer::rhi {
 
         for(Semaphore* semaphore : wait_semaphores) {
             Gl3Semaphore* gl_semaphore = static_cast<Gl3Semaphore*>(semaphore);
-            eastl::unique_lock lck(gl_semaphore->mutex);
+            std::unique_lock lck(gl_semaphore->mutex);
             gl_semaphore->cv.wait(lck, [&gl_semaphore] { return gl_semaphore->signaled; });
         }
 
@@ -431,13 +433,13 @@ namespace nova::renderer::rhi {
 
         for(Semaphore* semaphore : signal_semaphores) {
             Gl3Semaphore* gl_semaphore = static_cast<Gl3Semaphore*>(semaphore);
-            eastl::unique_lock lck(gl_semaphore->mutex);
+            std::unique_lock lck(gl_semaphore->mutex);
             gl_semaphore->signaled = true;
             gl_semaphore->cv.notify_all();
         }
 
         Gl3Fence* fence = static_cast<Gl3Fence*>(fence_to_signal);
-        eastl::unique_lock lck(fence->mutex);
+        std::unique_lock lck(fence->mutex);
         fence->signaled = true;
         fence->cv.notify_all();
     }
@@ -542,9 +544,9 @@ namespace nova::renderer::rhi {
         glDrawArraysInstanced(GL_TRIANGLES, 0, draw_indexed_mesh.num_instances, draw_indexed_mesh.num_indices);
     }
 
-    Result<GLuint> compile_shader(const eastl::vector<uint32_t>& spirv, const GLenum shader_type) {
+    Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, const GLenum shader_type) {
         spirv_cross::CompilerGLSL compiler(spirv);
-        const eastl::string glsl = compiler.compile();
+        const eastl::string glsl = compiler.compile().c_str();
         const char* glsl_c = glsl.c_str();
         const GLint len = static_cast<GLint>(glsl.size()); // SIGNED LENGTH WHOOOOOO
 
@@ -555,10 +557,10 @@ namespace nova::renderer::rhi {
         GLint compile_log_length;
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &compile_log_length);
         if(compile_log_length > 0) {
-            eastl::string compile_log;
+            std::string compile_log;
             compile_log.reserve(compile_log_length);
             glGetShaderInfoLog(shader, compile_log_length, nullptr, compile_log.data());
-            return Result<GLuint>(NovaError(compile_log));
+            return Result<GLuint>(NovaError(compile_log.c_str()));
         }
 
         return Result(shader);

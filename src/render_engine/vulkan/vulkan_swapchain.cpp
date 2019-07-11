@@ -63,7 +63,7 @@ namespace nova::renderer::rhi {
             return 0;
         }
         if(acquire_result != VK_SUCCESS) {
-            NOVA_LOG(ERROR) << __FILE__ << ":" << __LINE__ << "=> " << vk_result_to_string(acquire_result);
+            NOVA_LOG(ERROR) << __FILE__ << ":" << __LINE__ << "=> " << std::to_string(acquire_result);
         }
 
         return acquired_image_idx;

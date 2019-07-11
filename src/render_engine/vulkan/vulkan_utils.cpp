@@ -231,7 +231,7 @@ namespace nova::renderer::rhi {
         return vk_flags;
     }
 
-    eastl::string vk_result_to_string(VkResult result) {
+    std::string to_string(VkResult result) {
         switch(result) {
             case VK_SUCCESS:
                 return "VK_SUCCESS";
@@ -302,7 +302,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    eastl::string to_string(VkObjectType obj_type) {
+    std::string to_string(VkObjectType obj_type) {
         switch(obj_type) {
             case VK_OBJECT_TYPE_UNKNOWN:
                 return "Unknown";

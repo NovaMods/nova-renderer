@@ -5,7 +5,7 @@
 #ifndef NOVA_RENDERER_VULKAN_UTILS_HPP
 #define NOVA_RENDERER_VULKAN_UTILS_HPP
 
-#include <EASTL/string.h>
+#include <string>
 #include <EASTL/vector.h>
 #include <vulkan/vulkan.h>
 
@@ -30,9 +30,9 @@ namespace nova::renderer::rhi {
 
 	VkShaderStageFlags to_vk_shader_stage_flags(const ShaderStageFlags flags);
 
-    eastl::string vk_result_to_string(VkResult result);
+    std::string to_string(VkResult result);
 
-    eastl::string to_string(VkObjectType obj_type);
+    std::string to_string(VkObjectType obj_type);
 
     eastl::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions();
 
@@ -49,7 +49,7 @@ namespace nova::renderer::rhi {
     {                                                                                                                                      \
         const VkResult result = (expr);                                                                                                    \
         if(result != VK_SUCCESS) {                                                                                                         \
-            NOVA_LOG(ERROR) << __FILE__ << ":" << __LINE__ << "=> " << #expr << "=" << vk_result_to_string(result);                        \
+            NOVA_LOG(ERROR) << __FILE__ << ":" << __LINE__ << "=> " << #expr << "=" << to_string(result);                                  \
         }                                                                                                                                  \
     }
 #else

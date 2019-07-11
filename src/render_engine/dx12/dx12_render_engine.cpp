@@ -47,7 +47,6 @@ namespace nova::renderer::rhi {
         const HRESULT hr = device->CreateDescriptorHeap(&rtv_heap_descriptor, IID_PPV_ARGS(&rtv_descriptor_heap));
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create descriptor heap for the RTV";
-            throw render_engine_initialization_exception("Could not create descriptor head for the RTV");
         }
     }
 
@@ -604,8 +603,10 @@ namespace nova::renderer::rhi {
                     break;
             }
 
-            NOVA_LOG(ERROR) << "Could not create texture " << info.name << ": Error code " << hr
-                            << ", Error description: " << error_description << ", Windows error: '" << get_last_windows_error() << "'";
+            NOVA_LOG(ERROR) << "Could not create texture " << info.name.c_str() << ": Error code " << hr
+                            << ", Error description: " << error_description.c_str() << ", Windows error: '"
+                            << get_last_windows_error().c_str()
+                            << "'";
 
             return nullptr;
         }
@@ -878,16 +879,16 @@ namespace nova::renderer::rhi {
         eastl::unordered_map<eastl::string, spirv_cross::Resource> spirv_sampled_images;
         spirv_sampled_images.reserve(resources.sampled_images.size());
         for(const spirv_cross::Resource& sampled_image : resources.sampled_images) {
-            spirv_sampled_images[sampled_image.name] = sampled_image;
+            spirv_sampled_images[sampled_image.name.c_str()] = sampled_image;
         }
 
         eastl::unordered_map<eastl::string, spirv_cross::Resource> spirv_uniform_buffers;
         spirv_uniform_buffers.reserve(resources.uniform_buffers.size());
         for(const spirv_cross::Resource& uniform_buffer : resources.uniform_buffers) {
-            spirv_uniform_buffers[uniform_buffer.name] = uniform_buffer;
+            spirv_uniform_buffers[uniform_buffer.name.c_str()] = uniform_buffer;
         }
 
-        eastl::string shader_hlsl = shader_compiler.compile();
+        eastl::string shader_hlsl = shader_compiler.compile().c_str();
 
         const fs::path& filename = shader.filename;
         fs::path debug_path = filename.filename();
@@ -914,19 +915,21 @@ namespace nova::renderer::rhi {
             std::stringstream ss;
             ss << "Could not compile vertex shader for pipeline " << filename.string() << ": "
                << static_cast<char*>(shader_compile_errors->GetBufferPointer());
-            throw shaderpack::shader_compilation_failed(ss.str());
+            return {};
         }
 
         ComPtr<ID3D12ShaderReflection> shader_reflector;
         hr = D3DReflect(shader_blob->GetBufferPointer(), shader_blob->GetBufferSize(), IID_PPV_ARGS(&shader_reflector));
         if(FAILED(hr)) {
-            throw shaderpack::shader_reflection_failed("Could not create reflector, error code " + eastl::to_string(hr));
+            NOVA_LOG(ERROR) << "Could not create reflector, error code " << std::to_string(hr);
+            return {};
         }
 
         D3D12_SHADER_DESC shader_desc;
         hr = shader_reflector->GetDesc(&shader_desc);
         if(FAILED(hr)) {
-            throw shaderpack::shader_reflection_failed("Could not get shader description");
+            NOVA_LOG(ERROR) << "Could not get shader description";
+            return {};
         }
 
         eastl::unordered_map<eastl::string, D3D12_SHADER_INPUT_BIND_DESC> shader_inputs(shader_desc.BoundResources);
@@ -936,7 +939,8 @@ namespace nova::renderer::rhi {
             D3D12_SHADER_INPUT_BIND_DESC bind_desc;
             hr = shader_reflector->GetResourceBindingDesc(i, &bind_desc);
             if(FAILED(hr)) {
-                throw shaderpack::shader_reflection_failed("Could not get description for bind point " + eastl::to_string(i));
+                NOVA_LOG(ERROR) << "Could not get description for bind point " << std::to_string(i);
+                return {};
             }
 
             D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type = {};
