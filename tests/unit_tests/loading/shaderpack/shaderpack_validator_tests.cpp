@@ -1,5 +1,13 @@
-#include "../../../../src/loading/shaderpack/shaderpack_validator.hpp"
+/*!
+ * \author ddubois
+ * \date 9-Oct-2018
+ */
+
+#include "nova_renderer/util/utils.hpp"
+
 #include "../../../src/general_test_setup.hpp"
+
+#include "../../../../src/loading/shaderpack/shaderpack_validator.hpp"
 #undef TEST
 #include <gtest/gtest.h>
 
@@ -2067,7 +2075,7 @@ TEST(TextureValidator, TextureFormatWarningsPropagate) {
     ASSERT_EQ(report.warnings.size(), 1);
     EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of '\"RGBA8\"' will be used");
 
-    EXPECT_EQ(texture.at("format").at("pixelFormat").get<std::string>(), "RGBA8");
+    EXPECT_EQ(texture.at("format").at("pixelFormat").get<eastl::string>(), "RGBA8");
 }
 
 /********************************************
@@ -2086,7 +2094,8 @@ TEST(TextureFormatValidator, NoErrorsOrWarnings) {
     };
     // clang-format on
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format, "TestTexture");
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
+                                                                                                                    "TestTexture");
     nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
@@ -2104,7 +2113,8 @@ TEST(TextureFormatValidator, PixelFormatMissing) {
     };
     // clang-format on
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format, "TestTexture");
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
+                                                                                                                    "TestTexture");
     nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
@@ -2112,7 +2122,7 @@ TEST(TextureFormatValidator, PixelFormatMissing) {
     ASSERT_EQ(report.warnings.size(), 1);
     EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of '\"RGBA8\"' will be used");
 
-    EXPECT_EQ(texture_format.at("pixelFormat").get<std::string>(), "RGBA8");
+    EXPECT_EQ(texture_format.at("pixelFormat").get<eastl::string>(), "RGBA8");
 }
 
 TEST(TextureFormatValidator, DimensionTypeMissing) {
@@ -2126,7 +2136,8 @@ TEST(TextureFormatValidator, DimensionTypeMissing) {
     };
     // clang-format on
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format, "TestTexture");
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
+                                                                                                                    "TestTexture");
     nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
@@ -2135,7 +2146,7 @@ TEST(TextureFormatValidator, DimensionTypeMissing) {
     EXPECT_EQ(report.warnings[0],
               "Format of texture TestTexture: Missing field dimensionType. A default value of '\"Absolute\"' will be used");
 
-    EXPECT_EQ(texture_format.at("dimensionType").get<std::string>(), "Absolute");
+    EXPECT_EQ(texture_format.at("dimensionType").get<eastl::string>(), "Absolute");
 }
 
 TEST(TextureFormatValidator, WidthMissing) {
@@ -2149,7 +2160,8 @@ TEST(TextureFormatValidator, WidthMissing) {
     };
     // clang-format on
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format, "TestTexture");
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
+                                                                                                                    "TestTexture");
     nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
@@ -2169,7 +2181,8 @@ TEST(TextureFormatValidator, HeightMissing) {
     };
     // clang-format on
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format, "TestTexture");
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
+                                                                                                                    "TestTexture");
     nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
@@ -2457,7 +2470,7 @@ TEST(MaterialValidator, PassesEmptyArray) {
     // clang-format off
     nlohmann::json material = {
             {"name", "TestMaterial"},
-            {"passes", std::vector<std::string>{}},
+            {"passes", eastl::vector<eastl::string>{}},
             {"filter", "geometry_type::block"}
     };
     // clang-format on

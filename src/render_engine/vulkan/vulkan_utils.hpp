@@ -1,9 +1,13 @@
-#pragma once
+//
+// Created by jannis on 30.08.18.
+//
 
-#include <string>
-#include <vector>
+#ifndef NOVA_RENDERER_VULKAN_UTILS_HPP
+#define NOVA_RENDERER_VULKAN_UTILS_HPP
 
-#include "vulkan.hpp"
+#include <EASTL/string.h>
+#include <EASTL/vector.h>
+#include <vulkan/vulkan.h>
 
 #include "nova_renderer/command_list.hpp"
 
@@ -26,13 +30,13 @@ namespace nova::renderer::rhi {
 
 	VkShaderStageFlags to_vk_shader_stage_flags(const ShaderStageFlags flags);
 
-    std::string vk_result_to_string(VkResult result);
+    eastl::string vk_result_to_string(VkResult result);
 
-    std::string to_string(VkObjectType obj_type);
+    eastl::string to_string(VkObjectType obj_type);
 
-    std::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions();
+    eastl::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions();
 
-    std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
+    eastl::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
 
     bool operator&(const ShaderStageFlags& lhs, const ShaderStageFlags& rhs);
 } // namespace nova::renderer
@@ -51,3 +55,4 @@ namespace nova::renderer::rhi {
 #else
 #define NOVA_CHECK_RESULT(expr) expr
 #endif
+#endif // NOVA_RENDERER_VULKAN_UTILS_HPP

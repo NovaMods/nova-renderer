@@ -1,9 +1,11 @@
+/*!
+ * \author ddubois
+ * \date 17-Sep-18.
+ */
+
 #include "render_graph_builder.hpp"
-
-#include <unordered_set>
-
+#include <EASTL/unordered_set.h>
 #include <minitrace/minitrace.h>
-
 #include "../../util/logger.hpp"
 
 namespace nova::renderer::shaderpack {
@@ -22,10 +24,10 @@ namespace nova::renderer::shaderpack {
      * \param depth The depth in the tree that we're at. If this number ever grows bigger than the total number of
      * passes, there's a circular dependency somewhere in the render graph. This is Bad and we hate it
      */
-    void add_dependent_passes(const std::string& pass_name,
-                              const std::unordered_map<std::string, RenderPassCreateInfo>& passes,
-                              std::vector<std::string>& ordered_passes,
-                              const std::unordered_map<std::string, std::vector<std::string>>& resource_to_write_pass,
+    void add_dependent_passes(const eastl::string& pass_name,
+                              const eastl::unordered_map<eastl::string, RenderPassCreateInfo>& passes,
+                              eastl::vector<eastl::string>& ordered_passes,
+                              const eastl::unordered_map<eastl::string, eastl::vector<eastl::string>>& resource_to_write_pass,
                               uint32_t depth);
 
     bool Range::has_writer() const { return first_write_pass <= last_write_pass; }
@@ -42,10 +44,10 @@ namespace nova::renderer::shaderpack {
     unsigned Range::last_used_pass() const {
         unsigned last_pass = 0;
         if(has_writer()) {
-            last_pass = std::max(last_pass, last_write_pass);
+            last_pass = eastl::max(last_pass, last_write_pass);
         }
         if(has_reader()) {
-            last_pass = std::max(last_pass, last_read_pass);
+            last_pass = eastl::max(last_pass, last_read_pass);
         }
         return last_pass;
     }
@@ -53,10 +55,10 @@ namespace nova::renderer::shaderpack {
     unsigned Range::first_used_pass() const {
         unsigned first_pass = ~0U;
         if(has_writer()) {
-            first_pass = std::min(first_pass, first_write_pass);
+            first_pass = eastl::min(first_pass, first_write_pass);
         }
         if(has_reader()) {
-            first_pass = std::min(first_pass, first_read_pass);
+            first_pass = eastl::min(first_pass, first_read_pass);
         }
         return first_pass;
     }
@@ -74,18 +76,18 @@ namespace nova::renderer::shaderpack {
         return left || right;
     }
 
-    Result<std::vector<RenderPassCreateInfo>> order_passes(const std::vector<RenderPassCreateInfo>& passes) {
+    Result<eastl::vector<RenderPassCreateInfo>> order_passes(const eastl::vector<RenderPassCreateInfo>& passes) {
         MTR_SCOPE("Renderpass", "order_passes");
 
         NOVA_LOG(DEBUG) << "Executing Pass Scheduler";
 
-        std::unordered_map<std::string, RenderPassCreateInfo> render_passes_to_order;
+        eastl::unordered_map<eastl::string, RenderPassCreateInfo> render_passes_to_order;
         render_passes_to_order.reserve(passes.size());
         for(const RenderPassCreateInfo& create_info : passes) {
             render_passes_to_order.emplace(create_info.name, create_info);
         }
 
-        std::vector<std::string> ordered_passes;
+        eastl::vector<eastl::string> ordered_passes;
         ordered_passes.reserve(passes.size());
 
         /*
@@ -95,7 +97,7 @@ namespace nova::renderer::shaderpack {
         NOVA_LOG(TRACE) << "Collecting passes that write to each resource...";
         // Maps from resource name to pass that writes to that resource, then from resource name to pass that reads from
         // that resource
-        auto resource_to_write_pass = std::unordered_map<std::string, std::vector<std::string>>{};
+        auto resource_to_write_pass = eastl::unordered_map<eastl::string, eastl::vector<eastl::string>>{};
 
         for(const auto& pass : passes) {
             for(const auto& output : pass.texture_outputs) {
@@ -116,7 +118,7 @@ namespace nova::renderer::shaderpack {
         if(resource_to_write_pass.find("Backbuffer") == resource_to_write_pass.end()) {
             NOVA_LOG(ERROR)
                 << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
-            return Result<std::vector<RenderPassCreateInfo>>(NovaError("Failed to order passes because no backbuffer was found"));
+            return Result<eastl::vector<RenderPassCreateInfo>>(NovaError("Failed to order passes because no backbuffer was found"));
         }
 
         auto backbuffer_writes = resource_to_write_pass["Backbuffer"];
@@ -126,7 +128,7 @@ namespace nova::renderer::shaderpack {
             add_dependent_passes(pass_name, render_passes_to_order, ordered_passes, resource_to_write_pass, 1);
         }
 
-        std::reverse(ordered_passes.begin(), ordered_passes.end());
+        reverse(ordered_passes.begin(), ordered_passes.end());
 
         // We're going to loop through the original list of passes and remove them from the original list of passes
         // We want to keep the original passes around
@@ -135,7 +137,7 @@ namespace nova::renderer::shaderpack {
         // It loops through the ordered passes. When it sees the name of a new pass, it writes the pass to
         // ordered_passes and increments the write position. After all the passes are written, we remove all the
         // passes after the last one we wrote to, shrinking the list of ordered passes to only include the exact passes we want
-        std::unordered_set<std::string> seen;
+        eastl::unordered_set<eastl::string> seen;
 
         auto output_itr = ordered_passes.begin();
         for(const auto& pass : ordered_passes) {
@@ -150,24 +152,23 @@ namespace nova::renderer::shaderpack {
         // Granite does some reordering to try and find a submission order that has the fewest pipeline barriers. Not
         // gonna worry about that now
 
-        std::vector<RenderPassCreateInfo> passes_in_submission_order;
+        eastl::vector<RenderPassCreateInfo> passes_in_submission_order;
         passes_in_submission_order.reserve(ordered_passes.size());
 
-        for(const std::string& pass_name : ordered_passes) {
+        for(const eastl::string& pass_name : ordered_passes) {
             passes_in_submission_order.push_back(render_passes_to_order.at(pass_name));
         }
 
         return Result(passes_in_submission_order);
     }
 
-    void add_dependent_passes(const std::string& pass_name,
-                              const std::unordered_map<std::string, RenderPassCreateInfo>& passes,
-                              std::vector<std::string>& ordered_passes,
-                              const std::unordered_map<std::string, std::vector<std::string>>& resource_to_write_pass,
+    void add_dependent_passes(const eastl::string& pass_name,
+                              const eastl::unordered_map<eastl::string, RenderPassCreateInfo>& passes,
+                              eastl::vector<eastl::string>& ordered_passes,
+                              const eastl::unordered_map<eastl::string, eastl::vector<eastl::string>>& resource_to_write_pass,
                               const uint32_t depth) {
         if(depth > passes.size()) {
             NOVA_LOG(ERROR) << "Circular render graph detected! Please fix your render graph to not have circular dependencies";
-            throw circular_rendergraph_exception("Render graph has circular dependencies");
         }
 
         const auto& pass = passes.at(pass_name);
@@ -181,7 +182,8 @@ namespace nova::renderer::shaderpack {
         for(const auto& texture_name : pass.texture_inputs) {
             if(resource_to_write_pass.find(texture_name) == resource_to_write_pass.end()) {
                 // TODO: Ignore the implicitly defined resources
-                NOVA_LOG(ERROR) << "Pass " << pass_name << " reads from resource " << texture_name << ", but nothing writes to it";
+                NOVA_LOG(ERROR) << "Pass " << pass_name.c_str() << " reads from resource " << texture_name.c_str()
+                                << ", but nothing writes to it";
             } else {
                 const auto& write_passes = resource_to_write_pass.at(texture_name);
                 ordered_passes.insert(ordered_passes.end(), write_passes.begin(), write_passes.end());
@@ -194,7 +196,8 @@ namespace nova::renderer::shaderpack {
 
         for(const auto& buffer_name : pass.input_buffers) {
             if(resource_to_write_pass.find(buffer_name) == resource_to_write_pass.end()) {
-                NOVA_LOG(ERROR) << "Pass " << pass_name << " reads from buffer " << buffer_name << ", but no passes write to it";
+                NOVA_LOG(ERROR) << "Pass " << pass_name.c_str() << " reads from buffer " << buffer_name.c_str()
+                                << ", but no passes write to it";
             } else {
                 const auto& write_passes = resource_to_write_pass.at(buffer_name);
                 ordered_passes.insert(ordered_passes.end(), write_passes.begin(), write_passes.end());
@@ -206,9 +209,9 @@ namespace nova::renderer::shaderpack {
         }
     }
 
-    void determine_usage_order_of_textures(const std::vector<RenderPassCreateInfo>& passes,
-                                           std::unordered_map<std::string, Range>& resource_used_range,
-                                           std::vector<std::string>& resources_in_order) {
+    void determine_usage_order_of_textures(const eastl::vector<RenderPassCreateInfo>& passes,
+                                           eastl::unordered_map<eastl::string, Range>& resource_used_range,
+                                           eastl::vector<eastl::string>& resources_in_order) {
         uint32_t pass_idx = 0;
         for(const auto& pass : passes) {
             // color attachments
@@ -221,7 +224,7 @@ namespace nova::renderer::shaderpack {
                     tex_range.last_write_pass = pass_idx;
                 }
 
-                if(std::find(resources_in_order.begin(), resources_in_order.end(), input) == resources_in_order.end()) {
+                if(eastl::find(resources_in_order.begin(), resources_in_order.end(), input) == resources_in_order.end()) {
                     resources_in_order.push_back(input);
                 }
             }
@@ -236,7 +239,7 @@ namespace nova::renderer::shaderpack {
                         tex_range.last_write_pass = pass_idx;
                     }
 
-                    if(std::find(resources_in_order.begin(), resources_in_order.end(), output.name) == resources_in_order.end()) {
+                    if(eastl::find(resources_in_order.begin(), resources_in_order.end(), output.name) == resources_in_order.end()) {
                         resources_in_order.push_back(output.name);
                     }
                 }
@@ -246,16 +249,16 @@ namespace nova::renderer::shaderpack {
         }
     }
 
-    std::unordered_map<std::string, std::string> determine_aliasing_of_textures(
-        const std::unordered_map<std::string, TextureCreateInfo>& textures,
-        const std::unordered_map<std::string, Range>& resource_used_range,
-        const std::vector<std::string>& resources_in_order) {
-        std::unordered_map<std::string, std::string> aliases;
+    eastl::unordered_map<eastl::string, eastl::string> determine_aliasing_of_textures(
+        const eastl::unordered_map<eastl::string, TextureCreateInfo>& textures,
+        const eastl::unordered_map<eastl::string, Range>& resource_used_range,
+        const eastl::vector<eastl::string>& resources_in_order) {
+        eastl::unordered_map<eastl::string, eastl::string> aliases;
         aliases.reserve(resources_in_order.size());
 
         for(size_t i = 0; i < resources_in_order.size(); i++) {
             const auto& to_alias_name = resources_in_order[i];
-            NOVA_LOG(TRACE) << "Determining if we can alias `" << to_alias_name << "`. Does it exist? "
+            NOVA_LOG(TRACE) << "Determining if we can alias `" << to_alias_name.c_str() << "`. Does it exist? "
                             << (textures.find(to_alias_name) != textures.end());
             if(to_alias_name == "Backbuffer" || to_alias_name == "backbuffer") {
                 // Yay special cases!
@@ -267,7 +270,7 @@ namespace nova::renderer::shaderpack {
             // Only try to alias with lower-indexed resources
             for(size_t j = 0; j < i; j++) {
                 NOVA_LOG(TRACE) << "Trying to alias it with resource at index " << j << " out of " << resources_in_order.size();
-                const std::string& try_alias_name = resources_in_order[j];
+                const eastl::string& try_alias_name = resources_in_order[j];
                 if(resource_used_range.at(to_alias_name).is_disjoint_with(resource_used_range.at(try_alias_name))) {
                     // They can be aliased if they have the same format
                     const auto& try_alias_format = textures.at(try_alias_name).format;

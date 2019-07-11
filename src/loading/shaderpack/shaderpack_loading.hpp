@@ -1,19 +1,16 @@
-#pragma once
+/*!
+ * \author ddubois
+ * \date 21-Aug-18.
+ */
 
-#include <future>
+#ifndef NOVA_RENDERER_SHADERPACK_LOADING_HPP
+#define NOVA_RENDERER_SHADERPACK_LOADING_HPP
 
-#include <nova_renderer/shaderpack_data.hpp>
-#include <nova_renderer/util/filesystem.hpp>
+#include "nova_renderer/shaderpack_data.hpp"
+#include "nova_renderer/util/filesystem.hpp"
 
 
 namespace nova::renderer::shaderpack {
-
-    NOVA_EXCEPTION(shader_compilation_failed);
-    NOVA_EXCEPTION(shader_reflection_failed);
-    NOVA_EXCEPTION(shader_layout_creation_failed);
-    NOVA_EXCEPTION(pipeline_load_failed);
-    NOVA_EXCEPTION(material_load_failed);
-
     /*!
      * \brief Loads all the data for a single shaderpack
      *
@@ -29,5 +26,7 @@ namespace nova::renderer::shaderpack {
      * \param shaderpack_name The name of the shaderpack to loads
      * \return The shaderpack, if it can be loaded, or an empty optional if it cannot
      */
-    ShaderpackData load_shaderpack_data(const fs::path& shaderpack_name);
+    ShaderpackData NOVA_API load_shaderpack_data(const fs::path& shaderpack_name);
 } // namespace nova::renderer
+
+#endif // NOVA_RENDERER_SHADERPACK_LOADING_HPP

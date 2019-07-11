@@ -9,10 +9,10 @@ using namespace bvestl::polyalloc::operators;
 
 namespace nova::renderer {
     namespace rhi {
-        struct DeviceMemory;
+        struct NOVA_API DeviceMemory;
     }
 
-    struct DeviceMemoryAllocation {
+    struct NOVA_API DeviceMemoryAllocation {
         rhi::DeviceMemory* memory = nullptr;
         bvestl::polyalloc::AllocationInfo allocation_info;
     };
@@ -21,7 +21,7 @@ namespace nova::renderer {
      * \brief Couples an allocation strategy with a device memory object, allowing you to subdivide the device memory for use in individual
      * buffers, textures, etc
      */
-    struct DeviceMemoryResource {
+    struct NOVA_API DeviceMemoryResource {
         DeviceMemoryResource(rhi::DeviceMemory* memory, bvestl::polyalloc::AllocationStrategy* allocation_strategy);
 
         [[nodiscard]] DeviceMemoryAllocation allocate(const bvestl::polyalloc::Bytes size) const;

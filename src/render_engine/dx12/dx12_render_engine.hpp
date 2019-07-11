@@ -15,6 +15,7 @@
 
 #include <spirv_cross/spirv_hlsl.hpp>
 #include "dx12_swapchain.hpp"
+#include <EASTL/shared_ptr.h>
 
 namespace nova::renderer::rhi {
     /*!
@@ -33,7 +34,7 @@ namespace nova::renderer::rhi {
         virtual ~DX12RenderEngine() = default;
 
         // Inherited via render_engine
-        std::shared_ptr<Window> get_window() const override final;
+        eastl::shared_ptr<Window> get_window() const override final;
 
         void set_num_renderpasses(uint32_t num_renderpasses) override final;
 
@@ -42,13 +43,13 @@ namespace nova::renderer::rhi {
         Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
-                                        const std::vector<Image*>& attachments,
+                                        const eastl::vector<Image*>& attachments,
                                         const glm::uvec2& framebuffer_size) override final;
 
         Result<PipelineInterface*> create_pipeline_interface(
-            const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
-            const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override final;
+            const eastl::unordered_map<eastl::string, ResourceBindingDescription>& bindings,
+            const eastl::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const eastl::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override final;
 
         DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
                                                uint32_t num_samplers,
@@ -62,10 +63,10 @@ namespace nova::renderer::rhi {
          * a single descriptor heap is noticeably better, but I've also heard that this only applies to XBox. Further
          * research and testing is needed to resolve this
          */
-        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
+        eastl::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                            DescriptorPool* pool) override final;
 
-        void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override final;
+        void update_descriptor_sets(eastl::vector<DescriptorSetWrite>& writes) override final;
 
         Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override final;
 
@@ -77,15 +78,15 @@ namespace nova::renderer::rhi {
 
         Semaphore* create_semaphore() override final;
 
-        std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override final;
+        eastl::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override final;
 
         Fence* create_fence(bool signaled = false) override final;
 
-        std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override final;
+        eastl::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override final;
 
-        void wait_for_fences(const std::vector<Fence*> fences) override final;
+        void wait_for_fences(const eastl::vector<Fence*> fences) override final;
 
-        void reset_fences(const std::vector<Fence*>& fences) override final;
+        void reset_fences(const eastl::vector<Fence*>& fences) override final;
 
         void destroy_renderpass(Renderpass* pass) override final;
 
@@ -97,17 +98,17 @@ namespace nova::renderer::rhi {
 
         void destroy_texture(Image* resource) override final;
 
-        void destroy_semaphores(std::vector<Semaphore*>& semaphores) override final;
+        void destroy_semaphores(eastl::vector<Semaphore*>& semaphores) override final;
 
-        void destroy_fences(std::vector<Fence*>& fences) override final;
+        void destroy_fences(eastl::vector<Fence*>& fences) override final;
 
         CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override final;
 
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
                                  Fence* fence_to_signal = nullptr,
-                                 const std::vector<Semaphore*>& wait_semaphores = {},
-                                 const std::vector<Semaphore*>& signal_semaphores = {}) override final;
+                                 const eastl::vector<Semaphore*>& wait_semaphores = {},
+                                 const eastl::vector<Semaphore*>& signal_semaphores = {}) override final;
 
         void open_window_and_create_swapchain(const NovaSettings::WindowOptions& options, uint32_t num_frames);
 
@@ -132,7 +133,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief The index in the vector is the thread index
          */
-        std::vector<std::unordered_map<D3D12_COMMAND_LIST_TYPE, ID3D12CommandAllocator*>> command_allocators;
+        eastl::vector<eastl::unordered_map<D3D12_COMMAND_LIST_TYPE, ID3D12CommandAllocator*>> command_allocators;
 
 #pragma region Initialization
         void create_device();
@@ -145,12 +146,12 @@ namespace nova::renderer::rhi {
     };
 
     Microsoft::WRL::ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,
-                                                    const std::string& target,
+                                                    const eastl::string& target,
                                                     const spirv_cross::CompilerHLSL::Options& options,
-                                                    std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
+                                                    eastl::unordered_map<uint32_t, eastl::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
 
     void add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type,
                                           const D3D12_SHADER_INPUT_BIND_DESC& bind_desc,
                                           const uint32_t set,
-                                          std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
+                                          eastl::unordered_map<uint32_t, eastl::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
 } // namespace nova::renderer::rhi

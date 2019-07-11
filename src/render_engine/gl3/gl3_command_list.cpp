@@ -248,7 +248,7 @@ namespace nova::renderer::rhi {
 
     void Gl3CommandList::resource_barriers(PipelineStageFlags /* stages_before_barrier */,
                                            PipelineStageFlags /* stages_after_barrier */,
-                                           const std::vector<ResourceBarrier>& /* barriers */) {
+                                           const eastl::vector<ResourceBarrier>& /* barriers */) {
         // Don't need to do anything whoop
     }
 
@@ -271,7 +271,7 @@ namespace nova::renderer::rhi {
         copy_command.buffer_copy.num_bytes = num_bytes;
     }
 
-    void Gl3CommandList::execute_command_lists(const std::vector<CommandList*>& lists) {
+    void Gl3CommandList::execute_command_lists(const eastl::vector<CommandList*>& lists) {
         commands.emplace_back();
 
         Gl3Command& execute_lists_command = commands.front();
@@ -300,7 +300,7 @@ namespace nova::renderer::rhi {
         command.bind_pipeline.program = gl_pipeline->id;
     }
 
-    void Gl3CommandList::bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
+    void Gl3CommandList::bind_descriptor_sets(const eastl::vector<DescriptorSet*>& descriptor_sets,
                                               const PipelineInterface* pipeline_interface) {
         // Alrighty here's where the fun happens
         // For each descriptor, get its uniform binding from the pipeline interface
@@ -322,7 +322,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void Gl3CommandList::bind_vertex_buffers(const std::vector<Buffer*>& buffers) {
+    void Gl3CommandList::bind_vertex_buffers(const eastl::vector<Buffer*>& buffers) {
         commands.emplace_back();
 
         Gl3Command& command = commands.front();
@@ -357,5 +357,5 @@ namespace nova::renderer::rhi {
         command.draw_indexed_mesh.num_instances = num_instances;
     }
 
-    std::vector<Gl3Command> Gl3CommandList::get_commands() const { return commands; }
+    eastl::vector<Gl3Command> Gl3CommandList::get_commands() const { return commands; }
 } // namespace nova::renderer::rhi

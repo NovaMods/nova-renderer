@@ -1,32 +1,33 @@
 #pragma once
 
-#include <functional>
-#include <memory>
-#include <string>
+#include <EASTL/functional.h>
+#include <EASTL/memory.h>
+#include <EASTL/string.h>
 
 #include <fmt/format.h>
 
 #include "utils.hpp"
+#include <EASTL/unique_ptr.h>
 
 namespace nova::renderer {
-    struct NovaError {
-        std::string message = "";
+    struct NOVA_API NovaError {
+        eastl::string message = "";
 
-        std::unique_ptr<NovaError> cause;
+        eastl::unique_ptr<NovaError> cause;
 
         NovaError() = default;
 
-        explicit NovaError(std::string message);
+        explicit NovaError(eastl::string message);
 
-        NovaError(std::string message, NovaError cause);
+        NovaError(eastl::string message, NovaError cause);
 
-        [[nodiscard]] std::string to_string() const;
+        [[nodiscard]] eastl::string to_string() const;
     };
 
-    inline NovaError operator""_err(const char* str, std::size_t size) { return NovaError(std::string(str, size)); }
+    inline NOVA_API NovaError operator""_err(const char* str, std::size_t size) { return NovaError(eastl::string(str, size)); }
 
     template <typename ValueType>
-    struct Result {
+    struct NOVA_API Result {
         union {
             ValueType value;
             NovaError error;
@@ -38,19 +39,19 @@ namespace nova::renderer {
 
         explicit Result(const ValueType& value) : value(value), has_value(true) {}
 
-        explicit Result(NovaError error) : error(std::move(error)) {}
+        explicit Result(NovaError error) : error(eastl::move(error)) {}
 
         Result(const Result<ValueType>& other) = delete;
         Result<ValueType>& operator=(const Result<ValueType>& other) = delete;
 
         Result(Result<ValueType>&& old) noexcept {
             if(old.has_value) {
-                value = std::move(old.value);
+                value = eastl::move(old.value);
                 old.value = {};
 
                 has_value = true;
             } else {
-                error = std::move(old.error);
+                error = eastl::move(old.error);
                 old.error = {};
             }
         };
@@ -84,7 +85,7 @@ namespace nova::renderer {
             if(has_value) {
                 return Result<RetVal>(func(value));
             } else {
-                return Result<RetVal>(std::move(error));
+                return Result<RetVal>(eastl::move(error));
             }
         }
 
@@ -95,7 +96,7 @@ namespace nova::renderer {
             if(has_value) {
                 return func(value);
             } else {
-                return Result<RetVal>(std::move(error));
+                return Result<RetVal>(eastl::move(error));
             }
         }
 
@@ -106,7 +107,7 @@ namespace nova::renderer {
             }
         }
 
-        void on_error(std::function<void(const NovaError&)> error_func) const {
+        void on_error(eastl::function<void(const NovaError&)> error_func) const {
             if(!has_value) {
                 error_func(error);
             }
@@ -120,5 +121,5 @@ namespace nova::renderer {
     template <typename ValueType>
     Result(ValueType value)->Result<ValueType>;
 
-#define MAKE_ERROR(s, ...) NovaError(fmt::format(fmt(s), __VA_ARGS__))
+#define MAKE_ERROR(s, ...) NovaError(fmt::format(fmt(s), __VA_ARGS__).c_str())
 } // namespace nova::renderer

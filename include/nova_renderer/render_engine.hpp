@@ -9,20 +9,18 @@
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/util/utils.hpp"
 #include "rhi_types.hpp"
+#include <EASTL/shared_ptr.h>
 
 namespace nova::renderer {
-    class Window;
+    class NOVA_API Window;
 }
 
 namespace nova::renderer::rhi {
     struct Fence;
-    struct Image;
-    struct Semaphore;
+    struct NOVA_API Image;
+    struct NOVA_API Semaphore;
 
-    class Swapchain;
-
-    NOVA_EXCEPTION(render_engine_initialization_exception);
-    NOVA_EXCEPTION(render_engine_rendering_exception);
+    class NOVA_API Swapchain;
 
 #define NUM_THREADS 1
 
@@ -33,7 +31,7 @@ namespace nova::renderer::rhi {
      * All functions must be called after init(nova::settings) has been called except
      *   explicitly marked in the documentation
      */
-    class RenderEngine {
+    class NOVA_API RenderEngine {
     public:
         RenderEngine(RenderEngine&& other) = delete;
         RenderEngine& operator=(RenderEngine&& other) noexcept = delete;
@@ -46,7 +44,7 @@ namespace nova::renderer::rhi {
          */
         virtual ~RenderEngine() = default;
 
-        [[nodiscard]] virtual std::shared_ptr<Window> get_window() const = 0;
+        [[nodiscard]] virtual eastl::shared_ptr<Window> get_window() const = 0;
 
         /*!
          * \brief Allows the user to set an allocator that will be used for per-shaderpack objects. This allocator will
@@ -72,22 +70,22 @@ namespace nova::renderer::rhi {
         [[nodiscard]] virtual Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) = 0;
 
         [[nodiscard]] virtual Framebuffer* create_framebuffer(const Renderpass* renderpass,
-                                                              const std::vector<Image*>& attachments,
+                                                              const eastl::vector<Image*>& attachments,
                                                               const glm::uvec2& framebuffer_size) = 0;
 
         [[nodiscard]] virtual Result<PipelineInterface*> create_pipeline_interface(
-            const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
-            const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) = 0;
+            const eastl::unordered_map<eastl::string, ResourceBindingDescription>& bindings,
+            const eastl::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const eastl::optional<shaderpack::TextureAttachmentInfo>& depth_texture) = 0;
 
         [[nodiscard]] virtual DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
                                                                      uint32_t num_samplers,
                                                                      uint32_t num_uniform_buffers) = 0;
 
-        [[nodiscard]] virtual std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
+        [[nodiscard]] virtual eastl::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                                                  DescriptorPool* pool) = 0;
 
-        virtual void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) = 0;
+        virtual void update_descriptor_sets(eastl::vector<DescriptorSetWrite>& writes) = 0;
 
         [[nodiscard]] virtual Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
                                                                 const shaderpack::PipelineCreateInfo& data) = 0;
@@ -114,11 +112,11 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] virtual Semaphore* create_semaphore() = 0;
 
-        [[nodiscard]] virtual std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) = 0;
+        [[nodiscard]] virtual eastl::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) = 0;
 
         [[nodiscard]] virtual Fence* create_fence(bool signaled = false) = 0;
 
-        [[nodiscard]] virtual std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) = 0;
+        [[nodiscard]] virtual eastl::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) = 0;
 
         /*!
          * \blocks the fence until all fences are signaled
@@ -127,9 +125,9 @@ namespace nova::renderer::rhi {
          *
          * \param fences All the fences to wait for
          */
-        virtual void wait_for_fences(const std::vector<Fence*> fences) = 0;
+        virtual void wait_for_fences(const eastl::vector<Fence*> fences) = 0;
 
-        virtual void reset_fences(const std::vector<Fence*>& fences) = 0;
+        virtual void reset_fences(const eastl::vector<Fence*>& fences) = 0;
 
         /*!
          * \brief Clean up any GPU objects a Renderpass may own
@@ -177,7 +175,7 @@ namespace nova::renderer::rhi {
          * While Semaphores are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
          * need to clean up their GPU objects
          */
-        virtual void destroy_semaphores(std::vector<Semaphore*>& semaphores) = 0;
+        virtual void destroy_semaphores(eastl::vector<Semaphore*>& semaphores) = 0;
 
         /*!
          * \brief Clean up any GPU objects a Fence may own
@@ -185,7 +183,7 @@ namespace nova::renderer::rhi {
          * While Fence are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still need to
          * clean up their GPU objects
          */
-        virtual void destroy_fences(std::vector<Fence*>& fences) = 0;
+        virtual void destroy_fences(eastl::vector<Fence*>& fences) = 0;
 
         Swapchain* get_swapchain() const;
 
@@ -210,13 +208,13 @@ namespace nova::renderer::rhi {
         virtual void submit_command_list(CommandList* cmds,
                                          QueueType queue,
                                          Fence* fence_to_signal = nullptr,
-                                         const std::vector<Semaphore*>& wait_semaphores = {},
-                                         const std::vector<Semaphore*>& signal_semaphores = {}) = 0;
+                                         const eastl::vector<Semaphore*>& wait_semaphores = {},
+                                         const eastl::vector<Semaphore*>& signal_semaphores = {}) = 0;
 
     protected:
         NovaSettings& settings;
 
-        std::shared_ptr<Window> window;
+        eastl::shared_ptr<Window> window;
 
         glm::uvec2 swapchain_size;
         Swapchain* swapchain;
@@ -243,7 +241,7 @@ namespace nova::renderer::rhi {
         template <typename AllocType, typename... ArgTypes>
         AllocType* new_object(ArgTypes&&... args) {
             void* mem = shaderpack_allocator.allocate(sizeof(AllocType));
-            return new(mem) AllocType(std::forward<ArgTypes>(args)...);
+            return new(mem) AllocType(eastl::forward<ArgTypes>(args)...);
         }
     };
 <<<<<<< HEAD

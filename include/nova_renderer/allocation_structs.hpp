@@ -7,7 +7,7 @@ namespace bvestl {
 		/*!
 		 * Information about an allocation from an allocation strategy
 		 */
-		struct AllocationInfo {
+        struct NOVA_API AllocationInfo {
 			/*!
 			 * \brief The size of the allocation, in bytes
 			 */

@@ -11,12 +11,12 @@
 namespace nova::renderer::rhi {
     using namespace Microsoft::WRL;
 
-    Dx12CommandList::Dx12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds) : cmds(std::move(cmds)) {}
+    Dx12CommandList::Dx12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds) : cmds(eastl::move(cmds)) {}
 
     void Dx12CommandList::resource_barriers([[maybe_unused]] PipelineStageFlags stages_before_barrier,
                                             [[maybe_unused]] PipelineStageFlags stages_after_barrier,
-                                            const std::vector<ResourceBarrier>& barriers) {
-        std::vector<D3D12_RESOURCE_BARRIER> dx12_barriers;
+                                            const eastl::vector<ResourceBarrier>& barriers) {
+        eastl::vector<D3D12_RESOURCE_BARRIER> dx12_barriers;
         dx12_barriers.reserve(barriers.size());
 
         for(const ResourceBarrier& barrier : barriers) {
@@ -61,7 +61,7 @@ namespace nova::renderer::rhi {
         cmds->CopyBufferRegion(dst_buf->resource.Get(), destination_offset, src_buf->resource.Get(), source_offset, num_bytes);
     }
 
-    void Dx12CommandList::execute_command_lists(const std::vector<CommandList*>& lists) {
+    void Dx12CommandList::execute_command_lists(const eastl::vector<CommandList*>& lists) {
         // Apparently D3D12 can only execute bundles from another command list, meaning that the strategy I use to
         // record command buffers in Vulkan won't work here...
         //
@@ -95,7 +95,7 @@ namespace nova::renderer::rhi {
         cmds->SetPipelineState(dx_pipeline->pso.Get());
     }
 
-    void Dx12CommandList::bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
+    void Dx12CommandList::bind_descriptor_sets(const eastl::vector<DescriptorSet*>& descriptor_sets,
                                                const PipelineInterface* pipeline_interface) {
         const DX12PipelineInterface* dx_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
 
@@ -107,8 +107,8 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void Dx12CommandList::bind_vertex_buffers(const std::vector<Buffer*>& buffers) {
-        std::vector<D3D12_VERTEX_BUFFER_VIEW> views;
+    void Dx12CommandList::bind_vertex_buffers(const eastl::vector<Buffer*>& buffers) {
+        eastl::vector<D3D12_VERTEX_BUFFER_VIEW> views;
         views.reserve(buffers.size());
 
         for(const Buffer* buffer : buffers) {

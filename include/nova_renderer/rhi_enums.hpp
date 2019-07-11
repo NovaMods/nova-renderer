@@ -1,13 +1,15 @@
 #pragma once
 
+#include "nova_renderer/util/utils.hpp"
+
 namespace nova::renderer::rhi {
-    enum class MemoryUsage {
+    enum class NOVA_API MemoryUsage {
         DeviceOnly,
         LowFrequencyUpload,
         StagingBuffer,
     };
 
-    enum class ObjectType {
+    enum class NOVA_API ObjectType {
         Buffer,
         Texture,
         RenderTexture,
@@ -15,9 +17,9 @@ namespace nova::renderer::rhi {
         Any,
     };
 
-    enum class DescriptorType { CombinedImageSampler, UniformBuffer, StorageBuffer };
+    enum class NOVA_API DescriptorType { CombinedImageSampler, UniformBuffer, StorageBuffer };
 
-    enum class ResourceState {
+    enum class NOVA_API ResourceState {
         Undefined,
         General,
 
@@ -36,7 +38,7 @@ namespace nova::renderer::rhi {
         TransferDestination,
     };
 
-    enum class ResourceAccessFlags {
+    enum class NOVA_API ResourceAccessFlags {
         NoFlags = 0x00000000,
         IndexReadBit = 0x00000002,
         VertexAttributeReadBit = 0x00000004,
@@ -56,13 +58,13 @@ namespace nova::renderer::rhi {
         MemoryWriteBit = 0x00010000,
     };
 
-    enum class ImageAspectFlags {
+    enum class NOVA_API ImageAspectFlags {
         Color = 0x00000001,
         Depth = 0x00000002,
         Stencil = 0x00000004,
     };
 
-    enum class PipelineStageFlags {
+    enum class NOVA_API PipelineStageFlags {
         TopOfPipe = 0x00000001,
         DrawIndirect = 0x00000002,
         VertexInput = 0x00000004,
@@ -88,7 +90,7 @@ namespace nova::renderer::rhi {
         FragmentDensityProcess = 0x00800000,
     };
 
-    enum class ShaderStageFlags {
+    enum class NOVA_API ShaderStageFlags {
         Vertex = 0x0001,
         TessellationControl = 0x0002,
         TessellationEvaluation = 0x0004,
@@ -104,19 +106,19 @@ namespace nova::renderer::rhi {
         Mesh = 0x0080,
     };
 
-    enum class QueueType {
+    enum class NOVA_API QueueType {
         Graphics,
         Transfer,
         AsyncCompute,
     };
-    enum class BufferUsage {
+    enum class NOVA_API BufferUsage {
         UniformBuffer,
         IndexBuffer,
         VertexBuffer,
         StagingBuffer,
     };
 
-    enum class ResourceType {
+    enum class NOVA_API ResourceType {
         Buffer,
         Image,
     };

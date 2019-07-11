@@ -17,9 +17,9 @@ namespace nova::renderer {
         // TODO: fil out this test when the RHI is stable
         TEST_SETUP_LOGGER();
 
-        std::array<char, FILENAME_MAX> buff{};
+        eastl::array<char, FILENAME_MAX> buff{};
         getcwd(buff.data(), FILENAME_MAX);
-        NOVA_LOG(DEBUG) << "Running in " << buff.data() << std::flush;
+        NOVA_LOG(DEBUG) << "Running in " << buff.data() << eastl::flush;
         NOVA_LOG(DEBUG) << "Predefined resources at: " << CMAKE_DEFINED_RESOURCES_PREFIX;
 
         NovaSettings settings;
@@ -37,7 +37,7 @@ namespace nova::renderer {
 
             renderer->load_shaderpack(CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack");
 
-            std::shared_ptr<Window> window = renderer->get_engine()->get_window();
+            eastl::shared_ptr<Window> window = renderer->get_engine()->get_window();
 
             MeshData cube = {};
             cube.vertex_data = {
@@ -73,7 +73,7 @@ namespace nova::renderer {
 
             return 0;
         }
-        catch(const std::exception& e) {
+        catch(const eastl::exception& e) {
             NOVA_LOG(ERROR) << e.what();
             return -1;
         }
@@ -95,7 +95,7 @@ void sigsegv_handler(int sig) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     signal(sig, SIG_IGN);
 
-    std::cerr << "!!!SIGSEGV!!!" << std::endl;
+    eastl::cerr << "!!!SIGSEGV!!!" << eastl::endl;
     nova_backtrace();
 
     _exit(1);
@@ -105,7 +105,7 @@ void sigabrt_handler(int sig) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     signal(sig, SIG_IGN);
 
-    std::cerr << "!!!SIGABRT!!!" << std::endl;
+    eastl::cerr << "!!!SIGABRT!!!" << eastl::endl;
     nova_backtrace();
 
     _exit(1);

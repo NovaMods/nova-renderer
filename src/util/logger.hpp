@@ -1,13 +1,19 @@
-#pragma once
-
-#include <functional>
-#include <mutex>
-#include <sstream>
-#include <string>
-#include <unordered_map>
 #include <utility>
 
-// Undefine ERROR because we use it as an enum name and windows.h defines it which messes with our code
+/*!
+ * \author ddubois
+ * \date 21-Aug-18.
+ */
+
+#ifndef NOVA_RENDERER_LOGGER_HPP
+#define NOVA_RENDERER_LOGGER_HPP
+
+#include <EASTL/functional.h>
+#include <mutex>
+#include <sstream>
+#include <EASTL/string.h>
+#include <EASTL/unordered_map.h>
+
 #ifdef ERROR
 #undef ERROR
 #endif
@@ -26,14 +32,14 @@ namespace nova::renderer {
 
         explicit Logger() = default;
 
-        void add_log_handler(LogLevel level, const std::function<void(std::string)>& log_handler);
+        void add_log_handler(LogLevel level, const eastl::function<void(eastl::string)>& log_handler);
 
-        void log(LogLevel level, const std::string& msg);
+        void log(LogLevel level, const eastl::string& msg);
 
         _log_stream log(LogLevel level) const;
 
     private:
-        std::unordered_map<LogLevel, std::function<void(std::string)>> log_handlers;
+        eastl::unordered_map<LogLevel, eastl::function<void(eastl::string)>> log_handlers;
         std::mutex log_lock;
     };
 
@@ -61,3 +67,5 @@ namespace nova::renderer {
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define NOVA_LOG(LEVEL) ::nova::renderer::Logger::instance.log(::nova::renderer::LogLevel::LEVEL)
+
+#endif // NOVA_RENDERER_LOGGER_HPP

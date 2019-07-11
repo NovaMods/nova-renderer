@@ -14,7 +14,7 @@ namespace nova::renderer::shaderpack {
     }
 
     void from_json(const nlohmann::json& j, TextureCreateInfo& tex) {
-        tex.name = get_json_value<std::string>(j, "name").value();
+        tex.name = get_json_value<eastl::string>(j, "name").value();
         tex.format = get_json_value<TextureFormat>(j, "format").value();
     }
 
@@ -29,13 +29,13 @@ namespace nova::renderer::shaderpack {
     }
 
     void from_json(const nlohmann::json& j, RenderPassCreateInfo& pass) {
-        pass.dependencies = get_json_array<std::string>(j, "dependencies");
-        pass.texture_inputs = get_json_array<std::string>(j, "textureInputs");
+        pass.dependencies = get_json_array<eastl::string>(j, "dependencies");
+        pass.texture_inputs = get_json_array<eastl::string>(j, "textureInputs");
         pass.texture_outputs = get_json_array<TextureAttachmentInfo>(j, "textureOutputs");
         pass.depth_texture = get_json_value<TextureAttachmentInfo>(j, "depthTexture");
-        pass.input_buffers = get_json_array<std::string>(j, "inputBuffers");
-        pass.output_buffers = get_json_array<std::string>(j, "outputBuffers");
-        pass.name = get_json_value<std::string>(j, "name").value_or("<NAME_MISSING>");
+        pass.input_buffers = get_json_array<eastl::string>(j, "inputBuffers");
+        pass.output_buffers = get_json_array<eastl::string>(j, "outputBuffers");
+        pass.name = get_json_value<eastl::string>(j, "name").value_or("<NAME_MISSING>");
     }
 
     void from_json(const nlohmann::json& j, StencilOpState& stencil_op) {
@@ -48,20 +48,20 @@ namespace nova::renderer::shaderpack {
     }
 
     void from_json(const nlohmann::json& j, VertexFieldData& vertex_data) {
-        vertex_data.semantic_name = get_json_value<std::string>(j, "name").value();
+        vertex_data.semantic_name = get_json_value<eastl::string>(j, "name").value();
         vertex_data.field = get_json_value<VertexFieldEnum>(j, "field", vertex_field_enum_from_string).value();
     }
 
     void from_json(const nlohmann::json& j, PipelineCreateInfo& pipeline) {
-        pipeline.name = get_json_value<std::string>(j, "name").value();
-        pipeline.parent_name = get_json_value<std::string>(j, "parent").value_or("");
-        pipeline.pass = get_json_value<std::string>(j, "pass").value();
-        pipeline.defines = get_json_array<std::string>(j, "defines");
+        pipeline.name = get_json_value<eastl::string>(j, "name").value();
+        pipeline.parent_name = get_json_value<eastl::string>(j, "parent").value_or("");
+        pipeline.pass = get_json_value<eastl::string>(j, "pass").value();
+        pipeline.defines = get_json_array<eastl::string>(j, "defines");
         pipeline.states = get_json_array<StateEnum>(j, "states", state_enum_from_string);
         pipeline.vertex_fields = get_json_array<VertexFieldData>(j, "vertexFields");
         pipeline.front_face = get_json_value<StencilOpState>(j, "frontFace");
         pipeline.back_face = get_json_value<StencilOpState>(j, "backFace");
-        pipeline.fallback = get_json_value<std::string>(j, "fallback").value_or("");
+        pipeline.fallback = get_json_value<eastl::string>(j, "fallback").value_or("");
         pipeline.depth_bias = get_json_value<float>(j, "depthBias", 0);
         pipeline.slope_scaled_depth_bias = get_json_value<float>(j, "slopeScaledDepthBias", 0);
         pipeline.stencil_ref = get_json_value<uint32_t>(j, "stencilRef", 0);
@@ -85,43 +85,43 @@ namespace nova::renderer::shaderpack {
         pipeline.depth_func = get_json_value<CompareOpEnum>(j, "depthFunc", CompareOpEnum::Less, compare_op_enum_from_string);
         pipeline.render_queue = get_json_value<RenderQueueEnum>(j, "renderQueue", RenderQueueEnum::Opaque, render_queue_enum_from_string);
 
-        pipeline.vertex_shader.filename = get_json_value<std::string>(j, "vertexShader").value_or("<NAME_MISSING>");
+        pipeline.vertex_shader.filename = get_json_value<eastl::string>(j, "vertexShader").value_or("<NAME_MISSING>").c_str();
 
-        std::optional<std::string> geometry_shader_name = get_json_value<std::string>(j, "geometryShader", true);
+        eastl::optional<eastl::string> geometry_shader_name = get_json_value<eastl::string>(j, "geometryShader", true);
         if(geometry_shader_name) {
-            pipeline.geometry_shader = std::make_optional<ShaderSource>();
-            (*pipeline.geometry_shader).filename = *geometry_shader_name;
+            pipeline.geometry_shader = eastl::make_optional<ShaderSource>();
+            (*pipeline.geometry_shader).filename = (*geometry_shader_name).c_str();
         }
 
-        std::optional<std::string> tess_control_shader_name = get_json_value<std::string>(j, "tessellationControlShader", true);
+        eastl::optional<eastl::string> tess_control_shader_name = get_json_value<eastl::string>(j, "tessellationControlShader", true);
         if(tess_control_shader_name) {
-            pipeline.tessellation_control_shader = std::make_optional<ShaderSource>();
-            (*pipeline.tessellation_control_shader).filename = *tess_control_shader_name;
+            pipeline.tessellation_control_shader = eastl::make_optional<ShaderSource>();
+            (*pipeline.tessellation_control_shader).filename = (*tess_control_shader_name).c_str();
         }
 
-        std::optional<std::string> tess_eval_shader_name = get_json_value<std::string>(j, "tessellationEvalShader", true);
+        eastl::optional<eastl::string> tess_eval_shader_name = get_json_value<eastl::string>(j, "tessellationEvalShader", true);
         if(tess_eval_shader_name) {
-            pipeline.tessellation_evaluation_shader = std::make_optional<ShaderSource>();
-            (*pipeline.tessellation_evaluation_shader).filename = *tess_eval_shader_name;
+            pipeline.tessellation_evaluation_shader = eastl::make_optional<ShaderSource>();
+            (*pipeline.tessellation_evaluation_shader).filename = (*tess_eval_shader_name).c_str();
         }
 
-        std::optional<std::string> fragment_shader_name = get_json_value<std::string>(j, "fragmentShader", true);
+        eastl::optional<eastl::string> fragment_shader_name = get_json_value<eastl::string>(j, "fragmentShader", true);
         if(fragment_shader_name) {
-            pipeline.fragment_shader = std::make_optional<ShaderSource>();
-            (*pipeline.fragment_shader).filename = *fragment_shader_name;
+            pipeline.fragment_shader = eastl::make_optional<ShaderSource>();
+            (*pipeline.fragment_shader).filename = (*fragment_shader_name).c_str();
         }
     }
 
     void from_json(const nlohmann::json& j, MaterialPass& pass) {
-        pass.name = get_json_value<std::string>(j, "name").value();
-        pass.pipeline = get_json_value<std::string>(j, "pipeline").value();
-        pass.bindings = get_json_value<std::unordered_map<std::string, std::string>>(j, "bindings").value();
+        pass.name = get_json_value<eastl::string>(j, "name").value();
+        pass.pipeline = get_json_value<eastl::string>(j, "pipeline").value();
+        pass.bindings = get_json_value<eastl::unordered_map<eastl::string, eastl::string>>(j, "bindings").value();
     }
 
     void from_json(const nlohmann::json& j, MaterialData& mat) {
-        mat.name = get_json_value<std::string>(j, "name").value();
+        mat.name = get_json_value<eastl::string>(j, "name").value();
         mat.passes = get_json_array<MaterialPass>(j, "passes");
-        mat.geometry_filter = get_json_value<std::string>(j, "filter").value();
+        mat.geometry_filter = get_json_value<eastl::string>(j, "filter").value();
 
         for(MaterialPass& pass : mat.passes) {
             pass.material_name = mat.name;
@@ -129,11 +129,11 @@ namespace nova::renderer::shaderpack {
     }
 
     void from_json(const nlohmann::json& j, TextureAttachmentInfo& tex) {
-        tex.name = get_json_value<std::string>(j, "name").value();
+        tex.name = get_json_value<eastl::string>(j, "name").value();
         tex.clear = get_json_value<bool>(j, "clear", false);
     }
 
-    void from_json(const nlohmann::json& j, std::vector<RenderPassCreateInfo>& passes) {
+    void from_json(const nlohmann::json& j, eastl::vector<RenderPassCreateInfo>& passes) {
         for(const auto& node : j) {
             passes.push_back(node.get<RenderPassCreateInfo>());
         }

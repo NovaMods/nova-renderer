@@ -1,18 +1,19 @@
 #pragma once
 
 #include <cstdint> // needed for uint****
-#include <vector>
+#include <EASTL/vector.h>
 
 #include "nova_renderer/rhi_enums.hpp"
+#include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer::rhi {
-    struct Buffer;
-    struct DescriptorSet;
-    struct Framebuffer;
-    struct Pipeline;
-    struct PipelineInterface;
-    struct Renderpass;
-    struct ResourceBarrier;
+    struct NOVA_API Buffer;
+    struct NOVA_API DescriptorSet;
+    struct NOVA_API Framebuffer;
+    struct NOVA_API Pipeline;
+    struct NOVA_API PipelineInterface;
+    struct NOVA_API Renderpass;
+    struct NOVA_API ResourceBarrier;
 
     /*!
      * \brief An API-agnostic command list
@@ -29,7 +30,7 @@ namespace nova::renderer::rhi {
      *
      * Command lists are fully bound to ChaiScript
      */
-    class CommandList {
+    class NOVA_API CommandList {
     public:
         enum class Level {
             Primary,
@@ -54,7 +55,7 @@ namespace nova::renderer::rhi {
          */
         virtual void resource_barriers(PipelineStageFlags stages_before_barrier,
                                        PipelineStageFlags stages_after_barrier,
-                                       const std::vector<ResourceBarrier>& barriers) = 0;
+                                       const eastl::vector<ResourceBarrier>& barriers) = 0;
 
         /*!
          * \brief Records a command to copy one region of a buffer to another buffer
@@ -83,7 +84,7 @@ namespace nova::renderer::rhi {
          * These command lists should be secondary command lists. Nova doesn't validate this because yolo but you need
          * to be nice - the API-specific validation layers _will_ yell at you
          */
-        virtual void execute_command_lists(const std::vector<CommandList*>& lists) = 0;
+        virtual void execute_command_lists(const eastl::vector<CommandList*>& lists) = 0;
 
         /*!
          * \brief Begins a renderpass
@@ -97,7 +98,7 @@ namespace nova::renderer::rhi {
 
         virtual void bind_pipeline(const Pipeline* pipeline) = 0;
 
-        virtual void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
+        virtual void bind_descriptor_sets(const eastl::vector<DescriptorSet*>& descriptor_sets,
                                           const PipelineInterface* pipeline_interface) = 0;
 
         /*!
@@ -108,7 +109,7 @@ namespace nova::renderer::rhi {
          *
          * \param buffers The buffers to bind
          */
-        virtual void bind_vertex_buffers(const std::vector<Buffer*>& buffers) = 0;
+        virtual void bind_vertex_buffers(const eastl::vector<Buffer*>& buffers) = 0;
 
         /*!
          * \brief Binds the provided index buffer to the command list

@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-#include "util/utils.hpp"
+#include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(window_creation_error);
@@ -10,8 +10,10 @@ namespace nova::renderer {
     /*!
      * \brief A platform-independent window interface
      */
-    class Window {
+    class NOVA_API Window {
     public:
+        virtual ~Window() = default;
+
         /*!
          * \brief Handles what should happen when the frame is done. This includes telling the operating system that
          * we're still alive

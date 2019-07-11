@@ -9,6 +9,8 @@
 	#define BVESTL_POLYALLOC_ASSERT assert
 #endif
 
+#include "nova_renderer/util/utils.hpp"
+
 #ifndef BVESTL_POLYALLOC_NO_ASSERT_ON_DEFAULT_CONSTRUCT
 	#define BVESTL_POLYALLOC_DEFAULT_CONSTRUCT_ASSERT BVESTL_POLYALLOC_ASSERT(false && "Default Constructing an AllocatorHandle is always a bug.")
 #else
@@ -17,7 +19,7 @@
 
 namespace bvestl {
 	namespace polyalloc {
-		class Allocator {
+        class NOVA_API Allocator {
 		  public:
 			Allocator() = default;
 			Allocator(Allocator const&) = delete;
@@ -32,7 +34,7 @@ namespace bvestl {
 			virtual void deallocate(void* p, size_t n) = 0;
 		};
 
-		class allocator_handle {
+		class NOVA_API allocator_handle {
 		  public:
 		  	// Needs to exist because EASTL won't compile without it. Should not ever be called.
 			EA_FORCE_INLINE allocator_handle(char const* const = nullptr) noexcept : allocator_(nullptr) {

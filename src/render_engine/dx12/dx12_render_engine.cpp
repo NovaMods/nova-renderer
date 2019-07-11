@@ -36,7 +36,7 @@ namespace nova::renderer::rhi {
         cbv_srv_uav_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     }
 
-    std::shared_ptr<Window> DX12RenderEngine::get_window() const { return window; }
+    eastl::shared_ptr<Window> DX12RenderEngine::get_window() const { return window; }
 
     void DX12RenderEngine::set_num_renderpasses(const uint32_t num_renderpasses) {
         D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_descriptor = {};
@@ -132,13 +132,13 @@ namespace nova::renderer::rhi {
     }
 
     Framebuffer* DX12RenderEngine::create_framebuffer(const Renderpass* /* renderpass */,
-                                                      const std::vector<Image*>& attachments,
+                                                      const eastl::vector<Image*>& attachments,
                                                       const glm::uvec2& framebuffer_size) {
         const size_t attachment_count = attachments.size();
         DX12Framebuffer* framebuffer = new DX12Framebuffer;
         framebuffer->render_targets.reserve(attachment_count);
 
-        std::vector<ID3D12Resource*> rendertargets;
+        eastl::vector<ID3D12Resource*> rendertargets;
         rendertargets.reserve(attachment_count);
 
         for(uint32_t i = 0; i < attachments.size(); i++) {
@@ -162,9 +162,9 @@ namespace nova::renderer::rhi {
     }
 
     Result<PipelineInterface*> DX12RenderEngine::create_pipeline_interface(
-        const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
-        const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-        const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
+        const eastl::unordered_map<eastl::string, ResourceBindingDescription>& bindings,
+        const eastl::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+        const eastl::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
 
         DX12PipelineInterface* pipeline_interface = new DX12PipelineInterface;
         pipeline_interface->bindings = bindings;
@@ -191,7 +191,7 @@ namespace nova::renderer::rhi {
 
         // Make a descriptor table for each descriptor set
         for(uint32_t set = 0; set < num_sets; set++) {
-            std::vector<ResourceBindingDescription>& descriptor_layouts = pipeline_interface->table_layouts.at(set);
+            eastl::vector<ResourceBindingDescription>& descriptor_layouts = pipeline_interface->table_layouts.at(set);
             D3D12_ROOT_PARAMETER& param = const_cast<D3D12_ROOT_PARAMETER&>(root_sig_desc.pParameters[set]);
             param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 
@@ -219,7 +219,7 @@ namespace nova::renderer::rhi {
                                                         root_sig_blob.GetAddressOf(),
                                                         error_blob.GetAddressOf());
         if(!SUCCEEDED(res)) {
-            const std::string err_str = static_cast<const char*>(error_blob->GetBufferPointer());
+            const eastl::string err_str = static_cast<const char*>(error_blob->GetBufferPointer());
             return Result<PipelineInterface*>(NovaError(err_str));
         }
 
@@ -241,7 +241,7 @@ namespace nova::renderer::rhi {
         return pool;
     }
 
-    std::vector<DescriptorSet*> DX12RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
+    eastl::vector<DescriptorSet*> DX12RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                                          DescriptorPool* /* pool */) {
         // Create a descriptor heap for each descriptor set
         // This is kinda gross and maybe I'll move to something else eventually but I gotta get past this code
@@ -252,11 +252,11 @@ namespace nova::renderer::rhi {
 
         const uint32_t num_sets = static_cast<const uint32_t>(dx12_pipeline_interface->table_layouts.size());
 
-        std::vector<DescriptorSet*> descriptor_sets;
+        eastl::vector<DescriptorSet*> descriptor_sets;
         descriptor_sets.reserve(num_sets);
 
         for(uint32_t i = 0; i < num_sets; i++) {
-            const std::vector<ResourceBindingDescription> bindings_for_set = dx12_pipeline_interface->table_layouts.at(i);
+            const eastl::vector<ResourceBindingDescription> bindings_for_set = dx12_pipeline_interface->table_layouts.at(i);
 
             DX12DescriptorSet* set = new DX12DescriptorSet;
 
@@ -274,7 +274,7 @@ namespace nova::renderer::rhi {
         return descriptor_sets;
     }
 
-    void DX12RenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
+    void DX12RenderEngine::update_descriptor_sets(eastl::vector<DescriptorSetWrite>& writes) {
         // We want to create descriptors in the heaps in the order of their bindings
         for(const DescriptorSetWrite& write : writes) {
             const DX12DescriptorSet* set = static_cast<const DX12DescriptorSet*>(write.set);
@@ -322,7 +322,7 @@ namespace nova::renderer::rhi {
          * Compile all shader stages
          */
 
-        std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>> shader_inputs;
+        eastl::unordered_map<uint32_t, eastl::vector<D3D12_DESCRIPTOR_RANGE1>> shader_inputs;
         spirv_cross::CompilerHLSL::Options options = {};
         options.shader_model = 51;
 
@@ -366,12 +366,12 @@ namespace nova::renderer::rhi {
          * Blend state
          */
 
-        pipeline_state_desc.BlendState.AlphaToCoverageEnable = std::find(states_begin,
+        pipeline_state_desc.BlendState.AlphaToCoverageEnable = eastl::find(states_begin,
                                                                          states_end,
                                                                          shaderpack::StateEnum::EnableAlphaToCoverage) != states_end;
         pipeline_state_desc.BlendState.IndependentBlendEnable = false;
         D3D12_RENDER_TARGET_BLEND_DESC& blend_state = pipeline_state_desc.BlendState.RenderTarget[0];
-        blend_state.BlendEnable = std::find(states_begin, states_end, shaderpack::StateEnum::Blending) != states_end;
+        blend_state.BlendEnable = eastl::find(states_begin, states_end, shaderpack::StateEnum::Blending) != states_end;
         blend_state.SrcBlend = to_dx12_blend(data.source_blend_factor);
         blend_state.DestBlend = to_dx12_blend(data.destination_blend_factor);
         blend_state.BlendOp = D3D12_BLEND_OP_ADD;
@@ -387,10 +387,10 @@ namespace nova::renderer::rhi {
 
         D3D12_RASTERIZER_DESC& raster_desc = pipeline_state_desc.RasterizerState;
         raster_desc.FillMode = D3D12_FILL_MODE_SOLID;
-        if(std::find(states_begin, states_end, shaderpack::StateEnum::InvertCulling) != states_end) {
+        if(eastl::find(states_begin, states_end, shaderpack::StateEnum::InvertCulling) != states_end) {
             raster_desc.CullMode = D3D12_CULL_MODE_FRONT;
 
-        } else if(std::find(states_begin, states_end, shaderpack::StateEnum::DisableCulling) != states_end) {
+        } else if(eastl::find(states_begin, states_end, shaderpack::StateEnum::DisableCulling) != states_end) {
             raster_desc.CullMode = D3D12_CULL_MODE_NONE;
 
         } else {
@@ -411,15 +411,15 @@ namespace nova::renderer::rhi {
          */
 
         D3D12_DEPTH_STENCIL_DESC& ds_desc = pipeline_state_desc.DepthStencilState;
-        ds_desc.DepthEnable = std::find(states_begin, states_end, shaderpack::StateEnum::DisableDepthTest) == states_end;
-        if(std::find(states_begin, states_end, shaderpack::StateEnum::DisableDepthWrite) != states_end) {
+        ds_desc.DepthEnable = eastl::find(states_begin, states_end, shaderpack::StateEnum::DisableDepthTest) == states_end;
+        if(eastl::find(states_begin, states_end, shaderpack::StateEnum::DisableDepthWrite) != states_end) {
             ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
         } else {
             ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
         }
 
         ds_desc.DepthFunc = to_dx12_compare_func(data.depth_func);
-        ds_desc.StencilEnable = std::find(states_begin, states_end, shaderpack::StateEnum::EnableStencilTest) != states_end;
+        ds_desc.StencilEnable = eastl::find(states_begin, states_end, shaderpack::StateEnum::EnableStencilTest) != states_end;
         ds_desc.StencilReadMask = data.stencil_read_mask;
         ds_desc.StencilWriteMask = data.stencil_write_mask;
         if(data.front_face) {
@@ -441,7 +441,7 @@ namespace nova::renderer::rhi {
          * Input description
          */
 
-        const std::vector<D3D12_INPUT_ELEMENT_DESC> input_descs = get_input_descriptions();
+        const eastl::vector<D3D12_INPUT_ELEMENT_DESC> input_descs = get_input_descriptions();
         pipeline_state_desc.InputLayout.NumElements = static_cast<UINT>(input_descs.size());
         pipeline_state_desc.InputLayout.pInputElementDescs = input_descs.data();
 
@@ -593,7 +593,7 @@ namespace nova::renderer::rhi {
                                                            IID_PPV_ARGS(&texture));
 
         if(FAILED(hr)) {
-            std::string error_description;
+            eastl::string error_description;
             switch(hr) {
                 case E_OUTOFMEMORY:
                     error_description = "Out of memory";
@@ -616,7 +616,7 @@ namespace nova::renderer::rhi {
 
     Semaphore* DX12RenderEngine::create_semaphore() { return nullptr; }
 
-    std::vector<Semaphore*> DX12RenderEngine::create_semaphores(uint32_t num_semaphores) { return std::vector<Semaphore*>(); }
+    eastl::vector<Semaphore*> DX12RenderEngine::create_semaphores(uint32_t num_semaphores) { return eastl::vector<Semaphore*>(); }
 
     Fence* DX12RenderEngine::create_fence(const bool signaled) {
         DX12Fence* fence = new_object<DX12Fence>();
@@ -630,8 +630,8 @@ namespace nova::renderer::rhi {
         return fence;
     }
 
-    std::vector<Fence*> DX12RenderEngine::create_fences(const uint32_t num_fences, const bool signaled) {
-        std::vector<Fence*> fences;
+    eastl::vector<Fence*> DX12RenderEngine::create_fences(const uint32_t num_fences, const bool signaled) {
+        eastl::vector<Fence*> fences;
         fences.reserve(num_fences);
 
         const uint32_t initial_value = signaled ? CPU_FENCE_SIGNALED : 0;
@@ -648,14 +648,14 @@ namespace nova::renderer::rhi {
         return fences;
     }
 
-    void DX12RenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
+    void DX12RenderEngine::wait_for_fences(const eastl::vector<Fence*> fences) {
         for(const Fence* fence : fences) {
             const DX12Fence* dx_fence = static_cast<const DX12Fence*>(fence);
             WaitForSingleObject(dx_fence->event, INFINITE);
         }
     }
 
-    void DX12RenderEngine::reset_fences(const std::vector<Fence*>& fences) {
+    void DX12RenderEngine::reset_fences(const eastl::vector<Fence*>& fences) {
         for(Fence* fence : fences) {
             DX12Fence* dx12_fence = static_cast<DX12Fence*>(fence);
             ResetEvent(dx12_fence->event);
@@ -687,14 +687,14 @@ namespace nova::renderer::rhi {
         d3d12_framebuffer->resource = nullptr;
     }
 
-    void DX12RenderEngine::destroy_semaphores(std::vector<Semaphore*>& semaphores) {
+    void DX12RenderEngine::destroy_semaphores(eastl::vector<Semaphore*>& semaphores) {
         for(Semaphore* semaphore : semaphores) {
             DX12Semaphore* dx_semaphore = static_cast<DX12Semaphore*>(semaphore);
             dx_semaphore->fence = nullptr;
         }
     }
 
-    void DX12RenderEngine::destroy_fences(std::vector<Fence*>& fences) {
+    void DX12RenderEngine::destroy_fences(eastl::vector<Fence*>& fences) {
         for(Fence* fence : fences) {
             DX12Fence* dx_fence = static_cast<DX12Fence*>(fence);
             dx_fence->fence = nullptr;
@@ -738,8 +738,8 @@ namespace nova::renderer::rhi {
     void DX12RenderEngine::submit_command_list(CommandList* cmds,
                                                const QueueType queue,
                                                Fence* fence_to_signal,
-                                               const std::vector<Semaphore*>& wait_semaphores,
-                                               const std::vector<Semaphore*>& signal_semaphores) {
+                                               const eastl::vector<Semaphore*>& wait_semaphores,
+                                               const eastl::vector<Semaphore*>& signal_semaphores) {
         Dx12CommandList* dx_cmds = static_cast<Dx12CommandList*>(cmds);
         dx_cmds->cmds->Close();
 
@@ -778,7 +778,7 @@ namespace nova::renderer::rhi {
     }
 
     void DX12RenderEngine::open_window_and_create_swapchain(const NovaSettings::WindowOptions& options, uint32_t num_frames) {
-        window = std::make_shared<Win32Window>(options);
+        window = eastl::make_shared<Win32Window>(options);
 
         Win32Window* win32_window = static_cast<Win32Window*>(window.get());
 
@@ -865,9 +865,9 @@ namespace nova::renderer::rhi {
     }
 
     ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,
-                                    const std::string& target,
+                                    const eastl::string& target,
                                     const spirv_cross::CompilerHLSL::Options& options,
-                                    std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
+                                    eastl::unordered_map<uint32_t, eastl::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
 
         spirv_cross::CompilerHLSL shader_compiler(shader.source);
         shader_compiler.set_hlsl_options(options);
@@ -875,19 +875,19 @@ namespace nova::renderer::rhi {
         const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
 
         // Make maps of all the types of things we care about
-        std::unordered_map<std::string, spirv_cross::Resource> spirv_sampled_images;
+        eastl::unordered_map<eastl::string, spirv_cross::Resource> spirv_sampled_images;
         spirv_sampled_images.reserve(resources.sampled_images.size());
         for(const spirv_cross::Resource& sampled_image : resources.sampled_images) {
             spirv_sampled_images[sampled_image.name] = sampled_image;
         }
 
-        std::unordered_map<std::string, spirv_cross::Resource> spirv_uniform_buffers;
+        eastl::unordered_map<eastl::string, spirv_cross::Resource> spirv_uniform_buffers;
         spirv_uniform_buffers.reserve(resources.uniform_buffers.size());
         for(const spirv_cross::Resource& uniform_buffer : resources.uniform_buffers) {
             spirv_uniform_buffers[uniform_buffer.name] = uniform_buffer;
         }
 
-        std::string shader_hlsl = shader_compiler.compile();
+        eastl::string shader_hlsl = shader_compiler.compile();
 
         const fs::path& filename = shader.filename;
         fs::path debug_path = filename.filename();
@@ -920,7 +920,7 @@ namespace nova::renderer::rhi {
         ComPtr<ID3D12ShaderReflection> shader_reflector;
         hr = D3DReflect(shader_blob->GetBufferPointer(), shader_blob->GetBufferSize(), IID_PPV_ARGS(&shader_reflector));
         if(FAILED(hr)) {
-            throw shaderpack::shader_reflection_failed("Could not create reflector, error code " + std::to_string(hr));
+            throw shaderpack::shader_reflection_failed("Could not create reflector, error code " + eastl::to_string(hr));
         }
 
         D3D12_SHADER_DESC shader_desc;
@@ -929,14 +929,14 @@ namespace nova::renderer::rhi {
             throw shaderpack::shader_reflection_failed("Could not get shader description");
         }
 
-        std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC> shader_inputs(shader_desc.BoundResources);
+        eastl::unordered_map<eastl::string, D3D12_SHADER_INPUT_BIND_DESC> shader_inputs(shader_desc.BoundResources);
         // For each resource in the DX12 shader, find its set and binding in SPIR-V. Translate the sets and bindings into places in
         // descriptor tables
         for(uint32_t i = 0; i < shader_desc.BoundResources; i++) {
             D3D12_SHADER_INPUT_BIND_DESC bind_desc;
             hr = shader_reflector->GetResourceBindingDesc(i, &bind_desc);
             if(FAILED(hr)) {
-                throw shaderpack::shader_reflection_failed("Could not get description for bind point " + std::to_string(i));
+                throw shaderpack::shader_reflection_failed("Could not get description for bind point " + eastl::to_string(i));
             }
 
             D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type = {};
@@ -984,7 +984,7 @@ namespace nova::renderer::rhi {
     void add_resource_to_descriptor_table(const D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type,
                                           const D3D12_SHADER_INPUT_BIND_DESC& bind_desc,
                                           const uint32_t set,
-                                          std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
+                                          eastl::unordered_map<uint32_t, eastl::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
         D3D12_DESCRIPTOR_RANGE1 range = {};
         range.BaseShaderRegister = bind_desc.BindPoint;
         range.RegisterSpace = bind_desc.Space;

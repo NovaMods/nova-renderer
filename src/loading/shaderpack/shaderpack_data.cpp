@@ -31,7 +31,7 @@ namespace nova::renderer::shaderpack {
         return {std::round(pixel_width), std::round(pixel_height)};
     }
 
-    PixelFormatEnum pixel_format_enum_from_string(const std::string& str) {
+    PixelFormatEnum pixel_format_enum_from_string(const eastl::string& str) {
         if(str == "RGBA8") {
             return PixelFormatEnum::RGBA8;
         }
@@ -48,11 +48,11 @@ namespace nova::renderer::shaderpack {
             return PixelFormatEnum::DepthStencil;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported pixel format " << str;
-        throw validation_failure_exception("Unsupported pixel format " + str);
+        NOVA_LOG(ERROR) << "Unsupported pixel format " << str.c_str();
+        return {};
     }
 
-    TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const std::string& str) {
+    TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const eastl::string& str) {
         if(str == "ScreenRelative") {
             return TextureDimensionTypeEnum ::ScreenRelative;
         }
@@ -60,11 +60,11 @@ namespace nova::renderer::shaderpack {
             return TextureDimensionTypeEnum::Absolute;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported texture dimension type " << str;
-        throw validation_failure_exception("Unsupported texture dimension type " + str);
+        NOVA_LOG(ERROR) << "Unsupported texture dimension type " << str.c_str();
+        return {};
     }
 
-    TextureFilterEnum texture_filter_enum_from_string(const std::string& str) {
+    TextureFilterEnum texture_filter_enum_from_string(const eastl::string& str) {
         if(str == "TexelAA") {
             return TextureFilterEnum::TexelAA;
         }
@@ -75,11 +75,11 @@ namespace nova::renderer::shaderpack {
             return TextureFilterEnum::Point;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported texture filter " << str;
-        throw validation_failure_exception("Unsupported texture filter " + str);
+        NOVA_LOG(ERROR) << "Unsupported texture filter " << str.c_str();
+        return {};
     }
 
-    WrapModeEnum wrap_mode_enum_from_string(const std::string& str) {
+    WrapModeEnum wrap_mode_enum_from_string(const eastl::string& str) {
         if(str == "Repeat") {
             return WrapModeEnum::Repeat;
         }
@@ -87,11 +87,11 @@ namespace nova::renderer::shaderpack {
             return WrapModeEnum::Clamp;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported wrap mode " << str;
-        throw validation_failure_exception("Unsupported wrap mode " + str);
+        NOVA_LOG(ERROR) << "Unsupported wrap mode " << str.c_str();
+        return {};
     }
 
-    StencilOpEnum stencil_op_enum_from_string(const std::string& str) {
+    StencilOpEnum stencil_op_enum_from_string(const eastl::string& str) {
         if(str == "Keep") {
             return StencilOpEnum::Keep;
         }
@@ -117,11 +117,11 @@ namespace nova::renderer::shaderpack {
             return StencilOpEnum::Invert;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported stencil op " << str;
-        throw validation_failure_exception("Unsupported stencil op " + str);
+        NOVA_LOG(ERROR) << "Unsupported stencil op " << str.c_str();
+        return {};
     }
 
-    CompareOpEnum compare_op_enum_from_string(const std::string& str) {
+    CompareOpEnum compare_op_enum_from_string(const eastl::string& str) {
         if(str == "Never") {
             return CompareOpEnum::Never;
         }
@@ -147,11 +147,11 @@ namespace nova::renderer::shaderpack {
             return CompareOpEnum::Always;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported compare op " << str;
-        throw validation_failure_exception("Unsupported compare op " + str);
+        NOVA_LOG(ERROR) << "Unsupported compare op " << str.c_str();
+        return {};
     }
 
-    MsaaSupportEnum msaa_support_enum_from_string(const std::string& str) {
+    MsaaSupportEnum msaa_support_enum_from_string(const eastl::string& str) {
         if(str == "MSAA") {
             return MsaaSupportEnum::MSAA;
         }
@@ -162,11 +162,11 @@ namespace nova::renderer::shaderpack {
             return MsaaSupportEnum::None;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported antialiasing mode " << str;
-        throw validation_failure_exception("Unsupported antialiasing mode " + str);
+        NOVA_LOG(ERROR) << "Unsupported antialiasing mode " << str.c_str();
+        return {};
     }
 
-    PrimitiveTopologyEnum primitive_topology_enum_from_string(const std::string& str) {
+    PrimitiveTopologyEnum primitive_topology_enum_from_string(const eastl::string& str) {
         if(str == "Triangles") {
             return PrimitiveTopologyEnum::Triangles;
         }
@@ -174,11 +174,11 @@ namespace nova::renderer::shaderpack {
             return PrimitiveTopologyEnum::Lines;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported primitive mode " << str;
-        throw validation_failure_exception("Unsupported primitive mode " + str);
+        NOVA_LOG(ERROR) << "Unsupported primitive mode " << str.c_str();
+        return {};
     }
 
-    BlendFactorEnum blend_factor_enum_from_string(const std::string& str) {
+    BlendFactorEnum blend_factor_enum_from_string(const eastl::string& str) {
         if(str == "One") {
             return BlendFactorEnum::One;
         }
@@ -210,11 +210,11 @@ namespace nova::renderer::shaderpack {
             return BlendFactorEnum::OneMinusDstAlpha;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported blend factor " << str;
-        throw validation_failure_exception("Unsupported blend factor " + str);
+        NOVA_LOG(ERROR) << "Unsupported blend factor " << str.c_str();
+        return {};
     }
 
-    RenderQueueEnum render_queue_enum_from_string(const std::string& str) {
+    RenderQueueEnum render_queue_enum_from_string(const eastl::string& str) {
         if(str == "Transparent") {
             return RenderQueueEnum::Transparent;
         }
@@ -225,11 +225,11 @@ namespace nova::renderer::shaderpack {
             return RenderQueueEnum::Cutout;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported render queue " << str;
-        throw validation_failure_exception("Unsupported render queue " + str);
+        NOVA_LOG(ERROR) << "Unsupported render queue " << str.c_str();
+        return {};
     }
 
-    StateEnum state_enum_from_string(const std::string& str) {
+    StateEnum state_enum_from_string(const eastl::string& str) {
         if(str == "Blending") {
             return StateEnum::Blending;
         }
@@ -261,11 +261,11 @@ namespace nova::renderer::shaderpack {
             return StateEnum::DisableAlphaWrite;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported state enum " << str;
-        throw validation_failure_exception("Unsupported state enum " + str);
+        NOVA_LOG(ERROR) << "Unsupported state enum " << str.c_str();
+        return {};
     }
 
-    VertexFieldEnum vertex_field_enum_from_string(const std::string& str) {
+    VertexFieldEnum vertex_field_enum_from_string(const eastl::string& str) {
         if(str == "Position") {
             return VertexFieldEnum::Position;
         }
@@ -294,11 +294,11 @@ namespace nova::renderer::shaderpack {
             return VertexFieldEnum::McEntityId;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported vertex field " << str;
-        throw validation_failure_exception("Unsupported vertex field " + str);
+        NOVA_LOG(ERROR) << "Unsupported vertex field " << str.c_str();
+        return {};
     }
 
-    std::string to_string(const PixelFormatEnum val) {
+    eastl::string to_string(const PixelFormatEnum val) {
         switch(val) {
             case PixelFormatEnum::RGBA8:
                 return "RGBA8";
@@ -319,7 +319,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const TextureDimensionTypeEnum val) {
+    eastl::string to_string(const TextureDimensionTypeEnum val) {
         switch(val) {
             case TextureDimensionTypeEnum::ScreenRelative:
                 return "ScreenRelative";
@@ -331,7 +331,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const TextureFilterEnum val) {
+    eastl::string to_string(const TextureFilterEnum val) {
         switch(val) {
             case TextureFilterEnum::TexelAA:
                 return "TexelAA";
@@ -346,7 +346,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const WrapModeEnum val) {
+    eastl::string to_string(const WrapModeEnum val) {
         switch(val) {
             case WrapModeEnum::Repeat:
                 return "Repeat";
@@ -358,7 +358,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const StencilOpEnum val) {
+    eastl::string to_string(const StencilOpEnum val) {
         switch(val) {
             case StencilOpEnum::Keep:
                 return "Keep";
@@ -388,7 +388,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const CompareOpEnum val) {
+    eastl::string to_string(const CompareOpEnum val) {
         switch(val) {
             case CompareOpEnum::Never:
                 return "Never";
@@ -418,7 +418,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const MsaaSupportEnum val) {
+    eastl::string to_string(const MsaaSupportEnum val) {
         switch(val) {
             case MsaaSupportEnum::MSAA:
                 return "MSAA";
@@ -433,7 +433,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const PrimitiveTopologyEnum val) {
+    eastl::string to_string(const PrimitiveTopologyEnum val) {
         switch(val) {
             case PrimitiveTopologyEnum::Triangles:
                 return "Triangles";
@@ -445,7 +445,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const BlendFactorEnum val) {
+    eastl::string to_string(const BlendFactorEnum val) {
         switch(val) {
             case BlendFactorEnum::One:
                 return "One";
@@ -481,7 +481,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const RenderQueueEnum val) {
+    eastl::string to_string(const RenderQueueEnum val) {
         switch(val) {
             case RenderQueueEnum::Transparent:
                 return "Transparent";
@@ -496,7 +496,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const StateEnum val) {
+    eastl::string to_string(const StateEnum val) {
         switch(val) {
             case StateEnum::Blending:
                 return "Blending";
@@ -532,7 +532,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const VertexFieldEnum val) {
+    eastl::string to_string(const VertexFieldEnum val) {
         switch(val) {
             case VertexFieldEnum::Position:
                 return "Position";

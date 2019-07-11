@@ -231,7 +231,7 @@ namespace nova::renderer::rhi {
         return vk_flags;
     }
 
-    std::string vk_result_to_string(VkResult result) {
+    eastl::string vk_result_to_string(VkResult result) {
         switch(result) {
             case VK_SUCCESS:
                 return "VK_SUCCESS";
@@ -302,7 +302,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    std::string to_string(VkObjectType obj_type) {
+    eastl::string to_string(VkObjectType obj_type) {
         switch(obj_type) {
             case VK_OBJECT_TYPE_UNKNOWN:
                 return "Unknown";
@@ -385,8 +385,8 @@ namespace nova::renderer::rhi {
         }
     }
 
-    std::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions() {
-        static std::vector<VkVertexInputBindingDescription> input_descriptions = {
+    eastl::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions() {
+        static eastl::vector<VkVertexInputBindingDescription> input_descriptions = {
             VkVertexInputBindingDescription{
                 0,                          // binding
                 sizeof(FullVertex),         // stride
@@ -427,8 +427,8 @@ namespace nova::renderer::rhi {
         return input_descriptions;
     }
 
-    std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions() {
-        static std::vector<VkVertexInputAttributeDescription> attribute_descriptions = {
+    eastl::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions() {
+        static eastl::vector<VkVertexInputAttributeDescription> attribute_descriptions = {
             // Position
             VkVertexInputAttributeDescription{
                 0,                          // location

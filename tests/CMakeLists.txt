@@ -20,7 +20,12 @@ nova_format(nova-test-end-to-end)
 ##############
 # Unit tests #
 ##############
-set(NOVA_UNIT_TEST_SOURCES unit_tests/loading/filesystem_test.cpp src/general_test_setup.hpp unit_tests/loading/shaderpack/shaderpack_validator_tests.cpp)
+set(NOVA_UNIT_TEST_SOURCES 
+	unit_tests/loading/filesystem_test.cpp 
+	src/general_test_setup.hpp 
+	unit_tests/loading/shaderpack/shaderpack_validator_tests.cpp
+	)
+
 add_executable(nova-test-unit ${NOVA_UNIT_TEST_SOURCES})
 target_compile_definitions(nova-test-unit PRIVATE CMAKE_DEFINED_RESOURCES_PREFIX="${CMAKE_CURRENT_LIST_DIR}/resources/")
 target_link_libraries(nova-test-unit PRIVATE nova-renderer GTest::Main Threads::Threads)

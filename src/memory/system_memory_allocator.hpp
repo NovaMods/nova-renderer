@@ -24,7 +24,7 @@ namespace bvestl {
              * \param alloc_strategy The allocation strategy to use when allocating memory
              */
             SystemMemoryAllocator(uint8_t* memory, const Bytes size, eastl::unique_ptr<AllocationStrategy> alloc_strategy)
-                : memory(memory), memory_size(size), alloc_strategy(std::move(alloc_strategy)) {}
+                : memory(memory), memory_size(size), alloc_strategy(eastl::move(alloc_strategy)) {}
 
             ~SystemMemoryAllocator() override = default;
 

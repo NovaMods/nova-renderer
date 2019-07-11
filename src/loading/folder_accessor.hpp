@@ -1,30 +1,21 @@
-#pragma once
+/*!
+ * \author ddubois
+ * \date 14-Aug-18.
+ */
+
+#ifndef NOVA_RENDERER_RESOURCEPACK_H
+#define NOVA_RENDERER_RESOURCEPACK_H
 
 #include <mutex>
-#include <optional>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
 #include "nova_renderer/util/filesystem.hpp"
 #include "nova_renderer/util/utils.hpp"
+#include <EASTL/optional.h>
+#include <EASTL/string.h>
+#include <EASTL/unordered_map.h>
+#include <EASTL/vector.h>
+#include <EASTL/shared_ptr.h>
 
 namespace nova::renderer {
-    NOVA_EXCEPTION(resource_not_found_exception);
-
-    class FilesystemException : public std::exception { // Convert fs::filesystem_error into a nova class
-    private:
-        const std::string message;
-        const std::error_code error_code;
-
-    public:
-        explicit FilesystemException(const fs::filesystem_error& error) : message(error.what()), error_code(error.code()) {}
-
-        [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
-
-        [[nodiscard]] std::error_code code() const noexcept { return error_code; }
-    };
-
     /*!
      * \brief A collection of resources on the filsysstem
      *
@@ -65,7 +56,7 @@ namespace nova::renderer {
          * \param resource_path The path to the resource to load, relative to this resourcepack's root
          * \return All the bytes in the loaded resource
          */
-        virtual std::string read_text_file(const fs::path& resource_path) = 0;
+        virtual eastl::string read_text_file(const fs::path& resource_path) = 0;
 
         /*!
          * \brief Loads the file at the provided path as a series of 32-bit numbers
@@ -73,19 +64,19 @@ namespace nova::renderer {
          * \param resource_path The path to the SPIR-V file to load, relative to this resourcepack's root
          * \return All the 32-bit numbers in the SPIR-V file
          */
-        std::vector<uint32_t> read_spirv_file(fs::path& resource_path);
+        eastl::vector<uint32_t> read_spirv_file(fs::path& resource_path);
 
         /*!
          * \brief Retrieves the paths of all the items in the specified folder
          * \param folder The folder to get all items from
          * \return A list of all the paths in the provided folder
          */
-        virtual std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) = 0;
+        virtual eastl::vector<fs::path> get_all_items_in_folder(const fs::path& folder) = 0;
 
-        std::shared_ptr<fs::path> get_root() const;
+        eastl::shared_ptr<fs::path> get_root() const;
 
     protected:
-        std::shared_ptr<fs::path> root_folder;
+        eastl::shared_ptr<fs::path> root_folder;
 
         /*!
          * \brief I expect certain resources, like textures, to be requested a lot as Nova streams them in and out of
@@ -93,11 +84,11 @@ namespace nova::renderer {
          * requested and we don't know if it exists. However, if a path has been checked before, we can now save an IO
          * call!
          */
-        std::unordered_map<std::string, bool> resource_existence;
+        eastl::unordered_map<eastl::string, bool> resource_existence;
 
-        std::unique_ptr<std::mutex> resource_existence_mutex;
+        eastl::unique_ptr<std::mutex> resource_existence_mutex;
 
-        std::optional<bool> does_resource_exist_in_map(const std::string& resource_string) const;
+        eastl::optional<bool> does_resource_exist_in_map(const eastl::string& resource_string) const;
 
         /*!
          * \brief Like the non-internal one, but does not add the folder's root to resource_path
@@ -115,3 +106,5 @@ namespace nova::renderer {
      */
     bool has_root(const fs::path& path, const fs::path& root);
 } // namespace nova::renderer
+
+#endif // NOVA_RENDERER_RESOURCEPACK_H

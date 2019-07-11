@@ -1,28 +1,30 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include <EASTL/string.h>
+#include <EASTL/vector.h>
+
+#include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
 
-    struct Semver {
+    struct NOVA_API Semver {
         uint32_t major;
         uint32_t minor;
         uint32_t patch;
     };
 
-    enum class GraphicsApi {
+    enum class NOVA_API GraphicsApi {
         Vulkan,
         Dx12,
         Gl2,
     };
 
-    struct NovaSettings;
+    struct NOVA_API NovaSettings;
 
     /*!
      * \brief Anything which inherits from this class wants to know about the configuration and any changes to it
      */
-    class ConfigListener {
+    class NOVA_API ConfigListener {
     public:
 		virtual ~ConfigListener() = default;
 
@@ -55,14 +57,14 @@ namespace nova::renderer {
         virtual void on_config_loaded(const NovaSettings& config) = 0;
     };
 
-    struct NovaSettings {
+    struct NOVA_API NovaSettings {
         /*!
          * \brief Options for configuring the way mesh memory is allocated
          *
          * Nova tries to be clever and optimize how it draws meshes with indirect rendering. It shoves everything into
          * a handful of giant buffers, to facilitate indirect rendering. These options are how you configure that
          */
-        struct BlockAllocatorSettings {
+        struct NOVA_API BlockAllocatorSettings {
             /*!
              * \brief The total amount of memory that can be used
              *
@@ -91,7 +93,7 @@ namespace nova::renderer {
         /*!
          * \brief All options to turn on debugging functionality
          */
-        struct DebugOptions {
+        struct NOVA_API DebugOptions {
             /*!
              * \brief If false, all debugging behavior is disabled, even if individual options are turned on
              */
@@ -116,12 +118,12 @@ namespace nova::renderer {
                 /*!
                  * \brief The path to `renderdoc.dll` on your filesystem
                  */
-                std::string renderdoc_dll_path = R"(C:\Program Files\RenderDoc\renderdoc.dll)";
+                eastl::string renderdoc_dll_path = R"(C:\Program Files\RenderDoc\renderdoc.dll)";
 
                 /*!
                  * \brief The base path for RenderDoc captures
                  */
-                std::string capture_path = "logs/captures";
+                eastl::string capture_path = "logs/captures";
 
             } renderdoc;
         } debug;
@@ -129,23 +131,23 @@ namespace nova::renderer {
         /*!
          * \brief Settings that Nova can change, but which are still stored in a config
          */
-        struct CacheOptions {
+        struct NOVA_API CacheOptions {
             /*!
              * \brief The shaderpack that was most recently loaded
              *
              * Nova requires a shaderpack to render anything, so we need to know which one to load on application start
              */
-            std::string loaded_shaderpack = "DefaultShaderpack";
+            eastl::string loaded_shaderpack = "DefaultShaderpack";
         } cache;
 
         /*!
          * \brief Options about the window that Nova will live in
          */
-        struct WindowOptions {
+        struct NOVA_API WindowOptions {
             /*!
              * \brief The title of the Window
              */
-            std::string title = "Nova Renderer";
+            eastl::string title = "Nova Renderer";
 
             /*!
              * \brief The width of the window
@@ -161,11 +163,11 @@ namespace nova::renderer {
         /*!
          * \brief Options that are specific to Nova's Vulkan rendering backend
          */
-        struct VulkanOptions {
+        struct NOVA_API VulkanOptions {
             /*!
              * \brief The application name to pass to Vulkan
              */
-            std::string application_name = "Nova Renderer";
+            eastl::string application_name = "Nova Renderer";
 
             /*!
              * \brief The application version to pass to Vulkan
@@ -176,7 +178,7 @@ namespace nova::renderer {
         /*!
          * \brief Options that are specific to Nova's DirectX 12 backend
          */
-        struct Dx12Options {
+        struct NOVA_API Dx12Options {
         } dx12;
 
         /*!
@@ -189,7 +191,7 @@ namespace nova::renderer {
         /*!
          * \brief Information about the system we're running on
          */
-        struct SystemInfo {
+        struct NOVA_API SystemInfo {
             /*!
              * \brief Whether we're on a Unified Memory Architecture
              */
@@ -228,6 +230,6 @@ namespace nova::renderer {
          */
         void update_config_loaded();
 
-        std::vector<ConfigListener*> config_change_listeners;
+        eastl::vector<ConfigListener*> config_change_listeners;
     };
 } // namespace nova::renderer

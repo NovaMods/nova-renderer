@@ -1,17 +1,17 @@
 #pragma once
 
-#include "nova_renderer/polyalloc.hpp"
+#include <EASTL/string.h>
+#include <EASTL/unordered_map.h>
 #include <glm/glm.hpp>
-#include <string>
-#include <unordered_map>
 #include "device_memory_resource.hpp"
+#include "nova_renderer/polyalloc.hpp"
 #include "nova_renderer/rhi_enums.hpp"
 #include "shaderpack_data.hpp"
 
 namespace nova::renderer::rhi {
 
 #pragma region Structs
-    struct BufferCreateInfo {
+    struct NOVA_API BufferCreateInfo {
 
         uint64_t size = 0;
 
@@ -20,7 +20,7 @@ namespace nova::renderer::rhi {
         DeviceMemoryAllocation allocation;
     };
 
-    struct DeviceMemory {};
+    struct NOVA_API DeviceMemory {};
 
     /*!
      * \brief A resource
@@ -28,30 +28,30 @@ namespace nova::renderer::rhi {
      * Resources may by dynamic of static. Dynamic resources are updated after they are created, possibly by a shader,
      * while static resources are loaded once and that's that
      */
-    struct Resource {
+    struct NOVA_API Resource {
         ResourceType type;
         bool is_dynamic = false;
     };
 
-    struct Sampler {};
+    struct NOVA_API Sampler {};
 
-    struct Image : Resource {
+    struct NOVA_API Image : Resource {
         bool is_depth_tex = false;
     };
 
-    struct Buffer : Resource {
+    struct NOVA_API Buffer : Resource {
         uint32_t size = 0;
     };
 
-    struct Framebuffer {
+    struct NOVA_API Framebuffer {
         glm::uvec2 size;
     };
 
-    struct Renderpass {
+    struct NOVA_API Renderpass {
         bool writes_to_backbuffer = false;
     };
 
-    struct ResourceBindingDescription {
+    struct NOVA_API ResourceBindingDescription {
         /*!
          * \brief Descriptor set that his binding belongs to
          */
@@ -85,23 +85,23 @@ namespace nova::renderer::rhi {
     /*!
      * \brief The interface for a pipeline. Includes both inputs (descriptors) and outputs (framebuffers)
      */
-    struct PipelineInterface {
-        std::unordered_map<std::string, ResourceBindingDescription> bindings;
+    struct NOVA_API PipelineInterface {
+        eastl::unordered_map<eastl::string, ResourceBindingDescription> bindings;
     };
 
-    struct Pipeline {};
+    struct NOVA_API Pipeline {};
 
-    struct Semaphore {};
+    struct NOVA_API Semaphore {};
 
-    struct PresentSemaphore {};
+    struct NOVA_API PresentSemaphore {};
 
-    struct Fence {};
+    struct NOVA_API Fence {};
 
-    struct DescriptorPool {};
+    struct NOVA_API DescriptorPool {};
 
-    struct DescriptorSet {};
+    struct NOVA_API DescriptorSet {};
 
-    struct ResourceBarrier {
+    struct NOVA_API ResourceBarrier {
         Resource* resource_to_barrier;
 
         ResourceState initial_state;
@@ -125,13 +125,13 @@ namespace nova::renderer::rhi {
         };
     };
 
-    struct DescriptorImageUpdate {
+    struct NOVA_API DescriptorImageUpdate {
         const Image* image;
         shaderpack::TextureFormat format;
         Sampler* sampler;
     };
 
-    struct DescriptorSetWrite {
+    struct NOVA_API DescriptorSetWrite {
         const DescriptorSet* set;
         uint32_t binding;
         DescriptorImageUpdate* image_info;
@@ -139,5 +139,5 @@ namespace nova::renderer::rhi {
     };
 #pragma endregion
 
-    ShaderStageFlags operator|=(const ShaderStageFlags lhs, const ShaderStageFlags rhs);
+    ShaderStageFlags NOVA_API operator|=(const ShaderStageFlags lhs, const ShaderStageFlags rhs);
 } // namespace nova::renderer::rhi

@@ -1,32 +1,36 @@
-#include "nova_renderer/util/utils.hpp"
+/*!
+ * \author David
+ * \date 18-May-16.
+ */
 
+#include "nova_renderer/util/utils.hpp"
 #include "logger.hpp"
 
 namespace nova::renderer {
     // taken from https://www.fluentcpp.com/2017/04/21/how-to-split-a-string-in-c/
-    std::vector<std::string> split(const std::string& s, char delim) {
-        std::vector<std::string> tokens;
+    eastl::vector<eastl::string> split(const eastl::string& s, char delim) {
+        eastl::vector<eastl::string> tokens;
         std::string token;
-        std::istringstream tokenStream(s);
+        std::istringstream tokenStream(s.c_str());
         while(std::getline(tokenStream, token, delim)) {
-            tokens.push_back(token);
+            tokens.push_back(token.c_str());
         }
         return tokens;
     }
 
-    std::string join(const std::vector<std::string>& strings, const std::string& joiner = ", ") {
+    eastl::string join(const eastl::vector<eastl::string>& strings, const eastl::string& joiner = ", ") {
         std::stringstream ss;
         for(size_t i = 0; i < strings.size(); i++) {
-            ss << strings[i];
+            ss << strings[i].c_str();
             if(i < strings.size() - 1) {
-                ss << joiner;
+                ss << joiner.c_str();
             }
         }
 
-        return ss.str();
+        return ss.str().c_str();
     }
 
-    std::string print_color(unsigned int color) {
+    eastl::string print_color(unsigned int color) {
         auto red = color >> 24;
         auto green = (color >> 16) & 0xFF;
         auto blue = (color >> 8) & 0xFF;
@@ -35,61 +39,39 @@ namespace nova::renderer {
         std::stringstream str;
         str << "(" << red << ", " << green << ", " << blue << ", " << alpha << ")";
 
-        return str.str();
+        return str.str().c_str();
     }
 
-    std::string print_array(int* const data, int size) {
+    eastl::string print_array(int* const data, int size) {
         std::stringstream ss;
 
         for(int i = 0; i < size; i++) {
             ss << data[i] << " ";
         }
 
-        return ss.str();
+        return ss.str().c_str();
     }
 
-    bool ends_with(const std::string& string, const std::string& ending) {
+    bool ends_with(const eastl::string& string, const eastl::string& ending) {
         if(string.length() >= ending.length()) {
             return (0 == string.compare(string.length() - ending.length(), ending.length(), ending));
         }
         return false;
     }
 
-    void write_to_file(const std::string& data, const fs::path& filepath) {
+    void write_to_file(const eastl::string& data, const fs::path& filepath) {
         std::ofstream os(filepath);
         if(os.good()) {
-            os << data;
+            os << data.c_str();
         }
         os.close();
     }
 
-    void write_to_file(const std::vector<uint32_t>& data, const fs::path& filepath) {
+    void write_to_file(const eastl::vector<uint32_t>& data, const fs::path& filepath) {
         std::ofstream os(filepath, std::ios::binary);
         if(os.good()) {
             os.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size() * 4));
         }
         os.close();
     }
-
-    NovaException::NovaException() : msg(generate_msg(typeid(*this).name(), std::nullopt)) {}
-
-    NovaException::NovaException(const std::exception& cause) : msg(generate_msg("", cause)) {}
-
-    NovaException::NovaException(const std::string& msg) : msg(generate_msg(msg, std::nullopt)) {}
-
-    NovaException::NovaException(const std::string& msg, const std::exception& cause) : msg(generate_msg(msg, cause)) {}
-
-    std::string NovaException::generate_msg(const std::string& msg, const std::optional<std::exception>& exception) {
-        std::stringstream ss;
-
-        ss << msg;
-
-        if(exception) {
-            ss << "\nCaused by: " << exception->what();
-        }
-
-        return ss.str();
-    }
-
-    const char* NovaException::what() const noexcept { return msg.c_str(); }
 } // namespace nova::renderer

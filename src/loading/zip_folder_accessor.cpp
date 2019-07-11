@@ -1,6 +1,6 @@
 #include "zip_folder_accessor.hpp"
 
-#include <array>
+#include <EASTL/array.h>
 #include <memory>
 
 #include "nova_renderer/util/utils.hpp"
@@ -12,8 +12,7 @@ namespace nova::renderer {
         const auto folder_string = folder.string();
 
         if(mz_zip_reader_init_file(&zip_archive, folder_string.c_str(), 0) == 0) {
-            NOVA_LOG(DEBUG) << "Could not open zip archive " << folder_string;
-            throw resource_not_found_exception(folder_string);
+            NOVA_LOG(ERROR) << "Could not open zip archive " << folder_string;
         }
 
         build_file_tree();
@@ -24,15 +23,14 @@ namespace nova::renderer {
         delete_file_tree(files);
     }
 
-    void ZipFolderAccessor::delete_file_tree(std::unique_ptr<FileTreeNode>& node) { node = nullptr; }
+    void ZipFolderAccessor::delete_file_tree(eastl::unique_ptr<FileTreeNode>& node) { node = nullptr; }
 
-    std::string ZipFolderAccessor::read_text_file(const fs::path& resource_path) {
+    eastl::string ZipFolderAccessor::read_text_file(const fs::path& resource_path) {
         const fs::path full_path = *root_folder / resource_path;
 
-        const std::string resource_string = full_path.string();
+        const eastl::string resource_string = full_path.string().c_str();
         if(!does_resource_exist_on_filesystem(full_path)) {
-            NOVA_LOG(DEBUG) << "Resource at path " << resource_string << " does not exist";
-            throw resource_not_found_exception(resource_string);
+            NOVA_LOG(ERROR) << "Resource at path " << resource_string.c_str() << " does not exist";
         }
 
         const uint32_t file_idx = resource_indexes.at(resource_string);
@@ -41,13 +39,12 @@ namespace nova::renderer {
         const mz_bool has_file_stat = mz_zip_reader_file_stat(&zip_archive, file_idx, &file_stat);
         if(has_file_stat == 0) {
             const mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
-            const std::string err = mz_zip_get_error_string(err_code);
+            const eastl::string err = mz_zip_get_error_string(err_code);
 
-            NOVA_LOG(DEBUG) << "Could not get information for file " << resource_string << ": " << err;
-            throw resource_not_found_exception(resource_string);
+            NOVA_LOG(ERROR) << "Could not get information for file " << resource_string.c_str() << ": " << err.c_str();
         }
 
-        std::vector<char> resource_buffer;
+        eastl::vector<char> resource_buffer;
         resource_buffer.reserve(static_cast<uint64_t>(file_stat.m_uncomp_size));
 
         const mz_bool file_extracted = mz_zip_reader_extract_to_mem(&zip_archive,
@@ -57,24 +54,23 @@ namespace nova::renderer {
                                                                     0);
         if(file_extracted == 0) {
             const mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
-            const std::string err = mz_zip_get_error_string(err_code);
+            const eastl::string err = mz_zip_get_error_string(err_code);
 
-            NOVA_LOG(DEBUG) << "Could not extract file " << resource_string << ": " << err;
-            throw resource_not_found_exception(resource_string);
+            NOVA_LOG(ERROR) << "Could not extract file " << resource_string.c_str() << ": " << err.c_str();
         }
 
-        return std::string{resource_buffer.data()};
+        return eastl::string{resource_buffer.data()};
     }
 
-    std::vector<fs::path> ZipFolderAccessor::get_all_items_in_folder(const fs::path& folder) {
-        std::string folder_stringname = folder.string();
-        std::vector<std::string> folder_path_parts = split(folder.string(), '/');
+    eastl::vector<fs::path> ZipFolderAccessor::get_all_items_in_folder(const fs::path& folder) {
+        const eastl::string folder_stringname = folder.string().c_str();
+        eastl::vector<eastl::string> folder_path_parts = split(folder_stringname, '/');
 
         FileTreeNode* cur_node = files.get();
         // Get the node at this path
-        for(const std::string& part : folder_path_parts) {
+        for(const eastl::string& part : folder_path_parts) {
             bool found_node = false;
-            for(std::unique_ptr<FileTreeNode>& child : cur_node->children) {
+            for(eastl::unique_ptr<FileTreeNode>& child : cur_node->children) {
                 if(child->name == part) {
                     cur_node = child.get();
                     found_node = true;
@@ -83,35 +79,35 @@ namespace nova::renderer {
             }
 
             if(!found_node) {
-                throw resource_not_found_exception(folder.string());
+                NOVA_LOG(ERROR) << "Couldn't find node " << folder.string();
             }
         }
 
-        std::vector<fs::path> children_paths;
+        eastl::vector<fs::path> children_paths;
         children_paths.reserve(cur_node->children.size());
-        for(const std::unique_ptr<FileTreeNode>& child : cur_node->children) {
-            std::string s = child->get_full_path();
-            children_paths.emplace_back(s);
+        for(const eastl::unique_ptr<FileTreeNode>& child : cur_node->children) {
+            eastl::string s = child->get_full_path();
+            children_paths.emplace_back(s.c_str());
         }
 
         return children_paths;
     }
 
     void ZipFolderAccessor::build_file_tree() {
-        uint32_t num_files = mz_zip_reader_get_num_files(&zip_archive);
+        const uint32_t num_files = mz_zip_reader_get_num_files(&zip_archive);
 
-        std::vector<std::string> all_filenames;
+        eastl::vector<eastl::string> all_filenames;
         all_filenames.resize(num_files);
-        std::array<char, 1024> filename_buffer{0};
+        eastl::array<char, 1024> filename_buffer{0};
 
         for(uint32_t i = 0; i < num_files; i++) {
-            uint32_t num_bytes_in_filename = mz_zip_reader_get_filename(&zip_archive, i, filename_buffer.data(), 1024);
+            const uint32_t num_bytes_in_filename = mz_zip_reader_get_filename(&zip_archive, i, filename_buffer.data(), 1024);
             filename_buffer[num_bytes_in_filename] = '\0';
             all_filenames.emplace_back(filename_buffer.data());
         }
 
         // Build a tree from all the files
-        for(const std::string& filename : all_filenames) {
+        for(const eastl::string& filename : all_filenames) {
             auto filename_parts = split(filename, '/');
             auto cur_node = files.get();
             for(const auto& part : filename_parts) {
@@ -131,12 +127,12 @@ namespace nova::renderer {
                 }
 
                 // We didn't find a node for the current part of the path, so let's add one
-                auto new_node = std::make_unique<FileTreeNode>();
+                auto new_node = eastl::make_unique<FileTreeNode>();
                 new_node->name = part;
                 new_node->parent = cur_node;
 
                 auto* new_node_raw = new_node.get();
-                cur_node->children.push_back(std::move(new_node));
+                cur_node->children.push_back(eastl::move(new_node));
 
                 cur_node = new_node_raw;
             }
@@ -144,13 +140,13 @@ namespace nova::renderer {
     }
 
     bool ZipFolderAccessor::does_resource_exist_on_filesystem(const fs::path& resource_path) {
-        const auto resource_string = resource_path.string();
+        const auto resource_string = resource_path.string().c_str();
         const auto existence_maybe = does_resource_exist_in_map(resource_string);
         if(existence_maybe) {
             return existence_maybe.value();
         }
 
-        int32_t ret_val = mz_zip_reader_locate_file(&zip_archive, resource_string.c_str(), "", 0);
+        int32_t ret_val = mz_zip_reader_locate_file(&zip_archive, resource_string, "", 0);
         if(ret_val != -1) {
             // resource found!
             resource_indexes.emplace(resource_string, ret_val);
@@ -162,7 +158,7 @@ namespace nova::renderer {
         return false;
     }
 
-    void print_file_tree(const std::unique_ptr<FileTreeNode>& folder, uint32_t depth) {
+    void print_file_tree(const eastl::unique_ptr<FileTreeNode>& folder, uint32_t depth) {
         if(folder == nullptr) {
             return;
         }
@@ -172,7 +168,7 @@ namespace nova::renderer {
             ss << "    ";
         }
 
-        ss << folder->name;
+        ss << folder->name.c_str();
         NOVA_LOG(INFO) << ss.str();
 
         for(const auto& child : folder->children) {
@@ -180,8 +176,8 @@ namespace nova::renderer {
         }
     }
 
-    std::string FileTreeNode::get_full_path() const {
-        std::vector<std::string> names;
+    eastl::string FileTreeNode::get_full_path() const {
+        eastl::vector<eastl::string> names;
         const FileTreeNode* cur_node = this;
         while(cur_node != nullptr) {
             names.push_back(cur_node->name);

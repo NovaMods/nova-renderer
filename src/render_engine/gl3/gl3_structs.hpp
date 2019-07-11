@@ -9,7 +9,7 @@
 
 #include <condition_variable>
 #include <mutex>
-#include <unordered_map>
+#include <EASTL/unordered_map.h>
 
 #include "glad/glad.h"
 #include "nova_renderer/rhi_types.hpp"
@@ -48,7 +48,7 @@ namespace nova::renderer::rhi {
 
     struct Gl3DescriptorSet : DescriptorSet {
         // The index in the array is the binding in the set
-        std::vector<Gl3Descriptor> descriptors;
+        eastl::vector<Gl3Descriptor> descriptors;
     };
 
     struct Gl3SamplerDescriptor : DescriptorSet {
@@ -56,8 +56,8 @@ namespace nova::renderer::rhi {
     };
 
     struct Gl3DescriptorPool : DescriptorPool {
-        std::vector<Gl3Descriptor> descriptors;
-        std::vector<Gl3SamplerDescriptor> sampler_sets;
+        eastl::vector<Gl3Descriptor> descriptors;
+        eastl::vector<Gl3SamplerDescriptor> sampler_sets;
 
         bvestl::polyalloc::allocator_handle descriptor_allocator;
     };
@@ -67,7 +67,7 @@ namespace nova::renderer::rhi {
     };
 
     struct Gl3PipelineInterface : PipelineInterface {
-        std::unordered_map<std::string, GLuint> uniform_cache;
+        eastl::unordered_map<eastl::string, GLuint> uniform_cache;
     };
 
     struct Gl3Fence : Fence {

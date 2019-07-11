@@ -10,10 +10,10 @@
 
 #include <cstdint>
 #include <nlohmann/json.hpp>
-#include <optional>
-#include <string>
-#include <unordered_map>
-#include <vector>
+#include <EASTL/optional.h>
+#include <EASTL/string.h>
+#include <EASTL/unordered_map.h>
+#include <EASTL/vector.h>
 #include "util/filesystem.hpp"
 #include "util/utils.hpp"
 
@@ -22,12 +22,10 @@
 #include <glm/glm.hpp>
 
 namespace nova::renderer::shaderpack {
-    NOVA_EXCEPTION(validation_failure_exception);
-
     /*!
      * \brief Controls the rasterizer's state
      */
-    enum class StateEnum {
+    enum class NOVA_API StateEnum {
         /*!
          * \brief Enable blending for this material state
          */
@@ -79,14 +77,14 @@ namespace nova::renderer::shaderpack {
         DisableAlphaWrite,
     };
 
-    enum class TextureFilterEnum { TexelAA, Bilinear, Point };
+    enum class NOVA_API TextureFilterEnum { TexelAA, Bilinear, Point };
 
-    enum class WrapModeEnum { Repeat, Clamp };
+    enum class NOVA_API WrapModeEnum { Repeat, Clamp };
 
     /*!
      * \brief The kind of data in a vertex attribute
      */
-    enum class VertexFieldEnum {
+    enum class NOVA_API VertexFieldEnum {
         /*!
          * \brief The vertex position
          *
@@ -163,7 +161,7 @@ namespace nova::renderer::shaderpack {
     /*!
      * \brief Where the texture comes from
      */
-    enum class TextureLocationEnum {
+    enum class NOVA_API TextureLocationEnum {
         /*!
          * \brief The texture is written to by a shader
          */
@@ -180,15 +178,15 @@ namespace nova::renderer::shaderpack {
         InAppPackage
     };
 
-    enum class MsaaSupportEnum { MSAA, Both, None };
+    enum class NOVA_API MsaaSupportEnum { MSAA, Both, None };
 
-    enum class StencilOpEnum { Keep, Zero, Replace, Incr, IncrWrap, Decr, DecrWrap, Invert };
+    enum class NOVA_API StencilOpEnum { Keep, Zero, Replace, Incr, IncrWrap, Decr, DecrWrap, Invert };
 
-    enum class CompareOpEnum { Never, Less, LessEqual, Greater, GreaterEqual, Equal, NotEqual, Always };
+    enum class NOVA_API CompareOpEnum { Never, Less, LessEqual, Greater, GreaterEqual, Equal, NotEqual, Always };
 
-    enum class PrimitiveTopologyEnum { Triangles, Lines };
+    enum class NOVA_API PrimitiveTopologyEnum { Triangles, Lines };
 
-    enum class BlendFactorEnum {
+    enum class NOVA_API BlendFactorEnum {
         One,
         Zero,
         SrcColor,
@@ -201,9 +199,9 @@ namespace nova::renderer::shaderpack {
         OneMinusDstAlpha
     };
 
-    enum class RenderQueueEnum { Transparent, Opaque, Cutout };
+    enum class NOVA_API RenderQueueEnum { Transparent, Opaque, Cutout };
 
-    enum class PixelFormatEnum {
+    enum class NOVA_API PixelFormatEnum {
         RGBA8,
         RGBA16F,
         RGBA32F,
@@ -211,15 +209,15 @@ namespace nova::renderer::shaderpack {
         DepthStencil,
     };
 
-    enum class TextureDimensionTypeEnum { ScreenRelative, Absolute };
+    enum class NOVA_API TextureDimensionTypeEnum { ScreenRelative, Absolute };
 
     /*!
      * \brief Defines a sampler to use for a texture
      *
      * At the time of writing I'm not sure how this is corellated with a texture, but all well
      */
-    struct SamplerCreateInfo {
-        std::string name;
+    struct NOVA_API SamplerCreateInfo {
+        eastl::string name;
 
         /*!
          * \brief What kind of texture filter to use
@@ -235,7 +233,7 @@ namespace nova::renderer::shaderpack {
         WrapModeEnum wrap_mode{};
     };
 
-    struct StencilOpState {
+    struct NOVA_API StencilOpState {
         StencilOpEnum fail_op;
         StencilOpEnum pass_op;
         StencilOpEnum depth_fail_op;
@@ -244,66 +242,66 @@ namespace nova::renderer::shaderpack {
         uint32_t write_mask;
     };
 
-    struct ShaderSource {
+    struct NOVA_API ShaderSource {
         fs::path filename;
-        std::vector<uint32_t> source;
+        eastl::vector<uint32_t> source;
     };
 
     struct VertexFieldData {
-        std::string semantic_name;
+        eastl::string semantic_name;
         VertexFieldEnum field{};
     };
 
     /*!
      * \brief All the data that Nova uses to build a pipeline
      */
-    struct PipelineCreateInfo {
+    struct NOVA_API PipelineCreateInfo {
         /*!
          * \brief The name of this pipeline
          */
-        std::string name;
+        eastl::string name;
 
         /*!
          * \brief The pipeline that this pipeline inherits from
          */
-        std::optional<std::string> parent_name;
+        eastl::optional<eastl::string> parent_name;
 
         /*!
          * \brief The name of the pass that this pipeline belongs to
          */
-        std::string pass;
+        eastl::string pass;
 
         /*!
          * \brief All of the symbols in the shader that are defined by this state
          */
-        std::vector<std::string> defines;
+        eastl::vector<eastl::string> defines;
 
         /*!
          * \brief Defines the rasterizer state that's active for this pipeline
          */
-        std::vector<StateEnum> states;
+        eastl::vector<StateEnum> states;
 
         /*!
          * \brief Sets up the vertex fields that Nova will bind to this pipeline
          *
          * The index in the array is the attribute index that the vertex field is bound to
          */
-        std::vector<VertexFieldData> vertex_fields;
+        eastl::vector<VertexFieldData> vertex_fields;
 
         /*!
          * \brief The stencil buffer operations to perform on the front faces
          */
-        std::optional<StencilOpState> front_face;
+        eastl::optional<StencilOpState> front_face;
 
         /*!
          * \brief The stencil buffer operations to perform on the back faces
          */
-        std::optional<StencilOpState> back_face;
+        eastl::optional<StencilOpState> back_face;
 
         /*!
          * \brief The material to use if this one's shaders can't be found
          */
-        std::optional<std::string> fallback;
+        eastl::optional<eastl::string> fallback;
 
         /*!
          * \brief A bias to apply to the depth
@@ -374,10 +372,10 @@ namespace nova::renderer::shaderpack {
 
         ShaderSource vertex_shader{};
 
-        std::optional<ShaderSource> geometry_shader;
-        std::optional<ShaderSource> tessellation_control_shader;
-        std::optional<ShaderSource> tessellation_evaluation_shader;
-        std::optional<ShaderSource> fragment_shader;
+        eastl::optional<ShaderSource> geometry_shader;
+        eastl::optional<ShaderSource> tessellation_control_shader;
+        eastl::optional<ShaderSource> tessellation_evaluation_shader;
+        eastl::optional<ShaderSource> fragment_shader;
 
         /*!
          * \brief Merges this pipeline with the parent, returning the merged pipeline
@@ -385,7 +383,7 @@ namespace nova::renderer::shaderpack {
         [[nodiscard]] PipelineCreateInfo merge_with_parent(const PipelineCreateInfo& parent_pipeline) const;
     };
 
-    struct TextureFormat {
+    struct NOVA_API TextureFormat {
         /*!
          * \brief The format of the texture
          */
@@ -414,7 +412,7 @@ namespace nova::renderer::shaderpack {
     /*!
      * \brief A texture that a pass can use
      */
-    struct TextureCreateInfo {
+    struct  NOVA_API TextureCreateInfo {
         /*!
          * \brief The name of the texture
          *
@@ -449,24 +447,24 @@ namespace nova::renderer::shaderpack {
          * If you use one of the virtual textures, then all fields except the binding are ignored
          * If you use `Backbuffer`, then all fields are ignored since the backbuffer is always bound to output location 0
          */
-        std::string name;
+        eastl::string name;
 
         TextureFormat format{};
     };
 
-    struct ShaderpackResourcesData {
-        std::vector<TextureCreateInfo> textures;
-        std::vector<SamplerCreateInfo> samplers;
+    struct NOVA_API ShaderpackResourcesData {
+        eastl::vector<TextureCreateInfo> textures;
+        eastl::vector<SamplerCreateInfo> samplers;
     };
 
     /*!
      * \brief A description of a texture that a render pass outputs to
      */
-    struct TextureAttachmentInfo {
+    struct NOVA_API TextureAttachmentInfo {
         /*!
          * \brief The name of the texture
          */
-        std::string name;
+        eastl::string name;
 
 		PixelFormatEnum pixel_format;
 
@@ -501,49 +499,49 @@ namespace nova::renderer::shaderpack {
      * resources.json file sets up sixteen framebuffer color attachments for ping-pong buffers, a depth attachment,
      * some shadow maps, etc
      */
-    struct RenderPassCreateInfo {
+    struct NOVA_API RenderPassCreateInfo {
         /*!
          * \brief The name of this render pass
          */
-        std::string name;
+        eastl::string name;
 
         /*!
          * \brief The materials that MUST execute before this one
          */
-        std::vector<std::string> dependencies;
+        eastl::vector<eastl::string> dependencies;
 
         /*!
          * \brief The textures that this pass will read from
          */
-        std::vector<std::string> texture_inputs;
+        eastl::vector<eastl::string> texture_inputs;
         /*!
          * \brief The textures that this pass will write to
          */
-        std::vector<TextureAttachmentInfo> texture_outputs;
+        eastl::vector<TextureAttachmentInfo> texture_outputs;
 
         /*!
          * \brief The depth texture this pass will write to
          */
-        std::optional<TextureAttachmentInfo> depth_texture;
+        eastl::optional<TextureAttachmentInfo> depth_texture;
 
         /*!
          * \brief All the buffers that this renderpass reads from
          */
-        std::vector<std::string> input_buffers;
+        eastl::vector<eastl::string> input_buffers;
 
         /*!
          * \brief All the buffers that this renderpass writes to
          */
-        std::vector<std::string> output_buffers;
+        eastl::vector<eastl::string> output_buffers;
 
         RenderPassCreateInfo() = default;
     };
 
-    struct MaterialPass {
-        std::string name;
-        std::string material_name;
-        std::string pipeline;
-        std::unordered_map<std::string, std::string> bindings;
+    struct NOVA_API MaterialPass {
+        eastl::string name;
+        eastl::string material_name;
+        eastl::string pipeline;
+        eastl::unordered_map<eastl::string, eastl::string> bindings;
 
         /*!
          * \brief All the descriptor sets needed to bind everything used by this material to its pipeline
@@ -552,58 +550,58 @@ namespace nova::renderer::shaderpack {
          * descriptor sets is allowed, although the result won't show up on screen for a couple frames because Nova
          * (will) copies its descriptor sets to each in-flight frame
          */
-        std::vector<VkDescriptorSet> descriptor_sets;
+        eastl::vector<VkDescriptorSet> descriptor_sets;
 
         VkPipelineLayout layout = nullptr;
     };
 
-    struct MaterialData {
-        std::string name;
-        std::vector<MaterialPass> passes;
-        std::string geometry_filter;
+    struct NOVA_API MaterialData {
+        eastl::string name;
+        eastl::vector<MaterialPass> passes;
+        eastl::string geometry_filter;
     };
 
     /*!
      * \brief All the data that can be in a shaderpack
      */
-    struct ShaderpackData {
-        std::vector<PipelineCreateInfo> pipelines;
+    struct NOVA_API ShaderpackData {
+        eastl::vector<PipelineCreateInfo> pipelines;
 
         /*!
          * \brief All the renderpasses that this shaderpack needs, in submission order
          */
-        std::vector<RenderPassCreateInfo> passes;
+        eastl::vector<RenderPassCreateInfo> passes;
 
-        std::vector<MaterialData> materials;
+        eastl::vector<MaterialData> materials;
 
         ShaderpackResourcesData resources;
     };
 
-    PixelFormatEnum pixel_format_enum_from_string(const std::string& str);
-    TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const std::string& str);
-    TextureFilterEnum texture_filter_enum_from_string(const std::string& str);
-    WrapModeEnum wrap_mode_enum_from_string(const std::string& str);
-    StencilOpEnum stencil_op_enum_from_string(const std::string& str);
-    CompareOpEnum compare_op_enum_from_string(const std::string& str);
-    MsaaSupportEnum msaa_support_enum_from_string(const std::string& str);
-    PrimitiveTopologyEnum primitive_topology_enum_from_string(const std::string& str);
-    BlendFactorEnum blend_factor_enum_from_string(const std::string& str);
-    RenderQueueEnum render_queue_enum_from_string(const std::string& str);
-    StateEnum state_enum_from_string(const std::string& str);
-    VertexFieldEnum vertex_field_enum_from_string(const std::string& str);
+    PixelFormatEnum NOVA_API pixel_format_enum_from_string(const eastl::string& str);
+    TextureDimensionTypeEnum NOVA_API texture_dimension_type_enum_from_string(const eastl::string& str);
+    TextureFilterEnum NOVA_API texture_filter_enum_from_string(const eastl::string& str);
+    WrapModeEnum NOVA_API wrap_mode_enum_from_string(const eastl::string& str);
+    StencilOpEnum NOVA_API stencil_op_enum_from_string(const eastl::string& str);
+    CompareOpEnum NOVA_API compare_op_enum_from_string(const eastl::string& str);
+    MsaaSupportEnum NOVA_API msaa_support_enum_from_string(const eastl::string& str);
+    PrimitiveTopologyEnum NOVA_API primitive_topology_enum_from_string(const eastl::string& str);
+    BlendFactorEnum NOVA_API blend_factor_enum_from_string(const eastl::string& str);
+    RenderQueueEnum NOVA_API render_queue_enum_from_string(const eastl::string& str);
+    StateEnum NOVA_API state_enum_from_string(const eastl::string& str);
+    VertexFieldEnum NOVA_API vertex_field_enum_from_string(const eastl::string& str);
 
-    std::string to_string(PixelFormatEnum val);
-    std::string to_string(TextureDimensionTypeEnum val);
-    std::string to_string(TextureFilterEnum val);
-    std::string to_string(WrapModeEnum val);
-    std::string to_string(StencilOpEnum val);
-    std::string to_string(CompareOpEnum val);
-    std::string to_string(MsaaSupportEnum val);
-    std::string to_string(PrimitiveTopologyEnum val);
-    std::string to_string(BlendFactorEnum val);
-    std::string to_string(RenderQueueEnum val);
-    std::string to_string(StateEnum val);
-    std::string to_string(VertexFieldEnum val);
+    eastl::string NOVA_API  to_string(PixelFormatEnum val);
+    eastl::string NOVA_API  to_string(TextureDimensionTypeEnum val);
+    eastl::string NOVA_API  to_string(TextureFilterEnum val);
+    eastl::string NOVA_API  to_string(WrapModeEnum val);
+    eastl::string NOVA_API  to_string(StencilOpEnum val);
+    eastl::string NOVA_API  to_string(CompareOpEnum val);
+    eastl::string NOVA_API  to_string(MsaaSupportEnum val);
+    eastl::string NOVA_API  to_string(PrimitiveTopologyEnum val);
+    eastl::string NOVA_API  to_string(BlendFactorEnum val);
+    eastl::string NOVA_API  to_string(RenderQueueEnum val);
+    eastl::string NOVA_API  to_string(StateEnum val);
+    eastl::string NOVA_API  to_string(VertexFieldEnum val);
 } // namespace nova::renderer
 
 #endif // NOVA_RENDERER_SHADERPACK_DATA_HPP

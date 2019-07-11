@@ -4,16 +4,16 @@
 
 namespace nova::renderer {
 
-    NovaError::NovaError(std::string message) : message(std::move(message)) {}
+    NovaError::NovaError(eastl::string message) : message(eastl::move(message)) {}
 
-    NovaError::NovaError(std::string message, NovaError cause) : message(std::move(message)) {
-        this->cause = std::make_unique<NovaError>();
-        *this->cause = std::forward<NovaError>(cause);
+    NovaError::NovaError(eastl::string message, NovaError cause) : message(eastl::move(message)) {
+        this->cause = eastl::make_unique<NovaError>();
+        *this->cause = eastl::forward<NovaError>(cause);
     }
 
-    std::string NovaError::to_string() const {
+    eastl::string NovaError::to_string() const {
         if(cause) {
-            return fmt::format(fmt("{:s}\nCaused by: {:s}"), message, cause->to_string());
+            return fmt::format(fmt("{:s}\nCaused by: {:s}"), message, cause->to_string().c_str()).c_str();
         } else {
             return message;
         }

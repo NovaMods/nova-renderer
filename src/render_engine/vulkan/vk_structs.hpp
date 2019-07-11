@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 
 #include "nova_renderer/rhi_types.hpp"
@@ -55,7 +54,7 @@ namespace nova::renderer::rhi {
          *
          * The index in the vector is the index of the set
          */
-        std::vector<VkDescriptorSetLayout> layouts_by_set;
+        eastl::vector<VkDescriptorSetLayout> layouts_by_set;
     };
 
     struct VulkanPipeline : Pipeline {
@@ -80,10 +79,10 @@ namespace nova::renderer::rhi {
 
     struct VulkanGpuInfo {
         VkPhysicalDevice phys_device{};
-        std::vector<VkQueueFamilyProperties> queue_family_props;
-        std::vector<VkExtensionProperties> available_extensions;
+        eastl::vector<VkQueueFamilyProperties> queue_family_props;
+        eastl::vector<VkExtensionProperties> available_extensions;
         VkSurfaceCapabilitiesKHR surface_capabilities{};
-        std::vector<VkSurfaceFormatKHR> surface_formats;
+        eastl::vector<VkSurfaceFormatKHR> surface_formats;
         VkPhysicalDeviceProperties props{};
         VkPhysicalDeviceFeatures supported_features{};
         VkPhysicalDeviceMemoryProperties memory_properties{};

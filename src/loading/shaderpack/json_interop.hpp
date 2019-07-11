@@ -1,4 +1,10 @@
-#pragma once
+/*!
+ * \author ddubois
+ * \date 07-Sep-18.
+ */
+
+#ifndef NOVA_RENDERER_JSON_INTEROP_HPP
+#define NOVA_RENDERER_JSON_INTEROP_HPP
 
 #include "nova_renderer/shaderpack_data.hpp"
 
@@ -21,9 +27,11 @@ namespace nova::renderer::shaderpack {
 
     void from_json(const nlohmann::json& j, RenderPassCreateInfo& pass);
 
-    void from_json(const nlohmann::json& j, std::vector<RenderPassCreateInfo>& passes);
+    void from_json(const nlohmann::json& j, eastl::vector<RenderPassCreateInfo>& passes);
 
     void from_json(const nlohmann::json& j, MaterialPass& pass);
 
     void from_json(const nlohmann::json& j, MaterialData& mat);
-} // namespace nova::renderer
+} // namespace nova::renderer::shaderpack
+
+#endif // NOVA_RENDERER_JSON_INTEROP_HPP

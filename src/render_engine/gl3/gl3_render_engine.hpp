@@ -7,6 +7,7 @@
 #include "gl3_command_list.hpp"
 #include "glad/glad.h"
 #include "nova_renderer/render_engine.hpp"
+#include <EASTL/shared_ptr.h>
 
 namespace nova::renderer::rhi {
     /*!
@@ -24,7 +25,7 @@ namespace nova::renderer::rhi {
 
         ~Gl3RenderEngine() override final = default;
 
-        std::shared_ptr<Window> get_window() const override final;
+        eastl::shared_ptr<Window> get_window() const override final;
 
         void set_num_renderpasses(uint32_t num_renderpasses) override final;
 
@@ -34,22 +35,22 @@ namespace nova::renderer::rhi {
         Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
-                                        const std::vector<Image*>& attachments,
+                                        const eastl::vector<Image*>& attachments,
                                         const glm::uvec2& framebuffer_size) override final;
 
         DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
                                                uint32_t num_samplers,
                                                uint32_t num_uniform_buffers) override final;
 
-        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
+        eastl::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                            DescriptorPool* pool) override final;
 
-        void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override final;
+        void update_descriptor_sets(eastl::vector<DescriptorSetWrite>& writes) override final;
 
         Result<PipelineInterface*> create_pipeline_interface(
-            const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
-            const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override final;
+            const eastl::unordered_map<eastl::string, ResourceBindingDescription>& bindings,
+            const eastl::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const eastl::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override final;
 
         Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override final;
 
@@ -65,15 +66,15 @@ namespace nova::renderer::rhi {
         Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
 
         Semaphore* create_semaphore() override final;
-        std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override final;
+        eastl::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override final;
 
         Fence* create_fence(bool signaled = false) override final;
 
-        std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override final;
+        eastl::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override final;
 
-        void wait_for_fences(const std::vector<Fence*> fences) override final;
+        void wait_for_fences(const eastl::vector<Fence*> fences) override final;
 
-        void reset_fences(const std::vector<Fence*>& fences) override final;
+        void reset_fences(const eastl::vector<Fence*>& fences) override final;
 
         void destroy_renderpass(Renderpass* pass) override final;
 
@@ -83,8 +84,8 @@ namespace nova::renderer::rhi {
 
         void destroy_pipeline(Pipeline* pipeline) override final;
         void destroy_texture(Image* resource) override final;
-        void destroy_semaphores(std::vector<Semaphore*>& semaphores) override final;
-        void destroy_fences(std::vector<Fence*>& fences) override final;
+        void destroy_semaphores(eastl::vector<Semaphore*>& semaphores) override final;
+        void destroy_fences(eastl::vector<Fence*>& fences) override final;
 
         CommandList* get_command_list(uint32_t thread_idx,
                                       QueueType needed_queue_type,
@@ -93,8 +94,8 @@ namespace nova::renderer::rhi {
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
                                  Fence* fence_to_signal = nullptr,
-                                 const std::vector<Semaphore*>& wait_semaphores = {},
-                                 const std::vector<Semaphore*>& signal_semaphores = {}) override final;
+                                 const eastl::vector<Semaphore*>& wait_semaphores = {},
+                                 const eastl::vector<Semaphore*>& signal_semaphores = {}) override final;
 
     protected:
         void open_window_and_create_surface(const NovaSettings::WindowOptions& options);
@@ -102,7 +103,7 @@ namespace nova::renderer::rhi {
     private:
         bool supports_geometry_shaders = false;
 
-        std::unordered_map<std::string, shaderpack::SamplerCreateInfo> samplers;
+        eastl::unordered_map<eastl::string, shaderpack::SamplerCreateInfo> samplers;
 
         static void set_initial_state();
 
@@ -125,5 +126,5 @@ namespace nova::renderer::rhi {
 #pragma endregion
     };
 
-    Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, GLenum shader_type);
+    Result<GLuint> compile_shader(const eastl::vector<uint32_t>& spirv, GLenum shader_type);
 } // namespace nova::renderer::rhi

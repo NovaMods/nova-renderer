@@ -4,7 +4,7 @@
 
 namespace nova::ttl {
     task_scheduler::per_thread_data::per_thread_data()
-        : task_queue(new wait_free_queue<std::function<void()>>),
+        : task_queue(new wait_free_queue<eastl::function<void()>>),
           things_in_queue_mutex(new std::mutex),
           things_in_queue_cv(new std::condition_variable),
           is_sleeping(new std::atomic<bool>(false)) {}
@@ -19,12 +19,12 @@ namespace nova::ttl {
 
         for(uint32_t i = 0; i < num_threads; i++) {
             per_thread_data data;
-            data.task_queue = std::make_unique<wait_free_queue<std::function<void()>>>();
-            data.is_sleeping = std::make_unique<std::atomic<bool>>();
+            data.task_queue = eastl::make_unique<wait_free_queue<eastl::function<void()>>>();
+            data.is_sleeping = eastl::make_unique<std::atomic<bool>>();
             data.last_successful_steal = 0;
-            data.things_in_queue_cv = std::make_unique<std::condition_variable>();
-            data.things_in_queue_mutex = std::make_unique<std::mutex>();
-            thread_local_data.push_back(std::move(data));
+            data.things_in_queue_cv = eastl::make_unique<std::condition_variable>();
+            data.things_in_queue_mutex = eastl::make_unique<std::mutex>();
+            thread_local_data.push_back(eastl::move(data));
 
             threads.emplace_back(thread_func, this);
         }
@@ -61,7 +61,7 @@ namespace nova::ttl {
 
     uint32_t task_scheduler::get_num_threads() const { return num_threads; }
 
-    void task_scheduler::add_task(std::function<void()> task) {
+    void task_scheduler::add_task(eastl::function<void()> task) {
         size_t thread_idx = 0;
         if(behavior_of_task_queue_search == task_queue_search_behavior::NEXT) {
             if(last_task_queue_index >= thread_local_data.size()) {
@@ -70,7 +70,7 @@ namespace nova::ttl {
 
             thread_idx = last_task_queue_index++;
         } else if(behavior_of_task_queue_search == task_queue_search_behavior::MOST_EMPTY) {
-            size_t lowest_size = std::numeric_limits<size_t>::max();
+            size_t lowest_size = eastl::numeric_limits<size_t>::max();
             for(size_t i = 0; i < thread_local_data.size(); i++) {
                 size_t size = thread_local_data[i].task_queue->size();
                 if(size < lowest_size) {
@@ -80,7 +80,7 @@ namespace nova::ttl {
             }
         }
 
-        thread_local_data[thread_idx].task_queue->push(std::move(task));
+        thread_local_data[thread_idx].task_queue->push(eastl::move(task));
 
         if(behavior_of_empty_queues == empty_queue_behavior::SLEEP) {
             // Find a thread that is sleeping and wake it
@@ -96,9 +96,9 @@ namespace nova::ttl {
         }
     }
 
-    void task_scheduler::add_task_proxy(std::function<void()> task) { add_task(std::move(task)); }
+    void task_scheduler::add_task_proxy(eastl::function<void()> task) { add_task(eastl::move(task)); }
 
-    bool task_scheduler::get_next_task(std::function<void()>* task) {
+    bool task_scheduler::get_next_task(eastl::function<void()>* task) {
         const std::size_t current_thread_index = get_current_thread_idx();
         per_thread_data& tls = thread_local_data[current_thread_index];
 
@@ -140,7 +140,7 @@ namespace nova::ttl {
 
         while(!pool->should_shutdown->load()) {
             // Get a new task from the queue, and execute it
-            std::function<void()> next_task;
+            eastl::function<void()> next_task;
             const bool success = pool->get_next_task(&next_task);
             const empty_queue_behavior behavior = pool->behavior_of_empty_queues;
 

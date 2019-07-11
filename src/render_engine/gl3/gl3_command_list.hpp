@@ -5,7 +5,7 @@
 
 #ifndef NOVA_RENDERER_GL_2_COMMAND_LIST_HPP
 #define NOVA_RENDERER_GL_2_COMMAND_LIST_HPP
-#include <nova_renderer/command_list.hpp>
+#include "nova_renderer/command_list.hpp"
 
 #include "gl3_structs.hpp"
 #include "glad/glad.h"
@@ -35,7 +35,7 @@ namespace nova::renderer::rhi {
     };
 
     struct Gl3ExecuteCommandListsCommand {
-        std::vector<CommandList*> lists_to_execute;
+        eastl::vector<CommandList*> lists_to_execute;
     };
 
     struct Gl3BeginRenderpassCommand {
@@ -48,14 +48,14 @@ namespace nova::renderer::rhi {
 
     struct Gl3BindDescriptorSetsCommand {
         GLuint program;
-        std::vector<Gl3DescriptorSet*> sets;
-        std::unordered_map<std::string, GLuint> uniform_cache;
-        std::unordered_map<std::string, ResourceBindingDescription> pipeline_bindings;
-        std::unordered_map<std::string, GLuint> uniform_block_indices;
+        eastl::vector<Gl3DescriptorSet*> sets;
+        eastl::unordered_map<eastl::string, GLuint> uniform_cache;
+        eastl::unordered_map<eastl::string, ResourceBindingDescription> pipeline_bindings;
+        eastl::unordered_map<eastl::string, GLuint> uniform_block_indices;
     };
 
     struct Gl3BindVertexBuffersCommand {
-        std::vector<GLuint> buffers;
+        eastl::vector<GLuint> buffers;
     };
 
     struct Gl3BindIndexBufferCommand {
@@ -118,7 +118,7 @@ namespace nova::renderer::rhi {
 
         void resource_barriers(PipelineStageFlags stages_before_barrier,
                                PipelineStageFlags stages_after_barrier,
-                               const std::vector<ResourceBarrier>& barriers) override final;
+                               const eastl::vector<ResourceBarrier>& barriers) override final;
 
         void copy_buffer(Buffer* destination_buffer,
                          uint64_t destination_offset,
@@ -126,7 +126,7 @@ namespace nova::renderer::rhi {
                          uint64_t source_offset,
                          uint64_t num_bytes) override final;
 
-        void execute_command_lists(const std::vector<CommandList*>& lists) override final;
+        void execute_command_lists(const eastl::vector<CommandList*>& lists) override final;
 
         void begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) override final;
 
@@ -134,10 +134,10 @@ namespace nova::renderer::rhi {
 
         void bind_pipeline(const Pipeline* pipeline) override final;
 
-        void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
+        void bind_descriptor_sets(const eastl::vector<DescriptorSet*>& descriptor_sets,
                                   const PipelineInterface* pipeline_interface) override final;
 
-        void bind_vertex_buffers(const std::vector<Buffer*>& buffers) override final;
+        void bind_vertex_buffers(const eastl::vector<Buffer*>& buffers) override final;
 
         void bind_index_buffer(const Buffer* buffer) override final;
 
@@ -148,10 +148,10 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Provides access to the actual command list, so that the GL3 render engine can process the commands
          */
-        [[nodiscard]] std::vector<Gl3Command> get_commands() const;
+        [[nodiscard]] eastl::vector<Gl3Command> get_commands() const;
 
     private:
-        std::vector<Gl3Command> commands;
+        eastl::vector<Gl3Command> commands;
     };
 } // namespace nova::renderer::rhi
 
