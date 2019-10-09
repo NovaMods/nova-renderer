@@ -10,9 +10,9 @@ namespace nova::renderer {
     public:
         explicit RegularFolderAccessor(const fs::path& folder);
 
-        eastl::string read_text_file(const fs::path& resource_path) override final;
+        std::string read_text_file(const fs::path& resource_path) override final;
 
-        eastl::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override final;
+        std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override final;
 
     protected:
         bool does_resource_exist_on_filesystem(const fs::path& resource_path) override final;

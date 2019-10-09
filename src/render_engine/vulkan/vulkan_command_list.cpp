@@ -15,11 +15,11 @@ namespace nova::renderer::rhi {
 
     void VulkanCommandList::resource_barriers(const PipelineStageFlags stages_before_barrier,
                                               const PipelineStageFlags stages_after_barrier,
-                                              const eastl::vector<ResourceBarrier>& barriers) {
-        eastl::vector<VkBufferMemoryBarrier> buffer_barriers;
+                                              const std::vector<ResourceBarrier>& barriers) {
+        std::vector<VkBufferMemoryBarrier> buffer_barriers;
         buffer_barriers.reserve(barriers.size());
 
-        eastl::vector<VkImageMemoryBarrier> image_barriers;
+        std::vector<VkImageMemoryBarrier> image_barriers;
         image_barriers.reserve(barriers.size());
 
         for(const ResourceBarrier& barrier : barriers) {
@@ -91,8 +91,8 @@ namespace nova::renderer::rhi {
         vkCmdCopyBuffer(cmds, vk_source_buffer->buffer, vk_destination_buffer->buffer, 1, &copy);
     }
 
-    void VulkanCommandList::execute_command_lists(const eastl::vector<CommandList*>& lists) {
-        eastl::vector<VkCommandBuffer> buffers;
+    void VulkanCommandList::execute_command_lists(const std::vector<CommandList*>& lists) {
+        std::vector<VkCommandBuffer> buffers;
         buffers.reserve(lists.size());
 
         for(CommandList* list : lists) {
@@ -124,7 +124,7 @@ namespace nova::renderer::rhi {
         vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline->pipeline);
     }
 
-    void VulkanCommandList::bind_descriptor_sets(const eastl::vector<DescriptorSet*>& descriptor_sets,
+    void VulkanCommandList::bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
                                                  const PipelineInterface* pipeline_interface) {
         const VulkanPipelineInterface* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
 
@@ -141,11 +141,11 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void VulkanCommandList::bind_vertex_buffers(const eastl::vector<Buffer*>& buffers) {
-        eastl::vector<VkBuffer> vk_buffers;
+    void VulkanCommandList::bind_vertex_buffers(const std::vector<Buffer*>& buffers) {
+        std::vector<VkBuffer> vk_buffers;
         vk_buffers.reserve(buffers.size());
 
-        eastl::vector<VkDeviceSize> offsets;
+        std::vector<VkDeviceSize> offsets;
         offsets.reserve(buffers.size());
         for(uint32_t i = 0; i < buffers.size(); i++) {
             offsets.push_back(i);

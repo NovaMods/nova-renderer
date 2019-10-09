@@ -8,7 +8,7 @@ namespace nova::ttl {
     /*!
      * \brief An atomic counter that can be waited on
      *
-     * Brought to you by eastl::condition_variable, eastl::mutex, and uint32_t
+     * Brought to you by std::condition_variable, std::mutex, and uint32_t
      *
      * Internal value starts at 0
      */

@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <EASTL/shared_ptr.h>
+#include <memory>
 
 #include "nova_renderer/render_engine.hpp"
 
@@ -53,71 +53,71 @@ namespace nova::renderer::rhi {
         ~VulkanRenderEngine() = default;
 
 #pragma region Render engine interface
-        [[nodiscard]] eastl::shared_ptr<Window> get_window() const override final;
+        [[nodiscard]] std::shared_ptr<Window> get_window() const override;
 
-        void set_num_renderpasses(uint32_t num_renderpasses) override final;
+        void set_num_renderpasses(uint32_t num_renderpasses) override;
 
-        Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage usage, ObjectType allowed_objects) override final;
+        Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage usage, ObjectType allowed_objects) override;
 
-        Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
+        Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
-                                        const eastl::vector<Image*>& attachments,
-                                        const glm::uvec2& framebuffer_size) override final;
+                                        const std::vector<Image*>& attachments,
+                                        const glm::uvec2& framebuffer_size) override;
 
         Result<PipelineInterface*> create_pipeline_interface(
-            const eastl::unordered_map<eastl::string, ResourceBindingDescription>& bindings,
-            const eastl::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-            const eastl::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override final;
+            const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
+            const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override;
 
         DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
                                                uint32_t num_samplers,
-                                               uint32_t num_uniform_buffers) override final;
+                                               uint32_t num_uniform_buffers) override;
 
-        eastl::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                             DescriptorPool* pool) override final;
+        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
+                                                             DescriptorPool* pool) override;
 
-        void update_descriptor_sets(eastl::vector<DescriptorSetWrite>& writes) override final;
+        void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override;
 
-        Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override final;
+        Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override;
 
-        Buffer* create_buffer(const BufferCreateInfo& info) override final;
+        Buffer* create_buffer(const BufferCreateInfo& info) override;
 
-        void write_data_to_buffer(const void* data, const uint64_t num_bytes, uint64_t offset, const Buffer* buffer) override final;
+        void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) override;
 
-        Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
-        Semaphore* create_semaphore() override final;
-        eastl::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override final;
+        Image* create_texture(const shaderpack::TextureCreateInfo& info) override;
+        Semaphore* create_semaphore() override;
+        std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override;
 
-        Fence* create_fence(bool signaled = false) override final;
+        Fence* create_fence(bool signaled = false) override;
 
-        eastl::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override final;
+        std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override;
 
-        void wait_for_fences(const eastl::vector<Fence*> fences) override final;
+        void wait_for_fences(std::vector<Fence*> fences) override;
 
-        void reset_fences(const eastl::vector<Fence*>& fences) override final;
+        void reset_fences(const std::vector<Fence*>& fences) override;
 
-        void destroy_renderpass(Renderpass* pass) override final;
+        void destroy_renderpass(Renderpass* pass) override;
 
-        void destroy_framebuffer(Framebuffer* framebuffer) override final;
+        void destroy_framebuffer(Framebuffer* framebuffer) override;
 
-        void destroy_pipeline_interface(PipelineInterface* pipeline_interface) override final;
+        void destroy_pipeline_interface(PipelineInterface* pipeline_interface) override;
 
-        void destroy_pipeline(Pipeline* pipeline) override final;
+        void destroy_pipeline(Pipeline* pipeline) override;
 
-        void destroy_texture(Image* resource) override final;
+        void destroy_texture(Image* resource) override;
 
-        void destroy_semaphores(eastl::vector<Semaphore*>& semaphores) override final;
+        void destroy_semaphores(std::vector<Semaphore*>& semaphores) override;
 
-        void destroy_fences(eastl::vector<Fence*>& fences) override final;
+        void destroy_fences(std::vector<Fence*>& fences) override;
 
-        CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override final;
+        CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override;
 
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
                                  Fence* fence_to_signal = nullptr,
-                                 const eastl::vector<Semaphore*>& wait_semaphores = {},
-                                 const eastl::vector<Semaphore*>& signal_semaphores = {}) override final;
+                                 const std::vector<Semaphore*>& wait_semaphores = {},
+                                 const std::vector<Semaphore*>& signal_semaphores = {}) override;
 #pragma endregion
 
         [[nodiscard]] uint32_t get_queue_family_index(QueueType type) const;
@@ -129,14 +129,14 @@ namespace nova::renderer::rhi {
         /*!
          * The index in the vector is the thread index, the key in the map is the queue family index
          */
-        eastl::vector<eastl::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
+        std::vector<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
 
         /*!
          * \brief Keeps track of how much has been allocated from each heap
          *
          * In the same order as VulkanGpuInfo::memory_properties::memoryHeaps
          */
-        eastl::vector<uint32_t> heap_usages;
+        std::vector<uint32_t> heap_usages;
 
         /*!
          * \brief Map from HOST_VISIBLE memory allocations to the memory address they're mapped to
@@ -144,7 +144,7 @@ namespace nova::renderer::rhi {
          * The Vulkan render engine maps memory when it's allocated, if the memory is for a uniform or a staging
          * buffer.
          */
-        eastl::unordered_map<VkDeviceMemory, void*> heap_mappings;
+        std::unordered_map<VkDeviceMemory, void*> heap_mappings;
 
         // Debugging things
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
@@ -152,7 +152,7 @@ namespace nova::renderer::rhi {
         PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;
 
 #pragma region Initialization
-        eastl::vector<const char*> enabled_layer_names;
+        std::vector<const char*> enabled_layer_names;
 
         void create_instance();
 
@@ -166,7 +166,7 @@ namespace nova::renderer::rhi {
 
         void create_per_thread_command_pools();
 
-        [[nodiscard]] eastl::unordered_map<uint32_t, VkCommandPool> make_new_command_pools() const;
+        [[nodiscard]] std::unordered_map<uint32_t, VkCommandPool> make_new_command_pools() const;
 #pragma endregion
 
 #pragma region Helpers
@@ -185,10 +185,10 @@ namespace nova::renderer::rhi {
         [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags,
                                                            MemorySearchMode search_mode = MemorySearchMode::Fuzzy) const;
 
-        [[nodiscard]] VkShaderModule create_shader_module(const eastl::vector<uint32_t>& spirv) const;
+        [[nodiscard]] VkShaderModule create_shader_module(const std::vector<uint32_t>& spirv) const;
 
-        [[nodiscard]] eastl::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
-            const eastl::unordered_map<eastl::string, ResourceBindingDescription>& all_bindings) const;
+        [[nodiscard]] std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
+            const std::unordered_map<std::string, ResourceBindingDescription>& all_bindings) const;
 
         /*!
          * \brief Gets the image view associated with the given image
@@ -202,7 +202,7 @@ namespace nova::renderer::rhi {
          */
         [[nodiscard]] VkImageView image_view_for_image(const Image* image);
 
-        [[nodiscard]] static VkCommandBufferLevel to_vk_command_buffer_level(const CommandList::Level level);
+        [[nodiscard]] static VkCommandBufferLevel to_vk_command_buffer_level(CommandList::Level level);
 #pragma endregion
 
 #pragma region Debugging

@@ -385,8 +385,8 @@ namespace nova::renderer::rhi {
         }
     }
 
-    eastl::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions() {
-        static eastl::vector<VkVertexInputBindingDescription> input_descriptions = {
+    std::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions() {
+        static std::vector<VkVertexInputBindingDescription> input_descriptions = {
             VkVertexInputBindingDescription{
                 0,                          // binding
                 sizeof(FullVertex),         // stride
@@ -427,8 +427,8 @@ namespace nova::renderer::rhi {
         return input_descriptions;
     }
 
-    eastl::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions() {
-        static eastl::vector<VkVertexInputAttributeDescription> attribute_descriptions = {
+    std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions() {
+        static std::vector<VkVertexInputAttributeDescription> attribute_descriptions = {
             // Position
             VkVertexInputAttributeDescription{
                 0,                          // location

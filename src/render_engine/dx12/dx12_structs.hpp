@@ -21,7 +21,7 @@ namespace nova::renderer::rhi {
     };
 
     struct DX12Framebuffer : Framebuffer {
-        eastl::vector<CD3DX12_CPU_DESCRIPTOR_HANDLE> render_targets;
+        std::vector<CD3DX12_CPU_DESCRIPTOR_HANDLE> render_targets;
 
         bool has_depth_stencil = false;
         D3D12_CPU_DESCRIPTOR_HANDLE depth_stencil_image = {};
@@ -30,11 +30,11 @@ namespace nova::renderer::rhi {
     };
 
     struct DX12PipelineInterface : PipelineInterface {
-        eastl::unordered_map<uint32_t, eastl::vector<ResourceBindingDescription>> table_layouts;
+        std::unordered_map<uint32_t, std::vector<ResourceBindingDescription>> table_layouts;
 
-        eastl::vector<shaderpack::TextureAttachmentInfo> color_attachments;
+        std::vector<shaderpack::TextureAttachmentInfo> color_attachments;
 
-        eastl::optional<shaderpack::TextureAttachmentInfo> depth_texture;
+        std::optional<shaderpack::TextureAttachmentInfo> depth_texture;
         Microsoft::WRL::ComPtr<ID3D12RootSignature> root_sig;
     };
 
@@ -46,7 +46,7 @@ namespace nova::renderer::rhi {
     struct DX12DescriptorSet : DescriptorSet {
         Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
 
-        eastl::vector<D3D12_CPU_DESCRIPTOR_HANDLE> descriptors;
+        std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> descriptors;
     };
 
     struct DX12Pipeline : Pipeline {

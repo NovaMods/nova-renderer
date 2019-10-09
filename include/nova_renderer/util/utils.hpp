@@ -8,9 +8,9 @@
 #ifndef RENDERER_UTILS_H
 #define RENDERER_UTILS_H
 
-#include <EASTL/algorithm.h>
-#include <EASTL/string.h>
-#include <EASTL/vector.h>
+#include <algorithm>
+#include <string>
+#include <vector>
 
 #include <fstream>
 
@@ -52,22 +52,22 @@ namespace nova::renderer {
      */
     template <typename Cont, typename Func>
     void foreach(Cont container, Func thing_to_do) {
-        eastl::for_each(eastl::cbegin(container), eastl::cend(container), thing_to_do);
+        std::for_each(std::cbegin(container), std::cend(container), thing_to_do);
     }
 
-    eastl::vector<eastl::string> split(const eastl::string& s, char delim);
+    std::vector<std::string> split(const std::string& s, char delim);
 
-    eastl::string join(const eastl::vector<eastl::string>& strings, const eastl::string& joiner);
+    std::string join(const std::vector<std::string>& strings, const std::string& joiner);
 
-    eastl::string print_color(unsigned int color);
+    std::string print_color(unsigned int color);
 
-    eastl::string print_array(int* data, int size);
+    std::string print_array(int* data, int size);
 
-    bool ends_with(const eastl::string& string, const eastl::string& ending);
+    bool ends_with(const std::string& string, const std::string& ending);
 
-    void write_to_file(const eastl::string& data, const fs::path& filepath);
+    void write_to_file(const std::string& data, const fs::path& filepath);
 
-    void write_to_file(const eastl::vector<uint32_t>& data, const fs::path& filepath);
+    void write_to_file(const std::vector<uint32_t>& data, const fs::path& filepath);
     
 #define FORMAT(s, ...) fmt::format(fmt(s), __VA_ARGS__)
 } // namespace nova::renderer

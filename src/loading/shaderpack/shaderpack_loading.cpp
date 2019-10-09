@@ -117,28 +117,28 @@ namespace nova::renderer::shaderpack {
             /* .generalConstantMatrixVectorIndexing = */ true,
         }};
 
-    eastl::shared_ptr<FolderAccessorBase> get_shaderpack_accessor(const fs::path& shaderpack_name);
+    std::shared_ptr<FolderAccessorBase> get_shaderpack_accessor(const fs::path& shaderpack_name);
 
-    ShaderpackResourcesData load_dynamic_resources_file(const eastl::shared_ptr<FolderAccessorBase>& folder_access);
+    ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
 
-    Result<eastl::vector<RenderPassCreateInfo>> load_passes_file(const eastl::shared_ptr<FolderAccessorBase>& folder_access);
+    Result<std::vector<RenderPassCreateInfo>> load_passes_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
 
-    eastl::vector<PipelineCreateInfo> load_pipeline_files(const eastl::shared_ptr<FolderAccessorBase>& folder_access);
-    PipelineCreateInfo load_single_pipeline(const eastl::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& pipeline_path);
+    std::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<FolderAccessorBase>& folder_access);
+    PipelineCreateInfo load_single_pipeline(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& pipeline_path);
 
-    eastl::vector<MaterialData> load_material_files(const eastl::shared_ptr<FolderAccessorBase>& folder_access);
-    MaterialData load_single_material(const eastl::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& material_path);
+    std::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access);
+    MaterialData load_single_material(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& material_path);
 
-    eastl::vector<uint32_t> load_shader_file(const fs::path& filename,
-                                           const eastl::shared_ptr<FolderAccessorBase>& folder_access,
+    std::vector<uint32_t> load_shader_file(const fs::path& filename,
+                                           const std::shared_ptr<FolderAccessorBase>& folder_access,
                                            EShLanguage stage,
-                                           const eastl::vector<eastl::string>& defines);
+                                           const std::vector<std::string>& defines);
 
     bool loading_failed = false;
 
     ShaderpackData load_shaderpack_data(const fs::path& shaderpack_name) {
         loading_failed = false;
-        const eastl::shared_ptr<FolderAccessorBase> folder_access = get_shaderpack_accessor(shaderpack_name);
+        const std::shared_ptr<FolderAccessorBase> folder_access = get_shaderpack_accessor(shaderpack_name);
 
         // The shaderpack has a number of items: There's the shaders themselves, of course, but there's so, so much more
         // What else is there?
@@ -158,26 +158,26 @@ namespace nova::renderer::shaderpack {
         return data;
     }
 
-    eastl::shared_ptr<FolderAccessorBase> get_shaderpack_accessor(const fs::path& shaderpack_name) {
+    std::shared_ptr<FolderAccessorBase> get_shaderpack_accessor(const fs::path& shaderpack_name) {
         fs::path path_to_shaderpack = shaderpack_name;
 
         // Where is the shaderpack, and what kind of folder is it in?
         if(is_zip_folder(path_to_shaderpack)) {
             // zip folder in shaderpacks folder
             path_to_shaderpack.replace_extension(".zip");
-            return eastl::make_shared<ZipFolderAccessor>(path_to_shaderpack);
+            return std::make_shared<ZipFolderAccessor>(path_to_shaderpack);
         }
         if(fs::exists(path_to_shaderpack)) {
             // regular folder in shaderpacks folder
-            return eastl::make_shared<RegularFolderAccessor>(path_to_shaderpack);
+            return std::make_shared<RegularFolderAccessor>(path_to_shaderpack);
         }
 
         return {};
     }
 
-    ShaderpackResourcesData load_dynamic_resources_file(const eastl::shared_ptr<FolderAccessorBase>& folder_access) {
+    ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         NOVA_LOG(TRACE) << "load_dynamic_resource_file called";
-        eastl::string resources_string = folder_access->read_text_file("resources.json");
+        std::string resources_string = folder_access->read_text_file("resources.json");
         try {
             auto json_resources = nlohmann::json::parse(resources_string.c_str());
             const ValidationReport report = validate_shaderpack_resources_data(json_resources);
@@ -197,27 +197,27 @@ namespace nova::renderer::shaderpack {
         return {};
     }
 
-    Result<eastl::vector<RenderPassCreateInfo>> load_passes_file(const eastl::shared_ptr<FolderAccessorBase>& folder_access) {
+    Result<std::vector<RenderPassCreateInfo>> load_passes_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         NOVA_LOG(TRACE) << "load_passes_file called";
         const auto passes_bytes = folder_access->read_text_file("passes.json");
         try {
             auto json_passes = nlohmann::json::parse(passes_bytes);
-            const auto passes = json_passes.get<eastl::vector<RenderPassCreateInfo>>();
+            const auto passes = json_passes.get<std::vector<RenderPassCreateInfo>>();
 
             return order_passes(passes);
 
         } catch(nlohmann::json::parse_error& err) {
-            return Result<eastl::vector<RenderPassCreateInfo>>(
+            return Result<std::vector<RenderPassCreateInfo>>(
                 MAKE_ERROR("Could not parse your shaderpack's passes.json: {:s}", err.what()));
         }
     }
 
-    eastl::vector<PipelineCreateInfo> load_pipeline_files(const eastl::shared_ptr<FolderAccessorBase>& folder_access) {
+    std::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         NOVA_LOG(TRACE) << "load_pipeline_files called";
 
-        eastl::vector<fs::path> potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
+        std::vector<fs::path> potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
 
-        eastl::vector<PipelineCreateInfo> output;
+        std::vector<PipelineCreateInfo> output;
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
@@ -234,7 +234,7 @@ namespace nova::renderer::shaderpack {
         return output;
     }
 
-    PipelineCreateInfo load_single_pipeline(const eastl::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& pipeline_path) {
+    PipelineCreateInfo load_single_pipeline(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& pipeline_path) {
         NOVA_LOG(TRACE) << "Task to load pipeline " << pipeline_path << " started";
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
@@ -289,11 +289,11 @@ namespace nova::renderer::shaderpack {
         return new_pipeline;
     }
 
-    eastl::vector<uint32_t> load_shader_file(const fs::path& filename,
-                                           const eastl::shared_ptr<FolderAccessorBase>& folder_access,
+    std::vector<uint32_t> load_shader_file(const fs::path& filename,
+                                           const std::shared_ptr<FolderAccessorBase>& folder_access,
                                            const EShLanguage stage,
-                                           const eastl::vector<eastl::string>& defines) {
-        static eastl::unordered_map<EShLanguage, eastl::vector<fs::path>> extensions_by_shader_stage = {{EShLangVertex,
+                                           const std::vector<std::string>& defines) {
+        static std::unordered_map<EShLanguage, std::vector<fs::path>> extensions_by_shader_stage = {{EShLangVertex,
                                                                                                      {
                                                                                                          ".vert.spirv",
                                                                                                          ".vsh.spirv",
@@ -369,7 +369,7 @@ namespace nova::renderer::shaderpack {
                                                                                                          ".tess_control.hlsl",
                                                                                                      }}};
 
-        eastl::vector<fs::path> extensions_for_current_stage = extensions_by_shader_stage.at(stage);
+        std::vector<fs::path> extensions_for_current_stage = extensions_by_shader_stage.at(stage);
 
         for(const fs::path& extension : extensions_for_current_stage) {
             fs::path full_filename = filename;
@@ -383,24 +383,24 @@ namespace nova::renderer::shaderpack {
 
             // Check the extension to know what kind of shader file the user has provided. SPIR-V files can be loaded
             // as-is, but GLSL, GLSL ES, and HLSL files need to be transpiled to SPIR-V
-            if(extension.string().find(".spirv") != eastl::string::npos) {
+            if(extension.string().find(".spirv") != std::string::npos) {
                 // SPIR-V file!
                 // TODO: figure out how to handle defines with SPIRV
                 return folder_access->read_spirv_file(full_filename);
             }
-            if(extension.string().find(".hlsl") != eastl::string::npos) {
+            if(extension.string().find(".hlsl") != std::string::npos) {
                 shader.setEnvInput(glslang::EShSourceHlsl, stage, glslang::EShClientVulkan, 0);
             } else {
                 // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
                 shader.setEnvInput(glslang::EShSourceGlsl, stage, glslang::EShClientVulkan, 0);
             }
 
-            eastl::string shader_source = folder_access->read_text_file(full_filename);
-            eastl::string::size_type version_pos = shader_source.find("#version");
-            eastl::string::size_type inject_pos = 0;
-            if(version_pos != eastl::string::npos) {
-                eastl::string::size_type break_after_version_pos = shader_source.find('\n', version_pos);
-                if(break_after_version_pos != eastl::string::npos) {
+            std::string shader_source = folder_access->read_text_file(full_filename);
+            std::string::size_type version_pos = shader_source.find("#version");
+            std::string::size_type inject_pos = 0;
+            if(version_pos != std::string::npos) {
+                std::string::size_type break_after_version_pos = shader_source.find('\n', version_pos);
+                if(break_after_version_pos != std::string::npos) {
                     inject_pos = break_after_version_pos + 1;
                 }
             }
@@ -439,7 +439,7 @@ namespace nova::renderer::shaderpack {
             std::vector<uint32_t> spirv_std;
             GlslangToSpv(*program.getIntermediate(stage), spirv_std);
 
-            eastl::vector<uint32_t> spirv(spirv_std.begin(), spirv_std.end());
+            std::vector<uint32_t> spirv(spirv_std.begin(), spirv_std.end());
 
             fs::path dump_filename = filename.filename();
             dump_filename.replace_extension(std::to_string(stage) + ".spirv.generated");
@@ -452,12 +452,12 @@ namespace nova::renderer::shaderpack {
         return {};
     }
 
-    eastl::vector<MaterialData> load_material_files(const eastl::shared_ptr<FolderAccessorBase>& folder_access) {
-        eastl::vector<fs::path> potential_material_files = folder_access->get_all_items_in_folder("materials");
+    std::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {
+        std::vector<fs::path> potential_material_files = folder_access->get_all_items_in_folder("materials");
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
-        eastl::vector<MaterialData> output;
+        std::vector<MaterialData> output;
         output.reserve(potential_material_files.size());
 
         for(const fs::path& potential_file : potential_material_files) {
@@ -470,8 +470,8 @@ namespace nova::renderer::shaderpack {
         return output;
     }
 
-    MaterialData load_single_material(const eastl::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& material_path) {
-        const eastl::string material_text = folder_access->read_text_file(material_path);
+    MaterialData load_single_material(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& material_path) {
+        const std::string material_text = folder_access->read_text_file(material_path);
 
         auto json_material = nlohmann::json::parse(material_text);
         const auto report = validate_material(json_material);

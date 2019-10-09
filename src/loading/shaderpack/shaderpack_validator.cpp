@@ -1,6 +1,6 @@
 #include "shaderpack_validator.hpp"
 
-#include <EASTL/array.h>
+#include <array>
 #include <fmt/format.h>
 
 #include "nova_renderer/util/utils.hpp"
@@ -15,8 +15,8 @@ namespace nova::renderer::shaderpack {
      * default value. It will thus cause an exception
      */
     nlohmann::json default_graphics_pipeline = {{"parentName", ""},
-                                                {"defines", eastl::array<eastl::string, 0>{}},
-                                                {"states", eastl::array<eastl::string, 0>{}},
+                                                {"defines", std::array<std::string, 0>{}},
+                                                {"states", std::array<std::string, 0>{}},
                                                 {"frontFace", nlohmann::json::object_t()},
                                                 {"backFace", nlohmann::json::object_t()},
                                                 {"fallback", ""},
@@ -38,26 +38,26 @@ namespace nova::renderer::shaderpack {
                                                 {"tessellationEvaluationShader", ""},
                                                 {"geometryShader", ""}};
 
-    eastl::vector<eastl::string> required_graphics_pipeline_fields = {"name", "pass", "vertexFields", "vertexShader"};
+    std::vector<std::string> required_graphics_pipeline_fields = {"name", "pass", "vertexFields", "vertexShader"};
 
     nlohmann::json default_texture_format = {{"pixelFormat", "RGBA8"}, {"dimensionType", "Absolute"}};
 
     void ensure_field_exists(nlohmann::json& j,
-                             const eastl::string& field_name,
-                             const eastl::string& context,
+                             const std::string& field_name,
+                             const std::string& context,
                              const nlohmann::json& default_value,
                              ValidationReport& report);
 
-    static eastl::string pipeline_msg(const eastl::string& name, const eastl::string& field_name) {
+    static std::string pipeline_msg(const std::string& name, const std::string& field_name) {
         return fmt::format(fmt("Pipeline {:s}: Missing field {:s}"), name.c_str(), field_name.c_str()).c_str();
     }
 
     ValidationReport validate_graphics_pipeline(nlohmann::json& pipeline_json) {
         ValidationReport report;
-        const eastl::string name = get_json_value<eastl::string>(pipeline_json, "name").value_or("<NAME_MISSING>");
+        const std::string name = get_json_value<std::string>(pipeline_json, "name").value_or("<NAME_MISSING>");
         // Don't need to check for the name's existence here, it'll be checked with the rest of the required fields
 
-        const eastl::string pipeline_context = "Pipeline " + name;
+        const std::string pipeline_context = "Pipeline " + name;
         // Check non-required fields first
         for(const auto& str : default_graphics_pipeline.items()) {
             ensure_field_exists(pipeline_json, str.key().c_str(), pipeline_context, default_graphics_pipeline, report);
@@ -65,7 +65,7 @@ namespace nova::renderer::shaderpack {
 
         // Check required items
         report.errors.reserve(required_graphics_pipeline_fields.size());
-        for(const eastl::string& field_name : required_graphics_pipeline_fields) {
+        for(const std::string& field_name : required_graphics_pipeline_fields) {
             const auto& itr = pipeline_json.find(field_name.c_str());
             if(itr == pipeline_json.end()) {
                 report.errors.emplace_back(pipeline_msg(name, field_name));
@@ -75,7 +75,7 @@ namespace nova::renderer::shaderpack {
         return report;
     }
 
-    static eastl::string resources_msg(const eastl::string& msg) { return fmt::format(fmt("Resources file: {:s}"), msg.c_str()).c_str(); }
+    static std::string resources_msg(const std::string& msg) { return fmt::format(fmt("Resources file: {:s}"), msg.c_str()).c_str(); }
 
     ValidationReport validate_shaderpack_resources_data(nlohmann::json& resources_json) {
         ValidationReport report;
@@ -122,14 +122,14 @@ namespace nova::renderer::shaderpack {
         return report;
     }
 
-    static eastl::string texture_msg(const eastl::string& name, const eastl::string& msg) {
+    static std::string texture_msg(const std::string& name, const std::string& msg) {
         return fmt::format(fmt("Texture {:s}: {:s}"), name.c_str(), msg.c_str()).c_str();
     }
 
     ValidationReport validate_texture_data(nlohmann::json& texture_json) {
         ValidationReport report;
-        const auto name_maybe = get_json_value<eastl::string>(texture_json, "name");
-        eastl::string name;
+        const auto name_maybe = get_json_value<std::string>(texture_json, "name");
+        std::string name;
         if(name_maybe) {
             name = name_maybe.value();
         } else {
@@ -149,14 +149,14 @@ namespace nova::renderer::shaderpack {
         return report;
     }
 
-    static eastl::string format_msg(const eastl::string& tex_name, const eastl::string& msg) {
+    static std::string format_msg(const std::string& tex_name, const std::string& msg) {
         return fmt::format(fmt("Format of texture {:s}: {:s}"), tex_name.c_str(), msg.c_str()).c_str();
     }
 
-    ValidationReport validate_texture_format(nlohmann::json& format_json, const eastl::string& texture_name) {
+    ValidationReport validate_texture_format(nlohmann::json& format_json, const std::string& texture_name) {
         ValidationReport report;
 
-        const eastl::string context = fmt::format(fmt("Format of texture {:s}"), texture_name.c_str()).c_str();
+        const std::string context = fmt::format(fmt("Format of texture {:s}"), texture_name.c_str()).c_str();
         ensure_field_exists(format_json, "pixelFormat", context, default_texture_format, report);
         ensure_field_exists(format_json, "dimensionType", context, default_texture_format, report);
 
@@ -173,13 +173,13 @@ namespace nova::renderer::shaderpack {
         return report;
     }
 
-    static eastl::string sampler_msg(const eastl::string& name, const eastl::string& msg) {
+    static std::string sampler_msg(const std::string& name, const std::string& msg) {
         return fmt::format(fmt("Sampler {:s}: {:s}"), name.c_str(), msg.c_str()).c_str();
     }
 
     ValidationReport validate_sampler_data(nlohmann::json& sampler_json) {
         ValidationReport report;
-        const eastl::string name = get_json_value<eastl::string>(sampler_json, "name").value_or("<NAME_MISSING>");
+        const std::string name = get_json_value<std::string>(sampler_json, "name").value_or("<NAME_MISSING>");
         if(name == "<NAME_MISSING>") {
             report.errors.emplace_back(sampler_msg(name, "Missing field name"));
         }
@@ -197,17 +197,17 @@ namespace nova::renderer::shaderpack {
         return report;
     }
 
-    static eastl::string material_msg(const eastl::string& name, const eastl::string& msg) {
+    static std::string material_msg(const std::string& name, const std::string& msg) {
         return fmt::format(fmt("Material {:s}: {:s}"), name.c_str(), msg.c_str()).c_str();
     }
-    static eastl::string material_pass_msg(const eastl::string& mat_name, const eastl::string& pass_name, const eastl::string& error) {
+    static std::string material_pass_msg(const std::string& mat_name, const std::string& pass_name, const std::string& error) {
         return fmt::format(fmt("Material pass {:s} in material {:s}: {:s}"), pass_name.c_str(), mat_name.c_str(), error.c_str()).c_str();
     }
 
     ValidationReport validate_material(nlohmann::json& material_json) {
         ValidationReport report;
 
-        const eastl::string name = get_json_value<eastl::string>(material_json, "name").value_or("<NAME_MISSING>");
+        const std::string name = get_json_value<std::string>(material_json, "name").value_or("<NAME_MISSING>");
         if(name == "<NAME_MISSING>") {
             report.errors.emplace_back(material_msg(name, "Missing material name"));
         }
@@ -232,12 +232,12 @@ namespace nova::renderer::shaderpack {
             }
 
             for(const auto& pass_json : passes_json) {
-                const eastl::string pass_name = get_json_value<eastl::string>(pass_json, "name").value_or("<NAME_MISSING>");
+                const std::string pass_name = get_json_value<std::string>(pass_json, "name").value_or("<NAME_MISSING>");
                 if(pass_name == "<NAME_MISSING>") {
                     report.errors.emplace_back(material_pass_msg(name, pass_name, "Missing field name"));
                 }
 
-                const auto pipeline_maybe = get_json_value<eastl::string>(pass_json, "pipeline");
+                const auto pipeline_maybe = get_json_value<std::string>(pass_json, "pipeline");
                 if(!pipeline_maybe) {
                     report.errors.emplace_back(material_pass_msg(name, pass_name, "Missing field pipeline"));
                 }
@@ -258,8 +258,8 @@ namespace nova::renderer::shaderpack {
     }
 
     void ensure_field_exists(nlohmann::json& j,
-                             const eastl::string& field_name,
-                             const eastl::string& context,
+                             const std::string& field_name,
+                             const std::string& context,
                              const nlohmann::json& default_value,
                              ValidationReport& report) {
         std::string field_name_std = field_name.c_str();

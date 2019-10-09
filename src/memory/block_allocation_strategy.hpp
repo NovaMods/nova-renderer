@@ -54,9 +54,9 @@ namespace bvestl {
 			 * \param allocation The struct to fill out with information about the allocation
 			 * \return True if the allocation succeeds, false otherwise. The allocation can only fail if you're out of memory
 			 */
-			bool allocate(Bytes size, AllocationInfo& allocation) override final;
+			bool allocate(Bytes size, AllocationInfo& allocation) override;
 
-			void free(const AllocationInfo& alloc) override final;
+			void free(const AllocationInfo& alloc) override;
 
 		private:
 			allocator_handle& allocator;

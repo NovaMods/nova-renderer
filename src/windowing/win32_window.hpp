@@ -34,11 +34,11 @@ namespace nova::renderer {
          * Platform-agnostic window interface
          */
 
-        void on_frame_end() override final;
+        void on_frame_end() override;
 
-        bool should_close() const override final;
+        bool should_close() const override;
 
-        glm::uvec2 get_window_size() const override final;
+        glm::uvec2 get_window_size() const override;
 
         /*
          * End platform-agnostic window interface

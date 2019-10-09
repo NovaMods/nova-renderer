@@ -8,8 +8,8 @@
 
 #include <atomic>
 #include <cstdint>
-#include <EASTL/functional.h>
-#include <EASTL/unique_ptr.h>
+#include <functional>
+#include <memory>
 #include <future>
 #include "nova_renderer/util/utils.hpp"
 #include "../util/logger.hpp"
@@ -23,7 +23,7 @@
 namespace nova::ttl {
     class task_scheduler;
 
-    using ArgumentExtractorType = eastl::function<void(task_scheduler*)>;
+    using ArgumentExtractorType = std::function<void(task_scheduler*)>;
 
     using TaskFunction = void (*)(task_scheduler*, void*);
 
@@ -88,15 +88,15 @@ namespace nova::ttl {
             /*!
              * \brief A queue of all the tasks this thread needs to execute
              */
-            eastl::unique_ptr<wait_free_queue<eastl::function<void()>>> task_queue;
+            std::unique_ptr<wait_free_queue<std::function<void()>>> task_queue;
             /*!
              * \brief The index of the queue we last stole from
              */
             std::size_t last_successful_steal = 0;
 
-            eastl::unique_ptr<std::mutex> things_in_queue_mutex;
-            eastl::unique_ptr<std::condition_variable> things_in_queue_cv;
-            eastl::unique_ptr<std::atomic<bool>> is_sleeping;
+            std::unique_ptr<std::mutex> things_in_queue_mutex;
+            std::unique_ptr<std::condition_variable> things_in_queue_cv;
+            std::unique_ptr<std::atomic<bool>> is_sleeping;
 
             per_thread_data();
 
@@ -129,20 +129,20 @@ namespace nova::ttl {
          * \brief Adds a task to the internal queue. Allocates internally
          *
          * \tparam F       Function type.
-         * \tparam Args    Arguments to the function. Copied if lvalue. Moved if rvalue. Use eastl::ref/eastl::cref for references.
+         * \tparam Args    Arguments to the function. Copied if lvalue. Moved if rvalue. Use std::ref/std::cref for references.
          *
          * \param function Function to invoke
-         * \param args     Arguments to the function. Copied if lvalue. Moved if rvalue. Use eastl::ref/eastl::cref for references.
+         * \param args     Arguments to the function. Copied if lvalue. Moved if rvalue. Use std::ref/std::cref for references.
          *
          * \return A future to the data that your task will produce
          */
         template <class F, class... Args>
         auto add_task(F&& function, Args&&... args)
-            -> std::future<decltype(function(std::declval<task_scheduler*>(), eastl::forward<Args>(args)...))> {
-            using RetVal = decltype(function(std::declval<task_scheduler*>(), eastl::forward<Args>(args)...));
+            -> std::future<decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...))> {
+            using RetVal = decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...));
 
-            auto task = eastl::make_shared<std::packaged_task<RetVal()>>(
-                std::bind(eastl::forward<F>(function), this, eastl::forward<Args>(args)...));
+            auto task = std::make_shared<std::packaged_task<RetVal()>>(
+                std::bind(std::forward<F>(function), this, std::forward<Args>(args)...));
             std::future<RetVal> future = task->get_future();
 
             add_task_proxy([task] {
@@ -167,20 +167,20 @@ namespace nova::ttl {
          * \brief Adds a task to the internal queue. Allocates internally
          *
          * \tparam F       Function type.
-         * \tparam Args    Arguments to the function. Copied if lvalue. Moved if rvalue. Use eastl::ref/eastl::cref for references.
+         * \tparam Args    Arguments to the function. Copied if lvalue. Moved if rvalue. Use std::ref/std::cref for references.
          *
          * \param counter  The counter to decrement when the task has finished
          * \param function Function to invoke
-         * \param args     Arguments to the function. Copied if lvalue. Moved if rvalue. Use eastl::ref/eastl::cref for references.
+         * \param args     Arguments to the function. Copied if lvalue. Moved if rvalue. Use std::ref/std::cref for references.
          *
          * \return A future to the data that your task will produce
          */
         template <class F, class... Args>
         auto add_task(condition_counter* counter, F&& function, Args&&... args)
-            -> std::future<decltype(function(std::declval<task_scheduler*>(), eastl::forward<Args>(args)...))> {
-            using RetVal = decltype(function(std::declval<task_scheduler*>(), eastl::forward<Args>(args)...));
+            -> std::future<decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...))> {
+            using RetVal = decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...));
 
-            auto task = std::make_shared<std::packaged_task<RetVal()>>(std::bind(function, this, eastl::forward<Args>(args)...));
+            auto task = std::make_shared<std::packaged_task<RetVal()>>(std::bind(function, this, std::forward<Args>(args)...));
             std::future<RetVal> future = task->get_future();
 
             counter->add(1);
@@ -219,16 +219,16 @@ namespace nova::ttl {
 
     private:
         uint32_t num_threads;
-        eastl::vector<std::thread> threads;
-        eastl::vector<per_thread_data> thread_local_data;
+        std::vector<std::thread> threads;
+        std::vector<per_thread_data> thread_local_data;
 
-        eastl::unique_ptr<std::atomic<bool>> should_shutdown;
+        std::unique_ptr<std::atomic<bool>> should_shutdown;
 
         empty_queue_behavior behavior_of_empty_queues = empty_queue_behavior::YIELD;
         task_queue_search_behavior behavior_of_task_queue_search = task_queue_search_behavior::NEXT;
         bool initialized = false;
-        eastl::unique_ptr<std::mutex> initialized_mutex;
-        eastl::unique_ptr<std::condition_variable> initialized_cv;
+        std::unique_ptr<std::mutex> initialized_mutex;
+        std::unique_ptr<std::condition_variable> initialized_cv;
 
         uint32_t last_task_queue_index = 0;
 
@@ -237,13 +237,13 @@ namespace nova::ttl {
          *
          * \param task       The task to queue
          */
-        void add_task(eastl::function<void()> task);
+        void add_task(std::function<void()> task);
         /*!
          * \brief Proxy to add_task because the compiler cannot be sure which add_task
          *           to use for lambdas
          * \param task The task to queue
          */
-        void add_task_proxy(eastl::function<void()> task);
+        void add_task_proxy(std::function<void()> task);
 
         /*!
          * \brief Attempts to get the next task, returning success
@@ -251,7 +251,7 @@ namespace nova::ttl {
          * \param task The memory to write the next task to
          * \return True if there was a task, false if there was not
          */
-        bool get_next_task(eastl::function<void()>* task);
+        bool get_next_task(std::function<void()>* task);
     };
 
     void thread_func(task_scheduler* pool);

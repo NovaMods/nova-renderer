@@ -1,7 +1,7 @@
 #pragma once
 
-#include <EASTL/string.h>
-#include <EASTL/unordered_map.h>
+#include <string>
+#include <unordered_map>
 #include <glm/glm.hpp>
 #include "device_memory_resource.hpp"
 #include "nova_renderer/polyalloc.hpp"
@@ -86,7 +86,7 @@ namespace nova::renderer::rhi {
      * \brief The interface for a pipeline. Includes both inputs (descriptors) and outputs (framebuffers)
      */
     struct NOVA_API PipelineInterface {
-        eastl::unordered_map<eastl::string, ResourceBindingDescription> bindings;
+        std::unordered_map<std::string, ResourceBindingDescription> bindings;
     };
 
     struct NOVA_API Pipeline {};
@@ -139,5 +139,5 @@ namespace nova::renderer::rhi {
     };
 #pragma endregion
 
-    ShaderStageFlags NOVA_API operator|=(const ShaderStageFlags lhs, const ShaderStageFlags rhs);
+    ShaderStageFlags NOVA_API operator|=(ShaderStageFlags lhs, ShaderStageFlags rhs);
 } // namespace nova::renderer::rhi

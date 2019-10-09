@@ -9,7 +9,7 @@
 #endif
 
 namespace {
-    void* eastl_aligned_alloc(std::size_t size, std::size_t alignment) {
+    void* std_aligned_alloc(std::size_t size, std::size_t alignment) {
         if (alignment == 0 || (alignment & (alignment - 1)) != 0)
             throw std::invalid_argument("Alignment must be a power of 2");
 
@@ -38,7 +38,7 @@ namespace {
         return allocatedMemory;
     }
 
-    void eastl_aligned_free(void* ptr) noexcept {
+    void std_aligned_free(void* ptr) noexcept {
 #ifdef EA_PLATFORM_MICROSOFT
         _aligned_free(ptr);
 #else
@@ -48,7 +48,7 @@ namespace {
 } // namespace
 
 void* operator new(std::size_t count) {
-    return eastl_aligned_alloc(count, 16);
+    return std_aligned_alloc(count, 16);
 }
 
 void* operator new[](std::size_t count) {
@@ -77,11 +77,11 @@ void* operator new[](std::size_t size,
                      unsigned /*debugFlags*/,
                      char const* /*file*/,
                      int /*line*/) {
-    return eastl_aligned_alloc(size, alignment);
+    return std_aligned_alloc(size, alignment);
 }
 
 void operator delete(void* ptr) noexcept {
-    eastl_aligned_free(ptr);
+    std_aligned_free(ptr);
 }
 
 void operator delete[](void* ptr) noexcept {

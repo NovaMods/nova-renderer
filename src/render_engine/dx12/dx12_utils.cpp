@@ -181,8 +181,8 @@ namespace nova::renderer::rhi {
         }
     }
 
-    eastl::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions() {
-        static eastl::vector<D3D12_INPUT_ELEMENT_DESC> input_element_descriptions =
+    std::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions() {
+        static std::vector<D3D12_INPUT_ELEMENT_DESC> input_element_descriptions =
             {// Position
              D3D12_INPUT_ELEMENT_DESC{
                  "POSITION",                                 // SemanticName

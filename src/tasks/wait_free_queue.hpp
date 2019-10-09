@@ -32,7 +32,7 @@
 
 #include <atomic>
 #include <cassert>
-#include <EASTL/vector.h>
+#include <vector>
 
 constexpr static size_t CACHE_LINE_SIZE = 64;
 
@@ -66,8 +66,8 @@ namespace nova::ttl {
             }
 
         private:
-            eastl::vector<T> items;
-            eastl::unique_ptr<circular_array> previous;
+            std::vector<T> items;
+            std::unique_ptr<circular_array> previous;
 
         public:
             [[nodiscard]] std::size_t size() const { return items.size(); }

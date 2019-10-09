@@ -1,8 +1,8 @@
 #pragma once
 
 #include <memory>
-#include <EASTL/array.h>
-#include <EASTL/string.h>
+#include <array>
+#include <string>
 
 #include "nova_renderer/device_memory_resource.hpp"
 #include "nova_renderer/nova_settings.hpp"
@@ -39,33 +39,33 @@ namespace nova::renderer {
          */
         rhi::Buffer* per_renderable_data = nullptr;
 
-        eastl::vector<RenderableType> renderables;
+        std::vector<RenderableType> renderables;
     };
 
     struct NOVA_API MaterialPass {
         // Descriptors for the material pass
 
-        eastl::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
-        eastl::vector<rhi::DescriptorSet*> descriptor_sets;
+        std::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
+        std::vector<rhi::DescriptorSet*> descriptor_sets;
         const rhi::PipelineInterface* pipeline_interface;
     };
 
     struct NOVA_API Pipeline {
         rhi::Pipeline* pipeline = nullptr;
 
-        eastl::vector<MaterialPass> passes;
+        std::vector<MaterialPass> passes;
     };
 
     struct NOVA_API Renderpass {
         rhi::Renderpass* renderpass = nullptr;
         rhi::Framebuffer* framebuffer = nullptr;
 
-        eastl::vector<Pipeline> pipelines;
+        std::vector<Pipeline> pipelines;
 
         bool writes_to_backbuffer = false;
 
-        eastl::vector<rhi::ResourceBarrier> read_texture_barriers;
-        eastl::vector<rhi::ResourceBarrier> write_texture_barriers;
+        std::vector<rhi::ResourceBarrier> read_texture_barriers;
+        std::vector<rhi::ResourceBarrier> write_texture_barriers;
     };
 
     struct NOVA_API Mesh {
@@ -78,8 +78,8 @@ namespace nova::renderer {
 
 #pragma region metadata
     struct NOVA_API FullMaterialPassName {
-        eastl::string material_name;
-        eastl::string pass_name;
+        std::string material_name;
+        std::string pass_name;
 
         bool operator==(const FullMaterialPassName& other) const;
     };
@@ -101,13 +101,13 @@ namespace nova::renderer {
     struct NOVA_API PipelineMetadata {
         shaderpack::PipelineCreateInfo data;
 
-        eastl::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher> material_metadatas{};
+        std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher> material_metadatas{};
     };
 
     struct NOVA_API RenderpassMetadata {
         shaderpack::RenderPassCreateInfo data;
 
-        eastl::unordered_map<eastl::string, PipelineMetadata> pipeline_metadata{};
+        std::unordered_map<std::string, PipelineMetadata> pipeline_metadata{};
     };
 #pragma endregion
 
@@ -145,7 +145,7 @@ namespace nova::renderer {
          *
          * \param shaderpack_name The name of the shaderpack to load
          */
-        void load_shaderpack(const eastl::string& shaderpack_name);
+        void load_shaderpack(const std::string& shaderpack_name);
 
         /*!
          * \brief Executes a single frame
@@ -193,11 +193,11 @@ namespace nova::renderer {
 
     private:
         NovaSettings render_settings;
-        eastl::unique_ptr<rhi::RenderEngine> rhi;
+        std::unique_ptr<rhi::RenderEngine> rhi;
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
-        static eastl::unique_ptr<NovaRenderer> instance;
+        static std::unique_ptr<NovaRenderer> instance;
 
         rhi::Sampler* point_sampler;
 
@@ -209,12 +209,12 @@ namespace nova::renderer {
          * Right now I throw this allocator at the GPU memory allocators, because they need some way to allocate memory and I'm not about to
          * try and band-aid aid things together
          */
-        eastl::shared_ptr<bvestl::polyalloc::allocator_handle> global_allocator;
+        std::shared_ptr<bvestl::polyalloc::allocator_handle> global_allocator;
 
-        eastl::unique_ptr<DeviceMemoryResource> mesh_memory;
+        std::unique_ptr<DeviceMemoryResource> mesh_memory;
 
-        eastl::unique_ptr<DeviceMemoryResource> ubo_memory;
-        eastl::unique_ptr<DeviceMemoryResource> staging_buffer_memory;
+        std::unique_ptr<DeviceMemoryResource> ubo_memory;
+        std::unique_ptr<DeviceMemoryResource> staging_buffer_memory;
         void* staging_buffer_memory_ptr;
 
 #pragma region Initialization
@@ -236,7 +236,7 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Shaderpack
-        using PipelineReturn = eastl::tuple<Pipeline, PipelineMetadata>;
+        using PipelineReturn = std::tuple<Pipeline, PipelineMetadata>;
 
         bool shaderpack_loaded = false;
 
@@ -251,22 +251,22 @@ namespace nova::renderer {
          *
          * Basically this vector contains all the data you need to render a frame
          */
-        eastl::vector<Renderpass> renderpasses;
+        std::vector<Renderpass> renderpasses;
 
-        eastl::unordered_map<eastl::string, rhi::Image*> dynamic_textures;
-        eastl::unordered_map<eastl::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
+        std::unordered_map<std::string, rhi::Image*> dynamic_textures;
+        std::unordered_map<std::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
 
-        void create_dynamic_textures(const eastl::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
+        void create_dynamic_textures(const std::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
 
-        void create_render_passes(const eastl::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
-                                  const eastl::vector<shaderpack::PipelineCreateInfo>& pipelines,
-                                  const eastl::vector<shaderpack::MaterialData>& materials);
+        void create_render_passes(const std::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
+                                  const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
+                                  const std::vector<shaderpack::MaterialData>& materials);
 
         void create_materials_for_pipeline(
             Pipeline& pipeline,
-            eastl::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher>& material_metadatas,
-            const eastl::vector<shaderpack::MaterialData>& materials,
-            const eastl::string& pipeline_name,
+            std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher>& material_metadatas,
+            const std::vector<shaderpack::MaterialData>& materials,
+            const std::string& pipeline_name,
             const rhi::PipelineInterface* pipeline_interface,
             rhi::DescriptorPool* descriptor_pool,
             const MaterialPassKey& template_key);
@@ -286,26 +286,26 @@ namespace nova::renderer {
          */
         void bind_data_to_material_descriptor_sets(
             const MaterialPass& material,
-            const eastl::unordered_map<eastl::string, eastl::string>& bindings,
-            const eastl::unordered_map<eastl::string, rhi::ResourceBindingDescription>& descriptor_descriptions);
+            const std::unordered_map<std::string, std::string>& bindings,
+            const std::unordered_map<std::string, rhi::ResourceBindingDescription>& descriptor_descriptions);
 
         [[nodiscard]] Result<rhi::PipelineInterface*> create_pipeline_interface(
             const shaderpack::PipelineCreateInfo& pipeline_create_info,
-            const eastl::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-            const eastl::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const;
+            const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const;
 
         [[nodiscard]] Result<PipelineReturn> create_graphics_pipeline(rhi::PipelineInterface* pipeline_interface,
                                                                       const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
 
-        static void get_shader_module_descriptors(const eastl::vector<uint32_t>& spirv,
-                                                  const rhi::ShaderStageFlags shader_stage,
-                                                  eastl::unordered_map<eastl::string, rhi::ResourceBindingDescription>& bindings);
+        static void get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
+                                                  rhi::ShaderStageFlags shader_stage,
+                                                  std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings);
 
-        static void add_resource_to_bindings(eastl::unordered_map<eastl::string, rhi::ResourceBindingDescription>& bindings,
-                                             const rhi::ShaderStageFlags shader_stage,
+        static void add_resource_to_bindings(std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings,
+                                             rhi::ShaderStageFlags shader_stage,
                                              const spirv_cross::CompilerGLSL& shader_compiler,
                                              const spirv_cross::Resource& resource,
-                                             const rhi::DescriptorType type);
+                                             rhi::DescriptorType type);
 
         void destroy_render_passes();
 
@@ -315,7 +315,7 @@ namespace nova::renderer {
 #pragma region Meshes
         MeshId next_mesh_id = 0;
 
-        eastl::unordered_map<MeshId, Mesh> meshes;
+        std::unordered_map<MeshId, Mesh> meshes;
 #pragma endregion
 
 #pragma region Rendering
@@ -326,10 +326,10 @@ namespace nova::renderer {
         rhi::Buffer* model_matrix_buffer;
         uint32_t cur_model_matrix_index = 0;
 
-        eastl::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;
+        std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;
 
-        eastl::unordered_map<eastl::string, RenderpassMetadata> renderpass_metadatas;
-        eastl::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
+        std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
+        std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
 
         void record_renderpass(Renderpass& renderpass, rhi::CommandList* cmds);
 

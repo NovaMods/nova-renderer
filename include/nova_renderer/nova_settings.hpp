@@ -1,7 +1,7 @@
 #pragma once
 
-#include <EASTL/string.h>
-#include <EASTL/vector.h>
+#include <string>
+#include <vector>
 
 #include "nova_renderer/util/utils.hpp"
 
@@ -118,12 +118,12 @@ namespace nova::renderer {
                 /*!
                  * \brief The path to `renderdoc.dll` on your filesystem
                  */
-                eastl::string renderdoc_dll_path = R"(C:\Program Files\RenderDoc\renderdoc.dll)";
+                std::string renderdoc_dll_path = R"(C:\Program Files\RenderDoc\renderdoc.dll)";
 
                 /*!
                  * \brief The base path for RenderDoc captures
                  */
-                eastl::string capture_path = "logs/captures";
+                std::string capture_path = "logs/captures";
 
             } renderdoc;
         } debug;
@@ -137,7 +137,7 @@ namespace nova::renderer {
              *
              * Nova requires a shaderpack to render anything, so we need to know which one to load on application start
              */
-            eastl::string loaded_shaderpack = "DefaultShaderpack";
+            std::string loaded_shaderpack = "DefaultShaderpack";
         } cache;
 
         /*!
@@ -147,7 +147,7 @@ namespace nova::renderer {
             /*!
              * \brief The title of the Window
              */
-            eastl::string title = "Nova Renderer";
+            std::string title = "Nova Renderer";
 
             /*!
              * \brief The width of the window
@@ -167,7 +167,7 @@ namespace nova::renderer {
             /*!
              * \brief The application name to pass to Vulkan
              */
-            eastl::string application_name = "Nova Renderer";
+            std::string application_name = "Nova Renderer";
 
             /*!
              * \brief The application version to pass to Vulkan
@@ -230,6 +230,6 @@ namespace nova::renderer {
          */
         void update_config_loaded();
 
-        eastl::vector<ConfigListener*> config_change_listeners;
+        std::vector<ConfigListener*> config_change_listeners;
     };
 } // namespace nova::renderer

@@ -7,7 +7,7 @@
 #include "gl3_command_list.hpp"
 #include "glad/glad.h"
 #include "nova_renderer/render_engine.hpp"
-#include <EASTL/shared_ptr.h>
+#include <memory>
 
 namespace nova::renderer::rhi {
     /*!
@@ -23,79 +23,79 @@ namespace nova::renderer::rhi {
         Gl3RenderEngine(const Gl3RenderEngine& other) = delete;
         Gl3RenderEngine& operator=(const Gl3RenderEngine& other) = delete;
 
-        ~Gl3RenderEngine() override final = default;
+        ~Gl3RenderEngine() override = default;
 
-        eastl::shared_ptr<Window> get_window() const override final;
+        std::shared_ptr<Window> get_window() const override;
 
-        void set_num_renderpasses(uint32_t num_renderpasses) override final;
+        void set_num_renderpasses(uint32_t num_renderpasses) override;
 
-        Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage type, ObjectType allowed_objects) override final;
+        Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage type, ObjectType allowed_objects) override;
 
         // Inherited via render_engine
-        Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override final;
+        Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
-                                        const eastl::vector<Image*>& attachments,
-                                        const glm::uvec2& framebuffer_size) override final;
+                                        const std::vector<Image*>& attachments,
+                                        const glm::uvec2& framebuffer_size) override;
 
         DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
                                                uint32_t num_samplers,
-                                               uint32_t num_uniform_buffers) override final;
+                                               uint32_t num_uniform_buffers) override;
 
-        eastl::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                           DescriptorPool* pool) override final;
+        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
+                                                           DescriptorPool* pool) override;
 
-        void update_descriptor_sets(eastl::vector<DescriptorSetWrite>& writes) override final;
+        void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override;
 
         Result<PipelineInterface*> create_pipeline_interface(
-            const eastl::unordered_map<eastl::string, ResourceBindingDescription>& bindings,
-            const eastl::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-            const eastl::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override final;
+            const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
+            const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override;
 
-        Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override final;
+        Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override;
 
-        Buffer* create_buffer(const BufferCreateInfo& info) override final;
+        Buffer* create_buffer(const BufferCreateInfo& info) override;
 
         /*!
          * \inheritdoc
          *
          * This method assumes you're going to use the buffer as a copy source
          */
-        void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) override final;
+        void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) override;
 
-        Image* create_texture(const shaderpack::TextureCreateInfo& info) override final;
+        Image* create_texture(const shaderpack::TextureCreateInfo& info) override;
 
-        Semaphore* create_semaphore() override final;
-        eastl::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override final;
+        Semaphore* create_semaphore() override;
+        std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override;
 
-        Fence* create_fence(bool signaled = false) override final;
+        Fence* create_fence(bool signaled = false) override;
 
-        eastl::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override final;
+        std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override;
 
-        void wait_for_fences(const eastl::vector<Fence*> fences) override final;
+        void wait_for_fences(std::vector<Fence*> fences) override;
 
-        void reset_fences(const eastl::vector<Fence*>& fences) override final;
+        void reset_fences(const std::vector<Fence*>& fences) override;
 
-        void destroy_renderpass(Renderpass* pass) override final;
+        void destroy_renderpass(Renderpass* pass) override;
 
-        void destroy_framebuffer(Framebuffer* framebuffer) override final;
+        void destroy_framebuffer(Framebuffer* framebuffer) override;
 
-        void destroy_pipeline_interface(PipelineInterface* pipeline_interface) override final;
+        void destroy_pipeline_interface(PipelineInterface* pipeline_interface) override;
 
-        void destroy_pipeline(Pipeline* pipeline) override final;
-        void destroy_texture(Image* resource) override final;
-        void destroy_semaphores(eastl::vector<Semaphore*>& semaphores) override final;
-        void destroy_fences(eastl::vector<Fence*>& fences) override final;
+        void destroy_pipeline(Pipeline* pipeline) override;
+        void destroy_texture(Image* resource) override;
+        void destroy_semaphores(std::vector<Semaphore*>& semaphores) override;
+        void destroy_fences(std::vector<Fence*>& fences) override;
 
         CommandList* get_command_list(uint32_t thread_idx,
                                       QueueType needed_queue_type,
-                                      CommandList::Level command_list_type) override final;
+                                      CommandList::Level command_list_type) override;
         
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
                                  Fence* fence_to_signal = nullptr,
-                                 const eastl::vector<Semaphore*>& wait_semaphores = {},
-                                 const eastl::vector<Semaphore*>& signal_semaphores = {}) override final;
+                                 const std::vector<Semaphore*>& wait_semaphores = {},
+                                 const std::vector<Semaphore*>& signal_semaphores = {}) override;
 
     protected:
         void open_window_and_create_surface(const NovaSettings::WindowOptions& options);
@@ -103,7 +103,7 @@ namespace nova::renderer::rhi {
     private:
         bool supports_geometry_shaders = false;
 
-        eastl::unordered_map<eastl::string, shaderpack::SamplerCreateInfo> samplers;
+        std::unordered_map<std::string, shaderpack::SamplerCreateInfo> samplers;
 
         static void set_initial_state();
 

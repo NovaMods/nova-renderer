@@ -25,8 +25,8 @@ namespace nova::renderer {
      * making them use special vertex formats
      */
     struct NOVA_API MeshData {
-        eastl::vector<FullVertex> vertex_data;
-        eastl::vector<uint32_t> indices;
+        std::vector<FullVertex> vertex_data;
+        std::vector<uint32_t> indices;
     };
 
     using MeshId = uint64_t;
@@ -50,7 +50,7 @@ namespace nova::renderer {
     struct NOVA_API RenderableMetadata {
         RenderableId id = 0;
 
-        eastl::vector<eastl::string> passes;
+        std::vector<std::string> passes;
     };
 
     struct NOVA_API RenderableBase {

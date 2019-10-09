@@ -36,7 +36,7 @@ namespace bvestl {
 
 		class NOVA_API allocator_handle {
 		  public:
-		  	// Needs to exist because EASTL won't compile without it. Should not ever be called.
+		  	// Needs to exist because std won't compile without it. Should not ever be called.
 			EA_FORCE_INLINE allocator_handle(char const* const = nullptr) noexcept : allocator_(nullptr) {
 				BVESTL_POLYALLOC_DEFAULT_CONSTRUCT_ASSERT;
 			}
@@ -62,7 +62,7 @@ namespace bvestl {
 			}
 
 			EA_FORCE_INLINE char const* get_name() const noexcept {
-				return "EASTL Polyalloc Allocator Handle";
+				return "std Polyalloc Allocator Handle";
 			}
 
 			EA_FORCE_INLINE void set_name(char const* const) const noexcept {}

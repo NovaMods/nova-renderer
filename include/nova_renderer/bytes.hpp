@@ -84,7 +84,7 @@ namespace bvestl {
             }
 #pragma endregion
 
-#pragma region eastl::size_t arithmatic operators
+#pragma region std::size_t arithmatic operators
             constexpr EA_FORCE_INLINE Bytes operator+(std::size_t const addend) const noexcept { return Bytes(byte_count + addend); }
 
             constexpr EA_FORCE_INLINE Bytes operator-(std::size_t const subtrahend) const noexcept {

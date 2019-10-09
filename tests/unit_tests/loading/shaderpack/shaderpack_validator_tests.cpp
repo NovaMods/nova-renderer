@@ -2075,7 +2075,7 @@ TEST(TextureValidator, TextureFormatWarningsPropagate) {
     ASSERT_EQ(report.warnings.size(), 1);
     EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of '\"RGBA8\"' will be used");
 
-    EXPECT_EQ(texture.at("format").at("pixelFormat").get<eastl::string>(), "RGBA8");
+    EXPECT_EQ(texture.at("format").at("pixelFormat").get<std::string>(), "RGBA8");
 }
 
 /********************************************
@@ -2122,7 +2122,7 @@ TEST(TextureFormatValidator, PixelFormatMissing) {
     ASSERT_EQ(report.warnings.size(), 1);
     EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of '\"RGBA8\"' will be used");
 
-    EXPECT_EQ(texture_format.at("pixelFormat").get<eastl::string>(), "RGBA8");
+    EXPECT_EQ(texture_format.at("pixelFormat").get<std::string>(), "RGBA8");
 }
 
 TEST(TextureFormatValidator, DimensionTypeMissing) {
@@ -2146,7 +2146,7 @@ TEST(TextureFormatValidator, DimensionTypeMissing) {
     EXPECT_EQ(report.warnings[0],
               "Format of texture TestTexture: Missing field dimensionType. A default value of '\"Absolute\"' will be used");
 
-    EXPECT_EQ(texture_format.at("dimensionType").get<eastl::string>(), "Absolute");
+    EXPECT_EQ(texture_format.at("dimensionType").get<std::string>(), "Absolute");
 }
 
 TEST(TextureFormatValidator, WidthMissing) {
@@ -2470,7 +2470,7 @@ TEST(MaterialValidator, PassesEmptyArray) {
     // clang-format off
     nlohmann::json material = {
             {"name", "TestMaterial"},
-            {"passes", eastl::vector<eastl::string>{}},
+            {"passes", std::vector<std::string>{}},
             {"filter", "geometry_type::block"}
     };
     // clang-format on

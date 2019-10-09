@@ -6,7 +6,7 @@
 #define NOVA_RENDERER_VULKAN_UTILS_HPP
 
 #include <string>
-#include <EASTL/vector.h>
+#include <vector>
 #include <vulkan/vulkan.h>
 
 #include "nova_renderer/command_list.hpp"
@@ -20,23 +20,23 @@ namespace nova::renderer::rhi {
 
 	VkBlendFactor to_blend_factor(shaderpack::BlendFactorEnum factor);
 
-	VkCompareOp to_compare_op(const shaderpack::CompareOpEnum compare_op);
+	VkCompareOp to_compare_op(shaderpack::CompareOpEnum compare_op);
 
 	VkStencilOp to_stencil_op(shaderpack::StencilOpEnum stencil_op);
 
-	VkFormat to_vk_format(const shaderpack::PixelFormatEnum format);
+	VkFormat to_vk_format(shaderpack::PixelFormatEnum format);
 
-	VkDescriptorType to_vk_descriptor_type(const DescriptorType type);
+	VkDescriptorType to_vk_descriptor_type(DescriptorType type);
 
-	VkShaderStageFlags to_vk_shader_stage_flags(const ShaderStageFlags flags);
+	VkShaderStageFlags to_vk_shader_stage_flags(ShaderStageFlags flags);
 
     std::string to_string(VkResult result);
 
     std::string to_string(VkObjectType obj_type);
 
-    eastl::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions();
+    std::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions();
 
-    eastl::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
+    std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
 
     bool operator&(const ShaderStageFlags& lhs, const ShaderStageFlags& rhs);
 } // namespace nova::renderer

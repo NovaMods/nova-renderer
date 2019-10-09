@@ -18,12 +18,12 @@
 #endif
 
 namespace nova::renderer {
-    Result<RENDERDOC_API_1_3_0*> load_renderdoc(const eastl::string& renderdoc_dll_path) {
+    Result<RENDERDOC_API_1_3_0*> load_renderdoc(const std::string& renderdoc_dll_path) {
 #if defined(NOVA_WINDOWS)
         using HINSTANCE = HINSTANCE__* const;
         HINSTANCE renderdoc_dll = LoadLibrary(renderdoc_dll_path.c_str());
         if(!renderdoc_dll) {
-            const eastl::string error = get_last_windows_error();
+            const std::string error = get_last_windows_error();
             return Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc. Error: {:s}", error.c_str()));
         }
 
@@ -31,7 +31,7 @@ namespace nova::renderer {
 
         const auto get_api = reinterpret_cast<pRENDERDOC_GetAPI>(GetProcAddress(renderdoc_dll, "RENDERDOC_GetAPI"));
         if(!get_api) {
-            const eastl::string error = get_last_windows_error();
+            const std::string error = get_last_windows_error();
             return Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc DLL. Error: {:s}", error.c_str()));
         }
 

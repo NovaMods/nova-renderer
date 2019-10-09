@@ -55,7 +55,7 @@ namespace nova::renderer::rhi {
     }
 
     Framebuffer* Gl3RenderEngine::create_framebuffer(const Renderpass* /* renderpass */,
-                                                     const eastl::vector<Image*>& attachments,
+                                                     const std::vector<Image*>& attachments,
                                                      const glm::uvec2& /* framebuffer_size */) {
         Gl3Framebuffer* framebuffer = new Gl3Framebuffer;
 
@@ -90,9 +90,9 @@ namespace nova::renderer::rhi {
         return pool;
     }
 
-    eastl::vector<DescriptorSet*> Gl3RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface, DescriptorPool* pool) {
+    std::vector<DescriptorSet*> Gl3RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface, DescriptorPool* pool) {
         Gl3DescriptorPool* gl_descriptor_pool = static_cast<Gl3DescriptorPool*>(pool);
-        eastl::vector<DescriptorSet*> sets;
+        std::vector<DescriptorSet*> sets;
 
         for(const auto& [name, desc] : pipeline_interface->bindings) {
             void* new_set_mem = gl_descriptor_pool->descriptor_allocator.allocate(sizeof(Gl3DescriptorSet));
@@ -105,7 +105,7 @@ namespace nova::renderer::rhi {
         return sets;
     }
 
-    void Gl3RenderEngine::update_descriptor_sets(eastl::vector<DescriptorSetWrite>& writes) {
+    void Gl3RenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
         for(DescriptorSetWrite& write : writes) {
             const Gl3DescriptorSet* cset = static_cast<const Gl3DescriptorSet*>(write.set);
             Gl3DescriptorSet* set = const_cast<Gl3DescriptorSet*>(cset); // I have a few regrets
@@ -134,9 +134,9 @@ namespace nova::renderer::rhi {
     }
 
     Result<PipelineInterface*> Gl3RenderEngine::create_pipeline_interface(
-        const eastl::unordered_map<eastl::string, ResourceBindingDescription>& bindings,
-        const eastl::vector<shaderpack::TextureAttachmentInfo>& /* color_attachments */,
-        const eastl::optional<shaderpack::TextureAttachmentInfo>& /* depth_texture */) {
+        const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
+        const std::vector<shaderpack::TextureAttachmentInfo>& /* color_attachments */,
+        const std::optional<shaderpack::TextureAttachmentInfo>& /* depth_texture */) {
         Gl3PipelineInterface* pipeline_interface = new Gl3PipelineInterface;
         pipeline_interface->bindings = bindings;
 
@@ -148,7 +148,7 @@ namespace nova::renderer::rhi {
 
         pipeline->id = glCreateProgram();
 
-        eastl::vector<eastl::string> pipeline_creation_errors;
+        std::vector<std::string> pipeline_creation_errors;
         pipeline_creation_errors.reserve(4);
 
         const Result<GLuint> vertex_shader = compile_shader(data.vertex_shader.source, GL_VERTEX_SHADER);
@@ -188,7 +188,7 @@ namespace nova::renderer::rhi {
             program_link_log_std.reserve(link_log_length);
             glGetProgramInfoLog(pipeline->id, link_log_length, nullptr, program_link_log_std.data());
 
-            const eastl::string program_link_log = program_link_log_std.c_str();
+            const std::string program_link_log = program_link_log_std.c_str();
 
             pipeline_creation_errors.push_back(program_link_log);
 
@@ -292,8 +292,8 @@ namespace nova::renderer::rhi {
 
     Semaphore* Gl3RenderEngine::create_semaphore() { return new Gl3Semaphore; }
 
-    eastl::vector<Semaphore*> Gl3RenderEngine::create_semaphores(const uint32_t num_semaphores) {
-        eastl::vector<Semaphore*> semaphores(num_semaphores);
+    std::vector<Semaphore*> Gl3RenderEngine::create_semaphores(const uint32_t num_semaphores) {
+        std::vector<Semaphore*> semaphores(num_semaphores);
 
         for(uint32_t i = 0; i < num_semaphores; i++) {
             semaphores[i] = new Gl3Semaphore;
@@ -309,8 +309,8 @@ namespace nova::renderer::rhi {
         return fence;
     }
 
-    eastl::vector<Fence*> Gl3RenderEngine::create_fences(const uint32_t num_fences, const bool signaled) {
-        eastl::vector<Fence*> fences;
+    std::vector<Fence*> Gl3RenderEngine::create_fences(const uint32_t num_fences, const bool signaled) {
+        std::vector<Fence*> fences;
         fences.reserve(num_fences);
 
         for(uint32_t i = 0; i < num_fences; i++) {
@@ -323,7 +323,7 @@ namespace nova::renderer::rhi {
         return fences;
     }
 
-    void Gl3RenderEngine::wait_for_fences(const eastl::vector<Fence*> fences) {
+    void Gl3RenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
         for(Fence* fence : fences) {
             Gl3Fence* gl_fence = static_cast<Gl3Fence*>(fence);
             std::unique_lock lck(gl_fence->mutex);
@@ -331,7 +331,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void Gl3RenderEngine::reset_fences(const eastl::vector<Fence*>& fences) {
+    void Gl3RenderEngine::reset_fences(const std::vector<Fence*>& fences) {
         for(Fence* fence : fences) {
             Gl3Fence* gl_fence = static_cast<Gl3Fence*>(fence);
             std::unique_lock guard(gl_fence->mutex);
@@ -357,11 +357,11 @@ namespace nova::renderer::rhi {
     }
 
     void Gl3RenderEngine::destroy_semaphores(
-        eastl::vector<Semaphore*>& /* semaphores */) { // OpenGL semaphores have no GPU objects, so we don't need to do anything here
+        std::vector<Semaphore*>& /* semaphores */) { // OpenGL semaphores have no GPU objects, so we don't need to do anything here
     }
 
     void Gl3RenderEngine::destroy_fences(
-        eastl::vector<Fence*>& /* fences */) { // OpenGL fences have no GPU objects, so we don't need to do anything here
+        std::vector<Fence*>& /* fences */) { // OpenGL fences have no GPU objects, so we don't need to do anything here
     }
 
     CommandList* Gl3RenderEngine::get_command_list(uint32_t /* thread_idx */,
@@ -374,8 +374,8 @@ namespace nova::renderer::rhi {
     void Gl3RenderEngine::submit_command_list(CommandList* cmds,
                                               QueueType /* queue */,
                                               Fence* fence_to_signal,
-                                              const eastl::vector<Semaphore*>& wait_semaphores,
-                                              const eastl::vector<Semaphore*>& signal_semaphores) {
+                                              const std::vector<Semaphore*>& wait_semaphores,
+                                              const std::vector<Semaphore*>& signal_semaphores) {
         // GL is F U N
         // No equivalent for queues. Hope yalls like waiting for things
         // No equivalent for fences or semaphores. Mutexes, anyone?
@@ -387,7 +387,7 @@ namespace nova::renderer::rhi {
         }
 
         Gl3CommandList* gl_cmds = static_cast<Gl3CommandList*>(cmds);
-        const eastl::vector<Gl3Command>& commands = gl_cmds->get_commands();
+        const std::vector<Gl3Command>& commands = gl_cmds->get_commands();
         for(const Gl3Command& command : commands) {
             switch(command.type) {
                 case Gl3CommandType::BufferCopy:
@@ -492,7 +492,7 @@ namespace nova::renderer::rhi {
     }
 
     void Gl3RenderEngine::bind_vertex_buffers_impl(const Gl3BindVertexBuffersCommand& bind_vertex_buffers) {
-        // TODO: use eastl::array or something where this is implicitly true
+        // TODO: use std::array or something where this is implicitly true
         assert(bind_vertex_buffers.buffers.size() == 7);
 
         // All the bindings because there is no god
@@ -546,7 +546,7 @@ namespace nova::renderer::rhi {
 
     Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, const GLenum shader_type) {
         spirv_cross::CompilerGLSL compiler(spirv);
-        const eastl::string glsl = compiler.compile().c_str();
+        const std::string glsl = compiler.compile().c_str();
         const char* glsl_c = glsl.c_str();
         const GLint len = static_cast<GLint>(glsl.size()); // SIGNED LENGTH WHOOOOOO
 

@@ -24,7 +24,7 @@ namespace nova::renderer {
     struct NOVA_API DeviceMemoryResource {
         DeviceMemoryResource(rhi::DeviceMemory* memory, bvestl::polyalloc::AllocationStrategy* allocation_strategy);
 
-        [[nodiscard]] DeviceMemoryAllocation allocate(const bvestl::polyalloc::Bytes size) const;
+        [[nodiscard]] DeviceMemoryAllocation allocate(bvestl::polyalloc::Bytes size) const;
 
         bvestl::polyalloc::AllocationStrategy* allocation_strategy;
 

@@ -20,9 +20,9 @@ namespace bvestl {
 
 			explicit BumpPointAllocationStrategy(Bytes size_in, Bytes alignment_in = Bytes(0));
 
-			bool allocate(Bytes size, AllocationInfo& allocation) override final;
+			bool allocate(Bytes size, AllocationInfo& allocation) override;
 
-			void free(const AllocationInfo&) override final;
+			void free(const AllocationInfo&) override;
 
 		private:
 			Bytes memory_size;

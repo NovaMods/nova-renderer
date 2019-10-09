@@ -1,4 +1,4 @@
-#include <EASTL/string.h>
+#include <string>
 #include <strsafe.h>
 
 #include "../util/logger.hpp"
@@ -66,7 +66,7 @@ namespace nova::renderer {
 
         window_class_id = RegisterClassExW(&window_class);
         if(window_class_id == 0) {
-            const eastl::string windows_err = get_last_windows_error();
+            const std::string windows_err = get_last_windows_error();
             NOVA_LOG(FATAL) << "Could not register window class: " << windows_err.c_str();
         }
     }

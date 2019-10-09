@@ -8,11 +8,11 @@
 #ifndef NOVA_RENDERER_LOGGER_HPP
 #define NOVA_RENDERER_LOGGER_HPP
 
-#include <EASTL/functional.h>
+#include <functional>
 #include <mutex>
 #include <sstream>
-#include <EASTL/string.h>
-#include <EASTL/unordered_map.h>
+#include <string>
+#include <unordered_map>
 
 #ifdef ERROR
 #undef ERROR
@@ -32,14 +32,14 @@ namespace nova::renderer {
 
         explicit Logger() = default;
 
-        void add_log_handler(LogLevel level, const eastl::function<void(eastl::string)>& log_handler);
+        void add_log_handler(LogLevel level, const std::function<void(std::string)>& log_handler);
 
-        void log(LogLevel level, const eastl::string& msg);
+        void log(LogLevel level, const std::string& msg);
 
         _log_stream log(LogLevel level) const;
 
     private:
-        eastl::unordered_map<LogLevel, eastl::function<void(eastl::string)>> log_handlers;
+        std::unordered_map<LogLevel, std::function<void(std::string)>> log_handlers;
         std::mutex log_lock;
     };
 

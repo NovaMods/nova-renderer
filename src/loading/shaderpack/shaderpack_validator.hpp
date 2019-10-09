@@ -10,14 +10,14 @@
 #define NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
 
 #include <nlohmann/json.hpp>
-#include <EASTL/string.h>
+#include <string>
 
 #include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer::shaderpack {
     struct ValidationReport {
-        eastl::vector<eastl::string> warnings;
-        eastl::vector<eastl::string> errors;
+        std::vector<std::string> warnings;
+        std::vector<std::string> errors;
 
         void NOVA_API merge_in(const ValidationReport& other);
     };
@@ -57,7 +57,7 @@ namespace nova::renderer::shaderpack {
      *
      * \param format_json The JSON to validate
      */
-    ValidationReport NOVA_API validate_texture_format(nlohmann::json& format_json, const eastl::string& texture_name);
+    ValidationReport NOVA_API validate_texture_format(nlohmann::json& format_json, const std::string& texture_name);
 
     /*!
      * \brief Validates that the provided JSON has all the fields it needed. Warnings about optional fields are

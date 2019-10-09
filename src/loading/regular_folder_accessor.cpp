@@ -7,7 +7,7 @@
 namespace nova::renderer {
     RegularFolderAccessor::RegularFolderAccessor(const fs::path& folder) : FolderAccessorBase(folder) {}
 
-    eastl::string RegularFolderAccessor::read_text_file(const fs::path& resource_path) {
+    std::string RegularFolderAccessor::read_text_file(const fs::path& resource_path) {
         std::lock_guard l(*resource_existence_mutex);
         fs::path full_resource_path;
         if(has_root(resource_path, *root_folder)) {
@@ -20,7 +20,7 @@ namespace nova::renderer {
             NOVA_LOG(ERROR) << "Resource at path " << full_resource_path.string() << " does not exist";
         }
 
-        // eastl::vector<uint8_t> buf;
+        // std::vector<uint8_t> buf;
         std::ifstream resource_stream(full_resource_path);
         if(!resource_stream.good()) {
             // Error reading this file - it can't be read again in the future
@@ -31,7 +31,7 @@ namespace nova::renderer {
         }
 
         std::string buf;
-        eastl::string file_string;
+        std::string file_string;
 
         while(getline(resource_stream, buf)) {
             // uint8_t val;
@@ -46,9 +46,9 @@ namespace nova::renderer {
         return file_string;
     }
 
-    eastl::vector<fs::path> RegularFolderAccessor::get_all_items_in_folder(const fs::path& folder) {
+    std::vector<fs::path> RegularFolderAccessor::get_all_items_in_folder(const fs::path& folder) {
         const fs::path full_path = *root_folder / folder;
-        eastl::vector<fs::path> paths = {};
+        std::vector<fs::path> paths = {};
 
         fs::directory_iterator folder_itr(full_path);
         for(const fs::directory_entry& entry : folder_itr) {
@@ -60,7 +60,7 @@ namespace nova::renderer {
 
     bool RegularFolderAccessor::does_resource_exist_on_filesystem(const fs::path& resource_path) {
         // NOVA_LOG(TRACE) << "Checking resource existence for " << resource_path;
-        const eastl::string resource_string = resource_path.string().c_str();
+        const std::string resource_string = resource_path.string().c_str();
         const auto existence_maybe = does_resource_exist_in_map(resource_string);
         if(existence_maybe) {
             // NOVA_LOG(TRACE) << "Does " << resource_path << " exist? " << *existence_maybe;

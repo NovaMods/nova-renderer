@@ -9,8 +9,6 @@ if(VCPKG_TOOLCHAIN)
 	link_directories(SYSTEM "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib")
 endif()
 
-option(NOVA_PACKAGE "Build only the library, nothing else." OFF)
-
 ############################################################
 # Fix build type because of possible capitalization issues #
 ############################################################
@@ -40,6 +38,16 @@ endif()
 option(NOVA_TEST "Enable tests." OFF)
 option(NOVA_ENABLE_EXPERIMENTAL "Enable experimental features, may be in code as well as in the CMake files" OFF)
 option(NOVA_TREAT_WARNINGS_AS_ERRORS "Add -Werror flag or /WX for MSVC" OFF)
+option(NOVA_PACKAGE "Build only the library, nothing else." OFF)
+
+option(NOVA_ENABLE_VULKAN_RHI "Compile the Vulkan RHI backend" ON)
+option(NOVA_ENABLE_D3D12_RHI "Compile the D3D12 RHI backend" ON)
+option(NOVA_ENABLE_OPENGL_RHI "Compile the OpenGL 3 backend" ON)
+
+if(NOT NOVA_ENABLE_VULKAN_RHI AND NOT VULKAN_ENABLE_D3D12_RHI AND NOT NOVA_ENABLE_OPENGL_RHI)
+	message(ERROR "You must enable at least one RHI backend")
+endif()
+
 if(NOVA_ENABLE_EXPERIMENTAL)
     set(CMAKE_LINK_WHAT_YOU_USE TRUE) # Warn about unsued linked libraries
 endif()
@@ -144,28 +152,6 @@ set(NOVA_SOURCE
 		src/render_engine/rhi_types.cpp
 		src/render_engine/swapchain.cpp
 
-        src/render_engine/vulkan/vulkan_command_list.cpp
-        src/render_engine/vulkan/vulkan_command_list.hpp 
-		src/render_engine/vulkan/vulkan_render_engine.cpp 
-		src/render_engine/vulkan/vulkan_render_engine.hpp
-		src/render_engine/vulkan/vk_structs.hpp
-        src/render_engine/vulkan/vulkan_utils.hpp
-        src/render_engine/vulkan/vulkan_type_converters.hpp
-        src/render_engine/vulkan/vulkan_utils.cpp
-        src/render_engine/vulkan/vulkan_swapchain.cpp 
-        src/render_engine/vulkan/vulkan_swapchain.hpp
-
-        src/render_engine/gl3/gl3_render_engine.cpp
-        src/render_engine/gl3/gl3_render_engine.hpp 
-        src/render_engine/gl3/gl3_command_list.cpp 
-        src/render_engine/gl3/gl3_command_list.hpp 
-        src/render_engine/gl3/gl3_swapchain.cpp 
-        src/render_engine/gl3/gl3_swapchain.hpp 
-        src/render_engine/gl3/KHR/khrplatform.h
-        src/render_engine/gl3/glad/glad.h 
-        src/render_engine/gl3/glad.c 
-		src/render_engine/gl3/gl3_structs.hpp 
-
         src/tasks/task_scheduler.cpp
         src/tasks/task_scheduler.hpp
         src/tasks/task_graph.hpp
@@ -213,18 +199,8 @@ set(NOVA_HEADERS
 set(WINDOWS_NOVA_SOURCE
     src/util/windows_utils.cpp
     src/util/windows_utils.hpp
-    src/render_engine/dx12/dx12_utils.cpp
-    src/render_engine/dx12/dx12_utils.hpp
     src/windowing/win32_window.hpp
     src/windowing/win32_window.cpp
-    src/render_engine/dx12/d3dx12.h
-    src/render_engine/dx12/dx12_command_list.cpp 
-	src/render_engine/dx12/dx12_command_list.hpp 
-	src/render_engine/dx12/dx12_structs.hpp
-	src/render_engine/dx12/dx12_swapchain.cpp
-	src/render_engine/dx12/dx12_swapchain.hpp
-	src/render_engine/dx12/dx12_render_engine.cpp
-	src/render_engine/dx12/dx12_render_engine.hpp
 	)
 
 set(UNIX_NOVA_SOURCE
@@ -233,6 +209,57 @@ set(UNIX_NOVA_SOURCE
     src/util/linux_utils.cpp
     src/util/linux_utils.hpp
 	)
+
+#########################################
+# Which RHI backends should we compile? #
+#########################################
+if(NOVA_ENABLE_VULKAN_RHI)
+	set(NOVA_SOURCE
+		${NOVA_SOURCE}
+        src/render_engine/vulkan/vulkan_command_list.cpp
+        src/render_engine/vulkan/vulkan_command_list.hpp 
+		src/render_engine/vulkan/vulkan_render_engine.cpp 
+		src/render_engine/vulkan/vulkan_render_engine.hpp
+		src/render_engine/vulkan/vk_structs.hpp
+        src/render_engine/vulkan/vulkan_utils.hpp
+        src/render_engine/vulkan/vulkan_type_converters.hpp
+        src/render_engine/vulkan/vulkan_utils.cpp
+        src/render_engine/vulkan/vulkan_swapchain.cpp 
+        src/render_engine/vulkan/vulkan_swapchain.hpp
+		)
+endif()
+
+if(NOVA_ENABLE_D3D12_RHI)
+	set(WINDOWS_NOVA_SOURCE
+		${WINDOWS_NOVA_SOURCE}
+		src/render_engine/dx12/dx12_utils.cpp
+		src/render_engine/dx12/dx12_utils.hpp
+		src/render_engine/dx12/d3dx12.h
+		src/render_engine/dx12/dx12_command_list.cpp 
+		src/render_engine/dx12/dx12_command_list.hpp 
+		src/render_engine/dx12/dx12_structs.hpp
+		src/render_engine/dx12/dx12_swapchain.cpp
+		src/render_engine/dx12/dx12_swapchain.hpp
+		src/render_engine/dx12/dx12_render_engine.cpp
+		src/render_engine/dx12/dx12_render_engine.hpp
+		)
+endif()
+
+if(NOVA_ENABLE_OPENGL_RHI)
+	set(NOVA_SOURCE
+		${NOVA_SOURCE}
+        src/render_engine/gl3/gl3_render_engine.cpp
+        src/render_engine/gl3/gl3_render_engine.hpp 
+        src/render_engine/gl3/gl3_command_list.cpp 
+        src/render_engine/gl3/gl3_command_list.hpp 
+        src/render_engine/gl3/gl3_swapchain.cpp 
+        src/render_engine/gl3/gl3_swapchain.hpp 
+        src/render_engine/gl3/KHR/khrplatform.h
+        src/render_engine/gl3/glad/glad.h 
+        src/render_engine/gl3/glad.c 
+		src/render_engine/gl3/gl3_structs.hpp 
+		)
+endif()
 
 if(WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${WINDOWS_NOVA_SOURCE})
@@ -298,11 +325,18 @@ add_library(nova-renderer STATIC
     ${3RD_PARTY_SOURCE}
 )
 nova_format(nova-renderer "${OTHER_NOVA_SOURCE}")
-target_include_directories(nova-renderer PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+
+# Add VULKAN_SDK to the include path
+# TODO: Only add if the user is compiling the Vulkan backend
+
+message(STATUS $ENV{VULKAN_SDK}/Include)
+
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
 target_compile_definitions(nova-renderer PUBLIC FMT_STRING_ALIAS=1)
+target_include_directories(nova-renderer PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $ENV{VULKAN_SDK}/Include)
+target_link_directories(nova-renderer PUBLIC $ENV{VULKAN_SDK}/Lib)
 
 include(GNUInstallDirs)
 
@@ -338,7 +372,6 @@ add_coverage(nova-renderer)
 # Set libraries to link #
 #########################
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
-					 EASTL
                      fmt::fmt
                      glm
                      glslang::glslang
@@ -356,7 +389,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      spirv-cross-reflect
                      spirv-cross-msl
                      spirv-cross-util
-                     Vulkan::Vulkan
+					 vulkan-1
 )
 
 ##############################
