@@ -23,14 +23,14 @@
 #endif
 
 namespace nova::renderer::rhi {
-    VulkanRenderEngine::VulkanRenderEngine(NovaSettings& settings) : RenderEngine(settings) {
+    VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(settings) {
         create_instance();
 
-        if(settings.debug.enabled) {
+        if(settings.settings.debug.enabled) {
             enable_debug_output();
         }
 
-        open_window_and_create_surface(settings.window);
+        open_window_and_create_surface(settings.settings.window);
 
         create_device_and_queues();
 
@@ -251,7 +251,7 @@ namespace nova::renderer::rhi {
 
         renderpass->render_area = {{0, 0}, {framebuffer_width, framebuffer_height}};
 
-        if(settings.debug.enabled) {
+        if(settings.settings.debug.enabled) {
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             object_name.objectType = VK_OBJECT_TYPE_IMAGE;
@@ -720,7 +720,7 @@ namespace nova::renderer::rhi {
             return Result<Pipeline*>(MAKE_ERROR("Could not compile pipeline {:s}", data.name.c_str()));
         }
 
-        if(settings.debug.enabled) {
+        if(settings.settings.debug.enabled) {
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             object_name.objectType = VK_OBJECT_TYPE_IMAGE;
@@ -841,7 +841,7 @@ namespace nova::renderer::rhi {
 
         vkCreateImageView(device, &image_view_create_info, nullptr, &texture->image_view);
 
-        if(settings.debug.enabled) {
+        if(settings.settings.debug.enabled) {
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             object_name.objectType = VK_OBJECT_TYPE_IMAGE;
@@ -1056,12 +1056,12 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderEngine::create_instance() {
-        const auto& version = settings.vulkan.application_version;
+        const auto& version = settings.settings.vulkan.application_version;
 
         VkApplicationInfo application_info;
         application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         application_info.pNext = nullptr;
-        application_info.pApplicationName = this->settings.vulkan.application_name.c_str();
+        application_info.pApplicationName = settings.settings.vulkan.application_name;
         application_info.applicationVersion = VK_MAKE_VERSION(version.major, version.minor, version.patch);
         application_info.pEngineName = "Nova Renderer 0.9";
         application_info.apiVersion = VK_API_VERSION_1_1;
@@ -1072,7 +1072,7 @@ namespace nova::renderer::rhi {
         create_info.flags = 0;
         create_info.pApplicationInfo = &application_info;
 
-        if(settings.debug.enabled && settings.debug.enable_validation_layers) {
+        if(settings.settings.debug.enabled && settings.settings.debug.enable_validation_layers) {
             enabled_layer_names.push_back("VK_LAYER_LUNARG_standard_validation");
             // enabled_layer_names.push_back("VK_LAYER_LUNARG_api_dump");
         }
@@ -1089,7 +1089,7 @@ namespace nova::renderer::rhi {
 #error Unsupported Operating system
 #endif
 
-        if(settings.debug.enabled) {
+        if(settings.settings.debug.enabled) {
             enabled_extension_names.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
             enabled_extension_names.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         }

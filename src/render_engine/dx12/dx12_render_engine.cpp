@@ -20,10 +20,10 @@ using Microsoft::WRL::ComPtr;
 #define GPU_FENCE_SIGNALED 32
 
 namespace nova::renderer::rhi {
-    D3D12RenderEngine::D3D12RenderEngine(NovaSettings& settings) : RenderEngine(settings) {
+    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(settings) {
         create_device();
 
-        open_window_and_create_swapchain(settings.window, settings.max_in_flight_frames);
+        open_window_and_create_swapchain(settings.settings.window, settings.settings.max_in_flight_frames);
 
         create_queues();
 
@@ -54,7 +54,7 @@ namespace nova::renderer::rhi {
         desc.SizeInBytes = size;
 
         D3D12_MEMORY_POOL device_memory_pool = D3D12_MEMORY_POOL_L1;
-        if(settings.system_info.is_uma) {
+        if(settings.settings.system_info.is_uma) {
             device_memory_pool = D3D12_MEMORY_POOL_L0;
         }
 
@@ -477,7 +477,7 @@ namespace nova::renderer::rhi {
          * Debugging
          */
 
-        if(settings.debug.enabled) {
+        if(settings.settings.debug.enabled) {
             pipeline_state_desc.Flags = D3D12_PIPELINE_STATE_FLAG_TOOL_DEBUG;
         }
 
@@ -792,7 +792,7 @@ namespace nova::renderer::rhi {
     }
 
     void D3D12RenderEngine::create_device() {
-        if(settings.debug.enabled && settings.debug.enable_validation_layers) {
+        if(settings.settings.debug.enabled && settings.settings.debug.enable_validation_layers) {
             ComPtr<ID3D12Debug> debug_controller;
             D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
             debug_controller->EnableDebugLayer();

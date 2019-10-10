@@ -185,7 +185,7 @@ namespace nova::renderer::rhi {
          */
         virtual void destroy_fences(std::vector<Fence*>& fences) = 0;
 
-        Swapchain* get_swapchain() const;
+        [[nodiscard]] Swapchain* get_swapchain() const;
 
         /*!
          * \brief Allocates a new command list that can be used from the provided thread and has the desired type
@@ -212,7 +212,7 @@ namespace nova::renderer::rhi {
                                          const std::vector<Semaphore*>& signal_semaphores = {}) = 0;
 
     protected:
-        NovaSettings& settings;
+        NovaSettingsAccessManager& settings;
 
         std::shared_ptr<Window> window;
 
@@ -230,7 +230,8 @@ namespace nova::renderer::rhi {
          *
          * \attention Called by nova
          */
-        explicit RenderEngine(NovaSettings& settings) : settings(settings), swapchain_size(settings.window.width, settings.window.height){};
+        explicit RenderEngine(NovaSettingsAccessManager& settings)  // NOLINT(cppcoreguidelines-pro-type-member-init)
+            : settings(settings), swapchain_size(settings.settings.window.width, settings.settings.window.height){};
 
         template <typename AllocType>
         AllocType* new_object() {

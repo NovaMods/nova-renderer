@@ -152,7 +152,7 @@ namespace nova::renderer {
          */
         void execute_frame();
 
-        NovaSettings& get_settings();
+        NovaSettingsAccessManager& get_settings();
 
 #pragma region Meshes
         /*!
@@ -192,7 +192,7 @@ namespace nova::renderer {
         static void deinitialize();
 
     private:
-        NovaSettings render_settings;
+        NovaSettingsAccessManager render_settings;
         std::unique_ptr<rhi::RenderEngine> rhi;
         rhi::Swapchain* swapchain;
 

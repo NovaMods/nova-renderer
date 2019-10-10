@@ -19,14 +19,14 @@ namespace nova::renderer {
         Gl2,
     };
 
-    struct NOVA_API NovaSettings;
+    struct NOVA_API NovaSettingsAccessManager;
 
     /*!
      * \brief Anything which inherits from this class wants to know about the configuration and any changes to it
      */
     class NOVA_API ConfigListener {
     public:
-		virtual ~ConfigListener() = default;
+        virtual ~ConfigListener() = default;
 
         /*!
          * \brief Tells the listeners that there has been a change in the configuration
@@ -38,7 +38,7 @@ namespace nova::renderer {
          *
          * \param new_config The updated configuration
          */
-        virtual void on_config_change(const NovaSettings& new_config) = 0;
+        virtual void on_config_change(const NovaSettingsAccessManager& new_config) = 0;
 
         /*!
          * \brief Tells listeners that the configuration has been loaded
@@ -54,7 +54,7 @@ namespace nova::renderer {
          *
          * \param config The configuration that was loaded
          */
-        virtual void on_config_loaded(const NovaSettings& config) = 0;
+        virtual void on_config_loaded(const NovaSettingsAccessManager& config) = 0;
     };
 
     struct NOVA_API NovaSettings {
@@ -123,7 +123,7 @@ namespace nova::renderer {
                 /*!
                  * \brief The base path for RenderDoc captures
                  */
-                std::string capture_path = "logs/captures";
+                const char* capture_path = "logs/captures";
 
             } renderdoc;
         } debug;
@@ -147,7 +147,7 @@ namespace nova::renderer {
             /*!
              * \brief The title of the Window
              */
-            std::string title = "Nova Renderer";
+            const char* title = "Nova Renderer";
 
             /*!
              * \brief The width of the window
@@ -167,7 +167,7 @@ namespace nova::renderer {
             /*!
              * \brief The application name to pass to Vulkan
              */
-            std::string application_name = "Nova Renderer";
+            const char* application_name = "Nova Renderer";
 
             /*!
              * \brief The application version to pass to Vulkan
@@ -209,6 +209,13 @@ namespace nova::renderer {
          * \brief Settings for how Nova should allocate index memory
          */
         BlockAllocatorSettings index_memory_settings;
+    };
+
+    class NOVA_API NovaSettingsAccessManager { // Classes named Manager are an antipattern so yes
+    public:
+        NovaSettings settings;
+
+        explicit NovaSettingsAccessManager(NovaSettings settings);
 
         /*!
          * \brief Registers the given iconfig_change_listener as an Observer
@@ -230,6 +237,7 @@ namespace nova::renderer {
          */
         void update_config_loaded();
 
+    private:
         std::vector<ConfigListener*> config_change_listeners;
     };
 } // namespace nova::renderer

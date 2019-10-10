@@ -18,7 +18,7 @@ namespace nova::renderer::rhi {
      */
     class D3D12RenderEngine final : public RenderEngine {
     public:
-        explicit D3D12RenderEngine(NovaSettings& settings);
+        explicit D3D12RenderEngine(NovaSettingsAccessManager& settings);
 
         D3D12RenderEngine(D3D12RenderEngine&& old) noexcept = delete;
         D3D12RenderEngine& operator=(D3D12RenderEngine&& old) noexcept = delete;

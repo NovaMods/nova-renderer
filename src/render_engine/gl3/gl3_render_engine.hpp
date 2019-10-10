@@ -15,7 +15,7 @@ namespace nova::renderer::rhi {
      */
     class Gl3RenderEngine final : public RenderEngine {
     public:
-        explicit Gl3RenderEngine(NovaSettings& settings);
+        explicit Gl3RenderEngine(NovaSettingsAccessManager& settings);
 
         Gl3RenderEngine(Gl3RenderEngine&& other) = delete;
         Gl3RenderEngine& operator=(Gl3RenderEngine&& other) noexcept = delete;

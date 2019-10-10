@@ -67,7 +67,7 @@ namespace nova::renderer {
                 .map([&](RENDERDOC_API_1_3_0* api) {
                     render_doc = api;
 
-                    render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path.c_str());
+                    render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path);
 
                     RENDERDOC_InputButton capture_key[] = {eRENDERDOC_Key_F12, eRENDERDOC_Key_PrtScrn};
                     render_doc->SetCaptureKeys(capture_key, 2);
@@ -118,7 +118,7 @@ namespace nova::renderer {
 
     NovaRenderer::~NovaRenderer() { mtr_shutdown(); }
 
-    NovaSettings& NovaRenderer::get_settings() { return render_settings; }
+    NovaSettingsAccessManager& NovaRenderer::get_settings() { return render_settings; }
 
     void NovaRenderer::execute_frame() {
         MTR_SCOPE("RenderLoop", "execute_frame");
@@ -284,7 +284,7 @@ namespace nova::renderer {
 
                     const shaderpack::TextureCreateInfo& info = dynamic_texture_infos.at(attachment_info.name);
                     const glm::uvec2 attachment_size = info.format.get_size_in_pixels(
-                        {render_settings.window.width, render_settings.window.height});
+                        {render_settings.settings.window.width, render_settings.settings.window.height});
 
                     if(framebuffer_size.x > 0) {
                         if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {

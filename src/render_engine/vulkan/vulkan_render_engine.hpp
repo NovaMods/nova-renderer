@@ -42,7 +42,7 @@ namespace nova::renderer::rhi {
         // Info about the hardware
         VulkanGpuInfo gpu;
 
-        VulkanRenderEngine(NovaSettings& settings);
+        VulkanRenderEngine(NovaSettingsAccessManager& settings);
 
         VulkanRenderEngine(VulkanRenderEngine&& old) noexcept = delete;
         VulkanRenderEngine& operator=(VulkanRenderEngine&& old) noexcept = delete;

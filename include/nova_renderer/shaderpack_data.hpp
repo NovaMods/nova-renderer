@@ -412,7 +412,7 @@ namespace nova::renderer::shaderpack {
     /*!
      * \brief A texture that a pass can use
      */
-    struct  NOVA_API TextureCreateInfo {
+    struct NOVA_API TextureCreateInfo {
         /*!
          * \brief The name of the texture
          *

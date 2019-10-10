@@ -13,14 +13,14 @@
 #include "gl3_structs.hpp"
 
 namespace nova::renderer::rhi {
-    Gl3RenderEngine::Gl3RenderEngine(NovaSettings& settings) : RenderEngine(settings) {
+    Gl3RenderEngine::Gl3RenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(settings) {
         const bool loaded_opengl = gladLoadGL() != 0;
         if(!loaded_opengl) {
             NOVA_LOG(FATAL) << "Could not load OpenGL 3.1 functions, sorry bro";
             return;
         }
 
-        open_window_and_create_surface(settings.window);
+        open_window_and_create_surface(settings.settings.window);
 
         set_initial_state();
     }
