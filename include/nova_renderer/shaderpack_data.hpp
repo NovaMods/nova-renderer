@@ -464,7 +464,7 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief The name of the texture
          */
-        std::string name;
+        std::string name{};
 
 		PixelFormatEnum pixel_format;
 

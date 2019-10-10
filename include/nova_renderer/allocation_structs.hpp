@@ -22,7 +22,7 @@ namespace bvestl {
 			 * Data internal to the allocation strategy. For instance, a block allocator might store the block that this allocation corresponds
 			 * to
 			 */
-			void* internal_data;
+			void* internal_data = nullptr;
 		};
 	}
 }

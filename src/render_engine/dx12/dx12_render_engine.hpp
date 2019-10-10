@@ -2,15 +2,17 @@
 
 #include "nova_renderer/render_engine.hpp"
 
+#include <memory>
+
+#pragma warning(push, 0)
 #include <d3d12.h>
 #include <d3d12shader.h>
-
 #include <dxgi1_4.h>
-#include <wrl.h>
-
 #include <spirv_cross/spirv_hlsl.hpp>
+#include <wrl.h>
+#pragma warning(pop)
+
 #include "dx12_swapchain.hpp"
-#include <memory>
 
 namespace nova::renderer::rhi {
     /*!
@@ -46,9 +48,7 @@ namespace nova::renderer::rhi {
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override;
 
-        DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
-                                               uint32_t num_samplers,
-                                               uint32_t num_uniform_buffers) override;
+        DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images, uint32_t num_samplers, uint32_t num_uniform_buffers) override;
 
         /*!
          * \brief Creates all the descriptor sets that are needed for this pipeline interface
@@ -58,8 +58,7 @@ namespace nova::renderer::rhi {
          * a single descriptor heap is noticeably better, but I've also heard that this only applies to XBox. Further
          * research and testing is needed to resolve this
          */
-        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                           DescriptorPool* pool) override;
+        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface, DescriptorPool* pool) override;
 
         void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override;
 

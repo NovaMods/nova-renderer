@@ -47,7 +47,7 @@ namespace nova::renderer {
 
         std::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
         std::vector<rhi::DescriptorSet*> descriptor_sets;
-        const rhi::PipelineInterface* pipeline_interface;
+        const rhi::PipelineInterface* pipeline_interface = nullptr;
     };
 
     struct NOVA_API Pipeline {

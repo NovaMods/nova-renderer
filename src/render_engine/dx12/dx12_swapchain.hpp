@@ -1,11 +1,11 @@
 #pragma once
 
-#include <wrl/client.h>
-
+#pragma warning(push, 0)
 #include <d3d12.h>
 #include <dxgi1_4.h>
-
 #include <glm/vec2.hpp>
+#include <wrl/client.h>
+#pragma warning(pop)
 
 #include "nova_renderer/swapchain.hpp"
 

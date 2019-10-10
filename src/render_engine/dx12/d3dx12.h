@@ -12,6 +12,8 @@
 #ifndef __D3DX12_H__
 #define __D3DX12_H__
 
+#pragma warning(push, 0)    // This file dos not follow the C++ core guidelines _at all_
+
 #include "d3d12.h"
 
 #if defined(__cplusplus)
@@ -2255,5 +2257,7 @@ inline HRESULT D3DX12ParsePipelineStream(const D3D12_PIPELINE_STATE_STREAM_DESC&
 }
 
 #endif // defined( __cplusplus )
+
+#pragma warning(pop)
 
 #endif //__D3DX12_H__

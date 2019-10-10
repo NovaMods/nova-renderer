@@ -5,9 +5,16 @@
 
 #ifndef NOVA_RENDERER_D3D12_COMMAND_LIST_HPP
 #define NOVA_RENDERER_D3D12_COMMAND_LIST_HPP
+
+#pragma warning(push, 0)
 #include <d3d12.h>
+#pragma warning(pop)
+
 #include <nova_renderer/command_list.hpp>
+
+#pragma warning(push, 0)
 #include <wrl/client.h>
+#pragma warning(pop)
 
 #include "dx12_structs.hpp"
 

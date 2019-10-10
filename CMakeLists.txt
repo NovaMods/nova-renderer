@@ -91,12 +91,14 @@ set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
 #################################
 include(external)
 
+add_subdirectory(libs/ntl)
+
 ########################
 # Add Nova source code #
 ########################
 set(NOVA_SOURCE
+        include/nova_renderer/util/filesystem.hpp
         include/nova_renderer/util/platform.hpp
-        include/nova_renderer/util/result.hpp
         include/nova_renderer/util/utils.hpp
 		
         include/nova_renderer/command_list.hpp
@@ -176,6 +178,11 @@ set(NOVA_SOURCE
 		src/memory/system_memory_allocator.cpp
 
 		)
+		
+#################################################################
+# Add NTL source code - just until I get INTERFACE libs working #
+#################################################################
+set(NOVA_SOURCE ${NOVA_SOURCE} ${NTL_SOURCE})
 
 ####################
 # Add Nova headers #
@@ -335,7 +342,11 @@ set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
 target_compile_definitions(nova-renderer PUBLIC FMT_STRING_ALIAS=1)
-target_include_directories(nova-renderer PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $ENV{VULKAN_SDK}/Include)
+target_include_directories(nova-renderer PUBLIC 
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> 
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs/ntl/include>		# We should be using an interface library but that isn't working and I don't wanna troubleshoot
+	$ENV{VULKAN_SDK}/Include
+	)
 target_link_directories(nova-renderer PUBLIC $ENV{VULKAN_SDK}/Lib)
 
 include(GNUInstallDirs)
@@ -382,6 +393,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      miniz::miniz
                      nlohmann_json
                      nlohmann_json::nlohmann_json
+					 ntl
                      spirv-tools::SPIRV-Tools
                      spirv-cross-core
                      spirv-cross-cpp
@@ -453,3 +465,8 @@ remove_permissive(nova-renderer)
 if(NOVA_TEST)
     add_subdirectory(tests)
 endif()
+
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+  message(STATUS "dir='${dir}'")
+endforeach()

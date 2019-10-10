@@ -6,7 +6,7 @@
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/platform.hpp"
-#include "nova_renderer/util/result.hpp"
+#include <ntl/result.hpp>
 #include "nova_renderer/util/utils.hpp"
 #include "rhi_types.hpp"
 #include <memory>
@@ -216,8 +216,8 @@ namespace nova::renderer::rhi {
 
         std::shared_ptr<Window> window;
 
-        glm::uvec2 swapchain_size;
-        Swapchain* swapchain;
+        glm::uvec2 swapchain_size = {};
+        Swapchain* swapchain = nullptr;
 
         bvestl::polyalloc::allocator_handle shaderpack_allocator;
 
@@ -231,7 +231,7 @@ namespace nova::renderer::rhi {
          * \attention Called by nova
          */
         explicit RenderEngine(NovaSettingsAccessManager& settings)  // NOLINT(cppcoreguidelines-pro-type-member-init)
-            : settings(settings), swapchain_size(settings.settings.window.width, settings.settings.window.height){};
+            : settings(settings), swapchain_size(settings.settings.window.width, settings.settings.window.height) {};
 
         template <typename AllocType>
         AllocType* new_object() {

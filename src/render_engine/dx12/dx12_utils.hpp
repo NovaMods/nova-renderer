@@ -1,11 +1,11 @@
 #pragma once
 
+#pragma warning(push, 0)
 #include <d3d12.h>
+#pragma warning(pop)
 
 #include <nova_renderer/shaderpack_data.hpp>
 #include "nova_renderer/command_list.hpp"
-
-#include "../../util/logger.hpp"
 
 namespace nova::renderer::rhi {
     D3D12_RESOURCE_STATES to_dx12_state(ResourceState state);

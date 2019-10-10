@@ -41,11 +41,11 @@ namespace nova::renderer::rhi {
         Microsoft::WRL::ComPtr<IDXGISwapChain1> swapchain_uncast;
 
         const HRESULT hr = dxgi->CreateSwapChainForHwnd(direct_command_queue,
-                                                  window,
-                                                  &swapchain_desc,
-                                                  nullptr,
-                                                  nullptr,
-                                                  swapchain_uncast.GetAddressOf());
+                                                        window,
+                                                        &swapchain_desc,
+                                                        nullptr,
+                                                        nullptr,
+                                                        swapchain_uncast.GetAddressOf());
 
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create swapchain";

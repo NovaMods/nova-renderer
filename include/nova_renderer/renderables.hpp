@@ -36,8 +36,8 @@ namespace nova::renderer {
     };
 
     struct NOVA_API StaticMeshRenderableData : StaticMeshRenderableUpdateData {
-        glm::vec3 initial_position;
-        glm::vec3 initial_rotation;
+        glm::vec3 initial_position = {};
+        glm::vec3 initial_rotation = {};
         glm::vec3 initial_scale = glm::vec3(1);
 
         bool is_static = true;

@@ -6,16 +6,12 @@
 
 #include <fmt/format.h>
 
-#include "utils.hpp"
-
-namespace nova::renderer {
-    struct NOVA_API NovaError {
+namespace ntl {
+    struct NovaError {
         std::string message = "";
 
         std::unique_ptr<NovaError> cause;
-
-        NovaError() = default;
-
+        
         explicit NovaError(const std::string& message);
 
         NovaError(const std::string& message, NovaError cause);
@@ -23,13 +19,13 @@ namespace nova::renderer {
         [[nodiscard]] std::string to_string() const;
     };
 
-    inline NOVA_API NovaError operator""_err(const char* str, std::size_t size) { return NovaError(std::string(str, size)); }
+    inline NovaError operator""_err(const char* str, std::size_t size) { return NovaError(std::string(str, size)); }
 
-    template <typename ValueType>
-    struct NOVA_API Result {
+    template <typename ValueType, typename ErrorType = NovaError>
+    struct Result {
         union {
             ValueType value;
-            NovaError error;
+            ErrorType error;
         };
 
         bool has_value = false;
@@ -38,12 +34,12 @@ namespace nova::renderer {
 
         explicit Result(const ValueType& value) : value(value), has_value(true) {}
 
-        explicit Result(NovaError error) : error(std::move(error)) {}
+        explicit Result(ErrorType error) : error(std::move(error)) {}
 
-        Result(const Result<ValueType>& other) = delete;
+        explicit Result(const Result<ValueType>& other) = delete;
         Result<ValueType>& operator=(const Result<ValueType>& other) = delete;
 
-        Result(Result<ValueType>&& old) noexcept {
+        explicit Result(Result<ValueType>&& old) noexcept {
             if(old.has_value) {
                 value = std::move(old.value);
                 old.value = {};
@@ -55,7 +51,7 @@ namespace nova::renderer {
             }
         };
 
-        Result<ValueType>& operator=(Result<ValueType>&& old) noexcept {
+        Result& operator=(Result<ValueType>&& old) noexcept {
             if(old.has_value) {
                 value = old.value;
                 old.value = {};
@@ -73,7 +69,7 @@ namespace nova::renderer {
             if(has_value) {
                 value.~ValueType();
             } else {
-                error.~NovaError();
+                error.~ErrorType();
             }
         }
 
@@ -106,7 +102,7 @@ namespace nova::renderer {
             }
         }
 
-        void on_error(std::function<void(const NovaError&)> error_func) const {
+        void on_error(std::function<void(const ErrorType&)> error_func) const {
             if(!has_value) {
                 error_func(error);
             }

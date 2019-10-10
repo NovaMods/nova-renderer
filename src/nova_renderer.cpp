@@ -18,9 +18,11 @@
 #include "nova_renderer/swapchain.hpp"
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
 
+#pragma warning(push, 0)
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <minitrace/minitrace.h>
+#pragma warning(pop)
 
 #include "loading/shaderpack/render_graph_builder.hpp"
 #include "memory/block_allocation_strategy.hpp"

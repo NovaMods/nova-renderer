@@ -12,13 +12,13 @@ namespace nova::renderer {
 
     void NovaSettingsAccessManager::update_config_changed() {
         for(ConfigListener* l : config_change_listeners) {
-            l->on_config_change(settings);
+            l->on_config_change(*this);
         }
     }
 
     void NovaSettingsAccessManager::update_config_loaded() {
         for(ConfigListener* l : config_change_listeners) {
-            l->on_config_loaded(settings);
+            l->on_config_loaded(*this);
         }
     }
 } // namespace nova::renderer

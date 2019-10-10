@@ -1,7 +1,9 @@
+#pragma warning(push, 0)
 #include <D3DCompiler.h>
 #include <d3d12sdklayers.h>
 
 #include <spirv_cross/spirv_hlsl.hpp>
+#pragma warning pop
 
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "../../util/logger.hpp"

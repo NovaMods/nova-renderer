@@ -19,7 +19,7 @@ namespace nova::renderer {
         Gl2,
     };
 
-    struct NOVA_API NovaSettingsAccessManager;
+    class NOVA_API NovaSettingsAccessManager;
 
     /*!
      * \brief Anything which inherits from this class wants to know about the configuration and any changes to it
@@ -135,7 +135,7 @@ namespace nova::renderer {
              *
              * Nova requires a shaderpack to render anything, so we need to know which one to load on application start
              */
-            std::string loaded_shaderpack = "DefaultShaderpack";
+            const char* loaded_shaderpack = "DefaultShaderpack";
         } cache;
 
         /*!

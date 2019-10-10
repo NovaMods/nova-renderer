@@ -29,7 +29,7 @@ namespace nova::renderer::rhi {
      * while static resources are loaded once and that's that
      */
     struct NOVA_API Resource {
-        ResourceType type;
+        ResourceType type = {};
         bool is_dynamic = false;
     };
 
