@@ -26,8 +26,6 @@ namespace nova::renderer {
      */
     class NOVA_API ConfigListener {
     public:
-        virtual ~ConfigListener() = default;
-
         /*!
          * \brief Tells the listeners that there has been a change in the configuration
          *
