@@ -7,18 +7,17 @@
 //! \brief Beautiful vectors!
 
 namespace ntl {
-    class Vector {
-    public:
-    };
-
     /*!
      * \brief A vector whose capacity may not change after initialization
      *
      * \tparam ValueType Type of the data that this vector stores. Must be movable
+     * \tparam AllowResizing If true, this vector can resize at runtime. If false, it's a fixed-capacity vector
      */
-    template <typename ValueType>
-    class FixedCapacityVector {
+    template <typename ValueType, bool AllowResizing = true>
+    class Vector {
     public:
+        Vector() : m_buffer(new ValueType[11]), m_capacity(11) {}
+
         /*!
          * \brief Initializes the fixed size vector with the provided capacity
          *
@@ -26,7 +25,7 @@ namespace ntl {
          *
          *\param capacity The capacity of your vector
          */
-        explicit FixedCapacityVector(uint64_t const capacity) : m_buffer(new ValueType[capacity]), m_capacity(capacity) {}
+        explicit Vector(uint64_t const capacity) : m_buffer(new ValueType[capacity]), m_capacity(capacity) {}
 
         /*!
          * \brief Initializes this fixed size vector from an arbitrary buffer
@@ -36,26 +35,23 @@ namespace ntl {
          * \param buffer The buffer which stores the array to wrap
          * \param length The number of elements in the array
          */
-        FixedCapacityVector(ValueType* const buffer, uint64_t const length) : m_buffer(buffer), m_capacity(length), m_size(length) {}
+        Vector(ValueType* const buffer, uint64_t const length) : m_buffer(buffer), m_capacity(length), m_size(length) {}
 
-        explicit FixedCapacityVector(FixedCapacityVector&& old) noexcept
-            : m_buffer(old.m_buffer), m_capacity(old.m_capacity), m_size(old.m_size) {
-            old.m_size = 0;
-        }
-        FixedCapacityVector& operator=(FixedCapacityVector&& old) noexcept {
+        explicit Vector(Vector&& old) noexcept : m_buffer(old.m_buffer), m_capacity(old.m_capacity), m_size(old.m_size) { old.m_size = 0; }
+        Vector& operator=(Vector&& old) noexcept {
             m_buffer = old.m_buffer;
-            capacity = old.capacity;
+            m_capacity = old.m_capacity;
 
             old.m_size = 0;
 
             return *this;
         }
 
-        explicit FixedCapacityVector(FixedCapacityVector const& other)
+        explicit Vector(Vector const& other)
             : m_buffer(new ValueType[other.m_capacity]), m_capacity(other.m_capacity), m_size(other.m_size) {
             std::memcpy(m_buffer, other.m_buffer, m_capacity * sizeof(ValueType));
         }
-        FixedCapacityVector& operator=(const FixedCapacityVector& other) {
+        Vector& operator=(const Vector& other) {
             m_buffer = new ValueType[other.m_capacity];
             m_capacity = other.m_capacity;
 
@@ -64,7 +60,7 @@ namespace ntl {
             return *this;
         }
 
-        ~FixedCapacityVector() {
+        ~Vector() {
             if(m_size > 0) {
                 delete[] m_buffer;
             }
@@ -86,9 +82,6 @@ namespace ntl {
 
         /*!
          * \brief Returns a reference to the first element in this vector
-         *
-         * Because this vector never reallocates itself, returned referenced will be valid until the object they reference is popped from
-         * the vector
          */
         [[nodiscard]] Result<ValueType&, bool> first() const {
             if(m_size > 0) {
@@ -101,9 +94,6 @@ namespace ntl {
 
         /*!
          * \brief Returns a reference to the last element in this vector
-         *
-         * Because this vector never reallocates itself, returned referenced will be valid until the object they reference is popped from
-         * the vector
          */
         [[nodiscard]] Result<ValueType&, bool> last() const {
             if(m_size > 0) {
@@ -117,9 +107,6 @@ namespace ntl {
         /*!
          * \brief Returns a reference to the element at the specified index
          *
-         * Because this vector never reallocates itself, returned referenced will be valid until the object they reference is popped from
-         * the vector
-         *
          * \param idx The index of the element you want
          */
         [[nodiscard]] Result<ValueType&, bool> at(uint64_t const idx) const {
@@ -130,22 +117,26 @@ namespace ntl {
                 return Result(false);
             }
         }
-
+        
         /*!
          * \brief Pushes a new object onto the vector
          *
          * \return True if we could push the object onto the vector, false if the vector is already full
          */
         bool push(ValueType&& new_value) {
-            if(m_size != m_capacity) {
-                m_size++;
-                m_buffer[m_size] = new_value;
+            if(m_size == m_capacity) {
+                if(AllowResizing) {
+                    grow_buffer();
 
-                return true;
-
-            } else {
-                return false;
+                } else {
+                    return false;
+                }
             }
+
+            m_size++;
+            m_buffer[m_size] = new_value;
+
+            return true;
         }
 
         /*!
@@ -162,6 +153,10 @@ namespace ntl {
             }
         }
 
+        [[nodiscard]] Iterator<ValueType> begin() const noexcept {}
+
+        [[nodiscard]] Iterator<ValueType> end() const noexcept {}
+
         /*!
          * \brief Returns a stream of this vector's elements, allowing you to write complex functional pipelines that process this vector
          */
@@ -170,7 +165,20 @@ namespace ntl {
     private:
         ValueType* m_buffer;
 
-        const uint64_t m_capacity;
+        uint64_t m_capacity;
         uint64_t m_size = 0;
+
+        /*!
+         * \brief Doubles the size of the internal buffer
+         */
+        void grow_buffer() { auto* new_buffer = new ValueType[m_capacity * 2];
+
+            std::memcpy(new_buffer, m_buffer, m_size * sizeof(ValueType));
+
+            delete[] m_buffer;
+
+            m_buffer = new_buffer;
+            m_capacity *= 2;
+        }
     };
 } // namespace ntl
