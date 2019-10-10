@@ -240,25 +240,19 @@ namespace nova::renderer::rhi {
         }
     }
 
-    rhi::Gl3CommandList::Gl3CommandList() {
-        // TODO: maintain an average of the number of commands per command list, and allocate enough commands for like 90% of all command
-        // lists
-        commands.reserve(128);
-    }
+    Gl3CommandList::Gl3CommandList() { commands.reserve(128); }
 
-    void Gl3CommandList::resource_barriers(PipelineStageFlags /* stages_before_barrier */,
-                                           PipelineStageFlags /* stages_after_barrier */,
-                                           const std::vector<ResourceBarrier>& /* barriers */) {
-        // Don't need to do anything whoop
-    }
+    void Gl3CommandList::resource_barriers(PipelineStageFlags stages_before_barrier,
+                                           PipelineStageFlags stages_after_barrier,
+                                           const std::vector<ResourceBarrier>& barriers) {}
 
     void Gl3CommandList::copy_buffer(Buffer* destination_buffer,
                                      const uint64_t destination_offset,
                                      Buffer* source_buffer,
                                      const uint64_t source_offset,
                                      const uint64_t num_bytes) {
-        Gl3Buffer* dst_buf = reinterpret_cast<Gl3Buffer*>(destination_buffer);
-        Gl3Buffer* src_buf = reinterpret_cast<Gl3Buffer*>(source_buffer);
+        auto* dst_buf = reinterpret_cast<Gl3Buffer*>(destination_buffer);
+        auto* src_buf = reinterpret_cast<Gl3Buffer*>(source_buffer);
 
         commands.emplace_back();
 
@@ -279,7 +273,7 @@ namespace nova::renderer::rhi {
     }
 
     void Gl3CommandList::begin_renderpass(Renderpass* /* renderpass */, Framebuffer* framebuffer) {
-        Gl3Framebuffer* gl_framebuffer = reinterpret_cast<Gl3Framebuffer*>(framebuffer);
+        auto* gl_framebuffer = reinterpret_cast<Gl3Framebuffer*>(framebuffer);
 
         commands.emplace_back();
 
@@ -291,7 +285,7 @@ namespace nova::renderer::rhi {
     void Gl3CommandList::end_renderpass() {}
 
     void Gl3CommandList::bind_pipeline(const Pipeline* pipeline) {
-        const Gl3Pipeline* gl_pipeline = static_cast<const Gl3Pipeline*>(pipeline);
+        const auto* gl_pipeline = static_cast<const Gl3Pipeline*>(pipeline);
 
         commands.emplace_back();
 
@@ -306,7 +300,7 @@ namespace nova::renderer::rhi {
         // For each descriptor, get its uniform binding from the pipeline interface
         // Record a command to bind it
 
-        const Gl3PipelineInterface* gl_interface = static_cast<const Gl3PipelineInterface*>(pipeline_interface);
+        const auto* gl_interface = static_cast<const Gl3PipelineInterface*>(pipeline_interface);
 
         commands.emplace_back();
 
@@ -317,7 +311,7 @@ namespace nova::renderer::rhi {
         command.bind_descriptor_sets.sets.reserve(descriptor_sets.size());
 
         for(const DescriptorSet* set : descriptor_sets) {
-            const Gl3DescriptorSet* gl_set = static_cast<const Gl3DescriptorSet*>(set);
+            const auto* gl_set = static_cast<const Gl3DescriptorSet*>(set);
             command.bind_descriptor_sets.sets.emplace_back(const_cast<Gl3DescriptorSet*>(gl_set));
         }
     }
@@ -331,14 +325,14 @@ namespace nova::renderer::rhi {
         command.bind_vertex_buffers.buffers.reserve(buffers.size());
 
         for(const Buffer* buffer : buffers) {
-            const Gl3Buffer* gl_buffer = static_cast<const Gl3Buffer*>(buffer);
+            const auto* gl_buffer = static_cast<const Gl3Buffer*>(buffer);
 
             command.bind_vertex_buffers.buffers.push_back(gl_buffer->id);
         }
     }
 
     void Gl3CommandList::bind_index_buffer(const Buffer* buffer) {
-        const Gl3Buffer* gl_buffer = static_cast<const Gl3Buffer*>(buffer);
+        const auto* gl_buffer = static_cast<const Gl3Buffer*>(buffer);
 
         commands.emplace_back();
         Gl3Command& command = commands.front();
