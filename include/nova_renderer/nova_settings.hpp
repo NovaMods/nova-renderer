@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include <ntl/vector.hpp>
+
 #include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
@@ -236,6 +238,6 @@ namespace nova::renderer {
         void update_config_loaded();
 
     private:
-        std::vector<ConfigListener*> config_change_listeners;
+        ntl::Vector<ConfigListener*> config_change_listeners;
     };
 } // namespace nova::renderer

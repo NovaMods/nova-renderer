@@ -29,10 +29,10 @@ namespace nova::renderer::rhi {
 
         void set_num_renderpasses(uint32_t num_renderpasses) override;
 
-        Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage type, ObjectType allowed_objects) override;
+        ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage type, ObjectType allowed_objects) override;
 
         // Inherited via render_engine
-        Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override;
+        ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
                                         const std::vector<Image*>& attachments,
@@ -47,12 +47,12 @@ namespace nova::renderer::rhi {
 
         void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override;
 
-        Result<PipelineInterface*> create_pipeline_interface(
+        ntl::Result<PipelineInterface*> create_pipeline_interface(
             const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override;
 
-        Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override;
+        ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override;
 
         Buffer* create_buffer(const BufferCreateInfo& info) override;
 
@@ -126,5 +126,5 @@ namespace nova::renderer::rhi {
 #pragma endregion
     };
 
-    Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, GLenum shader_type);
+    ntl::Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, GLenum shader_type);
 } // namespace nova::renderer::rhi

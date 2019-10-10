@@ -76,7 +76,7 @@ namespace nova::renderer::shaderpack {
         return left || right;
     }
 
-    Result<std::vector<RenderPassCreateInfo>> order_passes(const std::vector<RenderPassCreateInfo>& passes) {
+    ntl::Result<std::vector<RenderPassCreateInfo>> order_passes(const std::vector<RenderPassCreateInfo>& passes) {
         MTR_SCOPE("Renderpass", "order_passes");
 
         NOVA_LOG(DEBUG) << "Executing Pass Scheduler";
@@ -118,7 +118,7 @@ namespace nova::renderer::shaderpack {
         if(resource_to_write_pass.find("Backbuffer") == resource_to_write_pass.end()) {
             NOVA_LOG(ERROR)
                 << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
-            return Result<std::vector<RenderPassCreateInfo>>(NovaError("Failed to order passes because no backbuffer was found"));
+            return ntl::Result<std::vector<RenderPassCreateInfo>>(ntl::NovaError("Failed to order passes because no backbuffer was found"));
         }
 
         auto backbuffer_writes = resource_to_write_pass["Backbuffer"];
@@ -159,7 +159,7 @@ namespace nova::renderer::shaderpack {
             passes_in_submission_order.push_back(render_passes_to_order.at(pass_name));
         }
 
-        return Result(passes_in_submission_order);
+        return ntl::Result(passes_in_submission_order);
     }
 
     void add_dependent_passes(const std::string& pass_name,

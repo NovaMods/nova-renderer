@@ -45,7 +45,7 @@ namespace nova::renderer::rhi {
         // Pretty sure Vulkan doesn't need to do anything here
     }
 
-    Result<DeviceMemory*> VulkanRenderEngine::allocate_device_memory(const uint64_t size,
+    ntl::Result<DeviceMemory*> VulkanRenderEngine::allocate_device_memory(const uint64_t size,
                                                                      const MemoryUsage usage,
                                                                      const ObjectType /* allowed_objects */) {
         VulkanDeviceMemory* memory = new_object<VulkanDeviceMemory>();
@@ -90,10 +90,10 @@ namespace nova::renderer::rhi {
             heap_mappings.emplace(memory->memory, mapped_memory);
         }
 
-        return Result<DeviceMemory*>(memory);
+        return ntl::Result<DeviceMemory*>(memory);
     }
 
-    Result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
+    ntl::Result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
         VulkanSwapchain* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain);
         VkExtent2D swapchain_extent = {swapchain_size.x, swapchain_size.y};
 
@@ -214,19 +214,19 @@ namespace nova::renderer::rhi {
         }
 
         if(framebuffer_width == 0) {
-            return Result<Renderpass*>(MAKE_ERROR(
+            return ntl::Result<Renderpass*>(MAKE_ERROR(
                 "Framebuffer width for pass {:s} is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero width",
                 data.name));
         }
 
         if(framebuffer_height == 0) {
-            return Result<Renderpass*>(MAKE_ERROR(
+            return ntl::Result<Renderpass*>(MAKE_ERROR(
                 "Framebuffer height for pass {:s} is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero height",
                 data.name));
         }
 
         if(framebuffer_attachments.size() > gpu.props.limits.maxColorAttachments) {
-            return Result<Renderpass*>(MAKE_ERROR(
+            return ntl::Result<Renderpass*>(MAKE_ERROR(
                 "Framebuffer for pass {:s} has {:d} color attachments, but your GPU only supports {:d}. Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures",
                 data.name,
                 data.texture_outputs.size(),
@@ -260,7 +260,7 @@ namespace nova::renderer::rhi {
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
         }
 
-        return Result(static_cast<Renderpass*>(renderpass));
+        return ntl::Result(static_cast<Renderpass*>(renderpass));
     }
 
     Framebuffer* VulkanRenderEngine::create_framebuffer(const Renderpass* renderpass,
@@ -291,7 +291,7 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-    Result<PipelineInterface*> VulkanRenderEngine::create_pipeline_interface(
+    ntl::Result<PipelineInterface*> VulkanRenderEngine::create_pipeline_interface(
         const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
         const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
         const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
@@ -431,7 +431,7 @@ namespace nova::renderer::rhi {
 
         NOVA_CHECK_RESULT(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &pipeline_interface->pass));
 
-        return Result(static_cast<PipelineInterface*>(pipeline_interface));
+        return ntl::Result(static_cast<PipelineInterface*>(pipeline_interface));
     }
 
     DescriptorPool* VulkanRenderEngine::create_descriptor_pool(const uint32_t num_sampled_images,
@@ -523,7 +523,7 @@ namespace nova::renderer::rhi {
         vkUpdateDescriptorSets(device, static_cast<uint32_t>(vk_writes.size()), vk_writes.data(), 0, nullptr);
     }
 
-    Result<Pipeline*> VulkanRenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
+    ntl::Result<Pipeline*> VulkanRenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
                                                           const shaderpack::PipelineCreateInfo& data) {
         NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name.c_str();
 
@@ -717,7 +717,7 @@ namespace nova::renderer::rhi {
 
         VkResult result = vkCreateGraphicsPipelines(device, nullptr, 1, &pipeline_create_info, nullptr, &vk_pipeline->pipeline);
         if(result != VK_SUCCESS) {
-            return Result<Pipeline*>(MAKE_ERROR("Could not compile pipeline {:s}", data.name.c_str()));
+            return ntl::Result<Pipeline*>(MAKE_ERROR("Could not compile pipeline {:s}", data.name.c_str()));
         }
 
         if(settings.settings.debug.enabled) {
@@ -730,7 +730,7 @@ namespace nova::renderer::rhi {
             NOVA_LOG(INFO) << "Set pipeline " << vk_pipeline->pipeline << " to have name " << data.name.c_str();
         }
 
-        return Result(static_cast<Pipeline*>(vk_pipeline));
+        return ntl::Result(static_cast<Pipeline*>(vk_pipeline));
     }
 
     Buffer* VulkanRenderEngine::create_buffer(const BufferCreateInfo& info) {

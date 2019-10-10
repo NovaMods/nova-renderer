@@ -1,8 +1,9 @@
 #pragma once
 
-#include <memory>
 #include <array>
+#include <memory>
 #include <string>
+#include <mutex>
 
 #include "nova_renderer/device_memory_resource.hpp"
 #include "nova_renderer/nova_settings.hpp"
@@ -289,13 +290,13 @@ namespace nova::renderer {
             const std::unordered_map<std::string, std::string>& bindings,
             const std::unordered_map<std::string, rhi::ResourceBindingDescription>& descriptor_descriptions);
 
-        [[nodiscard]] Result<rhi::PipelineInterface*> create_pipeline_interface(
+        [[nodiscard]] ntl::Result<rhi::PipelineInterface*> create_pipeline_interface(
             const shaderpack::PipelineCreateInfo& pipeline_create_info,
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const;
 
-        [[nodiscard]] Result<PipelineReturn> create_graphics_pipeline(rhi::PipelineInterface* pipeline_interface,
-                                                                      const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
+        [[nodiscard]] ntl::Result<PipelineReturn> create_graphics_pipeline(
+            rhi::PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
 
         static void get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
                                                   rhi::ShaderStageFlags shader_stage,

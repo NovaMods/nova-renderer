@@ -21,16 +21,29 @@
 #pragma warning(push, 0)
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
+#include <glslang/MachineIndependent/Initialize.h>
 #include <minitrace/minitrace.h>
+#include <spirv_cross/spirv_glsl.hpp>
 #pragma warning(pop)
 
+#include "debugging/renderdoc.hpp"
 #include "loading/shaderpack/render_graph_builder.hpp"
+#include "loading/shaderpack/shaderpack_loading.hpp"
 #include "memory/block_allocation_strategy.hpp"
 #include "memory/bump_point_allocation_strategy.hpp"
 #include "memory/mallocator.hpp"
+#include "memory/system_memory_allocator.hpp"
+#include "nova_renderer/command_list.hpp"
+#include "nova_renderer/nova_renderer.hpp"
+#include "nova_renderer/swapchain.hpp"
 #include "render_engine/gl3/gl3_render_engine.hpp"
+#include "render_engine/vulkan/vulkan_render_engine.hpp"
 #include "render_objects/uniform_structs.hpp"
 #include "util/logger.hpp"
+
+#if defined(NOVA_WINDOWS)
+#include "render_engine/dx12/dx12_render_engine.hpp"
+#endif
 
 using namespace bvestl::polyalloc;
 using namespace bvestl::polyalloc::operators;
@@ -84,7 +97,7 @@ namespace nova::renderer {
 
                     return 0;
                 })
-                .on_error([](const NovaError& error) { NOVA_LOG(ERROR) << error.to_string().c_str(); });
+                .on_error([](const ntl::NovaError& error) { NOVA_LOG(ERROR) << error.to_string().c_str(); });
         }
 
         switch(settings.api) {
@@ -249,7 +262,7 @@ namespace nova::renderer {
             RenderpassMetadata metadata;
             metadata.data = create_info;
 
-            Result<rhi::Renderpass*> renderpass_result = rhi->create_renderpass(create_info);
+            ntl::Result<rhi::Renderpass*> renderpass_result = rhi->create_renderpass(create_info);
             if(!renderpass_result.has_value) {
                 NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name.c_str() << ": "
                                 << renderpass_result.error.to_string().c_str();
@@ -326,16 +339,16 @@ namespace nova::renderer {
                 if(pipeline_create_info.pass == create_info.name) {
                     std::unordered_map<std::string, ResourceBinding> bindings;
 
-                    Result<rhi::PipelineInterface*> pipeline_interface = create_pipeline_interface(pipeline_create_info,
-                                                                                                   create_info.texture_outputs,
-                                                                                                   create_info.depth_texture);
+                    ntl::Result<rhi::PipelineInterface*> pipeline_interface = create_pipeline_interface(pipeline_create_info,
+                                                                                                        create_info.texture_outputs,
+                                                                                                        create_info.depth_texture);
                     if(!pipeline_interface) {
                         NOVA_LOG(ERROR) << "Pipeline " << create_info.name.c_str()
                                         << " has an invalid interface: " << pipeline_interface.error.to_string().c_str();
                         continue;
                     }
 
-                    Result<PipelineReturn> pipeline_result = create_graphics_pipeline(*pipeline_interface, pipeline_create_info);
+                    ntl::Result<PipelineReturn> pipeline_result = create_graphics_pipeline(*pipeline_interface, pipeline_create_info);
                     if(pipeline_result) {
                         auto [pipeline, pipeline_metadata] = *pipeline_result;
 
@@ -451,7 +464,7 @@ namespace nova::renderer {
         rhi->update_descriptor_sets(writes);
     }
 
-    Result<rhi::PipelineInterface*> NovaRenderer::create_pipeline_interface(
+    ntl::Result<rhi::PipelineInterface*> NovaRenderer::create_pipeline_interface(
         const shaderpack::PipelineCreateInfo& pipeline_create_info,
         const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
         const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const {
@@ -480,24 +493,25 @@ namespace nova::renderer {
         return rhi->create_pipeline_interface(bindings, color_attachments, depth_texture);
     }
 
-    Result<NovaRenderer::PipelineReturn> NovaRenderer::create_graphics_pipeline(
+    ntl::Result<NovaRenderer::PipelineReturn> NovaRenderer::create_graphics_pipeline(
         rhi::PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& pipeline_create_info) const {
         Pipeline pipeline;
         PipelineMetadata metadata;
 
         metadata.data = pipeline_create_info;
 
-        Result<rhi::Pipeline*> rhi_pipeline = rhi->create_pipeline(pipeline_interface, pipeline_create_info);
+        ntl::Result<rhi::Pipeline*> rhi_pipeline = rhi->create_pipeline(pipeline_interface, pipeline_create_info);
         if(rhi_pipeline) {
             pipeline.pipeline = *rhi_pipeline;
 
         } else {
-            NovaError error = NovaError(fmt::format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name.c_str()).c_str(),
-                                        std::move(rhi_pipeline.error));
-            return Result<PipelineReturn>(std::move(error));
+            ntl::NovaError error = ntl::NovaError(fmt::format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name.c_str())
+                                                      .c_str(),
+                                                  std::move(rhi_pipeline.error));
+            return ntl::Result<PipelineReturn>(std::move(error));
         }
 
-        return Result(PipelineReturn{pipeline, metadata});
+        return ntl::Result(PipelineReturn{pipeline, metadata});
     }
 
     void NovaRenderer::get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
@@ -674,12 +688,12 @@ namespace nova::renderer {
 
         if(start_index != cur_model_matrix_index) {
             const std::vector<rhi::Buffer*> vertex_buffers = {batch.vertex_buffer,
-                                                                batch.vertex_buffer,
-                                                                batch.vertex_buffer,
-                                                                batch.vertex_buffer,
-                                                                batch.vertex_buffer,
-                                                                batch.vertex_buffer,
-                                                                batch.vertex_buffer};
+                                                              batch.vertex_buffer,
+                                                              batch.vertex_buffer,
+                                                              batch.vertex_buffer,
+                                                              batch.vertex_buffer,
+                                                              batch.vertex_buffer,
+                                                              batch.vertex_buffer};
             cmds->bind_vertex_buffers(vertex_buffers);
             cmds->bind_index_buffer(batch.index_buffer);
 
@@ -744,11 +758,11 @@ namespace nova::renderer {
 
     void NovaRenderer::create_global_gpu_pools() {
         const uint64_t mesh_memory_size = 512000000;
-        Result<rhi::DeviceMemory*> memory_result = rhi->allocate_device_memory(mesh_memory_size,
-                                                                               rhi::MemoryUsage::DeviceOnly,
-                                                                               rhi::ObjectType::Buffer);
+        ntl::Result<rhi::DeviceMemory*> memory_result = rhi->allocate_device_memory(mesh_memory_size,
+                                                                                    rhi::MemoryUsage::DeviceOnly,
+                                                                                    rhi::ObjectType::Buffer);
 
-        Result<DeviceMemoryResource*> mesh_memory_result = memory_result.map([&](rhi::DeviceMemory* memory) {
+        ntl::Result<DeviceMemoryResource*> mesh_memory_result = memory_result.map([&](rhi::DeviceMemory* memory) {
             auto* allocator = new BlockAllocationStrategy(*global_allocator, Bytes(mesh_memory_size), 64_b);
             return new DeviceMemoryResource(memory, allocator);
         });
@@ -762,7 +776,7 @@ namespace nova::renderer {
 
         // Assume 65k things, plus we need space for the builtin ubos
         const uint64_t ubo_memory_size = sizeof(PerFrameUniforms) + sizeof(glm::mat4) * 0xFFFF;
-        Result<DeviceMemoryResource*>
+        ntl::Result<DeviceMemoryResource*>
             ubo_memory_result = rhi->allocate_device_memory(ubo_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
                                     .map([&](rhi::DeviceMemory* memory) {
                                         auto* allocator = new BumpPointAllocationStrategy(Bytes(ubo_memory_size), Bytes(sizeof(glm::mat4)));
@@ -778,7 +792,7 @@ namespace nova::renderer {
 
         // Staging buffers will be pooled, so we don't need a _ton_ of memory for them
         const Bytes staging_memory_size = 256_kb;
-        const Result<DeviceMemoryResource*>
+        const ntl::Result<DeviceMemoryResource*>
             staging_memory_result = rhi->allocate_device_memory(staging_memory_size.b_count(),
                                                                 rhi::MemoryUsage::StagingBuffer,
                                                                 rhi::ObjectType::Buffer)

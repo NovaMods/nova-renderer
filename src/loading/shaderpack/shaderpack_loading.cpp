@@ -121,7 +121,7 @@ namespace nova::renderer::shaderpack {
 
     ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
 
-    Result<std::vector<RenderPassCreateInfo>> load_passes_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
+    ntl::Result<std::vector<RenderPassCreateInfo>> load_passes_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
 
     std::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<FolderAccessorBase>& folder_access);
     PipelineCreateInfo load_single_pipeline(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& pipeline_path);
@@ -197,17 +197,17 @@ namespace nova::renderer::shaderpack {
         return {};
     }
 
-    Result<std::vector<RenderPassCreateInfo>> load_passes_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
+    ntl::Result<std::vector<RenderPassCreateInfo>> load_passes_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         NOVA_LOG(TRACE) << "load_passes_file called";
         const auto passes_bytes = folder_access->read_text_file("passes.json");
         try {
-            auto json_passes = nlohmann::json::parse(passes_bytes);
+            const auto json_passes = nlohmann::json::parse(passes_bytes);
             const auto passes = json_passes.get<std::vector<RenderPassCreateInfo>>();
 
             return order_passes(passes);
-
-        } catch(nlohmann::json::parse_error& err) {
-            return Result<std::vector<RenderPassCreateInfo>>(
+        }
+        catch(nlohmann::json::parse_error& err) {
+            return ntl::Result<std::vector<RenderPassCreateInfo>>(
                 MAKE_ERROR("Could not parse your shaderpack's passes.json: {:s}", err.what()));
         }
     }

@@ -2,14 +2,14 @@
 
 #include <memory>
 
+#include <memory>
+#include <ntl/result.hpp>
 #include "nova_renderer/command_list.hpp"
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/platform.hpp"
-#include <ntl/result.hpp>
 #include "nova_renderer/util/utils.hpp"
 #include "rhi_types.hpp"
-#include <memory>
 
 namespace nova::renderer {
     class NOVA_API Window;
@@ -55,7 +55,7 @@ namespace nova::renderer::rhi {
 
         virtual void set_num_renderpasses(uint32_t num_renderpasses) = 0;
 
-        [[nodiscard]] virtual Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage type, ObjectType allowed_objects) = 0;
+        [[nodiscard]] virtual ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage type, ObjectType allowed_objects) = 0;
 
         /*!
          * \brief Creates a renderpass from the provided data
@@ -67,13 +67,13 @@ namespace nova::renderer::rhi {
          *
          * \return The newly created renderpass
          */
-        [[nodiscard]] virtual Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) = 0;
+        [[nodiscard]] virtual ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) = 0;
 
         [[nodiscard]] virtual Framebuffer* create_framebuffer(const Renderpass* renderpass,
                                                               const std::vector<Image*>& attachments,
                                                               const glm::uvec2& framebuffer_size) = 0;
 
-        [[nodiscard]] virtual Result<PipelineInterface*> create_pipeline_interface(
+        [[nodiscard]] virtual ntl::Result<PipelineInterface*> create_pipeline_interface(
             const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) = 0;
@@ -87,7 +87,7 @@ namespace nova::renderer::rhi {
 
         virtual void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) = 0;
 
-        [[nodiscard]] virtual Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
+        [[nodiscard]] virtual ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
                                                                 const shaderpack::PipelineCreateInfo& data) = 0;
 
         [[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info) = 0;
@@ -230,8 +230,8 @@ namespace nova::renderer::rhi {
          *
          * \attention Called by nova
          */
-        explicit RenderEngine(NovaSettingsAccessManager& settings)  // NOLINT(cppcoreguidelines-pro-type-member-init)
-            : settings(settings), swapchain_size(settings.settings.window.width, settings.settings.window.height) {};
+        explicit RenderEngine(NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)
+            : settings(settings), swapchain_size(settings.settings.window.width, settings.settings.window.height){};
 
         template <typename AllocType>
         AllocType* new_object() {

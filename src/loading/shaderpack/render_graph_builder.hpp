@@ -9,7 +9,7 @@
 #include <nova_renderer/shaderpack_data.hpp>
 #include <string>
 #include <unordered_map>
-#include <nova_renderer/util/result.hpp>
+#include <ntl/result.hpp>
 
 namespace nova::renderer::shaderpack {
     struct Range {
@@ -39,7 +39,7 @@ namespace nova::renderer::shaderpack {
      * \param passes A map from pass name to pass of all the passes to order
      * \return The names of the passes in submission order
      */
-    Result<std::vector<RenderPassCreateInfo>> order_passes(const std::vector<RenderPassCreateInfo>& passes);
+    ntl::Result<std::vector<RenderPassCreateInfo>> order_passes(const std::vector<RenderPassCreateInfo>& passes);
 
     /*!
      * \brief Puts textures in usage order and determines which have overlapping usage ranges

@@ -44,14 +44,14 @@ namespace nova::renderer::rhi {
         // Gl3 doesn't need to do anything either
     }
 
-    Result<DeviceMemory*> Gl3RenderEngine::allocate_device_memory(const uint64_t /* size */,
+    ntl::Result<DeviceMemory*> Gl3RenderEngine::allocate_device_memory(const uint64_t /* size */,
                                                                   const MemoryUsage /* type */,
                                                                   const ObjectType /* allowed_objects */) {
-        return Result(new DeviceMemory);
+        return ntl::Result(new DeviceMemory);
     }
 
-    Result<Renderpass*> Gl3RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& /* data */) {
-        return Result<Renderpass*>(new Renderpass);
+    ntl::Result<Renderpass*> Gl3RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& /* data */) {
+        return ntl::Result<Renderpass*>(new Renderpass);
     }
 
     Framebuffer* Gl3RenderEngine::create_framebuffer(const Renderpass* /* renderpass */,
@@ -133,17 +133,18 @@ namespace nova::renderer::rhi {
         }
     }
 
-    Result<PipelineInterface*> Gl3RenderEngine::create_pipeline_interface(
+    ntl::Result<PipelineInterface*> Gl3RenderEngine::create_pipeline_interface(
         const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
         const std::vector<shaderpack::TextureAttachmentInfo>& /* color_attachments */,
         const std::optional<shaderpack::TextureAttachmentInfo>& /* depth_texture */) {
         Gl3PipelineInterface* pipeline_interface = new Gl3PipelineInterface;
         pipeline_interface->bindings = bindings;
 
-        return Result(static_cast<PipelineInterface*>(pipeline_interface));
+        return ntl::Result(static_cast<PipelineInterface*>(pipeline_interface));
     }
 
-    Result<Pipeline*> Gl3RenderEngine::create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) {
+    ntl::Result<Pipeline*> Gl3RenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
+                                                            const shaderpack::PipelineCreateInfo& data) {
         Gl3Pipeline* pipeline = new Gl3Pipeline;
 
         pipeline->id = glCreateProgram();
@@ -151,7 +152,7 @@ namespace nova::renderer::rhi {
         std::vector<std::string> pipeline_creation_errors;
         pipeline_creation_errors.reserve(4);
 
-        const Result<GLuint> vertex_shader = compile_shader(data.vertex_shader.source, GL_VERTEX_SHADER);
+        const ntl::Result<GLuint> vertex_shader = compile_shader(data.vertex_shader.source, GL_VERTEX_SHADER);
         if(vertex_shader) {
             glAttachShader(pipeline->id, vertex_shader.value);
 
@@ -160,7 +161,7 @@ namespace nova::renderer::rhi {
         }
 
         if(supports_geometry_shaders && data.geometry_shader) {
-            const Result<GLuint> geometry_shader = compile_shader(data.geometry_shader->source, GL_GEOMETRY_SHADER_ARB);
+            const ntl::Result<GLuint> geometry_shader = compile_shader(data.geometry_shader->source, GL_GEOMETRY_SHADER_ARB);
             if(geometry_shader) {
                 glAttachShader(pipeline->id, geometry_shader.value);
 
@@ -170,7 +171,7 @@ namespace nova::renderer::rhi {
         }
 
         if(data.fragment_shader) {
-            const Result<GLuint> fragment_shader = compile_shader(data.fragment_shader->source, GL_FRAGMENT_SHADER);
+            const ntl::Result<GLuint> fragment_shader = compile_shader(data.fragment_shader->source, GL_FRAGMENT_SHADER);
             if(fragment_shader) {
                 glAttachShader(pipeline->id, fragment_shader.value);
 
@@ -192,7 +193,7 @@ namespace nova::renderer::rhi {
 
             pipeline_creation_errors.push_back(program_link_log);
 
-            return Result<Pipeline*>(NovaError(program_link_log));
+            return ntl::Result<Pipeline*>(ntl::NovaError(program_link_log));
         }
 
         Gl3PipelineInterface* gl3_pipeline_interface = static_cast<Gl3PipelineInterface*>(pipeline_interface);
@@ -201,7 +202,7 @@ namespace nova::renderer::rhi {
             gl3_pipeline_interface->uniform_cache.emplace(binding.first, uniform_location);
         }
 
-        return Result(static_cast<Pipeline*>(pipeline));
+        return ntl::Result(static_cast<Pipeline*>(pipeline));
     }
 
     Buffer* Gl3RenderEngine::create_buffer(const BufferCreateInfo& info) {
@@ -544,7 +545,7 @@ namespace nova::renderer::rhi {
         glDrawArraysInstanced(GL_TRIANGLES, 0, draw_indexed_mesh.num_instances, draw_indexed_mesh.num_indices);
     }
 
-    Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, const GLenum shader_type) {
+    ntl::Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, const GLenum shader_type) {
         spirv_cross::CompilerGLSL compiler(spirv);
         const std::string glsl = compiler.compile().c_str();
         const char* glsl_c = glsl.c_str();
@@ -560,9 +561,9 @@ namespace nova::renderer::rhi {
             std::string compile_log;
             compile_log.reserve(compile_log_length);
             glGetShaderInfoLog(shader, compile_log_length, nullptr, compile_log.data());
-            return Result<GLuint>(NovaError(compile_log.c_str()));
+            return ntl::Result<GLuint>(ntl::NovaError(compile_log.c_str()));
         }
 
-        return Result(shader);
+        return ntl::Result(shader);
     }
 } // namespace nova::renderer::rhi

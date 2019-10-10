@@ -4,6 +4,8 @@
 #include <memory>
 #include <string>
 
+// ReSharper thinks that the include isn't used, but it's used in a macro so it needs to be here
+// ReSharper disable once CppUnusedIncludeDirective
 #include <fmt/format.h>
 
 namespace ntl {
@@ -116,5 +118,5 @@ namespace ntl {
     template <typename ValueType>
     Result(ValueType value)->Result<ValueType>;
 
-#define MAKE_ERROR(s, ...) NovaError(fmt::format(fmt(s), __VA_ARGS__).c_str())
-} // namespace nova::renderer
+#define MAKE_ERROR(s, ...) ::ntl::NovaError(fmt::format(fmt(s), __VA_ARGS__).c_str())
+} // namespace ntl
