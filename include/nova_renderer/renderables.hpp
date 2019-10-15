@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 
 namespace nova::renderer {
-    struct NOVA_API FullVertex {
+    struct FullVertex {
         glm::vec3 position;          // 12 bytes
         glm::vec3 normal;            // 12 bytes
         glm::vec3 tangent;           // 12 bytes
@@ -24,18 +24,18 @@ namespace nova::renderer {
      * particles, etc will probably have FAR fewer vertices than chunks, meaning that there's not a huge savings by
      * making them use special vertex formats
      */
-    struct NOVA_API MeshData {
+    struct MeshData {
         std::vector<FullVertex> vertex_data;
         std::vector<uint32_t> indices;
     };
 
     using MeshId = uint64_t;
 
-    struct NOVA_API StaticMeshRenderableUpdateData {
+    struct StaticMeshRenderableUpdateData {
         MeshId mesh;
     };
 
-    struct NOVA_API StaticMeshRenderableData : StaticMeshRenderableUpdateData {
+    struct StaticMeshRenderableData : StaticMeshRenderableUpdateData {
         glm::vec3 initial_position = {};
         glm::vec3 initial_rotation = {};
         glm::vec3 initial_scale = glm::vec3(1);
@@ -47,13 +47,13 @@ namespace nova::renderer {
 
     static std::atomic<RenderableId> next_renderable_id;
 
-    struct NOVA_API RenderableMetadata {
+    struct RenderableMetadata {
         RenderableId id = 0;
 
         std::vector<std::string> passes;
     };
 
-    struct NOVA_API RenderableBase {
+    struct RenderableBase {
         RenderableId id = 0;
 
         bool is_visible = true;

@@ -19,10 +19,10 @@ namespace nova::renderer::shaderpack {
         std::vector<std::string> warnings;
         std::vector<std::string> errors;
 
-        void NOVA_API merge_in(const ValidationReport& other);
+        void merge_in(const ValidationReport& other);
     };
 
-    void NOVA_API print(const ValidationReport& report);
+    void print(const ValidationReport& report);
 
     /*!
      * \brief Checks if the pipeline_json has all the properties that a full pipeline should have, printing a debug
@@ -32,7 +32,7 @@ namespace nova::renderer::shaderpack {
      *
      * \param pipeline_json The JSON pipeline to validate and possibly fill in
      */
-    ValidationReport NOVA_API validate_graphics_pipeline(nlohmann::json& pipeline_json);
+    ValidationReport validate_graphics_pipeline(nlohmann::json& pipeline_json);
 
     /*!
      * \brief Validates the dynamic resources that the given JSON file contains. Any warnings about missing fields with
@@ -41,7 +41,7 @@ namespace nova::renderer::shaderpack {
      *
      * \param resources_json The JSON dynamic resources to validate
      */
-    ValidationReport NOVA_API validate_shaderpack_resources_data(nlohmann::json& resources_json);
+    ValidationReport validate_shaderpack_resources_data(nlohmann::json& resources_json);
 
     /*!
      * \brief Validates a single texture's JSON, printing warnings to the warning logger and throwing an exception with
@@ -49,7 +49,7 @@ namespace nova::renderer::shaderpack {
      *
      * \param texture_json The JSON of the texture to validate
      */
-    ValidationReport NOVA_API validate_texture_data(nlohmann::json& texture_json);
+    ValidationReport validate_texture_data(nlohmann::json& texture_json);
 
     /*!
      * \brief Validates a texture format, printing warnings to the warning logger and throwing an exception with any
@@ -57,7 +57,7 @@ namespace nova::renderer::shaderpack {
      *
      * \param format_json The JSON to validate
      */
-    ValidationReport NOVA_API validate_texture_format(nlohmann::json& format_json, const std::string& texture_name);
+    ValidationReport validate_texture_format(nlohmann::json& format_json, const std::string& texture_name);
 
     /*!
      * \brief Validates that the provided JSON has all the fields it needed. Warnings about optional fields are
@@ -65,7 +65,7 @@ namespace nova::renderer::shaderpack {
      *
      * \param sampler_json The JSON to validate
      */
-    ValidationReport NOVA_API validate_sampler_data(nlohmann::json& sampler_json);
+    ValidationReport validate_sampler_data(nlohmann::json& sampler_json);
 
     /*!
      * \brief Validates that the provided JSON for has all the fields it needs. Optional fields that are missing
@@ -75,7 +75,7 @@ namespace nova::renderer::shaderpack {
      *
      * \return A list of all errors encountered when validating this material
      */
-    ValidationReport NOVA_API validate_material(nlohmann::json& material_json);
+    ValidationReport validate_material(nlohmann::json& material_json);
 } // namespace nova::renderer
 
 #endif // NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP

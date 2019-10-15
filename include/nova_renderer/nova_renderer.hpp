@@ -21,12 +21,12 @@ namespace spirv_cross {
 
 namespace nova::renderer {
     namespace rhi {
-        class NOVA_API Swapchain;
+        class Swapchain;
     }
 
 #pragma region Runtime optimized data
     template <typename RenderableType>
-    struct NOVA_API MeshBatch {
+    struct MeshBatch {
         rhi::Buffer* vertex_buffer = nullptr;
         rhi::Buffer* index_buffer = nullptr;
 
@@ -43,7 +43,7 @@ namespace nova::renderer {
         std::vector<RenderableType> renderables;
     };
 
-    struct NOVA_API MaterialPass {
+    struct MaterialPass {
         // Descriptors for the material pass
 
         std::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
@@ -51,13 +51,13 @@ namespace nova::renderer {
         const rhi::PipelineInterface* pipeline_interface = nullptr;
     };
 
-    struct NOVA_API Pipeline {
+    struct Pipeline {
         rhi::Pipeline* pipeline = nullptr;
 
         std::vector<MaterialPass> passes;
     };
 
-    struct NOVA_API Renderpass {
+    struct Renderpass {
         rhi::Renderpass* renderpass = nullptr;
         rhi::Framebuffer* framebuffer = nullptr;
 
@@ -69,7 +69,7 @@ namespace nova::renderer {
         std::vector<rhi::ResourceBarrier> write_texture_barriers;
     };
 
-    struct NOVA_API Mesh {
+    struct Mesh {
         rhi::Buffer* vertex_buffer = nullptr;
         rhi::Buffer* index_buffer = nullptr;
 
@@ -78,47 +78,47 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region metadata
-    struct NOVA_API FullMaterialPassName {
+    struct FullMaterialPassName {
         std::string material_name;
         std::string pass_name;
 
         bool operator==(const FullMaterialPassName& other) const;
     };
 
-    struct NOVA_API FullMaterialPassNameHasher {
+    struct FullMaterialPassNameHasher {
         std::size_t operator()(const FullMaterialPassName& name) const;
     };
 
-    struct NOVA_API MaterialPassKey {
+    struct MaterialPassKey {
         uint32_t renderpass_index;
         uint32_t pipeline_index;
         uint32_t material_pass_index;
     };
 
-    struct NOVA_API MaterialPassMetadata {
+    struct MaterialPassMetadata {
         shaderpack::MaterialPass data;
     };
 
-    struct NOVA_API PipelineMetadata {
+    struct PipelineMetadata {
         shaderpack::PipelineCreateInfo data;
 
         std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher> material_metadatas{};
     };
 
-    struct NOVA_API RenderpassMetadata {
+    struct RenderpassMetadata {
         shaderpack::RenderPassCreateInfo data;
 
         std::unordered_map<std::string, PipelineMetadata> pipeline_metadata{};
     };
 #pragma endregion
 
-    struct NOVA_API ResourceBinding {};
+    struct ResourceBinding {};
 
     /*!
      * \brief Main class for Nova. Owns all of Nova's resources and provides a way to access them
      * This class exists as a singleton so it's always available
      */
-    class NOVA_API NovaRenderer {
+    class NovaRenderer {
     public:
         /*!
          * \brief Initializes the Nova Renderer

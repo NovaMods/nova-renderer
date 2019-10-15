@@ -19,7 +19,7 @@
 
 namespace bvestl {
 	namespace polyalloc {
-        class NOVA_API Allocator {
+        class Allocator {
 		  public:
 			Allocator() = default;
 			Allocator(Allocator const&) = delete;
@@ -34,7 +34,7 @@ namespace bvestl {
 			virtual void deallocate(void* p, size_t n) = 0;
 		};
 
-		class NOVA_API allocator_handle {
+		class allocator_handle {
 		  public:
 		  	// Needs to exist because std won't compile without it. Should not ever be called.
 			EA_FORCE_INLINE allocator_handle(char const* const = nullptr) noexcept : allocator_(nullptr) {

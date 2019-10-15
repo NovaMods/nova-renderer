@@ -7,13 +7,13 @@
 #include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer::rhi {
-    struct NOVA_API Buffer;
-    struct NOVA_API DescriptorSet;
-    struct NOVA_API Framebuffer;
-    struct NOVA_API Pipeline;
-    struct NOVA_API PipelineInterface;
-    struct NOVA_API Renderpass;
-    struct NOVA_API ResourceBarrier;
+    struct Buffer;
+    struct DescriptorSet;
+    struct Framebuffer;
+    struct Pipeline;
+    struct PipelineInterface;
+    struct Renderpass;
+    struct ResourceBarrier;
 
     /*!
      * \brief An API-agnostic command list
@@ -30,7 +30,7 @@ namespace nova::renderer::rhi {
      *
      * Command lists are fully bound to ChaiScript
      */
-    class NOVA_API CommandList {
+    class CommandList {
     public:
         enum class Level {
             Primary,

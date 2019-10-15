@@ -7,7 +7,7 @@ namespace nova::renderer {
     }
 
     void NovaSettingsAccessManager::register_change_listener(ConfigListener* new_listener) {
-        config_change_listeners.push(new_listener);
+        config_change_listeners.push_back(new_listener);
     }
 
     void NovaSettingsAccessManager::update_config_changed() {

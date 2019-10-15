@@ -8,7 +8,7 @@ namespace nova::renderer {
     /*!
      * \brief A platform-independent window interface
      */
-    class NOVA_API Window {
+    class Window {
     public:
         virtual ~Window() = default;
 

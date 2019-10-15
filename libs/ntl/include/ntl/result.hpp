@@ -8,8 +8,10 @@
 // ReSharper disable once CppUnusedIncludeDirective
 #include <fmt/format.h>
 
+#include <nova_renderer/util/utils.hpp>
+
 namespace ntl {
-    struct NovaError {
+    struct NOVA_API NovaError {
         std::string message = "";
 
         std::unique_ptr<NovaError> cause;
@@ -21,7 +23,7 @@ namespace ntl {
         [[nodiscard]] std::string to_string() const;
     };
 
-    inline NovaError operator""_err(const char* str, std::size_t size) { return NovaError(std::string(str, size)); }
+    inline NovaError operator""_err(const char* str, const std::size_t size) { return NovaError(std::string(str, size)); }
 
     template <typename ValueType, typename ErrorType = NovaError>
     struct Result {

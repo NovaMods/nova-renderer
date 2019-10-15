@@ -12,15 +12,15 @@
 #include "rhi_types.hpp"
 
 namespace nova::renderer {
-    class NOVA_API Window;
+    class Window;
 }
 
 namespace nova::renderer::rhi {
     struct Fence;
-    struct NOVA_API Image;
-    struct NOVA_API Semaphore;
+    struct Image;
+    struct Semaphore;
 
-    class NOVA_API Swapchain;
+    class Swapchain;
 
 #define NUM_THREADS 1
 
@@ -31,7 +31,7 @@ namespace nova::renderer::rhi {
      * All functions must be called after init(nova::settings) has been called except
      *   explicitly marked in the documentation
      */
-    class NOVA_API RenderEngine {
+    class RenderEngine {
     public:
         RenderEngine(RenderEngine&& other) = delete;
         RenderEngine& operator=(RenderEngine&& other) noexcept = delete;

@@ -4,12 +4,12 @@
 
 namespace bvestl {
 	namespace polyalloc {
-        struct NOVA_API AllocationInfo;
+        struct AllocationInfo;
 
         /*!
          * \brief Interface for an allocation strategy
          */
-        class NOVA_API AllocationStrategy {
+        class AllocationStrategy {
 		public:
 			virtual ~AllocationStrategy() = default;
 

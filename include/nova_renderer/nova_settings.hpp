@@ -3,30 +3,28 @@
 #include <string>
 #include <vector>
 
-#include <ntl/vector.hpp>
-
 #include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
 
-    struct NOVA_API Semver {
+    struct Semver {
         uint32_t major;
         uint32_t minor;
         uint32_t patch;
     };
 
-    enum class NOVA_API GraphicsApi {
+    enum class GraphicsApi {
         Vulkan,
         Dx12,
         Gl2,
     };
 
-    class NOVA_API NovaSettingsAccessManager;
+    class NovaSettingsAccessManager;
 
     /*!
      * \brief Anything which inherits from this class wants to know about the configuration and any changes to it
      */
-    class NOVA_API ConfigListener {
+    class ConfigListener {
     public:
         /*!
          * \brief Tells the listeners that there has been a change in the configuration
@@ -57,14 +55,14 @@ namespace nova::renderer {
         virtual void on_config_loaded(const NovaSettingsAccessManager& config) = 0;
     };
 
-    struct NOVA_API NovaSettings {
+    struct NovaSettings {
         /*!
          * \brief Options for configuring the way mesh memory is allocated
          *
          * Nova tries to be clever and optimize how it draws meshes with indirect rendering. It shoves everything into
          * a handful of giant buffers, to facilitate indirect rendering. These options are how you configure that
          */
-        struct NOVA_API BlockAllocatorSettings {
+        struct BlockAllocatorSettings {
             /*!
              * \brief The total amount of memory that can be used
              *
@@ -93,7 +91,7 @@ namespace nova::renderer {
         /*!
          * \brief All options to turn on debugging functionality
          */
-        struct NOVA_API DebugOptions {
+        struct DebugOptions {
             /*!
              * \brief If false, all debugging behavior is disabled, even if individual options are turned on
              */
@@ -131,7 +129,7 @@ namespace nova::renderer {
         /*!
          * \brief Settings that Nova can change, but which are still stored in a config
          */
-        struct NOVA_API CacheOptions {
+        struct CacheOptions {
             /*!
              * \brief The shaderpack that was most recently loaded
              *
@@ -143,7 +141,7 @@ namespace nova::renderer {
         /*!
          * \brief Options about the window that Nova will live in
          */
-        struct NOVA_API WindowOptions {
+        struct WindowOptions {
             /*!
              * \brief The title of the Window
              */
@@ -163,7 +161,7 @@ namespace nova::renderer {
         /*!
          * \brief Options that are specific to Nova's Vulkan rendering backend
          */
-        struct NOVA_API VulkanOptions {
+        struct VulkanOptions {
             /*!
              * \brief The application name to pass to Vulkan
              */
@@ -178,7 +176,7 @@ namespace nova::renderer {
         /*!
          * \brief Options that are specific to Nova's DirectX 12 backend
          */
-        struct NOVA_API Dx12Options {
+        struct Dx12Options {
         } dx12;
 
         /*!
@@ -191,7 +189,7 @@ namespace nova::renderer {
         /*!
          * \brief Information about the system we're running on
          */
-        struct NOVA_API SystemInfo {
+        struct SystemInfo {
             /*!
              * \brief Whether we're on a Unified Memory Architecture
              */
@@ -211,7 +209,7 @@ namespace nova::renderer {
         BlockAllocatorSettings index_memory_settings;
     };
 
-    class NOVA_API NovaSettingsAccessManager { // Classes named Manager are an antipattern so yes
+    class NovaSettingsAccessManager { // Classes named Manager are an antipattern so yes
     public:
         NovaSettings settings;
 
@@ -238,6 +236,6 @@ namespace nova::renderer {
         void update_config_loaded();
 
     private:
-        ntl::Vector<ConfigListener*> config_change_listeners;
+        std::vector<ConfigListener*> config_change_listeners;
     };
 } // namespace nova::renderer

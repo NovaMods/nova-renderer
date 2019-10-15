@@ -23,7 +23,7 @@ namespace bvestl {
          *
          * You can use the user-defined literals `_b`, `_kb`, `_mb`, and `_gb`.
          */
-        class NOVA_API Bytes {
+        class Bytes {
         public:
             constexpr explicit EA_FORCE_INLINE Bytes(std::size_t const count) noexcept : byte_count(count){};
             constexpr EA_FORCE_INLINE Bytes(Bytes const& other) noexcept = default;
@@ -117,7 +117,7 @@ namespace bvestl {
          * A class to represent a value in kilobytes. Unlike \ref Bytes::k_count(), converting from a \ref Bytes to a \ref KBytes is
          * lossless.
          */
-        class NOVA_API KBytes : public Bytes {
+        class KBytes : public Bytes {
         public:
             /**
              * Represents count * 1024 bytes.
@@ -137,7 +137,7 @@ namespace bvestl {
          * A class to represent a value in megabytes. Unlike \ref Bytes::m_count(), converting from a \ref Bytes to a \ref MBytes is
          * lossless.
          */
-        class NOVA_API MBytes : public Bytes {
+        class MBytes : public Bytes {
         public:
             /**
              * Represents count * 1024^2 bytes.
@@ -157,7 +157,7 @@ namespace bvestl {
          * A class to represent a value in gigabytes. Unlike \ref Bytes::g_count(), converting from a \ref Bytes to a \ref GBytes is
          * lossless.
          */
-        class NOVA_API GBytes : public Bytes {
+        class GBytes : public Bytes {
         public:
             /**
              * Represents count * 1024^3 bytes.
@@ -173,11 +173,11 @@ namespace bvestl {
             constexpr explicit EA_FORCE_INLINE GBytes(Bytes const b) noexcept : Bytes(b){};
         };
 
-        constexpr EA_FORCE_INLINE NOVA_API Bytes operator*(std::size_t const multiplicand, Bytes const lhs) noexcept {
+        constexpr EA_FORCE_INLINE Bytes operator*(std::size_t const multiplicand, Bytes const lhs) noexcept {
             return lhs * multiplicand;
         }
 
-        constexpr EA_FORCE_INLINE NOVA_API Bytes operator/(std::size_t const dividend, Bytes const divisor) noexcept {
+        constexpr EA_FORCE_INLINE Bytes operator/(std::size_t const dividend, Bytes const divisor) noexcept {
             return Bytes(dividend / divisor.b_count());
         }
 
@@ -188,7 +188,7 @@ namespace bvestl {
          * \param b Byte value to print.
          * \return Input stream.
          */
-        NOVA_API std::ostream& operator<<(std::ostream& os, Bytes b);
+        std::ostream& operator<<(std::ostream& os, Bytes b);
         /**
          * Rounds and prints the amount of kilobytes within a \ref Bytes class. Prints as "XXkb"
          *
@@ -196,7 +196,7 @@ namespace bvestl {
          * \param b Byte value to print.
          * \return Input stream.
          */
-        NOVA_API std::ostream& operator<<(std::ostream& os, KBytes b);
+        std::ostream& operator<<(std::ostream& os, KBytes b);
         /**
          * Rounds and prints the amount of megabytes within a \ref Bytes class. Prints as "XXkb"
          *
@@ -204,7 +204,7 @@ namespace bvestl {
          * \param b Byte value to print.
          * \return Input stream.
          */
-        NOVA_API std::ostream& operator<<(std::ostream& os, MBytes b);
+        std::ostream& operator<<(std::ostream& os, MBytes b);
         /**
          * Rounds and prints the amount of gigabytes within a \ref Bytes class. Prints as "XXkb"
          *
@@ -212,13 +212,13 @@ namespace bvestl {
          * \param b Byte value to print.
          * \return Input stream.
          */
-        NOVA_API std::ostream& operator<<(std::ostream& os, GBytes b);
+        std::ostream& operator<<(std::ostream& os, GBytes b);
 
         namespace operators {
-            constexpr EA_FORCE_INLINE NOVA_API Bytes operator""_b(unsigned long long const value) { return Bytes(value); }
-            constexpr EA_FORCE_INLINE NOVA_API Bytes operator""_kb(unsigned long long const value) { return KBytes(value); }
-            constexpr EA_FORCE_INLINE NOVA_API Bytes operator""_mb(unsigned long long const value) { return MBytes(value); }
-            constexpr EA_FORCE_INLINE NOVA_API Bytes operator""_gb(unsigned long long const value) { return GBytes(value); }
+            constexpr EA_FORCE_INLINE Bytes operator""_b(unsigned long long const value) { return Bytes(value); }
+            constexpr EA_FORCE_INLINE Bytes operator""_kb(unsigned long long const value) { return KBytes(value); }
+            constexpr EA_FORCE_INLINE Bytes operator""_mb(unsigned long long const value) { return MBytes(value); }
+            constexpr EA_FORCE_INLINE Bytes operator""_gb(unsigned long long const value) { return GBytes(value); }
         } // namespace operators
     }     // namespace polyalloc
 } // namespace bvestl

@@ -11,7 +11,7 @@
 namespace nova::renderer::rhi {
 
 #pragma region Structs
-    struct NOVA_API BufferCreateInfo {
+    struct BufferCreateInfo {
 
         uint64_t size = 0;
 
@@ -20,7 +20,7 @@ namespace nova::renderer::rhi {
         DeviceMemoryAllocation allocation;
     };
 
-    struct NOVA_API DeviceMemory {};
+    struct DeviceMemory {};
 
     /*!
      * \brief A resource
@@ -28,30 +28,30 @@ namespace nova::renderer::rhi {
      * Resources may by dynamic of static. Dynamic resources are updated after they are created, possibly by a shader,
      * while static resources are loaded once and that's that
      */
-    struct NOVA_API Resource {
+    struct Resource {
         ResourceType type = {};
         bool is_dynamic = false;
     };
 
-    struct NOVA_API Sampler {};
+    struct Sampler {};
 
-    struct NOVA_API Image : Resource {
+    struct Image : Resource {
         bool is_depth_tex = false;
     };
 
-    struct NOVA_API Buffer : Resource {
+    struct Buffer : Resource {
         uint32_t size = 0;
     };
 
-    struct NOVA_API Framebuffer {
+    struct Framebuffer {
         glm::uvec2 size;
     };
 
-    struct NOVA_API Renderpass {
+    struct Renderpass {
         bool writes_to_backbuffer = false;
     };
 
-    struct NOVA_API ResourceBindingDescription {
+    struct ResourceBindingDescription {
         /*!
          * \brief Descriptor set that his binding belongs to
          */
@@ -85,23 +85,23 @@ namespace nova::renderer::rhi {
     /*!
      * \brief The interface for a pipeline. Includes both inputs (descriptors) and outputs (framebuffers)
      */
-    struct NOVA_API PipelineInterface {
+    struct PipelineInterface {
         std::unordered_map<std::string, ResourceBindingDescription> bindings;
     };
 
-    struct NOVA_API Pipeline {};
+    struct Pipeline {};
 
-    struct NOVA_API Semaphore {};
+    struct Semaphore {};
 
-    struct NOVA_API PresentSemaphore {};
+    struct PresentSemaphore {};
 
-    struct NOVA_API Fence {};
+    struct Fence {};
 
-    struct NOVA_API DescriptorPool {};
+    struct DescriptorPool {};
 
-    struct NOVA_API DescriptorSet {};
+    struct DescriptorSet {};
 
-    struct NOVA_API ResourceBarrier {
+    struct ResourceBarrier {
         Resource* resource_to_barrier;
 
         ResourceState initial_state;
@@ -125,13 +125,13 @@ namespace nova::renderer::rhi {
         };
     };
 
-    struct NOVA_API DescriptorImageUpdate {
+    struct DescriptorImageUpdate {
         const Image* image;
         shaderpack::TextureFormat format;
         Sampler* sampler;
     };
 
-    struct NOVA_API DescriptorSetWrite {
+    struct DescriptorSetWrite {
         const DescriptorSet* set;
         uint32_t binding;
         DescriptorImageUpdate* image_info;
@@ -139,5 +139,5 @@ namespace nova::renderer::rhi {
     };
 #pragma endregion
 
-    ShaderStageFlags NOVA_API operator|=(ShaderStageFlags lhs, ShaderStageFlags rhs);
+    ShaderStageFlags operator|=(ShaderStageFlags lhs, ShaderStageFlags rhs);
 } // namespace nova::renderer::rhi
