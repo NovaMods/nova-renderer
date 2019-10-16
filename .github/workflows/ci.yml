@@ -66,6 +66,42 @@ jobs:
       - name: Run unit tests
         working-directory: build
         run: ./nova-test-unit --gtest_color=yes
+      # 8. Prepare artifacts for uploading
+      - name: Prepare artifacts
+        run: |
+          mkdir artifacts
+
+          # Binary artifacts
+          mkdir artifacts/binary
+          cp build/nova-test-unit artifacts/binary
+          cp build/nova-test-end-to-end artifacts/binary
+          cp build/libnova-renderer.a artifacts/binary
+
+          # Header artifact
+          mkdir artifacts/headers
+          cp -r include/* artifacts/headers
+
+          # Docs
+          mkdir artifacts/docs
+          cp -r docs/* artifacts/docs
+      # 9. Upload binary artifacts
+      - name: Upload binary artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: binary
+          path: artifacts/binary
+      # 10. Upload headers artifact
+      - name: Upload headers artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: headers
+          path: artifacts/headers
+      # 11. Upload docs artifact
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: docs
+          path: artifacts/docs
 
   build-linux-clang:
     # Even tho we run the real build in an arch linux docker
@@ -131,6 +167,42 @@ jobs:
       - name: Run unit tests
         working-directory: build
         run: ./nova-test-unit --gtest_color=yes
+      # 8. Prepare artifacts for uploading
+      - name: Prepare artifacts
+        run: |
+          mkdir artifacts
+
+          # Binary artifacts
+          mkdir artifacts/binary
+          cp build/nova-test-unit artifacts/binary
+          cp build/nova-test-end-to-end artifacts/binary
+          cp build/libnova-renderer.a artifacts/binary
+
+          # Header artifact
+          mkdir artifacts/headers
+          cp -r include/* artifacts/headers
+
+          # Docs
+          mkdir artifacts/docs
+          cp -r docs/* artifacts/docs
+      # 9. Upload binary artifacts
+      - name: Upload binary artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: binary
+          path: artifacts/binary
+      # 10. Upload headers artifact
+      - name: Upload headers artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: headers
+          path: artifacts/headers
+      # 11. Upload docs artifact
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: docs
+          path: artifacts/docs
 
   build-windows-msvc:
     # Running on Windows Server 2019 or whatever the latest version is,
@@ -163,10 +235,10 @@ jobs:
               $totalBytes = $Global:Data.SourceArgs.TotalBytesToReceive
               $receivedBytes = $Global:Data.SourceArgs.BytesReceived
               If ($null -ne $percentage) {
-                If($percentage - 10 -gt $last_percentage) {
-                    Write-Host ("{0}% ({1}/{2})" -f $percentage,$receivedBytes,$totalBytes)
-                    $last_percentage = $percentage
-                }
+                  If($percentage - 10 -gt $last_percentage) {
+                      Write-Host ("{0}% ({1}/{2})" -f $percentage,$receivedBytes,$totalBytes)
+                      $last_percentage = $percentage
+                  }
               }
           }
           Write-Host ("100% ({0}/{1})" -f $receivedBytes,$totalBytes)
@@ -213,4 +285,40 @@ jobs:
         working-directory: build/Debug
         shell: bash
         run: ./nova-test-unit.exe --gtest_color=yes
-      
+      # 8. Prepare artifacts for uploading
+      - name: Prepare artifacts
+        shell: bash
+        run: |
+          mkdir artifacts
+
+          # Binary artifacts
+          mkdir artifacts/binary
+          cp build/Debug/nova-test-unit.exe artifacts/binary
+          cp build/Debug/nova-test-end-to-end.exe artifacts/binary
+          cp build/Debug/nova-renderer.lib artifacts/binary
+
+          # Header artifact
+          mkdir artifacts/headers
+          cp -r include/* artifacts/headers
+
+          # Docs
+          mkdir artifacts/docs
+          cp -r docs/* artifacts/docs
+      # 9. Upload binary artifacts
+      - name: Upload binary artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: binary
+          path: artifacts/binary
+      # 10. Upload headers artifact
+      - name: Upload headers artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: headers
+          path: artifacts/headers
+      # 11. Upload docs artifact
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: docs
+          path: artifacts/docs
