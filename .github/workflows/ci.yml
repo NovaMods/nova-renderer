@@ -17,7 +17,7 @@ jobs:
       #    Arch linux updates NEVER require manual interaction,
       #    so this is safe in combination with --noconfirm
       - name: Update System
-        run: pacman --noconfirm --Syu
+        run: pacman --noconfirm -Syu
       # 2. Install the required dependencies
       - name: Install dependencies
         run: pacman --noconfirm -S cmake make binutils gcc python3 git vulkan-devel
@@ -80,7 +80,7 @@ jobs:
       #    Arch linux updates NEVER require manual interaction,
       #    so this is safe in combination with --noconfirm
       - name: Update System
-        run: pacman --noconfirm --Syu
+        run: pacman --noconfirm -Syu
       # 2. Install the required dependencies
       - name: Install dependencies
         run: pacman --noconfirm -S cmake ninja binutils clang python3 git vulkan-devel
@@ -116,7 +116,8 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake .. -G"Ninja" -DNOVA_TEST=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
+          cmake .. -G"Ninja" -DNOVA_TEST=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake \
+            -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang
       # 6. Build with CMake
       - name: Build with CMake
         working-directory: build
