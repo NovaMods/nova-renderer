@@ -20,7 +20,7 @@ jobs:
         run: pacman --noconfirm -Syu
       # 2. Install the required dependencies
       - name: Install dependencies
-        run: pacman --noconfirm -S cmake make binutils gcc python3 git vulkan-devel
+        run: pacman --noconfirm -S cmake make binutils gcc python3 git vulkan-devel ninja tar unzip which
       # 3. Checkout the repository, this is done via a github action
       - name: Checkout repository
         uses: actions/checkout@master
@@ -40,20 +40,18 @@ jobs:
               # The fiddly part, this will require a manual install of vcpkg... lets do it
               git clone https://github.com/microsoft/vcpkg vcpkg
               pushd vcpkg
-              # -useSystemBinaries Since this is arch, we can safely rely on the system
-              # build utilities to speed up the build
-              bash bootstrap-vcpkg.sh -useSystemBinaries
-              export PATH=$PATH:`pwd`
+              bash bootstrap-vcpkg.sh
+              export PATH=`pwd`:$PATH
               popd
               # Now vcpkg should be set up
-              bash setup-linux.sh
+              VULKAN_SDK=/usr bash setup-linux.sh
           fi
       # 5. Configure with CMake
       - name: Configure with CMake
         run: |
           mkdir build
           cd build
-          cmake .. -G"Unix Makefiles" -DNOVA_TEST=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
+          VULKAN_SDK=/usr cmake .. -G"Unix Makefiles" -DNOVA_TEST=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
       # 6. Build with CMake
       #    We use 2 cores since thats what Github provides as of writing this script,
       #    For further reference see https://help.github.com/en/articles/virtual-environments-for-github-actions
@@ -83,7 +81,7 @@ jobs:
         run: pacman --noconfirm -Syu
       # 2. Install the required dependencies
       - name: Install dependencies
-        run: pacman --noconfirm -S cmake ninja binutils clang python3 git vulkan-devel
+        run: pacman --noconfirm -S cmake ninja binutils clang python3 git vulkan-devel tar unzip which
       # 3. Checkout the repository, this is done via a github action
       - name: Checkout repository
         uses: actions/checkout@master
@@ -103,20 +101,18 @@ jobs:
               # The fiddly part, this will require a manual install of vcpkg... lets do it
               git clone https://github.com/microsoft/vcpkg vcpkg
               pushd vcpkg
-              # -useSystemBinaries Since this is arch, we can safely rely on the system
-              # build utilities to speed up the build
-              bash bootstrap-vcpkg.sh -useSystemBinaries
-              export PATH=$PATH:`pwd`
+              bash bootstrap-vcpkg.sh
+              export PATH=`pwd`:$PATH
               popd
               # Now vcpkg should be set up
-              bash setup-linux.sh
+              VULKAN_SDK=/usr bash setup-linux.sh
           fi
       # 5. Configure with CMake
       - name: Configure with CMake
         run: |
           mkdir build
           cd build
-          cmake .. -G"Ninja" -DNOVA_TEST=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake \
+          VULKAN_SDK=/usr cmake .. -G"Ninja" -DNOVA_TEST=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake \
             -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang
       # 6. Build with CMake
       - name: Build with CMake
