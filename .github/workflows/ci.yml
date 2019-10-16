@@ -1,0 +1,127 @@
+name: CI
+on: [push]
+
+jobs:
+  build-linux-gcc:
+    # Even tho we run the real build in an arch linux docker
+    # containerwe need to specify a HostOS
+    runs-on: ubuntu-latest
+
+    # Run the real build on an arch linux docker container
+    # Ubuntu has out of date tools and sometimes system updates
+    # require manual interaction so its unusable for CI
+    container: archlinux/base
+
+    steps:
+      # 1. Update the system
+      #    Arch linux updates NEVER require manual interaction,
+      #    so this is safe in combination with --noconfirm
+      - name: Update System
+        run: pacman --noconfirm --Syu
+      # 2. Install the required dependencies
+      - name: Install dependencies
+        run: pacman --noconfirm -S cmake make binutils gcc python3 git vulkan-devel
+      # 3. Checkout the repository, this is done via a github action
+      - name: Checkout repository
+        uses: actions/checkout@master
+      # 4. Prepare nova
+      #    Currently there are 2 different build methods in use with nova,
+      #    so check which one the branch we are on is using and adjust as required
+      - name: Prepare
+        shell: bash
+        run: |
+          set -e
+
+          if [[ -f "build.py" ]]; then
+              # The new build.py method is easy, just run it with python
+              # and we are good to go
+              python3 build.py
+          else
+              # The fiddly part, this will require a manual install of vcpkg... lets do it
+              git clone https://github.com/microsoft/vcpkg vcpkg
+              pushd vcpkg
+              # -useSystemBinaries Since this is arch, we can safely rely on the system
+              # build utilities to speed up the build
+              bash bootstrap-vcpkg.sh -useSystemBinaries
+              export PATH=$PATH:`pwd`
+              popd
+              # Now vcpkg should be set up
+              bash setup-linux.sh
+          fi
+      # 5. Configure with CMake
+      - name: Configure with CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. -G"Unix Makefiles" -DNOVA_TEST=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
+      # 6. Build with CMake
+      #    We use 2 cores since thats what Github provides as of writing this script,
+      #    For further reference see https://help.github.com/en/articles/virtual-environments-for-github-actions
+      - name: Build with CMake
+        working-directory: build
+        run: cmake --build . -- -j2
+      # 7. Run the unit tests
+      - name: Run unit tests
+        working-directory: build
+        run: ./nova-test-unit --gtest_color=yes
+
+  build-linux-clang:
+    # Even tho we run the real build in an arch linux docker
+    # containerwe need to specify a HostOS
+    runs-on: ubuntu-latest
+
+    # Run the real build on an arch linux docker container
+    # Ubuntu has out of date tools and sometimes system updates
+    # require manual interaction so its unusable for CI
+    container: archlinux/base
+
+    steps:
+      # 1. Update the system
+      #    Arch linux updates NEVER require manual interaction,
+      #    so this is safe in combination with --noconfirm
+      - name: Update System
+        run: pacman --noconfirm --Syu
+      # 2. Install the required dependencies
+      - name: Install dependencies
+        run: pacman --noconfirm -S cmake ninja binutils clang python3 git vulkan-devel
+      # 3. Checkout the repository, this is done via a github action
+      - name: Checkout repository
+        uses: actions/checkout@master
+      # 4. Prepare nova
+      #    Currently there are 2 different build methods in use with nova,
+      #    so check which one the branch we are on is using and adjust as required
+      - name: Prepare
+        shell: bash
+        run: |
+          set -e
+
+          if [[ -f "build.py" ]]; then
+              # The new build.py method is easy, just run it with python
+              # and we are good to go
+              python3 build.py
+          else
+              # The fiddly part, this will require a manual install of vcpkg... lets do it
+              git clone https://github.com/microsoft/vcpkg vcpkg
+              pushd vcpkg
+              # -useSystemBinaries Since this is arch, we can safely rely on the system
+              # build utilities to speed up the build
+              bash bootstrap-vcpkg.sh -useSystemBinaries
+              export PATH=$PATH:`pwd`
+              popd
+              # Now vcpkg should be set up
+              bash setup-linux.sh
+          fi
+      # 5. Configure with CMake
+      - name: Configure with CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. -G"Ninja" -DNOVA_TEST=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
+      # 6. Build with CMake
+      - name: Build with CMake
+        working-directory: build
+        run: cmake --build .
+      # 7. Run the unit tests
+      - name: Run unit tests
+        working-directory: build
+        run: ./nova-test-unit --gtest_color=yes
