@@ -69,39 +69,18 @@ jobs:
       # 8. Prepare artifacts for uploading
       - name: Prepare artifacts
         run: |
-          mkdir artifacts
-
           # Binary artifacts
-          mkdir artifacts/binary
-          cp build/nova-test-unit artifacts/binary
-          cp build/nova-test-end-to-end artifacts/binary
-          cp build/libnova-renderer.a artifacts/binary
-
-          # Header artifact
-          mkdir artifacts/headers
-          cp -r include/* artifacts/headers
-
-          # Docs
-          mkdir artifacts/docs
-          cp -r docs/* artifacts/docs
+          mkdir artifacts
+          cp LICENSE artifacts
+          cp build/nova-test-unit artifacts
+          cp build/nova-test-end-to-end artifacts
+          cp build/libnova-renderer.a artifacts
       # 9. Upload binary artifacts
       - name: Upload binary artifacts
         uses: actions/upload-artifact@master
         with:
-          name: binary
-          path: artifacts/binary
-      # 10. Upload headers artifact
-      - name: Upload headers artifact
-        uses: actions/upload-artifact@master
-        with:
-          name: headers
-          path: artifacts/headers
-      # 11. Upload docs artifact
-      - name: Upload docs artifact
-        uses: actions/upload-artifact@master
-        with:
-          name: docs
-          path: artifacts/docs
+          name: binary-linux-gcc
+          path: artifacts
 
   build-linux-clang:
     # Even tho we run the real build in an arch linux docker
@@ -170,39 +149,18 @@ jobs:
       # 8. Prepare artifacts for uploading
       - name: Prepare artifacts
         run: |
-          mkdir artifacts
-
           # Binary artifacts
-          mkdir artifacts/binary
-          cp build/nova-test-unit artifacts/binary
-          cp build/nova-test-end-to-end artifacts/binary
-          cp build/libnova-renderer.a artifacts/binary
-
-          # Header artifact
-          mkdir artifacts/headers
-          cp -r include/* artifacts/headers
-
-          # Docs
-          mkdir artifacts/docs
-          cp -r docs/* artifacts/docs
+          mkdir artifacts
+          cp LICENSE artifacts
+          cp build/nova-test-unit artifacts
+          cp build/nova-test-end-to-end artifacts
+          cp build/libnova-renderer.a artifacts
       # 9. Upload binary artifacts
       - name: Upload binary artifacts
         uses: actions/upload-artifact@master
         with:
-          name: binary
-          path: artifacts/binary
-      # 10. Upload headers artifact
-      - name: Upload headers artifact
-        uses: actions/upload-artifact@master
-        with:
-          name: headers
-          path: artifacts/headers
-      # 11. Upload docs artifact
-      - name: Upload docs artifact
-        uses: actions/upload-artifact@master
-        with:
-          name: docs
-          path: artifacts/docs
+          name: binary-linux-clang
+          path: artifacts
 
   build-windows-msvc:
     # Running on Windows Server 2019 or whatever the latest version is,
@@ -289,36 +247,54 @@ jobs:
       - name: Prepare artifacts
         shell: bash
         run: |
-          mkdir artifacts
-
           # Binary artifacts
-          mkdir artifacts/binary
-          cp build/Debug/nova-test-unit.exe artifacts/binary
-          cp build/Debug/nova-test-end-to-end.exe artifacts/binary
-          cp build/Debug/nova-renderer.lib artifacts/binary
-
-          # Header artifact
-          mkdir artifacts/headers
-          cp -r include/* artifacts/headers
-
-          # Docs
-          mkdir artifacts/docs
-          cp -r docs/* artifacts/docs
+          mkdir artifacts
+          cp LICENSE artifacts
+          cp build/Debug/nova-test-unit.exe artifacts
+          cp build/Debug/nova-test-end-to-end.exe artifacts
+          cp build/Debug/nova-renderer.lib artifacts
       # 9. Upload binary artifacts
       - name: Upload binary artifacts
         uses: actions/upload-artifact@master
         with:
-          name: binary
-          path: artifacts/binary
-      # 10. Upload headers artifact
-      - name: Upload headers artifact
-        uses: actions/upload-artifact@master
-        with:
-          name: headers
-          path: artifacts/headers
-      # 11. Upload docs artifact
-      - name: Upload docs artifact
+          name: binary-windows-msvc
+          path: artifacts
+
+  build-simple-artifacts:
+    # Let's use linux for packaging up our artifacts which don't
+    # require building
+    # We could also use Windows or OSX, but Linux seems to be most fitting
+    runs-on: ubuntu-latest
+
+    steps:
+      # Of course we need a copy of the repository
+      - name: Checkout repository
+        uses: actions/checkout@master
+      # Preparation of the artifacts, for example adding LICENSE
+      - name: Prepare artifacts
+        run: |
+          mkdir artifacts
+
+          # Docs
+          mkdir artifacts/docs
+          cp -r docs/* artifacts/docs
+          cp LICENSE artifacts/docs
+          cp readme.md artifacts/docs
+
+          # Headers
+          mkdir artifacts/headers
+          cp -r include/* artifacts/headers
+          cp LICENSE artifacts/headers
+      # Upload the docs artifact
+      - name: Upload docs
         uses: actions/upload-artifact@master
         with:
           name: docs
           path: artifacts/docs
+      # Upload the headers artifact
+      - name: Upload headers
+        uses: actions/upload-artifact@master
+        with:
+          name: headers
+          path: artifacts/headers
+          
