@@ -51,13 +51,17 @@ jobs:
         run: |
           mkdir build
           cd build
-          VULKAN_SDK=/usr cmake .. -G"Unix Makefiles" -DNOVA_TEST=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
+          VULKAN_SDK=/usr cmake ..   \
+            -G"Unix Makefiles"       \
+            -DNOVA_TEST=ON           \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
       # 6. Build with CMake
-      #    We use 2 cores since thats what Github provides as of writing this script,
-      #    For further reference see https://help.github.com/en/articles/virtual-environments-for-github-actions
+      #    We use 3 threads on 2 cores since thats what Github provides as of writing this script,
+      #    for further reference see https://help.github.com/en/articles/virtual-environments-for-github-actions
       - name: Build with CMake
         working-directory: build
-        run: cmake --build . -- -j2
+        run: cmake --build . -- -j3
       # 7. Run the unit tests
       - name: Run unit tests
         working-directory: build
@@ -112,8 +116,13 @@ jobs:
         run: |
           mkdir build
           cd build
-          VULKAN_SDK=/usr cmake .. -G"Ninja" -DNOVA_TEST=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake \
-            -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang
+          VULKAN_SDK=/usr cmake ..                                           \
+            -G"Ninja"                                                        \
+            -DNOVA_TEST=ON                                                   \
+            -DCMAKE_BUILD_TYPE=Debug                                         \
+            -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake \
+            -DCMAKE_CXX_COMPILER=clang++                                     \
+            -DCMAKE_C_COMPILER=clang
       # 6. Build with CMake
       - name: Build with CMake
         working-directory: build
@@ -122,3 +131,86 @@ jobs:
       - name: Run unit tests
         working-directory: build
         run: ./nova-test-unit --gtest_color=yes
+
+  build-windows-msvc:
+    # Running on Windows Server 2019 or whatever the latest version is,
+    # lets hope this goes well...
+    runs-on: windows-latest
+
+    steps:
+      # 1. Download the VulkanSDK
+      - name: Download VulkanSDK
+        shell: powershell
+        run: |
+          $web = New-Object System.Net.WebClient
+          $web.UseDefaultCredentials = $True
+          $url = "https://sdk.lunarg.com/sdk/download/1.1.121.2/windows/VulkanSDK-1.1.121.2-Installer.exe?Human=true"
+          $file = "VulkanSDK-Installer.exe"
+          Register-ObjectEvent -InputObject $web -EventName DownloadFileCompleted `
+          -SourceIdentifier Web.DownloadFileCompleted -Action {    
+              $Global:isDownloaded = $True
+          }
+          Register-ObjectEvent -InputObject $web -EventName DownloadProgressChanged `
+          -SourceIdentifier Web.DownloadProgressChanged -Action {
+              $Global:Data = $event
+          }
+          $web.DownloadFileAsync($url,$file)
+          
+          $last_percentage = -1
+
+          While (-Not $isDownloaded) {
+              $percentage = $Global:Data.SourceArgs.ProgressPercentage
+              $totalBytes = $Global:Data.SourceArgs.TotalBytesToReceive
+              $receivedBytes = $Global:Data.SourceArgs.BytesReceived
+              If ($null -ne $percentage) {
+                If($percentage - 10 -gt $last_percentage) {
+                    Write-Host ("{0}% ({1}/{2})" -f $percentage,$receivedBytes,$totalBytes)
+                    $last_percentage = $percentage
+                }
+              }
+          }
+          Write-Host ("100% ({0}/{1})" -f $receivedBytes,$totalBytes)
+      # 2. Install the VulkanSDK
+      - name: Install VulkanSDK
+        run: .\VulkanSDK-Installer.exe /S
+      # 3. Checkout the repository, this is done via a github action
+      - name: Checkout repository
+        uses: actions/checkout@master
+      # 4. Prepare nova
+      #    Currently there are 2 different build methods in use with nova,
+      #    so check which one the branch we are on is using and adjust as required
+      - name: Prepare
+        shell: bash
+        run: |
+          set -e
+
+          if [[ -f "build.py" ]]; then
+              # The new build.py method is easy, just run it with python
+              # and we are good to go
+              python build.py
+          else
+              # vcpkg is provided via the system
+              VULKAN_SDK='C:\\VulkanSDK\\1.1.121.2' powershell .\\setup-windows.ps1
+          fi
+      # 5. Configure with CMake
+      - name: Configure with CMake
+        shell: bash
+        run: |
+          mkdir build
+          cd build
+          VULKAN_SDK='C:\\VulkanSDK\\1.1.121.2' cmake .. \
+            -G "Visual Studio 16 2019" -A x64            \
+            -DNOVA_TEST=ON                               \
+            -DCMAKE_BUILD_TYPE=Debug                     \
+            -DCMAKE_TOOLCHAIN_FILE="${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      # 6. Build with CMake
+      - name: Build with CMake
+        working-directory: build
+        shell: bash
+        run: cmake --build .
+      # 7. Run the unit tests
+      - name: Run unit tests
+        working-directory: build/Debug
+        shell: bash
+        run: ./nova-test-unit.exe --gtest_color=yes
+      
