@@ -12,7 +12,7 @@ namespace nova::renderer {
     X11Window::X11Window(const NovaSettings::WindowOptions &options) {
         display = XOpenDisplay(nullptr);
         if(display == nullptr) {
-            throw window_creation_error("Failed to open XDisplay");
+            return;
         }
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -28,7 +28,7 @@ namespace nova::renderer {
                                      BlackPixel(display, screen),  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                                      WhitePixel(display, screen)); // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 
-        XStoreName(display, window, options.title.c_str());
+        XStoreName(display, window, options.title);
 
         wm_protocols = XInternAtom(display, "WM_PROTOCOLS", 0);
         wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", 0);

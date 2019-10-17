@@ -22,8 +22,8 @@
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <glslang/MachineIndependent/Initialize.h>
-#include <minitrace/minitrace.h>
-#include <spirv_cross/spirv_glsl.hpp>
+#include <minitrace.h>
+#include <spirv_glsl.hpp>
 #pragma warning(pop)
 
 #include "debugging/renderdoc.hpp"

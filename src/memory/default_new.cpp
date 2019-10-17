@@ -1,7 +1,5 @@
 #include "default_new.hpp"
 
-#include <EABase/eabase.h>
-
 #include <stdexcept>
 
 #if !defined(EA_PLATFORM_MICROSOFT) || defined(EA_PLATFORM_MINGW)
@@ -56,8 +54,6 @@ void* operator new[](std::size_t count) {
 }
 
 void* operator new(std::size_t count, std::nothrow_t const& tag) noexcept {
-    EA_UNUSED(tag);
-
     return malloc(count);
 }
 
@@ -89,7 +85,6 @@ void operator delete[](void* ptr) noexcept {
 }
 
 void operator delete(void* ptr, std::size_t count) noexcept {
-    EA_UNUSED(count);
     ::operator delete(ptr);
 }
 
@@ -98,7 +93,6 @@ void operator delete[](void* ptr, std::size_t count) noexcept {
 }
 
 void operator delete(void* ptr, std::nothrow_t const& tag) noexcept {
-    EA_UNUSED(tag);
     ::operator delete(ptr);
 }
 

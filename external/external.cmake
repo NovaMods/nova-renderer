@@ -53,7 +53,7 @@ set(SPIRV_CROSS_ENABLE_CPP OFF CACHE BOOL "Don't compile the SPIRV-Cross C++ bac
 set(SPIRV_CROSS_SKIP_INSTALL ON CACHE BOOL "Don't install SPIRV-Cross onto the system, I already know where it is" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Cross)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Cross/external/glslang)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glslang)
 
 target_includes_system(glslang)
 

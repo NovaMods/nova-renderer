@@ -1,6 +1,5 @@
 #pragma once
 
-#include <EABase/config/eacompilertraits.h>
 #include <cstdlib>
 #include <iosfwd>
 
@@ -25,89 +24,89 @@ namespace bvestl {
          */
         class Bytes {
         public:
-            constexpr explicit EA_FORCE_INLINE Bytes(std::size_t const count) noexcept : byte_count(count){};
-            constexpr EA_FORCE_INLINE Bytes(Bytes const& other) noexcept = default;
+            constexpr explicit  Bytes(std::size_t const count) noexcept : byte_count(count){};
+            constexpr  Bytes(Bytes const& other) noexcept = default;
             constexpr Bytes& operator=(Bytes const& other) noexcept = default;
 
             /**
              * \return Value in bytes.
              */
-            constexpr EA_FORCE_INLINE std::size_t b_count() const noexcept { return byte_count; }
+            constexpr  std::size_t b_count() const noexcept { return byte_count; }
             /**
              * \return Rounded value in kilobytes.
              */
-            constexpr EA_FORCE_INLINE std::size_t k_count() const noexcept { return (byte_count + 512) / 1024; }
+            constexpr  std::size_t k_count() const noexcept { return (byte_count + 512) / 1024; }
             /**
              * \return Rounded value in megabytes.
              */
-            constexpr EA_FORCE_INLINE std::size_t m_count() const noexcept { return (byte_count + 524288) / 1048576; }
+            constexpr  std::size_t m_count() const noexcept { return (byte_count + 524288) / 1048576; }
             /**
              * \return Rounded value in gigabytes.
              */
-            constexpr EA_FORCE_INLINE std::size_t g_count() const noexcept { return (byte_count + 536870912) / 1073741824; }
+            constexpr  std::size_t g_count() const noexcept { return (byte_count + 536870912) / 1073741824; }
 
 #pragma region Comparison operators
-            constexpr EA_FORCE_INLINE bool operator==(Bytes const& rhs) const noexcept { return byte_count == rhs.byte_count; }
+            constexpr  bool operator==(Bytes const& rhs) const noexcept { return byte_count == rhs.byte_count; }
 
-            constexpr EA_FORCE_INLINE bool operator!=(Bytes const& rhs) const noexcept { return !(rhs == *this); }
+            constexpr  bool operator!=(Bytes const& rhs) const noexcept { return !(rhs == *this); }
 
-            constexpr EA_FORCE_INLINE bool operator<(Bytes const& rhs) const noexcept { return byte_count < rhs.byte_count; }
+            constexpr  bool operator<(Bytes const& rhs) const noexcept { return byte_count < rhs.byte_count; }
 
-            constexpr EA_FORCE_INLINE bool operator>(Bytes const& rhs) const noexcept { return rhs < *this; }
+            constexpr  bool operator>(Bytes const& rhs) const noexcept { return rhs < *this; }
 
-            constexpr EA_FORCE_INLINE bool operator<=(Bytes const& rhs) const noexcept { return !(rhs < *this); }
+            constexpr  bool operator<=(Bytes const& rhs) const noexcept { return !(rhs < *this); }
 
-            constexpr EA_FORCE_INLINE bool operator>=(Bytes const& rhs) const noexcept { return !(*this < rhs); }
+            constexpr  bool operator>=(Bytes const& rhs) const noexcept { return !(*this < rhs); }
 #pragma endregion
 
 #pragma region Bytes arithmatic operators
-            constexpr EA_FORCE_INLINE Bytes operator+(Bytes const addend) const noexcept { return Bytes(byte_count + addend.byte_count); }
+            constexpr  Bytes operator+(Bytes const addend) const noexcept { return Bytes(byte_count + addend.byte_count); }
 
-            constexpr EA_FORCE_INLINE Bytes operator-(Bytes const subtrahend) const noexcept {
+            constexpr  Bytes operator-(Bytes const subtrahend) const noexcept {
                 return Bytes(byte_count - subtrahend.byte_count);
             }
 
-            constexpr EA_FORCE_INLINE Bytes operator*(std::size_t const multiplicand) const noexcept {
+            constexpr  Bytes operator*(std::size_t const multiplicand) const noexcept {
                 return Bytes(byte_count * multiplicand);
             }
 
-            constexpr EA_FORCE_INLINE Bytes operator/(std::size_t const divisor) const noexcept { return Bytes(byte_count / divisor); }
+            constexpr  Bytes operator/(std::size_t const divisor) const noexcept { return Bytes(byte_count / divisor); }
 
-            constexpr EA_FORCE_INLINE Bytes& operator+=(Bytes const addend) noexcept {
+            constexpr  Bytes& operator+=(Bytes const addend) noexcept {
                 byte_count += addend.byte_count;
                 return *this;
             }
 
-            constexpr EA_FORCE_INLINE Bytes& operator-=(Bytes const subtrahend) noexcept {
+            constexpr  Bytes& operator-=(Bytes const subtrahend) noexcept {
                 byte_count -= subtrahend.byte_count;
                 return *this;
             }
 #pragma endregion
 
 #pragma region std::size_t arithmatic operators
-            constexpr EA_FORCE_INLINE Bytes operator+(std::size_t const addend) const noexcept { return Bytes(byte_count + addend); }
+            constexpr  Bytes operator+(std::size_t const addend) const noexcept { return Bytes(byte_count + addend); }
 
-            constexpr EA_FORCE_INLINE Bytes operator-(std::size_t const subtrahend) const noexcept {
+            constexpr  Bytes operator-(std::size_t const subtrahend) const noexcept {
                 return Bytes(byte_count - subtrahend);
             }
 
-            constexpr EA_FORCE_INLINE Bytes& operator*=(std::size_t const multiplicand) noexcept {
+            constexpr  Bytes& operator*=(std::size_t const multiplicand) noexcept {
                 byte_count *= multiplicand;
                 return *this;
             }
 
-            constexpr EA_FORCE_INLINE Bytes& operator/=(std::size_t const divisor) noexcept {
+            constexpr  Bytes& operator/=(std::size_t const divisor) noexcept {
                 byte_count /= divisor;
                 return *this;
             }
 #pragma endregion
 
 #pragma region Bytes bitwise operators
-            constexpr EA_FORCE_INLINE Bytes operator~() const noexcept { return Bytes(~byte_count); }
+            constexpr  Bytes operator~() const noexcept { return Bytes(~byte_count); }
 
-            constexpr EA_FORCE_INLINE Bytes operator&(Bytes const& rhs) const noexcept { return Bytes(byte_count & rhs.byte_count); }
+            constexpr  Bytes operator&(Bytes const& rhs) const noexcept { return Bytes(byte_count & rhs.byte_count); }
 
-            constexpr EA_FORCE_INLINE Bytes operator|(Bytes const& rhs) const noexcept { return Bytes(byte_count | rhs.byte_count); }
+            constexpr  Bytes operator|(Bytes const& rhs) const noexcept { return Bytes(byte_count | rhs.byte_count); }
 #pragma endregion
         private:
             std::size_t byte_count;
@@ -124,13 +123,13 @@ namespace bvestl {
              *
              * \param count Amount of kilobytes to represent.
              */
-            constexpr explicit EA_FORCE_INLINE KBytes(std::size_t const count) noexcept : Bytes(count * 1024){};
+            constexpr explicit  KBytes(std::size_t const count) noexcept : Bytes(count * 1024){};
             /**
              * Losslessly copies from another \ref Bytes instance.
              *
              * \param b Instance to copy from.
              */
-            constexpr explicit EA_FORCE_INLINE KBytes(Bytes const b) noexcept : Bytes(b){};
+            constexpr explicit  KBytes(Bytes const b) noexcept : Bytes(b){};
         };
 
         /**
@@ -144,13 +143,13 @@ namespace bvestl {
              *
              * \param count Amount of megabytes to represent.
              */
-            constexpr explicit EA_FORCE_INLINE MBytes(std::size_t const count) noexcept : Bytes(count * 1048576){};
+            constexpr explicit  MBytes(std::size_t const count) noexcept : Bytes(count * 1048576){};
             /**
              * Losslessly copies from another \ref Bytes instance.
              *
              * \param b Instance to copy from.
              */
-            constexpr explicit EA_FORCE_INLINE MBytes(Bytes const b) noexcept : Bytes(b){};
+            constexpr explicit  MBytes(Bytes const b) noexcept : Bytes(b){};
         };
 
         /**
@@ -164,20 +163,20 @@ namespace bvestl {
              *
              * \param count Amount of gigabytes to represent.
              */
-            constexpr explicit EA_FORCE_INLINE GBytes(std::size_t const count) noexcept : Bytes(count * 1073741824){};
+            constexpr explicit  GBytes(std::size_t const count) noexcept : Bytes(count * 1073741824){};
             /**
              * Losslessly copies from another \ref Bytes instance.
              *
              * \param b Instance to copy from.
              */
-            constexpr explicit EA_FORCE_INLINE GBytes(Bytes const b) noexcept : Bytes(b){};
+            constexpr explicit  GBytes(Bytes const b) noexcept : Bytes(b){};
         };
 
-        constexpr EA_FORCE_INLINE Bytes operator*(std::size_t const multiplicand, Bytes const lhs) noexcept {
+        constexpr  Bytes operator*(std::size_t const multiplicand, Bytes const lhs) noexcept {
             return lhs * multiplicand;
         }
 
-        constexpr EA_FORCE_INLINE Bytes operator/(std::size_t const dividend, Bytes const divisor) noexcept {
+        constexpr  Bytes operator/(std::size_t const dividend, Bytes const divisor) noexcept {
             return Bytes(dividend / divisor.b_count());
         }
 
@@ -215,10 +214,10 @@ namespace bvestl {
         std::ostream& operator<<(std::ostream& os, GBytes b);
 
         namespace operators {
-            constexpr EA_FORCE_INLINE Bytes operator""_b(unsigned long long const value) { return Bytes(value); }
-            constexpr EA_FORCE_INLINE Bytes operator""_kb(unsigned long long const value) { return KBytes(value); }
-            constexpr EA_FORCE_INLINE Bytes operator""_mb(unsigned long long const value) { return MBytes(value); }
-            constexpr EA_FORCE_INLINE Bytes operator""_gb(unsigned long long const value) { return GBytes(value); }
+            constexpr  Bytes operator""_b(unsigned long long const value) { return Bytes(value); }
+            constexpr  Bytes operator""_kb(unsigned long long const value) { return KBytes(value); }
+            constexpr  Bytes operator""_mb(unsigned long long const value) { return MBytes(value); }
+            constexpr  Bytes operator""_gb(unsigned long long const value) { return GBytes(value); }
         } // namespace operators
     }     // namespace polyalloc
 } // namespace bvestl

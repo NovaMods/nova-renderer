@@ -391,23 +391,26 @@ add_coverage(nova-renderer)
 #########################
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      fmt
-					 glm_static
                      glslang
-                     OGLCompiler 
+                     OGLCompiler
                      OSDependent
                      SPIRV
 					 minitrace
                      miniz
+                     nlohmann::json
+                     vma::vma
                      SPIRV-Tools
                      spirv-cross-core
-                     spirv-cross-cpp
                      spirv-cross-glsl
                      spirv-cross-reflect
-                     spirv-cross-msl
                      spirv-cross-util
-					 vulkan-1
 )
 
+if(WIN32)
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan-1)
+else()
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan)
+endif()
 ##############################
 # Find C++ filesystem header #
 ##############################

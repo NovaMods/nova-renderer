@@ -104,6 +104,15 @@ namespace nova::renderer::shaderpack {
         /* .MaxCullDistances = */ 8,
         /* .MaxCombinedClipAndCullDistances = */ 8,
         /* .MaxSamples = */ 4,
+        /* .MaxMeshOutputVerticesNV */ 1024,
+        /* .MaxMeshOutputPrimitivesNV */ 1024,
+        /* .MaxMeshWorkGroupSizeX_NV */ 1024,
+        /* .MaxMeshWorkGroupSizeY_NV */ 1024,
+        /* .MaxMeshWorkGroupSizeZ_NV */ 1024,
+        /* .MaxTaskWorkGroupSizeX_NV */ 1024,
+        /* .MaxTaskWorkGroupSizeY_NV */ 1024,
+        /* .MaxTaskWorkGroupSizeZ_NV */ 1024,
+        /* .MaxMeshViewCountNV */ 1024,
         /* .limits = */
         {
             /* .nonInductiveForLoops = */ true,
