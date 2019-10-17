@@ -6,7 +6,7 @@
 #ifndef NOVA_RENDERER_RENDERDOC_HPP
 #define NOVA_RENDERER_RENDERDOC_HPP
 
-#include <ntl/result.hpp>
+#include "nova_renderer/util/result.hpp"
 #include "nova_renderer/renderdoc_app.h"
 
 namespace nova::renderer {

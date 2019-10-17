@@ -2,8 +2,7 @@
 
 #include <fmt/format.h>
 
-namespace nova::renderer {
-
+namespace ntl {
     NovaError::NovaError(const std::string& message) : message(std::move(message)) {}
 
     NovaError::NovaError(const std::string& message, NovaError cause) : message(std::move(message)) {

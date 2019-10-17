@@ -123,7 +123,7 @@ namespace nova::renderer {
         /*!
          * \brief Initializes the Nova Renderer
          */
-        explicit NovaRenderer(NovaSettings settings);
+        explicit NovaRenderer(const NovaSettings& settings);
 
         NovaRenderer(NovaRenderer&& other) noexcept = delete;
         NovaRenderer& operator=(NovaRenderer&& other) noexcept = delete;

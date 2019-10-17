@@ -28,7 +28,7 @@ set(NOVA_UNIT_TEST_SOURCES
 
 add_executable(nova-test-unit ${NOVA_UNIT_TEST_SOURCES})
 target_compile_definitions(nova-test-unit PRIVATE CMAKE_DEFINED_RESOURCES_PREFIX="${CMAKE_CURRENT_LIST_DIR}/resources/")
-target_link_libraries(nova-test-unit PRIVATE nova-renderer GTest::Main Threads::Threads)
+target_link_libraries(nova-test-unit PRIVATE nova-renderer gtest Threads::Threads)
 target_compile_options_if_supported(nova-test-unit PRIVATE -Wno-unknown-pragmas)
 remove_permissive(nova-test-unit)
 nova_format(nova-test-unit)

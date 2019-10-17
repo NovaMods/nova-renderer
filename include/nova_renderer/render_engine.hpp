@@ -3,7 +3,7 @@
 #include <memory>
 
 #include <memory>
-#include <ntl/result.hpp>
+#include "nova_renderer/util/result.hpp"
 #include "nova_renderer/command_list.hpp"
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/shaderpack_data.hpp"

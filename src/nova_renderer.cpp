@@ -64,7 +64,7 @@ namespace nova::renderer {
         return material_name_hash ^ pass_name_hash;
     }
 
-    NovaRenderer::NovaRenderer(NovaSettings settings) : render_settings(settings) {
+    NovaRenderer::NovaRenderer(const NovaSettings& settings) : render_settings(settings) {
         create_global_allocator();
 
         mtr_init("trace.json");

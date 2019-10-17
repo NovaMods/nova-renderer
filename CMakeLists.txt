@@ -44,6 +44,11 @@ option(NOVA_ENABLE_VULKAN_RHI "Compile the Vulkan RHI backend" ON)
 option(NOVA_ENABLE_D3D12_RHI "Compile the D3D12 RHI backend" ON)
 option(NOVA_ENABLE_OPENGL_RHI "Compile the OpenGL 3 backend" ON)
 
+if(NOVA_ENABLE_D3D12_API AND NOT WIN32)
+	message(WARNING "Nova can only compile its D3D12 RHI backend on Windows 10. You're now on Windows 10, so I'm disabling the D3D12 RHI backend")
+	set(NOVA_ENABLE_D3D12_RHI_BACKEND OFF)
+endif()
+
 if(NOT NOVA_ENABLE_VULKAN_RHI AND NOT VULKAN_ENABLE_D3D12_RHI AND NOT NOVA_ENABLE_OPENGL_RHI)
 	message(ERROR "You must enable at least one RHI backend")
 endif()
@@ -91,14 +96,13 @@ set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
 #################################
 include(external)
 
-add_subdirectory(libs/ntl)
-
 ########################
 # Add Nova source code #
 ########################
 set(NOVA_SOURCE
         include/nova_renderer/util/filesystem.hpp
         include/nova_renderer/util/platform.hpp
+        include/nova_renderer/util/result.hpp
         include/nova_renderer/util/utils.hpp
 		
         include/nova_renderer/command_list.hpp
@@ -344,8 +348,8 @@ target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
 target_compile_definitions(nova-renderer PUBLIC FMT_STRING_ALIAS=1)
 target_include_directories(nova-renderer PUBLIC 
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> 
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs/ntl/include>		# We should be using an interface library but that isn't working and I don't wanna troubleshoot
 	$ENV{VULKAN_SDK}/Include
+	${FMT_HEADERS}
 	)
 target_link_directories(nova-renderer PUBLIC $ENV{VULKAN_SDK}/Lib)
 
@@ -383,18 +387,15 @@ add_coverage(nova-renderer)
 # Set libraries to link #
 #########################
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
-                     fmt::fmt
-                     glm
-                     glslang::glslang
-                     glslang::OGLCompiler 
-                     glslang::OSDependent
-                     glslang::SPIRV
-                     minitrace::minitrace
-                     miniz::miniz
-                     nlohmann_json
-                     nlohmann_json::nlohmann_json
-					 ntl
-                     spirv-tools::SPIRV-Tools
+                     fmt
+					 glm_static
+                     glslang
+                     OGLCompiler 
+                     OSDependent
+                     SPIRV
+					 minitrace
+                     miniz
+                     SPIRV-Tools
                      spirv-cross-core
                      spirv-cross-cpp
                      spirv-cross-glsl
@@ -430,7 +431,7 @@ if(WIN32)
     add_compile_options_if_supported(/Zc:twoPhase- /permissive /bigobj )
 
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler glslang::HLSL spirv-cross-hlsl)
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler spirv-cross-hlsl)
     target_include_directories(nova-renderer PRIVATE ${WinSDK_DIRS})
     target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING NOMINMAX)
 	target_compile_definitions(nova-renderer PRIVATE NOVA_EXPORT)

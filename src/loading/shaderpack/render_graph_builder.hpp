@@ -9,7 +9,7 @@
 #include <nova_renderer/shaderpack_data.hpp>
 #include <string>
 #include <unordered_map>
-#include <ntl/result.hpp>
+#include "nova_renderer/util/result.hpp"
 
 namespace nova::renderer::shaderpack {
     struct Range {
