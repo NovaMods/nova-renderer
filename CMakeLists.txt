@@ -355,24 +355,25 @@ target_link_directories(nova-renderer PUBLIC $ENV{VULKAN_SDK}/Lib)
 
 include(GNUInstallDirs)
 
-install(
-    TARGETS nova-renderer
-    EXPORT nova-renderer-config
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/
-)
-
-install(
-    EXPORT nova-renderer-config DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/nova-renderer
-    NAMESPACE nova-renderer::
-)
-
-install(
-    DIRECTORY ${CMAKE_SOURCE_DIR}/src/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nova-renderer
-    FILES_MATCHING PATTERN "*.hpp*"
-)
+# TODO: Never care about CMake packages ever again
+# install(
+#     TARGETS nova-renderer
+#     EXPORT nova-renderer-config
+#     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/
+#     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/
+#     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/
+# )
+# 
+# install(
+#     EXPORT nova-renderer-config DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/nova-renderer
+#     NAMESPACE nova-renderer::
+# )
+# 
+# install(
+#     DIRECTORY ${CMAKE_SOURCE_DIR}/src/
+#     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nova-renderer
+#     FILES_MATCHING PATTERN "*.hpp*"
+# )
 
 ##################################
 # Add extra warnings if possible #

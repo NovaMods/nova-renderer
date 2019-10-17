@@ -97,12 +97,9 @@ set_property(TARGET spirv-tools-vimsyntax PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-tools-pkg-config PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-tools-shared-pkg-config PROPERTY EXCLUDE_FROM_ALL True)
 
-set_property(TARGET spirv-cross PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-cross-core PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-cross-cpp PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-cross-glsl PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-cross-hlsl PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-cross-msl PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-cross-reflect PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-cross-util PROPERTY EXCLUDE_FROM_ALL True)
 
