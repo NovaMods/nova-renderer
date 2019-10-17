@@ -22,15 +22,14 @@ else()
 endif()
 
 # Settings for all dependencies
-set(BUILD_STATIC_LIBS ON)
+set(BUILD_STATIC_LIBS ON CACHE BOOL "Static libraries best libraries" FORCE)
 
 # Dependencies and specific options
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/fmt)
 
-set(GLM_TEST_ENABLE_CXX_17 ON)
-set(GLM_TEST_ENABLE OFF)
-set(GLM_TEST_ENABLE_SIMD_AVX2 ON)	# TODO: determine minimum CPU for Nova and use the right instruction set
+set(GLM_TEST_ENABLE_CXX_17 ON CACHE BOOL "Enable C++17 features in glm" FORCE)
+set(GLM_TEST_ENABLE OFF CACHE BOOL "Don't build GLM tests" FORCE)
 include_target(glm::glm "$CMAKE_CURRENT_LIST_DIR}/glm")
 
 include_target(nlohmann::json "${CMAKE_CURRENT_LIST_DIR}/json/single_include")
@@ -38,19 +37,20 @@ include_target(spirv::headers "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers")
 include_target(vma::vma "${3RD_PARTY_DIR}/VulkanMemoryAllocator/src")
 include_target(vulkan::sdk "${VULKAN_INCLUDE}")
 
-# Submodule libraries
+set(BUILD_EXAMPLES OFF CACHE BOOL "Disable Miniz examples" FORCE)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/miniz)
 
-set(SPIRV-Headers_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers)
+set(SPIRV-Headers_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers" CACHE FILEPATH "Use our submodule SPIRV-Headers" FORCE)
 set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
 set(SPIRV_WERROR OFF CACHE BOOL "Enable error on warning SPIRV-Tools" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools)
 
 set(ENABLE_EXPORTS ON CACHE BOOL "Enable linking SPIRV_Cross" FORCE)
-set(SPIRV_CROSS_CLI OFF)
-set(SPIRV_CROSS_ENABLE_TESTS OFF)
-set(SPIRV_CROSS_ENABLE_MSL OFF)	# Need to remove this is we add a Metal RHI backend
-set(SPIRV_CROSS_ENABLE_CPP OFF)
-set(SPIRV_CROSS_SKIP_INSTALL ON)
+set(SPIRV_CROSS_CLI OFF CACHE BOOL "Don't compile SPIRV-Cross as a CLI, Nova only needs the API" FORCE)
+set(SPIRV_CROSS_ENABLE_TESTS OFF CACHE BOOL "Don't compile SPIRV-Cross tests" FORCE)
+set(SPIRV_CROSS_ENABLE_MSL OFF CACHE BOOL "Don't compile the SPIRV-Cross MSL backend" FORCE)	# Need to remove this is we add a Metal RHI backend
+set(SPIRV_CROSS_ENABLE_CPP OFF CACHE BOOL "Don't compile the SPIRV-Cross C++ backend" FORCE)
+set(SPIRV_CROSS_SKIP_INSTALL ON CACHE BOOL "Don't install SPIRV-Cross onto the system, I already know where it is" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Cross)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Cross/external/glslang)
@@ -60,7 +60,6 @@ target_includes_system(glslang)
 # Manually built libraries
         
 include(minitrace)
-include(miniz)
 
 # Hide unnecessary targets from all
 
