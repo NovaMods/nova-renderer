@@ -274,19 +274,19 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief All of the symbols in the shader that are defined by this state
          */
-        std::vector<std::string> defines;
+        std::vector<std::string> defines{};
 
         /*!
          * \brief Defines the rasterizer state that's active for this pipeline
          */
-        std::vector<StateEnum> states;
+        std::vector<StateEnum> states{};
 
         /*!
          * \brief Sets up the vertex fields that Nova will bind to this pipeline
          *
          * The index in the array is the attribute index that the vertex field is bound to
          */
-        std::vector<VertexFieldData> vertex_fields;
+        std::vector<VertexFieldData> vertex_fields{};
 
         /*!
          * \brief The stencil buffer operations to perform on the front faces
@@ -508,16 +508,16 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief The materials that MUST execute before this one
          */
-        std::vector<std::string> dependencies;
+        std::vector<std::string> dependencies{};
 
         /*!
          * \brief The textures that this pass will read from
          */
-        std::vector<std::string> texture_inputs;
+        std::vector<std::string> texture_inputs{};
         /*!
          * \brief The textures that this pass will write to
          */
-        std::vector<TextureAttachmentInfo> texture_outputs;
+        std::vector<TextureAttachmentInfo> texture_outputs{};
 
         /*!
          * \brief The depth texture this pass will write to
@@ -527,12 +527,12 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief All the buffers that this renderpass reads from
          */
-        std::vector<std::string> input_buffers;
+        std::vector<std::string> input_buffers{};
 
         /*!
          * \brief All the buffers that this renderpass writes to
          */
-        std::vector<std::string> output_buffers;
+        std::vector<std::string> output_buffers{};
 
         RenderPassCreateInfo() = default;
     };

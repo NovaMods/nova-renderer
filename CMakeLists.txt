@@ -117,6 +117,7 @@ set(NOVA_SOURCE
         include/nova_renderer/shaderpack_data.hpp
         include/nova_renderer/window.hpp
 		include/nova_renderer/bytes.hpp
+		include/nova_renderer/render_graph.hpp
 		include/nova_renderer/allocation_strategy.hpp
 		include/nova_renderer/allocation_structs.hpp
 		include/nova_renderer/bytes.hpp
