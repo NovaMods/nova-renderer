@@ -407,11 +407,18 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      spirv-cross-util
 )
 
-if(WIN32)
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan-1)
-else()
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan)
+if(NOVA_ENABLE_VULKAN_RHI)
+	if(WIN32)
+		set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan-1)
+	else()
+		set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan)
+	endif()
 endif()
+
+if(NOVA_ENABLE_D3D12_RHI)
+	set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} spirv-cross-hlsl)
+endif()
+
 ##############################
 # Find C++ filesystem header #
 ##############################
