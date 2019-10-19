@@ -22,7 +22,8 @@ else()
 endif()
 
 # Settings for all dependencies
-set(BUILD_STATIC_LIBS ON CACHE BOOL "Static libraries best libraries" FORCE)
+set(BUILD_STATIC_LIBS ON CACHE BOOL "Compile everything as a static lib" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Don't compile anything as a shared lib" FORCE)
 
 # Dependencies and specific options
 
