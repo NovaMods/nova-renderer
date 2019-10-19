@@ -8,9 +8,3 @@
 #if defined(linux) || defined(__linux) || defined(__linux__)
 #define NOVA_LINUX
 #endif
-
-#if __GNUC__
-#define DEPRECATED(new_api) [[deprecated("Use ##new_api instead")]]
-#else
-#define DEPRECATED(new_api) [[deprecated]]
-#endif
