@@ -393,6 +393,7 @@ add_coverage(nova-renderer)
 set(COMMON_LINK_LIBS 
 	${CMAKE_DL_LIBS}
     fmt
+	glm::glm
     glslang
     OGLCompiler
     OSDependent
