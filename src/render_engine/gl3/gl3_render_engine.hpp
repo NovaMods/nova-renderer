@@ -1,13 +1,9 @@
-/*!
- * \author ddubois
- * \date 31-Mar-19.
- */
-
 #pragma once
+
+#include <memory>
 #include "gl3_command_list.hpp"
 #include "glad/glad.h"
 #include "nova_renderer/render_engine.hpp"
-#include <memory>
 
 namespace nova::renderer::rhi {
     /*!
@@ -25,8 +21,6 @@ namespace nova::renderer::rhi {
 
         ~Gl4NvRenderEngine() override = default;
 
-        std::shared_ptr<Window> get_window() const override;
-
         void set_num_renderpasses(uint32_t num_renderpasses) override;
 
         ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage type, ObjectType allowed_objects) override;
@@ -38,12 +32,9 @@ namespace nova::renderer::rhi {
                                         const std::vector<Image*>& attachments,
                                         const glm::uvec2& framebuffer_size) override;
 
-        DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
-                                               uint32_t num_samplers,
-                                               uint32_t num_uniform_buffers) override;
+        DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images, uint32_t num_samplers, uint32_t num_uniform_buffers) override;
 
-        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                           DescriptorPool* pool) override;
+        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface, DescriptorPool* pool) override;
 
         void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override;
 
@@ -87,10 +78,8 @@ namespace nova::renderer::rhi {
         void destroy_semaphores(std::vector<Semaphore*>& semaphores) override;
         void destroy_fences(std::vector<Fence*>& fences) override;
 
-        CommandList* get_command_list(uint32_t thread_idx,
-                                      QueueType needed_queue_type,
-                                      CommandList::Level command_list_type) override;
-        
+        CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level command_list_type) override;
+
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
                                  Fence* fence_to_signal = nullptr,

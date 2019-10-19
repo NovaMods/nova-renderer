@@ -157,6 +157,7 @@ set(NOVA_SOURCE
 		 
         src/render_engine/command_list.cpp
 		src/render_engine/rhi_types.cpp
+		src/render_engine/render_engine.cpp
 		src/render_engine/swapchain.cpp
 
         src/tasks/task_scheduler.cpp

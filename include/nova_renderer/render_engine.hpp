@@ -10,10 +10,7 @@
 #include "nova_renderer/util/platform.hpp"
 #include "nova_renderer/util/utils.hpp"
 #include "rhi_types.hpp"
-
-namespace nova::renderer {
-    class Window;
-}
+#include <nova_renderer/window.hpp>
 
 namespace nova::renderer::rhi {
     struct Fence;
@@ -44,7 +41,7 @@ namespace nova::renderer::rhi {
          */
         virtual ~RenderEngine() = default;
 
-        [[nodiscard]] virtual std::shared_ptr<Window> get_window() const = 0;
+        [[nodiscard]] Window& get_window() const;
 
         /*!
          * \brief Allows the user to set an allocator that will be used for per-shaderpack objects. This allocator will
@@ -214,7 +211,7 @@ namespace nova::renderer::rhi {
     protected:
         NovaSettingsAccessManager& settings;
 
-        std::shared_ptr<Window> window;
+        std::unique_ptr<Window> window;
 
         glm::uvec2 swapchain_size = {};
         Swapchain* swapchain = nullptr;

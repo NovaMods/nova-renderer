@@ -33,8 +33,6 @@ namespace nova::renderer::rhi {
         cbv_srv_uav_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     }
 
-    std::shared_ptr<Window> D3D12RenderEngine::get_window() const { return window; }
-
     void D3D12RenderEngine::set_num_renderpasses(const uint32_t num_renderpasses) {
         D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_descriptor = {};
         rtv_heap_descriptor.NumDescriptors = num_renderpasses * 8;
@@ -778,8 +776,8 @@ namespace nova::renderer::rhi {
         dx_queue->Signal(dx_signal_fence->fence.Get(), CPU_FENCE_SIGNALED);
     }
 
-    void D3D12RenderEngine::open_window_and_create_swapchain(const NovaSettings::WindowOptions& options, uint32_t num_frames) {
-        window = std::make_shared<Win32Window>(options);
+    void D3D12RenderEngine::open_window_and_create_swapchain(const NovaSettings::WindowOptions& options, const uint32_t num_frames) {
+        window = std::make_unique<Win32Window>(options);
 
         auto* win32_window = static_cast<Win32Window*>(window.get());
 

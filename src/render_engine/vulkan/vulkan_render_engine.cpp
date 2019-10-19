@@ -38,9 +38,7 @@ namespace nova::renderer::rhi {
 
         create_per_thread_command_pools();
     }
-
-    std::shared_ptr<Window> VulkanRenderEngine::get_window() const { return window; }
-
+    
     void VulkanRenderEngine::set_num_renderpasses(uint32_t /* num_renderpasses */) {
         // Pretty sure Vulkan doesn't need to do anything here
     }
@@ -1040,7 +1038,7 @@ namespace nova::renderer::rhi {
         NOVA_CHECK_RESULT(vkCreateXlibSurfaceKHR(instance, &x_surface_create_info, nullptr, &surface));
 
 #elif defined(NOVA_WINDOWS)
-        window = std::make_shared<Win32Window>(options);
+        window = std::make_unique<Win32Window>(options);
 
         VkWin32SurfaceCreateInfoKHR win32_surface_create = {};
         win32_surface_create.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;

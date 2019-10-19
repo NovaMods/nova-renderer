@@ -24,7 +24,7 @@ namespace ntl {
     inline NovaError operator""_err(const char* str, const std::size_t size) { return NovaError(std::string(str, size)); }
 
     template <typename ValueType, typename ErrorType = NovaError>
-    struct Result {
+    struct [[nodiscard]] Result {
         union {
             ValueType value;
             ErrorType error;

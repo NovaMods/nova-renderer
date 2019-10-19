@@ -37,7 +37,7 @@ namespace nova::renderer {
 
             renderer->load_shaderpack(CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack");
 
-            std::shared_ptr<Window> window = renderer->get_engine()->get_window();
+            Window& window = renderer->get_engine()->get_window();
 
             MeshData cube = {};
             cube.vertex_data = {
@@ -56,7 +56,7 @@ namespace nova::renderer {
 
             // Render one frame to upload mesh data
             renderer->execute_frame();
-            window->on_frame_end();
+            window.on_frame_end();
 
             StaticMeshRenderableData data = {};
             data.mesh = mesh_id;
@@ -64,9 +64,9 @@ namespace nova::renderer {
 
             renderer->add_renderable_for_material(FullMaterialPassName{"gbuffers_terrain", "forward"}, data);
 
-            while(!window->should_close()) {
+            while(!window.should_close()) {
                 renderer->execute_frame();
-                window->on_frame_end();
+                window.on_frame_end();
             }
 
             NovaRenderer::deinitialize();
@@ -83,11 +83,16 @@ namespace nova::renderer {
 } // namespace nova::renderer
 
 int main() {
+    try {
 #ifdef NOVA_LINUX
-    signal(SIGSEGV, sigsegv_handler);
-    signal(SIGABRT, sigabrt_handler);
+        signal(SIGSEGV, sigsegv_handler);
+        signal(SIGABRT, sigabrt_handler);
 #endif
-    return nova::renderer::main();
+        return nova::renderer::main();
+    }
+    catch(...) {
+        return -1;
+    }
 }
 
 #ifdef __linux__

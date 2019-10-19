@@ -53,8 +53,6 @@ namespace nova::renderer::rhi {
         ~VulkanRenderEngine() = default;
 
 #pragma region Render engine interface
-        [[nodiscard]] std::shared_ptr<Window> get_window() const override;
-
         void set_num_renderpasses(uint32_t num_renderpasses) override;
 
         ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage usage, ObjectType allowed_objects) override;

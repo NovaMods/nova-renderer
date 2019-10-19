@@ -36,11 +36,11 @@ set(SPIRV_WERROR OFF CACHE BOOL "Enable error on warning SPIRV-Tools" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools)
 
 set(ENABLE_EXPORTS ON CACHE BOOL "Enable linking SPIRV_Cross" FORCE)
-set(SPIRV_CROSS_CLI OFF CACHE BOOL "Don't compile SPIRV-Cross as a CLI, Nova only needs the API" FORCE)
-set(SPIRV_CROSS_ENABLE_TESTS OFF CACHE BOOL "Don't compile SPIRV-Cross tests" FORCE)
-set(SPIRV_CROSS_ENABLE_MSL OFF CACHE BOOL "Don't compile the SPIRV-Cross MSL backend" FORCE)	# Need to remove this is we add a Metal RHI backend
-set(SPIRV_CROSS_ENABLE_CPP OFF CACHE BOOL "Don't compile the SPIRV-Cross C++ backend" FORCE)
-set(SPIRV_CROSS_SKIP_INSTALL ON CACHE BOOL "Don't install SPIRV-Cross onto the system, I already know where it is" FORCE)
+set(SPIRV_CROSS_CLI OFF CACHE BOOL "Don't build the CLI" FORCE)
+set(SPIRV_CROSS_ENABLE_TESTS OFF CACHE BOOL "Tests are for library developers, not library consumers" FORCE)
+set(SPIRV_CROSS_ENABLE_MSL OFF CACHE BOOL "Nova doesn't use MSL" FORCE)	# Need to remove this is we add a Metal RHI backend
+set(SPIRV_CROSS_ENABLE_CPP OFF CACHE BOOL "Nova doesn't use C++ shaders, but one of its debugging tools might" FORCE)
+set(SPIRV_CROSS_SKIP_INSTALL ON CACHE BOOL "No stop install bad" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Cross)
 
 # Manually built libraries
