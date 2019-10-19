@@ -21,22 +21,11 @@ else()
     set(VULKAN_INCLUDE "")
 endif()
 
-# Settings for all dependencies
-set(BUILD_STATIC_LIBS ON CACHE BOOL "Compile everything as a static lib" FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Don't compile anything as a shared lib" FORCE)
-
 # Dependencies and specific options
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/fmt)
-
-set(GLM_TEST_ENABLE_CXX_17 ON CACHE BOOL "Enable C++17 features in glm" FORCE)
-set(GLM_TEST_ENABLE OFF CACHE BOOL "Don't build GLM tests" FORCE)
-include_target(glm::glm "$CMAKE_CURRENT_LIST_DIR}/glm")
-
-include_target(nlohmann::json "${CMAKE_CURRENT_LIST_DIR}/json/single_include")
-include_target(spirv::headers "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers")
-include_target(vma::vma "${3RD_PARTY_DIR}/VulkanMemoryAllocator/src")
-include_target(vulkan::sdk "${VULKAN_INCLUDE}")
+# Compile things as shared libraries
+set(BUILD_STATIC_LIBS OFF CACHE BOOL "Compile everything as a static lib" FORCE)
+set(BUILD_SHARED_LIBS ON CACHE BOOL "Don't compile anything as a shared lib" FORCE)
 
 set(BUILD_EXAMPLES OFF CACHE BOOL "Disable Miniz examples" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/miniz)
@@ -54,13 +43,29 @@ set(SPIRV_CROSS_ENABLE_CPP OFF CACHE BOOL "Don't compile the SPIRV-Cross C++ bac
 set(SPIRV_CROSS_SKIP_INSTALL ON CACHE BOOL "Don't install SPIRV-Cross onto the system, I already know where it is" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Cross)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glslang)
-
-target_includes_system(glslang)
-
 # Manually built libraries
         
 include(minitrace)
+
+# Compile things as static libraries
+set(BUILD_STATIC_LIBS ON CACHE BOOL "Compile everything as a static lib" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Don't compile anything as a shared lib" FORCE)
+
+# GLSLang has a circular dependency and I don't even care what I did wrong, it has to be a static lib
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glslang)
+target_includes_system(glslang)
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/fmt)
+
+set(GLM_TEST_ENABLE_CXX_17 ON)
+set(GLM_TEST_ENABLE OFF)
+set(GLM_TEST_ENABLE_SIMD_AVX2 ON)	# TODO: determine minimum CPU for Nova and use the right instruction set
+include_target(glm::glm "${CMAKE_CURRENT_LIST_DIR}/glm")
+
+include_target(nlohmann::json "${CMAKE_CURRENT_LIST_DIR}/json/single_include")
+include_target(spirv::headers "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers")
+include_target(vma::vma "${3RD_PARTY_DIR}/VulkanMemoryAllocator/src")
+include_target(vulkan::sdk "${VULKAN_INCLUDE}")
 
 # Hide unnecessary targets from all
 
@@ -107,6 +112,8 @@ set_property(TARGET spirv-cross-util PROPERTY EXCLUDE_FROM_ALL True)
 # Test dependencies #
 #####################
 if(NOVA_TEST)
+    set(BUILD_STATIC_LIBS OFF CACHE BOOL "Compile everything as a static lib" FORCE)
+    set(BUILD_SHARED_LIBS ON CACHE BOOL "Don't compile anything as a shared lib" FORCE)
 	set(BUILD_GMOCK OFF)
 	add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/googletest)
 endif()

@@ -11,19 +11,19 @@
 
 namespace nova::renderer::rhi {
     /*!
-     * \brief OpenGL 3.1 render engine because compatibility
+     * \brief OpenGL 4.6 RHI backend. Optimized for Nvidia GPUs
      */
-    class Gl3RenderEngine final : public RenderEngine {
+    class Gl4NvRenderEngine final : public RenderEngine {
     public:
-        explicit Gl3RenderEngine(NovaSettingsAccessManager& settings);
+        explicit Gl4NvRenderEngine(NovaSettingsAccessManager& settings);
 
-        Gl3RenderEngine(Gl3RenderEngine&& other) = delete;
-        Gl3RenderEngine& operator=(Gl3RenderEngine&& other) noexcept = delete;
+        Gl4NvRenderEngine(Gl4NvRenderEngine&& other) = delete;
+        Gl4NvRenderEngine& operator=(Gl4NvRenderEngine&& other) noexcept = delete;
 
-        Gl3RenderEngine(const Gl3RenderEngine& other) = delete;
-        Gl3RenderEngine& operator=(const Gl3RenderEngine& other) = delete;
+        Gl4NvRenderEngine(const Gl4NvRenderEngine& other) = delete;
+        Gl4NvRenderEngine& operator=(const Gl4NvRenderEngine& other) = delete;
 
-        ~Gl3RenderEngine() override = default;
+        ~Gl4NvRenderEngine() override = default;
 
         std::shared_ptr<Window> get_window() const override;
 

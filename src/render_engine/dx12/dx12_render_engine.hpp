@@ -8,11 +8,17 @@
 #include <d3d12.h>
 #include <d3d12shader.h>
 #include <dxgi1_4.h>
-#include <spirv_cross/spirv_hlsl.hpp>
+#include <spirv_hlsl.hpp>
 #include <wrl.h>
 #pragma warning(pop)
 
 #include "dx12_swapchain.hpp"
+
+// Make sure we don't pollute includees with windows.h problems
+// TODO: Convert to modules and watch this problem _finally_ start to go away
+#ifdef ERROR
+#undef ERROR
+#endif
 
 namespace nova::renderer::rhi {
     /*!

@@ -3,7 +3,7 @@
  * \date 31-Mar-19.
  */
 
-#include <spirv_cross/spirv_glsl.hpp>
+#include <spirv_glsl.hpp>
 
 #include "gl3_render_engine.hpp"
 
@@ -13,10 +13,10 @@
 #include "gl3_structs.hpp"
 
 namespace nova::renderer::rhi {
-    Gl3RenderEngine::Gl3RenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(settings) {
-        const bool loaded_opengl = gladLoadGL() != 0;
+    Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(settings) {
+        const bool loaded_opengl = true;    // TODO: Load OpenGL from GLFW
         if(!loaded_opengl) {
-            NOVA_LOG(FATAL) << "Could not load OpenGL 3.1 functions, sorry bro";
+            NOVA_LOG(FATAL) << "Could not load OpenGL 4.6 functions, sorry bro";
             return;
         }
 
@@ -25,7 +25,7 @@ namespace nova::renderer::rhi {
         set_initial_state();
     }
 
-    void Gl3RenderEngine::set_initial_state() {
+    void Gl4NvRenderEngine::set_initial_state() {
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
@@ -40,21 +40,21 @@ namespace nova::renderer::rhi {
         glEnableVertexAttribArray(6);
     }
 
-    void Gl3RenderEngine::set_num_renderpasses([[maybe_unused]] uint32_t num_renderpasses) {
+    void Gl4NvRenderEngine::set_num_renderpasses([[maybe_unused]] uint32_t num_renderpasses) {
         // Gl3 doesn't need to do anything either
     }
 
-    ntl::Result<DeviceMemory*> Gl3RenderEngine::allocate_device_memory(const uint64_t /* size */,
+    ntl::Result<DeviceMemory*> Gl4NvRenderEngine::allocate_device_memory(const uint64_t /* size */,
                                                                   const MemoryUsage /* type */,
                                                                   const ObjectType /* allowed_objects */) {
         return ntl::Result(new DeviceMemory);
     }
 
-    ntl::Result<Renderpass*> Gl3RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& /* data */) {
+    ntl::Result<Renderpass*> Gl4NvRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& /* data */) {
         return ntl::Result<Renderpass*>(new Renderpass);
     }
 
-    Framebuffer* Gl3RenderEngine::create_framebuffer(const Renderpass* /* renderpass */,
+    Framebuffer* Gl4NvRenderEngine::create_framebuffer(const Renderpass* /* renderpass */,
                                                      const std::vector<Image*>& attachments,
                                                      const glm::uvec2& /* framebuffer_size */) {
         Gl3Framebuffer* framebuffer = new Gl3Framebuffer;
@@ -80,7 +80,7 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-    DescriptorPool* Gl3RenderEngine::create_descriptor_pool(const uint32_t num_sampled_images,
+    DescriptorPool* Gl4NvRenderEngine::create_descriptor_pool(const uint32_t num_sampled_images,
                                                             const uint32_t num_samplers,
                                                             const uint32_t num_uniform_buffers) {
         Gl3DescriptorPool* pool = new Gl3DescriptorPool;
@@ -90,7 +90,7 @@ namespace nova::renderer::rhi {
         return pool;
     }
 
-    std::vector<DescriptorSet*> Gl3RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface, DescriptorPool* pool) {
+    std::vector<DescriptorSet*> Gl4NvRenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface, DescriptorPool* pool) {
         Gl3DescriptorPool* gl_descriptor_pool = static_cast<Gl3DescriptorPool*>(pool);
         std::vector<DescriptorSet*> sets;
 
@@ -105,7 +105,7 @@ namespace nova::renderer::rhi {
         return sets;
     }
 
-    void Gl3RenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
+    void Gl4NvRenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
         for(DescriptorSetWrite& write : writes) {
             const Gl3DescriptorSet* cset = static_cast<const Gl3DescriptorSet*>(write.set);
             Gl3DescriptorSet* set = const_cast<Gl3DescriptorSet*>(cset); // I have a few regrets
@@ -133,7 +133,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    ntl::Result<PipelineInterface*> Gl3RenderEngine::create_pipeline_interface(
+    ntl::Result<PipelineInterface*> Gl4NvRenderEngine::create_pipeline_interface(
         const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
         const std::vector<shaderpack::TextureAttachmentInfo>& /* color_attachments */,
         const std::optional<shaderpack::TextureAttachmentInfo>& /* depth_texture */) {
@@ -143,7 +143,7 @@ namespace nova::renderer::rhi {
         return ntl::Result(static_cast<PipelineInterface*>(pipeline_interface));
     }
 
-    ntl::Result<Pipeline*> Gl3RenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
+    ntl::Result<Pipeline*> Gl4NvRenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
                                                             const shaderpack::PipelineCreateInfo& data) {
         Gl3Pipeline* pipeline = new Gl3Pipeline;
 
@@ -152,7 +152,7 @@ namespace nova::renderer::rhi {
         std::vector<std::string> pipeline_creation_errors;
         pipeline_creation_errors.reserve(4);
 
-        const ntl::Result<GLuint> vertex_shader = compile_shader(data.vertex_shader.source, GL_VERTEX_SHADER);
+        const ntl::Result<GLuint>& vertex_shader = compile_shader(data.vertex_shader.source, GL_VERTEX_SHADER);
         if(vertex_shader) {
             glAttachShader(pipeline->id, vertex_shader.value);
 
@@ -161,7 +161,8 @@ namespace nova::renderer::rhi {
         }
 
         if(supports_geometry_shaders && data.geometry_shader) {
-            const ntl::Result<GLuint> geometry_shader = compile_shader(data.geometry_shader->source, GL_GEOMETRY_SHADER_ARB);
+            // TODO: convert to the extension when we care about Mac support
+            const ntl::Result<GLuint>& geometry_shader = compile_shader(data.geometry_shader->source, GL_GEOMETRY_SHADER);   
             if(geometry_shader) {
                 glAttachShader(pipeline->id, geometry_shader.value);
 
@@ -171,7 +172,7 @@ namespace nova::renderer::rhi {
         }
 
         if(data.fragment_shader) {
-            const ntl::Result<GLuint> fragment_shader = compile_shader(data.fragment_shader->source, GL_FRAGMENT_SHADER);
+            const ntl::Result<GLuint>& fragment_shader = compile_shader(data.fragment_shader->source, GL_FRAGMENT_SHADER);
             if(fragment_shader) {
                 glAttachShader(pipeline->id, fragment_shader.value);
 
@@ -205,7 +206,7 @@ namespace nova::renderer::rhi {
         return ntl::Result(static_cast<Pipeline*>(pipeline));
     }
 
-    Buffer* Gl3RenderEngine::create_buffer(const BufferCreateInfo& info) {
+    Buffer* Gl4NvRenderEngine::create_buffer(const BufferCreateInfo& info) {
         Gl3Buffer* buffer = new Gl3Buffer;
 
         glGenBuffers(1, &buffer->id);
@@ -234,14 +235,14 @@ namespace nova::renderer::rhi {
         return buffer;
     }
 
-    void Gl3RenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const Buffer* buffer) {
+    void Gl4NvRenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const Buffer* buffer) {
         const Gl3Buffer* gl_buffer = static_cast<const Gl3Buffer*>(buffer);
 
         glBindBuffer(GL_COPY_READ_BUFFER, gl_buffer->id);
         glBufferSubData(GL_COPY_READ_BUFFER, offset, num_bytes, data);
     }
 
-    Image* Gl3RenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
+    Image* Gl4NvRenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
         Gl3Image* image = new Gl3Image;
 
         glGenTextures(1, &image->id);
@@ -291,9 +292,9 @@ namespace nova::renderer::rhi {
         return image;
     }
 
-    Semaphore* Gl3RenderEngine::create_semaphore() { return new Gl3Semaphore; }
+    Semaphore* Gl4NvRenderEngine::create_semaphore() { return new Gl3Semaphore; }
 
-    std::vector<Semaphore*> Gl3RenderEngine::create_semaphores(const uint32_t num_semaphores) {
+    std::vector<Semaphore*> Gl4NvRenderEngine::create_semaphores(const uint32_t num_semaphores) {
         std::vector<Semaphore*> semaphores(num_semaphores);
 
         for(uint32_t i = 0; i < num_semaphores; i++) {
@@ -303,14 +304,14 @@ namespace nova::renderer::rhi {
         return semaphores;
     }
 
-    Fence* Gl3RenderEngine::create_fence(const bool signaled) {
+    Fence* Gl4NvRenderEngine::create_fence(const bool signaled) {
         Gl3Fence* fence = new Gl3Fence;
         fence->signaled = signaled;
 
         return fence;
     }
 
-    std::vector<Fence*> Gl3RenderEngine::create_fences(const uint32_t num_fences, const bool signaled) {
+    std::vector<Fence*> Gl4NvRenderEngine::create_fences(const uint32_t num_fences, const bool signaled) {
         std::vector<Fence*> fences;
         fences.reserve(num_fences);
 
@@ -324,7 +325,7 @@ namespace nova::renderer::rhi {
         return fences;
     }
 
-    void Gl3RenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
+    void Gl4NvRenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
         for(Fence* fence : fences) {
             Gl3Fence* gl_fence = static_cast<Gl3Fence*>(fence);
             std::unique_lock lck(gl_fence->mutex);
@@ -332,7 +333,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void Gl3RenderEngine::reset_fences(const std::vector<Fence*>& fences) {
+    void Gl4NvRenderEngine::reset_fences(const std::vector<Fence*>& fences) {
         for(Fence* fence : fences) {
             Gl3Fence* gl_fence = static_cast<Gl3Fence*>(fence);
             std::unique_lock guard(gl_fence->mutex);
@@ -340,39 +341,39 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void Gl3RenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
+    void Gl4NvRenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
 
-    void Gl3RenderEngine::destroy_framebuffer(Framebuffer* framebuffer) { delete framebuffer; }
+    void Gl4NvRenderEngine::destroy_framebuffer(Framebuffer* framebuffer) { delete framebuffer; }
 
-    void Gl3RenderEngine::destroy_pipeline_interface(PipelineInterface* /* pipeline_interface */) {
+    void Gl4NvRenderEngine::destroy_pipeline_interface(PipelineInterface* /* pipeline_interface */) {
         // No work needed, no GPU objects in Gl3PipelineInterface;
     }
 
-    void Gl3RenderEngine::destroy_pipeline(Pipeline* pipeline) {}
+    void Gl4NvRenderEngine::destroy_pipeline(Pipeline* pipeline) {}
 
-    void Gl3RenderEngine::destroy_texture(Image* resource) {
+    void Gl4NvRenderEngine::destroy_texture(Image* resource) {
         Gl3Image* gl_image = static_cast<Gl3Image*>(resource);
         glDeleteTextures(1, &gl_image->id);
 
         delete gl_image;
     }
 
-    void Gl3RenderEngine::destroy_semaphores(
+    void Gl4NvRenderEngine::destroy_semaphores(
         std::vector<Semaphore*>& /* semaphores */) { // OpenGL semaphores have no GPU objects, so we don't need to do anything here
     }
 
-    void Gl3RenderEngine::destroy_fences(
+    void Gl4NvRenderEngine::destroy_fences(
         std::vector<Fence*>& /* fences */) { // OpenGL fences have no GPU objects, so we don't need to do anything here
     }
 
-    CommandList* Gl3RenderEngine::get_command_list(uint32_t /* thread_idx */,
+    CommandList* Gl4NvRenderEngine::get_command_list(uint32_t /* thread_idx */,
                                                    QueueType /* needed_queue_type */,
                                                    CommandList::Level /* command_list_type */) {
         // TODO: Something useful for custom memory allocation
         return new Gl3CommandList();
     }
 
-    void Gl3RenderEngine::submit_command_list(CommandList* cmds,
+    void Gl4NvRenderEngine::submit_command_list(CommandList* cmds,
                                               QueueType /* queue */,
                                               Fence* fence_to_signal,
                                               const std::vector<Semaphore*>& wait_semaphores,
@@ -445,7 +446,12 @@ namespace nova::renderer::rhi {
         fence->cv.notify_all();
     }
 
-    void Gl3RenderEngine::copy_buffers_impl(const Gl3BufferCopyCommand& buffer_copy) {
+    void Gl4NvRenderEngine::open_window_and_create_surface(const NovaSettings::WindowOptions& options) {
+        // Create GLFW window
+        // Be sure to create an OpenGL 4.6 forward-compatible context!
+    }
+
+    void Gl4NvRenderEngine::copy_buffers_impl(const Gl3BufferCopyCommand& buffer_copy) {
         glBindBuffer(GL_COPY_READ_BUFFER, buffer_copy.source_buffer);
         glBindBuffer(GL_COPY_WRITE_BUFFER, buffer_copy.destination_buffer);
 
@@ -456,13 +462,13 @@ namespace nova::renderer::rhi {
                             buffer_copy.num_bytes);
     }
 
-    void Gl3RenderEngine::begin_renderpass_impl(const Gl3BeginRenderpassCommand& begin_renderpass) {
+    void Gl4NvRenderEngine::begin_renderpass_impl(const Gl3BeginRenderpassCommand& begin_renderpass) {
         glBindFramebuffer(GL_FRAMEBUFFER, begin_renderpass.framebuffer);
     }
 
-    void Gl3RenderEngine::bind_pipeline_impl(const Gl3BindPipelineCommand& bind_pipeline) { glUseProgram(bind_pipeline.program); }
+    void Gl4NvRenderEngine::bind_pipeline_impl(const Gl3BindPipelineCommand& bind_pipeline) { glUseProgram(bind_pipeline.program); }
 
-    void Gl3RenderEngine::bind_descriptor_sets_impl(const Gl3BindDescriptorSetsCommand& bind_descriptor_sets) {
+    void Gl4NvRenderEngine::bind_descriptor_sets_impl(const Gl3BindDescriptorSetsCommand& bind_descriptor_sets) {
         for(uint32_t set_idx = 0; set_idx < bind_descriptor_sets.sets.size(); set_idx++) {
             const Gl3DescriptorSet* set = bind_descriptor_sets.sets.at(set_idx);
 
@@ -492,7 +498,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void Gl3RenderEngine::bind_vertex_buffers_impl(const Gl3BindVertexBuffersCommand& bind_vertex_buffers) {
+    void Gl4NvRenderEngine::bind_vertex_buffers_impl(const Gl3BindVertexBuffersCommand& bind_vertex_buffers) {
         // TODO: use std::array or something where this is implicitly true
         assert(bind_vertex_buffers.buffers.size() == 7);
 
@@ -537,11 +543,11 @@ namespace nova::renderer::rhi {
                               reinterpret_cast<void*>(offsetof(FullVertex, additional_stuff)));
     }
 
-    void Gl3RenderEngine::bind_index_buffer_impl(const Gl3BindIndexBufferCommand& bind_index_buffer) {
+    void Gl4NvRenderEngine::bind_index_buffer_impl(const Gl3BindIndexBufferCommand& bind_index_buffer) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bind_index_buffer.buffer);
     }
 
-    void Gl3RenderEngine::draw_indexed_mesh_impl(const Gl3DrawIndexedMeshCommand& draw_indexed_mesh) {
+    void Gl4NvRenderEngine::draw_indexed_mesh_impl(const Gl3DrawIndexedMeshCommand& draw_indexed_mesh) {
         glDrawArraysInstanced(GL_TRIANGLES, 0, draw_indexed_mesh.num_instances, draw_indexed_mesh.num_indices);
     }
 

@@ -8,8 +8,6 @@
 // ReSharper disable once CppUnusedIncludeDirective
 #include <fmt/format.h>
 
-#include <nova_renderer/util/utils.hpp>
-
 namespace ntl {
     struct NovaError {
         std::string message = "";
@@ -40,10 +38,24 @@ namespace ntl {
 
         explicit Result(ErrorType error) : error(std::move(error)) {}
 
-        explicit Result(const Result<ValueType>& other) = delete;
-        Result<ValueType>& operator=(const Result<ValueType>& other) = delete;
+        explicit Result(const Result<ValueType, ErrorType>& other) {
+            if(other.has_value) {
+                value = other.value;
+            } else {
+                error = other.error;
+            }
+        };
+        Result& operator=(const Result<ValueType, ErrorType>& other) {
+            if(other.has_value) {
+                value = other.value;
+            } else {
+                error = other.error;
+            }
 
-        explicit Result(Result<ValueType>&& old) noexcept {
+            return *this;
+        };
+
+        explicit Result(Result<ValueType, ErrorType>&& old) noexcept {
             if(old.has_value) {
                 value = std::move(old.value);
                 old.value = {};
@@ -55,7 +67,7 @@ namespace ntl {
             }
         };
 
-        Result& operator=(Result<ValueType>&& old) noexcept {
+        Result& operator=(Result<ValueType, ErrorType>&& old) noexcept {
             if(old.has_value) {
                 value = old.value;
                 old.value = {};
@@ -112,6 +124,7 @@ namespace ntl {
             }
         }
 
+        // ReSharper disable once CppNonExplicitConversionOperator
         operator bool() const { return has_value; }
 
         ValueType operator*() { return value; }

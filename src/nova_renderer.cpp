@@ -39,11 +39,12 @@
 #include "render_engine/gl3/gl3_render_engine.hpp"
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
 #include "render_objects/uniform_structs.hpp"
-#include "util/logger.hpp"
 
 #if defined(NOVA_WINDOWS)
 #include "render_engine/dx12/dx12_render_engine.hpp"
 #endif
+
+#include "util/logger.hpp"
 
 using namespace bvestl::polyalloc;
 using namespace bvestl::polyalloc::operators;
@@ -95,6 +96,8 @@ namespace nova::renderer {
 
                     NOVA_LOG(INFO) << "Loaded RenderDoc successfully";
 
+                    auto b = ERROR;
+
                     return 0;
                 })
                 .on_error([](const ntl::NovaError& error) { NOVA_LOG(ERROR) << error.to_string().c_str(); });
@@ -118,7 +121,7 @@ namespace nova::renderer {
 
             case GraphicsApi::Gl2: {
                 MTR_SCOPE("Init", "InitGL3RenderEngine");
-                rhi = std::make_unique<rhi::Gl3RenderEngine>(render_settings);
+                rhi = std::make_unique<rhi::Gl4NvRenderEngine>(render_settings);
             } break;
         }
 

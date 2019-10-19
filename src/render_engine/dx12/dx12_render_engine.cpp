@@ -2,7 +2,7 @@
 #include <D3DCompiler.h>
 #include <d3d12sdklayers.h>
 
-#include <spirv_cross/spirv_hlsl.hpp>
+#include <spirv_hlsl.hpp>
 #pragma warning pop
 
 #include "../../loading/shaderpack/shaderpack_loading.hpp"

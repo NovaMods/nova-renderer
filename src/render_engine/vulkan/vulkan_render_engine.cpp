@@ -23,7 +23,7 @@
 #endif
 
 namespace nova::renderer::rhi {
-    VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(settings) {
+    VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(settings) {  // NOLINT(cppcoreguidelines-pro-type-member-init)
         create_instance();
 
         if(settings.settings.debug.enabled) {
@@ -48,7 +48,7 @@ namespace nova::renderer::rhi {
     ntl::Result<DeviceMemory*> VulkanRenderEngine::allocate_device_memory(const uint64_t size,
                                                                      const MemoryUsage usage,
                                                                      const ObjectType /* allowed_objects */) {
-        VulkanDeviceMemory* memory = new_object<VulkanDeviceMemory>();
+        auto* memory = new_object<VulkanDeviceMemory>();
 
         VkMemoryAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -94,10 +94,10 @@ namespace nova::renderer::rhi {
     }
 
     ntl::Result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
-        VulkanSwapchain* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain);
+        auto* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain);
         VkExtent2D swapchain_extent = {swapchain_size.x, swapchain_size.y};
 
-        VulkanRenderpass* renderpass = new_object<VulkanRenderpass>();
+        auto* renderpass = new_object<VulkanRenderpass>();
 
         VkSubpassDescription subpass_description = {};
         subpass_description.flags = 0;
