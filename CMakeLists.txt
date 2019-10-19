@@ -390,22 +390,22 @@ add_coverage(nova-renderer)
 #########################
 # Set libraries to link #
 #########################
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
-                     fmt
-                     glslang
-                     OGLCompiler
-                     OSDependent
-                     SPIRV
-					 minitrace
-                     miniz
-                     nlohmann::json
-                     vma::vma
-                     SPIRV-Tools
-                     spirv-cross-core
-                     spirv-cross-glsl
-                     spirv-cross-reflect
-                     spirv-cross-util
-)
+set(COMMON_LINK_LIBS 
+	${CMAKE_DL_LIBS}
+    fmt
+    glslang
+    OGLCompiler
+    OSDependent
+    SPIRV
+	minitrace
+    miniz
+    nlohmann::json
+    vma::vma
+    SPIRV-Tools
+    spirv-cross-core
+    spirv-cross-glsl
+    spirv-cross-reflect
+    spirv-cross-util)
 
 if(NOVA_ENABLE_VULKAN_RHI)
 	if(WIN32)
