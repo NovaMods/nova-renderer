@@ -1,5 +1,5 @@
 name: CI
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build-linux:
@@ -213,4 +213,3 @@ jobs:
         with:
           name: headers
           path: artifacts/headers
-          
