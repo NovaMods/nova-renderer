@@ -35,6 +35,12 @@ namespace nova::renderer::rhi {
 
         create_device_and_queues();
 
+        if(settings.settings.debug.enabled) {
+            // Late init, can only be used when the device has already been created
+            vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
+                    vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT"));
+        }
+
         create_swapchain();
 
         create_per_thread_command_pools();
@@ -1107,8 +1113,6 @@ namespace nova::renderer::rhi {
             vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
         vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
             vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT"));
-        vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
-            vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT"));
 
         VkDebugUtilsMessengerCreateInfoEXT debug_create_info = {};
         debug_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;

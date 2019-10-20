@@ -72,6 +72,8 @@ namespace bvestl {
 
             constexpr  Bytes operator/(std::size_t const divisor) const noexcept { return Bytes(byte_count / divisor); }
 
+            constexpr  Bytes operator%(std::size_t const divisor) const noexcept { return Bytes(byte_count % divisor); }
+
             constexpr  Bytes& operator+=(Bytes const addend) noexcept {
                 byte_count += addend.byte_count;
                 return *this;
@@ -81,6 +83,9 @@ namespace bvestl {
                 byte_count -= subtrahend.byte_count;
                 return *this;
             }
+
+            constexpr  Bytes operator%(Bytes const divisor) const noexcept { return Bytes(byte_count % divisor.byte_count); }
+
 #pragma endregion
 
 #pragma region std::size_t arithmatic operators
@@ -97,6 +102,11 @@ namespace bvestl {
 
             constexpr  Bytes& operator/=(std::size_t const divisor) noexcept {
                 byte_count /= divisor;
+                return *this;
+            }
+
+            constexpr  Bytes& operator%=(std::size_t const divisor) noexcept {
+                byte_count %= divisor;
                 return *this;
             }
 #pragma endregion
