@@ -16,15 +16,20 @@ jobs:
     # jobs in this yaml file
     strategy:
       matrix:
-        compiler: [gcc, clang]
+        cc: [gcc, clang]
+        include:
+          - cc: gcc
+            cxx: g++
+          - cc: clang
+            cxx: clang++
 
     # Environment variables
     env:
       VULKAN_SDK: /usr
-      CC: ${{ matrix.compiler }}
-      CXX: ${{ matrix.compiler }}++
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
 
-    name: build-linux-${{ matrix.compiler }}
+    name: build-linux-${{ matrix.cc }}
 
     steps:
       # 1. Update the system
@@ -34,7 +39,7 @@ jobs:
         run: pacman --noconfirm -Syu
       # 2. Install the required dependencies
       - name: Install dependencies
-        run: pacman --noconfirm -S cmake binutils gcc python3 git vulkan-devel ninja tar unzip which ${{ matrix.compiler }}
+        run: pacman --noconfirm -S cmake binutils gcc python3 git vulkan-devel ninja tar unzip which ${{ matrix.cc }}
       # 3. Checkout the repository, this is done via a github action
       - name: Checkout repository
         uses: actions/checkout@master
@@ -91,7 +96,7 @@ jobs:
           name: binary-linux-${{ matrix.compiler }}
           path: artifacts
 
-  build-windows-msvc:
+  build-windows:
     # Running on Windows Server 2019 or whatever the latest version is,
     # lets hope this goes well...
     runs-on: windows-latest
@@ -104,11 +109,16 @@ jobs:
     env:
       VULKAN_SDK: C:\\VulkanSDK\\${{ matrix.vulkan }}
 
+    name: build-windows-msvc
+
     steps:
       # 1. Download the VulkanSDK
       - name: Download VulkanSDK
         shell: bash
-        run: curl -L "https://sdk.lunarg.com/sdk/download/${{ matrix.vulkan }}/windows/VulkanSDK-${{ matrix.vulkan }}-Installer.exe?Human=true"
+        run: |
+          curl -L \
+          'https://sdk.lunarg.com/sdk/download/${{ matrix.vulkan }}/windows/VulkanSDK-${{ matrix.vulkan }}-Installer.exe?Human=true' \
+          -o VulkanSDK-Installer.exe
       # 2. Install the VulkanSDK
       - name: Install VulkanSDK
         run: .\VulkanSDK-Installer.exe /S
