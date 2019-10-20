@@ -20,8 +20,8 @@
 namespace nova::renderer {
     ntl::Result<RENDERDOC_API_1_3_0*> load_renderdoc(const std::string& renderdoc_dll_path) {
 #if defined(NOVA_WINDOWS)
-        using HINSTANCE = HINSTANCE__* const;
-        HINSTANCE renderdoc_dll = LoadLibrary(renderdoc_dll_path.c_str());
+        using Hinstance = HINSTANCE__* const;
+        Hinstance renderdoc_dll = LoadLibrary(renderdoc_dll_path.c_str());
         if(!renderdoc_dll) {
             const std::string error = get_last_windows_error();
             return ntl::Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc. Error: {:s}", error.c_str()));

@@ -9,7 +9,7 @@ using namespace bvestl::polyalloc::operators;
 
 namespace bvestl {
 	namespace polyalloc {
-		BlockAllocationStrategy::BlockAllocationStrategy(allocator_handle& allocator_in, const Bytes size, const Bytes alignment_in)
+		BlockAllocationStrategy::BlockAllocationStrategy(const allocator_handle& allocator_in, const Bytes size, const Bytes alignment_in)
 			: allocator(allocator_in), memory_size(size), alignment(alignment_in) {
 
 			head = make_new_block(0_b, size);
@@ -75,7 +75,7 @@ namespace bvestl {
 		}
 
 		void BlockAllocationStrategy::free(const AllocationInfo& alloc) {
-			Block* block = static_cast<Block*>(alloc.internal_data);
+            auto* block = static_cast<Block*>(alloc.internal_data);
 			block->free = true;
 
 			if (block->previous && block->previous->free) {
@@ -113,7 +113,7 @@ namespace bvestl {
 
 		BlockAllocationStrategy::Block* BlockAllocationStrategy::make_new_block(const Bytes offset, const Bytes size) {
 			void* mem = allocator.allocate(sizeof(Block));
-			Block* block = new(mem) Block;
+            auto* block = new(mem) Block;
 			block->id = next_block_id;
 			block->size = size;
 			block->offset = offset;

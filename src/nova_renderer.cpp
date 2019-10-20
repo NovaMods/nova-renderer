@@ -763,12 +763,12 @@ namespace nova::renderer {
     void NovaRenderer::deinitialize() { instance.reset(); }
 
     void NovaRenderer::create_global_allocator() {
-        uint8_t* heap = new uint8_t[global_memory_pool_size.b_count()];
+        auto* heap = new uint8_t[global_memory_pool_size.b_count()];
         allocator_handle handle(new Mallocator);
-        AllocationStrategy* allocation_strategy = new BlockAllocationStrategy(handle, global_memory_pool_size);
+        std::unique_ptr<AllocationStrategy> allocation_strategy = std::make_unique<BlockAllocationStrategy>(handle, global_memory_pool_size);
 
         global_allocator = std::make_shared<allocator_handle>(
-            new SystemMemoryAllocator(heap, global_memory_pool_size, std::unique_ptr<AllocationStrategy>(allocation_strategy)));
+            new SystemMemoryAllocator(heap, global_memory_pool_size, std::move(allocation_strategy)));
     }
 
     void NovaRenderer::create_global_gpu_pools() {
@@ -776,9 +776,8 @@ namespace nova::renderer {
         ntl::Result<rhi::DeviceMemory*> memory_result = rhi->allocate_device_memory(mesh_memory_size,
                                                                                     rhi::MemoryUsage::DeviceOnly,
                                                                                     rhi::ObjectType::Buffer);
-
-        ntl::Result<DeviceMemoryResource*> mesh_memory_result = memory_result.map([&](rhi::DeviceMemory* memory) {
-            auto* allocator = new BlockAllocationStrategy(*global_allocator, Bytes(mesh_memory_size), 64_b);
+        const ntl::Result<DeviceMemoryResource*> mesh_memory_result = memory_result.map([&](rhi::DeviceMemory* memory) {
+            auto* allocator = new BlockAllocationStrategy(*global_allocator.get(), Bytes(mesh_memory_size), 64_b);
             return new DeviceMemoryResource(memory, allocator);
         });
 
@@ -791,7 +790,7 @@ namespace nova::renderer {
 
         // Assume 65k things, plus we need space for the builtin ubos
         const uint64_t ubo_memory_size = sizeof(PerFrameUniforms) + sizeof(glm::mat4) * 0xFFFF;
-        ntl::Result<DeviceMemoryResource*>
+        const ntl::Result<DeviceMemoryResource*>
             ubo_memory_result = rhi->allocate_device_memory(ubo_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
                                     .map([&](rhi::DeviceMemory* memory) {
                                         auto* allocator = new BumpPointAllocationStrategy(Bytes(ubo_memory_size), Bytes(sizeof(glm::mat4)));
