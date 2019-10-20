@@ -1,6 +1,6 @@
 #pragma once
 
-#include <miniz/miniz_zip.h>
+#include <miniz.h>
 
 #include "folder_accessor.hpp"
 #include <memory>

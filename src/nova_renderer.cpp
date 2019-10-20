@@ -8,7 +8,7 @@
 #include "memory/system_memory_allocator.hpp"
 
 #include <glslang/MachineIndependent/Initialize.h>
-#include <spirv_cross/spirv_glsl.hpp>
+#include <spirv_glsl.hpp>
 #include "loading/shaderpack/shaderpack_loading.hpp"
 #if defined(NOVA_WINDOWS)
 #include "render_engine/dx12/dx12_render_engine.hpp"

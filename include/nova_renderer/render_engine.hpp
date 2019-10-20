@@ -242,10 +242,4 @@ namespace nova::renderer::rhi {
             return new(mem) AllocType(std::forward<ArgTypes>(args)...);
         }
     };
-<<<<<<< HEAD
-} // namespace nova::renderer
-=======
 } // namespace nova::renderer::rhi
-
-#endif // NOVA_RENDERER_RENDER_ENGINE_HPP
->>>>>>> Renamed a lot of things yolo
