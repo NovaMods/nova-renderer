@@ -17,8 +17,8 @@ namespace {
 #ifdef _WIN32
             allocatedMemory = _aligned_malloc(size, alignment);
 #else
-            alignment = alignment < alignof(void*) ? alignof(void*) : alignment;
-            if (posix_memalign(&allocatedMemory, alignment, size) != 0) {
+            if (posix_memalign(&allocatedMemory,
+                    alignment < alignof(void*) ? alignof(void*) : alignment, size) != 0) {
                 allocatedMemory = nullptr;
             }
 #endif

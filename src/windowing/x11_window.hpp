@@ -6,6 +6,8 @@
 #include "nova_renderer/window.hpp"
 #include "nova_renderer/nova_settings.hpp"
 
+#include <X11/Xlib.h>
+
 namespace nova::renderer {
     class X11Window final : public Window {
     private:

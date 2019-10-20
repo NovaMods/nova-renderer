@@ -1028,14 +1028,14 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderEngine::open_window_and_create_surface(const NovaSettings::WindowOptions& options) {
 #ifdef NOVA_LINUX
-        window = std::make_shared<X11Window>(options);
+        window = std::make_unique<X11Window>(options);
 
         VkXlibSurfaceCreateInfoKHR x_surface_create_info;
         x_surface_create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
         x_surface_create_info.pNext = nullptr;
         x_surface_create_info.flags = 0;
 
-        X11Window* x11_window_ptr = static_cast<X11Window*>(window.get());
+        auto* x11_window_ptr = dynamic_cast<X11Window*>(window.get());
         x_surface_create_info.dpy = x11_window_ptr->get_display();
         x_surface_create_info.window = x11_window_ptr->get_x11_window();
 
@@ -1469,7 +1469,7 @@ namespace nova::renderer::rhi {
         }
 
 #ifdef NOVA_LINUX
-        if((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
+        if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
             nova_backtrace();
         }
 #endif
