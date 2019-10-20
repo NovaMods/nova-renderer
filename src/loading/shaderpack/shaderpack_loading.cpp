@@ -100,6 +100,15 @@ namespace nova::renderer {
         /* .MaxCullDistances = */ 8,
         /* .MaxCombinedClipAndCullDistances = */ 8,
         /* .MaxSamples = */ 4,
+        /* maxMeshOutputVerticesNV = */ 1024,
+        /* maxMeshOutputPrimitivesNV = */ 1024,
+        /* maxMeshWorkGroupSizeX_NV = */ 1024,
+        /* maxMeshWorkGroupSizeY_NV = */ 1024,
+        /* maxMeshWorkGroupSizeZ_NV = */ 1024,
+        /* maxTaskWorkGroupSizeX_NV = */ 1024,
+        /* maxTaskWorkGroupSizeY_NV = */ 1024,
+        /* maxTaskWorkGroupSizeZ_NV = */ 1024,
+        /* maxMeshViewCountNV = */ 1024,
         /* .limits = */
         {
             /* .nonInductiveForLoops = */ true,
