@@ -2,7 +2,6 @@
 
 #include <memory>
 
-#include <memory>
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/command_list.hpp"
 #include "nova_renderer/nova_settings.hpp"
@@ -10,7 +9,7 @@
 #include "nova_renderer/util/platform.hpp"
 #include "nova_renderer/util/utils.hpp"
 #include "rhi_types.hpp"
-#include <nova_renderer/window.hpp>
+#include "nova_renderer/window.hpp"
 
 namespace nova::renderer::rhi {
     struct Fence;
@@ -220,6 +219,7 @@ namespace nova::renderer::rhi {
 
         /*!
          * \brief Initializes the engine, does **NOT** open any window
+         * \param allocator The allocator nova is using
          * \param settings The settings passed to nova
          *
          * Intentionally does nothing. This constructor serves mostly to ensure that concrete render engines have a
@@ -227,8 +227,10 @@ namespace nova::renderer::rhi {
          *
          * \attention Called by nova
          */
-        explicit RenderEngine(NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)
-            : settings(settings), swapchain_size(settings.settings.window.width, settings.settings.window.height){};
+        explicit RenderEngine(bvestl::polyalloc::Allocator* allocator,
+                              NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)
+            : settings(settings), swapchain_size(settings.settings.window.width, settings.settings.window.height),
+              shaderpack_allocator(allocator) {};
 
         template <typename AllocType>
         AllocType* new_object() {

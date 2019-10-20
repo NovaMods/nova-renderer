@@ -22,7 +22,7 @@ using Microsoft::WRL::ComPtr;
 #define GPU_FENCE_SIGNALED 32
 
 namespace nova::renderer::rhi {
-    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(settings) {
+    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(&mallocator, settings) {
         create_device();
 
         open_window_and_create_swapchain(settings.settings.window, settings.settings.max_in_flight_frames);

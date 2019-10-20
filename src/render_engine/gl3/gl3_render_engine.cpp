@@ -8,10 +8,10 @@
 #include "gl3_structs.hpp"
 
 namespace nova::renderer::rhi {
-    Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(settings) {
+    Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(&mallocator, settings) {
         const bool loaded_opengl = true;    // TODO: Load OpenGL from GLFW
         if(!loaded_opengl) {
-            NOVA_LOG(FATAL) << "Could not load OpenGL 4.6 functions, sorry bro";
+            NOVA_LOG(FATAL) << "Could not load OpenGL 4.6 functions";
             return;
         }
 

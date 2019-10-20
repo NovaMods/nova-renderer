@@ -36,12 +36,18 @@
 #include "nova_renderer/command_list.hpp"
 #include "nova_renderer/nova_renderer.hpp"
 #include "nova_renderer/swapchain.hpp"
-#include "render_engine/gl3/gl3_render_engine.hpp"
-#include "render_engine/vulkan/vulkan_render_engine.hpp"
 #include "render_objects/uniform_structs.hpp"
 
-#if defined(NOVA_WINDOWS)
+#if defined(NOVA_VULKAN_RHI)
+#include "render_engine/vulkan/vulkan_render_engine.hpp"
+#endif
+
+#if defined(NOVA_WINDOWS) && defined(NOVA_D3D12_RHI)
 #include "render_engine/dx12/dx12_render_engine.hpp"
+#endif
+
+#if defined(NOVA_OPENGL_RHI)
+#include "render_engine/gl3/gl3_render_engine.hpp"
 #endif
 
 #include "util/logger.hpp"
@@ -105,23 +111,29 @@ namespace nova::renderer {
 
         switch(settings.api) {
             case GraphicsApi::Dx12:
-#if defined(NOVA_WINDOWS)
+#if defined(NOVA_WINDOWS) && defined(NOVA_D3D12_RHI)
             {
                 MTR_SCOPE("Init", "InitDirect3D12RenderEngine");
                 rhi = std::make_unique<rhi::D3D12RenderEngine>(render_settings);
             } break;
-#else
-                NOVA_LOG(WARN) << "You selected the DX12 graphics API, but your system doesn't support it. Defaulting to Vulkan";
-                [[fallthrough]];
 #endif
+
+#if defined(NOVA_VULKAN_RHI)
             case GraphicsApi::Vulkan: {
                 MTR_SCOPE("Init", "InitVulkanRenderEngine");
                 rhi = std::make_unique<rhi::VulkanRenderEngine>(render_settings);
             } break;
+#endif
 
+#if defined(NOVA_OPENGL_RHI)
             case GraphicsApi::Gl2: {
                 MTR_SCOPE("Init", "InitGL3RenderEngine");
                 rhi = std::make_unique<rhi::Gl4NvRenderEngine>(render_settings);
+            } break;
+#endif
+            default: {
+                // TODO: Deal with it in a better way, this will crash soon
+                NOVA_LOG(FATAL) << "Selected graphics API was not enabled!";
             } break;
         }
 

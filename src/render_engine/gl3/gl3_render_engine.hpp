@@ -5,6 +5,9 @@
 #include "glad/glad.h"
 #include "nova_renderer/render_engine.hpp"
 
+// TODO: Not always use mallocator
+#include "../../memory/mallocator.hpp"
+
 namespace nova::renderer::rhi {
     /*!
      * \brief OpenGL 4.6 RHI backend. Optimized for Nvidia GPUs
@@ -90,6 +93,9 @@ namespace nova::renderer::rhi {
         void open_window_and_create_surface(const NovaSettings::WindowOptions& options);
 
     private:
+        // TODO: Not always use mallocator
+        bvestl::polyalloc::Mallocator mallocator;
+
         bool supports_geometry_shaders = false;
 
         std::unordered_map<std::string, shaderpack::SamplerCreateInfo> samplers;

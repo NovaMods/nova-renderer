@@ -7,6 +7,7 @@ namespace bvestl {
         }
 
         void* Mallocator::allocate(const size_t n, size_t /* alignment */, size_t /* offset */, const int flags) {
+            // TODO: Actually support aligned alloc
 			return allocate(n, flags);
         }
 

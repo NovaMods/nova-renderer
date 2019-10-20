@@ -13,6 +13,8 @@
 #pragma warning(pop)
 
 #include "dx12_swapchain.hpp"
+// TODO: Not always use mallocator
+#include "../../memory/mallocator.hpp"
 
 // Make sure we don't pollute includees with windows.h problems
 // TODO: Convert to modules and watch this problem _finally_ start to go away
@@ -111,6 +113,9 @@ namespace nova::renderer::rhi {
         void open_window_and_create_swapchain(const NovaSettings::WindowOptions& options, uint32_t num_frames);
 
     private:
+        // TODO: Not always use mallocator
+        bvestl::polyalloc::Mallocator mallocator;
+
         Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi_factory;
 
         Microsoft::WRL::ComPtr<IDXGIAdapter3> adapter;

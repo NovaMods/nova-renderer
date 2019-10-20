@@ -24,7 +24,7 @@
 
 namespace nova::renderer::rhi {
     VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings)
-        : RenderEngine(settings) { // NOLINT(cppcoreguidelines-pro-type-member-init)
+        : RenderEngine(&mallocator, settings) { // NOLINT(cppcoreguidelines-pro-type-member-init)
         create_instance();
 
         if(settings.settings.debug.enabled) {

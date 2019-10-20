@@ -1,14 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 project(nova-renderer)
 
-# Hey lemme manually add the VCPKG include directories because why would a package manager make things work?
-if(VCPKG_TOOLCHAIN)
-	set(VCPKG_INSTALLED_PATH "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
-	set(VCPKG_INSTALLED_PATH_DEBUG "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug")
-    include_directories(SYSTEM "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
-	link_directories(SYSTEM "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib")
-endif()
-
 ############################################################
 # Fix build type because of possible capitalization issues #
 ############################################################
@@ -356,6 +348,19 @@ target_include_directories(nova-renderer PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/external/miniz	# Miniz doesn't export a MINIZ_HEADERS variable?
 	)
 target_link_directories(nova-renderer PUBLIC $ENV{VULKAN_SDK}/Lib)
+
+# Compilation definitions indicating enabled backends
+if(NOVA_ENABLE_VULKAN_RHI)
+	target_compile_definitions(nova-renderer PUBLIC NOVA_VULKAN_RHI)
+endif()
+
+if(NOVA_ENABLE_D3D12_RHI)
+	target_compile_definitions(nova-renderer PUBLIC NOVA_D3D12_RHI)
+endif()
+
+if(NOVA_ENABLE_OPENGL_RHI)
+	target_compile_definitions(nova-renderer PUBLIC NOVA_OPENGL_RHI)
+endif()
 
 include(GNUInstallDirs)
 

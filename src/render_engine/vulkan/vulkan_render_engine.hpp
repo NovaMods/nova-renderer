@@ -14,6 +14,9 @@
 #include "../configuration.hpp"
 #include "vk_structs.hpp"
 
+// TODO: Not always use mallocator
+#include "../../memory/mallocator.hpp"
+
 namespace nova::renderer::rhi {
     struct VulkanMemoryHeap : VkMemoryHeap {
         VkDeviceSize amount_allocated = 0;
@@ -124,6 +127,9 @@ namespace nova::renderer::rhi {
         void open_window_and_create_surface(const NovaSettings::WindowOptions& options);
 
     private:
+        // TODO: Not always use mallocator
+        bvestl::polyalloc::Mallocator mallocator;
+
         std::unordered_map<QueueType, uint32_t> queue_family_indices;
 
         /*!
