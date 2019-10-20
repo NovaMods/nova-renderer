@@ -8,7 +8,7 @@
 #include "gl3_structs.hpp"
 
 namespace nova::renderer::rhi {
-    Gl3Command::Gl3Command() : type(Gl3CommandType::None) {}
+    Gl3Command::Gl3Command() {}
 
     Gl3Command::Gl3Command(Gl3Command&& old) noexcept : type(old.type) {
         switch(type) {

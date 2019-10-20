@@ -68,7 +68,7 @@ namespace nova::renderer::rhi {
     };
 
     struct Gl3Command {
-        Gl3CommandType type;
+        Gl3CommandType type = Gl3CommandType::None;
 
         union {
             Gl3BufferCopyCommand buffer_copy;
@@ -106,7 +106,7 @@ namespace nova::renderer::rhi {
      *
      * On the other hand, OpenGL has no concept of a resource barrier...
      */
-    class Gl3CommandList final : public CommandList {
+    class [[nodiscard]] Gl3CommandList final : public CommandList {
     public:
         Gl3CommandList();
 
@@ -115,6 +115,8 @@ namespace nova::renderer::rhi {
 
         Gl3CommandList(const Gl3CommandList& other) = delete;
         Gl3CommandList& operator=(const Gl3CommandList& other) = delete;
+
+        ~Gl3CommandList() override = default;
 
         void resource_barriers(PipelineStageFlags stages_before_barrier,
                                PipelineStageFlags stages_after_barrier,
@@ -141,8 +143,6 @@ namespace nova::renderer::rhi {
         void bind_index_buffer(const Buffer* buffer) override;
 
         void draw_indexed_mesh(uint32_t num_indices, uint32_t num_instances) override;
-
-        ~Gl3CommandList() override;
 
         /*!
          * \brief Provides access to the actual command list, so that the GL3 render engine can process the commands

@@ -23,7 +23,8 @@
 #endif
 
 namespace nova::renderer::rhi {
-    VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(settings) {  // NOLINT(cppcoreguidelines-pro-type-member-init)
+    VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings)
+        : RenderEngine(settings) { // NOLINT(cppcoreguidelines-pro-type-member-init)
         create_instance();
 
         if(settings.settings.debug.enabled) {
@@ -38,14 +39,14 @@ namespace nova::renderer::rhi {
 
         create_per_thread_command_pools();
     }
-    
+
     void VulkanRenderEngine::set_num_renderpasses(uint32_t /* num_renderpasses */) {
         // Pretty sure Vulkan doesn't need to do anything here
     }
 
     ntl::Result<DeviceMemory*> VulkanRenderEngine::allocate_device_memory(const uint64_t size,
-                                                                     const MemoryUsage usage,
-                                                                     const ObjectType /* allowed_objects */) {
+                                                                          const MemoryUsage usage,
+                                                                          const ObjectType /* allowed_objects */) {
         auto* memory = new_object<VulkanDeviceMemory>();
 
         VkMemoryAllocateInfo alloc_info = {};
@@ -522,7 +523,7 @@ namespace nova::renderer::rhi {
     }
 
     ntl::Result<Pipeline*> VulkanRenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
-                                                          const shaderpack::PipelineCreateInfo& data) {
+                                                               const shaderpack::PipelineCreateInfo& data) {
         NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name.c_str();
 
         const VulkanPipelineInterface* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
@@ -807,7 +808,7 @@ namespace nova::renderer::rhi {
         image_create_info.queueFamilyIndexCount = 1;
         image_create_info.pQueueFamilyIndices = &graphics_family_index;
         image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        
+
         /*
         VmaAllocationCreateInfo alloc_create_info = {};
         alloc_create_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
@@ -819,7 +820,8 @@ namespace nova::renderer::rhi {
         alloc_create_info.pUserData = nullptr;
 
         // TODO: Actualy create the image
-        // vmaCreateImage(vma_allocator, &image_create_info, &alloc_create_info, &texture->image, &texture->allocation, &texture->vma_info);*/
+        // vmaCreateImage(vma_allocator, &image_create_info, &alloc_create_info, &texture->image, &texture->allocation,
+        &texture->vma_info);*/
 
         VkImageViewCreateInfo image_view_create_info = {};
         image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -962,7 +964,7 @@ namespace nova::renderer::rhi {
         VkCommandBuffer new_buffer;
         vkAllocateCommandBuffers(device, &create_info, &new_buffer);
 
-        VulkanCommandList* list = new_object<VulkanCommandList>(new_buffer, this);
+        auto* list = new_object<VulkanCommandList>(new_buffer, this);
 
         return list;
     }
@@ -1022,6 +1024,8 @@ namespace nova::renderer::rhi {
         vkQueueSubmit(queue_to_submit_to, 1, &submit_info, vk_fence->fence);
     }
 
+    uint32_t VulkanRenderEngine::get_queue_family_index(const QueueType type) const { return queue_family_indices.at(type); }
+
     void VulkanRenderEngine::open_window_and_create_surface(const NovaSettings::WindowOptions& options) {
 #ifdef NOVA_LINUX
         window = std::make_shared<X11Window>(options);
@@ -1031,7 +1035,7 @@ namespace nova::renderer::rhi {
         x_surface_create_info.pNext = nullptr;
         x_surface_create_info.flags = 0;
 
-        X11Window* x11_window_ptr = static_cast<X11Window *>(window.get());
+        X11Window* x11_window_ptr = static_cast<X11Window*>(window.get());
         x_surface_create_info.dpy = x11_window_ptr->get_display();
         x_surface_create_info.window = x11_window_ptr->get_x11_window();
 
@@ -1043,7 +1047,7 @@ namespace nova::renderer::rhi {
         VkWin32SurfaceCreateInfoKHR win32_surface_create = {};
         win32_surface_create.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
         Window* window_ptr = window.get();
-        Win32Window* win32_window_ptr = static_cast<Win32Window*>(window_ptr);
+        auto* win32_window_ptr = static_cast<Win32Window*>(window_ptr);
         win32_surface_create.hwnd = win32_window_ptr->get_window_handle();
 
         NOVA_CHECK_RESULT(vkCreateWin32SurfaceKHR(instance, &win32_surface_create, nullptr, &surface));
@@ -1181,7 +1185,7 @@ namespace nova::renderer::rhi {
         }
 
         if(gpu.phys_device == nullptr) {
-           NOVA_LOG(ERROR) << "Failed to find good GPU";
+            NOVA_LOG(ERROR) << "Failed to find good GPU";
             return;
         }
 
@@ -1368,6 +1372,15 @@ namespace nova::renderer::rhi {
         return layouts;
     }
 
+    VkImageView VulkanRenderEngine::image_view_for_image(const Image* image) { 
+        // TODO: This method is terrible. We shouldn't tie image views to images, we should let everything that wants
+        // to use the image create its own image view
+        
+        const auto* vk_image = static_cast<const VulkanImage*>(image);
+
+        return vk_image->image_view;
+    }
+
     VkCommandBufferLevel VulkanRenderEngine::to_vk_command_buffer_level(const CommandList::Level level) {
         switch(level) {
             case CommandList::Level::Primary:
@@ -1380,77 +1393,77 @@ namespace nova::renderer::rhi {
         return VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     }
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderEngine::debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                                             VkDebugUtilsMessageTypeFlagsEXT messageTypes,
-                                                                             const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderEngine::debug_report_callback(const VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+                                                                             const VkDebugUtilsMessageTypeFlagsEXT message_types,
+                                                                             const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
                                                                              void* /* pUserData */) {
         std::string type = "General";
-        if((messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) != 0U) {
+        if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) != 0U) {
             type = "Validation";
-        } else if((messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) != 0U) {
+        } else if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) != 0U) {
             type = "Performance";
         }
 
         std::stringstream ss;
         ss << "[" << type << "]";
-        if(pCallbackData->queueLabelCount != 0) {
+        if(callback_data->queueLabelCount != 0) {
             ss << " Queues: ";
-            for(uint32_t i = 0; i < pCallbackData->queueLabelCount; i++) {
-                ss << pCallbackData->pQueueLabels[i].pLabelName;
-                if(i != pCallbackData->queueLabelCount - 1) {
+            for(uint32_t i = 0; i < callback_data->queueLabelCount; i++) {
+                ss << callback_data->pQueueLabels[i].pLabelName;
+                if(i != callback_data->queueLabelCount - 1) {
                     ss << ", ";
                 }
             }
         }
 
-        if(pCallbackData->cmdBufLabelCount != 0) {
+        if(callback_data->cmdBufLabelCount != 0) {
             ss << " Command Buffers: ";
-            for(uint32_t i = 0; i < pCallbackData->cmdBufLabelCount; i++) {
-                ss << pCallbackData->pCmdBufLabels[i].pLabelName;
-                if(i != pCallbackData->cmdBufLabelCount - 1) {
+            for(uint32_t i = 0; i < callback_data->cmdBufLabelCount; i++) {
+                ss << callback_data->pCmdBufLabels[i].pLabelName;
+                if(i != callback_data->cmdBufLabelCount - 1) {
                     ss << ", ";
                 }
             }
         }
 
-        if(pCallbackData->objectCount != 0) {
+        if(callback_data->objectCount != 0) {
             ss << " Objects: ";
-            for(uint32_t i = 0; i < pCallbackData->objectCount; i++) {
-                ss << to_string(pCallbackData->pObjects[i].objectType);
-                if(pCallbackData->pObjects[i].pObjectName != nullptr) {
-                    ss << pCallbackData->pObjects[i].pObjectName;
+            for(uint32_t i = 0; i < callback_data->objectCount; i++) {
+                ss << to_string(callback_data->pObjects[i].objectType);
+                if(callback_data->pObjects[i].pObjectName != nullptr) {
+                    ss << callback_data->pObjects[i].pObjectName;
                 }
-                ss << " (" << pCallbackData->pObjects[i].objectHandle << ") ";
-                if(i != pCallbackData->objectCount - 1) {
+                ss << " (" << callback_data->pObjects[i].objectHandle << ") ";
+                if(i != callback_data->objectCount - 1) {
                     ss << ", ";
                 }
             }
         }
 
-        if(pCallbackData->pMessage != nullptr) {
-            ss << pCallbackData->pMessage;
+        if(callback_data->pMessage != nullptr) {
+            ss << callback_data->pMessage;
         }
 
         const std::string msg = ss.str();
 
-        if((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
+        if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
             NOVA_LOG(ERROR) << "[" << type << "] " << msg;
 
-        } else if((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {
+        } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {
             // Warnings may hint at unexpected / non-spec API usage
             NOVA_LOG(WARN) << "[" << type << "] " << msg;
 
-        } else if(((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) != 0) &&
-                  ((messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U)) { // No validation info!
+        } else if(((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) != 0) &&
+                  ((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U)) { // No validation info!
             // Informal messages that may become handy during debugging
             NOVA_LOG(INFO) << "[" << type << "] " << msg;
 
-        } else if((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) != 0) {
+        } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) != 0) {
             // Diagnostic info from the Vulkan loader and layers
             // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
             NOVA_LOG(DEBUG) << "[" << type << "] " << msg;
 
-        } else if((messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U) { // No validation info!
+        } else if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U) { // No validation info!
             // Catch-all to be super sure
             NOVA_LOG(INFO) << "[" << type << "]" << msg;
         }

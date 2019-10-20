@@ -124,6 +124,8 @@ namespace nova::renderer::rhi {
         void open_window_and_create_surface(const NovaSettings::WindowOptions& options);
 
     private:
+        std::unordered_map<QueueType, uint32_t> queue_family_indices;
+
         /*!
          * The index in the vector is the thread index, the key in the map is the queue family index
          */
@@ -198,7 +200,7 @@ namespace nova::renderer::rhi {
          * The method checks an internal hash map. If there's already an image view for the given image then great,
          * otherwise one is created on-demand
          */
-        [[nodiscard]] VkImageView image_view_for_image(const Image* image);
+        [[nodiscard]] static VkImageView image_view_for_image(const Image* image);
 
         [[nodiscard]] static VkCommandBufferLevel to_vk_command_buffer_level(CommandList::Level level);
 #pragma endregion
@@ -206,10 +208,10 @@ namespace nova::renderer::rhi {
 #pragma region Debugging
         VkDebugUtilsMessengerEXT debug_callback{};
 
-        static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                                    VkDebugUtilsMessageTypeFlagsEXT messageTypes,
-                                                                    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                                                    void* pUserData);
+        static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+                                                                    VkDebugUtilsMessageTypeFlagsEXT message_types,
+                                                                    const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+                                                                    void* user_data);
 #pragma endregion
     };
 } // namespace nova::renderer::rhi
