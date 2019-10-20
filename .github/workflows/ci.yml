@@ -2,9 +2,9 @@ name: CI
 on: [push]
 
 jobs:
-  build-linux-gcc:
+  build-linux:
     # Even tho we run the real build in an arch linux docker
-    # containerwe need to specify a HostOS
+    # container, we need to specify a HostOS
     runs-on: ubuntu-latest
 
     # Run the real build on an arch linux docker container
@@ -12,15 +12,29 @@ jobs:
     # require manual interaction so its unusable for CI
     container: archlinux/base
 
+    # Use a build matrix so GCC and Clang don't have to have different
+    # jobs in this yaml file
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+
+    # Environment variables
+    env:
+      VULKAN_SDK: /usr
+      CC: ${{ matrix.compiler }}
+      CXX: ${{ matrix.compiler }}++
+
+    name: build-linux-${{ matrix.compiler }}
+
     steps:
       # 1. Update the system
-      #    Arch linux updates NEVER require manual interaction,
-      #    so this is safe in combination with --noconfirm
+      #    Arch linux updates NEVER require manual interaction
+      #    when using --noconfirm, so this is totally safe
       - name: Update System
         run: pacman --noconfirm -Syu
       # 2. Install the required dependencies
       - name: Install dependencies
-        run: pacman --noconfirm -S cmake make binutils gcc python3 git vulkan-devel ninja tar unzip which
+        run: pacman --noconfirm -S cmake binutils gcc python3 git vulkan-devel ninja tar unzip which ${{ matrix.compiler }}
       # 3. Checkout the repository, this is done via a github action
       - name: Checkout repository
         uses: actions/checkout@master
@@ -30,8 +44,6 @@ jobs:
       - name: Prepare
         shell: bash
         run: |
-          set -e
-
           if [[ -f "build.py" ]]; then
               # The new build.py method is easy, just run it with python
               # and we are good to go
@@ -44,100 +56,17 @@ jobs:
               export PATH=`pwd`:$PATH
               popd
               # Now vcpkg should be set up
-              VULKAN_SDK=/usr bash setup-linux.sh
+              bash setup-linux.sh
           fi
       # 5. Configure with CMake
       - name: Configure with CMake
         run: |
           mkdir build
           cd build
-          VULKAN_SDK=/usr cmake ..   \
-            -G"Unix Makefiles"       \
+          cmake .. -G"Ninja"         \
             -DNOVA_TEST=ON           \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
-      # 6. Build with CMake
-      #    We use 3 threads on 2 cores since thats what Github provides as of writing this script,
-      #    for further reference see https://help.github.com/en/articles/virtual-environments-for-github-actions
-      - name: Build with CMake
-        working-directory: build
-        run: cmake --build . -- -j3
-      # 7. Run the unit tests
-      - name: Run unit tests
-        working-directory: build
-        run: ./nova-test-unit --gtest_color=yes
-      # 8. Prepare artifacts for uploading
-      - name: Prepare artifacts
-        run: |
-          # Binary artifacts
-          mkdir artifacts
-          cp LICENSE artifacts
-          cp build/nova-test-unit artifacts
-          cp build/nova-test-end-to-end artifacts
-          cp build/libnova-renderer.a artifacts
-      # 9. Upload binary artifacts
-      - name: Upload binary artifacts
-        uses: actions/upload-artifact@master
-        with:
-          name: binary-linux-gcc
-          path: artifacts
-
-  build-linux-clang:
-    # Even tho we run the real build in an arch linux docker
-    # containerwe need to specify a HostOS
-    runs-on: ubuntu-latest
-
-    # Run the real build on an arch linux docker container
-    # Ubuntu has out of date tools and sometimes system updates
-    # require manual interaction so its unusable for CI
-    container: archlinux/base
-
-    steps:
-      # 1. Update the system
-      #    Arch linux updates NEVER require manual interaction,
-      #    so this is safe in combination with --noconfirm
-      - name: Update System
-        run: pacman --noconfirm -Syu
-      # 2. Install the required dependencies
-      - name: Install dependencies
-        run: pacman --noconfirm -S cmake ninja binutils clang python3 git vulkan-devel tar unzip which
-      # 3. Checkout the repository, this is done via a github action
-      - name: Checkout repository
-        uses: actions/checkout@master
-      # 4. Prepare nova
-      #    Currently there are 2 different build methods in use with nova,
-      #    so check which one the branch we are on is using and adjust as required
-      - name: Prepare
-        shell: bash
-        run: |
-          set -e
-
-          if [[ -f "build.py" ]]; then
-              # The new build.py method is easy, just run it with python
-              # and we are good to go
-              python3 build.py
-          else
-              # The fiddly part, this will require a manual install of vcpkg... lets do it
-              git clone https://github.com/microsoft/vcpkg vcpkg
-              pushd vcpkg
-              bash bootstrap-vcpkg.sh
-              export PATH=`pwd`:$PATH
-              popd
-              # Now vcpkg should be set up
-              VULKAN_SDK=/usr bash setup-linux.sh
-          fi
-      # 5. Configure with CMake
-      - name: Configure with CMake
-        run: |
-          mkdir build
-          cd build
-          VULKAN_SDK=/usr cmake ..                                           \
-            -G"Ninja"                                                        \
-            -DNOVA_TEST=ON                                                   \
-            -DCMAKE_BUILD_TYPE=Debug                                         \
-            -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake \
-            -DCMAKE_CXX_COMPILER=clang++                                     \
-            -DCMAKE_C_COMPILER=clang
       # 6. Build with CMake
       - name: Build with CMake
         working-directory: build
@@ -159,7 +88,7 @@ jobs:
       - name: Upload binary artifacts
         uses: actions/upload-artifact@master
         with:
-          name: binary-linux-clang
+          name: binary-linux-${{ matrix.compiler }}
           path: artifacts
 
   build-windows-msvc:
@@ -167,39 +96,19 @@ jobs:
     # lets hope this goes well...
     runs-on: windows-latest
 
+    # Used for supplying the vulkan version
+    strategy:
+      matrix:
+        vulkan: [1.1.121.2]
+
+    env:
+      VULKAN_SDK: C:\\VulkanSDK\\${{ matrix.vulkan }}
+
     steps:
       # 1. Download the VulkanSDK
       - name: Download VulkanSDK
-        shell: powershell
-        run: |
-          $web = New-Object System.Net.WebClient
-          $web.UseDefaultCredentials = $True
-          $url = "https://sdk.lunarg.com/sdk/download/1.1.121.2/windows/VulkanSDK-1.1.121.2-Installer.exe?Human=true"
-          $file = "VulkanSDK-Installer.exe"
-          Register-ObjectEvent -InputObject $web -EventName DownloadFileCompleted `
-          -SourceIdentifier Web.DownloadFileCompleted -Action {    
-              $Global:isDownloaded = $True
-          }
-          Register-ObjectEvent -InputObject $web -EventName DownloadProgressChanged `
-          -SourceIdentifier Web.DownloadProgressChanged -Action {
-              $Global:Data = $event
-          }
-          $web.DownloadFileAsync($url,$file)
-          
-          $last_percentage = -1
-
-          While (-Not $isDownloaded) {
-              $percentage = $Global:Data.SourceArgs.ProgressPercentage
-              $totalBytes = $Global:Data.SourceArgs.TotalBytesToReceive
-              $receivedBytes = $Global:Data.SourceArgs.BytesReceived
-              If ($null -ne $percentage) {
-                  If($percentage - 10 -gt $last_percentage) {
-                      Write-Host ("{0}% ({1}/{2})" -f $percentage,$receivedBytes,$totalBytes)
-                      $last_percentage = $percentage
-                  }
-              }
-          }
-          Write-Host ("100% ({0}/{1})" -f $receivedBytes,$totalBytes)
+        shell: bash
+        run: curl -L "https://sdk.lunarg.com/sdk/download/${{ matrix.vulkan }}/windows/VulkanSDK-${{ matrix.vulkan }}-Installer.exe?Human=true"
       # 2. Install the VulkanSDK
       - name: Install VulkanSDK
         run: .\VulkanSDK-Installer.exe /S
@@ -212,15 +121,13 @@ jobs:
       - name: Prepare
         shell: bash
         run: |
-          set -e
-
           if [[ -f "build.py" ]]; then
               # The new build.py method is easy, just run it with python
               # and we are good to go
               python build.py
           else
               # vcpkg is provided via the system
-              VULKAN_SDK='C:\\VulkanSDK\\1.1.121.2' powershell .\\setup-windows.ps1
+              powershell .\\setup-windows.ps1
           fi
       # 5. Configure with CMake
       - name: Configure with CMake
@@ -228,10 +135,9 @@ jobs:
         run: |
           mkdir build
           cd build
-          VULKAN_SDK='C:\\VulkanSDK\\1.1.121.2' cmake .. \
-            -G "Visual Studio 16 2019" -A x64            \
-            -DNOVA_TEST=ON                               \
-            -DCMAKE_BUILD_TYPE=Debug                     \
+          cmake .. -G "Visual Studio 16 2019" -A x64            \
+            -DNOVA_TEST=ON                                      \
+            -DCMAKE_BUILD_TYPE=Debug                            \
             -DCMAKE_TOOLCHAIN_FILE="${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
       # 6. Build with CMake
       - name: Build with CMake
