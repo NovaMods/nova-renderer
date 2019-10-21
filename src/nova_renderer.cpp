@@ -253,6 +253,7 @@ namespace nova::renderer {
         for(const shaderpack::TextureCreateInfo& create_info : texture_create_infos) {
             rhi::Image* new_texture = rhi->create_image(create_info);
             dynamic_textures.emplace(create_info.name, new_texture);
+            dynamic_texture_infos.emplace(create_info.name, create_info);
         }
     }
 
@@ -387,6 +388,8 @@ namespace nova::renderer {
                     }
                 }
             }
+
+            renderpasses.push_back(renderpass);
         }
     }
 
@@ -408,6 +411,7 @@ namespace nova::renderer {
             for(const shaderpack::MaterialPass& pass_data : material_data.passes) {
                 if(pass_data.pipeline == pipeline_name) {
                     MaterialPass pass = {};
+                    pass.pipeline_interface = pipeline_interface;
 
                     pass.descriptor_sets = rhi->create_descriptor_sets(pipeline_interface, descriptor_pool);
 
@@ -428,6 +432,8 @@ namespace nova::renderer {
                 }
             }
         }
+
+        pipeline.passes.shrink_to_fit();
     }
 
     void NovaRenderer::bind_data_to_material_descriptor_sets(
@@ -719,6 +725,13 @@ namespace nova::renderer {
                                                            const StaticMeshRenderableData& renderable) {
         const RenderableId id = next_renderable_id.load();
         next_renderable_id.fetch_add(1);
+
+        auto pos = material_pass_keys.find(material_name);
+        if(pos == material_pass_keys.end()) {
+            NOVA_LOG(ERROR) << "No material named " <<
+                material_name.material_name << " for pass " << material_name.pass_name;
+            return std::numeric_limits<uint64_t>::max();
+        }
 
         // Figure out where to put the renderable
         const MaterialPassKey& pass_key = material_pass_keys.at(material_name);

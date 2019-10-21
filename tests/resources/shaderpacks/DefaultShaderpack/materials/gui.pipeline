@@ -1,6 +1,6 @@
 {
     "name": "gui",
-    "pass": "Forward",
+    "pass": "forward",
     "depthFunc": "LessEqual",
     "states": [
         "DisableAlphaWrite"

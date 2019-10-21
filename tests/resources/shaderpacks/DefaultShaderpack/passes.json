@@ -1,6 +1,6 @@
 [
     {
-        "name": "Forward",
+        "name": "forward",
         "textureOutputs": [
             {
                 "name": "LitWorld",
@@ -17,7 +17,7 @@
         ]
     }, 
     {
-        "name": "Final",
+        "name": "final",
         "textureInputs": ["LitWorld"],
         "textureOutputs": [
             {

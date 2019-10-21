@@ -94,8 +94,6 @@ namespace nova::renderer::rhi {
         // TODO: Not always use mallocator
         bvestl::polyalloc::Mallocator mallocator;
 
-        GlfwWindow *window;
-
         bool supports_geometry_shaders = false;
 
         std::unordered_map<std::string, shaderpack::SamplerCreateInfo> samplers;

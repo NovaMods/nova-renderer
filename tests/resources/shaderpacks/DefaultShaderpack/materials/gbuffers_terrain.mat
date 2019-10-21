@@ -3,7 +3,7 @@
     "filter": "geometry_type::block AND not_transparent",
     "passes": [
         {
-            "name": "main",
+            "name": "forward",
             "pipeline": "gbuffers_terrain",
             "bindings": {
                 "per_model_uniforms": "NovaModelMatrixBuffer"

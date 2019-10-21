@@ -6,20 +6,24 @@
 #include "../../util/logger.hpp"
 #include "gl3_command_list.hpp"
 #include "gl3_structs.hpp"
+#include "gl3_swapchain.hpp"
 
 namespace nova::renderer::rhi {
     Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings)
-        : RenderEngine(&mallocator, settings), window(new GlfwWindow(settings.settings)) {
+        : RenderEngine(&mallocator, settings) {
+
+        window = std::make_unique<GlfwWindow>(settings.settings);
 
         gladLoadGLLoader(GlfwWindow::get_gl_proc_address);
+
+        swapchain = new Gl3Swapchain(settings.settings.max_in_flight_frames, window->get_window_size());
 
         set_initial_state();
     }
 
     Gl4NvRenderEngine::~Gl4NvRenderEngine() {
-        delete window;
+        delete swapchain;
     }
-
 
     void Gl4NvRenderEngine::set_initial_state() {
         glEnable(GL_TEXTURE_2D);
@@ -433,10 +437,13 @@ namespace nova::renderer::rhi {
             gl_semaphore->signaled = true;
             gl_semaphore->cv.notify_all();
         }
-        auto* fence = static_cast<Gl3Fence*>(fence_to_signal);
-        std::unique_lock lck(fence->mutex);
-        fence->signaled = true;
-        fence->cv.notify_all();
+
+        if(fence_to_signal) {
+            auto* fence = static_cast<Gl3Fence*>(fence_to_signal);
+            std::unique_lock lck(fence->mutex);
+            fence->signaled = true;
+            fence->cv.notify_all();
+        }
     }
 
     void Gl4NvRenderEngine::copy_buffers_impl(const Gl3BufferCopyCommand& buffer_copy) {
