@@ -227,7 +227,6 @@ if(NOVA_ENABLE_VULKAN_RHI)
 		src/render_engine/vulkan/vulkan_render_engine.hpp
 		src/render_engine/vulkan/vk_structs.hpp
         src/render_engine/vulkan/vulkan_utils.hpp
-        src/render_engine/vulkan/vulkan_type_converters.hpp
         src/render_engine/vulkan/vulkan_utils.cpp
         src/render_engine/vulkan/vulkan_swapchain.cpp 
         src/render_engine/vulkan/vulkan_swapchain.hpp
