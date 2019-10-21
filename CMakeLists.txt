@@ -262,6 +262,8 @@ if(NOVA_ENABLE_OPENGL_RHI)
             src/render_engine/gl3/glad/glad.h
             src/render_engine/gl3/glad.c
             src/render_engine/gl3/gl3_structs.hpp
+            src/windowing/glfw_window.cpp
+            src/windowing/glfw_window.hpp
             )
 endif()
 
@@ -419,6 +421,18 @@ if(NOVA_ENABLE_VULKAN_RHI)
     else()
         set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan)
     endif()
+endif()
+
+if(NOVA_ENABLE_OPENGL_RHI)
+    if(TARGET glfw)
+        set(GLFW_TARGET_NAME glfw)
+    elseif(TARGET glfw3)
+        set(GLFW_TARGET_NAME glfw3)
+    else()
+        message(FATAL_ERROR "GLFW target name could not be found")
+    endif()
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} ${GLFW_TARGET_NAME})
+    target_include_directories(nova-renderer PUBLIC external/glfw/include)
 endif()
 
 if(NOVA_ENABLE_D3D12_RHI)

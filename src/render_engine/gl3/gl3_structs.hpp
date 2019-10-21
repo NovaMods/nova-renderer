@@ -56,6 +56,9 @@ namespace nova::renderer::rhi {
     };
 
     struct Gl3DescriptorPool : DescriptorPool {
+        Gl3DescriptorPool(const bvestl::polyalloc::allocator_handle& descriptor_allocator)
+            : descriptor_allocator(descriptor_allocator) {}
+
         std::vector<Gl3Descriptor> descriptors;
         std::vector<Gl3SamplerDescriptor> sampler_sets;
 

@@ -50,7 +50,7 @@ extern "C" {
 #endif
 
 #include "stdint.h"
-
+#include "KHR/khrplatform.h"
 struct gladGLversionStruct {
     int major;
     int minor;

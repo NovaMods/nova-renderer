@@ -4,6 +4,7 @@
 #include "gl3_command_list.hpp"
 #include "glad/glad.h"
 #include "nova_renderer/render_engine.hpp"
+#include "../../windowing/glfw_window.hpp"
 
 // TODO: Not always use mallocator
 #include "../../memory/mallocator.hpp"
@@ -22,7 +23,7 @@ namespace nova::renderer::rhi {
         Gl4NvRenderEngine(const Gl4NvRenderEngine& other) = delete;
         Gl4NvRenderEngine& operator=(const Gl4NvRenderEngine& other) = delete;
 
-        ~Gl4NvRenderEngine() override = default;
+        ~Gl4NvRenderEngine() override;
 
         void set_num_renderpasses(uint32_t num_renderpasses) override;
 
@@ -89,12 +90,11 @@ namespace nova::renderer::rhi {
                                  const std::vector<Semaphore*>& wait_semaphores = {},
                                  const std::vector<Semaphore*>& signal_semaphores = {}) override;
 
-    protected:
-        void open_window_and_create_surface(const NovaSettings::WindowOptions& options);
-
     private:
         // TODO: Not always use mallocator
         bvestl::polyalloc::Mallocator mallocator;
+
+        GlfwWindow *window;
 
         bool supports_geometry_shaders = false;
 

@@ -8,17 +8,18 @@
 #include "gl3_structs.hpp"
 
 namespace nova::renderer::rhi {
-    Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(&mallocator, settings) {
-        const bool loaded_opengl = true;    // TODO: Load OpenGL from GLFW
-        if(!loaded_opengl) {
-            NOVA_LOG(FATAL) << "Could not load OpenGL 4.6 functions";
-            return;
-        }
+    Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings)
+        : RenderEngine(&mallocator, settings), window(new GlfwWindow(settings.settings)) {
 
-        open_window_and_create_surface(settings.settings.window);
+        gladLoadGLLoader(GlfwWindow::get_gl_proc_address);
 
         set_initial_state();
     }
+
+    Gl4NvRenderEngine::~Gl4NvRenderEngine() {
+        delete window;
+    }
+
 
     void Gl4NvRenderEngine::set_initial_state() {
         glEnable(GL_TEXTURE_2D);
@@ -78,7 +79,7 @@ namespace nova::renderer::rhi {
     DescriptorPool* Gl4NvRenderEngine::create_descriptor_pool(const uint32_t num_sampled_images,
                                                             const uint32_t num_samplers,
                                                             const uint32_t num_uniform_buffers) {
-        auto* pool = new Gl3DescriptorPool;
+        auto* pool = new Gl3DescriptorPool(shaderpack_allocator);
         pool->descriptors.resize(static_cast<std::size_t>(num_sampled_images + num_uniform_buffers));
         pool->sampler_sets.resize(num_samplers);
 
@@ -438,11 +439,6 @@ namespace nova::renderer::rhi {
         fence->cv.notify_all();
     }
 
-    void Gl4NvRenderEngine::open_window_and_create_surface(const NovaSettings::WindowOptions& options) {
-        // Create GLFW window
-        // Be sure to create an OpenGL 4.6 forward-compatible context!
-    }
-
     void Gl4NvRenderEngine::copy_buffers_impl(const Gl3BufferCopyCommand& buffer_copy) {
         glBindBuffer(GL_COPY_READ_BUFFER, buffer_copy.source_buffer);
         glBindBuffer(GL_COPY_WRITE_BUFFER, buffer_copy.destination_buffer);
@@ -549,9 +545,9 @@ namespace nova::renderer::rhi {
 
     ntl::Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, const GLenum shader_type) {
         spirv_cross::CompilerGLSL compiler(spirv);
-        const std::string glsl = compiler.compile().c_str();
+        const std::string glsl = compiler.compile();
         const char* glsl_c = glsl.c_str();
-        const auto len = static_cast<GLint>(glsl.size()); // SIGNED LENGTH WHOOOOOO
+        const auto len = static_cast<GLint>(glsl.size());
 
         const GLuint shader = glCreateShader(shader_type);
         glShaderSource(shader, 1, &glsl_c, &len);
@@ -561,9 +557,9 @@ namespace nova::renderer::rhi {
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &compile_log_length);
         if(compile_log_length > 0) {
             std::string compile_log;
-            compile_log.reserve(compile_log_length);
+            compile_log.resize(static_cast<unsigned long>(compile_log_length));
             glGetShaderInfoLog(shader, compile_log_length, nullptr, compile_log.data());
-            return ntl::Result<GLuint>(ntl::NovaError(compile_log.c_str()));
+            return ntl::Result<GLuint>(ntl::NovaError(compile_log));
         }
 
         return ntl::Result(shader);

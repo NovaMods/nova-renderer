@@ -67,6 +67,13 @@ include_target(spirv::headers "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers")
 include_target(vma::vma "${3RD_PARTY_DIR}/VulkanMemoryAllocator/src")
 include_target(vulkan::sdk "${VULKAN_INCLUDE}")
 
+# GLFW
+set(GLFW_BUILD_EXAMPLES OFF)
+set(GLFW_BUILD_TESTS OFF)
+set(GLFW_BUILD_DOCS OFF)
+set(GLFW_INSTALL OFF)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glfw)
+
 # Hide unnecessary targets from all
 
 set_property(TARGET glslang PROPERTY EXCLUDE_FROM_ALL True)
