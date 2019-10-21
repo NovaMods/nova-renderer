@@ -1,0 +1,215 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  build-linux:
+    # Even tho we run the real build in an arch linux docker
+    # container, we need to specify a HostOS
+    runs-on: ubuntu-latest
+
+    # Run the real build on an arch linux docker container
+    # Ubuntu has out of date tools and sometimes system updates
+    # require manual interaction so its unusable for CI
+    container: archlinux/base
+
+    # Use a build matrix so GCC and Clang don't have to have different
+    # jobs in this yaml file
+    strategy:
+      matrix:
+        cc: [gcc, clang]
+        include:
+          - cc: gcc
+            cxx: g++
+          - cc: clang
+            cxx: clang++
+
+    # Environment variables
+    env:
+      VULKAN_SDK: /usr
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+
+    name: build-linux-${{ matrix.cc }}
+
+    steps:
+      # 1. Update the system
+      #    Arch linux updates NEVER require manual interaction
+      #    when using --noconfirm, so this is totally safe
+      - name: Update System
+        run: pacman --noconfirm -Syu
+      # 2. Install the required dependencies
+      - name: Install dependencies
+        run: pacman --noconfirm -S cmake binutils gcc python3 git vulkan-devel ninja tar unzip which ${{ matrix.cc }}
+      # 3. Checkout the repository, this is done via a github action
+      - name: Checkout repository
+        uses: actions/checkout@master
+      # 4. Prepare nova
+      #    Currently there are 2 different build methods in use with nova,
+      #    so check which one the branch we are on is using and adjust as required
+      - name: Prepare
+        shell: bash
+        run: |
+          if [[ -f "build.py" ]]; then
+              # The new build.py method is easy, just run it with python
+              # and we are good to go
+              python3 build.py
+          else
+              # The fiddly part, this will require a manual install of vcpkg... lets do it
+              git clone https://github.com/microsoft/vcpkg vcpkg
+              pushd vcpkg
+              bash bootstrap-vcpkg.sh
+              export PATH=`pwd`:$PATH
+              popd
+              # Now vcpkg should be set up
+              bash setup-linux.sh
+          fi
+      # 5. Configure with CMake
+      - name: Configure with CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. -G"Ninja"         \
+            -DNOVA_TEST=ON           \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
+      # 6. Build with CMake
+      - name: Build with CMake
+        working-directory: build
+        run: cmake --build .
+      # 7. Run the unit tests
+      - name: Run unit tests
+        working-directory: build
+        run: ./nova-test-unit --gtest_color=yes
+      # 8. Prepare artifacts for uploading
+      - name: Prepare artifacts
+        run: |
+          # Binary artifacts
+          mkdir artifacts
+          cp LICENSE artifacts
+          cp build/nova-test-unit artifacts
+          cp build/nova-test-end-to-end artifacts
+          cp build/libnova-renderer.a artifacts
+      # 9. Upload binary artifacts
+      - name: Upload binary artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: binary-linux-${{ matrix.compiler }}
+          path: artifacts
+
+  build-windows:
+    # Running on Windows Server 2019 or whatever the latest version is,
+    # lets hope this goes well...
+    runs-on: windows-latest
+
+    # Used for supplying the vulkan version
+    strategy:
+      matrix:
+        vulkan: [1.1.121.2]
+
+    env:
+      VULKAN_SDK: C:\\VulkanSDK\\${{ matrix.vulkan }}
+
+    name: build-windows-msvc
+
+    steps:
+      # 1. Download the VulkanSDK
+      - name: Download VulkanSDK
+        shell: bash
+        run: |
+          curl -L \
+          'https://sdk.lunarg.com/sdk/download/${{ matrix.vulkan }}/windows/VulkanSDK-${{ matrix.vulkan }}-Installer.exe?Human=true' \
+          -o VulkanSDK-Installer.exe
+      # 2. Install the VulkanSDK
+      - name: Install VulkanSDK
+        run: .\VulkanSDK-Installer.exe /S
+      # 3. Checkout the repository, this is done via a github action
+      - name: Checkout repository
+        uses: actions/checkout@master
+      # 4. Prepare nova
+      #    Currently there are 2 different build methods in use with nova,
+      #    so check which one the branch we are on is using and adjust as required
+      - name: Prepare
+        shell: bash
+        run: |
+          if [[ -f "build.py" ]]; then
+              # The new build.py method is easy, just run it with python
+              # and we are good to go
+              python build.py
+          else
+              # vcpkg is provided via the system
+              powershell .\\setup-windows.ps1
+          fi
+      # 5. Configure with CMake
+      - name: Configure with CMake
+        shell: bash
+        run: |
+          mkdir build
+          cd build
+          cmake .. -G "Visual Studio 16 2019" -A x64            \
+            -DNOVA_TEST=ON                                      \
+            -DCMAKE_BUILD_TYPE=Debug                            \
+            -DCMAKE_TOOLCHAIN_FILE="${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      # 6. Build with CMake
+      - name: Build with CMake
+        working-directory: build
+        shell: bash
+        run: cmake --build .
+      # 7. Run the unit tests
+      - name: Run unit tests
+        working-directory: build/Debug
+        shell: bash
+        run: ./nova-test-unit.exe --gtest_color=yes
+      # 8. Prepare artifacts for uploading
+      - name: Prepare artifacts
+        shell: bash
+        run: |
+          # Binary artifacts
+          mkdir artifacts
+          cp LICENSE artifacts
+          cp build/Debug/nova-test-unit.exe artifacts
+          cp build/Debug/nova-test-end-to-end.exe artifacts
+          cp build/Debug/nova-renderer.lib artifacts
+      # 9. Upload binary artifacts
+      - name: Upload binary artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: binary-windows-msvc
+          path: artifacts
+
+  build-simple-artifacts:
+    # Let's use linux for packaging up our artifacts which don't
+    # require building
+    # We could also use Windows or OSX, but Linux seems to be most fitting
+    runs-on: ubuntu-latest
+
+    steps:
+      # Of course we need a copy of the repository
+      - name: Checkout repository
+        uses: actions/checkout@master
+      # Preparation of the artifacts, for example adding LICENSE
+      - name: Prepare artifacts
+        run: |
+          mkdir artifacts
+
+          # Docs
+          mkdir artifacts/docs
+          cp -r docs/* artifacts/docs
+          cp LICENSE artifacts/docs
+          cp readme.md artifacts/docs
+
+          # Headers
+          mkdir artifacts/headers
+          cp -r include/* artifacts/headers
+          cp LICENSE artifacts/headers
+      # Upload the docs artifact
+      - name: Upload docs
+        uses: actions/upload-artifact@master
+        with:
+          name: docs
+          path: artifacts/docs
+      # Upload the headers artifact
+      - name: Upload headers
+        uses: actions/upload-artifact@master
+        with:
+          name: headers
+          path: artifacts/headers
