@@ -867,9 +867,15 @@ namespace nova::renderer::rhi {
         }
     }
 
-    Semaphore* VulkanRenderEngine::create_semaphore() { return nullptr; }
+    Semaphore* VulkanRenderEngine::create_semaphore() {
+        // TODO
+        return nullptr;
+    }
 
-    std::vector<Semaphore*> VulkanRenderEngine::create_semaphores(uint32_t num_semaphores) { return std::vector<Semaphore*>(); }
+    std::vector<Semaphore*> VulkanRenderEngine::create_semaphores(uint32_t num_semaphores) {
+        // TODO
+        return std::vector<Semaphore*>();
+    }
 
     Fence* VulkanRenderEngine::create_fence(const bool signaled) {
         auto* fence = new_object<VulkanFence>();
