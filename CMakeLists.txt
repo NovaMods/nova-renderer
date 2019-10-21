@@ -37,12 +37,12 @@ option(NOVA_ENABLE_D3D12_RHI "Compile the D3D12 RHI backend" ON)
 option(NOVA_ENABLE_OPENGL_RHI "Compile the OpenGL 3 backend" ON)
 
 if(NOVA_ENABLE_D3D12_API AND NOT WIN32)
-	message(WARNING "Nova can only compile its D3D12 RHI backend on Windows 10. You're now on Windows 10, so I'm disabling the D3D12 RHI backend")
-	set(NOVA_ENABLE_D3D12_RHI_BACKEND OFF)
+    message(WARNING "Nova can only compile its D3D12 RHI backend on Windows 10. You're now on Windows 10, so I'm disabling the D3D12 RHI backend")
+    set(NOVA_ENABLE_D3D12_RHI_BACKEND OFF)
 endif()
 
 if(NOT NOVA_ENABLE_VULKAN_RHI AND NOT VULKAN_ENABLE_D3D12_RHI AND NOT NOVA_ENABLE_OPENGL_RHI)
-	message(ERROR "You must enable at least one RHI backend")
+    message(ERROR "You must enable at least one RHI backend")
 endif()
 
 if(NOVA_ENABLE_EXPERIMENTAL)
@@ -96,25 +96,25 @@ set(NOVA_SOURCE
         include/nova_renderer/util/platform.hpp
         include/nova_renderer/util/result.hpp
         include/nova_renderer/util/utils.hpp
-		
+
         include/nova_renderer/command_list.hpp
-		include/nova_renderer/device_memory_resource.hpp
+        include/nova_renderer/device_memory_resource.hpp
         include/nova_renderer/nova_renderer.hpp
         include/nova_renderer/nova_settings.hpp
         include/nova_renderer/render_engine.hpp
         include/nova_renderer/renderables.hpp
-        include/nova_renderer/renderdoc_app.h 
-		include/nova_renderer/rhi_enums.hpp 
-		include/nova_renderer/rhi_types.hpp 
+        include/nova_renderer/renderdoc_app.h
+        include/nova_renderer/rhi_enums.hpp
+        include/nova_renderer/rhi_types.hpp
         include/nova_renderer/shaderpack_data.hpp
         include/nova_renderer/window.hpp
-		include/nova_renderer/bytes.hpp
-		include/nova_renderer/render_graph.hpp
-		include/nova_renderer/allocation_strategy.hpp
-		include/nova_renderer/allocation_structs.hpp
-		include/nova_renderer/bytes.hpp
-		include/nova_renderer/polyalloc.hpp
-		
+        include/nova_renderer/bytes.hpp
+        include/nova_renderer/render_graph.hpp
+        include/nova_renderer/allocation_strategy.hpp
+        include/nova_renderer/allocation_structs.hpp
+        include/nova_renderer/bytes.hpp
+        include/nova_renderer/polyalloc.hpp
+
         src/nova_renderer.cpp
         src/render_engine/render_engine.cpp
 
@@ -127,7 +127,7 @@ set(NOVA_SOURCE
         src/loading/loading_utils.cpp
         src/loading/loading_utils.hpp
         src/loading/json_utils.hpp
-		
+
         src/settings/nova_settings.cpp
 
         src/render_objects/uniform_structs.hpp
@@ -136,21 +136,21 @@ set(NOVA_SOURCE
         src/util/logger.hpp
         src/util/utils.cpp
         src/util/result.cpp
-				
+
         src/loading/shaderpack/shaderpack_loading.cpp
         src/loading/shaderpack/shaderpack_loading.hpp
         src/loading/shaderpack/shaderpack_data.cpp
         src/loading/shaderpack/json_interop.cpp
         src/loading/shaderpack/json_interop.hpp
-        src/loading/shaderpack/shaderpack_validator.cpp 
-        src/loading/shaderpack/shaderpack_validator.hpp 
-        src/loading/shaderpack/render_graph_builder.cpp 
+        src/loading/shaderpack/shaderpack_validator.cpp
+        src/loading/shaderpack/shaderpack_validator.hpp
+        src/loading/shaderpack/render_graph_builder.cpp
         src/loading/shaderpack/render_graph_builder.hpp
-		 
+
         src/render_engine/command_list.cpp
-		src/render_engine/rhi_types.cpp
-		src/render_engine/render_engine.cpp
-		src/render_engine/swapchain.cpp
+        src/render_engine/rhi_types.cpp
+        src/render_engine/render_engine.cpp
+        src/render_engine/swapchain.cpp
 
         src/tasks/task_scheduler.cpp
         src/tasks/task_scheduler.hpp
@@ -161,22 +161,22 @@ set(NOVA_SOURCE
 
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
-		
-		src/memory/device_memory_resource.cpp
-		src/memory/block_allocation_strategy.hpp
-		src/memory/bump_point_allocation_strategy.hpp
-		src/memory/mallocator.hpp
-		src/memory/system_memory_allocator.hpp
-		src/memory/block_allocation_strategy.cpp
-		src/memory/bump_point_allocation_strategy.cpp
-		src/memory/bytes.cpp
+
+        src/memory/device_memory_resource.cpp
+        src/memory/block_allocation_strategy.hpp
+        src/memory/bump_point_allocation_strategy.hpp
+        src/memory/mallocator.hpp
+        src/memory/system_memory_allocator.hpp
+        src/memory/block_allocation_strategy.cpp
+        src/memory/bump_point_allocation_strategy.cpp
+        src/memory/bytes.cpp
         src/memory/default_new.cpp
         src/memory/default_new.hpp
-		src/memory/mallocator.cpp
-		src/memory/system_memory_allocator.cpp
+        src/memory/mallocator.cpp
+        src/memory/system_memory_allocator.cpp
 
-		)
-		
+        )
+
 #################################################################
 # Add NTL source code - just until I get INTERFACE libs working #
 #################################################################
@@ -202,67 +202,67 @@ set(NOVA_HEADERS
 # Select platform dependent code #
 ##################################
 set(WINDOWS_NOVA_SOURCE
-    src/util/windows_utils.cpp
-    src/util/windows_utils.hpp
-    src/windowing/win32_window.hpp
-    src/windowing/win32_window.cpp
-	)
+        src/util/windows_utils.cpp
+        src/util/windows_utils.hpp
+        src/windowing/win32_window.hpp
+        src/windowing/win32_window.cpp
+        )
 
 set(UNIX_NOVA_SOURCE
-    src/windowing/x11_window.cpp
-    src/windowing/x11_window.hpp
-    src/util/linux_utils.cpp
-    src/util/linux_utils.hpp
-	)
+        src/windowing/x11_window.cpp
+        src/windowing/x11_window.hpp
+        src/util/linux_utils.cpp
+        src/util/linux_utils.hpp
+        )
 
 #########################################
 # Which RHI backends should we compile? #
 #########################################
 if(NOVA_ENABLE_VULKAN_RHI)
-	set(NOVA_SOURCE
-		${NOVA_SOURCE}
-        src/render_engine/vulkan/vulkan_command_list.cpp
-        src/render_engine/vulkan/vulkan_command_list.hpp 
-		src/render_engine/vulkan/vulkan_render_engine.cpp 
-		src/render_engine/vulkan/vulkan_render_engine.hpp
-		src/render_engine/vulkan/vk_structs.hpp
-        src/render_engine/vulkan/vulkan_utils.hpp
-        src/render_engine/vulkan/vulkan_utils.cpp
-        src/render_engine/vulkan/vulkan_swapchain.cpp 
-        src/render_engine/vulkan/vulkan_swapchain.hpp
-		)
+    set(NOVA_SOURCE
+            ${NOVA_SOURCE}
+            src/render_engine/vulkan/vulkan_command_list.cpp
+            src/render_engine/vulkan/vulkan_command_list.hpp
+            src/render_engine/vulkan/vulkan_render_engine.cpp
+            src/render_engine/vulkan/vulkan_render_engine.hpp
+            src/render_engine/vulkan/vk_structs.hpp
+            src/render_engine/vulkan/vulkan_utils.hpp
+            src/render_engine/vulkan/vulkan_utils.cpp
+            src/render_engine/vulkan/vulkan_swapchain.cpp
+            src/render_engine/vulkan/vulkan_swapchain.hpp
+            )
 endif()
 
 if(NOVA_ENABLE_D3D12_RHI)
-	set(WINDOWS_NOVA_SOURCE
-		${WINDOWS_NOVA_SOURCE}
-		src/render_engine/dx12/dx12_utils.cpp
-		src/render_engine/dx12/dx12_utils.hpp
-		src/render_engine/dx12/d3dx12.h
-		src/render_engine/dx12/dx12_command_list.cpp 
-		src/render_engine/dx12/dx12_command_list.hpp 
-		src/render_engine/dx12/dx12_structs.hpp
-		src/render_engine/dx12/dx12_swapchain.cpp
-		src/render_engine/dx12/dx12_swapchain.hpp
-		src/render_engine/dx12/dx12_render_engine.cpp
-		src/render_engine/dx12/dx12_render_engine.hpp
-		)
+    set(WINDOWS_NOVA_SOURCE
+            ${WINDOWS_NOVA_SOURCE}
+            src/render_engine/dx12/dx12_utils.cpp
+            src/render_engine/dx12/dx12_utils.hpp
+            src/render_engine/dx12/d3dx12.h
+            src/render_engine/dx12/dx12_command_list.cpp
+            src/render_engine/dx12/dx12_command_list.hpp
+            src/render_engine/dx12/dx12_structs.hpp
+            src/render_engine/dx12/dx12_swapchain.cpp
+            src/render_engine/dx12/dx12_swapchain.hpp
+            src/render_engine/dx12/dx12_render_engine.cpp
+            src/render_engine/dx12/dx12_render_engine.hpp
+            )
 endif()
 
 if(NOVA_ENABLE_OPENGL_RHI)
-	set(NOVA_SOURCE
-		${NOVA_SOURCE}
-        src/render_engine/gl3/gl3_render_engine.cpp
-        src/render_engine/gl3/gl3_render_engine.hpp 
-        src/render_engine/gl3/gl3_command_list.cpp 
-        src/render_engine/gl3/gl3_command_list.hpp 
-        src/render_engine/gl3/gl3_swapchain.cpp 
-        src/render_engine/gl3/gl3_swapchain.hpp 
-        src/render_engine/gl3/KHR/khrplatform.h
-        src/render_engine/gl3/glad/glad.h 
-        src/render_engine/gl3/glad.c 
-		src/render_engine/gl3/gl3_structs.hpp 
-		)
+    set(NOVA_SOURCE
+            ${NOVA_SOURCE}
+            src/render_engine/gl3/gl3_render_engine.cpp
+            src/render_engine/gl3/gl3_render_engine.hpp
+            src/render_engine/gl3/gl3_command_list.cpp
+            src/render_engine/gl3/gl3_command_list.hpp
+            src/render_engine/gl3/gl3_swapchain.cpp
+            src/render_engine/gl3/gl3_swapchain.hpp
+            src/render_engine/gl3/KHR/khrplatform.h
+            src/render_engine/gl3/glad/glad.h
+            src/render_engine/gl3/glad.c
+            src/render_engine/gl3/gl3_structs.hpp
+            )
 endif()
 
 if(WIN32)
@@ -324,10 +324,10 @@ source_group("nova" FILES ${NOVA_NO_COMPILE} ${3RD_PARTY_SOURCE} ${NOVA_SOURCE} 
 # Setup the nova library #
 ##########################
 add_library(nova-renderer STATIC
-    ${NOVA_HEADERS}
-    ${NOVA_SOURCE}
-    ${3RD_PARTY_SOURCE}
-)
+        ${NOVA_HEADERS}
+        ${NOVA_SOURCE}
+        ${3RD_PARTY_SOURCE}
+        )
 nova_format(nova-renderer "${OTHER_NOVA_SOURCE}")
 
 # Add VULKAN_SDK to the include path
@@ -340,25 +340,25 @@ set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
 target_compile_definitions(nova-renderer PUBLIC FMT_STRING_ALIAS=1)
-target_include_directories(nova-renderer PUBLIC 
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> 
-	$ENV{VULKAN_SDK}/Include
-	${FMT_HEADERS}
-	${CMAKE_CURRENT_SOURCE_DIR}/external/miniz	# Miniz doesn't export a MINIZ_HEADERS variable?
-	)
+target_include_directories(nova-renderer PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $ENV{VULKAN_SDK}/Include
+        ${FMT_HEADERS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/miniz	# Miniz doesn't export a MINIZ_HEADERS variable?
+        )
 target_link_directories(nova-renderer PUBLIC $ENV{VULKAN_SDK}/Lib)
 
 # Compilation definitions indicating enabled backends
 if(NOVA_ENABLE_VULKAN_RHI)
-	target_compile_definitions(nova-renderer PUBLIC NOVA_VULKAN_RHI)
+    target_compile_definitions(nova-renderer PUBLIC NOVA_VULKAN_RHI)
 endif()
 
 if(NOVA_ENABLE_D3D12_RHI)
-	target_compile_definitions(nova-renderer PUBLIC NOVA_D3D12_RHI)
+    target_compile_definitions(nova-renderer PUBLIC NOVA_D3D12_RHI)
 endif()
 
 if(NOVA_ENABLE_OPENGL_RHI)
-	target_compile_definitions(nova-renderer PUBLIC NOVA_OPENGL_RHI)
+    target_compile_definitions(nova-renderer PUBLIC NOVA_OPENGL_RHI)
 endif()
 
 include(GNUInstallDirs)
@@ -395,34 +395,34 @@ add_coverage(nova-renderer)
 #########################
 # Set libraries to link #
 #########################
-set(COMMON_LINK_LIBS 
-	${CMAKE_DL_LIBS}
-    fmt
-	glm::glm
-    glslang
-    OGLCompiler
-    OSDependent
-    SPIRV
-	minitrace
-    miniz
-    nlohmann::json
-    vma::vma
-    SPIRV-Tools
-    spirv-cross-core
-    spirv-cross-glsl
-    spirv-cross-reflect
-    spirv-cross-util)
+set(COMMON_LINK_LIBS
+        ${CMAKE_DL_LIBS}
+        fmt
+        glm::glm
+        glslang
+        OGLCompiler
+        OSDependent
+        SPIRV
+        minitrace
+        miniz
+        nlohmann::json
+        vma::vma
+        SPIRV-Tools
+        spirv-cross-core
+        spirv-cross-glsl
+        spirv-cross-reflect
+        spirv-cross-util)
 
 if(NOVA_ENABLE_VULKAN_RHI)
-	if(WIN32)
-		set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan-1)
-	else()
-		set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan)
-	endif()
+    if(WIN32)
+        set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan-1)
+    else()
+        set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan)
+    endif()
 endif()
 
 if(NOVA_ENABLE_D3D12_RHI)
-	set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} spirv-cross-hlsl)
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} spirv-cross-hlsl)
 endif()
 
 ##############################
@@ -454,7 +454,7 @@ if(WIN32)
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler spirv-cross-hlsl)
     target_include_directories(nova-renderer PRIVATE ${WinSDK_DIRS})
     target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING NOMINMAX)
-	target_compile_definitions(nova-renderer PRIVATE NOVA_EXPORT)
+    target_compile_definitions(nova-renderer PRIVATE NOVA_EXPORT)
 
     # Visual Studio is stupid. Is it really that hard to use filesystem directories to organize code like literally
     # everyone else?
@@ -463,7 +463,7 @@ if(WIN32)
         string(REPLACE "/" "\\" source_path_msvc "${source_path}")
         source_group("${source_path_msvc}" FILES "${source}")
     endforeach()
-    
+
 else()
     # GCC and Clang complain loudly about the #pragma region stuff. This shuts them up.
     target_compile_options_if_supported(nova-renderer PRIVATE -Wno-unknown-pragmas)
@@ -489,5 +489,5 @@ endif()
 
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 foreach(dir ${dirs})
-  message(STATUS "dir='${dir}'")
+    message(STATUS "dir='${dir}'")
 endforeach()
