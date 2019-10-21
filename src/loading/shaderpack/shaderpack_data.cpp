@@ -564,4 +564,26 @@ namespace nova::renderer::shaderpack {
 
         return "Unknown value";
     }
-} // namespace nova::renderer
+
+    uint32_t pixel_format_to_pixel_width(const PixelFormatEnum format) {
+        switch(format) {
+            case PixelFormatEnum::RGBA8:
+                return 4 * 8;
+
+            case PixelFormatEnum::RGBA16F:
+                return 4 * 16;
+
+            case PixelFormatEnum::RGBA32F:
+                return 4 * 32;
+
+            case PixelFormatEnum::Depth:
+                return 32;
+
+            case PixelFormatEnum::DepthStencil:
+                return 32;
+
+            default:
+                return 32;
+        }
+    }
+} // namespace nova::renderer::shaderpack

@@ -578,31 +578,33 @@ namespace nova::renderer::shaderpack {
         ShaderpackResourcesData resources;
     };
 
-    PixelFormatEnum pixel_format_enum_from_string(const std::string& str);
-    TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const std::string& str);
-    TextureFilterEnum texture_filter_enum_from_string(const std::string& str);
-    WrapModeEnum wrap_mode_enum_from_string(const std::string& str);
-    StencilOpEnum stencil_op_enum_from_string(const std::string& str);
-    CompareOpEnum compare_op_enum_from_string(const std::string& str);
-    MsaaSupportEnum msaa_support_enum_from_string(const std::string& str);
-    PrimitiveTopologyEnum primitive_topology_enum_from_string(const std::string& str);
-    BlendFactorEnum blend_factor_enum_from_string(const std::string& str);
-    RenderQueueEnum render_queue_enum_from_string(const std::string& str);
-    StateEnum state_enum_from_string(const std::string& str);
-    VertexFieldEnum vertex_field_enum_from_string(const std::string& str);
+    [[nodiscard]] PixelFormatEnum pixel_format_enum_from_string(const std::string& str);
+    [[nodiscard]] TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const std::string& str);
+    [[nodiscard]] TextureFilterEnum texture_filter_enum_from_string(const std::string& str);
+    [[nodiscard]] WrapModeEnum wrap_mode_enum_from_string(const std::string& str);
+    [[nodiscard]] StencilOpEnum stencil_op_enum_from_string(const std::string& str);
+    [[nodiscard]] CompareOpEnum compare_op_enum_from_string(const std::string& str);
+    [[nodiscard]] MsaaSupportEnum msaa_support_enum_from_string(const std::string& str);
+    [[nodiscard]] PrimitiveTopologyEnum primitive_topology_enum_from_string(const std::string& str);
+    [[nodiscard]] BlendFactorEnum blend_factor_enum_from_string(const std::string& str);
+    [[nodiscard]] RenderQueueEnum render_queue_enum_from_string(const std::string& str);
+    [[nodiscard]] StateEnum state_enum_from_string(const std::string& str);
+    [[nodiscard]] VertexFieldEnum vertex_field_enum_from_string(const std::string& str);
 
-    std::string  to_string(PixelFormatEnum val);
-    std::string  to_string(TextureDimensionTypeEnum val);
-    std::string  to_string(TextureFilterEnum val);
-    std::string  to_string(WrapModeEnum val);
-    std::string  to_string(StencilOpEnum val);
-    std::string  to_string(CompareOpEnum val);
-    std::string  to_string(MsaaSupportEnum val);
-    std::string  to_string(PrimitiveTopologyEnum val);
-    std::string  to_string(BlendFactorEnum val);
-    std::string  to_string(RenderQueueEnum val);
-    std::string  to_string(StateEnum val);
-    std::string  to_string(VertexFieldEnum val);
+    [[nodiscard]] std::string to_string(PixelFormatEnum val);
+    [[nodiscard]] std::string to_string(TextureDimensionTypeEnum val);
+    [[nodiscard]] std::string to_string(TextureFilterEnum val);
+    [[nodiscard]] std::string to_string(WrapModeEnum val);
+    [[nodiscard]] std::string to_string(StencilOpEnum val);
+    [[nodiscard]] std::string to_string(CompareOpEnum val);
+    [[nodiscard]] std::string to_string(MsaaSupportEnum val);
+    [[nodiscard]] std::string to_string(PrimitiveTopologyEnum val);
+    [[nodiscard]] std::string to_string(BlendFactorEnum val);
+    [[nodiscard]] std::string to_string(RenderQueueEnum val);
+    [[nodiscard]] std::string to_string(StateEnum val);
+    [[nodiscard]] std::string to_string(VertexFieldEnum val);
+
+    [[nodiscard]] uint32_t pixel_format_to_pixel_width(PixelFormatEnum format);
 } // namespace nova::renderer
 
 #endif // NOVA_RENDERER_SHADERPACK_DATA_HPP

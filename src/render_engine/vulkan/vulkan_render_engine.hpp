@@ -9,10 +9,9 @@
 
 #include "nova_renderer/render_engine.hpp"
 
-#include "vulkan_swapchain.hpp"
-
 #include "../configuration.hpp"
 #include "vk_structs.hpp"
+#include "vulkan_swapchain.hpp"
 
 // TODO: Not always use mallocator
 #include "../../memory/mallocator.hpp"
@@ -71,12 +70,9 @@ namespace nova::renderer::rhi {
             const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override;
 
-        DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
-                                               uint32_t num_samplers,
-                                               uint32_t num_uniform_buffers) override;
+        DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images, uint32_t num_samplers, uint32_t num_uniform_buffers) override;
 
-        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                             DescriptorPool* pool) override;
+        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface, DescriptorPool* pool) override;
 
         void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override;
 
@@ -86,7 +82,7 @@ namespace nova::renderer::rhi {
 
         void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) override;
 
-        Image* create_texture(const shaderpack::TextureCreateInfo& info) override;
+        ntl::Result<Image*> create_image(const shaderpack::TextureCreateInfo& info) override;
         Semaphore* create_semaphore() override;
         std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override;
 

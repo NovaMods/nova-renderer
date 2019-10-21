@@ -2,14 +2,15 @@
 
 #include <memory>
 
-#include "nova_renderer/util/result.hpp"
 #include "nova_renderer/command_list.hpp"
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/platform.hpp"
+#include "nova_renderer/util/result.hpp"
 #include "nova_renderer/util/utils.hpp"
-#include "rhi_types.hpp"
 #include "nova_renderer/window.hpp"
+
+#include "rhi_types.hpp"
 
 namespace nova::renderer::rhi {
     struct Fence;
@@ -51,7 +52,9 @@ namespace nova::renderer::rhi {
 
         virtual void set_num_renderpasses(uint32_t num_renderpasses) = 0;
 
-        [[nodiscard]] virtual ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage type, ObjectType allowed_objects) = 0;
+        [[nodiscard]] virtual ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size,
+                                                                                MemoryUsage type,
+                                                                                ObjectType allowed_objects) = 0;
 
         /*!
          * \brief Creates a renderpass from the provided data
@@ -84,7 +87,7 @@ namespace nova::renderer::rhi {
         virtual void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) = 0;
 
         [[nodiscard]] virtual ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
-                                                                const shaderpack::PipelineCreateInfo& data) = 0;
+                                                                     const shaderpack::PipelineCreateInfo& data) = 0;
 
         [[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info) = 0;
 
@@ -104,7 +107,7 @@ namespace nova::renderer::rhi {
          */
         virtual void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) = 0;
 
-        [[nodiscard]] virtual Image* create_texture(const shaderpack::TextureCreateInfo& info) = 0;
+        [[nodiscard]] virtual ntl::Result<Image*> create_image(const shaderpack::TextureCreateInfo& info) = 0;
 
         [[nodiscard]] virtual Semaphore* create_semaphore() = 0;
 
@@ -229,8 +232,9 @@ namespace nova::renderer::rhi {
          */
         explicit RenderEngine(bvestl::polyalloc::Allocator* allocator,
                               NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)
-            : settings(settings), swapchain_size(settings.settings.window.width, settings.settings.window.height),
-              shaderpack_allocator(allocator) {};
+            : settings(settings),
+              swapchain_size(settings.settings.window.width, settings.settings.window.height),
+              shaderpack_allocator(allocator){};
 
         template <typename AllocType>
         AllocType* new_object() {

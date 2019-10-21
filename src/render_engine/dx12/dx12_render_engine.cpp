@@ -543,7 +543,7 @@ namespace nova::renderer::rhi {
         dx_buffer->resource->Unmap(0, &mapped_range);
     }
 
-    Image* D3D12RenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
+    Image* D3D12RenderEngine::create_image(const shaderpack::TextureCreateInfo& info) {
         const auto image = new_object<DX12Image>();
 
         const shaderpack::TextureFormat& format = info.format;

@@ -236,7 +236,7 @@ namespace nova::renderer::rhi {
         glBufferSubData(GL_COPY_READ_BUFFER, offset, num_bytes, data);
     }
 
-    Image* Gl4NvRenderEngine::create_texture(const shaderpack::TextureCreateInfo& info) {
+    Image* Gl4NvRenderEngine::create_image(const shaderpack::TextureCreateInfo& info) {
         auto* image = new Gl3Image;
 
         glGenTextures(1, &image->id);

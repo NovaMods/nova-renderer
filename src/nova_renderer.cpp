@@ -253,7 +253,7 @@ namespace nova::renderer {
 
     void NovaRenderer::create_dynamic_textures(const std::vector<shaderpack::TextureCreateInfo>& texture_create_infos) {
         for(const shaderpack::TextureCreateInfo& create_info : texture_create_infos) {
-            rhi::Image* new_texture = rhi->create_texture(create_info);
+            rhi::Image* new_texture = rhi->create_image(create_info);
             dynamic_textures.emplace(create_info.name, new_texture);
         }
     }
