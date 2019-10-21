@@ -462,7 +462,7 @@ namespace nova::renderer::rhi {
     std::vector<DescriptorSet*> VulkanRenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                                            DescriptorPool* pool) {
         const auto* vk_pipeline_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
-        const VulkanDescriptorPool* vk_pool = static_cast<const VulkanDescriptorPool*>(pool);
+        const auto* vk_pool = static_cast<const VulkanDescriptorPool*>(pool);
 
         VkDescriptorSetAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -477,7 +477,7 @@ namespace nova::renderer::rhi {
         std::vector<DescriptorSet*> final_sets;
         final_sets.reserve(sets.size());
         for(const VkDescriptorSet set : sets) {
-            VulkanDescriptorSet* vk_set = new_object<VulkanDescriptorSet>();
+            auto* vk_set = new_object<VulkanDescriptorSet>();
             vk_set->descriptor_set = set;
             final_sets.push_back(vk_set);
         }
@@ -786,7 +786,7 @@ namespace nova::renderer::rhi {
         memcpy(mapped_bytes, data, num_bytes);
     }
 
-    ntl::Result<Image*> VulkanRenderEngine::create_image(const shaderpack::TextureCreateInfo& info) {
+    Image* VulkanRenderEngine::create_image(const shaderpack::TextureCreateInfo& info) {
         auto* image = new_object<VulkanImage>();
 
         image->is_dynamic = true;
@@ -834,34 +834,37 @@ namespace nova::renderer::rhi {
         VkMemoryRequirements requirements;
         vkGetImageMemoryRequirements(device, image->image, &requirements);
 
-        return allocate_device_memory(requirements.size, MemoryUsage::DeviceOnly, ObjectType::RenderTexture)
-            .map([&](const DeviceMemory* image_memory) {
-                const auto vk_image_memory = static_cast<const VulkanDeviceMemory*>(image_memory);
-                vkBindImageMemory(device, image->image, vk_image_memory->memory, 0);
+        const auto image_memory = allocate_device_memory(requirements.size, MemoryUsage::DeviceOnly, ObjectType::RenderTexture);
 
-                return image;
-            })
-            .map([&](VulkanImage* image) {
-                VkImageViewCreateInfo image_view_create_info = {};
-                image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-                image_view_create_info.image = image->image;
-                image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-                image_view_create_info.format = image_create_info.format;
-                if(format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT) {
-                    image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-                    image->is_depth_tex = true;
-                } else {
-                    image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                }
-                image_view_create_info.subresourceRange.baseArrayLayer = 0;
-                image_view_create_info.subresourceRange.layerCount = 1;
-                image_view_create_info.subresourceRange.baseMipLevel = 0;
-                image_view_create_info.subresourceRange.levelCount = 1;
+        if(image_memory) {
+            const auto* vk_image_memory = static_cast<const VulkanDeviceMemory*>(image_memory.value);
+            vkBindImageMemory(device, image->image, vk_image_memory->memory, 0);
 
-                vkCreateImageView(device, &image_view_create_info, nullptr, &image->image_view);
+            VkImageViewCreateInfo image_view_create_info = {};
+            image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            image_view_create_info.image = image->image;
+            image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            image_view_create_info.format = image_create_info.format;
+            if(format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT) {
+                image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                image->is_depth_tex = true;
+            } else {
+                image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            }
+            image_view_create_info.subresourceRange.baseArrayLayer = 0;
+            image_view_create_info.subresourceRange.layerCount = 1;
+            image_view_create_info.subresourceRange.baseMipLevel = 0;
+            image_view_create_info.subresourceRange.levelCount = 1;
 
-                return image;
-            });
+            vkCreateImageView(device, &image_view_create_info, nullptr, &image->image_view);
+
+            return image;
+
+        } else {
+            NOVA_LOG(ERROR) << "Could not allocate memory for image " << info.name << ": " << image_memory.error.to_string();
+
+            return nullptr;
+        }
     }
 
     Semaphore* VulkanRenderEngine::create_semaphore() { return nullptr; }

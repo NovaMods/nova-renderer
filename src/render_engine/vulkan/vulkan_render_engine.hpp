@@ -82,7 +82,7 @@ namespace nova::renderer::rhi {
 
         void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) override;
 
-        ntl::Result<Image*> create_image(const shaderpack::TextureCreateInfo& info) override;
+        Image* create_image(const shaderpack::TextureCreateInfo& info) override;
         Semaphore* create_semaphore() override;
         std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override;
 

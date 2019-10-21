@@ -107,7 +107,7 @@ namespace nova::renderer::rhi {
          */
         virtual void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) = 0;
 
-        [[nodiscard]] virtual ntl::Result<Image*> create_image(const shaderpack::TextureCreateInfo& info) = 0;
+        [[nodiscard]] virtual Image* create_image(const shaderpack::TextureCreateInfo& info) = 0;
 
         [[nodiscard]] virtual Semaphore* create_semaphore() = 0;
 
