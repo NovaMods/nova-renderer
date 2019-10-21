@@ -854,18 +854,24 @@ namespace nova::renderer::rhi {
             object_name.objectHandle = reinterpret_cast<uint64_t>(texture->image);
             object_name.pObjectName = info.name.c_str();
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
-            NOVA_LOG(INFO) << "Set image " << texture->image << " to have name " << info.name.c_str();
+            NOVA_LOG(DEBUG) << "Set image " << texture->image << " to have name " << info.name.c_str();
         }
 
         return texture;
     }
 
-    Semaphore* VulkanRenderEngine::create_semaphore() { return nullptr; }
+    Semaphore* VulkanRenderEngine::create_semaphore() {
+        // TODO
+        return nullptr;
+    }
 
-    std::vector<Semaphore*> VulkanRenderEngine::create_semaphores(uint32_t num_semaphores) { return std::vector<Semaphore*>(); }
+    std::vector<Semaphore*> VulkanRenderEngine::create_semaphores(uint32_t num_semaphores) {
+        // TODO
+        return std::vector<Semaphore*>();
+    }
 
     Fence* VulkanRenderEngine::create_fence(const bool signaled) {
-        VulkanFence* fence = new_object<VulkanFence>();
+        auto* fence = new_object<VulkanFence>();
 
         VkFenceCreateInfo fence_create_info = {};
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -923,18 +929,18 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderEngine::destroy_pipeline_interface(PipelineInterface* pipeline_interface) {
-        VulkanPipelineInterface* vk_interface = static_cast<VulkanPipelineInterface*>(pipeline_interface);
+        auto* vk_interface = static_cast<VulkanPipelineInterface*>(pipeline_interface);
         vkDestroyRenderPass(device, vk_interface->pass, nullptr);
         vkDestroyPipelineLayout(device, vk_interface->pipeline_layout, nullptr);
     }
 
     void VulkanRenderEngine::destroy_pipeline(Pipeline* pipeline) {
-        VulkanPipeline* vk_pipeline = static_cast<VulkanPipeline*>(pipeline);
+        auto* vk_pipeline = static_cast<VulkanPipeline*>(pipeline);
         vkDestroyPipeline(device, vk_pipeline->pipeline, nullptr);
     }
 
     void VulkanRenderEngine::destroy_texture(Image* resource) {
-        VulkanImage* vk_image = static_cast<VulkanImage*>(resource);
+        auto* vk_image = static_cast<VulkanImage*>(resource);
         // TODO
         // vmaDestroyImage(vma_allocator, vk_image->image, vk_image->allocation);
 
@@ -943,6 +949,10 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderEngine::destroy_semaphores(std::vector<Semaphore*>& semaphores) {
         for(Semaphore* semaphore : semaphores) {
+            // TODO: Weird situation, in theory dynamic_cast should be used, but
+            //       it can't because Fence is not polymorphic (no virtual things).
+            //       The correct way would be to make Fence polymorphic, maybe with
+            //       a simple virtual destructor.
             VulkanSemaphore* vk_semaphore = static_cast<VulkanSemaphore*>(semaphore);
             vkDestroySemaphore(device, vk_semaphore->semaphore, nullptr);
         }
@@ -950,7 +960,8 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderEngine::destroy_fences(std::vector<Fence*>& fences) {
         for(Fence* fence : fences) {
-            VulkanFence* vk_fence = static_cast<VulkanFence*>(fence);
+            // TODO: dynamic vs static cast, see above
+            auto* vk_fence = static_cast<VulkanFence*>(fence);
             vkDestroyFence(device, vk_fence->fence, nullptr);
         }
     }
@@ -980,7 +991,7 @@ namespace nova::renderer::rhi {
                                                  Fence* fence_to_signal,
                                                  const std::vector<Semaphore*>& wait_semaphores,
                                                  const std::vector<Semaphore*>& signal_semaphores) {
-        VulkanCommandList* vk_list = static_cast<VulkanCommandList*>(cmds);
+        VulkanCommandList* vk_list = dynamic_cast<VulkanCommandList*>(cmds);
         vkEndCommandBuffer(vk_list->cmds);
 
         VkQueue queue_to_submit_to;
@@ -1005,6 +1016,7 @@ namespace nova::renderer::rhi {
         std::vector<VkSemaphore> vk_wait_semaphores;
         vk_wait_semaphores.reserve(wait_semaphores.size());
         for(const Semaphore* semaphore : wait_semaphores) {
+            // TODO: dynamic vs static cast, see above
             const VulkanSemaphore* vk_semaphore = static_cast<const VulkanSemaphore*>(semaphore);
             vk_wait_semaphores.push_back(vk_semaphore->semaphore);
         }
@@ -1012,6 +1024,7 @@ namespace nova::renderer::rhi {
         std::vector<VkSemaphore> vk_signal_semaphores;
         vk_signal_semaphores.reserve(signal_semaphores.size());
         for(const Semaphore* semaphore : signal_semaphores) {
+            // TODO: dynamic vs static cast, see above
             const VulkanSemaphore* vk_semaphore = static_cast<const VulkanSemaphore*>(semaphore);
             vk_signal_semaphores.push_back(vk_semaphore->semaphore);
         }
@@ -1025,6 +1038,7 @@ namespace nova::renderer::rhi {
         submit_info.signalSemaphoreCount = static_cast<uint32_t>(vk_signal_semaphores.size());
         submit_info.pSignalSemaphores = vk_signal_semaphores.data();
 
+        // TODO: dynamic vs static cast, see above
         const VulkanFence* vk_fence = static_cast<const VulkanFence*>(fence_to_signal);
 
         vkQueueSubmit(queue_to_submit_to, 1, &submit_info, vk_fence->fence);
@@ -1378,8 +1392,8 @@ namespace nova::renderer::rhi {
 
     VkImageView VulkanRenderEngine::image_view_for_image(const Image* image) { 
         // TODO: This method is terrible. We shouldn't tie image views to images, we should let everything that wants
-        // to use the image create its own image view
-        
+        //       to use the image create its own image view
+        // TODO: dynamic vs static cast, see above
         const auto* vk_image = static_cast<const VulkanImage*>(image);
 
         return vk_image->image_view;

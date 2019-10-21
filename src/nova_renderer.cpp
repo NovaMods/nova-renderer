@@ -102,8 +102,6 @@ namespace nova::renderer {
 
                     NOVA_LOG(INFO) << "Loaded RenderDoc successfully";
 
-                    auto b = ERROR;
-
                     return 0;
                 })
                 .on_error([](const ntl::NovaError& error) { NOVA_LOG(ERROR) << error.to_string().c_str(); });
