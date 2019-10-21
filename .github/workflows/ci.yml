@@ -43,6 +43,8 @@ jobs:
       # 3. Checkout the repository, this is done via a github action
       - name: Checkout repository
         uses: actions/checkout@master
+        with:
+          submodules: true
       # 4. Configure with CMake
       - name: Configure with CMake
         run: |
@@ -104,6 +106,8 @@ jobs:
       # 3. Checkout the repository, this is done via a github action
       - name: Checkout repository
         uses: actions/checkout@master
+        with:
+          submodules: true
       # 4. Configure with CMake
       - name: Configure with CMake
         shell: bash
