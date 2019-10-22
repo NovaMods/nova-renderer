@@ -4,7 +4,7 @@
 #include "nova_renderer/window.hpp"
 #include "nova_renderer/nova_settings.hpp"
 
-#ifdef SUPPORT_DX12
+#ifdef NOVA_WINDOWS
 
 #ifndef UNICODE
 #define UNICODE
@@ -16,18 +16,13 @@
 
 #include <glm/glm.hpp>
 
-
-#ifdef ERROR
-#undef ERROR
-#endif
-
 namespace nova::renderer {
     /*!
      * \brief A Win32 window for the DX12 variant of Nova
      */
     class Win32Window final : public Window {
     public:
-        Win32Window(const NovaSettings::WindowOptions& settings);
+        explicit Win32Window(const NovaSettings::WindowOptions& settings);
         virtual ~Win32Window();
 
         /*
@@ -35,16 +30,13 @@ namespace nova::renderer {
          */
 
         void on_frame_end() override;
-
-        bool should_close() const override;
-
-        glm::uvec2 get_window_size() const override;
+        [[nodiscard]] bool should_close() const override;
+        [[nodiscard]] glm::uvec2 get_window_size() const override;
 
         /*
          * End platform-agnostic window interface
          */
-
-        HWND get_window_handle() const;
+        [[nodiscard]] HWND get_window_handle() const;
 
     private:
         HWND window_handle;

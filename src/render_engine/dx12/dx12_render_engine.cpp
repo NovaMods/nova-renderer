@@ -1,9 +1,10 @@
 #pragma warning(push, 0)
 #include <D3DCompiler.h>
 #include <d3d12sdklayers.h>
-
 #include <spirv_hlsl.hpp>
 #pragma warning pop
+
+#include "nova_renderer/util/platform.hpp"
 
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "../../util/logger.hpp"
@@ -46,8 +47,8 @@ namespace nova::renderer::rhi {
     }
 
     ntl::Result<DeviceMemory*> D3D12RenderEngine::allocate_device_memory(const uint64_t size,
-                                                                   const MemoryUsage type,
-                                                                   const ObjectType allowed_objects) {
+                                                                         const MemoryUsage type,
+                                                                         const ObjectType allowed_objects) {
         auto* memory = new DX12DeviceMemory;
 
         D3D12_HEAP_DESC desc = {};
@@ -127,8 +128,8 @@ namespace nova::renderer::rhi {
     }
 
     Framebuffer* D3D12RenderEngine::create_framebuffer(const Renderpass* /* renderpass */,
-                                                      const std::vector<Image*>& attachments,
-                                                      const glm::uvec2& framebuffer_size) {
+                                                       const std::vector<Image*>& attachments,
+                                                       const glm::uvec2& framebuffer_size) {
         const size_t attachment_count = attachments.size();
         auto* framebuffer = new DX12Framebuffer;
         framebuffer->render_targets.reserve(attachment_count);
@@ -230,14 +231,14 @@ namespace nova::renderer::rhi {
     }
 
     DescriptorPool* D3D12RenderEngine::create_descriptor_pool(uint32_t /* num_sampled_images */,
-                                                             uint32_t /* num_samplers */,
-                                                             uint32_t /* num_uniform_buffers */) {
+                                                              uint32_t /* num_samplers */,
+                                                              uint32_t /* num_uniform_buffers */) {
         auto* pool = new DX12DescriptorPool;
         return pool;
     }
 
     std::vector<DescriptorSet*> D3D12RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                                           DescriptorPool* /* pool */) {
+                                                                          DescriptorPool* /* pool */) {
         // Create a descriptor heap for each descriptor set
         // This is kinda gross and maybe I'll move to something else eventually but I gotta get past this code
 
@@ -363,8 +364,8 @@ namespace nova::renderer::rhi {
          */
 
         pipeline_state_desc.BlendState.AlphaToCoverageEnable = std::find(states_begin,
-                                                                           states_end,
-                                                                           shaderpack::StateEnum::EnableAlphaToCoverage) != states_end;
+                                                                         states_end,
+                                                                         shaderpack::StateEnum::EnableAlphaToCoverage) != states_end;
         pipeline_state_desc.BlendState.IndependentBlendEnable = false;
         D3D12_RENDER_TARGET_BLEND_DESC& blend_state = pipeline_state_desc.BlendState.RenderTarget[0];
         blend_state.BlendEnable = std::find(states_begin, states_end, shaderpack::StateEnum::Blending) != states_end;
@@ -702,8 +703,8 @@ namespace nova::renderer::rhi {
     }
 
     CommandList* D3D12RenderEngine::get_command_list(const uint32_t thread_idx,
-                                                    const QueueType needed_queue_type,
-                                                    const CommandList::Level level) {
+                                                     const QueueType needed_queue_type,
+                                                     const CommandList::Level level) {
         D3D12_COMMAND_LIST_TYPE command_list_type = D3D12_COMMAND_LIST_TYPE_DIRECT;
         if(level == CommandList::Level::Secondary) {
             command_list_type = D3D12_COMMAND_LIST_TYPE_BUNDLE;
@@ -735,10 +736,10 @@ namespace nova::renderer::rhi {
     }
 
     void D3D12RenderEngine::submit_command_list(CommandList* cmds,
-                                               const QueueType queue,
-                                               Fence* fence_to_signal,
-                                               const std::vector<Semaphore*>& wait_semaphores,
-                                               const std::vector<Semaphore*>& signal_semaphores) {
+                                                const QueueType queue,
+                                                Fence* fence_to_signal,
+                                                const std::vector<Semaphore*>& wait_semaphores,
+                                                const std::vector<Semaphore*>& signal_semaphores) {
         auto* dx_cmds = static_cast<Dx12CommandList*>(cmds);
         dx_cmds->cmds->Close();
 
