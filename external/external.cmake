@@ -30,11 +30,6 @@ set(BUILD_SHARED_LIBS ON CACHE BOOL "Don't compile anything as a shared lib" FOR
 set(BUILD_EXAMPLES OFF CACHE BOOL "Disable Miniz examples" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/miniz)
 
-set(SPIRV-Headers_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers" CACHE FILEPATH "Use our submodule SPIRV-Headers" FORCE)
-set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
-set(SPIRV_WERROR OFF CACHE BOOL "Enable error on warning SPIRV-Tools" FORCE)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools)
-
 set(ENABLE_EXPORTS ON CACHE BOOL "Enable linking SPIRV_Cross" FORCE)
 set(SPIRV_CROSS_CLI OFF CACHE BOOL "Don't build the CLI" FORCE)
 set(SPIRV_CROSS_ENABLE_TESTS OFF CACHE BOOL "Tests are for library developers, not library consumers" FORCE)
@@ -43,13 +38,14 @@ set(SPIRV_CROSS_ENABLE_CPP OFF CACHE BOOL "Nova doesn't use C++ shaders, but one
 set(SPIRV_CROSS_SKIP_INSTALL ON CACHE BOOL "No stop install bad" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Cross)
 
-# Manually built libraries
-        
-include(minitrace)
-
 # Compile things as static libraries
 set(BUILD_STATIC_LIBS ON CACHE BOOL "Compile everything as a static lib" FORCE)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Don't compile anything as a shared lib" FORCE)
+
+set(SPIRV-Headers_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers" CACHE FILEPATH "Use our submodule SPIRV-Headers" FORCE)
+set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
+set(SPIRV_WERROR OFF CACHE BOOL "Enable error on warning SPIRV-Tools" FORCE)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools)
 
 # GLSLang has a circular dependency and I don't even care what I did wrong, it has to be a static lib
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glslang)
@@ -73,6 +69,8 @@ set(GLFW_BUILD_TESTS OFF)
 set(GLFW_BUILD_DOCS OFF)
 set(GLFW_INSTALL OFF)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glfw)
+        
+include(minitrace)
 
 # Hide unnecessary targets from all
 
