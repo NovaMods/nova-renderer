@@ -9,19 +9,21 @@
 #include "vulkan_command_list.hpp"
 #include "vulkan_utils.hpp"
 
+// TODO: Move window creation out of the RHI
 #ifdef NOVA_LINUX
-
 #define NOVA_VK_XLIB
 #include "../../util/linux_utils.hpp"
 #include "../../windowing/x11_window.hpp"
 
 #elif defined(NOVA_WINDOWS)
-
 #define NOVA_USE_WIN32
 #include "../../util/windows.hpp"
 #include "../../windowing/win32_window.hpp"
 
 #endif
+
+// TODO: A coherent way to manage program settings
+#include "../configuration.hpp"
 
 namespace nova::renderer::rhi {
     VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings)
@@ -792,7 +794,6 @@ namespace nova::renderer::rhi {
         // In Nova, images all have a dedicated allocation
         // This may or may not change depending on performance data, but given Nova's atlas-centric design I don't think it'll change much
         const auto image_pixel_size = info.format.get_size_in_pixels(swapchain_size);
-        const auto image_bytes_size = image_pixel_size.x * image_pixel_size.y * pixel_format_to_pixel_width(info.format.pixel_format);
 
         VkImageCreateInfo image_create_info = {};
         image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;

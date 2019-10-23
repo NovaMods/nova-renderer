@@ -2,6 +2,9 @@
 
 #include "nova_renderer/util/platform.hpp"
 
+// vulkan.h is a C header, so it does C things, and my C++ linter is like "wati no be more C++" but I ain't about to
+// rewrite vulkan.h
+#pragma warning(push, 0)
 #include <vulkan/vulkan.h>
 
 // I really don't know how Khronos/anyone else gets vulkan.h to work. Doing this manually feels dirty, and not in a
@@ -18,6 +21,7 @@
 #include <windows.h>
 #include <vulkan/vulkan_win32.h>
 #endif
+#pragma warning(pop)
 
 // Thank you, Windows, for being an idiot
 #ifdef ERROR
