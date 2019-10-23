@@ -39,7 +39,7 @@ jobs:
         run: pacman --noconfirm -Syu
       # 2. Install the required dependencies
       - name: Install dependencies
-        run: pacman --noconfirm -S cmake binutils gcc python3 git vulkan-devel ninja tar unzip which ${{ matrix.cc }}
+        run: pacman --noconfirm -S cmake binutils gcc python3 git vulkan-devel ninja tar unzip which libxinerama ${{ matrix.cc }}
       # 3. Checkout the repository, this is done via a github action
       - name: Checkout repository
         uses: actions/checkout@master
