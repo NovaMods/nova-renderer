@@ -27,9 +27,6 @@ endif()
 set(BUILD_STATIC_LIBS OFF CACHE BOOL "Compile everything as a static lib" FORCE)
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Don't compile anything as a shared lib" FORCE)
 
-set(BUILD_EXAMPLES OFF CACHE BOOL "Disable Miniz examples" FORCE)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/miniz)
-
 set(ENABLE_EXPORTS ON CACHE BOOL "Enable linking SPIRV_Cross" FORCE)
 set(SPIRV_CROSS_CLI OFF CACHE BOOL "Don't build the CLI" FORCE)
 set(SPIRV_CROSS_ENABLE_TESTS OFF CACHE BOOL "Tests are for library developers, not library consumers" FORCE)
@@ -71,6 +68,9 @@ set(GLFW_INSTALL OFF)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glfw)
         
 include(minitrace)
+
+set(BUILD_EXAMPLES OFF CACHE BOOL "Disable Miniz examples" FORCE)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/miniz)
 
 # Hide unnecessary targets from all
 
