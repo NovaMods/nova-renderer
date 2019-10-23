@@ -41,3 +41,15 @@
 #ifdef None
 #undef None
 #endif
+#ifdef Bool
+#undef Bool
+#endif
+#ifdef Status
+#undef Status
+#endif
+#ifdef True
+#undef True
+#endif
+#ifdef False
+#undef False
+#endif
