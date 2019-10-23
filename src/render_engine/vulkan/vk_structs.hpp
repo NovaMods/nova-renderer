@@ -1,15 +1,12 @@
 /*!
  * \brief Vulkan definition of the structs forward-declared in render_engine.hpp
- *
- * \author ddubois
- * \date 01-Apr-19.
  */
 
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-
 #include "nova_renderer/rhi_types.hpp"
+
+#include "vulkan.hpp"
 
 namespace nova::renderer::rhi {
     struct VulkanDeviceMemory : DeviceMemory {

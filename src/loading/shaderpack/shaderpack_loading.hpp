@@ -1,10 +1,4 @@
-/*!
- * \author ddubois
- * \date 21-Aug-18.
- */
-
-#ifndef NOVA_RENDERER_SHADERPACK_LOADING_HPP
-#define NOVA_RENDERER_SHADERPACK_LOADING_HPP
+#pragma once
 
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/filesystem.hpp"
@@ -28,5 +22,3 @@ namespace nova::renderer::shaderpack {
      */
     ShaderpackData load_shaderpack_data(const fs::path& shaderpack_name);
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_SHADERPACK_LOADING_HPP

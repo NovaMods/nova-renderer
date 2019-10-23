@@ -1,34 +1,31 @@
-//
-// Created by jannis on 30.08.18.
-//
-
-#ifndef NOVA_RENDERER_VULKAN_UTILS_HPP
-#define NOVA_RENDERER_VULKAN_UTILS_HPP
+#pragma once
 
 #include <string>
 #include <vector>
-#include <vulkan/vulkan.h>
 
 #include "nova_renderer/command_list.hpp"
-
 #include "nova_renderer/shaderpack_data.hpp"
+
+// idk maybe this header is included in places that already include Vulkan? Either way I want this include here and not anywhere else
+// ReSharper disable once CppUnusedIncludeDirective
+#include "vulkan.hpp"
 
 namespace nova::renderer::rhi {
     VkImageLayout to_vk_layout(ResourceState state);
 
-	VkPrimitiveTopology to_primitive_topology(shaderpack::PrimitiveTopologyEnum topology);
+    VkPrimitiveTopology to_primitive_topology(shaderpack::PrimitiveTopologyEnum topology);
 
-	VkBlendFactor to_blend_factor(shaderpack::BlendFactorEnum factor);
+    VkBlendFactor to_blend_factor(shaderpack::BlendFactorEnum factor);
 
-	VkCompareOp to_compare_op(shaderpack::CompareOpEnum compare_op);
+    VkCompareOp to_compare_op(shaderpack::CompareOpEnum compare_op);
 
-	VkStencilOp to_stencil_op(shaderpack::StencilOpEnum stencil_op);
+    VkStencilOp to_stencil_op(shaderpack::StencilOpEnum stencil_op);
 
-	VkFormat to_vk_format(shaderpack::PixelFormatEnum format);
+    VkFormat to_vk_format(shaderpack::PixelFormatEnum format);
 
-	VkDescriptorType to_vk_descriptor_type(DescriptorType type);
+    VkDescriptorType to_vk_descriptor_type(DescriptorType type);
 
-	VkShaderStageFlags to_vk_shader_stage_flags(ShaderStageFlags flags);
+    VkShaderStageFlags to_vk_shader_stage_flags(ShaderStageFlags flags);
 
     std::string to_string(VkResult result);
 
@@ -39,7 +36,7 @@ namespace nova::renderer::rhi {
     std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
 
     bool operator&(const ShaderStageFlags& lhs, const ShaderStageFlags& rhs);
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi
 
 // Only validate errors in debug mode
 // Release mode needs to be fast A F
@@ -55,4 +52,3 @@ namespace nova::renderer::rhi {
 #else
 #define NOVA_CHECK_RESULT(expr) expr
 #endif
-#endif // NOVA_RENDERER_VULKAN_UTILS_HPP

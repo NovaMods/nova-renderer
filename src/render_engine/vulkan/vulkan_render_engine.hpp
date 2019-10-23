@@ -1,19 +1,11 @@
-/*!
- * \author ddubois
- * \date 03-Apr-19.
- */
-
 #pragma once
-
-#include <memory>
 
 #include "nova_renderer/render_engine.hpp"
 
-#include "../configuration.hpp"
 #include "vk_structs.hpp"
 #include "vulkan_swapchain.hpp"
 
-// TODO: Not always use mallocator
+// TODO: Don't always use mallocator
 #include "../../memory/mallocator.hpp"
 
 namespace nova::renderer::rhi {

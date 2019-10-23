@@ -4,7 +4,6 @@
 #include <unordered_map>
 #include <glm/glm.hpp>
 #include "device_memory_resource.hpp"
-#include "nova_renderer/polyalloc.hpp"
 #include "nova_renderer/rhi_enums.hpp"
 #include "shaderpack_data.hpp"
 
