@@ -52,7 +52,8 @@ jobs:
           cd build
           cmake .. -G"Ninja"         \
             -DNOVA_TEST=ON           \
-            -DCMAKE_BUILD_TYPE=Debug
+            -DCMAKE_BUILD_TYPE=Debug \
+            -Wno-dev
       # 5. Build with CMake
       - name: Build with CMake
         working-directory: build
@@ -116,7 +117,8 @@ jobs:
           cd build
           cmake .. -G "Visual Studio 16 2019" -A x64            \
             -DNOVA_TEST=ON                                      \
-            -DCMAKE_BUILD_TYPE=Debug
+            -DCMAKE_BUILD_TYPE=Debug                            \
+            -Wno-dev
       # 5. Build with CMake
       - name: Build with CMake
         working-directory: build
