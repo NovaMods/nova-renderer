@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include "gl3_command_list.hpp"
 #include "glad/glad.h"
 #include "nova_renderer/render_engine.hpp"
@@ -30,7 +29,8 @@ namespace nova::renderer::rhi {
         ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage type, ObjectType allowed_objects) override;
 
         // Inherited via render_engine
-        ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) override;
+        ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data,
+                                                   const glm::uvec2& framebuffer_size) override;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
                                         const std::vector<Image*>& attachments,

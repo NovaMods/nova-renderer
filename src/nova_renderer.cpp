@@ -3,19 +3,20 @@
 #include <array>
 #include <future>
 
-#include "nova_renderer/nova_renderer.hpp"
-
-#include "memory/system_memory_allocator.hpp"
-
 #include <glslang/MachineIndependent/Initialize.h>
 #include <spirv_glsl.hpp>
+
+#include "nova_renderer/nova_renderer.hpp"
+
 #include "loading/shaderpack/shaderpack_loading.hpp"
+#include "memory/system_memory_allocator.hpp"
 #if defined(NOVA_WINDOWS)
 #include "render_engine/dx12/dx12_render_engine.hpp"
 #endif
-#include "debugging/renderdoc.hpp"
 #include "nova_renderer/command_list.hpp"
 #include "nova_renderer/swapchain.hpp"
+
+#include "debugging/renderdoc.hpp"
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
 
 #pragma warning(push, 0)
@@ -26,6 +27,10 @@
 #include <spirv_glsl.hpp>
 #pragma warning(pop)
 
+#include "nova_renderer/command_list.hpp"
+#include "nova_renderer/nova_renderer.hpp"
+#include "nova_renderer/swapchain.hpp"
+
 #include "debugging/renderdoc.hpp"
 #include "loading/shaderpack/render_graph_builder.hpp"
 #include "loading/shaderpack/shaderpack_loading.hpp"
@@ -33,9 +38,6 @@
 #include "memory/bump_point_allocation_strategy.hpp"
 #include "memory/mallocator.hpp"
 #include "memory/system_memory_allocator.hpp"
-#include "nova_renderer/command_list.hpp"
-#include "nova_renderer/nova_renderer.hpp"
-#include "nova_renderer/swapchain.hpp"
 #include "render_objects/uniform_structs.hpp"
 
 #if defined(NOVA_VULKAN_RHI)
@@ -276,22 +278,15 @@ namespace nova::renderer {
             RenderpassMetadata metadata;
             metadata.data = create_info;
 
-            ntl::Result<rhi::Renderpass*> renderpass_result = rhi->create_renderpass(create_info);
-            if(!renderpass_result) {
-                NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name.c_str() << ": "
-                                << renderpass_result.error.to_string().c_str();
-                continue;
-            }
-
-            renderpass.renderpass = renderpass_result.value;
-
             std::vector<rhi::Image*> output_images;
             output_images.reserve(create_info.texture_outputs.size());
 
             glm::uvec2 framebuffer_size(0);
 
+            const auto num_attachments = create_info.depth_texture ? create_info.texture_outputs.size() + 1 :
+                                                                     create_info.texture_outputs.size();
             std::vector<std::string> attachment_errors;
-            attachment_errors.reserve(create_info.texture_outputs.size());
+            attachment_errors.reserve(num_attachments);
 
             for(const shaderpack::TextureAttachmentInfo& attachment_info : create_info.texture_outputs) {
                 if(attachment_info.name == "Backbuffer") {
@@ -300,12 +295,10 @@ namespace nova::renderer {
                         renderpass.framebuffer = nullptr; // Will be resolved when rendering
 
                     } else {
-                        attachment_errors.push_back(
-                            fmt::format(
-                                fmt("Pass {:s} writes to the backbuffer and {:d} other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures"),
-                                create_info.name.c_str(),
-                                create_info.texture_outputs.size() - 1)
-                                .c_str());
+                        attachment_errors.push_back(fmt::format(
+                            fmt("Pass {:s} writes to the backbuffer and {:d} other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures"),
+                            create_info.name,
+                            create_info.texture_outputs.size() - 1));
                     }
 
                 } else {
@@ -318,16 +311,14 @@ namespace nova::renderer {
 
                     if(framebuffer_size.x > 0) {
                         if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {
-                            attachment_errors.push_back(
-                                fmt::format(
-                                    fmt("Attachment {:s} has a size of {:d}x{:d}, but the framebuffer for pass {:s} has a size of {:d}x{:d} - these must match! All attachments of a single renderpass must have the same size"),
-                                    attachment_info.name.c_str(),
-                                    attachment_size.x,
-                                    attachment_size.y,
-                                    create_info.name.c_str(),
-                                    framebuffer_size.x,
-                                    framebuffer_size.y)
-                                    .c_str());
+                            attachment_errors.push_back(fmt::format(
+                                fmt("Attachment {:s} has a size of {:d}x{:d}, but the framebuffer for pass {:s} has a size of {:d}x{:d} - these must match! All attachments of a single renderpass must have the same size"),
+                                attachment_info.name,
+                                attachment_size.x,
+                                attachment_size.y,
+                                create_info.name,
+                                framebuffer_size.x,
+                                framebuffer_size.y));
                         }
 
                     } else {
@@ -336,14 +327,30 @@ namespace nova::renderer {
                 }
             }
 
-            if(!attachment_errors.empty()) {
-                for(const std::string& err : attachment_errors) {
-                    NOVA_LOG(ERROR) << err.c_str();
+            // Can't combine these if statements and I don't want to `.find` twice
+            if(create_info.depth_texture) {
+                if(auto depth_tex_itr = dynamic_textures.find(create_info.depth_texture->name); depth_tex_itr != dynamic_textures.end()) {
+                    auto* image = depth_tex_itr->second;
+                    output_images.push_back(image);
                 }
-                rhi->destroy_renderpass(renderpass.renderpass);
+            }
 
-                NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name.c_str()
+            if(!attachment_errors.empty()) {
+                for(const auto& err : attachment_errors) {
+                    NOVA_LOG(ERROR) << err;
+                }
+
+                NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name
                                 << " because there were errors in the attachment specification. Look above this message for details";
+                continue;
+            }
+
+            ntl::Result<rhi::Renderpass*> renderpass_result = rhi->create_renderpass(create_info, framebuffer_size);
+            if(renderpass_result) {
+                renderpass.renderpass = renderpass_result.value;
+
+            } else {
+                NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name << ": " << renderpass_result.error.to_string();
                 continue;
             }
 
@@ -358,8 +365,8 @@ namespace nova::renderer {
                                                                                                         create_info.texture_outputs,
                                                                                                         create_info.depth_texture);
                     if(!pipeline_interface) {
-                        NOVA_LOG(ERROR) << "Pipeline " << create_info.name.c_str()
-                                        << " has an invalid interface: " << pipeline_interface.error.to_string().c_str();
+                        NOVA_LOG(ERROR) << "Pipeline " << create_info.name
+                                        << " has an invalid interface: " << pipeline_interface.error.to_string();
                         continue;
                     }
 
@@ -384,8 +391,8 @@ namespace nova::renderer {
                         metadata.pipeline_metadata.emplace(pipeline_create_info.name, pipeline_metadata);
 
                     } else {
-                        NOVA_LOG(ERROR) << "Could not create pipeline " << pipeline_create_info.name.c_str() << ": "
-                                        << pipeline_result.error.to_string().c_str();
+                        NOVA_LOG(ERROR) << "Could not create pipeline " << pipeline_create_info.name << ": "
+                                        << pipeline_result.error.to_string();
                     }
                 }
             }
@@ -729,8 +736,7 @@ namespace nova::renderer {
 
         auto pos = material_pass_keys.find(material_name);
         if(pos == material_pass_keys.end()) {
-            NOVA_LOG(ERROR) << "No material named " <<
-                material_name.material_name << " for pass " << material_name.pass_name;
+            NOVA_LOG(ERROR) << "No material named " << material_name.material_name << " for pass " << material_name.pass_name;
             return std::numeric_limits<uint64_t>::max();
         }
 
@@ -777,7 +783,8 @@ namespace nova::renderer {
     void NovaRenderer::create_global_allocator() {
         auto* heap = new uint8_t[global_memory_pool_size.b_count()];
         allocator_handle handle(new Mallocator);
-        std::unique_ptr<AllocationStrategy> allocation_strategy = std::make_unique<BlockAllocationStrategy>(handle, global_memory_pool_size);
+        std::unique_ptr<AllocationStrategy> allocation_strategy = std::make_unique<BlockAllocationStrategy>(handle,
+                                                                                                            global_memory_pool_size);
 
         global_allocator = std::make_shared<allocator_handle>(
             new SystemMemoryAllocator(heap, global_memory_pool_size, std::move(allocation_strategy)));

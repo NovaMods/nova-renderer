@@ -63,10 +63,12 @@ namespace nova::renderer::rhi {
          * after it's been created
          *
          * \param data The data to create a renderpass from
+         * \param framebuffer_size The size in pixels of the framebuffer that the renderpass will write to
          *
          * \return The newly created renderpass
          */
-        [[nodiscard]] virtual ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data) = 0;
+        [[nodiscard]] virtual ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data,
+                                                                         const glm::uvec2& framebuffer_size) = 0;
 
         [[nodiscard]] virtual Framebuffer* create_framebuffer(const Renderpass* renderpass,
                                                               const std::vector<Image*>& attachments,

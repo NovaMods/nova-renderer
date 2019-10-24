@@ -121,7 +121,8 @@ namespace nova::renderer::rhi {
         return ntl::Result<DeviceMemory*>(memory);
     }
 
-    ntl::Result<Renderpass*> D3D12RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
+    ntl::Result<Renderpass*> D3D12RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data,
+                                                                  const glm::uvec2& /* framebuffer_size */) {
         auto* renderpass = new DX12Renderpass;
 
         return ntl::Result<Renderpass*>(renderpass);

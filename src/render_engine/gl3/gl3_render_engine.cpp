@@ -50,7 +50,8 @@ namespace nova::renderer::rhi {
         return ntl::Result(new DeviceMemory);
     }
 
-    ntl::Result<Renderpass*> Gl4NvRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& /* data */) {
+    ntl::Result<Renderpass*> Gl4NvRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& /* data */,
+                                                                  const glm::uvec2& /* framebuffer_size */) {
         return ntl::Result<Renderpass*>(new Renderpass);
     }
 

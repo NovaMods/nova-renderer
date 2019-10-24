@@ -101,7 +101,7 @@ namespace nova::renderer::rhi {
         return ntl::Result<DeviceMemory*>(memory);
     }
 
-    ntl::Result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data) {
+    ntl::Result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data, const glm::uvec2& framebuffer_size) {
         auto* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain);
         VkExtent2D swapchain_extent = {swapchain_size.x, swapchain_size.y};
 
@@ -138,22 +138,13 @@ namespace nova::renderer::rhi {
         std::vector<VkAttachmentReference> attachment_references;
         std::vector<VkAttachmentDescription> attachments;
         std::vector<VkImageView> framebuffer_attachments;
-        uint32_t framebuffer_width = 0;
-        uint32_t framebuffer_height = 0;
+        uint32_t framebuffer_width = framebuffer_size.x;
+        uint32_t framebuffer_height = framebuffer_size.y;
 
         bool writes_to_backbuffer = false;
         // Collect framebuffer size information from color output attachments
         for(const shaderpack::TextureAttachmentInfo& attachment : data.texture_outputs) {
             if(attachment.name == "Backbuffer") {
-                // In Nova, if you write to the Backbuffer, you can _only_ write to the Backbuffer. This greatly
-                // simplifies my life
-                if(data.texture_outputs.size() > 1) {
-                    return ntl::Result<Renderpass*>(MAKE_ERROR(
-                        "Renderpass {:s} writes to the Backbuffer, and {:d} other render targets. Renderpasses which write to the backbuffer may not write to any other render targets",
-                        data.name,
-                        data.texture_outputs.size() - 1));
-                }
-
                 // Handle backbuffer
                 // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip
                 // everything
@@ -184,28 +175,27 @@ namespace nova::renderer::rhi {
 
                 renderpass->writes_to_backbuffer = true;
 
-                break;
+            } else {
+                VkAttachmentDescription desc = {};
+                desc.flags = 0;
+                desc.format = to_vk_format(attachment.pixel_format);
+                desc.samples = VK_SAMPLE_COUNT_1_BIT;
+                desc.loadOp = attachment.clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+                desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                desc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+                attachments.push_back(desc);
+
+                VkAttachmentReference ref = {};
+
+                ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                ref.attachment = static_cast<uint32_t>(attachments.size()) - 1;
+
+                attachment_references.push_back(ref);
             }
-
-            VkAttachmentDescription desc = {};
-            desc.flags = 0;
-            desc.format = to_vk_format(attachment.pixel_format);
-            desc.samples = VK_SAMPLE_COUNT_1_BIT;
-            desc.loadOp = attachment.clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
-            desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            desc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            attachments.push_back(desc);
-
-            VkAttachmentReference ref = {};
-
-            ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            ref.attachment = static_cast<uint32_t>(attachments.size()) - 1;
-
-            attachment_references.push_back(ref);
         }
 
         VkAttachmentReference depth_reference = {};
@@ -283,11 +273,11 @@ namespace nova::renderer::rhi {
     Framebuffer* VulkanRenderEngine::create_framebuffer(const Renderpass* renderpass,
                                                         const std::vector<Image*>& attachments,
                                                         const glm::uvec2& framebuffer_size) {
-        const auto* vk_renderpass = (const VulkanRenderpass*) (renderpass);
+        const auto* vk_renderpass = static_cast<const VulkanRenderpass*>(renderpass);
 
         std::vector<VkImageView> attachment_views;
         attachment_views.reserve(attachments.size());
-        for(const Image* attachment : attachments) {
+        for(const auto* attachment : attachments) {
             const auto* vk_image = static_cast<const VulkanImage*>(attachment);
             attachment_views.push_back(vk_image->image_view);
         }
@@ -1259,7 +1249,7 @@ namespace nova::renderer::rhi {
         vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
     }
 
-    bool VulkanRenderEngine::does_device_support_extensions(VkPhysicalDevice device) {
+    bool VulkanRenderEngine::does_device_support_extensions(const VkPhysicalDevice device) {
         uint32_t extension_count;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
         std::vector<VkExtensionProperties> available(extension_count);
@@ -1454,8 +1444,10 @@ namespace nova::renderer::rhi {
             }
         }
 
+        ss << " ";
+
         if(callback_data->cmdBufLabelCount != 0) {
-            ss << " Command Buffers: ";
+            ss << "Command Buffers: ";
             for(uint32_t i = 0; i < callback_data->cmdBufLabelCount; i++) {
                 ss << callback_data->pCmdBufLabels[i].pLabelName;
                 if(i != callback_data->cmdBufLabelCount - 1) {
@@ -1464,19 +1456,23 @@ namespace nova::renderer::rhi {
             }
         }
 
+        ss << " ";
+
         if(callback_data->objectCount != 0) {
-            ss << " Objects: ";
+            ss << "Objects: ";
             for(uint32_t i = 0; i < callback_data->objectCount; i++) {
                 ss << to_string(callback_data->pObjects[i].objectType);
                 if(callback_data->pObjects[i].pObjectName != nullptr) {
                     ss << callback_data->pObjects[i].pObjectName;
                 }
-                ss << " (" << callback_data->pObjects[i].objectHandle << ") ";
+                ss << " (" << std::hex << callback_data->pObjects[i].objectHandle << std::dec << ") ";
                 if(i != callback_data->objectCount - 1) {
                     ss << ", ";
                 }
             }
         }
+
+        ss << " ";
 
         if(callback_data->pMessage != nullptr) {
             ss << callback_data->pMessage;
