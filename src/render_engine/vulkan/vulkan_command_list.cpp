@@ -94,7 +94,7 @@ namespace nova::renderer::rhi {
         std::vector<VkCommandBuffer> buffers;
         buffers.reserve(lists.size());
 
-        for(CommandList* list : lists) {
+        for(auto* list : lists) {
             auto* vk_list = dynamic_cast<VulkanCommandList*>(list);
             buffers.push_back(vk_list->cmds);
         }
