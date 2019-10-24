@@ -116,10 +116,8 @@ namespace nova::renderer::rhi {
         void open_window_and_create_surface(const NovaSettings::WindowOptions& options);
 
     private:
-        // TODO: Not always use mallocator
+        // TODO: Don't always use mallocator
         bvestl::polyalloc::Mallocator mallocator;
-
-        std::unordered_map<QueueType, uint32_t> queue_family_indices;
 
         /*!
          * The index in the vector is the thread index, the key in the map is the queue family index
