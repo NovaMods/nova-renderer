@@ -24,8 +24,10 @@ namespace bvestl {
          */
         class Bytes {
         public:
-            constexpr explicit  Bytes(std::size_t const count) noexcept : byte_count(count){};
-            constexpr  Bytes(Bytes const& other) noexcept = default;
+            // ReSharper disable once CppNonExplicitConvertingConstructor
+            constexpr Bytes(std::size_t const count) noexcept : byte_count(count){};
+
+            constexpr Bytes(Bytes const& other) noexcept = default;
             constexpr Bytes& operator=(Bytes const& other) noexcept = default;
 
             /**

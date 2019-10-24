@@ -178,12 +178,13 @@ namespace nova::renderer {
         rhi::BufferCreateInfo vertex_buffer_create_info;
         vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::VertexBuffer;
         vertex_buffer_create_info.size = mesh_data.vertex_data.size() * sizeof(FullVertex);
-        vertex_buffer_create_info.allocation = mesh_memory->allocate(Bytes(vertex_buffer_create_info.size));
+        vertex_buffer_create_info.allocation = mesh_memory->allocate(vertex_buffer_create_info.size);
 
         rhi::Buffer* vertex_buffer = rhi->create_buffer(vertex_buffer_create_info);
 
         {
             rhi::BufferCreateInfo staging_vertex_buffer_create_info = vertex_buffer_create_info;
+            staging_vertex_buffer_create_info.allocation = staging_buffer_memory->allocate(staging_vertex_buffer_create_info.size);
             staging_vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
             rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info);
             rhi->write_data_to_buffer(mesh_data.vertex_data.data(),
@@ -196,15 +197,16 @@ namespace nova::renderer {
             rhi->submit_command_list(vertex_upload_cmds, rhi::QueueType::Transfer);
         }
 
-        rhi::BufferCreateInfo index_buffer_create_info = {};
+        rhi::BufferCreateInfo index_buffer_create_info;
         index_buffer_create_info.buffer_usage = rhi::BufferUsage::IndexBuffer;
         index_buffer_create_info.size = mesh_data.indices.size() * sizeof(uint32_t);
-        index_buffer_create_info.allocation = mesh_memory->allocate(Bytes(index_buffer_create_info.size));
+        index_buffer_create_info.allocation = mesh_memory->allocate(index_buffer_create_info.size);
 
         rhi::Buffer* index_buffer = rhi->create_buffer(index_buffer_create_info);
 
         {
             rhi::BufferCreateInfo staging_index_buffer_create_info = index_buffer_create_info;
+            staging_index_buffer_create_info.allocation = staging_buffer_memory->allocate(staging_index_buffer_create_info.size);
             staging_index_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
             rhi::Buffer* staging_index_buffer = rhi->create_buffer(staging_index_buffer_create_info);
             rhi->write_data_to_buffer(mesh_data.indices.data(), mesh_data.indices.size() * sizeof(uint32_t), 0, staging_index_buffer);
@@ -214,7 +216,9 @@ namespace nova::renderer {
             rhi->submit_command_list(indices_upload_cmds, rhi::QueueType::Transfer);
         }
 
-        Mesh mesh = {};
+        // TODO: Clean up staging buffers
+
+        Mesh mesh;
         mesh.vertex_buffer = vertex_buffer;
         mesh.index_buffer = index_buffer;
         mesh.num_indices = static_cast<uint32_t>(mesh_data.indices.size());

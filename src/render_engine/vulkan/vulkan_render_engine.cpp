@@ -26,8 +26,8 @@
 #include "../configuration.hpp"
 
 namespace nova::renderer::rhi {
-    VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings)
-        : RenderEngine(&mallocator, settings) { // NOLINT(cppcoreguidelines-pro-type-member-init)
+    VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)
+        : RenderEngine(&mallocator, settings) { 
         create_instance();
 
         if(settings.settings.debug.enabled) {
@@ -350,18 +350,14 @@ namespace nova::renderer::rhi {
         std::vector<VkAttachmentReference> attachment_references;
         std::vector<VkAttachmentDescription> attachment_descriptions;
         std::vector<VkImageView> framebuffer_attachments;
-        uint32_t framebuffer_width = 0;
-        uint32_t framebuffer_height = 0;
 
-        bool writes_to_backbuffer = false;
         // Collect framebuffer size information from color output attachments
         for(const shaderpack::TextureAttachmentInfo& attachment : color_attachments) {
             if(attachment.name == "Backbuffer") {
                 // Handle backbuffer
                 // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip
                 // everything
-                writes_to_backbuffer = true;
-
+                
                 VkAttachmentDescription desc = {};
                 desc.flags = 0;
                 desc.format = vk_swapchain->get_swapchain_format();
@@ -782,7 +778,7 @@ namespace nova::renderer::rhi {
         const bvestl::polyalloc::AllocationInfo& allocation_info = vulkan_buffer->memory.allocation_info;
         const auto* memory = static_cast<const VulkanDeviceMemory*>(vulkan_buffer->memory.memory);
 
-        // TODO: heap_mappings doens't have the buffer's memory in it
+        // TODO: heap_mappings doesn't have the buffer's memory in it
         // Alternately, the buffer's memory isn't in heap_mappings
         // Something something assuming constantly mapped?
         uint8_t* mapped_bytes = static_cast<uint8_t*>(heap_mappings.at(memory->memory)) +
@@ -1046,7 +1042,21 @@ namespace nova::renderer::rhi {
         vkQueueSubmit(queue_to_submit_to, 1, &submit_info, vk_fence->fence);
     }
 
-    uint32_t VulkanRenderEngine::get_queue_family_index(const QueueType type) const { return queue_family_indices.at(type); }
+    uint32_t VulkanRenderEngine::get_queue_family_index(const QueueType type) const {
+        switch(type) {
+            case QueueType::Graphics: 
+				return graphics_family_index;
+
+            case QueueType::Transfer:
+                return transfer_family_index;
+
+            case QueueType::AsyncCompute:
+                return compute_family_index;
+        }
+
+        NOVA_LOG(ERROR) << "Unknown queue type " << static_cast<uint32_t>(type);
+        return 999999;  // Will probably cause a crash, which is actually what we want rn
+    }
 
     void VulkanRenderEngine::open_window_and_create_surface(const NovaSettings::WindowOptions& options) {
 #ifdef NOVA_LINUX
@@ -1255,7 +1265,7 @@ namespace nova::renderer::rhi {
         vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
     }
 
-    bool VulkanRenderEngine::does_device_support_extensions(const VkPhysicalDevice device) {
+    bool VulkanRenderEngine::does_device_support_extensions(VkPhysicalDevice device) {
         uint32_t extension_count;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
         std::vector<VkExtensionProperties> available(extension_count);
