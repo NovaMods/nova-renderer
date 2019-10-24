@@ -101,7 +101,8 @@ namespace nova::renderer::rhi {
         return ntl::Result<DeviceMemory*>(memory);
     }
 
-    ntl::Result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data, const glm::uvec2& framebuffer_size) {
+    ntl::Result<Renderpass*> VulkanRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data,
+                                                                   const glm::uvec2& framebuffer_size) {
         auto* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain);
         VkExtent2D swapchain_extent = {swapchain_size.x, swapchain_size.y};
 
@@ -737,6 +738,7 @@ namespace nova::renderer::rhi {
 
     Buffer* VulkanRenderEngine::create_buffer(const BufferCreateInfo& info) {
         auto* buffer = new_object<VulkanBuffer>();
+        buffer->memory = info.allocation;
 
         VkBufferCreateInfo vk_create_info = {};
         vk_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -780,7 +782,11 @@ namespace nova::renderer::rhi {
         const bvestl::polyalloc::AllocationInfo& allocation_info = vulkan_buffer->memory.allocation_info;
         const auto* memory = static_cast<const VulkanDeviceMemory*>(vulkan_buffer->memory.memory);
 
-        uint8_t* mapped_bytes = static_cast<uint8_t*>(heap_mappings.at(memory->memory)) + allocation_info.offset.b_count() + offset;
+        // TODO: heap_mappings doens't have the buffer's memory in it
+        // Alternately, the buffer's memory isn't in heap_mappings
+        // Something something assuming constantly mapped?
+        uint8_t* mapped_bytes = static_cast<uint8_t*>(heap_mappings.at(memory->memory)) +
+                                                              allocation_info.offset.b_count() + offset;
         memcpy(mapped_bytes, data, num_bytes);
     }
 

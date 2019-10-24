@@ -578,6 +578,8 @@ namespace nova::renderer::shaderpack {
         ShaderpackResourcesData resources;
     };
 
+    // TODO: Wrap these in to_json/from_json thingies
+
     [[nodiscard]] PixelFormatEnum pixel_format_enum_from_string(const std::string& str);
     [[nodiscard]] TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const std::string& str);
     [[nodiscard]] TextureFilterEnum texture_filter_enum_from_string(const std::string& str);

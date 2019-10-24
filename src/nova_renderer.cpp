@@ -175,7 +175,7 @@ namespace nova::renderer {
     void NovaRenderer::set_num_meshes(const uint32_t num_meshes) { meshes.reserve(num_meshes); }
 
     MeshId NovaRenderer::create_mesh(const MeshData& mesh_data) {
-        rhi::BufferCreateInfo vertex_buffer_create_info = {};
+        rhi::BufferCreateInfo vertex_buffer_create_info;
         vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::VertexBuffer;
         vertex_buffer_create_info.size = mesh_data.vertex_data.size() * sizeof(FullVertex);
         vertex_buffer_create_info.allocation = mesh_memory->allocate(Bytes(vertex_buffer_create_info.size));

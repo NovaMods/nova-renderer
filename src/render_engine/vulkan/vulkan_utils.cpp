@@ -6,6 +6,7 @@
 #include "vulkan_utils.hpp"
 #include "nova_renderer/render_engine.hpp"
 #include "nova_renderer/renderables.hpp"
+#include "../../util/logger.hpp"
 
 namespace nova::renderer::rhi {
     VkImageLayout to_vk_layout(const ResourceState state) {
@@ -164,9 +165,11 @@ namespace nova::renderer::rhi {
 
             case shaderpack::PixelFormatEnum::DepthStencil:
                 return VK_FORMAT_D24_UNORM_S8_UINT;
-        }
 
-        return VK_FORMAT_R10X6G10X6_UNORM_2PACK16;
+            default:
+                NOVA_LOG(ERROR) << "Unknown pixel format, returning RGBA8";
+                return VK_FORMAT_R8G8B8A8_UNORM;
+        }
     }
 
     VkDescriptorType to_vk_descriptor_type(const DescriptorType type) {

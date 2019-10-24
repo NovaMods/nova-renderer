@@ -6,8 +6,10 @@
 #ifndef NOVA_RENDERER_UTILS_HPP
 #define NOVA_RENDERER_UTILS_HPP
 
-#include <nlohmann/json.hpp>
 #include <optional>
+
+#include <nlohmann/json.hpp>
+
 #include "../util/logger.hpp"
 
 namespace nova::renderer {
@@ -41,7 +43,9 @@ namespace nova::renderer {
      * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
      */
     template <typename ValType, std::enable_if_t<std::is_same_v<ValType, std::string>>** = nullptr>
-    std::optional<ValType> get_json_value(const nlohmann::json& json_obj, const std::string& key, bool empty_means_not_present = false) {
+    std::optional<ValType> get_json_value(const nlohmann::json& json_obj,
+                                          const std::string& key,
+                                          const bool empty_means_not_present = false) {
         const std::string key_std = key.c_str();
         const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
@@ -84,7 +88,7 @@ namespace nova::renderer {
     template <typename ValType>
     std::optional<ValType> get_json_value(const nlohmann::json& json_obj,
                                           const std::string& key,
-                                            std::function<ValType(const nlohmann::json&)> deserializer) {
+                                          std::function<ValType(const nlohmann::json&)> deserializer) {
         const std::string key_std = key.c_str();
         const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
@@ -161,7 +165,7 @@ namespace nova::renderer {
     template <typename ValType>
     std::vector<ValType> get_json_array(const nlohmann::json& json_obj,
                                         const std::string& key,
-                                          std::function<ValType(const nlohmann::json&)> deserializer) {
+                                        std::function<ValType(const nlohmann::json&)> deserializer) {
         const std::string key_std = key.c_str();
         const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {

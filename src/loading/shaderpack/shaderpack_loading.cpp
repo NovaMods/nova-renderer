@@ -4,8 +4,11 @@
  */
 
 #include "shaderpack_loading.hpp"
+
 #include <glslang/Include/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
+
+#include "../../tasks/task_scheduler.hpp"
 #include "../folder_accessor.hpp"
 #include "../json_utils.hpp"
 #include "../loading_utils.hpp"
@@ -15,8 +18,6 @@
 #include "json_interop.hpp"
 #include "render_graph_builder.hpp"
 #include "shaderpack_validator.hpp"
-
-#include "../../tasks/task_scheduler.hpp"
 
 namespace nova::renderer::shaderpack {
     // Removed from the GLSLang version we're using
@@ -145,6 +146,42 @@ namespace nova::renderer::shaderpack {
 
     bool loading_failed = false;
 
+    void fill_in_render_target_formats(ShaderpackData& data) {
+        const auto& textures = data.resources.textures;
+
+        for(auto& pass : data.passes) {
+            for(auto& output : pass.texture_outputs) {
+                if(output.name == "Backbuffer") {
+                    // Backbuffer is a special snowflake
+                    continue;
+                }
+
+                if(const auto& tex_itr = std::find_if(textures.begin(),
+                                                      textures.end(),
+                                                      [&](const TextureCreateInfo& texture_info) {
+                                                          return texture_info.name == output.name;
+                                                      });
+                   tex_itr != textures.end()) {
+                    output.pixel_format = tex_itr->format.pixel_format;
+                } else {
+                    NOVA_LOG(ERROR) << "Render pass " << pass.name << " is trying to use texture " << output.name
+                                    << ", but it's not in the render graph's dynamic texture list";
+                }
+            }
+
+            if(pass.depth_texture) {
+                if(const auto& tex_itr = std::find_if(textures.begin(),
+                                                      textures.end(),
+                                                      [&](const TextureCreateInfo& texture_info) {
+                                                          return texture_info.name == pass.depth_texture->name;
+                                                      });
+                   tex_itr != textures.end()) {
+                    pass.depth_texture->pixel_format = tex_itr->format.pixel_format;
+                }
+            }
+        }
+    }
+
     ShaderpackData load_shaderpack_data(const fs::path& shaderpack_name) {
         loading_failed = false;
         const std::shared_ptr<FolderAccessorBase> folder_access = get_shaderpack_accessor(shaderpack_name);
@@ -163,6 +200,8 @@ namespace nova::renderer::shaderpack {
         data.passes = load_passes_file(folder_access).value;
         data.pipelines = load_pipeline_files(folder_access);
         data.materials = load_material_files(folder_access);
+
+        fill_in_render_target_formats(data);
 
         return data;
     }
