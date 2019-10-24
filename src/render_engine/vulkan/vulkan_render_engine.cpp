@@ -145,6 +145,15 @@ namespace nova::renderer::rhi {
         // Collect framebuffer size information from color output attachments
         for(const shaderpack::TextureAttachmentInfo& attachment : data.texture_outputs) {
             if(attachment.name == "Backbuffer") {
+                // In Nova, if you write to the Backbuffer, you can _only_ write to the Backbuffer. This greatly
+                // simplifies my life
+                if(data.texture_outputs.size() > 1) {
+                    return ntl::Result<Renderpass*>(MAKE_ERROR(
+                        "Renderpass {:s} writes to the Backbuffer, and {:d} other render targets. Renderpasses which write to the backbuffer may not write to any other render targets",
+                        data.name,
+                        data.texture_outputs.size() - 1));
+                }
+
                 // Handle backbuffer
                 // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip
                 // everything
@@ -274,7 +283,7 @@ namespace nova::renderer::rhi {
     Framebuffer* VulkanRenderEngine::create_framebuffer(const Renderpass* renderpass,
                                                         const std::vector<Image*>& attachments,
                                                         const glm::uvec2& framebuffer_size) {
-        const auto* vk_renderpass = static_cast<const VulkanRenderpass*>(renderpass);
+        const auto* vk_renderpass = (const VulkanRenderpass*) (renderpass);
 
         std::vector<VkImageView> attachment_views;
         attachment_views.reserve(attachments.size());
@@ -1408,6 +1417,20 @@ namespace nova::renderer::rhi {
         return VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     }
 
+    VkShaderModule VulkanRenderEngine::create_shader_module(const std::vector<uint32_t>& spirv) const {
+        VkShaderModuleCreateInfo shader_module_create_info;
+        shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        shader_module_create_info.pNext = nullptr;
+        shader_module_create_info.flags = 0;
+        shader_module_create_info.pCode = spirv.data();
+        shader_module_create_info.codeSize = spirv.size() * 4;
+
+        VkShaderModule module;
+        NOVA_CHECK_RESULT(vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module));
+
+        return module;
+    }
+
     VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderEngine::debug_report_callback(const VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
                                                                              const VkDebugUtilsMessageTypeFlagsEXT message_types,
                                                                              const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
@@ -1489,19 +1512,5 @@ namespace nova::renderer::rhi {
         }
 #endif
         return VK_FALSE;
-    }
-
-    VkShaderModule VulkanRenderEngine::create_shader_module(const std::vector<uint32_t>& spirv) const {
-        VkShaderModuleCreateInfo shader_module_create_info;
-        shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        shader_module_create_info.pNext = nullptr;
-        shader_module_create_info.flags = 0;
-        shader_module_create_info.pCode = spirv.data();
-        shader_module_create_info.codeSize = spirv.size() * 4;
-
-        VkShaderModule module;
-        NOVA_CHECK_RESULT(vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module));
-
-        return module;
     }
 } // namespace nova::renderer::rhi

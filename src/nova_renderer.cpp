@@ -277,9 +277,10 @@ namespace nova::renderer {
             metadata.data = create_info;
 
             ntl::Result<rhi::Renderpass*> renderpass_result = rhi->create_renderpass(create_info);
-            if(!renderpass_result.has_value) {
+            if(!renderpass_result) {
                 NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name.c_str() << ": "
                                 << renderpass_result.error.to_string().c_str();
+                continue;
             }
 
             renderpass.renderpass = renderpass_result.value;
