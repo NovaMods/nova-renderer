@@ -553,7 +553,7 @@ namespace nova::renderer::shaderpack {
          */
         std::vector<VkDescriptorSet> descriptor_sets;
 
-        VkPipelineLayout layout = nullptr;
+        VkPipelineLayout layout = VK_NULL_HANDLE;
     };
 
     struct MaterialData {

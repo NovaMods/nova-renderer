@@ -54,8 +54,8 @@ namespace nova::renderer::rhi {
         const auto acquire_result = vkAcquireNextImageKHR(render_engine.device,
                                                           swapchain,
                                                           std::numeric_limits<uint64_t>::max(),
-                                                          nullptr,
-                                                          nullptr,
+                                                          VK_NULL_HANDLE,
+                                                          VK_NULL_HANDLE,
                                                           &acquired_image_idx);
         if(acquire_result == VK_ERROR_OUT_OF_DATE_KHR || acquire_result == VK_SUBOPTIMAL_KHR) {
             // TODO: Recreate the swapchain and all screen-relative textures

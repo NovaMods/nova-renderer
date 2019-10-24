@@ -18,23 +18,23 @@ namespace nova::renderer::rhi {
     };
 
     struct VulkanImage : Image {
-        VkImage image = nullptr;
-        VkImageView image_view = nullptr;
+        VkImage image = VK_NULL_HANDLE;
+        VkImageView image_view = VK_NULL_HANDLE;
         VulkanDeviceMemory* memory = nullptr;
     };
 
     struct VulkanBuffer : Buffer {
-        VkBuffer buffer = nullptr;
+        VkBuffer buffer = VK_NULL_HANDLE;
         DeviceMemoryAllocation memory{};
     };
 
     struct VulkanRenderpass : Renderpass {
-        VkRenderPass pass = nullptr;
+        VkRenderPass pass = VK_NULL_HANDLE;
         VkRect2D render_area{};
     };
 
     struct VulkanFramebuffer : Framebuffer {
-        VkFramebuffer framebuffer = nullptr;
+        VkFramebuffer framebuffer = VK_NULL_HANDLE;
     };
 
     struct VulkanPipelineInterface : PipelineInterface {
@@ -42,9 +42,9 @@ namespace nova::renderer::rhi {
          * \brief Renderpass for the pipeline's output layouts because why _wouldn't_ that be married to the
          * renderpass itself?
          */
-        VkRenderPass pass = nullptr;
+        VkRenderPass pass = VK_NULL_HANDLE;
 
-        VkPipelineLayout pipeline_layout = nullptr;
+        VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
 
         /*!
          * \brief All the descriptor set layouts that this pipeline interface needs to create descriptor sets
@@ -55,11 +55,11 @@ namespace nova::renderer::rhi {
     };
 
     struct VulkanPipeline : Pipeline {
-        VkPipeline pipeline = nullptr;
+        VkPipeline pipeline = VK_NULL_HANDLE;
     };
 
     struct VulkanDescriptorPool : DescriptorPool {
-        VkDescriptorPool descriptor_pool = nullptr;
+        VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
     };
 
     struct VulkanDescriptorSet : DescriptorSet {
