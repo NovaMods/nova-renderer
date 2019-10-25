@@ -760,8 +760,7 @@ namespace nova::renderer::rhi {
             } break;
 
             case BufferUsage::StagingBuffer: {
-                // TODO
-                NOVA_LOG(FATAL) << "Unimplemented: tried to create staging buffer";
+                vk_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             } break;
         }
         auto* vulkan_heap = static_cast<VulkanDeviceMemory*>(info.allocation.memory);
@@ -1038,7 +1037,6 @@ namespace nova::renderer::rhi {
         submit_info.pSignalSemaphores = vk_signal_semaphores.data();
 
         const auto* vk_fence = static_cast<const VulkanFence*>(fence_to_signal);
-
         vkQueueSubmit(queue_to_submit_to, 1, &submit_info, vk_fence->fence);
     }
 

@@ -292,8 +292,12 @@ namespace nova::renderer {
             std::vector<std::string> attachment_errors;
             attachment_errors.reserve(num_attachments);
 
+            bool writes_to_backbuffer = false;
+
             for(const shaderpack::TextureAttachmentInfo& attachment_info : create_info.texture_outputs) {
                 if(attachment_info.name == "Backbuffer") {
+                    writes_to_backbuffer = true;
+
                     if(create_info.texture_outputs.size() == 1) {
                         renderpass.writes_to_backbuffer = true;
                         renderpass.framebuffer = nullptr; // Will be resolved when rendering
@@ -358,7 +362,11 @@ namespace nova::renderer {
                 continue;
             }
 
-            renderpass.framebuffer = rhi->create_framebuffer(renderpass.renderpass, output_images, framebuffer_size);
+            // Backbuffer framebuffers are owned by the swapchain, not the renderpass that writes to them, so if the
+            // renderpass writes to the backbuffer then we don't need to create a framebuffer for it
+            if(!writes_to_backbuffer) {
+                renderpass.framebuffer = rhi->create_framebuffer(renderpass.renderpass, output_images, framebuffer_size);
+            }
 
             renderpass.pipelines.reserve(pipelines.size());
             for(const shaderpack::PipelineCreateInfo& pipeline_create_info : pipelines) {

@@ -1,17 +1,20 @@
-/*!
- * \author ddubois
- * \date 30-Mar-19.
- */
-
 #include "vulkan_command_list.hpp"
+
+#include "vk_structs.hpp"
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
 
-#include "vk_structs.hpp"
-
 namespace nova::renderer::rhi {
     VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine* render_engine)
-        : cmds(cmds), render_engine(*render_engine) {}
+        : cmds(cmds), render_engine(*render_engine) {
+
+        // TODO: Put this begin info in the constructor parameters
+        VkCommandBufferBeginInfo begin_info = {};
+        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        vkBeginCommandBuffer(cmds, &begin_info);
+    }
 
     void VulkanCommandList::resource_barriers(const PipelineStageFlags stages_before_barrier,
                                               const PipelineStageFlags stages_after_barrier,
@@ -80,13 +83,14 @@ namespace nova::renderer::rhi {
                                         Buffer* source_buffer,
                                         const uint64_t source_offset,
                                         const uint64_t num_bytes) {
-        VkBufferCopy copy = {};
+        VkBufferCopy copy;
         copy.srcOffset = source_offset;
         copy.dstOffset = destination_offset;
         copy.size = num_bytes;
         auto* vk_destination_buffer = static_cast<VulkanBuffer*>(destination_buffer);
         auto* vk_source_buffer = static_cast<VulkanBuffer*>(source_buffer);
 
+        // TODO: fix the crash on this line
         vkCmdCopyBuffer(cmds, vk_source_buffer->buffer, vk_destination_buffer->buffer, 1, &copy);
     }
 
