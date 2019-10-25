@@ -206,7 +206,7 @@ namespace nova::renderer::rhi {
         return ntl::Result(static_cast<Pipeline*>(pipeline));
     }
 
-    Buffer* Gl4NvRenderEngine::create_buffer(const BufferCreateInfo& info) {
+    Buffer* Gl4NvRenderEngine::create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& /* memory */) {
         auto* buffer = new Gl3Buffer;
 
         glGenBuffers(1, &buffer->id);

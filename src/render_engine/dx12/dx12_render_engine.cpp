@@ -496,7 +496,7 @@ namespace nova::renderer::rhi {
         return ntl::Result(static_cast<Pipeline*>(pipeline));
     }
 
-    Buffer* D3D12RenderEngine::create_buffer(const BufferCreateInfo& info) {
+    Buffer* D3D12RenderEngine::create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory) {
         auto* buffer = new_object<DX12Buffer>();
 
         D3D12_RESOURCE_STATES states = {};
@@ -518,10 +518,12 @@ namespace nova::renderer::rhi {
 
         D3D12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(info.size);
 
-        const auto memory = static_cast<DX12DeviceMemory*>(info.allocation.memory);
+        // TODO: Handle buffer alignment
+        const auto allocation = memory.allocate(info.size);
+        const auto* dx12_memory = static_cast<DX12DeviceMemory*>(allocation.memory);
 
-        device->CreatePlacedResource(memory->heap,
-                                     info.allocation.allocation_info.offset.b_count(),
+        device->CreatePlacedResource(dx12_memory->heap,
+                                     allocation.allocation_info.offset.b_count(),
                                      &resource_desc,
                                      states,
                                      nullptr,

@@ -91,7 +91,7 @@ namespace nova::renderer::rhi {
         [[nodiscard]] virtual ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
                                                                      const shaderpack::PipelineCreateInfo& data) = 0;
 
-        [[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info) = 0;
+        [[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory) = 0;
 
         /*!
          * \brief Writes data to a buffer

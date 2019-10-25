@@ -11,12 +11,9 @@ namespace nova::renderer::rhi {
 
 #pragma region Structs
     struct BufferCreateInfo {
-
         uint64_t size = 0;
 
         BufferUsage buffer_usage{};
-
-        DeviceMemoryAllocation allocation;
     };
 
     struct DeviceMemory {};

@@ -23,11 +23,12 @@
 #endif
 
 // TODO: A coherent way to manage program settings
+#include "../../util/memory_utils.hpp"
 #include "../configuration.hpp"
 
 namespace nova::renderer::rhi {
     VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)
-        : RenderEngine(&mallocator, settings) { 
+        : RenderEngine(&mallocator, settings) {
         create_instance();
 
         if(settings.settings.debug.enabled) {
@@ -357,7 +358,7 @@ namespace nova::renderer::rhi {
                 // Handle backbuffer
                 // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip
                 // everything
-                
+
                 VkAttachmentDescription desc = {};
                 desc.flags = 0;
                 desc.format = vk_swapchain->get_swapchain_format();
@@ -732,9 +733,8 @@ namespace nova::renderer::rhi {
         return ntl::Result(static_cast<Pipeline*>(vk_pipeline));
     }
 
-    Buffer* VulkanRenderEngine::create_buffer(const BufferCreateInfo& info) {
+    Buffer* VulkanRenderEngine::create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory) {
         auto* buffer = new_object<VulkanBuffer>();
-        buffer->memory = info.allocation;
 
         VkBufferCreateInfo vk_create_info = {};
         vk_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -763,10 +763,18 @@ namespace nova::renderer::rhi {
                 vk_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             } break;
         }
-        auto* vulkan_heap = static_cast<VulkanDeviceMemory*>(info.allocation.memory);
 
         vkCreateBuffer(device, &vk_create_info, nullptr, &buffer->buffer);
-        vkBindBufferMemory(device, buffer->buffer, vulkan_heap->memory, info.allocation.allocation_info.offset.b_count());
+
+        VkMemoryRequirements requirements;
+        vkGetBufferMemoryRequirements(device, buffer->buffer, &requirements);
+
+        const auto allocation = memory.allocate(requirements.size);
+
+        auto* vulkan_heap = static_cast<VulkanDeviceMemory*>(allocation.memory);
+        buffer->memory = allocation;
+
+        vkBindBufferMemory(device, buffer->buffer, vulkan_heap->memory, 0);
 
         return buffer;
     }
@@ -780,8 +788,7 @@ namespace nova::renderer::rhi {
         // TODO: heap_mappings doesn't have the buffer's memory in it
         // Alternately, the buffer's memory isn't in heap_mappings
         // Something something assuming constantly mapped?
-        uint8_t* mapped_bytes = static_cast<uint8_t*>(heap_mappings.at(memory->memory)) +
-                                                              allocation_info.offset.b_count() + offset;
+        uint8_t* mapped_bytes = static_cast<uint8_t*>(heap_mappings.at(memory->memory)) + allocation_info.offset.b_count() + offset;
         memcpy(mapped_bytes, data, num_bytes);
     }
 
@@ -918,6 +925,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderEngine::reset_fences(const std::vector<Fence*>& fences) {
+        // TODO: Apparently the fence is invalid here?
         vkResetFences(device, static_cast<uint32_t>(fences.size()), reinterpret_cast<const VkFence*>(fences.data()));
     }
 
@@ -1036,14 +1044,19 @@ namespace nova::renderer::rhi {
         submit_info.signalSemaphoreCount = static_cast<uint32_t>(vk_signal_semaphores.size());
         submit_info.pSignalSemaphores = vk_signal_semaphores.data();
 
-        const auto* vk_fence = static_cast<const VulkanFence*>(fence_to_signal);
-        vkQueueSubmit(queue_to_submit_to, 1, &submit_info, vk_fence->fence);
+        if(fence_to_signal) {
+            const auto* vk_fence = static_cast<const VulkanFence*>(fence_to_signal);
+            vkQueueSubmit(queue_to_submit_to, 1, &submit_info, vk_fence->fence);
+
+        } else {
+            vkQueueSubmit(queue_to_submit_to, 1, &submit_info, nullptr);
+        }
     }
 
     uint32_t VulkanRenderEngine::get_queue_family_index(const QueueType type) const {
         switch(type) {
-            case QueueType::Graphics: 
-				return graphics_family_index;
+            case QueueType::Graphics:
+                return graphics_family_index;
 
             case QueueType::Transfer:
                 return transfer_family_index;
@@ -1053,7 +1066,7 @@ namespace nova::renderer::rhi {
         }
 
         NOVA_LOG(ERROR) << "Unknown queue type " << static_cast<uint32_t>(type);
-        return 999999;  // Will probably cause a crash, which is actually what we want rn
+        return 999999; // Will probably cause a crash, which is actually what we want rn
     }
 
     void VulkanRenderEngine::open_window_and_create_surface(const NovaSettings::WindowOptions& options) {

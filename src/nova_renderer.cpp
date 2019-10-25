@@ -178,15 +178,15 @@ namespace nova::renderer {
         rhi::BufferCreateInfo vertex_buffer_create_info;
         vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::VertexBuffer;
         vertex_buffer_create_info.size = mesh_data.vertex_data.size() * sizeof(FullVertex);
-        vertex_buffer_create_info.allocation = mesh_memory->allocate(vertex_buffer_create_info.size);
 
-        rhi::Buffer* vertex_buffer = rhi->create_buffer(vertex_buffer_create_info);
+        rhi::Buffer* vertex_buffer = rhi->create_buffer(vertex_buffer_create_info, *mesh_memory.get());
+
+        // TODO: Try to get staging buffers from a pool
 
         {
             rhi::BufferCreateInfo staging_vertex_buffer_create_info = vertex_buffer_create_info;
-            staging_vertex_buffer_create_info.allocation = staging_buffer_memory->allocate(staging_vertex_buffer_create_info.size);
             staging_vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
-            rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info);
+            rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info, *staging_buffer_memory.get());
             rhi->write_data_to_buffer(mesh_data.vertex_data.data(),
                                       mesh_data.vertex_data.size() * sizeof(FullVertex),
                                       0,
@@ -200,15 +200,13 @@ namespace nova::renderer {
         rhi::BufferCreateInfo index_buffer_create_info;
         index_buffer_create_info.buffer_usage = rhi::BufferUsage::IndexBuffer;
         index_buffer_create_info.size = mesh_data.indices.size() * sizeof(uint32_t);
-        index_buffer_create_info.allocation = mesh_memory->allocate(index_buffer_create_info.size);
 
-        rhi::Buffer* index_buffer = rhi->create_buffer(index_buffer_create_info);
+        rhi::Buffer* index_buffer = rhi->create_buffer(index_buffer_create_info, *mesh_memory.get());
 
         {
             rhi::BufferCreateInfo staging_index_buffer_create_info = index_buffer_create_info;
-            staging_index_buffer_create_info.allocation = staging_buffer_memory->allocate(staging_index_buffer_create_info.size);
             staging_index_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
-            rhi::Buffer* staging_index_buffer = rhi->create_buffer(staging_index_buffer_create_info);
+            rhi::Buffer* staging_index_buffer = rhi->create_buffer(staging_index_buffer_create_info, *staging_buffer_memory.get());
             rhi->write_data_to_buffer(mesh_data.indices.data(), mesh_data.indices.size() * sizeof(uint32_t), 0, staging_index_buffer);
 
             rhi::CommandList* indices_upload_cmds = rhi->get_command_list(0, rhi::QueueType::Transfer);
@@ -866,16 +864,14 @@ namespace nova::renderer {
         rhi::BufferCreateInfo per_frame_data_create_info = {};
         per_frame_data_create_info.size = sizeof(PerFrameUniforms);
         per_frame_data_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
-        per_frame_data_create_info.allocation = ubo_memory->allocate(Bytes(sizeof(PerFrameUniforms)));
 
-        per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info);
+        per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory.get());
 
         // Buffer for each drawcall's model matrix
         rhi::BufferCreateInfo model_matrix_buffer_create_info = {};
         model_matrix_buffer_create_info.size = sizeof(glm::mat4) * 0xFFFF;
         model_matrix_buffer_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
-        model_matrix_buffer_create_info.allocation = ubo_memory->allocate(Bytes(sizeof(glm::mat4) * 0xFFFF));
 
-        model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info);
+        model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info, *ubo_memory.get());
     }
 } // namespace nova::renderer

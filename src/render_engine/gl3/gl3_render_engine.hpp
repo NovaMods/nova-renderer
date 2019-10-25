@@ -49,7 +49,7 @@ namespace nova::renderer::rhi {
 
         ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override;
 
-        Buffer* create_buffer(const BufferCreateInfo& info) override;
+        Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory) override;
 
         /*!
          * \inheritdoc
