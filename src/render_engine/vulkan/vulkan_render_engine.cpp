@@ -26,8 +26,6 @@
 #include "../../util/memory_utils.hpp"
 #include "../configuration.hpp"
 
-#define HANDLE_TO_U64(handle) reinterpret_cast<uint64_t>(reinterpret_cast<void*>(handle))
-
 namespace nova::renderer::rhi {
     VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)
         : RenderEngine(&mallocator, settings) {
@@ -266,7 +264,7 @@ namespace nova::renderer::rhi {
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             object_name.objectType = VK_OBJECT_TYPE_IMAGE;
-            object_name.objectHandle = HANDLE_TO_U64(renderpass->pass);
+            object_name.objectHandle = reinterpret_cast<uint64_t>(renderpass->pass);
             object_name.pObjectName = data.name.c_str();
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
         }
@@ -717,7 +715,7 @@ namespace nova::renderer::rhi {
         pipeline_create_info.subpass = 0;
         pipeline_create_info.basePipelineIndex = -1;
 
-        VkResult result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &vk_pipeline->pipeline);
+        VkResult result = vkCreateGraphicsPipelines(device, nullptr, 1, &pipeline_create_info, nullptr, &vk_pipeline->pipeline);
         if(result != VK_SUCCESS) {
             return ntl::Result<Pipeline*>(MAKE_ERROR("Could not compile pipeline {:s}", data.name.c_str()));
         }
@@ -726,7 +724,7 @@ namespace nova::renderer::rhi {
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             object_name.objectType = VK_OBJECT_TYPE_IMAGE;
-            object_name.objectHandle = HANDLE_TO_U64(vk_pipeline->pipeline);
+            object_name.objectHandle = reinterpret_cast<uint64_t>(vk_pipeline->pipeline);
             object_name.pObjectName = data.name.c_str();
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
             NOVA_LOG(INFO) << "Set pipeline " << vk_pipeline->pipeline << " to have name " << data.name.c_str();
@@ -830,7 +828,7 @@ namespace nova::renderer::rhi {
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             object_name.objectType = VK_OBJECT_TYPE_IMAGE;
-            object_name.objectHandle = HANDLE_TO_U64(image->image);
+            object_name.objectHandle = reinterpret_cast<uint64_t>(image->image);
             object_name.pObjectName = info.name.c_str();
 
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
@@ -927,8 +925,14 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderEngine::reset_fences(const std::vector<Fence*>& fences) {
-        // TODO: Apparently the fence is invalid here?
-        vkResetFences(device, static_cast<uint32_t>(fences.size()), reinterpret_cast<const VkFence*>(fences.data()));
+        std::vector<VkFence> vk_fences;
+        vk_fences.reserve(fences.size());
+        for(const auto* fence : fences) {
+            const auto* vk_fence = static_cast<const VulkanFence*>(fence);
+            vk_fences.push_back(vk_fence->fence);
+        }
+
+        vkResetFences(device, static_cast<uint32_t>(fences.size()), vk_fences.data());
     }
 
     void VulkanRenderEngine::destroy_renderpass(Renderpass* pass) {
@@ -1121,7 +1125,6 @@ namespace nova::renderer::rhi {
 
         if(settings.settings.debug.enabled && settings.settings.debug.enable_validation_layers) {
             enabled_layer_names.push_back("VK_LAYER_LUNARG_standard_validation");
-            // enabled_layer_names.push_back("VK_LAYER_LUNARG_api_dump");
         }
         create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layer_names.size());
         create_info.ppEnabledLayerNames = enabled_layer_names.data();
@@ -1178,8 +1181,7 @@ namespace nova::renderer::rhi {
 
         for(uint32_t device_idx = 0; device_idx < device_count; device_idx++) {
             graphics_family_idx = 0xFFFFFFFF;
-            // NOLINTNEXTLINE(misc-misplaced-const)
-            const VkPhysicalDevice current_device = physical_devices[device_idx];
+            VkPhysicalDevice current_device = physical_devices[device_idx];
             vkGetPhysicalDeviceProperties(current_device, &gpu.props);
 
             if(gpu.props.vendorID == 0x8086 &&
