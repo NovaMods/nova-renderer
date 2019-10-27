@@ -107,6 +107,10 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanCommandList::begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) {
+        // TODO: Store this somewhere better
+        // TODO: Get max framebuffer attachments from GPU
+        const static std::vector<VkClearValue> CLEAR_VALUES(9);
+
         auto* vk_renderpass = static_cast<VulkanRenderpass*>(renderpass);
         auto* vk_framebuffer = static_cast<VulkanFramebuffer*>(framebuffer);
 
@@ -115,6 +119,8 @@ namespace nova::renderer::rhi {
         begin_info.renderPass = vk_renderpass->pass;
         begin_info.framebuffer = vk_framebuffer->framebuffer;
         begin_info.renderArea = {{0, 0}, {static_cast<uint32_t>(framebuffer->size.x), static_cast<uint32_t>(framebuffer->size.y)}};
+        begin_info.clearValueCount = vk_framebuffer->num_attachments;
+        begin_info.pClearValues = CLEAR_VALUES.data();
 
         /*
          * ERROR: [Validation] [Validation]  Objects: Render Passforward (8483000000000025)  In vkCmdBeginRenderPass()
@@ -124,7 +130,8 @@ namespace nova::renderer::rhi {
          * so even if some pClearValues entries between 0 and 1 correspond to attachments that aren't cleared they will
          * be ignored. The Vulkan spec states: clearValueCount must be greater than the largest attachment index in
          * renderPass that specifies a loadOp (or stencilLoadOp, if the attachment has a depth/stencil format) of
-         * VK_ATTACHMENT_LOAD_OP_CLEAR (https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#VUID-VkRenderPassBeginInfo-clearValueCount-00902)
+         * VK_ATTACHMENT_LOAD_OP_CLEAR
+         * (https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#VUID-VkRenderPassBeginInfo-clearValueCount-00902)
          */
 
         // Nova _always_ records command lists in parallel for each renderpass

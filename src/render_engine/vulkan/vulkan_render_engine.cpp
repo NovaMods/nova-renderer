@@ -292,8 +292,11 @@ namespace nova::renderer::rhi {
         framebuffer_create_info.width = framebuffer_size.x;
         framebuffer_create_info.height = framebuffer_size.y;
         framebuffer_create_info.layers = 1;
+
         auto* framebuffer = new_object<VulkanFramebuffer>();
         framebuffer->size = framebuffer_size;
+        framebuffer->num_attachments = attachments.size();
+
         NOVA_CHECK_RESULT(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer->framebuffer));
 
         return framebuffer;
@@ -1494,7 +1497,7 @@ namespace nova::renderer::rhi {
             for(uint32_t i = 0; i < callback_data->objectCount; i++) {
                 ss << to_string(callback_data->pObjects[i].objectType);
                 if(callback_data->pObjects[i].pObjectName != nullptr) {
-                    ss << callback_data->pObjects[i].pObjectName;
+                    ss << " \"" << callback_data->pObjects[i].pObjectName << "\"";
                 }
                 ss << " (" << std::hex << callback_data->pObjects[i].objectHandle << std::dec << ") ";
                 if(i != callback_data->objectCount - 1) {

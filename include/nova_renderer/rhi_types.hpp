@@ -41,6 +41,8 @@ namespace nova::renderer::rhi {
 
     struct Framebuffer {
         glm::uvec2 size;
+
+        uint32_t num_attachments;
     };
 
     struct Renderpass {
