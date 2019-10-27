@@ -407,7 +407,10 @@ namespace nova::renderer {
                 }
             }
 
+            renderpass.id = renderpass_metadatas.size();
+
             renderpasses.push_back(renderpass);
+            renderpass_metadatas.push_back(metadata);
         }
     }
 
@@ -639,7 +642,7 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::record_renderpass(Renderpass& renderpass, rhi::CommandList* cmds) {
-        cmds->begin_renderpass(renderpass.renderpass, renderpass.framebuffer);
+        // TODO: Figure if any of these barriers are implicit
 
         if(!renderpass.read_texture_barriers.empty()) {
             cmds->resource_barriers(rhi::PipelineStageFlags::ColorAttachmentOutput,
@@ -654,7 +657,7 @@ namespace nova::renderer {
         }
 
         if(renderpass.writes_to_backbuffer) {
-            rhi::ResourceBarrier backbuffer_barrier = {};
+            rhi::ResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = swapchain->get_image(cur_frame_idx);
             backbuffer_barrier.initial_state = rhi::ResourceState::PresentSource;
             backbuffer_barrier.final_state = rhi::ResourceState::ColorAttachment;
@@ -669,16 +672,19 @@ namespace nova::renderer {
                                     {backbuffer_barrier});
         }
 
+        const auto& renderpass_metadata = renderpass_metadatas.at(renderpass.id);
+        NOVA_LOG(INFO) << "Beginning renderpass " << renderpass_metadata.data.name;
         cmds->begin_renderpass(renderpass.renderpass, renderpass.framebuffer);
 
         for(Pipeline& pipeline : renderpass.pipelines) {
             record_pipeline(pipeline, cmds);
         }
 
+        NOVA_LOG(INFO) << "Ending renderpass " << renderpass_metadata.data.name;
         cmds->end_renderpass();
 
         if(renderpass.writes_to_backbuffer) {
-            rhi::ResourceBarrier backbuffer_barrier = {};
+            rhi::ResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = swapchain->get_image(cur_frame_idx);
             backbuffer_barrier.initial_state = rhi::ResourceState::ColorAttachment;
             backbuffer_barrier.final_state = rhi::ResourceState::PresentSource;

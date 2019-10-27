@@ -1,6 +1,5 @@
 #include "nova_renderer/shaderpack_data.hpp"
 
-#include "../../util/vma_usage.hpp"
 #include "../json_utils.hpp"
 
 namespace nova::renderer::shaderpack {

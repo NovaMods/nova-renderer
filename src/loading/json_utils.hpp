@@ -73,7 +73,7 @@ namespace nova::renderer {
             return json_node.get<ValType>();
         }
 
-        NOVA_LOG(DEBUG) << key_std << " not found - using a default value";
+        NOVA_LOG(TRACE) << key_std << " not found - using a default value";
         return default_value;
     }
 
@@ -123,7 +123,7 @@ namespace nova::renderer {
         }
 
         using std::to_string;
-        NOVA_LOG(DEBUG) << key.c_str() << " not found - defaulting to " << to_string(default_value).c_str();
+        NOVA_LOG(TRACE) << key.c_str() << " not found - defaulting to " << to_string(default_value).c_str();
 
         return default_value;
     }

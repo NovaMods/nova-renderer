@@ -58,6 +58,8 @@ namespace nova::renderer {
     };
 
     struct Renderpass {
+        uint32_t id = 0;
+
         rhi::Renderpass* renderpass = nullptr;
         rhi::Framebuffer* framebuffer = nullptr;
 
@@ -329,7 +331,7 @@ namespace nova::renderer {
 
         std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;
 
-        std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
+        std::vector<RenderpassMetadata> renderpass_metadatas;
         std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
 
         void record_renderpass(Renderpass& renderpass, rhi::CommandList* cmds);

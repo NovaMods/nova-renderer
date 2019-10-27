@@ -3,6 +3,7 @@
 #include "vk_structs.hpp"
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
+#include "../../util/logger.hpp"
 
 namespace nova::renderer::rhi {
     VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine* render_engine)
@@ -28,7 +29,7 @@ namespace nova::renderer::rhi {
         for(const ResourceBarrier& barrier : barriers) {
             switch(barrier.resource_to_barrier->type) {
                 case ResourceType::Image: {
-                    auto* image = static_cast<VulkanImage*>(barrier.resource_to_barrier);
+                    const auto* image = static_cast<VulkanImage*>(barrier.resource_to_barrier);
 
                     VkImageMemoryBarrier image_barrier = {};
                     image_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -49,7 +50,7 @@ namespace nova::renderer::rhi {
                 } break;
 
                 case ResourceType::Buffer: {
-                    auto* buffer = static_cast<VulkanBuffer*>(barrier.resource_to_barrier);
+                    const auto* buffer = static_cast<VulkanBuffer*>(barrier.resource_to_barrier);
 
                     VkBufferMemoryBarrier buffer_barrier = {};
                     buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
