@@ -673,14 +673,14 @@ namespace nova::renderer {
         }
 
         const auto& renderpass_metadata = renderpass_metadatas.at(renderpass.id);
-        NOVA_LOG(INFO) << "Beginning renderpass " << renderpass_metadata.data.name;
+        NOVA_LOG(TRACE) << "Beginning renderpass " << renderpass_metadata.data.name;
         cmds->begin_renderpass(renderpass.renderpass, renderpass.framebuffer);
 
         for(Pipeline& pipeline : renderpass.pipelines) {
             record_pipeline(pipeline, cmds);
         }
 
-        NOVA_LOG(INFO) << "Ending renderpass " << renderpass_metadata.data.name;
+        NOVA_LOG(TRACE) << "Ending renderpass " << renderpass_metadata.data.name;
         cmds->end_renderpass();
 
         if(renderpass.writes_to_backbuffer) {

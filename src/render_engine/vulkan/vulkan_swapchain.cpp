@@ -275,6 +275,11 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanSwapchain::create_resources_for_frame(const VkImage image, const VkRenderPass renderpass, const glm::uvec2& swapchain_size) {
+        auto* vk_image = new VulkanImage;
+        vk_image->type = ResourceType::Image;
+        vk_image->is_dynamic = true;
+        vk_image->image = image;
+
         VkImageViewCreateInfo image_view_create_info = {};
         image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 
@@ -293,16 +298,15 @@ namespace nova::renderer::rhi {
         image_view_create_info.subresourceRange.baseArrayLayer = 0;
         image_view_create_info.subresourceRange.layerCount = 1;
 
-        VkImageView image_view;
-        vkCreateImageView(render_engine.device, &image_view_create_info, nullptr, &image_view);
-        swapchain_image_views.push_back(image_view);
+        vkCreateImageView(render_engine.device, &image_view_create_info, nullptr, &vk_image->image_view);
+        swapchain_image_views.push_back(vk_image->image_view);
 
-        swapchain_images.push_back(new VulkanImage{{}, image, image_view, nullptr});
+        swapchain_images.push_back(vk_image);
 
         VkFramebufferCreateInfo framebuffer_create_info = {};
         framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebuffer_create_info.attachmentCount = 1;
-        framebuffer_create_info.pAttachments = &image_view;
+        framebuffer_create_info.pAttachments = &vk_image->image_view;
         framebuffer_create_info.renderPass = renderpass;
         framebuffer_create_info.width = swapchain_extent.width;
         framebuffer_create_info.height = swapchain_extent.height;

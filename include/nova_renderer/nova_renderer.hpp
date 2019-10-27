@@ -210,7 +210,7 @@ namespace nova::renderer {
          * Local allocators 0.1 uwu
          *
          * Right now I throw this allocator at the GPU memory allocators, because they need some way to allocate memory and I'm not about to
-         * try and band-aid aid things together
+         * try and band-aid aid things together. Future work will have a better way to bootstrap Nova's allocators
          */
         std::shared_ptr<bvestl::polyalloc::allocator_handle> global_allocator;
 
