@@ -782,6 +782,14 @@ namespace nova::renderer::rhi {
             ComPtr<ID3D12Debug> debug_controller;
             D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
             debug_controller->EnableDebugLayer();
+
+            if(settings.settings.debug.enable_gpu_based_validation) {
+                ComPtr<ID3D12Debug1> debug1;
+                const auto hr = debug_controller->QueryInterface(IID_PPV_ARGS(&debug1));
+                if(SUCCEEDED(hr)) {
+                    debug1->SetEnableGPUBasedValidation(true);
+                }
+            }
         }
 
         NOVA_LOG(TRACE) << "Creating DX12 device";
@@ -848,8 +856,7 @@ namespace nova::renderer::rhi {
         CHECK_ERROR(device->CreateCommandQueue(&copy_queue_desc, IID_PPV_ARGS(&copy_command_queue)), "Could not create copy command queue");
     }
 
-    void D3D12RenderEngine::setup_debug_output() const {
-        ID3D12InfoQueue* info_queue;
+    void D3D12RenderEngine::setup_debug_output() {
         const auto hr = device->QueryInterface(IID_PPV_ARGS(&info_queue));
         if(SUCCEEDED(hr)) {
             info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);

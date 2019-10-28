@@ -106,6 +106,16 @@ namespace nova::renderer {
              */
             bool enable_validation_layers = false;
 
+            /*!
+             * \brief Enables GPU-based validation, which can check more situations then the normal debug layers but can cost a lot of
+             * performance
+             *
+             * GPU-based validation checks for a number of errors like uninitialized descriptors, indexing a descriptor that doesn't exist,
+             * or trying to access a resource that's in an incomplete state. These are great errors to check for, but checking for them
+             * costs significant GPU time. Unless you're developing Nova, this should probably remain `false`
+             */
+            bool enable_gpu_based_validation = false;
+
             struct {
                 /*!
                  * \brief If true, Nova will look for RenderDoc on your computer and will try to load it, letting you

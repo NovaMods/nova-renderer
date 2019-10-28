@@ -40,6 +40,7 @@ namespace nova::renderer {
         settings.vulkan.application_version = {0, 9, 0};
         settings.debug.enabled = true;
         settings.debug.enable_validation_layers = true;
+        settings.debug.enable_gpu_based_validation = true;
         settings.debug.renderdoc.enabled = true;
         settings.window.width = 640;
         settings.window.height = 480;

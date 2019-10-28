@@ -150,10 +150,11 @@ namespace nova::renderer::rhi {
          * - Enables breakpoints on errors and corruption messages
          * - Will tell the debug layer to output to stdout whenever I figure out how to do that
          */
-        void setup_debug_output() const;
+        void setup_debug_output();
 #pragma endregion
 
 #pragma region Helpers
+        Microsoft::WRL::ComPtr<ID3D12InfoQueue> info_queue = nullptr;
 #pragma endregion
     };
 
