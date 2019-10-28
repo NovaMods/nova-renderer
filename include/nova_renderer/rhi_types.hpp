@@ -26,7 +26,7 @@ namespace nova::renderer::rhi {
      */
     struct Resource {
         ResourceType type = {};
-        bool is_dynamic = false;
+        bool is_dynamic = true;
     };
 
     struct Sampler {};

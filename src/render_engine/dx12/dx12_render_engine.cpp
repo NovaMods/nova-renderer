@@ -40,7 +40,7 @@ namespace nova::renderer::rhi {
 
     void D3D12RenderEngine::set_num_renderpasses(const uint32_t num_renderpasses) {
         D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_descriptor = {};
-        rtv_heap_descriptor.NumDescriptors = num_renderpasses * 8;
+        rtv_heap_descriptor.NumDescriptors = num_renderpasses * 9;
         rtv_heap_descriptor.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 
         const HRESULT hr = device->CreateDescriptorHeap(&rtv_heap_descriptor, IID_PPV_ARGS(&rtv_descriptor_heap));
@@ -149,8 +149,12 @@ namespace nova::renderer::rhi {
             // Increment the RTV handle
             framebuffer->render_targets.at(i).Offset(i, rtv_descriptor_size);
 
-            // Create the Render Target View, which binds the swapchain buffer to the RTV handle
-            device->CreateRenderTargetView(d3d12_image->resource.Get(), nullptr, framebuffer->render_targets.at(i));
+            if(!d3d12_image->is_depth_tex) {
+                // Create the Render Target View, which binds the swapchain buffer to the RTV handle
+                device->CreateRenderTargetView(d3d12_image->resource.Get(), nullptr, framebuffer->render_targets.at(i));
+            } else {
+                device->CreateDepthStencilView(d3d12_image->resource.Get(), nullptr, framebuffer->render_targets.at(i));
+            }
         }
 
         next_rtv_descriptor_index += attachment_count;
@@ -550,6 +554,7 @@ namespace nova::renderer::rhi {
 
     Image* D3D12RenderEngine::create_image(const shaderpack::TextureCreateInfo& info) {
         const auto image = new_object<DX12Image>();
+        image->type = ResourceType::Image;
 
         const shaderpack::TextureFormat& format = info.format;
 
@@ -584,26 +589,26 @@ namespace nova::renderer::rhi {
         if(format.pixel_format == shaderpack::PixelFormatEnum::Depth || format.pixel_format == shaderpack::PixelFormatEnum::DepthStencil) {
             texture_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
             state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+            image->is_depth_tex = true;
         }
 
-        ComPtr<ID3D12Resource> texture;
         auto heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
         const HRESULT hr = device->CreateCommittedResource(&heap_props,
                                                            D3D12_HEAP_FLAG_NONE,
                                                            &texture_desc,
                                                            state,
                                                            nullptr,
-                                                           IID_PPV_ARGS(&texture));
+                                                           IID_PPV_ARGS(image->resource.GetAddressOf()));
 
-        if(FAILED(hr)) {
+        if(SUCCEEDED(hr)) {
+            image->resource->SetName(s2ws(info.name).c_str());
+            return image;
+
+        } else {
             NOVA_LOG(ERROR) << "Could not create texture " << info.name << ": Error code " << hr << ", Error description: " << to_string(hr)
                             << ", Windows error: '" << get_last_windows_error() << "'";
-
             return nullptr;
         }
-        texture->SetName(s2ws(info.name).c_str());
-
-        return image;
     }
 
     Semaphore* D3D12RenderEngine::create_semaphore() { return nullptr; }
