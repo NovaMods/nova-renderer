@@ -42,7 +42,6 @@ namespace nova::renderer::rhi {
         D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_descriptor = {};
         rtv_heap_descriptor.NumDescriptors = num_renderpasses * 8;
         rtv_heap_descriptor.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-        rtv_heap_descriptor.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
         const HRESULT hr = device->CreateDescriptorHeap(&rtv_heap_descriptor, IID_PPV_ARGS(&rtv_descriptor_heap));
         if(FAILED(hr)) {
@@ -131,6 +130,9 @@ namespace nova::renderer::rhi {
         const size_t attachment_count = attachments.size();
         auto* framebuffer = new DX12Framebuffer;
         framebuffer->render_targets.reserve(attachment_count);
+
+        // TODO: Create descriptors for the framebuffer attachments
+        // Also TODO: decide how to actually handle descriptor heaps
 
         std::vector<ID3D12Resource*> rendertargets;
         rendertargets.reserve(attachment_count);
@@ -574,8 +576,11 @@ namespace nova::renderer::rhi {
         texture_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
         texture_desc.SampleDesc = sample_desc;
 
+        D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_RENDER_TARGET;
+
         if(format.pixel_format == shaderpack::PixelFormatEnum::Depth || format.pixel_format == shaderpack::PixelFormatEnum::DepthStencil) {
             texture_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+            state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
         }
 
         ComPtr<ID3D12Resource> texture;
@@ -583,7 +588,7 @@ namespace nova::renderer::rhi {
         const HRESULT hr = device->CreateCommittedResource(&heap_props,
                                                            D3D12_HEAP_FLAG_NONE,
                                                            &texture_desc,
-                                                           D3D12_RESOURCE_STATE_RENDER_TARGET,
+                                                           state,
                                                            nullptr,
                                                            IID_PPV_ARGS(&texture));
 
