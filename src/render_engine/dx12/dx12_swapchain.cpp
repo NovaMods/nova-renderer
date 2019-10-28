@@ -74,7 +74,14 @@ namespace nova::renderer::rhi {
             // Create the Render Target View, which binds the swapchain buffer to the RTV handle
             device->CreateRenderTargetView(rendertarget.Get(), nullptr, rtv_handle);
 
-            framebuffers.push_back(new DX12Framebuffer{{size}, {rtv_handle}, false, {}, nullptr});
+            auto* framebuffer = new DX12Framebuffer;
+            framebuffer->size = size;
+            framebuffer->num_attachments = 1;
+            framebuffer->render_targets = {rtv_handle};
+            framebuffer->has_depth_stencil = false;
+            framebuffer->depth_stencil_image = {};
+
+            framebuffers.push_back(framebuffer);
 
             fences.push_back(rhi->create_fence(true));
 

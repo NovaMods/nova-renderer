@@ -131,11 +131,12 @@ namespace nova::renderer::rhi {
         auto* framebuffer = new DX12Framebuffer;
         framebuffer->render_targets.reserve(attachment_count);
 
-        // TODO: Create descriptors for the framebuffer attachments
-        // Also TODO: decide how to actually handle descriptor heaps
-
         std::vector<ID3D12Resource*> rendertargets;
         rendertargets.reserve(attachment_count);
+
+        CD3DX12_CPU_DESCRIPTOR_HANDLE base_rtv_descriptor(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
+                                                          next_rtv_descriptor_index,
+                                                          rtv_descriptor_size);
 
         for(uint32_t i = 0; i < attachments.size(); i++) {
             const Image* attachment = attachments.at(i);
@@ -143,14 +144,16 @@ namespace nova::renderer::rhi {
 
             rendertargets.emplace_back(d3d12_image->resource.Get());
 
-            framebuffer->render_targets.emplace_back(framebuffer->descriptor_heap->GetCPUDescriptorHandleForHeapStart());
+            framebuffer->render_targets.emplace_back(base_rtv_descriptor);
+
+            // Increment the RTV handle
+            framebuffer->render_targets.at(i).Offset(i, rtv_descriptor_size);
 
             // Create the Render Target View, which binds the swapchain buffer to the RTV handle
             device->CreateRenderTargetView(d3d12_image->resource.Get(), nullptr, framebuffer->render_targets.at(i));
-
-            // Increment the RTV handle
-            framebuffer->render_targets.at(i).Offset(1, rtv_descriptor_size);
         }
+
+        next_rtv_descriptor_index += attachment_count;
 
         framebuffer->size = framebuffer_size;
 
@@ -520,7 +523,7 @@ namespace nova::renderer::rhi {
         const auto allocation = memory.allocate(info.size);
         const auto* dx12_memory = static_cast<DX12DeviceMemory*>(allocation.memory);
 
-        device->CreatePlacedResource(dx12_memory->heap,
+        device->CreatePlacedResource(dx12_memory->heap.Get(),
                                      allocation.allocation_info.offset.b_count(),
                                      &resource_desc,
                                      states,
@@ -656,7 +659,9 @@ namespace nova::renderer::rhi {
 
     void D3D12RenderEngine::destroy_framebuffer(Framebuffer* framebuffer) {
         auto* d3d12_framebuffer = static_cast<DX12Framebuffer*>(framebuffer);
-        d3d12_framebuffer->descriptor_heap = nullptr;
+
+        // TODO: Some way to free the framebuffer's RTV descriptors? Probably we'll just destroy all the rendergraph framebuffers together,
+        // completely clearing out the RTV descriptor heap
     }
 
     void D3D12RenderEngine::destroy_pipeline_interface(PipelineInterface* pipeline_interface) {

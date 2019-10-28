@@ -1,12 +1,13 @@
 #pragma once
 
-#include "d3dx12.h"
 #include "nova_renderer/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 
+#include "d3dx12.h"
+
 namespace nova::renderer::rhi {
     struct DX12DeviceMemory : DeviceMemory {
-        ID3D12Heap* heap;
+        Microsoft::WRL::ComPtr<ID3D12Heap> heap;
     };
 
     struct DX12Renderpass : Renderpass {};
@@ -25,8 +26,6 @@ namespace nova::renderer::rhi {
 
         bool has_depth_stencil = false;
         D3D12_CPU_DESCRIPTOR_HANDLE depth_stencil_image = {};
-
-        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptor_heap = nullptr;
     };
 
     struct DX12PipelineInterface : PipelineInterface {
