@@ -26,9 +26,9 @@ namespace nova::renderer::rhi {
     D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(&mallocator, settings) {
         create_device();
 
-        open_window_and_create_swapchain(settings.settings.window, settings.settings.max_in_flight_frames);
-
         create_queues();
+
+        open_window_and_create_swapchain(settings.settings.window, settings.settings.max_in_flight_frames);
 
         rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
         cbv_srv_uav_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -111,14 +111,18 @@ namespace nova::renderer::rhi {
         } else {
             adapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &non_local_info);
 
-            if(size < non_local_info.AvailableForReservation) {
+            if(size > non_local_info.AvailableForReservation) {
                 return ntl::Result<DeviceMemory*>(ntl::NovaError("Not enough space for memory allocation"));
             }
         }
 
-        device->CreateHeap(&desc, IID_PPV_ARGS(&memory->heap));
+        const auto result = device->CreateHeap(&desc, IID_PPV_ARGS(&memory->heap));
+        if(SUCCEEDED(result)) {
+            return ntl::Result<DeviceMemory*>(memory);
 
-        return ntl::Result<DeviceMemory*>(memory);
+        } else {
+            return ntl::Result<DeviceMemory*>(MAKE_ERROR("Could not allocate mrmory"));
+        }
     }
 
     ntl::Result<Renderpass*> D3D12RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data,
@@ -785,7 +789,7 @@ namespace nova::renderer::rhi {
 
         auto* win32_window = static_cast<Win32Window*>(window.get());
 
-        const HWND window_handle = win32_window->get_window_handle();
+        const auto window_handle = win32_window->get_window_handle();
 
         swapchain = new DX12Swapchain(this,
                                       dxgi_factory.Get(),
