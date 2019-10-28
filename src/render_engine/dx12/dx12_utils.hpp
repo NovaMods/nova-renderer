@@ -8,21 +8,23 @@
 #include "nova_renderer/command_list.hpp"
 
 namespace nova::renderer::rhi {
-    D3D12_RESOURCE_STATES to_dx12_state(ResourceState state);
+    [[nodiscard]] D3D12_RESOURCE_STATES to_dx12_state(ResourceState state);
 
-    DXGI_FORMAT to_dxgi_format(shaderpack::PixelFormatEnum pixel_format);
+    [[nodiscard]] DXGI_FORMAT to_dxgi_format(shaderpack::PixelFormatEnum pixel_format);
 
-    enum D3D12_BLEND to_dx12_blend(shaderpack::BlendFactorEnum blend_factor);
+    [[nodiscard]] enum D3D12_BLEND to_dx12_blend(shaderpack::BlendFactorEnum blend_factor);
 
-    D3D12_COMPARISON_FUNC to_dx12_compare_func(shaderpack::CompareOpEnum depth_func);
+    [[nodiscard]] D3D12_COMPARISON_FUNC to_dx12_compare_func(shaderpack::CompareOpEnum depth_func);
 
-    D3D12_STENCIL_OP to_dx12_stencil_op(shaderpack::StencilOpEnum op);
+    [[nodiscard]] D3D12_STENCIL_OP to_dx12_stencil_op(shaderpack::StencilOpEnum op);
 
-    D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(shaderpack::PrimitiveTopologyEnum primitive_mode);
+    [[nodiscard]] D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(shaderpack::PrimitiveTopologyEnum primitive_mode);
 
-    D3D12_DESCRIPTOR_RANGE_TYPE to_dx12_range_type(DescriptorType type);
+    [[nodiscard]] D3D12_DESCRIPTOR_RANGE_TYPE to_dx12_range_type(DescriptorType type);
 
-    std::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions();
+    [[nodiscard]] std::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions();
+
+    [[nodiscard]] std::string to_string(HRESULT hr);
 
 #ifndef NDEBUG
 #define CHECK_ERROR(expr, msg)                                                                                                             \

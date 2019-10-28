@@ -888,13 +888,13 @@ namespace nova::renderer {
         per_frame_data_create_info.size = sizeof(PerFrameUniforms);
         per_frame_data_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
-        per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory.get());
+        per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory);
 
         // Buffer for each drawcall's model matrix
         rhi::BufferCreateInfo model_matrix_buffer_create_info = {};
         model_matrix_buffer_create_info.size = sizeof(glm::mat4) * 0xFFFF;
         model_matrix_buffer_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
-        model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info, *ubo_memory.get());
+        model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info, *ubo_memory);
     }
 } // namespace nova::renderer

@@ -1,4 +1,5 @@
 #include "dx12_utils.hpp"
+
 #include "nova_renderer/renderables.hpp"
 
 namespace nova::renderer::rhi {
@@ -218,9 +219,9 @@ namespace nova::renderer::rhi {
 
              // Main UV
              D3D12_INPUT_ELEMENT_DESC{
-                 "TEXCOORD",                                  // SemanticName
+                 "TEXCOORD",                                 // SemanticName
                  0,                                          // SemanticIndex
-                 DXGI_FORMAT_R32G32_FLOAT,                // Format
+                 DXGI_FORMAT_R32G32_FLOAT,                   // Format
                  0,                                          // InputSlot
                  sizeof(FullVertex),                         // AlignedByOffset
                  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
@@ -229,9 +230,9 @@ namespace nova::renderer::rhi {
 
              // Lightmap UV
              D3D12_INPUT_ELEMENT_DESC{
-                 "LMUV",                                  // SemanticName
+                 "LMUV",                                     // SemanticName
                  0,                                          // SemanticIndex
-                 DXGI_FORMAT_R16G16_FLOAT,                // Format
+                 DXGI_FORMAT_R16G16_FLOAT,                   // Format
                  0,                                          // InputSlot
                  sizeof(FullVertex),                         // AlignedByOffset
                  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
@@ -242,7 +243,7 @@ namespace nova::renderer::rhi {
              D3D12_INPUT_ELEMENT_DESC{
                  "VTEX_ID",                                  // SemanticName
                  0,                                          // SemanticIndex
-                 DXGI_FORMAT_R32_UINT,                // Format
+                 DXGI_FORMAT_R32_UINT,                       // Format
                  0,                                          // InputSlot
                  sizeof(FullVertex),                         // AlignedByOffset
                  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
@@ -253,7 +254,7 @@ namespace nova::renderer::rhi {
              D3D12_INPUT_ELEMENT_DESC{
                  "TANGENT",                                  // SemanticName
                  0,                                          // SemanticIndex
-                 DXGI_FORMAT_R32G32B32A32_FLOAT,                // Format
+                 DXGI_FORMAT_R32G32B32A32_FLOAT,             // Format
                  0,                                          // InputSlot
                  sizeof(FullVertex),                         // AlignedByOffset
                  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
@@ -261,5 +262,24 @@ namespace nova::renderer::rhi {
              }};
 
         return input_element_descriptions;
+    }
+
+    std::string to_string(const HRESULT hr) {
+        switch(hr) {
+            case DXGI_ERROR_INVALID_CALL:
+                return "Invalid call - one or more of the parameters was wrong";
+
+            case DXGI_STATUS_OCCLUDED:
+                return "Fullscreen is unavailable";
+
+            case E_OUTOFMEMORY:
+                return "Out of memory";
+
+            case E_INVALIDARG:
+                return "One or more arguments are invalid";
+
+            default:
+                return "Unknown error";
+        }
     }
 } // namespace nova::renderer::rhi

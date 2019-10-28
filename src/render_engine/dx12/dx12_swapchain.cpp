@@ -3,6 +3,7 @@
 #include "d3dx12.h"
 #include "dx12_structs.hpp"
 #include "nova_renderer/render_engine.hpp"
+#include "dx12_utils.hpp"
 
 namespace nova::renderer::rhi {
     DX12Swapchain::DX12Swapchain(RenderEngine* rhi,
@@ -26,7 +27,7 @@ namespace nova::renderer::rhi {
 
     void DX12Swapchain::present(uint32_t /* image_idx */) { swapchain->Present(0, DXGI_PRESENT_RESTRICT_TO_OUTPUT); }
 
-    void DX12Swapchain::create_swapchain(IDXGIFactory4* dxgi, HWND window, ID3D12CommandQueue* direct_command_queue) {
+    void DX12Swapchain::create_swapchain(IDXGIFactory4* dxgi, const HWND window, ID3D12CommandQueue* direct_command_queue) {
         DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {};
         swapchain_desc.Width = size.x;
         swapchain_desc.Height = size.y;
@@ -48,14 +49,7 @@ namespace nova::renderer::rhi {
                                                         swapchain_uncast.GetAddressOf());
 
         if(FAILED(hr)) {
-            NOVA_LOG(FATAL) << "Could not create swapchain";
-            if(hr == DXGI_ERROR_INVALID_CALL) {
-                NOVA_LOG(INFO) << "Invalid call - one or more of the parameters was wrong";
-            } else if(hr == DXGI_STATUS_OCCLUDED) {
-                NOVA_LOG(INFO) << "Fullscreen is unavailable";
-            } else if(hr == E_OUTOFMEMORY) {
-                NOVA_LOG(INFO) << "Out of memory. Soz bro :/";
-            }
+            NOVA_LOG(FATAL) << "Could not create swapchain: " << to_string(hr);
         }
 
         swapchain_uncast->QueryInterface(IID_PPV_ARGS(swapchain.GetAddressOf()));

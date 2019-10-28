@@ -143,6 +143,14 @@ namespace nova::renderer::rhi {
         void create_device();
 
         void create_queues();
+
+        /*!
+         * \brief Sets up a few things to make the debugging experience much nicer
+         *
+         * - Enables breakpoints on errors and corruption messages
+         * - Will tell the debug layer to output to stdout whenever I figure out how to do that
+         */
+        void setup_debug_output() const;
 #pragma endregion
 
 #pragma region Helpers

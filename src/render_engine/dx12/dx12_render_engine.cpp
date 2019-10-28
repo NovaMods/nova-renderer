@@ -32,6 +32,10 @@ namespace nova::renderer::rhi {
 
         rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
         cbv_srv_uav_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+        if(settings.settings.debug.enabled) {
+            setup_debug_output();
+        }
     }
 
     void D3D12RenderEngine::set_num_renderpasses(const uint32_t num_renderpasses) {
@@ -53,29 +57,18 @@ namespace nova::renderer::rhi {
 
         D3D12_HEAP_DESC desc = {};
         desc.SizeInBytes = size;
-
-        D3D12_MEMORY_POOL device_memory_pool = D3D12_MEMORY_POOL_L1;
-        if(settings.settings.system_info.is_uma) {
-            device_memory_pool = D3D12_MEMORY_POOL_L0;
-        }
+        desc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+        desc.Properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
 
         switch(type) {
             case MemoryUsage::DeviceOnly:
                 desc.Properties.Type = D3D12_HEAP_TYPE_DEFAULT;
-                desc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_NOT_AVAILABLE;
-                desc.Properties.MemoryPoolPreference = device_memory_pool;
                 break;
 
             case MemoryUsage::LowFrequencyUpload:
-                desc.Properties.Type = D3D12_HEAP_TYPE_UPLOAD;
-                desc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_COMBINE;
-                desc.Properties.MemoryPoolPreference = device_memory_pool;
-                break;
-
+                [[fallthrough]];
             case MemoryUsage::StagingBuffer:
                 desc.Properties.Type = D3D12_HEAP_TYPE_UPLOAD;
-                desc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_COMBINE;
-                desc.Properties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
         }
 
         desc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
@@ -121,7 +114,7 @@ namespace nova::renderer::rhi {
             return ntl::Result<DeviceMemory*>(memory);
 
         } else {
-            return ntl::Result<DeviceMemory*>(MAKE_ERROR("Could not allocate mrmory"));
+            return ntl::Result<DeviceMemory*>(ntl::NovaError(to_string(result)));
         }
     }
 
@@ -166,8 +159,7 @@ namespace nova::renderer::rhi {
         const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
         const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
         const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
-
-        DX12PipelineInterface* pipeline_interface = new DX12PipelineInterface;
+        auto* pipeline_interface = new DX12PipelineInterface;
         pipeline_interface->bindings = bindings;
 
         pipeline_interface->table_layouts.reserve(16);
@@ -193,7 +185,7 @@ namespace nova::renderer::rhi {
         // Make a descriptor table for each descriptor set
         for(uint32_t set = 0; set < num_sets; set++) {
             std::vector<ResourceBindingDescription>& descriptor_layouts = pipeline_interface->table_layouts.at(set);
-            D3D12_ROOT_PARAMETER& param = const_cast<D3D12_ROOT_PARAMETER&>(root_sig_desc.pParameters[set]);
+            auto& param = const_cast<D3D12_ROOT_PARAMETER&>(root_sig_desc.pParameters[set]);
             param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 
             param.DescriptorTable.NumDescriptorRanges = static_cast<UINT>(descriptor_layouts.size());
@@ -238,7 +230,7 @@ namespace nova::renderer::rhi {
     DescriptorPool* D3D12RenderEngine::create_descriptor_pool(uint32_t /* num_sampled_images */,
                                                               uint32_t /* num_samplers */,
                                                               uint32_t /* num_uniform_buffers */) {
-        auto* pool = new DX12DescriptorPool;
+        auto* pool = new DX12DescriptorPool; // This seems wrong
         return pool;
     }
 
@@ -249,7 +241,7 @@ namespace nova::renderer::rhi {
 
         // send help
 
-        const DX12PipelineInterface* dx12_pipeline_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
+        const auto* dx12_pipeline_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
 
         const auto num_sets = static_cast<const uint32_t>(dx12_pipeline_interface->table_layouts.size());
 
@@ -278,7 +270,7 @@ namespace nova::renderer::rhi {
     void D3D12RenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
         // We want to create descriptors in the heaps in the order of their bindings
         for(const DescriptorSetWrite& write : writes) {
-            const DX12DescriptorSet* set = static_cast<const DX12DescriptorSet*>(write.set);
+            const auto* set = static_cast<const DX12DescriptorSet*>(write.set);
             CD3DX12_CPU_DESCRIPTOR_HANDLE write_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(set->heap->GetCPUDescriptorHandleForHeapStart(),
                                                                                        cbv_srv_uav_descriptor_size * write.binding);
 
@@ -494,7 +486,7 @@ namespace nova::renderer::rhi {
 
         const HRESULT hr = device->CreateGraphicsPipelineState(&pipeline_state_desc, IID_PPV_ARGS(&pipeline->pso));
         if(FAILED(hr)) {
-            return ntl::Result<Pipeline*>(ntl::NovaError("Could not create PSO"));
+            return ntl::Result<Pipeline*>(MAKE_ERROR("Could not create PSO: {:s}", to_string(hr)));
         }
 
         return ntl::Result(static_cast<Pipeline*>(pipeline));
@@ -570,7 +562,7 @@ namespace nova::renderer::rhi {
         sample_desc.Count = 1;
         sample_desc.Quality = 1;
 
-        D3D12_RESOURCE_DESC texture_desc;
+        D3D12_RESOURCE_DESC texture_desc = {};
         texture_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
         texture_desc.Alignment = 0;
         texture_desc.Width = dimensions.x;
@@ -583,10 +575,9 @@ namespace nova::renderer::rhi {
         texture_desc.SampleDesc = sample_desc;
 
         if(format.pixel_format == shaderpack::PixelFormatEnum::Depth || format.pixel_format == shaderpack::PixelFormatEnum::DepthStencil) {
-            texture_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+            texture_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
         }
 
-        // TODO: Info in shaderpack::TextureCreateInfo about what heap to put the texture in
         ComPtr<ID3D12Resource> texture;
         auto heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
         const HRESULT hr = device->CreateCommittedResource(&heap_props,
@@ -597,22 +588,8 @@ namespace nova::renderer::rhi {
                                                            IID_PPV_ARGS(&texture));
 
         if(FAILED(hr)) {
-            std::string error_description;
-            switch(hr) {
-                case E_OUTOFMEMORY:
-                    error_description = "Out of memory";
-                    break;
-
-                case E_INVALIDARG:
-                    error_description = "One or more arguments are invalid";
-                    break;
-                default:
-                    error_description = "Everything broke";
-            }
-
-            NOVA_LOG(ERROR) << "Could not create texture " << info.name.c_str() << ": Error code " << hr
-                            << ", Error description: " << error_description.c_str() << ", Windows error: '"
-                            << get_last_windows_error().c_str() << "'";
+            NOVA_LOG(ERROR) << "Could not create texture " << info.name << ": Error code " << hr << ", Error description: " << to_string(hr)
+                            << ", Windows error: '" << get_last_windows_error() << "'";
 
             return nullptr;
         }
@@ -871,30 +848,42 @@ namespace nova::renderer::rhi {
         CHECK_ERROR(device->CreateCommandQueue(&copy_queue_desc, IID_PPV_ARGS(&copy_command_queue)), "Could not create copy command queue");
     }
 
+    void D3D12RenderEngine::setup_debug_output() const {
+        ID3D12InfoQueue* info_queue;
+        const auto hr = device->QueryInterface(IID_PPV_ARGS(&info_queue));
+        if(SUCCEEDED(hr)) {
+            info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+            info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+
+        } else {
+            NOVA_LOG(ERROR) << "Could not set up debugging: " << to_string(hr);
+        }
+    }
+
     ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,
                                     const std::string& target,
                                     const spirv_cross::CompilerHLSL::Options& options,
                                     std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
 
-        spirv_cross::CompilerHLSL shader_compiler(shader.source);
-        shader_compiler.set_hlsl_options(options);
+        auto* shader_compiler = new spirv_cross::CompilerHLSL(shader.source);
+        shader_compiler->set_hlsl_options(options);
 
-        const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
+        const spirv_cross::ShaderResources resources = shader_compiler->get_shader_resources();
 
         // Make maps of all the types of things we care about
         std::unordered_map<std::string, spirv_cross::Resource> spirv_sampled_images;
         spirv_sampled_images.reserve(resources.sampled_images.size());
         for(const spirv_cross::Resource& sampled_image : resources.sampled_images) {
-            spirv_sampled_images[sampled_image.name.c_str()] = sampled_image;
+            spirv_sampled_images[sampled_image.name] = sampled_image;
         }
 
         std::unordered_map<std::string, spirv_cross::Resource> spirv_uniform_buffers;
         spirv_uniform_buffers.reserve(resources.uniform_buffers.size());
         for(const spirv_cross::Resource& uniform_buffer : resources.uniform_buffers) {
-            spirv_uniform_buffers[uniform_buffer.name.c_str()] = uniform_buffer;
+            spirv_uniform_buffers[uniform_buffer.name] = uniform_buffer;
         }
 
-        std::string shader_hlsl = shader_compiler.compile().c_str();
+        const auto& shader_hlsl = shader_compiler->compile();
 
         const fs::path& filename = shader.filename;
         fs::path debug_path = filename.filename();
@@ -957,7 +946,7 @@ namespace nova::renderer::rhi {
                 case D3D_SIT_CBUFFER:
                     descriptor_type = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
                     spirv_resource = spirv_uniform_buffers.at(bind_desc.Name);
-                    set = shader_compiler.get_decoration(spirv_resource.id, spv::DecorationDescriptorSet);
+                    set = shader_compiler->get_decoration(spirv_resource.id, spv::DecorationDescriptorSet);
                     add_resource_to_descriptor_table(descriptor_type, bind_desc, set, tables);
                     break;
 
@@ -965,7 +954,7 @@ namespace nova::renderer::rhi {
                 case D3D_SIT_TBUFFER:
                     descriptor_type = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
                     spirv_resource = spirv_sampled_images.at(bind_desc.Name);
-                    set = shader_compiler.get_decoration(spirv_resource.id, spv::DecorationDescriptorSet);
+                    set = shader_compiler->get_decoration(spirv_resource.id, spv::DecorationDescriptorSet);
                     add_resource_to_descriptor_table(descriptor_type, bind_desc, set, tables);
 
                     // Also add a descriptor table entry for the sampler
