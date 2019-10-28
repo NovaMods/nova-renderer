@@ -1142,13 +1142,26 @@ namespace nova::renderer::rhi {
 #error Unsupported Operating system
 #endif
 
+        std::vector<VkValidationFeatureEnableEXT> enabled_validation_features = {VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT};
+
         if(settings.settings.debug.enabled) {
             enabled_extension_names.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
             enabled_extension_names.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+            if(settings.settings.debug.enable_gpu_based_validation) {
+                enabled_validation_features.push_back(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT);
+            }
         }
 
         create_info.enabledExtensionCount = static_cast<uint32_t>(enabled_extension_names.size());
         create_info.ppEnabledExtensionNames = enabled_extension_names.data();
+
+        VkValidationFeaturesEXT validation_features = {};
+        validation_features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+        validation_features.enabledValidationFeatureCount = static_cast<uint32_t>(enabled_validation_features.size());
+        validation_features.pEnabledValidationFeatures = enabled_validation_features.data();
+
+        create_info.pNext = &validation_features;
 
         NOVA_CHECK_RESULT(vkCreateInstance(&create_info, nullptr, &instance));
     }
