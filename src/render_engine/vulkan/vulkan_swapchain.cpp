@@ -312,9 +312,12 @@ namespace nova::renderer::rhi {
         framebuffer_create_info.height = swapchain_extent.height;
         framebuffer_create_info.layers = 1;
 
-        VkFramebuffer framebuffer;
-        vkCreateFramebuffer(render_engine.device, &framebuffer_create_info, nullptr, &framebuffer);
-        framebuffers.push_back(new VulkanFramebuffer{{swapchain_size}, framebuffer});
+        auto* vk_framebuffer = new VulkanFramebuffer;
+        vk_framebuffer->size = swapchain_size;
+        vk_framebuffer->num_attachments = 1;
+        vkCreateFramebuffer(render_engine.device, &framebuffer_create_info, nullptr, &vk_framebuffer->framebuffer);
+
+        framebuffers.push_back(vk_framebuffer);
 
         VkFenceCreateInfo fence_create_info = {};
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -330,6 +333,19 @@ namespace nova::renderer::rhi {
         vkGetSwapchainImagesKHR(render_engine.device, swapchain, &num_swapchain_images, nullptr);
         vk_images.resize(num_swapchain_images);
         vkGetSwapchainImagesKHR(render_engine.device, swapchain, &num_swapchain_images, vk_images.data());
+
+        if(render_engine.settings.settings.debug.enabled) {
+            for(uint32_t i = 0; i < vk_images.size(); i++) {
+                const auto image_name = "Swapchain image " + std::to_string(i);
+
+                VkDebugUtilsObjectNameInfoEXT object_name = {};
+                object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+                object_name.objectType = VK_OBJECT_TYPE_IMAGE;
+                object_name.objectHandle = reinterpret_cast<uint64_t>(vk_images.at(i));
+                object_name.pObjectName = image_name.c_str();
+                NOVA_CHECK_RESULT(render_engine.vkSetDebugUtilsObjectNameEXT(render_engine.device, &object_name));
+            }
+        }
 
         return vk_images;
     }

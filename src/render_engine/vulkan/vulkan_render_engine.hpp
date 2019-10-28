@@ -36,6 +36,11 @@ namespace nova::renderer::rhi {
         // Info about the hardware
         VulkanGpuInfo gpu;
 
+        // Debugging things
+        PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
+        PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
+        PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;
+
         VulkanRenderEngine(NovaSettingsAccessManager& settings);
 
         VulkanRenderEngine(VulkanRenderEngine&& old) noexcept = delete;
@@ -138,11 +143,6 @@ namespace nova::renderer::rhi {
          * buffer.
          */
         std::unordered_map<VkDeviceMemory, void*> heap_mappings;
-
-        // Debugging things
-        PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
-        PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
-        PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;
 
 #pragma region Initialization
         std::vector<const char*> enabled_layer_names;

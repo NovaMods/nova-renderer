@@ -105,7 +105,20 @@ namespace nova::renderer::rhi {
         ResourceState initial_state;
         ResourceState final_state;
 
+        /*!
+         * \brief How you're going to access this resource just before this barrier
+         *
+         * Will a shader read from it before the barrier? Will the fragment depth by copied to a depth buffer before
+         * this barrier? Will the resource be used as a indirect draw command buffer right before this barrier?
+         */
         ResourceAccessFlags access_before_barrier;
+
+        /*!
+         * \brief How you're going to access this resource after this barrier
+         *
+         * Will a shader read from it after the barrier? Will the fragment depth by copied to a depth buffer after
+         * this barrier? Will the resource be used as a indirect draw command buffer right after this barrier?
+         */
         ResourceAccessFlags access_after_barrier;
 
         QueueType source_queue;

@@ -295,7 +295,7 @@ namespace nova::renderer::rhi {
 
         auto* framebuffer = new_object<VulkanFramebuffer>();
         framebuffer->size = framebuffer_size;
-        framebuffer->num_attachments = attachments.size();
+        framebuffer->num_attachments = static_cast<uint32_t>(attachments.size());
 
         NOVA_CHECK_RESULT(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer->framebuffer));
 

@@ -407,7 +407,7 @@ namespace nova::renderer {
                 }
             }
 
-            renderpass.id = renderpass_metadatas.size();
+            renderpass.id = static_cast<uint32_t>(renderpass_metadatas.size());
 
             renderpasses.push_back(renderpass);
             renderpass_metadatas.push_back(metadata);
@@ -643,14 +643,20 @@ namespace nova::renderer {
 
     void NovaRenderer::record_renderpass(Renderpass& renderpass, rhi::CommandList* cmds) {
         // TODO: Figure if any of these barriers are implicit
+        // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource instead of
+        // using a robust default
 
         if(!renderpass.read_texture_barriers.empty()) {
+            // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
+            // instead of using a robust default
             cmds->resource_barriers(rhi::PipelineStageFlags::ColorAttachmentOutput,
                                     rhi::PipelineStageFlags::FragmentShader,
                                     renderpass.read_texture_barriers);
         }
 
         if(!renderpass.write_texture_barriers.empty()) {
+            // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
+            // instead of using a robust default
             cmds->resource_barriers(rhi::PipelineStageFlags::ColorAttachmentOutput,
                                     rhi::PipelineStageFlags::FragmentShader,
                                     renderpass.write_texture_barriers);
@@ -662,19 +668,30 @@ namespace nova::renderer {
             backbuffer_barrier.initial_state = rhi::ResourceState::PresentSource;
             backbuffer_barrier.final_state = rhi::ResourceState::ColorAttachment;
             backbuffer_barrier.access_before_barrier = rhi::ResourceAccessFlags::ColorAttachmentWriteBit;
-            backbuffer_barrier.access_after_barrier = rhi::ResourceAccessFlags::ColorAttachmentWriteBit;
+            backbuffer_barrier.access_after_barrier = rhi::ResourceAccessFlags::ShaderReadBit;
             backbuffer_barrier.source_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspectFlags::Color;
 
-            cmds->resource_barriers(rhi::PipelineStageFlags::BottomOfPipe,
-                                    rhi::PipelineStageFlags::ColorAttachmentOutput,
+            // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
+            // instead of using a robust default
+            cmds->resource_barriers(rhi::PipelineStageFlags::ColorAttachmentOutput,
+                                    rhi::PipelineStageFlags::VertexShader,
                                     {backbuffer_barrier});
         }
 
         const auto& renderpass_metadata = renderpass_metadatas.at(renderpass.id);
         NOVA_LOG(TRACE) << "Beginning renderpass " << renderpass_metadata.data.name;
-        cmds->begin_renderpass(renderpass.renderpass, renderpass.framebuffer);
+
+        const auto framebuffer = [&] {
+            if(!renderpass.writes_to_backbuffer) {
+                return renderpass.framebuffer;
+            } else {
+                return swapchain->get_framebuffer(cur_frame_idx);
+            }
+        }();
+
+        cmds->begin_renderpass(renderpass.renderpass, framebuffer);
 
         for(Pipeline& pipeline : renderpass.pipelines) {
             record_pipeline(pipeline, cmds);
@@ -689,7 +706,7 @@ namespace nova::renderer {
             backbuffer_barrier.initial_state = rhi::ResourceState::ColorAttachment;
             backbuffer_barrier.final_state = rhi::ResourceState::PresentSource;
             backbuffer_barrier.access_before_barrier = rhi::ResourceAccessFlags::ColorAttachmentWriteBit;
-            backbuffer_barrier.access_after_barrier = rhi::ResourceAccessFlags::ColorAttachmentWriteBit;
+            backbuffer_barrier.access_after_barrier = rhi::ResourceAccessFlags::MemoryReadBit;
             backbuffer_barrier.source_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspectFlags::Color;

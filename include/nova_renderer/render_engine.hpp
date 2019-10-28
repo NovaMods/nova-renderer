@@ -30,6 +30,8 @@ namespace nova::renderer::rhi {
      */
     class RenderEngine {
     public:
+        NovaSettingsAccessManager& settings;
+
         RenderEngine(RenderEngine&& other) = delete;
         RenderEngine& operator=(RenderEngine&& other) noexcept = delete;
 
@@ -213,8 +215,6 @@ namespace nova::renderer::rhi {
                                          const std::vector<Semaphore*>& signal_semaphores = {}) = 0;
 
     protected:
-        NovaSettingsAccessManager& settings;
-
         std::unique_ptr<Window> window;
 
         glm::uvec2 swapchain_size = {};
