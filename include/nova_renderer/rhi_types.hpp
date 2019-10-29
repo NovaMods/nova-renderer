@@ -2,9 +2,12 @@
 
 #include <string>
 #include <unordered_map>
+
 #include <glm/glm.hpp>
-#include "device_memory_resource.hpp"
+
 #include "nova_renderer/rhi_enums.hpp"
+
+#include "device_memory_resource.hpp"
 #include "shaderpack_data.hpp"
 
 namespace nova::renderer::rhi {
@@ -99,11 +102,10 @@ namespace nova::renderer::rhi {
 
     struct DescriptorSet {};
 
+    // TODO: This struct actually maps pretty directly to a Vulkan barrier, so it doesn't map well to a D3D12 barrier. Figure out how to
+    // make it D3D12-friendly
     struct ResourceBarrier {
         Resource* resource_to_barrier;
-
-        ResourceState initial_state;
-        ResourceState final_state;
 
         /*!
          * \brief How you're going to access this resource just before this barrier
@@ -111,7 +113,7 @@ namespace nova::renderer::rhi {
          * Will a shader read from it before the barrier? Will the fragment depth by copied to a depth buffer before
          * this barrier? Will the resource be used as a indirect draw command buffer right before this barrier?
          */
-        ResourceAccessFlags access_before_barrier;
+        ResourceAccess access_before_barrier;
 
         /*!
          * \brief How you're going to access this resource after this barrier
@@ -119,7 +121,7 @@ namespace nova::renderer::rhi {
          * Will a shader read from it after the barrier? Will the fragment depth by copied to a depth buffer after
          * this barrier? Will the resource be used as a indirect draw command buffer right after this barrier?
          */
-        ResourceAccessFlags access_after_barrier;
+        ResourceAccess access_after_barrier;
 
         QueueType source_queue;
         QueueType destination_queue;
@@ -127,6 +129,8 @@ namespace nova::renderer::rhi {
         union {
             struct {
                 ImageAspectFlags aspect;
+                ImageLayout current_layout;
+                ImageLayout new_layout;
             } image_memory_barrier;
 
             struct {
