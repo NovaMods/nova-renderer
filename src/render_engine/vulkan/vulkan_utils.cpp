@@ -1,43 +1,46 @@
 #include "vulkan_utils.hpp"
+
 #include "nova_renderer/render_engine.hpp"
 #include "nova_renderer/renderables.hpp"
+
 #include "../../util/logger.hpp"
 
 namespace nova::renderer::rhi {
-    VkImageLayout to_vk_layout(const ResourceState state) {
-        switch(state) {
-            case ResourceState::Undefined:
+    VkImageLayout to_vk_image_layout(const ImageLayout layout) {
+        switch(layout) {
+            case ImageLayout::Undefined:
                 return VK_IMAGE_LAYOUT_UNDEFINED;
 
-            case ResourceState::General:
+            case ImageLayout::General:
                 return VK_IMAGE_LAYOUT_GENERAL;
 
-            case ResourceState::ColorAttachment:
+            case ImageLayout::ColorAttachment:
                 return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-            case ResourceState::DepthStencilAttachment:
+            case ImageLayout::DepthStencilAttachment:
                 return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-            case ResourceState::DepthReadOnlyStencilAttachment:
+            case ImageLayout::DepthReadOnlyStencilAttachment:
                 return VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
 
-            case ResourceState::DepthAttachmentStencilReadOnly:
+            case ImageLayout::DepthAttachmentStencilReadOnly:
                 return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
 
-            case ResourceState::DepthStencilReadOnlyAttachment:
+            case ImageLayout::DepthStencilReadOnlyAttachment:
                 return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
 
-            case ResourceState::PresentSource:
+            case ImageLayout::PresentSource:
                 return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-            case ResourceState::NonFragmentShaderReadOnly:
-            case ResourceState::FragmentShaderReadOnly:
+            case ImageLayout::NonFragmentShaderReadOnly:
+                [[fallthrough]];
+            case ImageLayout::FragmentShaderReadOnly:
                 return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-            case ResourceState::TransferSource:
+            case ImageLayout::TransferSource:
                 return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
-            case ResourceState::TransferDestination:
+            case ImageLayout::TransferDestination:
                 return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
             default:

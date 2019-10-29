@@ -11,7 +11,7 @@
 #include "vulkan.hpp"
 
 namespace nova::renderer::rhi {
-    VkImageLayout to_vk_layout(ResourceState state);
+    VkImageLayout to_vk_image_layout(ImageLayout layout);
 
     VkPrimitiveTopology to_primitive_topology(shaderpack::PrimitiveTopologyEnum topology);
 
