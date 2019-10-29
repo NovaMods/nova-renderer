@@ -238,8 +238,12 @@ namespace nova::renderer::rhi {
                                                         root_sig_blob.GetAddressOf(),
                                                         error_blob.GetAddressOf());
         if(!SUCCEEDED(res)) {
-            const std::string err_str = static_cast<const char*>(error_blob->GetBufferPointer());
-            return ntl::Result<PipelineInterface*>(ntl::NovaError(err_str));
+            if(error_blob) {
+                const std::string err_str = static_cast<const char*>(error_blob->GetBufferPointer());
+                return ntl::Result<PipelineInterface*>(MAKE_ERROR("Could not create pipeline interface: {:s} ({:s})", err_str, to_string(res)));
+            } else {
+                return ntl::Result<PipelineInterface*>(MAKE_ERROR("Could not create pipeline interface: {:s}", to_string(res)));
+            }
         }
 
         device->CreateRootSignature(1,
@@ -539,9 +543,9 @@ namespace nova::renderer::rhi {
         }
 
         D3D12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(info.size);
+        const D3D12_RESOURCE_ALLOCATION_INFO allocation_desc = device->GetResourceAllocationInfo(0, 1, &resource_desc);
 
-        // TODO: Handle buffer alignment
-        const auto allocation = memory.allocate(info.size);
+        const auto allocation = memory.allocate(allocation_desc.SizeInBytes);
         const auto* dx12_memory = static_cast<DX12DeviceMemory*>(allocation.memory);
 
         device->CreatePlacedResource(dx12_memory->heap.Get(),

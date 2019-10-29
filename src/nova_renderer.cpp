@@ -280,8 +280,8 @@ namespace nova::renderer {
             RenderpassMetadata metadata;
             metadata.data = create_info;
 
-            std::vector<rhi::Image*> output_images;
-            output_images.reserve(create_info.texture_outputs.size());
+            std::vector<rhi::Image*> color_attachments;
+            color_attachments.reserve(create_info.texture_outputs.size());
 
             glm::uvec2 framebuffer_size(0);
 
@@ -309,7 +309,7 @@ namespace nova::renderer {
 
                 } else {
                     rhi::Image* image = dynamic_textures.at(attachment_info.name);
-                    output_images.push_back(image);
+                    color_attachments.push_back(image);
 
                     const shaderpack::TextureCreateInfo& info = dynamic_texture_infos.at(attachment_info.name);
                     const glm::uvec2 attachment_size = info.format.get_size_in_pixels(
@@ -334,12 +334,17 @@ namespace nova::renderer {
             }
 
             // Can't combine these if statements and I don't want to `.find` twice
-            if(create_info.depth_texture) {
-                if(auto depth_tex_itr = dynamic_textures.find(create_info.depth_texture->name); depth_tex_itr != dynamic_textures.end()) {
-                    auto* image = depth_tex_itr->second;
-                    output_images.push_back(image);
+            const auto depth_attachment = [&]() -> std::optional<rhi::Image*> {
+                if(create_info.depth_texture) {
+                    if(const auto depth_tex_itr = dynamic_textures.find(create_info.depth_texture->name);
+                       depth_tex_itr != dynamic_textures.end()) {
+                        auto* image = depth_tex_itr->second;
+                        return std::make_optional<rhi::Image*>(image);
+                    }
                 }
-            }
+
+                return {};
+            }();
 
             if(!attachment_errors.empty()) {
                 for(const auto& err : attachment_errors) {
@@ -363,7 +368,7 @@ namespace nova::renderer {
             // Backbuffer framebuffers are owned by the swapchain, not the renderpass that writes to them, so if the
             // renderpass writes to the backbuffer then we don't need to create a framebuffer for it
             if(!writes_to_backbuffer) {
-                renderpass.framebuffer = rhi->create_framebuffer(renderpass.renderpass, output_images, framebuffer_size);
+                renderpass.framebuffer = rhi->create_framebuffer(renderpass.renderpass, color_attachments, depth_attachment, framebuffer_size);
             }
 
             renderpass.pipelines.reserve(pipelines.size());

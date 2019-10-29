@@ -273,15 +273,23 @@ namespace nova::renderer::rhi {
     }
 
     Framebuffer* VulkanRenderEngine::create_framebuffer(const Renderpass* renderpass,
-                                                        const std::vector<Image*>& attachments,
+                                                        const std::vector<Image*>& color_attachments,
+                                                        const std::optional<Image*> depth_attachment,
                                                         const glm::uvec2& framebuffer_size) {
         const auto* vk_renderpass = static_cast<const VulkanRenderpass*>(renderpass);
 
         std::vector<VkImageView> attachment_views;
-        attachment_views.reserve(attachments.size());
-        for(const auto* attachment : attachments) {
+        attachment_views.reserve(color_attachments.size() + 1);
+
+        for(const auto* attachment : color_attachments) {
             const auto* vk_image = static_cast<const VulkanImage*>(attachment);
             attachment_views.push_back(vk_image->image_view);
+        }
+
+        // Depth attachment is ALWAYS the last attachment
+        if(depth_attachment) {
+            const auto* vk_depth_image = static_cast<const VulkanImage*>(*depth_attachment);
+            attachment_views.push_back(vk_depth_image->image_view);
         }
 
         VkFramebufferCreateInfo framebuffer_create_info = {};
@@ -295,7 +303,7 @@ namespace nova::renderer::rhi {
 
         auto* framebuffer = new_object<VulkanFramebuffer>();
         framebuffer->size = framebuffer_size;
-        framebuffer->num_attachments = static_cast<uint32_t>(attachments.size());
+        framebuffer->num_attachments = static_cast<uint32_t>(color_attachments.size());
 
         NOVA_CHECK_RESULT(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer->framebuffer));
 
