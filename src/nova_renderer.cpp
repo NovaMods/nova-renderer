@@ -179,14 +179,14 @@ namespace nova::renderer {
         vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::VertexBuffer;
         vertex_buffer_create_info.size = mesh_data.vertex_data.size() * sizeof(FullVertex);
 
-        rhi::Buffer* vertex_buffer = rhi->create_buffer(vertex_buffer_create_info, *mesh_memory.get());
+        rhi::Buffer* vertex_buffer = rhi->create_buffer(vertex_buffer_create_info, *mesh_memory);
 
         // TODO: Try to get staging buffers from a pool
 
         {
             rhi::BufferCreateInfo staging_vertex_buffer_create_info = vertex_buffer_create_info;
             staging_vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
-            rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info, *staging_buffer_memory.get());
+            rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info, *staging_buffer_memory);
             rhi->write_data_to_buffer(mesh_data.vertex_data.data(),
                                       mesh_data.vertex_data.size() * sizeof(FullVertex),
                                       0,
@@ -194,6 +194,18 @@ namespace nova::renderer {
 
             rhi::CommandList* vertex_upload_cmds = rhi->get_command_list(0, rhi::QueueType::Transfer);
             vertex_upload_cmds->copy_buffer(vertex_buffer, 0, staging_vertex_buffer, 0, vertex_buffer_create_info.size);
+
+            rhi::ResourceBarrier vertex_barrier = {};
+            vertex_barrier.resource_to_barrier = vertex_buffer;
+            vertex_barrier.initial_state = rhi::ResourceState::TransferDestination;
+            vertex_barrier.final_state = rhi::ResourceState::VertexOrConstantBuffer;
+            vertex_barrier.buffer_memory_barrier.offset = 0;
+            vertex_barrier.buffer_memory_barrier.size = vertex_buffer->size;
+
+            vertex_upload_cmds->resource_barriers(rhi::PipelineStageFlags::Transfer,
+                                                  rhi::PipelineStageFlags::VertexInput,
+                                                  {vertex_barrier});
+
             rhi->submit_command_list(vertex_upload_cmds, rhi::QueueType::Transfer);
         }
 
@@ -201,16 +213,28 @@ namespace nova::renderer {
         index_buffer_create_info.buffer_usage = rhi::BufferUsage::IndexBuffer;
         index_buffer_create_info.size = mesh_data.indices.size() * sizeof(uint32_t);
 
-        rhi::Buffer* index_buffer = rhi->create_buffer(index_buffer_create_info, *mesh_memory.get());
+        rhi::Buffer* index_buffer = rhi->create_buffer(index_buffer_create_info, *mesh_memory);
 
         {
             rhi::BufferCreateInfo staging_index_buffer_create_info = index_buffer_create_info;
             staging_index_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
-            rhi::Buffer* staging_index_buffer = rhi->create_buffer(staging_index_buffer_create_info, *staging_buffer_memory.get());
+            rhi::Buffer* staging_index_buffer = rhi->create_buffer(staging_index_buffer_create_info, *staging_buffer_memory);
             rhi->write_data_to_buffer(mesh_data.indices.data(), mesh_data.indices.size() * sizeof(uint32_t), 0, staging_index_buffer);
 
             rhi::CommandList* indices_upload_cmds = rhi->get_command_list(0, rhi::QueueType::Transfer);
             indices_upload_cmds->copy_buffer(index_buffer, 0, staging_index_buffer, 0, index_buffer_create_info.size);
+
+            rhi::ResourceBarrier index_barrier = {};
+            index_barrier.resource_to_barrier = index_buffer;
+            index_barrier.initial_state = rhi::ResourceState::TransferDestination;
+            index_barrier.final_state = rhi::ResourceState::IndexBuffer;
+            index_barrier.buffer_memory_barrier.offset = 0;
+            index_barrier.buffer_memory_barrier.size = index_buffer->size;
+
+            indices_upload_cmds->resource_barriers(rhi::PipelineStageFlags::Transfer,
+                                                  rhi::PipelineStageFlags::VertexInput,
+                                                  {index_barrier});
+
             rhi->submit_command_list(indices_upload_cmds, rhi::QueueType::Transfer);
         }
 
@@ -368,7 +392,10 @@ namespace nova::renderer {
             // Backbuffer framebuffers are owned by the swapchain, not the renderpass that writes to them, so if the
             // renderpass writes to the backbuffer then we don't need to create a framebuffer for it
             if(!writes_to_backbuffer) {
-                renderpass.framebuffer = rhi->create_framebuffer(renderpass.renderpass, color_attachments, depth_attachment, framebuffer_size);
+                renderpass.framebuffer = rhi->create_framebuffer(renderpass.renderpass,
+                                                                 color_attachments,
+                                                                 depth_attachment,
+                                                                 framebuffer_size);
             }
 
             renderpass.pipelines.reserve(pipelines.size());
