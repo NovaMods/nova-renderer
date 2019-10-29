@@ -1,6 +1,6 @@
-#include <spirv_glsl.hpp>
-
 #include "gl3_render_engine.hpp"
+
+#include <spirv_glsl.hpp>
 
 #include "../../../tests/src/general_test_setup.hpp"
 #include "../../util/logger.hpp"
@@ -9,8 +9,7 @@
 #include "gl3_swapchain.hpp"
 
 namespace nova::renderer::rhi {
-    Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings)
-        : RenderEngine(&mallocator, settings) {
+    Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(&mallocator, settings) {
 
         window = std::make_unique<GlfwWindow>(settings.settings);
 
@@ -21,9 +20,7 @@ namespace nova::renderer::rhi {
         set_initial_state();
     }
 
-    Gl4NvRenderEngine::~Gl4NvRenderEngine() {
-        delete swapchain;
-    }
+    Gl4NvRenderEngine::~Gl4NvRenderEngine() { delete swapchain; }
 
     void Gl4NvRenderEngine::set_initial_state() {
         glEnable(GL_TEXTURE_2D);
@@ -45,8 +42,8 @@ namespace nova::renderer::rhi {
     }
 
     ntl::Result<DeviceMemory*> Gl4NvRenderEngine::allocate_device_memory(const uint64_t /* size */,
-                                                                  const MemoryUsage /* type */,
-                                                                  const ObjectType /* allowed_objects */) {
+                                                                         const MemoryUsage /* type */,
+                                                                         const ObjectType /* allowed_objects */) {
         return ntl::Result(new DeviceMemory);
     }
 
@@ -56,34 +53,32 @@ namespace nova::renderer::rhi {
     }
 
     Framebuffer* Gl4NvRenderEngine::create_framebuffer(const Renderpass* /* renderpass */,
-                                                     const std::vector<Image*>& attachments,
-                                                     const glm::uvec2& /* framebuffer_size */) {
+                                                       const std::vector<Image*>& color_attachments,
+                                                       const std::optional<Image*> depth_attachment,
+                                                       const glm::uvec2& /* framebuffer_size */) {
         auto* framebuffer = new Gl3Framebuffer;
 
         glGenFramebuffers(1, &framebuffer->id);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->id);
 
-        uint32_t attachment_idx = 0;
-        for(const Image* attachment : attachments) {
-            const auto* gl_attachment = static_cast<const Gl3Image*>(attachment);
+        for(uint32_t i = 0; i < color_attachments.size();i++) {
+            const auto* gl_image = static_cast<const Gl3Image*>(color_attachments.at(i));
+            const GLenum attachment_slot = GL_COLOR_ATTACHMENT0 + i;
 
-            GLenum attachment_slot = GL_COLOR_ATTACHMENT0 + attachment_idx;
-            if(gl_attachment->is_depth_tex) {
-                attachment_slot = GL_DEPTH_ATTACHMENT;
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment_slot, GL_TEXTURE_2D, gl_image->id, 0);
+        }
 
-            } else {
-                attachment_idx++;
-            }
-
-            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment_slot, GL_TEXTURE_2D, gl_attachment->id, 0);
+        if(depth_attachment) {
+            const auto* gl_image = static_cast<const Gl3Image*>(*depth_attachment);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gl_image->id, 0);
         }
 
         return framebuffer;
     }
 
     DescriptorPool* Gl4NvRenderEngine::create_descriptor_pool(const uint32_t num_sampled_images,
-                                                            const uint32_t num_samplers,
-                                                            const uint32_t num_uniform_buffers) {
+                                                              const uint32_t num_samplers,
+                                                              const uint32_t num_uniform_buffers) {
         auto* pool = new Gl3DescriptorPool(shaderpack_allocator);
         pool->descriptors.resize(static_cast<std::size_t>(num_sampled_images + num_uniform_buffers));
         pool->sampler_sets.resize(num_samplers);
@@ -91,7 +86,8 @@ namespace nova::renderer::rhi {
         return pool;
     }
 
-    std::vector<DescriptorSet*> Gl4NvRenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface, DescriptorPool* pool) {
+    std::vector<DescriptorSet*> Gl4NvRenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
+                                                                          DescriptorPool* pool) {
         auto* gl_descriptor_pool = static_cast<Gl3DescriptorPool*>(pool);
         std::vector<DescriptorSet*> sets;
 
@@ -145,7 +141,7 @@ namespace nova::renderer::rhi {
     }
 
     ntl::Result<Pipeline*> Gl4NvRenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
-                                                            const shaderpack::PipelineCreateInfo& data) {
+                                                              const shaderpack::PipelineCreateInfo& data) {
         auto* pipeline = new Gl3Pipeline;
 
         pipeline->id = glCreateProgram();
@@ -163,7 +159,7 @@ namespace nova::renderer::rhi {
 
         if(supports_geometry_shaders && data.geometry_shader) {
             // TODO: convert to the extension when we care about Mac support
-            const ntl::Result<GLuint>& geometry_shader = compile_shader(data.geometry_shader->source, GL_GEOMETRY_SHADER);   
+            const ntl::Result<GLuint>& geometry_shader = compile_shader(data.geometry_shader->source, GL_GEOMETRY_SHADER);
             if(geometry_shader) {
                 glAttachShader(pipeline->id, geometry_shader.value);
 
@@ -367,17 +363,17 @@ namespace nova::renderer::rhi {
     }
 
     CommandList* Gl4NvRenderEngine::get_command_list(uint32_t /* thread_idx */,
-                                                   QueueType /* needed_queue_type */,
-                                                   CommandList::Level /* command_list_type */) {
+                                                     QueueType /* needed_queue_type */,
+                                                     CommandList::Level /* command_list_type */) {
         // TODO: Something useful for custom memory allocation
         return new Gl3CommandList();
     }
 
     void Gl4NvRenderEngine::submit_command_list(CommandList* cmds,
-                                              QueueType /* queue */,
-                                              Fence* fence_to_signal,
-                                              const std::vector<Semaphore*>& wait_semaphores,
-                                              const std::vector<Semaphore*>& signal_semaphores) {
+                                                QueueType /* queue */,
+                                                Fence* fence_to_signal,
+                                                const std::vector<Semaphore*>& wait_semaphores,
+                                                const std::vector<Semaphore*>& signal_semaphores) {
         // GL is F U N
         // No equivalent for queues. Hope yalls like waiting for things
         // No equivalent for fences or semaphores. Mutexes, anyone?
@@ -547,9 +543,7 @@ namespace nova::renderer::rhi {
         glDrawArraysInstanced(GL_TRIANGLES, 0, draw_indexed_mesh.num_instances, draw_indexed_mesh.num_indices);
     }
 
-    void Gl4NvRenderEngine::execute_command_lists_impl(const Gl3ExecuteCommandListsCommand& execute_command_lists) {
-        
-    }
+    void Gl4NvRenderEngine::execute_command_lists_impl(const Gl3ExecuteCommandListsCommand& execute_command_lists) {}
 
     ntl::Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, const GLenum shader_type) {
         spirv_cross::CompilerGLSL compiler(spirv);

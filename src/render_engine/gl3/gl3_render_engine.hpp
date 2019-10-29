@@ -1,9 +1,12 @@
 #pragma once
 
-#include "gl3_command_list.hpp"
-#include "glad/glad.h"
 #include "nova_renderer/render_engine.hpp"
+
+// BE CAREFUL WHERE WE INCLUDE GLAD
+#include "glad/glad.h"
+
 #include "../../windowing/glfw_window.hpp"
+#include "gl3_command_list.hpp"
 
 // TODO: Not always use mallocator
 #include "../../memory/mallocator.hpp"
@@ -33,7 +36,8 @@ namespace nova::renderer::rhi {
                                                    const glm::uvec2& framebuffer_size) override;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
-                                        const std::vector<Image*>& attachments,
+                                        const std::vector<Image*>& color_attachments,
+                                        const std::optional<Image*> depth_attachment,
                                         const glm::uvec2& framebuffer_size) override;
 
         DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images, uint32_t num_samplers, uint32_t num_uniform_buffers) override;

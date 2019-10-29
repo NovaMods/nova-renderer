@@ -78,8 +78,6 @@ namespace nova::renderer::rhi {
             framebuffer->size = size;
             framebuffer->num_attachments = 1;
             framebuffer->rtv_descriptors = {rtv_handle};
-            framebuffer->has_depth_stencil = false;
-            framebuffer->depth_stencil_image = {};
 
             framebuffers.push_back(framebuffer);
 
