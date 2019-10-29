@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img width=64px src="https://raw.githubusercontent.com/NovaMods/nova-rs/dc28cda0d5b534e89632602bac1bcddbda0a3c57/docs/images/nova-logo-128px-noborder.png">ova Renderer
+  <img width=64px src="https://raw.githubusercontent.com/NovaMods/nova-renderer/3d87b39c7d883e47c000533d372ed8eeb0c114fd/docs/images/nova-logo-128px-noborder.png">ova Renderer
 </h1>
 
 <p align="center">
