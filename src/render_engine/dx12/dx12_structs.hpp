@@ -22,10 +22,9 @@ namespace nova::renderer::rhi {
     };
 
     struct DX12Framebuffer : Framebuffer {
-        std::vector<CD3DX12_CPU_DESCRIPTOR_HANDLE> render_targets;
+        std::vector<CD3DX12_CPU_DESCRIPTOR_HANDLE> rtv_descriptors;
 
-        bool has_depth_stencil = false;
-        D3D12_CPU_DESCRIPTOR_HANDLE depth_stencil_image = {};
+        std::optional<D3D12_CPU_DESCRIPTOR_HANDLE> dsv_descriptor = {};
     };
 
     struct DX12PipelineInterface : PipelineInterface {

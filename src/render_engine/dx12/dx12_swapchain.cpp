@@ -77,7 +77,7 @@ namespace nova::renderer::rhi {
             auto* framebuffer = new DX12Framebuffer;
             framebuffer->size = size;
             framebuffer->num_attachments = 1;
-            framebuffer->render_targets = {rtv_handle};
+            framebuffer->rtv_descriptors = {rtv_handle};
             framebuffer->has_depth_stencil = false;
             framebuffer->depth_stencil_image = {};
 

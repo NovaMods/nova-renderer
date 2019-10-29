@@ -23,12 +23,12 @@ namespace nova::renderer::rhi {
             ID3D12Resource* resource_to_barrier;
             switch(barrier.resource_to_barrier->type) {
                 case ResourceType::Buffer: {
-                    DX12Buffer* d3d12_buffer = static_cast<DX12Buffer*>(barrier.resource_to_barrier);
+                    auto* d3d12_buffer = static_cast<DX12Buffer*>(barrier.resource_to_barrier);
                     resource_to_barrier = d3d12_buffer->resource.Get();
                 } break;
 
                 case ResourceType::Image: {
-                    DX12Image* d3d12_image = static_cast<DX12Image*>(barrier.resource_to_barrier);
+                    auto* d3d12_image = static_cast<DX12Image*>(barrier.resource_to_barrier);
                     resource_to_barrier = d3d12_image->resource.Get();
                 } break;
                 default:;
@@ -55,8 +55,8 @@ namespace nova::renderer::rhi {
                                       Buffer* source_buffer,
                                       const uint64_t source_offset,
                                       const uint64_t num_bytes) {
-        DX12Buffer* dst_buf = reinterpret_cast<DX12Buffer*>(destination_buffer);
-        DX12Buffer* src_buf = reinterpret_cast<DX12Buffer*>(source_buffer);
+        auto* dst_buf = reinterpret_cast<DX12Buffer*>(destination_buffer);
+        auto* src_buf = reinterpret_cast<DX12Buffer*>(source_buffer);
 
         cmds->CopyBufferRegion(dst_buf->resource.Get(), destination_offset, src_buf->resource.Get(), source_offset, num_bytes);
     }
@@ -69,21 +69,21 @@ namespace nova::renderer::rhi {
         //
 
         for(CommandList* list : lists) {
-            Dx12CommandList* d3d12_list = dynamic_cast<Dx12CommandList*>(list);
+            auto* d3d12_list = dynamic_cast<Dx12CommandList*>(list);
             cmds->ExecuteBundle(d3d12_list->cmds.Get());
         }
     }
 
     void Dx12CommandList::begin_renderpass(Renderpass* /* renderpass */, Framebuffer* framebuffer) {
-        DX12Framebuffer* d3d12_framebuffer = reinterpret_cast<DX12Framebuffer*>(framebuffer);
+        auto* d3d12_framebuffer = reinterpret_cast<DX12Framebuffer*>(framebuffer);
 
         D3D12_CPU_DESCRIPTOR_HANDLE* depth_stencil = nullptr;
-        if(d3d12_framebuffer->has_depth_stencil) {
-            depth_stencil = &d3d12_framebuffer->depth_stencil_image;
+        if(d3d12_framebuffer->dsv_descriptor) {
+            depth_stencil = &*d3d12_framebuffer->dsv_descriptor;
         }
 
-        cmds->OMSetRenderTargets(static_cast<UINT>(d3d12_framebuffer->render_targets.size()),
-                                 d3d12_framebuffer->render_targets.data(),
+        cmds->OMSetRenderTargets(static_cast<UINT>(d3d12_framebuffer->rtv_descriptors.size()),
+                                 d3d12_framebuffer->rtv_descriptors.data(),
                                  false,
                                  depth_stencil);
     }
@@ -91,17 +91,17 @@ namespace nova::renderer::rhi {
     void Dx12CommandList::end_renderpass() {}
 
     void Dx12CommandList::bind_pipeline(const Pipeline* pipeline) {
-        const DX12Pipeline* dx_pipeline = static_cast<const DX12Pipeline*>(pipeline);
+        const auto* dx_pipeline = static_cast<const DX12Pipeline*>(pipeline);
         cmds->SetPipelineState(dx_pipeline->pso.Get());
     }
 
     void Dx12CommandList::bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
                                                const PipelineInterface* pipeline_interface) {
-        const DX12PipelineInterface* dx_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
+        const auto* dx_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
 
         // Probably how this should work?
         for(uint32_t i = 0; i < descriptor_sets.size(); i++) {
-            const DX12DescriptorSet* dx_set = static_cast<const DX12DescriptorSet*>(descriptor_sets.at(i));
+            const auto* dx_set = static_cast<const DX12DescriptorSet*>(descriptor_sets.at(i));
             cmds->SetDescriptorHeaps(1, dx_set->heap.GetAddressOf());
             cmds->SetGraphicsRootDescriptorTable(i, dx_set->heap->GetGPUDescriptorHandleForHeapStart());
         }
@@ -112,7 +112,7 @@ namespace nova::renderer::rhi {
         views.reserve(buffers.size());
 
         for(const Buffer* buffer : buffers) {
-            const DX12Buffer* dx_buffer = static_cast<const DX12Buffer*>(buffer);
+            const auto* dx_buffer = static_cast<const DX12Buffer*>(buffer);
 
             views.emplace_back(
                 D3D12_VERTEX_BUFFER_VIEW{dx_buffer->resource->GetGPUVirtualAddress(), static_cast<UINT>(dx_buffer->size.b_count()), sizeof(FullVertex)});
@@ -122,7 +122,7 @@ namespace nova::renderer::rhi {
     }
 
     void Dx12CommandList::bind_index_buffer(const Buffer* buffer) {
-        const DX12Buffer* dx12_buffer = static_cast<const DX12Buffer*>(buffer);
+        const auto* dx12_buffer = static_cast<const DX12Buffer*>(buffer);
 
         D3D12_INDEX_BUFFER_VIEW view = {dx12_buffer->resource->GetGPUVirtualAddress(),
                                         static_cast<UINT>(dx12_buffer->size.b_count()),

@@ -73,7 +73,8 @@ namespace nova::renderer::rhi {
                                                                          const glm::uvec2& framebuffer_size) = 0;
 
         [[nodiscard]] virtual Framebuffer* create_framebuffer(const Renderpass* renderpass,
-                                                              const std::vector<Image*>& attachments,
+                                                              const std::vector<Image*>& color_attachments,
+                                                              const std::optional<Image*> depth_attachment,
                                                               const glm::uvec2& framebuffer_size) = 0;
 
         [[nodiscard]] virtual ntl::Result<PipelineInterface*> create_pipeline_interface(

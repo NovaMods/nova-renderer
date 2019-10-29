@@ -31,6 +31,7 @@ namespace nova::renderer::rhi {
         open_window_and_create_swapchain(settings.settings.window, settings.settings.max_in_flight_frames);
 
         rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+        dsv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
         cbv_srv_uav_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
         if(settings.settings.debug.enabled) {
@@ -40,12 +41,21 @@ namespace nova::renderer::rhi {
 
     void D3D12RenderEngine::set_num_renderpasses(const uint32_t num_renderpasses) {
         D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_descriptor = {};
-        rtv_heap_descriptor.NumDescriptors = num_renderpasses * 9;
+        rtv_heap_descriptor.NumDescriptors = num_renderpasses * 8;
         rtv_heap_descriptor.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 
-        const HRESULT hr = device->CreateDescriptorHeap(&rtv_heap_descriptor, IID_PPV_ARGS(&rtv_descriptor_heap));
+        HRESULT hr = device->CreateDescriptorHeap(&rtv_heap_descriptor, IID_PPV_ARGS(&rtv_descriptor_heap));
         if(FAILED(hr)) {
-            NOVA_LOG(FATAL) << "Could not create descriptor heap for the RTV: " << get_last_windows_error() << " (" << to_string(hr) << ")";
+            NOVA_LOG(FATAL) << "Could not create RTV descriptor heap: " << get_last_windows_error() << " (" << to_string(hr) << ")";
+        }
+
+        D3D12_DESCRIPTOR_HEAP_DESC dsv_heap_desc = {};
+        dsv_heap_desc.NumDescriptors = num_renderpasses;
+        dsv_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+
+        hr = device->CreateDescriptorHeap(&dsv_heap_desc, IID_PPV_ARGS(&dsv_descriptor_heap));
+        if(FAILED(hr)) {
+            NOVA_LOG(FATAL) << "Could not create DSV descriptor heap: " << get_last_windows_error() << " (" << to_string(hr) << ")";
         }
     }
 
@@ -125,11 +135,12 @@ namespace nova::renderer::rhi {
     }
 
     Framebuffer* D3D12RenderEngine::create_framebuffer(const Renderpass* /* renderpass */,
-                                                       const std::vector<Image*>& attachments,
+                                                       const std::vector<Image*>& color_attachments,
+                                                       const std::optional<Image*> depth_attachment,
                                                        const glm::uvec2& framebuffer_size) {
-        const size_t attachment_count = attachments.size();
+        const size_t attachment_count = color_attachments.size();
         auto* framebuffer = new DX12Framebuffer;
-        framebuffer->render_targets.reserve(attachment_count);
+        framebuffer->rtv_descriptors.reserve(attachment_count);
 
         std::vector<ID3D12Resource*> rendertargets;
         rendertargets.reserve(attachment_count);
@@ -138,27 +149,32 @@ namespace nova::renderer::rhi {
                                                           next_rtv_descriptor_index,
                                                           rtv_descriptor_size);
 
-        for(uint32_t i = 0; i < attachments.size(); i++) {
-            const Image* attachment = attachments.at(i);
+        for(uint32_t i = 0; i < color_attachments.size(); i++) {
+            const Image* attachment = color_attachments.at(i);
             const auto* d3d12_image = static_cast<const DX12Image*>(attachment);
 
             rendertargets.emplace_back(d3d12_image->resource.Get());
 
-            framebuffer->render_targets.emplace_back(base_rtv_descriptor);
+            framebuffer->rtv_descriptors.emplace_back(base_rtv_descriptor);
+            framebuffer->rtv_descriptors.at(i).Offset(i, rtv_descriptor_size);
 
-            // Increment the RTV handle
-            framebuffer->render_targets.at(i).Offset(i, rtv_descriptor_size);
-
-            if(!d3d12_image->is_depth_tex) {
-                // Create the Render Target View, which binds the swapchain buffer to the RTV handle
-                device->CreateRenderTargetView(d3d12_image->resource.Get(), nullptr, framebuffer->render_targets.at(i));
-
-            } else {
-                device->CreateDepthStencilView(d3d12_image->resource.Get(), nullptr, framebuffer->render_targets.at(i));
-            }
+           // Create the Render Target View, which binds the swapchain buffer to the RTV handle
+           device->CreateRenderTargetView(d3d12_image->resource.Get(), nullptr, framebuffer->rtv_descriptors.at(i));
         }
 
         next_rtv_descriptor_index += attachment_count;
+
+        if(depth_attachment) {
+            const auto* dx12_depth_attachment = static_cast<DX12Image*>(*depth_attachment);
+            CD3DX12_CPU_DESCRIPTOR_HANDLE dsv_descriptor(dsv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
+                                                         next_dsv_descriptor_index,
+                                                         dsv_descriptor_size);
+            next_dsv_descriptor_index++;
+
+            framebuffer->dsv_descriptor = std::make_optional<D3D12_CPU_DESCRIPTOR_HANDLE>(dsv_descriptor);
+
+            device->CreateDepthStencilView(dx12_depth_attachment->resource.Get(), nullptr, *framebuffer->dsv_descriptor);
+        }
 
         framebuffer->size = framebuffer_size;
 
