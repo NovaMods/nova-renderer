@@ -639,9 +639,24 @@ namespace nova::renderer::rhi {
         }
     }
 
-    Semaphore* D3D12RenderEngine::create_semaphore() { return nullptr; }
+    Semaphore* D3D12RenderEngine::create_semaphore() {
+        auto* semaphore = new DX12Semaphore;
 
-    std::vector<Semaphore*> D3D12RenderEngine::create_semaphores(uint32_t num_semaphores) { return std::vector<Semaphore*>(); }
+        device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(semaphore->fence.GetAddressOf()));
+
+        return semaphore;
+    }
+
+    std::vector<Semaphore*> D3D12RenderEngine::create_semaphores(uint32_t num_semaphores) {
+        std::vector<Semaphore*> semaphores;
+        semaphores.reserve(num_semaphores);
+
+        for(int i = 0; i < num_semaphores; i++) {
+            semaphores.push_back(create_semaphore());
+        }
+
+        return semaphores;
+    }
 
     Fence* D3D12RenderEngine::create_fence(const bool signaled) {
         auto* fence = new_object<DX12Fence>();
