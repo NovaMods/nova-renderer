@@ -3,36 +3,42 @@
 #include "nova_renderer/renderables.hpp"
 
 namespace nova::renderer::rhi {
-    D3D12_RESOURCE_STATES to_dx12_state(rhi::ResourceState state) {
+    D3D12_RESOURCE_STATES to_dx12_state(const ResourceState state) {
         switch(state) {
-            case rhi::ResourceState::Undefined:
-            case rhi::ResourceState::General:
+            case ResourceState::Undefined:
+            case ResourceState::General:
                 return D3D12_RESOURCE_STATE_COMMON;
 
-            case rhi::ResourceState::ColorAttachment:
+            case ResourceState::ColorAttachment:
                 return D3D12_RESOURCE_STATE_RENDER_TARGET;
 
-            case rhi::ResourceState::DepthStencilAttachment:
-            case rhi::ResourceState::DepthAttachmentStencilReadOnly:
+            case ResourceState::DepthStencilAttachment:
+            case ResourceState::DepthAttachmentStencilReadOnly:
                 return D3D12_RESOURCE_STATE_DEPTH_WRITE;
 
-            case rhi::ResourceState::DepthReadOnlyStencilAttachment:
-            case rhi::ResourceState::DepthStencilReadOnlyAttachment:
+            case ResourceState::DepthReadOnlyStencilAttachment:
+            case ResourceState::DepthStencilReadOnlyAttachment:
                 return D3D12_RESOURCE_STATE_DEPTH_READ;
 
-            case rhi::ResourceState::PresentSource:
+            case ResourceState::PresentSource:
                 return D3D12_RESOURCE_STATE_PRESENT;
 
-            case rhi::ResourceState::NonFragmentShaderReadOnly:
+            case ResourceState::VertexOrConstantBuffer:
+                return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+
+            case ResourceState::IndexBuffer:
+                return D3D12_RESOURCE_STATE_INDEX_BUFFER;
+
+            case ResourceState::NonFragmentShaderReadOnly:
                 return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 
-            case rhi::ResourceState::FragmentShaderReadOnly:
+            case ResourceState::FragmentShaderReadOnly:
                 return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
-            case rhi::ResourceState::TransferSource:
+            case ResourceState::TransferSource:
                 return D3D12_RESOURCE_STATE_COPY_SOURCE;
 
-            case rhi::ResourceState::TransferDestination:
+            case ResourceState::TransferDestination:
                 return D3D12_RESOURCE_STATE_COPY_DEST;
 
             default:

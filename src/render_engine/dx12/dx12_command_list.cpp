@@ -13,8 +13,8 @@ namespace nova::renderer::rhi {
 
     Dx12CommandList::Dx12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds) : cmds(std::move(cmds)) {}
 
-    void Dx12CommandList::resource_barriers([[maybe_unused]] PipelineStageFlags stages_before_barrier,
-                                            [[maybe_unused]] PipelineStageFlags stages_after_barrier,
+    void Dx12CommandList::resource_barriers(PipelineStageFlags /* stages_before_barrier */,
+                                            PipelineStageFlags /* stages_after_barrier */,
                                             const std::vector<ResourceBarrier>& barriers) {
         std::vector<D3D12_RESOURCE_BARRIER> dx12_barriers;
         dx12_barriers.reserve(barriers.size());

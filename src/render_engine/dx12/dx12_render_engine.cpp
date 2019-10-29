@@ -534,12 +534,11 @@ namespace nova::renderer::rhi {
                 states = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
             } break;
 
-            case BufferUsage::IndexBuffer: {
-                states = D3D12_RESOURCE_STATE_INDEX_BUFFER;
-            } break;
-
+            // Create the buffers as copy destinations. We'll change their state after we've copied to them
+            case BufferUsage::IndexBuffer:
+                [[fallthrough]];
             case BufferUsage::VertexBuffer: {
-                states = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+                states = D3D12_RESOURCE_STATE_COPY_DEST;
             } break;
 
             case BufferUsage::StagingBuffer: {
@@ -562,7 +561,7 @@ namespace nova::renderer::rhi {
                                      nullptr,
                                      IID_PPV_ARGS(&buffer->resource));
 
-        buffer->size = bvestl::polyalloc::Bytes(info.size);
+        buffer->size = bvestl::polyalloc::Bytes(allocation.allocation_info.size);
 
         return buffer;
     }

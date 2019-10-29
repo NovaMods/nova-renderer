@@ -31,6 +31,9 @@ namespace nova::renderer::rhi {
 
         PresentSource,
 
+        VertexOrConstantBuffer,
+        IndexBuffer,
+
         NonFragmentShaderReadOnly,
         FragmentShaderReadOnly,
 
