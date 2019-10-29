@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 30-Mar-19.
- */
-
 #include "dx12_command_list.hpp"
 #include "../../../tests/src/general_test_setup.hpp"
 #include "d3dx12.h"
@@ -20,7 +15,7 @@ namespace nova::renderer::rhi {
         dx12_barriers.reserve(barriers.size());
 
         for(const ResourceBarrier& barrier : barriers) {
-            ID3D12Resource* resource_to_barrier;
+            ID3D12Resource* resource_to_barrier = nullptr;
             switch(barrier.resource_to_barrier->type) {
                 case ResourceType::Buffer: {
                     auto* d3d12_buffer = static_cast<DX12Buffer*>(barrier.resource_to_barrier);
@@ -31,19 +26,18 @@ namespace nova::renderer::rhi {
                     auto* d3d12_image = static_cast<DX12Image*>(barrier.resource_to_barrier);
                     resource_to_barrier = d3d12_image->resource.Get();
                 } break;
-                default:;
             }
 
-            if(barrier.access_after_barrier == ResourceAccessFlags::NoFlags) {
-                const D3D12_RESOURCE_STATES initial_state = to_dx12_state(barrier.initial_state);
-                const D3D12_RESOURCE_STATES final_state = to_dx12_state(barrier.final_state);
-                // ReSharper disable once CppLocalVariableMightNotBeInitialized
+            if(barrier.access_after_barrier != ResourceAccess::NoFlags) {
+                const D3D12_RESOURCE_STATES initial_state = to_dx12_state(barrier.access_before_barrier);
+                const D3D12_RESOURCE_STATES final_state = to_dx12_state(barrier.access_after_barrier);
+
+                dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::UAV(resource_to_barrier));
                 dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(resource_to_barrier, initial_state, final_state));
+                dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::UAV(resource_to_barrier));
 
             } else {
-                // ReSharper disable once CppLocalVariableMightNotBeInitialized
-                const CD3DX12_RESOURCE_BARRIER sync = CD3DX12_RESOURCE_BARRIER::UAV(resource_to_barrier);
-                dx12_barriers.push_back(sync);
+                dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::UAV(resource_to_barrier));
             }
         }
 
