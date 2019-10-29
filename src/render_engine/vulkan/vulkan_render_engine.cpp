@@ -1536,7 +1536,7 @@ namespace nova::renderer::rhi {
             auto* vk_render_engine = reinterpret_cast<VulkanRenderEngine*>(render_engine);
             if(vk_render_engine->settings->debug.break_on_validation_errors) {
 #if defined(NOVA_WINDOWS)
-                std::raise(SIGABRT);
+                DebugBreak();
 #elif defined(NOVA_LINUX)
                 std::raise(SIGINT);
 #endif
