@@ -1339,7 +1339,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderEngine::create_per_thread_command_pools() {
-        const uint32_t num_threads = 1;
+        const uint32_t num_threads = 1; // TODO: Make this real
         command_pools_by_thread_idx.reserve(num_threads);
 
         for(uint32_t i = 0; i < num_threads; i++) {

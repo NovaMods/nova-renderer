@@ -28,6 +28,8 @@ namespace nova::renderer::rhi {
 
         create_queues();
 
+        create_command_allocators();
+
         open_window_and_create_swapchain(settings.settings.window, settings.settings.max_in_flight_frames);
 
         rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -158,8 +160,8 @@ namespace nova::renderer::rhi {
             framebuffer->rtv_descriptors.emplace_back(base_rtv_descriptor);
             framebuffer->rtv_descriptors.at(i).Offset(i, rtv_descriptor_size);
 
-           // Create the Render Target View, which binds the swapchain buffer to the RTV handle
-           device->CreateRenderTargetView(d3d12_image->resource.Get(), nullptr, framebuffer->rtv_descriptors.at(i));
+            // Create the Render Target View, which binds the swapchain buffer to the RTV handle
+            device->CreateRenderTargetView(d3d12_image->resource.Get(), nullptr, framebuffer->rtv_descriptors.at(i));
         }
 
         next_rtv_descriptor_index += attachment_count;
@@ -240,7 +242,8 @@ namespace nova::renderer::rhi {
         if(!SUCCEEDED(res)) {
             if(error_blob) {
                 const std::string err_str = static_cast<const char*>(error_blob->GetBufferPointer());
-                return ntl::Result<PipelineInterface*>(MAKE_ERROR("Could not create pipeline interface: {:s} ({:s})", err_str, to_string(res)));
+                return ntl::Result<PipelineInterface*>(
+                    MAKE_ERROR("Could not create pipeline interface: {:s} ({:s})", err_str, to_string(res)));
             } else {
                 return ntl::Result<PipelineInterface*>(MAKE_ERROR("Could not create pipeline interface: {:s}", to_string(res)));
             }
@@ -736,6 +739,7 @@ namespace nova::renderer::rhi {
         } else {
             switch(needed_queue_type) {
                 case QueueType::Graphics:
+                    command_list_type = D3D12_COMMAND_LIST_TYPE_DIRECT;
                     break;
 
                 case QueueType::Transfer:
@@ -748,10 +752,10 @@ namespace nova::renderer::rhi {
             }
         }
 
-        ID3D12CommandAllocator* command_allocator = command_allocators.at(thread_idx).at(command_list_type);
+        const ComPtr<ID3D12CommandAllocator> command_allocator = command_allocators.at(thread_idx).at(command_list_type);
 
         ComPtr<ID3D12CommandList> list;
-        device->CreateCommandList(0, command_list_type, command_allocator, nullptr, IID_PPV_ARGS(&list));
+        device->CreateCommandList(0, command_list_type, command_allocator.Get(), nullptr, IID_PPV_ARGS(&list));
 
         ComPtr<ID3D12GraphicsCommandList> graphics_list;
         list->QueryInterface(IID_PPV_ARGS(&graphics_list));
@@ -894,6 +898,31 @@ namespace nova::renderer::rhi {
         D3D12_COMMAND_QUEUE_DESC copy_queue_desc = {};
         copy_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
         CHECK_ERROR(device->CreateCommandQueue(&copy_queue_desc, IID_PPV_ARGS(&copy_command_queue)), "Could not create copy command queue");
+    }
+
+    void D3D12RenderEngine::create_command_allocators() {
+        // TODO: Make this real
+        const uint32_t num_threads = 1;
+
+        command_allocators.reserve(num_threads);
+        for(uint32_t i = 0; i < num_threads; i++) {
+            std::unordered_map<D3D12_COMMAND_LIST_TYPE, ComPtr<ID3D12CommandAllocator>> allocators_for_one_thread;
+            allocators_for_one_thread.reserve(3);
+
+            ComPtr<ID3D12CommandAllocator> direct_command_allocator;
+            device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(direct_command_allocator.GetAddressOf()));
+            allocators_for_one_thread.emplace(D3D12_COMMAND_LIST_TYPE_DIRECT, direct_command_allocator);
+
+            ComPtr<ID3D12CommandAllocator> compute_command_allocator;
+            device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COMPUTE, IID_PPV_ARGS(compute_command_allocator.GetAddressOf()));
+            allocators_for_one_thread.emplace(D3D12_COMMAND_LIST_TYPE_COMPUTE, compute_command_allocator);
+
+            ComPtr<ID3D12CommandAllocator> copy_command_allocator;
+            device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COPY, IID_PPV_ARGS(copy_command_allocator.GetAddressOf()));
+            allocators_for_one_thread.emplace(D3D12_COMMAND_LIST_TYPE_COPY, copy_command_allocator);
+
+            command_allocators.push_back(allocators_for_one_thread);
+        }
     }
 
     void D3D12RenderEngine::setup_debug_output() {

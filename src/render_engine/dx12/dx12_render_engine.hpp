@@ -143,12 +143,17 @@ namespace nova::renderer::rhi {
         /*!
          * \brief The index in the vector is the thread index
          */
-        std::vector<std::unordered_map<D3D12_COMMAND_LIST_TYPE, ID3D12CommandAllocator*>> command_allocators;
+        std::vector<std::unordered_map<D3D12_COMMAND_LIST_TYPE, Microsoft::WRL::ComPtr<ID3D12CommandAllocator>>> command_allocators;
 
 #pragma region Initialization
         void create_device();
 
         void create_queues();
+
+        /*!
+         * \brief Creates the pre-thread command allocators that we use at runtime
+         */
+        void create_command_allocators();
 
         /*!
          * \brief Sets up a few things to make the debugging experience much nicer
