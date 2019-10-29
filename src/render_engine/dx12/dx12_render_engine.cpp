@@ -539,6 +539,10 @@ namespace nova::renderer::rhi {
                 states = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
             } break;
 
+            case BufferUsage::StagingBuffer: {
+                states = D3D12_RESOURCE_STATE_COPY_SOURCE | D3D12_RESOURCE_STATE_GENERIC_READ;
+            } break;
+
             default:;
         }
 
