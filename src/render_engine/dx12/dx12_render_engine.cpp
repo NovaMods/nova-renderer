@@ -45,7 +45,7 @@ namespace nova::renderer::rhi {
 
         const HRESULT hr = device->CreateDescriptorHeap(&rtv_heap_descriptor, IID_PPV_ARGS(&rtv_descriptor_heap));
         if(FAILED(hr)) {
-            NOVA_LOG(FATAL) << "Could not create descriptor heap for the RTV";
+            NOVA_LOG(FATAL) << "Could not create descriptor heap for the RTV: " << get_last_windows_error() << " (" << to_string(hr) << ")";
         }
     }
 
@@ -152,6 +152,7 @@ namespace nova::renderer::rhi {
             if(!d3d12_image->is_depth_tex) {
                 // Create the Render Target View, which binds the swapchain buffer to the RTV handle
                 device->CreateRenderTargetView(d3d12_image->resource.Get(), nullptr, framebuffer->render_targets.at(i));
+
             } else {
                 device->CreateDepthStencilView(d3d12_image->resource.Get(), nullptr, framebuffer->render_targets.at(i));
             }
