@@ -699,8 +699,8 @@ namespace nova::renderer {
             backbuffer_barrier.resource_to_barrier = swapchain->get_image(cur_frame_idx);
             backbuffer_barrier.initial_state = rhi::ResourceState::PresentSource;
             backbuffer_barrier.final_state = rhi::ResourceState::ColorAttachment;
-            backbuffer_barrier.access_before_barrier = rhi::ResourceAccessFlags::ColorAttachmentWriteBit;
-            backbuffer_barrier.access_after_barrier = rhi::ResourceAccessFlags::ShaderReadBit;
+            backbuffer_barrier.access_before_barrier = rhi::ResourceAccess::ColorAttachmentWriteBit;
+            backbuffer_barrier.access_after_barrier = rhi::ResourceAccess::ShaderReadBit;
             backbuffer_barrier.source_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspectFlags::Color;
@@ -737,8 +737,8 @@ namespace nova::renderer {
             backbuffer_barrier.resource_to_barrier = swapchain->get_image(cur_frame_idx);
             backbuffer_barrier.initial_state = rhi::ResourceState::ColorAttachment;
             backbuffer_barrier.final_state = rhi::ResourceState::PresentSource;
-            backbuffer_barrier.access_before_barrier = rhi::ResourceAccessFlags::ColorAttachmentWriteBit;
-            backbuffer_barrier.access_after_barrier = rhi::ResourceAccessFlags::MemoryReadBit;
+            backbuffer_barrier.access_before_barrier = rhi::ResourceAccess::ColorAttachmentWriteBit;
+            backbuffer_barrier.access_after_barrier = rhi::ResourceAccess::MemoryReadBit;
             backbuffer_barrier.source_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspectFlags::Color;
