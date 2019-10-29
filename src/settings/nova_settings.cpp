@@ -1,10 +1,11 @@
-#include <utility>
 #include "nova_renderer/nova_settings.hpp"
+
+#include <utility>
+
 #include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
-    NovaSettingsAccessManager::NovaSettingsAccessManager(NovaSettings settings) : settings(std::move(settings)) {
-    }
+    NovaSettingsAccessManager::NovaSettingsAccessManager(NovaSettings settings) : settings(std::move(settings)) {}
 
     void NovaSettingsAccessManager::register_change_listener(ConfigListener* new_listener) {
         config_change_listeners.push_back(new_listener);
@@ -21,4 +22,6 @@ namespace nova::renderer {
             l->on_config_loaded(*this);
         }
     }
+
+    const NovaSettings* NovaSettingsAccessManager::operator->() const { return &settings; }
 } // namespace nova::renderer

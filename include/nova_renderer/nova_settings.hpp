@@ -107,6 +107,11 @@ namespace nova::renderer {
             bool enable_validation_layers = false;
 
             /*!
+             * \brief Should Nova raise SIGINT when the validation layers detect an error?
+             */
+            bool break_on_validation_errors = false;
+
+            /*!
              * \brief Enables GPU-based validation, which can check more situations then the normal debug layers but can cost a lot of
              * performance
              *
@@ -244,6 +249,9 @@ namespace nova::renderer {
          * \brief Tells all the config listeners that the configuration has been loaded for the first time
          */
         void update_config_loaded();
+
+        // Why did this take so long omg
+        const NovaSettings* operator->() const;
 
     private:
         std::vector<ConfigListener*> config_change_listeners;

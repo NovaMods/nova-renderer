@@ -1,5 +1,6 @@
 #include "vulkan_render_engine.hpp"
 
+#include <csignal>
 #include <set>
 
 #include "nova_renderer/allocation_structs.hpp"
@@ -22,7 +23,6 @@
 
 #endif
 
-// TODO: A coherent way to manage program settings
 #include "../../util/memory_utils.hpp"
 #include "../configuration.hpp"
 
@@ -1471,7 +1471,7 @@ namespace nova::renderer::rhi {
     VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderEngine::debug_report_callback(const VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
                                                                              const VkDebugUtilsMessageTypeFlagsEXT message_types,
                                                                              const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
-                                                                             void* /* pUserData */) {
+                                                                             void* render_engine) {
         std::string type = "General";
         if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) != 0U) {
             type = "Validation";
@@ -1529,6 +1529,18 @@ namespace nova::renderer::rhi {
 
         if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
             NOVA_LOG(ERROR) << "[" << type << "] " << msg;
+#ifdef NOVA_LINUX
+            nova_backtrace();
+#endif
+
+            auto* vk_render_engine = reinterpret_cast<VulkanRenderEngine*>(render_engine);
+            if(vk_render_engine->settings->debug.break_on_validation_errors) {
+#if defined(NOVA_WINDOWS)
+                std::raise(SIGABRT);
+#elif defined(NOVA_LINUX)
+                std::raise(SIGINT);
+#endif
+            }
 
         } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {
             // Warnings may hint at unexpected / non-spec API usage
@@ -1549,11 +1561,6 @@ namespace nova::renderer::rhi {
             NOVA_LOG(INFO) << "[" << type << "]" << msg;
         }
 
-#ifdef NOVA_LINUX
-        if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
-            nova_backtrace();
-        }
-#endif
         return VK_FALSE;
     }
 } // namespace nova::renderer::rhi
