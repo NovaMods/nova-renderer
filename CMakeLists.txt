@@ -279,7 +279,7 @@ endif()
 # Set platform dependent compile options #
 ##########################################
 if (UNIX)
-    add_compile_options_if_supported(-g -fno-omit-frame-pointer -fPIC -fdiagnostics-color=always)
+    add_compile_options_if_supported(-g -fno-omit-frame-pointer -fPIC -fdiagnostics-color=always -Wpessimizing-move -Wredundant-move)
 endif()
 
 if(MSVC)
