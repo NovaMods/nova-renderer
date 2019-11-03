@@ -32,6 +32,8 @@ namespace ntl {
             ErrorType error;
         };
 
+        bool is_moved = false;
+
         bool has_value = false;
 
         explicit Result(ValueType&& value) : value(value), has_value(true) {}
@@ -53,27 +55,31 @@ namespace ntl {
                 error = std::move(old.error);
                 old.error = {};
             }
+
+            old.is_moved = true;
         };
 
         Result& operator=(Result<ValueType>&& old) noexcept {
             if(old.has_value) {
-                value = old.value;
-                old.value = {};
-
+                value = std::move(old.value);
                 has_value = true;
+
             } else {
-                error = old.error;
-                old.error = {};
+                error = std::move(old.error);
             }
+
+            old.is_moved = true;
 
             return *this;
         };
 
         ~Result() {
-            if(has_value) {
-                value.~ValueType();
-            } else {
-                error.~ErrorType();
+            if(!is_moved) {
+                if(has_value) {
+                    value.~ValueType();
+                } else {
+                    error.~ErrorType();
+                }
             }
         }
 
@@ -106,7 +112,8 @@ namespace ntl {
             }
         }
 
-        void on_error(std::function<void(const ErrorType&)> error_func) const {
+        template <typename FuncType>
+        void on_error(FuntType&& error_func) const {
             if(!has_value) {
                 error_func(error);
             }
