@@ -1,4 +1,5 @@
 #include "dx12_command_list.hpp"
+
 #include "../../../tests/src/general_test_setup.hpp"
 #include "d3dx12.h"
 #include "dx12_utils.hpp"
@@ -11,6 +12,9 @@ namespace nova::renderer::rhi {
     void Dx12CommandList::resource_barriers(PipelineStageFlags /* stages_before_barrier */,
                                             PipelineStageFlags /* stages_after_barrier */,
                                             const std::vector<ResourceBarrier>& barriers) {
+        // D3D12 barriers don't use all the information in our `barriers` struct - specifically, they don't care much about image layouts,
+        // nor about the pipeline stage flags. Thus, this method doesn't do anything with that data
+
         std::vector<D3D12_RESOURCE_BARRIER> dx12_barriers;
         dx12_barriers.reserve(barriers.size());
 
@@ -28,17 +32,10 @@ namespace nova::renderer::rhi {
                 } break;
             }
 
-            if(barrier.access_after_barrier != ResourceAccess::NoFlags) {
-                const D3D12_RESOURCE_STATES initial_state = to_dx12_state(barrier.access_before_barrier);
-                const D3D12_RESOURCE_STATES final_state = to_dx12_state(barrier.access_after_barrier);
+            const D3D12_RESOURCE_STATES initial_state = to_dx12_state(barrier.old_state);
+            const D3D12_RESOURCE_STATES final_state = to_dx12_state(barrier.new_state);
 
-                dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::UAV(resource_to_barrier));
-                dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(resource_to_barrier, initial_state, final_state));
-                dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::UAV(resource_to_barrier));
-
-            } else {
-                dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::UAV(resource_to_barrier));
-            }
+            dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(resource_to_barrier, initial_state, final_state));
         }
 
         cmds->ResourceBarrier(static_cast<UINT>(dx12_barriers.size()), dx12_barriers.data());
@@ -108,8 +105,9 @@ namespace nova::renderer::rhi {
         for(const Buffer* buffer : buffers) {
             const auto* dx_buffer = static_cast<const DX12Buffer*>(buffer);
 
-            views.emplace_back(
-                D3D12_VERTEX_BUFFER_VIEW{dx_buffer->resource->GetGPUVirtualAddress(), static_cast<UINT>(dx_buffer->size.b_count()), sizeof(FullVertex)});
+            views.emplace_back(D3D12_VERTEX_BUFFER_VIEW{dx_buffer->resource->GetGPUVirtualAddress(),
+                                                        static_cast<UINT>(dx_buffer->size.b_count()),
+                                                        sizeof(FullVertex)});
         }
 
         cmds->IASetVertexBuffers(0, static_cast<UINT>(views.size()), views.data());

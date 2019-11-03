@@ -13,6 +13,8 @@
 namespace nova::renderer::rhi {
     VkImageLayout to_vk_image_layout(ImageLayout layout);
 
+    VkAccessFlags to_vk_access_flags(ResourceAccess access);
+
     VkPrimitiveTopology to_primitive_topology(shaderpack::PrimitiveTopologyEnum topology);
 
     VkBlendFactor to_blend_factor(shaderpack::BlendFactorEnum factor);

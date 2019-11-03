@@ -3,22 +3,6 @@
 #include <array>
 #include <future>
 
-#include <glslang/MachineIndependent/Initialize.h>
-#include <spirv_glsl.hpp>
-
-#include "nova_renderer/nova_renderer.hpp"
-
-#include "loading/shaderpack/shaderpack_loading.hpp"
-#include "memory/system_memory_allocator.hpp"
-#if defined(NOVA_WINDOWS)
-#include "render_engine/dx12/dx12_render_engine.hpp"
-#endif
-#include "nova_renderer/command_list.hpp"
-#include "nova_renderer/swapchain.hpp"
-
-#include "debugging/renderdoc.hpp"
-#include "render_engine/vulkan/vulkan_render_engine.hpp"
-
 #pragma warning(push, 0)
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
@@ -28,7 +12,6 @@
 #pragma warning(pop)
 
 #include "nova_renderer/command_list.hpp"
-#include "nova_renderer/nova_renderer.hpp"
 #include "nova_renderer/swapchain.hpp"
 
 #include "debugging/renderdoc.hpp"
@@ -197,8 +180,8 @@ namespace nova::renderer {
 
             rhi::ResourceBarrier vertex_barrier = {};
             vertex_barrier.resource_to_barrier = vertex_buffer;
-            vertex_barrier.initial_state = rhi::ResourceState::TransferDestination;
-            vertex_barrier.final_state = rhi::ResourceState::VertexOrConstantBuffer;
+            vertex_barrier.old_state = rhi::ResourceAccess::CopyDestination;
+            vertex_barrier.new_state = rhi::ResourceAccess::VertexBuffer;
             vertex_barrier.buffer_memory_barrier.offset = 0;
             vertex_barrier.buffer_memory_barrier.size = vertex_buffer->size;
 
@@ -226,14 +209,14 @@ namespace nova::renderer {
 
             rhi::ResourceBarrier index_barrier = {};
             index_barrier.resource_to_barrier = index_buffer;
-            index_barrier.initial_state = rhi::ResourceState::TransferDestination;
-            index_barrier.final_state = rhi::ResourceState::IndexBuffer;
+            index_barrier.old_state = rhi::ResourceAccess::CopyDestination;
+            index_barrier.new_state = rhi::ResourceAccess::IndexBuffer;
             index_barrier.buffer_memory_barrier.offset = 0;
             index_barrier.buffer_memory_barrier.size = index_buffer->size;
 
             indices_upload_cmds->resource_barriers(rhi::PipelineStageFlags::Transfer,
-                                                  rhi::PipelineStageFlags::VertexInput,
-                                                  {index_barrier});
+                                                   rhi::PipelineStageFlags::VertexInput,
+                                                   {index_barrier});
 
             rhi->submit_command_list(indices_upload_cmds, rhi::QueueType::Transfer);
         }
@@ -697,10 +680,8 @@ namespace nova::renderer {
         if(renderpass.writes_to_backbuffer) {
             rhi::ResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = swapchain->get_image(cur_frame_idx);
-            backbuffer_barrier.initial_state = rhi::ResourceState::PresentSource;
-            backbuffer_barrier.final_state = rhi::ResourceState::ColorAttachment;
-            backbuffer_barrier.access_before_barrier = rhi::ResourceAccess::ColorAttachmentWriteBit;
-            backbuffer_barrier.access_after_barrier = rhi::ResourceAccess::ShaderReadBit;
+            backbuffer_barrier.old_state = rhi::ResourceAccess::ColorAttachmentWriteBit;
+            backbuffer_barrier.new_state = rhi::ResourceAccess::ShaderRead;
             backbuffer_barrier.source_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspectFlags::Color;
@@ -735,10 +716,8 @@ namespace nova::renderer {
         if(renderpass.writes_to_backbuffer) {
             rhi::ResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = swapchain->get_image(cur_frame_idx);
-            backbuffer_barrier.initial_state = rhi::ResourceState::ColorAttachment;
-            backbuffer_barrier.final_state = rhi::ResourceState::PresentSource;
-            backbuffer_barrier.access_before_barrier = rhi::ResourceAccess::ColorAttachmentWriteBit;
-            backbuffer_barrier.access_after_barrier = rhi::ResourceAccess::MemoryReadBit;
+            backbuffer_barrier.old_state = rhi::ResourceAccess::ColorAttachmentWriteBit;
+            backbuffer_barrier.new_state = rhi::ResourceAccess::MemoryRead;
             backbuffer_barrier.source_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspectFlags::Color;

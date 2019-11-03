@@ -5,40 +5,39 @@
 namespace nova::renderer::rhi {
     D3D12_RESOURCE_STATES to_dx12_state(const ResourceState state) {
         switch(state) {
-            case ResourceState::Undefined:
-            case ResourceState::General:
+            case ResourceState::Common:
                 return D3D12_RESOURCE_STATE_COMMON;
 
-            case ResourceState::ColorAttachment:
+            case ResourceState::RenderTarget:
                 return D3D12_RESOURCE_STATE_RENDER_TARGET;
 
-            case ResourceState::DepthStencilAttachment:
-            case ResourceState::DepthAttachmentStencilReadOnly:
+            case ResourceState::DepthWrite:
                 return D3D12_RESOURCE_STATE_DEPTH_WRITE;
 
-            case ResourceState::DepthReadOnlyStencilAttachment:
-            case ResourceState::DepthStencilReadOnlyAttachment:
+            case ResourceState::DepthRead:
                 return D3D12_RESOURCE_STATE_DEPTH_READ;
 
             case ResourceState::PresentSource:
                 return D3D12_RESOURCE_STATE_PRESENT;
 
-            case ResourceState::VertexOrConstantBuffer:
+            case ResourceState::UniformBuffer:
+                [[fallthrough]];
+            case ResourceState::VertexBuffer:
                 return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
 
             case ResourceState::IndexBuffer:
                 return D3D12_RESOURCE_STATE_INDEX_BUFFER;
 
-            case ResourceState::NonFragmentShaderReadOnly:
+            case ResourceState::ShaderRead:
                 return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 
-            case ResourceState::FragmentShaderReadOnly:
+            case ResourceState::ShaderWrite:
                 return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
-            case ResourceState::TransferSource:
+            case ResourceState::CopySource:
                 return D3D12_RESOURCE_STATE_COPY_SOURCE;
 
-            case ResourceState::TransferDestination:
+            case ResourceState::CopyDestination:
                 return D3D12_RESOURCE_STATE_COPY_DEST;
 
             default:

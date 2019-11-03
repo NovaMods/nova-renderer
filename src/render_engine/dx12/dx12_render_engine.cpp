@@ -542,7 +542,7 @@ namespace nova::renderer::rhi {
             } break;
 
             case BufferUsage::StagingBuffer: {
-                states = D3D12_RESOURCE_STATE_COPY_SOURCE | D3D12_RESOURCE_STATE_GENERIC_READ;
+                states = D3D12_RESOURCE_STATE_GENERIC_READ;
             } break;
 
             default:;

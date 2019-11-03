@@ -48,6 +48,59 @@ namespace nova::renderer::rhi {
         }
     }
 
+    VkAccessFlags to_vk_access_flags(const ResourceState access, bool should_get_access_before_barrier) {
+        switch(access) {
+            case ResourceState::IndexBuffer:
+                return VK_ACCESS_INDEX_READ_BIT;
+
+            case ResourceState::VertexBuffer:
+                return VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+
+            case ResourceState::UniformBuffer:
+                return VK_ACCESS_UNIFORM_READ_BIT;
+
+            case ResourceState::ShaderRead:
+                return VK_ACCESS_SHADER_READ_BIT;
+
+            case ResourceState::ShaderWrite:
+                return VK_ACCESS_SHADER_WRITE_BIT;
+
+                // oh god send help
+            case ResourceState::RenderTarget: {
+                if(should_get_access_before_barrier) {
+                    return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                } else {
+                    return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+                }
+            }
+            case ResourceState::DepthWrite:
+                // TODO: Do I need to track if the resource has a stencil aspect?
+                return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+            case ResourceState::DepthRead:
+                return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+
+            case ResourceState::CopySource:
+                return VK_ACCESS_TRANSFER_READ_BIT;
+
+            case ResourceState::CopyDestination:
+                return VK_ACCESS_TRANSFER_WRITE_BIT;
+
+            // TODO: Figure out what to do for these
+            case ResourceState::HostRead:
+                return VK_ACCESS_HOST_READ_BIT;
+
+            case ResourceState::HostWrite:
+                return VK_ACCESS_HOST_WRITE_BIT;
+
+            case ResourceState::MemoryRead:
+                return VK_ACCESS_MEMORY_READ_BIT;
+
+            case ResourceState::MemoryWrite:
+                return VK_ACCESS_MEMORY_WRITE_BIT;
+        }
+    }
+
     VkPrimitiveTopology to_primitive_topology(shaderpack::PrimitiveTopologyEnum topology) {
         switch(topology) {
             case shaderpack::PrimitiveTopologyEnum::Lines:
