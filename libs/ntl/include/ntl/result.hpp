@@ -36,7 +36,7 @@ namespace ntl {
 
         bool has_value = false;
 
-        explicit Result(ValueType&& value) : value(value), has_value(true) {}
+        explicit Result(ValueType&& value) : value(std::move(value)), has_value(true) {}
 
         explicit Result(const ValueType& value) : value(value), has_value(true) {}
 
