@@ -2,7 +2,8 @@
 
 #include <spirv_glsl.hpp>
 
-#include "../../../tests/src/general_test_setup.hpp"
+#include "nova_renderer/renderables.hpp"
+
 #include "../../util/logger.hpp"
 #include "gl3_command_list.hpp"
 #include "gl3_structs.hpp"
@@ -61,7 +62,7 @@ namespace nova::renderer::rhi {
         glGenFramebuffers(1, &framebuffer->id);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->id);
 
-        for(uint32_t i = 0; i < color_attachments.size();i++) {
+        for(uint32_t i = 0; i < color_attachments.size(); i++) {
             const auto* gl_image = static_cast<const Gl3Image*>(color_attachments.at(i));
             const GLenum attachment_slot = GL_COLOR_ATTACHMENT0 + i;
 

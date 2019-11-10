@@ -106,6 +106,8 @@ namespace nova::renderer::rhi {
             case AccessFlags::FragmentDensityMapRead:
                 return VK_ACCESS_FRAGMENT_DENSITY_MAP_READ_BIT_EXT;
         }
+
+        return {};
     }
 
     VkPrimitiveTopology to_primitive_topology(const shaderpack::PrimitiveTopologyEnum topology) {

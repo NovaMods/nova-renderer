@@ -23,14 +23,15 @@
 #include "memory/system_memory_allocator.hpp"
 #include "render_objects/uniform_structs.hpp"
 
-#if defined(NOVA_VULKAN_RHI)
-#include "render_engine/vulkan/vulkan_render_engine.hpp"
-#endif
-
+// D3D12 MUST be included first because the Vulkan invlude undefines FAR, yet the D3D12 headers need FAR
+// Windows considered harmful
 #if defined(NOVA_WINDOWS) && defined(NOVA_D3D12_RHI)
 #include "render_engine/dx12/dx12_render_engine.hpp"
 #endif
 
+#if defined(NOVA_VULKAN_RHI)
+#include "render_engine/vulkan/vulkan_render_engine.hpp"
+#endif
 #if defined(NOVA_OPENGL_RHI)
 #include "render_engine/gl3/gl3_render_engine.hpp"
 #endif
@@ -684,8 +685,10 @@ namespace nova::renderer {
         if(renderpass.writes_to_backbuffer) {
             rhi::ResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = swapchain->get_image(cur_frame_idx);
-            backbuffer_barrier.old_state = rhi::ResourceAccess::ColorAttachmentWriteBit;
-            backbuffer_barrier.new_state = rhi::ResourceAccess::ShaderRead;
+            backbuffer_barrier.access_before_barrier = rhi::AccessFlags::ColorAttachmentWrite;
+            backbuffer_barrier.access_after_barrier = rhi::AccessFlags::ShaderRead;
+            backbuffer_barrier.old_state = rhi::ResourceState::RenderTarget;
+            backbuffer_barrier.new_state = rhi::ResourceState::ShaderRead;
             backbuffer_barrier.source_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspectFlags::Color;
@@ -720,8 +723,10 @@ namespace nova::renderer {
         if(renderpass.writes_to_backbuffer) {
             rhi::ResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = swapchain->get_image(cur_frame_idx);
-            backbuffer_barrier.old_state = rhi::ResourceAccess::ColorAttachmentWriteBit;
-            backbuffer_barrier.new_state = rhi::ResourceAccess::MemoryRead;
+            backbuffer_barrier.access_before_barrier = rhi::AccessFlags::ColorAttachmentWrite;
+            backbuffer_barrier.access_after_barrier = rhi::AccessFlags::MemoryRead;
+            backbuffer_barrier.old_state = rhi::ResourceState::RenderTarget;
+            backbuffer_barrier.new_state = rhi::ResourceState::PresentSource;
             backbuffer_barrier.source_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspectFlags::Color;
