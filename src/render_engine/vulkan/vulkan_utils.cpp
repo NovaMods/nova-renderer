@@ -6,102 +6,109 @@
 #include "../../util/logger.hpp"
 
 namespace nova::renderer::rhi {
-    VkImageLayout to_vk_image_layout(const ImageLayout layout) {
+    VkImageLayout to_vk_image_layout(const ResourceState layout) {
         switch(layout) {
-            case ImageLayout::Undefined:
-                return VK_IMAGE_LAYOUT_UNDEFINED;
-
-            case ImageLayout::General:
+            case ResourceState::Common:
                 return VK_IMAGE_LAYOUT_GENERAL;
-
-            case ImageLayout::ColorAttachment:
-                return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            case ImageLayout::DepthStencilAttachment:
-                return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-            case ImageLayout::DepthReadOnlyStencilAttachment:
-                return VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
-
-            case ImageLayout::DepthAttachmentStencilReadOnly:
-                return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
-
-            case ImageLayout::DepthStencilReadOnlyAttachment:
-                return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
-
-            case ImageLayout::PresentSource:
-                return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-            case ImageLayout::NonFragmentShaderReadOnly:
-                [[fallthrough]];
-            case ImageLayout::FragmentShaderReadOnly:
-                return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-            case ImageLayout::TransferSource:
-                return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-
-            case ImageLayout::TransferDestination:
-                return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-
-            default:
-                return VK_IMAGE_LAYOUT_GENERAL;
-        }
-    }
-
-    VkAccessFlags to_vk_access_flags(const ResourceState access, bool should_get_access_before_barrier) {
-        switch(access) {
-            case ResourceState::IndexBuffer:
-                return VK_ACCESS_INDEX_READ_BIT;
-
-            case ResourceState::VertexBuffer:
-                return VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-
-            case ResourceState::UniformBuffer:
-                return VK_ACCESS_UNIFORM_READ_BIT;
-
-            case ResourceState::ShaderRead:
-                return VK_ACCESS_SHADER_READ_BIT;
-
-            case ResourceState::ShaderWrite:
-                return VK_ACCESS_SHADER_WRITE_BIT;
-
-                // oh god send help
-            case ResourceState::RenderTarget: {
-                if(should_get_access_before_barrier) {
-                    return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                } else {
-                    return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-                }
-            }
-            case ResourceState::DepthWrite:
-                // TODO: Do I need to track if the resource has a stencil aspect?
-                return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-            case ResourceState::DepthRead:
-                return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
 
             case ResourceState::CopySource:
-                return VK_ACCESS_TRANSFER_READ_BIT;
+                return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
             case ResourceState::CopyDestination:
-                return VK_ACCESS_TRANSFER_WRITE_BIT;
+                return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
-            // TODO: Figure out what to do for these
-            case ResourceState::HostRead:
-                return VK_ACCESS_HOST_READ_BIT;
+            case ResourceState::ShaderRead:
+                return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-            case ResourceState::HostWrite:
-                return VK_ACCESS_HOST_WRITE_BIT;
+            case ResourceState::ShaderWrite:
+                return VK_IMAGE_LAYOUT_GENERAL; // TODO: Reevaluate this because it can't be optimal
 
-            case ResourceState::MemoryRead:
-                return VK_ACCESS_MEMORY_READ_BIT;
+            case ResourceState::RenderTarget:
+                return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-            case ResourceState::MemoryWrite:
-                return VK_ACCESS_MEMORY_WRITE_BIT;
+            case ResourceState::DepthWrite:
+                return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            case ResourceState::DepthRead:
+                return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
+
+            case ResourceState::PresentSource:
+                return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+                               
+            default:
+                NOVA_LOG(ERROR) << static_cast<uint32_t>(layout) << " is not a valid image state";
+                return VK_IMAGE_LAYOUT_GENERAL;
         }
     }
 
-    VkPrimitiveTopology to_primitive_topology(shaderpack::PrimitiveTopologyEnum topology) {
+    VkAccessFlags to_vk_access_flags(const AccessFlags access) {
+        switch(access) {
+            case AccessFlags::IndirectCommandRead:
+                return VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+
+            case AccessFlags::IndexRead:
+                return VK_ACCESS_INDEX_READ_BIT;
+
+            case AccessFlags::VertexAttributeRead:
+                return VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+
+            case AccessFlags::UniformRead:
+                return VK_ACCESS_UNIFORM_READ_BIT;
+
+            case AccessFlags::InputAttachmentRead:
+                return VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+
+            case AccessFlags::ShaderRead:
+                return VK_ACCESS_SHADER_READ_BIT;
+
+            case AccessFlags::ShaderWrite:
+                return VK_ACCESS_SHADER_WRITE_BIT;
+
+            case AccessFlags::ColorAttachmentRead:
+                return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+
+            case AccessFlags::ColorAttachmentWrite:
+                return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+            case AccessFlags::DepthStencilAttachmentRead:
+                return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+
+            case AccessFlags::DepthStencilAttachmentWrite:
+                return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+            case AccessFlags::CopyRead:
+                return VK_ACCESS_TRANSFER_READ_BIT;
+
+            case AccessFlags::CopyWrite:
+                return VK_ACCESS_TRANSFER_WRITE_BIT;
+
+            case AccessFlags::HostRead:
+                return VK_ACCESS_HOST_READ_BIT;
+
+            case AccessFlags::HostWrite:
+                return VK_ACCESS_HOST_WRITE_BIT;
+
+            case AccessFlags::MemoryRead:
+                return VK_ACCESS_MEMORY_READ_BIT;
+
+            case AccessFlags::MemoryWrite:
+                return VK_ACCESS_MEMORY_WRITE_BIT;
+
+            case AccessFlags::ShadingRateImageRead:
+                return VK_ACCESS_SHADING_RATE_IMAGE_READ_BIT_NV;
+
+            case AccessFlags::AccelerationStructureRead:
+                return VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_NV;
+
+            case AccessFlags::AccelerationStructureWrite:
+                return VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_NV;
+
+            case AccessFlags::FragmentDensityMapRead:
+                return VK_ACCESS_FRAGMENT_DENSITY_MAP_READ_BIT_EXT;
+        }
+    }
+
+    VkPrimitiveTopology to_primitive_topology(const shaderpack::PrimitiveTopologyEnum topology) {
         switch(topology) {
             case shaderpack::PrimitiveTopologyEnum::Lines:
                 return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;

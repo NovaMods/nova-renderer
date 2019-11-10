@@ -180,8 +180,10 @@ namespace nova::renderer {
 
             rhi::ResourceBarrier vertex_barrier = {};
             vertex_barrier.resource_to_barrier = vertex_buffer;
-            vertex_barrier.old_state = rhi::ResourceAccess::CopyDestination;
-            vertex_barrier.new_state = rhi::ResourceAccess::VertexBuffer;
+            vertex_barrier.old_state = rhi::ResourceState::CopyDestination;
+            vertex_barrier.new_state = rhi::ResourceState::VertexBuffer;
+            vertex_barrier.access_before_barrier = rhi::AccessFlags::CopyWrite;
+            vertex_barrier.access_after_barrier = rhi::AccessFlags::VertexAttributeRead;
             vertex_barrier.buffer_memory_barrier.offset = 0;
             vertex_barrier.buffer_memory_barrier.size = vertex_buffer->size;
 
@@ -209,8 +211,10 @@ namespace nova::renderer {
 
             rhi::ResourceBarrier index_barrier = {};
             index_barrier.resource_to_barrier = index_buffer;
-            index_barrier.old_state = rhi::ResourceAccess::CopyDestination;
-            index_barrier.new_state = rhi::ResourceAccess::IndexBuffer;
+            index_barrier.old_state = rhi::ResourceState::CopyDestination;
+            index_barrier.new_state = rhi::ResourceState::IndexBuffer;
+            index_barrier.access_before_barrier = rhi::AccessFlags::CopyWrite;
+            index_barrier.access_after_barrier = rhi::AccessFlags::IndexRead;
             index_barrier.buffer_memory_barrier.offset = 0;
             index_barrier.buffer_memory_barrier.size = index_buffer->size;
 

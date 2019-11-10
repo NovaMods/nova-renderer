@@ -19,6 +19,35 @@ namespace nova::renderer::rhi {
 
     enum class DescriptorType { CombinedImageSampler, UniformBuffer, StorageBuffer };
 
+    enum class AccessFlags {
+        IndirectCommandRead,
+
+        IndexRead,
+        VertexAttributeRead,
+        UniformRead,
+        InputAttachmentRead,
+        ShaderRead,
+        ShaderWrite,
+        ColorAttachmentRead,
+        ColorAttachmentWrite,
+        DepthStencilAttachmentRead,
+        DepthStencilAttachmentWrite,
+
+        CopyRead,
+        CopyWrite,
+        HostRead,
+        HostWrite,
+        MemoryRead,
+        MemoryWrite,
+
+        ShadingRateImageRead,
+
+        AccelerationStructureRead,
+        AccelerationStructureWrite,
+
+        FragmentDensityMapRead,
+    };
+
     enum class ResourceState {
         Common,
 
@@ -37,29 +66,6 @@ namespace nova::renderer::rhi {
         DepthRead,
 
         PresentSource,
-    };
-
-    enum class ImageLayout {
-        Undefined,
-        General,
-
-        ColorAttachment,
-        DepthStencilAttachment,
-        DepthReadOnlyStencilAttachment,
-        DepthAttachmentStencilReadOnly,
-        DepthStencilReadOnlyAttachment,
-
-        PresentSource,
-
-        VertexOrConstantBuffer,
-        IndexBuffer,
-
-        NonFragmentShaderReadOnly,
-        FragmentShaderReadOnly,
-
-        TransferSource,
-        TransferDestination,
-
     };
 
     enum class ImageAspectFlags {

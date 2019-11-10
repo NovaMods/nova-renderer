@@ -11,9 +11,9 @@
 #include "vulkan.hpp"
 
 namespace nova::renderer::rhi {
-    VkImageLayout to_vk_image_layout(ImageLayout layout);
+    VkImageLayout to_vk_image_layout(ResourceState layout);
 
-    VkAccessFlags to_vk_access_flags(ResourceState access);
+    VkAccessFlags to_vk_access_flags(AccessFlags access);
 
     VkPrimitiveTopology to_primitive_topology(shaderpack::PrimitiveTopologyEnum topology);
 

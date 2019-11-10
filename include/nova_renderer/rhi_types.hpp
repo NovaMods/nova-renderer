@@ -108,6 +108,16 @@ namespace nova::renderer::rhi {
         Resource* resource_to_barrier;
 
         /*!
+         * \brief The resource access that much finish before this barrier executed
+         */
+        AccessFlags access_before_barrier;
+
+        /*!
+         * \brief The resource access that must wait for this battier to finish executing
+         */
+        AccessFlags access_after_barrier;
+
+        /*!
          * \brief How you're going to access this resource just before this barrier
          *
          * Will a shader read from it before the barrier? Will the fragment depth by copied to a depth buffer before
