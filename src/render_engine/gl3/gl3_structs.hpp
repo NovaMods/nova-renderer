@@ -1,5 +1,5 @@
 /*!
- * \brief Gl2 definitions of the structs forward-declared in render_engine.hpp
+ * \brief NvGl4 definitions of the structs forward-declared in render_engine.hpp
  *
  * \author ddubois
  * \date 01-Apr-19.

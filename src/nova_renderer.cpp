@@ -94,7 +94,7 @@ namespace nova::renderer {
         }
 
         switch(settings.api) {
-            case GraphicsApi::Dx12:
+            case GraphicsApi::D3D12:
 #if defined(NOVA_WINDOWS) && defined(NOVA_D3D12_RHI)
             {
                 MTR_SCOPE("Init", "InitDirect3D12RenderEngine");
@@ -110,7 +110,7 @@ namespace nova::renderer {
 #endif
 
 #if defined(NOVA_OPENGL_RHI)
-            case GraphicsApi::Gl2: {
+            case GraphicsApi::NvGl4: {
                 MTR_SCOPE("Init", "InitGL3RenderEngine");
                 rhi = std::make_unique<rhi::Gl4NvRenderEngine>(render_settings);
             } break;

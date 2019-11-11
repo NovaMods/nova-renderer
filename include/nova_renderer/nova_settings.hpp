@@ -15,8 +15,8 @@ namespace nova::renderer {
 
     enum class GraphicsApi {
         Vulkan,
-        Dx12,
-        Gl2,
+        D3D12,
+        NvGl4,
     };
 
     class NovaSettingsAccessManager;
