@@ -689,18 +689,18 @@ namespace nova::renderer {
         if(renderpass.writes_to_backbuffer) {
             rhi::ResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = swapchain->get_image(cur_frame_idx);
-            backbuffer_barrier.access_before_barrier = rhi::AccessFlags::ColorAttachmentWrite;
-            backbuffer_barrier.access_after_barrier = rhi::AccessFlags::ShaderRead;
-            backbuffer_barrier.old_state = rhi::ResourceState::RenderTarget;
-            backbuffer_barrier.new_state = rhi::ResourceState::ShaderRead;
+            backbuffer_barrier.access_before_barrier = rhi::AccessFlags::MemoryRead;
+            backbuffer_barrier.access_after_barrier = rhi::AccessFlags::ColorAttachmentWrite;
+            backbuffer_barrier.old_state = rhi::ResourceState::PresentSource;
+            backbuffer_barrier.new_state = rhi::ResourceState::RenderTarget;
             backbuffer_barrier.source_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspectFlags::Color;
 
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
-            cmds->resource_barriers(rhi::PipelineStageFlags::ColorAttachmentOutput,
-                                    rhi::PipelineStageFlags::VertexShader,
+            cmds->resource_barriers(rhi::PipelineStageFlags::TopOfPipe,
+                                    rhi::PipelineStageFlags::ColorAttachmentOutput,
                                     {backbuffer_barrier});
         }
 
