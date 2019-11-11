@@ -6,9 +6,8 @@
 #include "vulkan_swapchain.hpp"
 
 #include "../../util/logger.hpp"
-#include "vulkan_utils.hpp"
-
 #include "vulkan_render_engine.hpp"
+#include "vulkan_utils.hpp"
 
 #ifdef ERROR
 #undef ERROR
@@ -31,7 +30,7 @@ namespace nova::renderer::rhi {
 
         swapchain_image_layouts.resize(num_swapchain_images);
         for(auto& swapchain_image_layout : swapchain_image_layouts) {
-            swapchain_image_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            swapchain_image_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         }
 
         // Create a dummy renderpass that writes to a single color attachment - the swapchain
@@ -50,12 +49,15 @@ namespace nova::renderer::rhi {
     }
 
     uint32_t VulkanSwapchain::acquire_next_swapchain_image() {
+        auto* fence = render_engine.create_fence();
+        auto* vk_fence = static_cast<VulkanFence*>(fence);
+
         uint32_t acquired_image_idx;
         const auto acquire_result = vkAcquireNextImageKHR(render_engine.device,
                                                           swapchain,
                                                           std::numeric_limits<uint64_t>::max(),
                                                           VK_NULL_HANDLE,
-                                                          VK_NULL_HANDLE,
+                                                          vk_fence->fence,
                                                           &acquired_image_idx);
         if(acquire_result == VK_ERROR_OUT_OF_DATE_KHR || acquire_result == VK_SUBOPTIMAL_KHR) {
             // TODO: Recreate the swapchain and all screen-relative textures
@@ -65,6 +67,9 @@ namespace nova::renderer::rhi {
         if(acquire_result != VK_SUCCESS) {
             NOVA_LOG(ERROR) << __FILE__ << ":" << __LINE__ << "=> " << std::to_string(acquire_result);
         }
+
+        // Block until we have the swapchain image in order to mimic D3D12. TODO: Reevaluate this decision
+        render_engine.wait_for_fences({vk_fence});
 
         return acquired_image_idx;
     }
@@ -95,9 +100,9 @@ namespace nova::renderer::rhi {
             barrier.dstQueueFamilyIndex = render_engine.graphics_family_index;
             barrier.image = image;
             barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-            barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+            barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
             barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Each swapchain image **will** be rendered to before it is
+            barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // Each swapchain image **will** be rendered to before it is
                                                                           // presented
             barrier.subresourceRange.baseMipLevel = 0;
             barrier.subresourceRange.levelCount = 1;
@@ -131,7 +136,7 @@ namespace nova::renderer::rhi {
 
         vkCmdPipelineBarrier(cmds,
                              VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
                              0,
                              0,
                              nullptr,

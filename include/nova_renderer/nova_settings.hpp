@@ -109,7 +109,7 @@ namespace nova::renderer {
             /*!
              * \brief Should Nova raise SIGINT when the validation layers detect an error?
              */
-            bool break_on_validation_errors = false;
+            bool break_on_validation_errors = true;
 
             /*!
              * \brief Enables GPU-based validation, which can check more situations then the normal debug layers but can cost a lot of
