@@ -688,10 +688,15 @@ namespace nova::renderer::rhi {
     }
 
     void D3D12RenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
+        std::vector<HANDLE> all_events;
+        all_events.reserve(fences.size());
+
         for(const Fence* fence : fences) {
             const auto* dx_fence = static_cast<const DX12Fence*>(fence);
-            WaitForSingleObject(dx_fence->event, INFINITE);
+            all_events.push_back(dx_fence->event);
         }
+
+        WaitForMultipleObjects(all_events.size(), all_events.data(), true, INFINITE);
     }
 
     void D3D12RenderEngine::reset_fences(const std::vector<Fence*>& fences) {
