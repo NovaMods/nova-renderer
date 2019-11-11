@@ -23,8 +23,8 @@
 #include "memory/system_memory_allocator.hpp"
 #include "render_objects/uniform_structs.hpp"
 
-// D3D12 MUST be included first because the Vulkan invlude undefines FAR, yet the D3D12 headers need FAR
-// Windows considered harmful
+// D3D12 MUST be included first because the Vulkan include undefines FAR, yet the D3D12 headers need FAR
+// Windows considered harmful 
 #if defined(NOVA_WINDOWS) && defined(NOVA_D3D12_RHI)
 #include "render_engine/dx12/dx12_render_engine.hpp"
 #endif
@@ -182,7 +182,7 @@ namespace nova::renderer {
             rhi::ResourceBarrier vertex_barrier = {};
             vertex_barrier.resource_to_barrier = vertex_buffer;
             vertex_barrier.old_state = rhi::ResourceState::CopyDestination;
-            vertex_barrier.new_state = rhi::ResourceState::VertexBuffer;
+            vertex_barrier.new_state = rhi::ResourceState::Common;
             vertex_barrier.access_before_barrier = rhi::AccessFlags::CopyWrite;
             vertex_barrier.access_after_barrier = rhi::AccessFlags::VertexAttributeRead;
             vertex_barrier.buffer_memory_barrier.offset = 0;
@@ -193,6 +193,8 @@ namespace nova::renderer {
                                                   {vertex_barrier});
 
             rhi->submit_command_list(vertex_upload_cmds, rhi::QueueType::Transfer);
+
+            // TODO: Barrier on the mesh's first usage
         }
 
         rhi::BufferCreateInfo index_buffer_create_info;
@@ -213,7 +215,7 @@ namespace nova::renderer {
             rhi::ResourceBarrier index_barrier = {};
             index_barrier.resource_to_barrier = index_buffer;
             index_barrier.old_state = rhi::ResourceState::CopyDestination;
-            index_barrier.new_state = rhi::ResourceState::IndexBuffer;
+            index_barrier.new_state = rhi::ResourceState::Common;
             index_barrier.access_before_barrier = rhi::AccessFlags::CopyWrite;
             index_barrier.access_after_barrier = rhi::AccessFlags::IndexRead;
             index_barrier.buffer_memory_barrier.offset = 0;
@@ -224,6 +226,8 @@ namespace nova::renderer {
                                                    {index_barrier});
 
             rhi->submit_command_list(indices_upload_cmds, rhi::QueueType::Transfer);
+
+            // TODO: Barrier on the mesh's first usage
         }
 
         // TODO: Clean up staging buffers

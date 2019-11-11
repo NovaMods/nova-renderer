@@ -763,11 +763,11 @@ namespace nova::renderer::rhi {
             } break;
 
             case BufferUsage::IndexBuffer: {
-                vk_create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+                vk_create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
             } break;
 
             case BufferUsage::VertexBuffer: {
-                vk_create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+                vk_create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
             } break;
 
             case BufferUsage::StagingBuffer: {

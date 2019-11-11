@@ -815,8 +815,10 @@ namespace nova::renderer::rhi {
             dx_queue->Signal(dx_semaphore->fence.Get(), GPU_FENCE_SIGNALED);
         }
 
-        const auto* dx_signal_fence = static_cast<const DX12Fence*>(fence_to_signal);
-        dx_queue->Signal(dx_signal_fence->fence.Get(), CPU_FENCE_SIGNALED);
+        if(fence_to_signal) {
+            const auto* dx_signal_fence = static_cast<const DX12Fence*>(fence_to_signal);
+            dx_queue->Signal(dx_signal_fence->fence.Get(), CPU_FENCE_SIGNALED);
+        }
     }
 
     void D3D12RenderEngine::open_window_and_create_swapchain(const NovaSettings::WindowOptions& options, const uint32_t num_frames) {

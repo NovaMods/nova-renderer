@@ -94,13 +94,27 @@ namespace nova::renderer::rhi {
         [[nodiscard]] virtual ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
                                                                      const shaderpack::PipelineCreateInfo& data) = 0;
 
+        /*!
+         * \brief Creates a buffer with undefined contents
+         */
         [[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory) = 0;
 
         /*!
+         * \brief Creates a buffer, initializing its contents with the provided initial data
+         *
+         * D3D12 and Vulkan have different rules that conflict when you're trying to upload data to a vertex or index buffer. This method
+         * smooths over that so I don't need to care about API differences
+         */
+        /*[[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info,
+                                                    DeviceMemoryResource& memory,
+                                                    uint64_t initial_data_size,
+                                                    void* initial_data) = 0;
+                                                    */
+        /*!
          * \brief Writes data to a buffer
          *
-         * This method always writes the data from byte 0 to byte num_bytes. It does not let you use an offset for either reading from the
-         * data or writing to the buffer
+         * This method always writes the data from byte 0 to byte num_bytes. It does not let you use an offset for either reading from
+         * the data or writing to the buffer
          *
          * The CPU must be able to write directly to the buffer for this method to work. If the buffer is device local, this method will
          * fail in a horrible way
