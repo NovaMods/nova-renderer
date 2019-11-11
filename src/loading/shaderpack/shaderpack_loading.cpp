@@ -197,7 +197,7 @@ namespace nova::renderer::shaderpack {
 
         ShaderpackData data{};
         data.resources = load_dynamic_resources_file(folder_access);
-        data.passes = load_passes_file(folder_access).value;
+        data.passes = load_passes_file(folder_access).value;    // TODO: Gracefully handle errors
         data.pipelines = load_pipeline_files(folder_access);
         data.materials = load_material_files(folder_access);
 

@@ -48,9 +48,7 @@ namespace nova::renderer::rhi {
         uint32_t num_attachments;
     };
 
-    struct Renderpass {
-        bool writes_to_backbuffer = false;
-    };
+    struct Renderpass {};
 
     struct ResourceBindingDescription {
         /*!

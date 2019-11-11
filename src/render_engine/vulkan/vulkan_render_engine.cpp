@@ -175,8 +175,6 @@ namespace nova::renderer::rhi {
                 framebuffer_width = swapchain_extent.width;
                 framebuffer_height = swapchain_extent.height;
 
-                renderpass->writes_to_backbuffer = true;
-
             } else {
                 VkAttachmentDescription desc = {};
                 desc.flags = 0;

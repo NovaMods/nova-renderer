@@ -56,6 +56,10 @@ namespace nova::renderer::rhi {
     }
 
     void DX12Swapchain::create_per_frame_resources(ID3D12Device* device) {
+        swapchain_images.clear();
+        framebuffers.clear();
+        fences.clear();
+
         D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_desc = {};
         rtv_heap_desc.NumDescriptors = num_images;
         rtv_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
@@ -69,7 +73,7 @@ namespace nova::renderer::rhi {
             Microsoft::WRL::ComPtr<ID3D12Resource> rendertarget;
             swapchain->GetBuffer(i, IID_PPV_ARGS(&rendertarget));
 
-            swapchain_images.push_back(new DX12Image{{}, rendertarget});
+            swapchain_images.push_back(new DX12Image{{{ResourceType::Image, true}, false}, rendertarget});
 
             // Create the Render Target View, which binds the swapchain buffer to the RTV handle
             device->CreateRenderTargetView(rendertarget.Get(), nullptr, rtv_handle);

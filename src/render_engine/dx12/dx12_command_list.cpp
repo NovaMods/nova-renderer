@@ -68,6 +68,8 @@ namespace nova::renderer::rhi {
     void Dx12CommandList::begin_renderpass(Renderpass* /* renderpass */, Framebuffer* framebuffer) {
         auto* d3d12_framebuffer = reinterpret_cast<DX12Framebuffer*>(framebuffer);
 
+        // TODO: Actually begin/end renderpasses if the hardware supports ID3D12GraphicsCommandList4
+
         D3D12_CPU_DESCRIPTOR_HANDLE* depth_stencil = nullptr;
         if(d3d12_framebuffer->dsv_descriptor) {
             depth_stencil = &*d3d12_framebuffer->dsv_descriptor;

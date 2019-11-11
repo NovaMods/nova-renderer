@@ -15,7 +15,7 @@
             "NovaMegaMesh_Vertices",
             "NovaMegaMesh_Indices"
         ]
-    }, 
+    },
     {
         "name": "final",
         "textureInputs": ["LitWorld"],
