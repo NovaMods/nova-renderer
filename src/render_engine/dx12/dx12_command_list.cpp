@@ -36,6 +36,8 @@ namespace nova::renderer::rhi {
             const D3D12_RESOURCE_STATES final_state = to_dx12_state(barrier.new_state);
 
             dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(resource_to_barrier, initial_state, final_state));
+
+            NOVA_LOG(INFO) << "Recording a barrier for resource " << reinterpret_cast<uint64_t>(resource_to_barrier);
         }
 
         cmds->ResourceBarrier(static_cast<UINT>(dx12_barriers.size()), dx12_barriers.data());
@@ -74,6 +76,8 @@ namespace nova::renderer::rhi {
         if(d3d12_framebuffer->dsv_descriptor) {
             depth_stencil = &*d3d12_framebuffer->dsv_descriptor;
         }
+
+        NOVA_LOG(INFO) << "Binding RTV descriptor " << d3d12_framebuffer->rtv_descriptors[0].ptr;
 
         cmds->OMSetRenderTargets(static_cast<UINT>(d3d12_framebuffer->rtv_descriptors.size()),
                                  d3d12_framebuffer->rtv_descriptors.data(),

@@ -1,8 +1,11 @@
 #include "dx12_swapchain.hpp"
+
+#include "nova_renderer/render_engine.hpp"
+
 #include "../../util/logger.hpp"
+#include "../../util/windows_utils.hpp"
 #include "d3dx12.h"
 #include "dx12_structs.hpp"
-#include "nova_renderer/render_engine.hpp"
 #include "dx12_utils.hpp"
 
 namespace nova::renderer::rhi {
@@ -14,16 +17,14 @@ namespace nova::renderer::rhi {
                                  const uint32_t num_images,
                                  ID3D12CommandQueue* direct_command_queue)
         : Swapchain(num_images, window_size), rhi(rhi) {
+        rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
         create_swapchain(dxgi, window, direct_command_queue);
 
         create_per_frame_resources(device);
     }
 
-    uint32_t DX12Swapchain::acquire_next_swapchain_image() {
-        const uint32_t ret_val = cur_frame_index;
-        cur_frame_index++;
-        return ret_val;
-    }
+    uint32_t DX12Swapchain::acquire_next_swapchain_image() { return swapchain->GetCurrentBackBufferIndex(); }
 
     void DX12Swapchain::present(uint32_t /* image_idx */) { swapchain->Present(0, DXGI_PRESENT_RESTRICT_TO_OUTPUT); }
 
@@ -73,10 +74,15 @@ namespace nova::renderer::rhi {
             Microsoft::WRL::ComPtr<ID3D12Resource> rendertarget;
             swapchain->GetBuffer(i, IID_PPV_ARGS(&rendertarget));
 
+            const auto image_name = fmt::format(fmt("Swapchain image {:d}"), i);
+            rendertarget->SetName(s2ws(image_name).c_str());
+
             swapchain_images.push_back(new DX12Image{{{ResourceType::Image, true}, false}, rendertarget});
 
             // Create the Render Target View, which binds the swapchain buffer to the RTV handle
             device->CreateRenderTargetView(rendertarget.Get(), nullptr, rtv_handle);
+            NOVA_LOG(INFO) << "Created RTV descriptor " << rtv_handle.ptr << " for swapchain image "
+                           << reinterpret_cast<uint64_t>(rendertarget.Get());
 
             auto* framebuffer = new DX12Framebuffer;
             framebuffer->size = size;
@@ -88,7 +94,7 @@ namespace nova::renderer::rhi {
             fences.push_back(rhi->create_fence(true));
 
             // Increment the RTV handle
-            rtv_handle.Offset(1, rtv_descriptor_size);
+            rtv_handle = rtv_handle.Offset(1, rtv_descriptor_size);
         }
     }
 } // namespace nova::renderer::rhi

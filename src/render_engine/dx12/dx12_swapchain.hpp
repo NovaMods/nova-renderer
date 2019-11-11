@@ -31,7 +31,7 @@ namespace nova::renderer::rhi {
 #pragma endregion
 
     private:
-        const uint32_t rtv_descriptor_size = 0;
+        uint32_t rtv_descriptor_size = 0;
 
         uint32_t cur_frame_index = 0;
 
