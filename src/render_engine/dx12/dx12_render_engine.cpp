@@ -679,7 +679,6 @@ namespace nova::renderer::rhi {
 
             device->CreateFence(initial_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence->fence.GetAddressOf()));
             fence->event = CreateEvent(nullptr, false, signaled, nullptr);
-            fence->fence->SetEventOnCompletion(CPU_FENCE_SIGNALED, fence->event);
 
             fences.emplace_back(fence);
         }
@@ -823,6 +822,7 @@ namespace nova::renderer::rhi {
         if(fence_to_signal) {
             const auto* dx_signal_fence = static_cast<const DX12Fence*>(fence_to_signal);
             dx_queue->Signal(dx_signal_fence->fence.Get(), CPU_FENCE_SIGNALED);
+            dx_signal_fence->fence->SetEventOnCompletion(CPU_FENCE_SIGNALED, dx_signal_fence->event);
         }
     }
 
