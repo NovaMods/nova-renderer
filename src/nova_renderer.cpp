@@ -141,8 +141,6 @@ namespace nova::renderer {
 
         NOVA_LOG(DEBUG) << "\n***********************\n        FRAME START        \n***********************";
 
-        // The frame fences tell us when the GPU is done working on the frame we need
-        rhi->wait_for_fences({frame_fences.at(cur_frame_idx)});
         rhi->reset_fences({frame_fences.at(cur_frame_idx)});
 
         rhi::CommandList* cmds = rhi->get_command_list(0, rhi::QueueType::Graphics);
@@ -152,6 +150,12 @@ namespace nova::renderer {
         }
 
         rhi->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences.at(cur_frame_idx));
+
+        // Wait for the GPU to finish before presenting. This destroys pipelining and throughput, however at this time I'm not sure how best
+        // to say "when GPU finishes this task, CPU should do something"
+        rhi->wait_for_fences({frame_fences.at(cur_frame_idx)});
+
+        rhi->get_swapchain()->present(cur_frame_idx);
 
         mtr_flush();
     }
