@@ -75,7 +75,7 @@ jobs:
       - name: Upload binary artifacts
         uses: actions/upload-artifact@master
         with:
-          name: binary-linux-${{ matrix.compiler }}
+          name: binary-linux-${{ matrix.cc }}
           path: artifacts
 
   build-windows:
