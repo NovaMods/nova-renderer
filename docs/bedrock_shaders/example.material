@@ -1,0 +1,103 @@
+{
+    "textures": [
+        {
+            "textureIndex": 0,
+            "textureLocation": "InUserPackage",
+            "textureName": "atlas.terrain"
+        },
+        {
+            "textureIndex": 1,
+            "textureLocation": "Dynamic",
+            "textureName": "Brightness"
+        },
+        {
+            "textureIndex": 2,
+            "textureLocation": "Dynamic",
+            "textureName": "SeasonFoliage"
+        },
+        {
+            "textureIndex": 3,
+            "textureLocation": "InUserPackage",
+            "textureName": "atlas.terrain_map1"
+        }
+    ],
+
+    "terrain_opaque_seasone:terrain_opaque": {
+        "defines": [ "SEASONS" ],
+        "samplerStates": [
+            {
+                "samplerIndex": 0,
+                "textureFilter": "TexelAA"
+            },
+            {
+                "samplerIndex": 1,
+                "textureFilter": "Bilinear"
+            },
+            {
+                "samplerIndex": 2,
+                "textureFilter": "Point"
+            }
+        ]
+    },
+
+    "terrain_blend:terrain_opaque": {
+        "defines": [ "BLEND" ],
+        "states": [
+            "Blending"
+        ]
+    },
+
+    "terrain_water:terrain_blend": {
+        "defines": [ "NEAR_WATER" ],
+        "states": [
+            "Blending"
+        ],
+
+        // fix z-fighting by offsetting water polygons by epsilon
+        "depthBias": 100.0,
+        "slopeScaledDepthBias": 0.1,
+        "depthBiasOGL": 0.5,
+        "slopeScaledDepthBiasOGL": 0.5
+    },
+
+    "terrain_water_below_stencil": {
+        "vertexShader": "shaders/renderchunk.vertex",
+        "vrGeometryShader": "shaders/renderchunk.geometry",
+        "fragmentShader": "shaders/renderchunk.fragment",
+
+        "states": [
+            "InvertCulling",
+            "DisableDepthWrite",
+            "EnableStencilTest",
+            "StencilWrite",
+            "DisableColorWrite"
+        ],
+
+        "defines": [ "BYPASS_PIXEL_SHADER" ],
+
+        "vertexFields": [
+            { "field": "Position" },
+            { "field": "UV1" },
+            { "field": "Color" },
+            { "field": "UV0" }
+        ],
+
+        "frontFace": {
+            "stencilFunc": "Always",
+            "stencilFailOp": "Keep",
+            "stencilDepthFailOp": "Keep",
+            "stencilPassOp": "Replace"
+        },
+
+        "backFace": {
+            "stencilFunc": "Always",
+            "stencilFailOp": "Keep",
+            "stencilDepthFailOp": "Keep",
+            "stencilPassOp": "Replace"
+        },
+
+        "stencilRef": 2,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 2
+    }
+}
