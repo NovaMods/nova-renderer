@@ -89,7 +89,7 @@ jobs:
         vulkan: [1.1.121.2]
 
     env:
-      VULKAN_SDK: C:\\VulkanSDK\\${{ matrix.vulkan }}
+      VULKAN_SDK: C:\VulkanSDK\${{ matrix.vulkan }}
 
     name: build-windows-msvc
 
