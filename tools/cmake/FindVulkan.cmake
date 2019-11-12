@@ -28,6 +28,9 @@
 #
 
 if(WIN32)
+  message(STATUS "Building on Win32")
+
+  message(STATUS "Include path maybe: $ENV{VULKAN_SDK}/Include")
   find_path(Vulkan_INCLUDE_DIR
     NAMES vulkan/vulkan.h
     PATHS
@@ -51,6 +54,7 @@ if(WIN32)
         )
   endif()
 else()
+  message(STATUS "Building on non-Win32")
     find_path(Vulkan_INCLUDE_DIR
       NAMES vulkan/vulkan.h
       PATHS
@@ -63,6 +67,9 @@ endif()
 
 set(Vulkan_LIBRARIES ${Vulkan_LIBRARY})
 set(Vulkan_INCLUDE_DIRS ${Vulkan_INCLUDE_DIR})
+
+message(STATUS "Vulkan_LIBRARIES: ${Vulkan_LIBRARIES}")
+message(STATUS "Vulkan_INCLUDE_DIRS: ${Vulkan_INCLUDE_DIRS}")
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Vulkan
