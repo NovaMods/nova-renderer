@@ -1,29 +1,28 @@
 #include "nova_renderer/shaderpack_data.hpp"
 
-#include "../../util/vma_usage.hpp"
 #include "../json_utils.hpp"
 
-namespace nova::renderer {
+namespace nova::renderer::shaderpack {
     /*!
      * \brief If a data member isn't in the JSON (which is fully supported and is 100% fine) then we use this to fill in
      * any missing values
      */
-    pipeline_data default_pipeline;
+    PipelineCreateInfo default_pipeline;
 
-    bool texture_format::operator==(const texture_format& other) const {
+    bool TextureFormat::operator==(const TextureFormat& other) const {
         return pixel_format == other.pixel_format && dimension_type == other.dimension_type && width == other.width &&
                height == other.height;
     }
 
-    bool texture_format::operator!=(const texture_format& other) const { return !(*this == other); }
+    bool TextureFormat::operator!=(const TextureFormat& other) const { return !(*this == other); }
 
-    bool texture_attachment::operator==(const texture_attachment& other) const { return other.name == name; }
+    bool TextureAttachmentInfo::operator==(const TextureAttachmentInfo& other) const { return other.name == name; }
 
-    glm::uvec2 texture_format::get_size_in_pixels(const glm::uvec2& screen_size) const {
+    glm::uvec2 TextureFormat::get_size_in_pixels(const glm::uvec2& screen_size) const {
         float pixel_width = width;
         float pixel_height = height;
 
-        if(dimension_type == texture_dimension_type_enum::ScreenRelative) {
+        if(dimension_type == TextureDimensionTypeEnum::ScreenRelative) {
             pixel_width *= static_cast<float>(screen_size.x);
             pixel_height *= static_cast<float>(screen_size.y);
         }
@@ -31,537 +30,559 @@ namespace nova::renderer {
         return {std::round(pixel_width), std::round(pixel_height)};
     }
 
-    pixel_format_enum pixel_format_enum_from_string(const std::string& str) {
+    PixelFormatEnum pixel_format_enum_from_string(const std::string& str) {
         if(str == "RGBA8") {
-            return pixel_format_enum::RGBA8;
+            return PixelFormatEnum::RGBA8;
         }
         if(str == "RGBA16F") {
-            return pixel_format_enum::RGBA16F;
+            return PixelFormatEnum::RGBA16F;
         }
         if(str == "RGBA32F") {
-            return pixel_format_enum::RGBA32F;
+            return PixelFormatEnum::RGBA32F;
         }
         if(str == "Depth") {
-            return pixel_format_enum::Depth;
+            return PixelFormatEnum::Depth;
         }
         if(str == "DepthStencil") {
-            return pixel_format_enum::DepthStencil;
+            return PixelFormatEnum::DepthStencil;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported pixel format " << str;
-        throw validation_failure_exception("Unsupported pixel format " + str);
+        NOVA_LOG(ERROR) << "Unsupported pixel format " << str.c_str();
+        return {};
     }
 
-    texture_dimension_type_enum texture_dimension_type_enum_from_string(const std::string& str) {
+    TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const std::string& str) {
         if(str == "ScreenRelative") {
-            return texture_dimension_type_enum ::ScreenRelative;
+            return TextureDimensionTypeEnum ::ScreenRelative;
         }
         if(str == "Absolute") {
-            return texture_dimension_type_enum::Absolute;
+            return TextureDimensionTypeEnum::Absolute;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported texture dimension type " << str;
-        throw validation_failure_exception("Unsupported texture dimension type " + str);
+        NOVA_LOG(ERROR) << "Unsupported texture dimension type " << str.c_str();
+        return {};
     }
 
-    texture_filter_enum texture_filter_enum_from_string(const std::string& str) {
+    TextureFilterEnum texture_filter_enum_from_string(const std::string& str) {
         if(str == "TexelAA") {
-            return texture_filter_enum::TexelAA;
+            return TextureFilterEnum::TexelAA;
         }
         if(str == "Bilinear") {
-            return texture_filter_enum::Bilinear;
+            return TextureFilterEnum::Bilinear;
         }
         if(str == "Point") {
-            return texture_filter_enum::Point;
+            return TextureFilterEnum::Point;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported texture filter " << str;
-        throw validation_failure_exception("Unsupported texture filter " + str);
+        NOVA_LOG(ERROR) << "Unsupported texture filter " << str.c_str();
+        return {};
     }
 
-    wrap_mode_enum wrap_mode_enum_from_string(const std::string& str) {
+    WrapModeEnum wrap_mode_enum_from_string(const std::string& str) {
         if(str == "Repeat") {
-            return wrap_mode_enum::Repeat;
+            return WrapModeEnum::Repeat;
         }
         if(str == "Clamp") {
-            return wrap_mode_enum::Clamp;
+            return WrapModeEnum::Clamp;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported wrap mode " << str;
-        throw validation_failure_exception("Unsupported wrap mode " + str);
+        NOVA_LOG(ERROR) << "Unsupported wrap mode " << str.c_str();
+        return {};
     }
 
-    stencil_op_enum stencil_op_enum_from_string(const std::string& str) {
+    StencilOpEnum stencil_op_enum_from_string(const std::string& str) {
         if(str == "Keep") {
-            return stencil_op_enum::Keep;
+            return StencilOpEnum::Keep;
         }
         if(str == "Zero") {
-            return stencil_op_enum::Zero;
+            return StencilOpEnum::Zero;
         }
         if(str == "Replace") {
-            return stencil_op_enum::Replace;
+            return StencilOpEnum::Replace;
         }
         if(str == "Incr") {
-            return stencil_op_enum::Incr;
+            return StencilOpEnum::Incr;
         }
         if(str == "IncrWrap") {
-            return stencil_op_enum::IncrWrap;
+            return StencilOpEnum::IncrWrap;
         }
         if(str == "Decr") {
-            return stencil_op_enum::Decr;
+            return StencilOpEnum::Decr;
         }
         if(str == "DecrWrap") {
-            return stencil_op_enum::DecrWrap;
+            return StencilOpEnum::DecrWrap;
         }
         if(str == "Invert") {
-            return stencil_op_enum::Invert;
+            return StencilOpEnum::Invert;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported stencil op " << str;
-        throw validation_failure_exception("Unsupported stencil op " + str);
+        NOVA_LOG(ERROR) << "Unsupported stencil op " << str.c_str();
+        return {};
     }
 
-    compare_op_enum compare_op_enum_from_string(const std::string& str) {
+    CompareOpEnum compare_op_enum_from_string(const std::string& str) {
         if(str == "Never") {
-            return compare_op_enum::Never;
+            return CompareOpEnum::Never;
         }
         if(str == "Less") {
-            return compare_op_enum::Less;
+            return CompareOpEnum::Less;
         }
         if(str == "LessEqual") {
-            return compare_op_enum::LessEqual;
+            return CompareOpEnum::LessEqual;
         }
         if(str == "Greater") {
-            return compare_op_enum::Greater;
+            return CompareOpEnum::Greater;
         }
         if(str == "GreaterEqual") {
-            return compare_op_enum::GreaterEqual;
+            return CompareOpEnum::GreaterEqual;
         }
         if(str == "Equal") {
-            return compare_op_enum::Equal;
+            return CompareOpEnum::Equal;
         }
         if(str == "NotEqual") {
-            return compare_op_enum::NotEqual;
+            return CompareOpEnum::NotEqual;
         }
         if(str == "Always") {
-            return compare_op_enum::Always;
+            return CompareOpEnum::Always;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported compare op " << str;
-        throw validation_failure_exception("Unsupported compare op " + str);
+        NOVA_LOG(ERROR) << "Unsupported compare op " << str.c_str();
+        return {};
     }
 
-    msaa_support_enum msaa_support_enum_from_string(const std::string& str) {
+    MsaaSupportEnum msaa_support_enum_from_string(const std::string& str) {
         if(str == "MSAA") {
-            return msaa_support_enum::MSAA;
+            return MsaaSupportEnum::MSAA;
         }
         if(str == "Both") {
-            return msaa_support_enum::Both;
+            return MsaaSupportEnum::Both;
         }
         if(str == "None") {
-            return msaa_support_enum::None;
+            return MsaaSupportEnum::None;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported antialiasing mode " << str;
-        throw validation_failure_exception("Unsupported antialiasing mode " + str);
+        NOVA_LOG(ERROR) << "Unsupported antialiasing mode " << str.c_str();
+        return {};
     }
 
-    primitive_topology_enum primitive_topology_enum_from_string(const std::string& str) {
+    PrimitiveTopologyEnum primitive_topology_enum_from_string(const std::string& str) {
         if(str == "Triangles") {
-            return primitive_topology_enum::Triangles;
+            return PrimitiveTopologyEnum::Triangles;
         }
         if(str == "Lines") {
-            return primitive_topology_enum::Lines;
+            return PrimitiveTopologyEnum::Lines;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported primitive mode " << str;
-        throw validation_failure_exception("Unsupported primitive mode " + str);
+        NOVA_LOG(ERROR) << "Unsupported primitive mode " << str.c_str();
+        return {};
     }
 
-    blend_factor_enum blend_factor_enum_from_string(const std::string& str) {
+    BlendFactorEnum blend_factor_enum_from_string(const std::string& str) {
         if(str == "One") {
-            return blend_factor_enum::One;
+            return BlendFactorEnum::One;
         }
         if(str == "Zero") {
-            return blend_factor_enum::Zero;
+            return BlendFactorEnum::Zero;
         }
         if(str == "SrcColor") {
-            return blend_factor_enum::SrcColor;
+            return BlendFactorEnum::SrcColor;
         }
         if(str == "DstColor") {
-            return blend_factor_enum::DstColor;
+            return BlendFactorEnum::DstColor;
         }
         if(str == "OneMinusSrcColor") {
-            return blend_factor_enum::OneMinusSrcColor;
+            return BlendFactorEnum::OneMinusSrcColor;
         }
         if(str == "OneMinusDstColor") {
-            return blend_factor_enum::OneMinusDstColor;
+            return BlendFactorEnum::OneMinusDstColor;
         }
         if(str == "SrcAlpha") {
-            return blend_factor_enum::SrcAlpha;
+            return BlendFactorEnum::SrcAlpha;
         }
         if(str == "DstAlpha") {
-            return blend_factor_enum::DstAlpha;
+            return BlendFactorEnum::DstAlpha;
         }
         if(str == "OneMinusSrcAlpha") {
-            return blend_factor_enum::OneMinusSrcAlpha;
+            return BlendFactorEnum::OneMinusSrcAlpha;
         }
         if(str == "OneMinusDstAlpha") {
-            return blend_factor_enum::OneMinusDstAlpha;
+            return BlendFactorEnum::OneMinusDstAlpha;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported blend factor " << str;
-        throw validation_failure_exception("Unsupported blend factor " + str);
+        NOVA_LOG(ERROR) << "Unsupported blend factor " << str.c_str();
+        return {};
     }
 
-    render_queue_enum render_queue_enum_from_string(const std::string& str) {
+    RenderQueueEnum render_queue_enum_from_string(const std::string& str) {
         if(str == "Transparent") {
-            return render_queue_enum::Transparent;
+            return RenderQueueEnum::Transparent;
         }
         if(str == "Opaque") {
-            return render_queue_enum::Opaque;
+            return RenderQueueEnum::Opaque;
         }
         if(str == "Cutout") {
-            return render_queue_enum::Cutout;
+            return RenderQueueEnum::Cutout;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported render queue " << str;
-        throw validation_failure_exception("Unsupported render queue " + str);
+        NOVA_LOG(ERROR) << "Unsupported render queue " << str.c_str();
+        return {};
     }
 
-    state_enum state_enum_from_string(const std::string& str) {
+    StateEnum state_enum_from_string(const std::string& str) {
         if(str == "Blending") {
-            return state_enum::Blending;
+            return StateEnum::Blending;
         }
         if(str == "InvertCulling") {
-            return state_enum::InvertCulling;
+            return StateEnum::InvertCulling;
         }
         if(str == "DisableCulling") {
-            return state_enum::DisableCulling;
+            return StateEnum::DisableCulling;
         }
         if(str == "DisableDepthWrite") {
-            return state_enum::DisableDepthWrite;
+            return StateEnum::DisableDepthWrite;
         }
         if(str == "DisableDepthTest") {
-            return state_enum::DisableDepthTest;
+            return StateEnum::DisableDepthTest;
         }
         if(str == "EnableStencilTest") {
-            return state_enum::EnableStencilTest;
+            return StateEnum::EnableStencilTest;
         }
         if(str == "StencilWrite") {
-            return state_enum::StencilWrite;
+            return StateEnum::StencilWrite;
         }
         if(str == "DisableColorWrite") {
-            return state_enum::DisableColorWrite;
+            return StateEnum::DisableColorWrite;
         }
         if(str == "EnableAlphaToCoverage") {
-            return state_enum::EnableAlphaToCoverage;
+            return StateEnum::EnableAlphaToCoverage;
         }
         if(str == "DisableAlphaWrite") {
-            return state_enum::DisableAlphaWrite;
+            return StateEnum::DisableAlphaWrite;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported state enum " << str;
-        throw validation_failure_exception("Unsupported state enum " + str);
+        NOVA_LOG(ERROR) << "Unsupported state enum " << str.c_str();
+        return {};
     }
 
-    vertex_field_enum vertex_field_enum_from_string(const std::string& str) {
+    VertexFieldEnum vertex_field_enum_from_string(const std::string& str) {
         if(str == "Position") {
-            return vertex_field_enum::Position;
+            return VertexFieldEnum::Position;
         }
         if(str == "Color") {
-            return vertex_field_enum::Color;
+            return VertexFieldEnum::Color;
         }
         if(str == "UV0") {
-            return vertex_field_enum::UV0;
+            return VertexFieldEnum::UV0;
         }
         if(str == "UV1") {
-            return vertex_field_enum::UV1;
+            return VertexFieldEnum::UV1;
         }
         if(str == "Normal") {
-            return vertex_field_enum::Normal;
+            return VertexFieldEnum::Normal;
         }
         if(str == "Tangent") {
-            return vertex_field_enum::Tangent;
+            return VertexFieldEnum::Tangent;
         }
         if(str == "MidTexCoord") {
-            return vertex_field_enum::MidTexCoord;
+            return VertexFieldEnum::MidTexCoord;
         }
         if(str == "VirtualTextureId") {
-            return vertex_field_enum::VirtualTextureId;
+            return VertexFieldEnum::VirtualTextureId;
         }
         if(str == "McEntityId") {
-            return vertex_field_enum::McEntityId;
+            return VertexFieldEnum::McEntityId;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported vertex field " << str;
-        throw validation_failure_exception("Unsupported vertex field " + str);
+        NOVA_LOG(ERROR) << "Unsupported vertex field " << str.c_str();
+        return {};
     }
 
-    std::string to_string(const pixel_format_enum val) {
+    std::string to_string(const PixelFormatEnum val) {
         switch(val) {
-            case pixel_format_enum::RGBA8:
+            case PixelFormatEnum::RGBA8:
                 return "RGBA8";
 
-            case pixel_format_enum::RGBA16F:
+            case PixelFormatEnum::RGBA16F:
                 return "RGBA16F";
 
-            case pixel_format_enum::RGBA32F:
+            case PixelFormatEnum::RGBA32F:
                 return "RGBA32F";
 
-            case pixel_format_enum::Depth:
+            case PixelFormatEnum::Depth:
                 return "Depth";
 
-            case pixel_format_enum::DepthStencil:
+            case PixelFormatEnum::DepthStencil:
                 return "DepthStencil";
         }
 
         return "Unknown value";
     }
 
-    std::string to_string(const texture_dimension_type_enum val) {
+    std::string to_string(const TextureDimensionTypeEnum val) {
         switch(val) {
-            case texture_dimension_type_enum::ScreenRelative:
+            case TextureDimensionTypeEnum::ScreenRelative:
                 return "ScreenRelative";
 
-            case texture_dimension_type_enum::Absolute:
+            case TextureDimensionTypeEnum::Absolute:
                 return "Absolute";
         }
 
         return "Unknown value";
     }
 
-    std::string to_string(const texture_filter_enum val) {
+    std::string to_string(const TextureFilterEnum val) {
         switch(val) {
-            case texture_filter_enum::TexelAA:
+            case TextureFilterEnum::TexelAA:
                 return "TexelAA";
 
-            case texture_filter_enum::Bilinear:
+            case TextureFilterEnum::Bilinear:
                 return "Bilinear";
 
-            case texture_filter_enum::Point:
+            case TextureFilterEnum::Point:
                 return "Point";
         }
 
         return "Unknown value";
     }
 
-    std::string to_string(const wrap_mode_enum val) {
+    std::string to_string(const WrapModeEnum val) {
         switch(val) {
-            case wrap_mode_enum::Repeat:
+            case WrapModeEnum::Repeat:
                 return "Repeat";
 
-            case wrap_mode_enum::Clamp:
+            case WrapModeEnum::Clamp:
                 return "Clamp";
         }
 
         return "Unknown value";
     }
 
-    std::string to_string(const stencil_op_enum val) {
+    std::string to_string(const StencilOpEnum val) {
         switch(val) {
-            case stencil_op_enum::Keep:
+            case StencilOpEnum::Keep:
                 return "Keep";
 
-            case stencil_op_enum::Zero:
+            case StencilOpEnum::Zero:
                 return "Zero";
 
-            case stencil_op_enum::Replace:
+            case StencilOpEnum::Replace:
                 return "Replace";
 
-            case stencil_op_enum::Incr:
+            case StencilOpEnum::Incr:
                 return "Incr";
 
-            case stencil_op_enum::IncrWrap:
+            case StencilOpEnum::IncrWrap:
                 return "IncrWrap";
 
-            case stencil_op_enum::Decr:
+            case StencilOpEnum::Decr:
                 return "Decr";
 
-            case stencil_op_enum::DecrWrap:
+            case StencilOpEnum::DecrWrap:
                 return "DecrWrap";
 
-            case stencil_op_enum::Invert:
+            case StencilOpEnum::Invert:
                 return "Invert";
         }
 
         return "Unknown value";
     }
 
-    std::string to_string(const compare_op_enum val) {
+    std::string to_string(const CompareOpEnum val) {
         switch(val) {
-            case compare_op_enum::Never:
+            case CompareOpEnum::Never:
                 return "Never";
 
-            case compare_op_enum::Less:
+            case CompareOpEnum::Less:
                 return "Less";
 
-            case compare_op_enum::LessEqual:
+            case CompareOpEnum::LessEqual:
                 return "LessEqual";
 
-            case compare_op_enum::Greater:
+            case CompareOpEnum::Greater:
                 return "Greater";
 
-            case compare_op_enum::GreaterEqual:
+            case CompareOpEnum::GreaterEqual:
                 return "GreaterEqual";
 
-            case compare_op_enum::Equal:
+            case CompareOpEnum::Equal:
                 return "Equal";
 
-            case compare_op_enum::NotEqual:
+            case CompareOpEnum::NotEqual:
                 return "NotEqual";
 
-            case compare_op_enum::Always:
+            case CompareOpEnum::Always:
                 return "Always";
         }
 
         return "Unknown value";
     }
 
-    std::string to_string(const msaa_support_enum val) {
+    std::string to_string(const MsaaSupportEnum val) {
         switch(val) {
-            case msaa_support_enum::MSAA:
+            case MsaaSupportEnum::MSAA:
                 return "MSAA";
 
-            case msaa_support_enum::Both:
+            case MsaaSupportEnum::Both:
                 return "Both";
 
-            case msaa_support_enum::None:
+            case MsaaSupportEnum::None:
                 return "None";
         }
 
         return "Unknown value";
     }
 
-    std::string to_string(const primitive_topology_enum val) {
+    std::string to_string(const PrimitiveTopologyEnum val) {
         switch(val) {
-            case primitive_topology_enum::Triangles:
+            case PrimitiveTopologyEnum::Triangles:
                 return "Triangles";
 
-            case primitive_topology_enum::Lines:
+            case PrimitiveTopologyEnum::Lines:
                 return "Lines";
         }
 
         return "Unknown value";
     }
 
-    std::string to_string(const blend_factor_enum val) {
+    std::string to_string(const BlendFactorEnum val) {
         switch(val) {
-            case blend_factor_enum::One:
+            case BlendFactorEnum::One:
                 return "One";
 
-            case blend_factor_enum::Zero:
+            case BlendFactorEnum::Zero:
                 return "Zero";
 
-            case blend_factor_enum::SrcColor:
+            case BlendFactorEnum::SrcColor:
                 return "SrcColor";
 
-            case blend_factor_enum::DstColor:
+            case BlendFactorEnum::DstColor:
                 return "DstColor";
 
-            case blend_factor_enum::OneMinusSrcColor:
+            case BlendFactorEnum::OneMinusSrcColor:
                 return "OneMinusSrcColor";
 
-            case blend_factor_enum::OneMinusDstColor:
+            case BlendFactorEnum::OneMinusDstColor:
                 return "OneMinusDstColor";
 
-            case blend_factor_enum::SrcAlpha:
+            case BlendFactorEnum::SrcAlpha:
                 return "SrcAlpha";
 
-            case blend_factor_enum::DstAlpha:
+            case BlendFactorEnum::DstAlpha:
                 return "DstAlpha";
 
-            case blend_factor_enum::OneMinusSrcAlpha:
+            case BlendFactorEnum::OneMinusSrcAlpha:
                 return "OneMinusSrcAlpha";
 
-            case blend_factor_enum::OneMinusDstAlpha:
+            case BlendFactorEnum::OneMinusDstAlpha:
                 return "OneMinusDstAlpha";
         }
 
         return "Unknown value";
     }
 
-    std::string to_string(const render_queue_enum val) {
+    std::string to_string(const RenderQueueEnum val) {
         switch(val) {
-            case render_queue_enum::Transparent:
+            case RenderQueueEnum::Transparent:
                 return "Transparent";
 
-            case render_queue_enum::Opaque:
+            case RenderQueueEnum::Opaque:
                 return "Opaque";
 
-            case render_queue_enum::Cutout:
+            case RenderQueueEnum::Cutout:
                 return "Cutout";
         }
 
         return "Unknown value";
     }
 
-    std::string to_string(const state_enum val) {
+    std::string to_string(const StateEnum val) {
         switch(val) {
-            case state_enum::Blending:
+            case StateEnum::Blending:
                 return "Blending";
 
-            case state_enum::InvertCulling:
+            case StateEnum::InvertCulling:
                 return "InvertCulling";
 
-            case state_enum::DisableCulling:
+            case StateEnum::DisableCulling:
                 return "DisableCulling";
 
-            case state_enum::DisableDepthWrite:
+            case StateEnum::DisableDepthWrite:
                 return "DisableDepthWrite";
 
-            case state_enum::DisableDepthTest:
+            case StateEnum::DisableDepthTest:
                 return "DisableDepthTest";
 
-            case state_enum::EnableStencilTest:
+            case StateEnum::EnableStencilTest:
                 return "EnableStencilTest";
 
-            case state_enum::StencilWrite:
+            case StateEnum::StencilWrite:
                 return "StencilWrite";
 
-            case state_enum::DisableColorWrite:
+            case StateEnum::DisableColorWrite:
                 return "DisableColorWrite";
 
-            case state_enum::EnableAlphaToCoverage:
+            case StateEnum::EnableAlphaToCoverage:
                 return "EnableAlphaToCoverage";
 
-            case state_enum::DisableAlphaWrite:
+            case StateEnum::DisableAlphaWrite:
                 return "DisableAlphaWrite";
         }
 
         return "Unknown value";
     }
 
-    std::string to_string(const vertex_field_enum val) {
+    std::string to_string(const VertexFieldEnum val) {
         switch(val) {
-            case vertex_field_enum::Position:
+            case VertexFieldEnum::Position:
                 return "Position";
 
-            case vertex_field_enum::Color:
+            case VertexFieldEnum::Color:
                 return "Color";
 
-            case vertex_field_enum::UV0:
+            case VertexFieldEnum::UV0:
                 return "UV0";
 
-            case vertex_field_enum::UV1:
+            case VertexFieldEnum::UV1:
                 return "UV1";
 
-            case vertex_field_enum::Normal:
+            case VertexFieldEnum::Normal:
                 return "Normal";
 
-            case vertex_field_enum::Tangent:
+            case VertexFieldEnum::Tangent:
                 return "Tangent";
 
-            case vertex_field_enum::MidTexCoord:
+            case VertexFieldEnum::MidTexCoord:
                 return "MidTexCoord";
 
-            case vertex_field_enum::VirtualTextureId:
+            case VertexFieldEnum::VirtualTextureId:
                 return "VirtualTextureId";
 
-            case vertex_field_enum::McEntityId:
+            case VertexFieldEnum::McEntityId:
                 return "McEntityId";
         }
 
         return "Unknown value";
     }
-} // namespace nova::renderer
+
+    uint32_t pixel_format_to_pixel_width(const PixelFormatEnum format) {
+        switch(format) {
+            case PixelFormatEnum::RGBA8:
+                return 4 * 8;
+
+            case PixelFormatEnum::RGBA16F:
+                return 4 * 16;
+
+            case PixelFormatEnum::RGBA32F:
+                return 4 * 32;
+
+            case PixelFormatEnum::Depth:
+                return 32;
+
+            case PixelFormatEnum::DepthStencil:
+                return 32;
+
+            default:
+                return 32;
+        }
+    }
+} // namespace nova::renderer::shaderpack

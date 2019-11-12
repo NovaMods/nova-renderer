@@ -1,4 +1,10 @@
-#pragma once
+/*!
+ * \author ddubois
+ * \date 05-Sep-18.
+ */
+
+#ifndef NOVA_RENDERER_UTILS_HPP
+#define NOVA_RENDERER_UTILS_HPP
 
 #include <optional>
 
@@ -19,10 +25,10 @@ namespace nova::renderer {
      */
     template <typename ValType, std::enable_if_t<!std::is_same_v<ValType, std::string>>** = nullptr>
     std::optional<ValType> get_json_value(const nlohmann::json& json_obj, const std::string& key) {
-        const auto& itr = json_obj.find(key);
+        const std::string key_std = key.c_str();
+        const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
-            auto& json_node = json_obj.at(key);
-            return std::optional<ValType>(json_node.get<ValType>());
+            return std::optional<ValType>(json_obj.at(key_std).get<ValType>());
         }
 
         return std::optional<ValType>{};
@@ -37,11 +43,14 @@ namespace nova::renderer {
      * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
      */
     template <typename ValType, std::enable_if_t<std::is_same_v<ValType, std::string>>** = nullptr>
-    std::optional<ValType> get_json_value(const nlohmann::json& json_obj, const std::string& key, bool empty_means_not_present = false) {
-        const auto& itr = json_obj.find(key);
+    std::optional<ValType> get_json_value(const nlohmann::json& json_obj,
+                                          const std::string& key,
+                                          const bool empty_means_not_present = false) {
+        const std::string key_std = key.c_str();
+        const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
-            auto str = json_obj.at(key).get<std::string>();
-            return (empty_means_not_present && str.empty()) ? std::optional<std::string>{} : std::optional<std::string>(str);
+            const auto str = json_obj.at(key_std).get<std::string>();
+            return (empty_means_not_present && str.empty()) ? std::optional<std::string>{} : std::optional<std::string>(str.c_str());
         }
 
         return std::optional<std::string>{};
@@ -57,13 +66,14 @@ namespace nova::renderer {
      */
     template <typename ValType>
     ValType get_json_value(const nlohmann::json& json_obj, const std::string& key, ValType default_value) {
-        const auto& itr = json_obj.find(key);
+        const std::string key_std = key.c_str();
+        const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
-            auto& json_node = json_obj.at(key);
+            auto& json_node = json_obj.at(key_std);
             return json_node.get<ValType>();
         }
 
-        NOVA_LOG(DEBUG) << key << " not found - using a default value";
+        NOVA_LOG(TRACE) << key_std << " not found - using a default value";
         return default_value;
     }
 
@@ -79,9 +89,10 @@ namespace nova::renderer {
     std::optional<ValType> get_json_value(const nlohmann::json& json_obj,
                                           const std::string& key,
                                           std::function<ValType(const nlohmann::json&)> deserializer) {
-        const auto& itr = json_obj.find(key);
+        const std::string key_std = key.c_str();
+        const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
-            auto& json_node = json_obj.at(key);
+            auto& json_node = json_obj.at(key.c_str());
             ValType val = deserializer(json_node);
             return std::optional<ValType>{std::move(val)};
         }
@@ -103,15 +114,16 @@ namespace nova::renderer {
                            const std::string& key,
                            ValType default_value,
                            std::function<ValType(const nlohmann::json&)> deserializer) {
-        const auto& itr = json_obj.find(key);
+        const std::string key_std = key.c_str();
+        const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
-            auto& json_node = json_obj.at(key);
+            auto& json_node = json_obj.at(key_std);
             ValType value = deserializer(json_node);
             return value;
         }
 
         using std::to_string;
-        NOVA_LOG(DEBUG) << key << " not found - defaulting to " << to_string(default_value);
+        NOVA_LOG(TRACE) << key.c_str() << " not found - defaulting to " << to_string(default_value).c_str();
 
         return default_value;
     }
@@ -125,9 +137,10 @@ namespace nova::renderer {
      */
     template <typename ValType>
     std::vector<ValType> get_json_array(const nlohmann::json& json_obj, const std::string& key) {
-        const auto& itr = json_obj.find(key);
+        const std::string key_std = key.c_str();
+        const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
-            auto& json_node = json_obj.at(key);
+            auto& json_node = json_obj.at(key_std);
             std::vector<ValType> vec;
             vec.reserve(json_node.size());
 
@@ -153,9 +166,10 @@ namespace nova::renderer {
     std::vector<ValType> get_json_array(const nlohmann::json& json_obj,
                                         const std::string& key,
                                         std::function<ValType(const nlohmann::json&)> deserializer) {
-        const auto& itr = json_obj.find(key);
+        const std::string key_std = key.c_str();
+        const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
-            auto& json_node = json_obj.at(key);
+            auto& json_node = json_obj.at(key_std);
             std::vector<ValType> vec;
             vec.reserve(json_node.size());
 
@@ -169,3 +183,5 @@ namespace nova::renderer {
         return std::vector<ValType>{};
     }
 } // namespace nova::renderer
+
+#endif // NOVA_RENDERER_UTILS_HPP

@@ -1,12 +1,17 @@
-#pragma once
+/*!
+ * \author ddubois
+ * \date 15-Dec-18.
+ */
+
+#ifndef NOVA_RENDERER_THREAD_POOL_HPP
+#define NOVA_RENDERER_THREAD_POOL_HPP
 
 #include <atomic>
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <future>
-
 #include "nova_renderer/util/utils.hpp"
-
 #include "../util/logger.hpp"
 #include "condition_counter.hpp"
 #include "wait_free_queue.hpp"
@@ -16,8 +21,6 @@
 #endif
 
 namespace nova::ttl {
-    NOVA_EXCEPTION(called_from_external_thread);
-
     class task_scheduler;
 
     using ArgumentExtractorType = std::function<void(task_scheduler*)>;
@@ -253,3 +256,5 @@ namespace nova::ttl {
 
     void thread_func(task_scheduler* pool);
 } // namespace nova::ttl
+
+#endif // NOVA_RENDERER_THREAD_POOL_HPP

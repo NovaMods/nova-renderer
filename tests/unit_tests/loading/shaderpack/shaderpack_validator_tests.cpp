@@ -1,5 +1,13 @@
-#include "../../../../src/loading/shaderpack/shaderpack_validator.hpp"
+/*!
+ * \author ddubois
+ * \date 9-Oct-2018
+ */
+
+#include "nova_renderer/util/utils.hpp"
+
 #include "../../../src/general_test_setup.hpp"
+
+#include "../../../../src/loading/shaderpack/shaderpack_validator.hpp"
 #undef TEST
 #include <gtest/gtest.h>
 
@@ -8,8 +16,6 @@
  ****************************************/
 
 TEST(GraphicsPipelineValidator, NoWarningsOrErrors) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -66,16 +72,14 @@ TEST(GraphicsPipelineValidator, NoWarningsOrErrors) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
 }
 
 TEST(GraphicsPipelineValidator, MissingName) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"parentName", "ParentOfTestPipeline"},
@@ -131,8 +135,8 @@ TEST(GraphicsPipelineValidator, MissingName) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -141,8 +145,6 @@ TEST(GraphicsPipelineValidator, MissingName) {
 }
 
 TEST(GraphicsPipelineValidator, MissingPass) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -198,8 +200,8 @@ TEST(GraphicsPipelineValidator, MissingPass) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -208,8 +210,6 @@ TEST(GraphicsPipelineValidator, MissingPass) {
 }
 
 TEST(GraphicsPipelineValidator, MissingVertexFields) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -263,8 +263,8 @@ TEST(GraphicsPipelineValidator, MissingVertexFields) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -273,8 +273,6 @@ TEST(GraphicsPipelineValidator, MissingVertexFields) {
 }
 
 TEST(GraphicsPipelineValidator, MissingVertexShader) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -330,8 +328,8 @@ TEST(GraphicsPipelineValidator, MissingVertexShader) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -340,8 +338,6 @@ TEST(GraphicsPipelineValidator, MissingVertexShader) {
 }
 
 TEST(GraphicsPipelineValidator, MissingParentName) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -397,8 +393,8 @@ TEST(GraphicsPipelineValidator, MissingParentName) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -407,8 +403,6 @@ TEST(GraphicsPipelineValidator, MissingParentName) {
 }
 
 TEST(GraphicsPipelineValidator, MissingDefines) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -462,8 +456,8 @@ TEST(GraphicsPipelineValidator, MissingDefines) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -472,8 +466,6 @@ TEST(GraphicsPipelineValidator, MissingDefines) {
 }
 
 TEST(GraphicsPipelineValidator, MissingStates) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -527,8 +519,8 @@ TEST(GraphicsPipelineValidator, MissingStates) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -537,8 +529,6 @@ TEST(GraphicsPipelineValidator, MissingStates) {
 }
 
 TEST(GraphicsPipelineValidator, MissingFrontFace) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -585,8 +575,8 @@ TEST(GraphicsPipelineValidator, MissingFrontFace) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -595,8 +585,6 @@ TEST(GraphicsPipelineValidator, MissingFrontFace) {
 }
 
 TEST(GraphicsPipelineValidator, MissingBackFace) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -643,8 +631,8 @@ TEST(GraphicsPipelineValidator, MissingBackFace) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -653,8 +641,6 @@ TEST(GraphicsPipelineValidator, MissingBackFace) {
 }
 
 TEST(GraphicsPipelineValidator, MissingFallback) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -710,8 +696,8 @@ TEST(GraphicsPipelineValidator, MissingFallback) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -720,8 +706,6 @@ TEST(GraphicsPipelineValidator, MissingFallback) {
 }
 
 TEST(GraphicsPipelineValidator, MissingDepthBias) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -777,8 +761,8 @@ TEST(GraphicsPipelineValidator, MissingDepthBias) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -787,8 +771,6 @@ TEST(GraphicsPipelineValidator, MissingDepthBias) {
 }
 
 TEST(GraphicsPipelineValidator, MissingSlopeScaledDepthBias) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -844,8 +826,8 @@ TEST(GraphicsPipelineValidator, MissingSlopeScaledDepthBias) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -854,8 +836,6 @@ TEST(GraphicsPipelineValidator, MissingSlopeScaledDepthBias) {
 }
 
 TEST(GraphicsPipelineValidator, MissingStencilRef) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -911,8 +891,8 @@ TEST(GraphicsPipelineValidator, MissingStencilRef) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -921,8 +901,6 @@ TEST(GraphicsPipelineValidator, MissingStencilRef) {
 }
 
 TEST(GraphicsPipelineValidator, MissingStencilReadMask) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -978,8 +956,8 @@ TEST(GraphicsPipelineValidator, MissingStencilReadMask) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -988,8 +966,6 @@ TEST(GraphicsPipelineValidator, MissingStencilReadMask) {
 }
 
 TEST(GraphicsPipelineValidator, MissingStencilWriteMask) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -1045,8 +1021,8 @@ TEST(GraphicsPipelineValidator, MissingStencilWriteMask) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1055,8 +1031,6 @@ TEST(GraphicsPipelineValidator, MissingStencilWriteMask) {
 }
 
 TEST(GraphicsPipelineValidator, MissingMsaaSupport) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -1112,8 +1086,8 @@ TEST(GraphicsPipelineValidator, MissingMsaaSupport) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1122,8 +1096,6 @@ TEST(GraphicsPipelineValidator, MissingMsaaSupport) {
 }
 
 TEST(GraphicsPipelineValidator, MissingSourceBlendFactor) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         { "name",                         "TestPipeline" },
@@ -1179,8 +1151,8 @@ TEST(GraphicsPipelineValidator, MissingSourceBlendFactor) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1189,8 +1161,6 @@ TEST(GraphicsPipelineValidator, MissingSourceBlendFactor) {
 }
 
 TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -1246,8 +1216,8 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1257,8 +1227,6 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 }
 
 TEST(GraphicsPipelineValidator, MissingAlphaSrc) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -1314,8 +1282,8 @@ TEST(GraphicsPipelineValidator, MissingAlphaSrc) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1324,8 +1292,6 @@ TEST(GraphicsPipelineValidator, MissingAlphaSrc) {
 }
 
 TEST(GraphicsPipelineValidator, MissingAlphaDst) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -1381,8 +1347,8 @@ TEST(GraphicsPipelineValidator, MissingAlphaDst) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1391,8 +1357,6 @@ TEST(GraphicsPipelineValidator, MissingAlphaDst) {
 }
 
 TEST(GraphicsPipelineValidator, MissingDepthFunc) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -1448,8 +1412,8 @@ TEST(GraphicsPipelineValidator, MissingDepthFunc) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1458,8 +1422,6 @@ TEST(GraphicsPipelineValidator, MissingDepthFunc) {
 }
 
 TEST(GraphicsPipelineValidator, MissingRenderQueue) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -1515,8 +1477,8 @@ TEST(GraphicsPipelineValidator, MissingRenderQueue) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1525,8 +1487,6 @@ TEST(GraphicsPipelineValidator, MissingRenderQueue) {
 }
 
 TEST(GraphicsPipelineValidator, MissingTessellationControlShader) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -1582,8 +1542,8 @@ TEST(GraphicsPipelineValidator, MissingTessellationControlShader) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1592,8 +1552,6 @@ TEST(GraphicsPipelineValidator, MissingTessellationControlShader) {
 }
 
 TEST(GraphicsPipelineValidator, MissingTessellationEvaluationShader) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -1649,8 +1607,8 @@ TEST(GraphicsPipelineValidator, MissingTessellationEvaluationShader) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1660,8 +1618,6 @@ TEST(GraphicsPipelineValidator, MissingTessellationEvaluationShader) {
 }
 
 TEST(GraphicsPipelineValidator, MissingGeometryShader) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -1717,8 +1673,8 @@ TEST(GraphicsPipelineValidator, MissingGeometryShader) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1727,8 +1683,6 @@ TEST(GraphicsPipelineValidator, MissingGeometryShader) {
 }
 
 TEST(GraphicsPipelineValidator, MissingFragmentShader) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
@@ -1784,8 +1738,8 @@ TEST(GraphicsPipelineValidator, MissingFragmentShader) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1798,8 +1752,6 @@ TEST(GraphicsPipelineValidator, MissingFragmentShader) {
  ************************************************/
 
 TEST(ResourcesValidator, NoErrorsOrWarnings) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json resources = {
         { "textures",
@@ -1829,16 +1781,14 @@ TEST(ResourcesValidator, NoErrorsOrWarnings) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_shaderpack_resources_data(resources);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_shaderpack_resources_data(resources);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
 }
 
 TEST(ResourcesValidator, TextureMissing) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json sampler = {
         { "name",     "TestSampler" },
@@ -1850,8 +1800,8 @@ TEST(ResourcesValidator, TextureMissing) {
     nlohmann::json resources;
     resources["samplers"] = nlohmann::json::array({sampler});
 
-    nova::renderer::validation_report report = nova::renderer::validate_shaderpack_resources_data(resources);
-    nova::renderer::print(report);
+    nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_shaderpack_resources_data(resources);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1861,8 +1811,6 @@ TEST(ResourcesValidator, TextureMissing) {
 }
 
 TEST(ResourcesValidator, SamplersMissing) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json resources = {
         { "textures",
@@ -1883,8 +1831,8 @@ TEST(ResourcesValidator, SamplersMissing) {
     };
     // clang-format on
 
-    nova::renderer::validation_report report = nova::renderer::validate_shaderpack_resources_data(resources);
-    nova::renderer::print(report);
+    nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_shaderpack_resources_data(resources);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1895,8 +1843,6 @@ TEST(ResourcesValidator, SamplersMissing) {
 }
 
 TEST(ResourcesValidator, TextureWarningsPropagate) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json resources = {
         { "textures",
@@ -1925,8 +1871,8 @@ TEST(ResourcesValidator, TextureWarningsPropagate) {
     };
     // clang-format on
 
-    nova::renderer::validation_report report = nova::renderer::validate_shaderpack_resources_data(resources);
-    nova::renderer::print(report);
+    nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_shaderpack_resources_data(resources);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1937,8 +1883,6 @@ TEST(ResourcesValidator, TextureWarningsPropagate) {
 }
 
 TEST(ResourcesValidator, SamplerErrorsPropagate) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json resources = {
         { "textures",
@@ -1967,8 +1911,8 @@ TEST(ResourcesValidator, SamplerErrorsPropagate) {
     };
     // clang-format on
 
-    nova::renderer::validation_report report = nova::renderer::validate_shaderpack_resources_data(resources);
-    nova::renderer::print(report);
+    nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_shaderpack_resources_data(resources);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1981,8 +1925,6 @@ TEST(ResourcesValidator, SamplerErrorsPropagate) {
  ************************************/
 
 TEST(TextureValidator, NoErrorsOrWarnings) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json texture = {
         { "name", "TestTexture" },
@@ -1997,16 +1939,14 @@ TEST(TextureValidator, NoErrorsOrWarnings) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_texture_data(texture);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_data(texture);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
 }
 
 TEST(TextureValidator, NameMissing) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json texture = {
             {"format", {
@@ -2018,8 +1958,8 @@ TEST(TextureValidator, NameMissing) {
     };
     // clang-format on
 
-    nova::renderer::validation_report report = nova::renderer::validate_texture_data(texture);
-    nova::renderer::print(report);
+    nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_data(texture);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2028,16 +1968,14 @@ TEST(TextureValidator, NameMissing) {
 }
 
 TEST(TextureValidator, FormatMissing) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json texture = {
             {"name", "TestTexture"}
     };
     // clang-format on
 
-    nova::renderer::validation_report report = nova::renderer::validate_texture_data(texture);
-    nova::renderer::print(report);
+    nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_data(texture);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2046,8 +1984,6 @@ TEST(TextureValidator, FormatMissing) {
 }
 
 TEST(TextureValidator, TextureFormatWarningsPropagate) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json texture = {
             {"name", "TestTexture"},
@@ -2059,8 +1995,8 @@ TEST(TextureValidator, TextureFormatWarningsPropagate) {
     };
     // clang-format on
 
-    nova::renderer::validation_report report = nova::renderer::validate_texture_data(texture);
-    nova::renderer::print(report);
+    nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_data(texture);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -2075,8 +2011,6 @@ TEST(TextureValidator, TextureFormatWarningsPropagate) {
  ********************************************/
 
 TEST(TextureFormatValidator, NoErrorsOrWarnings) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json texture_format = {
             {"pixelFormat", "RGBA8"},
@@ -2086,16 +2020,15 @@ TEST(TextureFormatValidator, NoErrorsOrWarnings) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_texture_format(texture_format, "TestTexture");
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
+                                                                                                                    "TestTexture");
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
 }
 
 TEST(TextureFormatValidator, PixelFormatMissing) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json texture_format = {
             {"dimensionType", "Absolute"},
@@ -2104,8 +2037,9 @@ TEST(TextureFormatValidator, PixelFormatMissing) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_texture_format(texture_format, "TestTexture");
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
+                                                                                                                    "TestTexture");
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -2116,8 +2050,6 @@ TEST(TextureFormatValidator, PixelFormatMissing) {
 }
 
 TEST(TextureFormatValidator, DimensionTypeMissing) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json texture_format = {
             {"pixelFormat", "RGBA8"},
@@ -2126,8 +2058,9 @@ TEST(TextureFormatValidator, DimensionTypeMissing) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_texture_format(texture_format, "TestTexture");
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
+                                                                                                                    "TestTexture");
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -2139,8 +2072,6 @@ TEST(TextureFormatValidator, DimensionTypeMissing) {
 }
 
 TEST(TextureFormatValidator, WidthMissing) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json texture_format = {
             {"pixelFormat", "RGBA8"},
@@ -2149,8 +2080,9 @@ TEST(TextureFormatValidator, WidthMissing) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_texture_format(texture_format, "TestTexture");
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
+                                                                                                                    "TestTexture");
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2159,8 +2091,6 @@ TEST(TextureFormatValidator, WidthMissing) {
 }
 
 TEST(TextureFormatValidator, HeightMissing) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json texture_format = {
             {"pixelFormat", "RGBA8"},
@@ -2169,8 +2099,9 @@ TEST(TextureFormatValidator, HeightMissing) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_texture_format(texture_format, "TestTexture");
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
+                                                                                                                    "TestTexture");
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2183,8 +2114,6 @@ TEST(TextureFormatValidator, HeightMissing) {
  ****************************************/
 
 TEST(SamplerValidator, NoErrorsOrWarnings) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json sampler = {
         { "name",     "TestSampler" },
@@ -2193,16 +2122,14 @@ TEST(SamplerValidator, NoErrorsOrWarnings) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_sampler_data(sampler);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_sampler_data(sampler);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
 }
 
 TEST(SamplerValidator, MissingName) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json sampler = {
             {"filter", "Bilinear"},
@@ -2210,8 +2137,8 @@ TEST(SamplerValidator, MissingName) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_sampler_data(sampler);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_sampler_data(sampler);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2220,8 +2147,6 @@ TEST(SamplerValidator, MissingName) {
 }
 
 TEST(SamplerValidator, MissingFilter) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json sampler = {
             {"name", "TestSampler"},
@@ -2229,8 +2154,8 @@ TEST(SamplerValidator, MissingFilter) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_sampler_data(sampler);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_sampler_data(sampler);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2239,8 +2164,6 @@ TEST(SamplerValidator, MissingFilter) {
 }
 
 TEST(SamplerValidator, MissingWrapMode) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json sampler = {
             {"name", "TestSampler"},
@@ -2248,8 +2171,8 @@ TEST(SamplerValidator, MissingWrapMode) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_sampler_data(sampler);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_sampler_data(sampler);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2262,8 +2185,6 @@ TEST(SamplerValidator, MissingWrapMode) {
  ****************************************/
 
 TEST(MaterialValidator, NoErrorsOrWarnings) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json material = {
         {"name", "TestMaterial"},
@@ -2286,16 +2207,14 @@ TEST(MaterialValidator, NoErrorsOrWarnings) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
 }
 
 TEST(MaterialValidator, BindingsMissing) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json material = {
         {"name", "TestMaterial"},
@@ -2311,8 +2230,8 @@ TEST(MaterialValidator, BindingsMissing) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
     ASSERT_EQ(report.warnings.size(), 1);
@@ -2320,8 +2239,6 @@ TEST(MaterialValidator, BindingsMissing) {
 }
 
 TEST(MaterialValidator, BindingsEmpty) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json material = {
         { "name", "TestMaterial" },
@@ -2338,8 +2255,8 @@ TEST(MaterialValidator, BindingsEmpty) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
     ASSERT_EQ(report.warnings.size(), 1);
@@ -2347,8 +2264,6 @@ TEST(MaterialValidator, BindingsEmpty) {
 }
 
 TEST(MaterialValidator, FilterMissing) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json material = {
         {"name", "TestMaterial"},
@@ -2370,8 +2285,8 @@ TEST(MaterialValidator, FilterMissing) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2380,8 +2295,6 @@ TEST(MaterialValidator, FilterMissing) {
 }
 
 TEST(MaterialValidator, NameMissing) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json material = {
         {"passes",
@@ -2403,8 +2316,8 @@ TEST(MaterialValidator, NameMissing) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2413,8 +2326,6 @@ TEST(MaterialValidator, NameMissing) {
 }
 
 TEST(MaterialValidator, PassesMissing) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json material = {
             {"name", "TestMaterial"},
@@ -2422,8 +2333,8 @@ TEST(MaterialValidator, PassesMissing) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2432,8 +2343,6 @@ TEST(MaterialValidator, PassesMissing) {
 }
 
 TEST(MaterialValidator, PassesWrongType) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json material = {
         {"name", "TestMaterial"},
@@ -2442,8 +2351,8 @@ TEST(MaterialValidator, PassesWrongType) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2452,8 +2361,6 @@ TEST(MaterialValidator, PassesWrongType) {
 }
 
 TEST(MaterialValidator, PassesEmptyArray) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json material = {
             {"name", "TestMaterial"},
@@ -2462,8 +2369,8 @@ TEST(MaterialValidator, PassesEmptyArray) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2472,8 +2379,6 @@ TEST(MaterialValidator, PassesEmptyArray) {
 }
 
 TEST(MaterialValidator, PassNoPipeline) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json material = {
         {"name", "TestMaterial"},
@@ -2495,8 +2400,8 @@ TEST(MaterialValidator, PassNoPipeline) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2505,8 +2410,6 @@ TEST(MaterialValidator, PassNoPipeline) {
 }
 
 TEST(MaterialValidator, PassNoName) {
-    TEST_SETUP_LOGGER();
-
     // clang-format off
     nlohmann::json material = {
         {"name", "TestMaterial"},
@@ -2528,8 +2431,8 @@ TEST(MaterialValidator, PassNoName) {
     };
     // clang-format on
 
-    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
-    nova::renderer::print(report);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
+    nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 

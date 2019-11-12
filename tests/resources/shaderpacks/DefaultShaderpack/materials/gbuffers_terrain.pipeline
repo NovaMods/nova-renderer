@@ -1,6 +1,6 @@
 {
     "name": "gbuffers_terrain",
-    "pass": "Forward",
+    "pass": "forward",
     "states": [
         "DisableAlphaWrite"
     ],

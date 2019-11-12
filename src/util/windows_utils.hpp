@@ -1,8 +1,12 @@
 /*!
  * \brief Utility functions for handling Windows
+ *
+ * \author ddubois
+ * \date 10-Oct-18.
  */
 
-#pragma once
+#ifndef NOVA_RENDERER_WINDOWS_UTILS_HPP
+#define NOVA_RENDERER_WINDOWS_UTILS_HPP
 
 #include <string>
 
@@ -19,3 +23,5 @@ std::wstring s2ws(const std::string& s);
  * \return The error string of the most recent Windows error
  */
 std::string get_last_windows_error();
+
+#endif // NOVA_RENDERER_WINDOWS_UTILS_HPP

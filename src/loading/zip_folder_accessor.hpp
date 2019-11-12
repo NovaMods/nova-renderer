@@ -1,14 +1,15 @@
 #pragma once
 
-#include <miniz/miniz_zip.h>
+#include <miniz.h>
 
 #include "folder_accessor.hpp"
+#include <memory>
 
 namespace nova::renderer {
-    struct file_tree_node {
+    struct FileTreeNode {
         std::string name;
-        std::vector<std::unique_ptr<file_tree_node>> children;
-        file_tree_node* parent = nullptr;
+        std::vector<std::unique_ptr<FileTreeNode>> children;
+        FileTreeNode* parent = nullptr;
 
         [[nodiscard]] std::string get_full_path() const;
     };
@@ -16,21 +17,21 @@ namespace nova::renderer {
     /*!
      * \brief Allows access to a zip folder
      */
-    class zip_folder_accessor : public folder_accessor_base {
+    class ZipFolderAccessor : public FolderAccessorBase {
     public:
-        explicit zip_folder_accessor(const fs::path& folder);
+        explicit ZipFolderAccessor(const fs::path& folder);
 
-        zip_folder_accessor(zip_folder_accessor&& other) noexcept = default;
-        zip_folder_accessor& operator=(zip_folder_accessor&& other) noexcept = default;
+        ZipFolderAccessor(ZipFolderAccessor&& other) noexcept = default;
+        ZipFolderAccessor& operator=(ZipFolderAccessor&& other) noexcept = default;
 
-        zip_folder_accessor(const zip_folder_accessor& other) = delete;
-        zip_folder_accessor& operator=(const zip_folder_accessor& other) = delete;
+        ZipFolderAccessor(const ZipFolderAccessor& other) = delete;
+        ZipFolderAccessor& operator=(const ZipFolderAccessor& other) = delete;
 
-        ~zip_folder_accessor() override;
+        ~ZipFolderAccessor() override final;
 
-        std::string read_text_file(const fs::path& resource_path) override;
+        std::string read_text_file(const fs::path& resource_path) override final;
 
-        std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override;
+        std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override final;
 
     private:
         /*!
@@ -40,17 +41,17 @@ namespace nova::renderer {
 
         mz_zip_archive zip_archive = {};
 
-        std::unique_ptr<file_tree_node> files = nullptr;
+        std::unique_ptr<FileTreeNode> files = nullptr;
 
-        void delete_file_tree(std::unique_ptr<file_tree_node>& node);
+        void delete_file_tree(std::unique_ptr<FileTreeNode>& node);
 
         void build_file_tree();
 
-        bool does_resource_exist_on_filesystem(const fs::path& resource_path) override;
+        bool does_resource_exist_on_filesystem(const fs::path& resource_path) override final;
     };
 
     /*!
      * \brief Prints out the nodes in a depth-first fashion
      */
-    void print_file_tree(const std::unique_ptr<file_tree_node>& folder, uint32_t depth);
+    void print_file_tree(const std::unique_ptr<FileTreeNode>& folder, uint32_t depth);
 } // namespace nova::renderer

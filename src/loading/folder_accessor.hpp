@@ -1,30 +1,21 @@
-#pragma once
+/*!
+ * \author ddubois
+ * \date 14-Aug-18.
+ */
+
+#ifndef NOVA_RENDERER_RESOURCEPACK_H
+#define NOVA_RENDERER_RESOURCEPACK_H
 
 #include <mutex>
+#include "nova_renderer/util/filesystem.hpp"
+#include "nova_renderer/util/utils.hpp"
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include "nova_renderer/util/filesystem.hpp"
-#include "nova_renderer/util/utils.hpp"
+#include <memory>
 
 namespace nova::renderer {
-    NOVA_EXCEPTION(resource_not_found_exception);
-
-    class filesystem_exception : public std::exception { // Convert fs::filesystem_error into a nova class
-    private:
-        const std::string message;
-        const std::error_code error_code;
-
-    public:
-        explicit filesystem_exception(const fs::filesystem_error& error) : message(error.what()), error_code(error.code()) {}
-
-        [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
-
-        [[nodiscard]] std::error_code code() const noexcept { return error_code; }
-    };
-
     /*!
      * \brief A collection of resources on the filsysstem
      *
@@ -32,21 +23,21 @@ namespace nova::renderer {
      * can be, sure, but it can also be a pure shaderpack. Ths main point is to abstract away loading resources from a
      * folder or a zip file - the calling code shouldn't care how the data is stored on the filesystem
      */
-    class folder_accessor_base {
+    class FolderAccessorBase {
     public:
         /*!
          * \brief Initializes this resourcepack to load resources from the folder/zip file with the provided name
          * \param folder The name of the folder or zip file to load resources from, relative to Nova's working directory
          */
-        explicit folder_accessor_base(const fs::path& folder);
+        explicit FolderAccessorBase(const fs::path& folder);
 
-        folder_accessor_base(folder_accessor_base&& other) noexcept = default;
-        folder_accessor_base& operator=(folder_accessor_base&& other) noexcept = default;
+        FolderAccessorBase(FolderAccessorBase&& other) noexcept = default;
+        FolderAccessorBase& operator=(FolderAccessorBase&& other) noexcept = default;
 
-        folder_accessor_base(const folder_accessor_base& other) = delete;
-        folder_accessor_base& operator=(const folder_accessor_base& other) = delete;
+        FolderAccessorBase(const FolderAccessorBase& other) = delete;
+        FolderAccessorBase& operator=(const FolderAccessorBase& other) = delete;
 
-        virtual ~folder_accessor_base() = default;
+        virtual ~FolderAccessorBase() = default;
 
         /*!
          * \brief Checks if the given resource exists
@@ -115,3 +106,5 @@ namespace nova::renderer {
      */
     bool has_root(const fs::path& path, const fs::path& root);
 } // namespace nova::renderer
+
+#endif // NOVA_RENDERER_RESOURCEPACK_H

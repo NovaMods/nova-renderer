@@ -1,9 +1,300 @@
 #include "vulkan_utils.hpp"
 
 #include "nova_renderer/render_engine.hpp"
+#include "nova_renderer/renderables.hpp"
 
-namespace nova::renderer {
-    std::string vk_result_to_string(VkResult result) {
+#include "../../util/logger.hpp"
+
+namespace nova::renderer::rhi {
+    VkImageLayout to_vk_image_layout(const ResourceState layout) {
+        switch(layout) {
+            case ResourceState::Common:
+                return VK_IMAGE_LAYOUT_GENERAL;
+
+            case ResourceState::CopySource:
+                return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+
+            case ResourceState::CopyDestination:
+                return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
+            case ResourceState::ShaderRead:
+                return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            case ResourceState::ShaderWrite:
+                return VK_IMAGE_LAYOUT_GENERAL; // TODO: Reevaluate this because it can't be optimal
+
+            case ResourceState::RenderTarget:
+                return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+            case ResourceState::DepthWrite:
+                return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            case ResourceState::DepthRead:
+                return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
+
+            case ResourceState::PresentSource:
+                return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+                               
+            default:
+                NOVA_LOG(ERROR) << static_cast<uint32_t>(layout) << " is not a valid image state";
+                return VK_IMAGE_LAYOUT_GENERAL;
+        }
+    }
+
+    VkAccessFlags to_vk_access_flags(const AccessFlags access) {
+        switch(access) {
+            case AccessFlags::IndirectCommandRead:
+                return VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+
+            case AccessFlags::IndexRead:
+                return VK_ACCESS_INDEX_READ_BIT;
+
+            case AccessFlags::VertexAttributeRead:
+                return VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+
+            case AccessFlags::UniformRead:
+                return VK_ACCESS_UNIFORM_READ_BIT;
+
+            case AccessFlags::InputAttachmentRead:
+                return VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+
+            case AccessFlags::ShaderRead:
+                return VK_ACCESS_SHADER_READ_BIT;
+
+            case AccessFlags::ShaderWrite:
+                return VK_ACCESS_SHADER_WRITE_BIT;
+
+            case AccessFlags::ColorAttachmentRead:
+                return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+
+            case AccessFlags::ColorAttachmentWrite:
+                return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+            case AccessFlags::DepthStencilAttachmentRead:
+                return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+
+            case AccessFlags::DepthStencilAttachmentWrite:
+                return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+            case AccessFlags::CopyRead:
+                return VK_ACCESS_TRANSFER_READ_BIT;
+
+            case AccessFlags::CopyWrite:
+                return VK_ACCESS_TRANSFER_WRITE_BIT;
+
+            case AccessFlags::HostRead:
+                return VK_ACCESS_HOST_READ_BIT;
+
+            case AccessFlags::HostWrite:
+                return VK_ACCESS_HOST_WRITE_BIT;
+
+            case AccessFlags::MemoryRead:
+                return VK_ACCESS_MEMORY_READ_BIT;
+
+            case AccessFlags::MemoryWrite:
+                return VK_ACCESS_MEMORY_WRITE_BIT;
+
+            case AccessFlags::ShadingRateImageRead:
+                return VK_ACCESS_SHADING_RATE_IMAGE_READ_BIT_NV;
+
+            case AccessFlags::AccelerationStructureRead:
+                return VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_NV;
+
+            case AccessFlags::AccelerationStructureWrite:
+                return VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_NV;
+
+            case AccessFlags::FragmentDensityMapRead:
+                return VK_ACCESS_FRAGMENT_DENSITY_MAP_READ_BIT_EXT;
+        }
+
+        return {};
+    }
+
+    VkPrimitiveTopology to_primitive_topology(const shaderpack::PrimitiveTopologyEnum topology) {
+        switch(topology) {
+            case shaderpack::PrimitiveTopologyEnum::Lines:
+                return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+            case shaderpack::PrimitiveTopologyEnum::Triangles:
+            default: // else the compiler complains
+                return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        }
+    }
+
+    VkBlendFactor to_blend_factor(shaderpack::BlendFactorEnum factor) {
+        switch(factor) {
+            case shaderpack::BlendFactorEnum::DstAlpha:
+                return VK_BLEND_FACTOR_DST_ALPHA;
+            case shaderpack::BlendFactorEnum::DstColor:
+                return VK_BLEND_FACTOR_DST_COLOR;
+            case shaderpack::BlendFactorEnum::One:
+                return VK_BLEND_FACTOR_ONE;
+            case shaderpack::BlendFactorEnum::OneMinusDstAlpha:
+                return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+            case shaderpack::BlendFactorEnum::OneMinusDstColor:
+                return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+            case shaderpack::BlendFactorEnum::OneMinusSrcAlpha:
+                return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+            case shaderpack::BlendFactorEnum::OneMinusSrcColor:
+                return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+            case shaderpack::BlendFactorEnum::SrcAlpha:
+                return VK_BLEND_FACTOR_SRC_ALPHA;
+            case shaderpack::BlendFactorEnum::SrcColor:
+                return VK_BLEND_FACTOR_SRC_COLOR;
+            case shaderpack::BlendFactorEnum::Zero:
+                return VK_BLEND_FACTOR_ZERO;
+            default:
+                return VK_BLEND_FACTOR_ZERO;
+        }
+    }
+
+    VkCompareOp to_compare_op(const shaderpack::CompareOpEnum compare_op) {
+        switch(compare_op) {
+            case shaderpack::CompareOpEnum::Never:
+                return VK_COMPARE_OP_NEVER;
+
+            case shaderpack::CompareOpEnum::Less:
+                return VK_COMPARE_OP_LESS;
+
+            case shaderpack::CompareOpEnum::LessEqual:
+                return VK_COMPARE_OP_LESS_OR_EQUAL;
+
+            case shaderpack::CompareOpEnum::Greater:
+                return VK_COMPARE_OP_GREATER;
+
+            case shaderpack::CompareOpEnum::GreaterEqual:
+                return VK_COMPARE_OP_GREATER_OR_EQUAL;
+
+            case shaderpack::CompareOpEnum::Equal:
+                return VK_COMPARE_OP_EQUAL;
+
+            case shaderpack::CompareOpEnum::NotEqual:
+                return VK_COMPARE_OP_NOT_EQUAL;
+
+            case shaderpack::CompareOpEnum::Always:
+                return VK_COMPARE_OP_ALWAYS;
+
+            default:
+                return VK_COMPARE_OP_NEVER;
+        }
+    }
+
+    VkStencilOp to_stencil_op(shaderpack::StencilOpEnum stencil_op) {
+        switch(stencil_op) {
+            case shaderpack::StencilOpEnum::Keep:
+                return VK_STENCIL_OP_KEEP;
+
+            case shaderpack::StencilOpEnum::Zero:
+                return VK_STENCIL_OP_ZERO;
+
+            case shaderpack::StencilOpEnum::Replace:
+                return VK_STENCIL_OP_REPLACE;
+
+            case shaderpack::StencilOpEnum::Incr:
+                return VK_STENCIL_OP_INCREMENT_AND_CLAMP;
+
+            case shaderpack::StencilOpEnum::IncrWrap:
+                return VK_STENCIL_OP_INCREMENT_AND_WRAP;
+
+            case shaderpack::StencilOpEnum::Decr:
+                return VK_STENCIL_OP_DECREMENT_AND_CLAMP;
+
+            case shaderpack::StencilOpEnum::DecrWrap:
+                return VK_STENCIL_OP_DECREMENT_AND_WRAP;
+
+            case shaderpack::StencilOpEnum::Invert:
+                return VK_STENCIL_OP_INVERT;
+
+            default:
+                return VK_STENCIL_OP_KEEP;
+        }
+    }
+
+    VkFormat to_vk_format(const shaderpack::PixelFormatEnum format) {
+        switch(format) {
+            case shaderpack::PixelFormatEnum::RGBA8:
+                return VK_FORMAT_R8G8B8A8_UNORM;
+
+            case shaderpack::PixelFormatEnum::RGBA16F:
+                return VK_FORMAT_R16G16B16A16_SFLOAT;
+
+            case shaderpack::PixelFormatEnum::RGBA32F:
+                return VK_FORMAT_R32G32B32A32_SFLOAT;
+
+            case shaderpack::PixelFormatEnum::Depth:
+                return VK_FORMAT_D32_SFLOAT;
+
+            case shaderpack::PixelFormatEnum::DepthStencil:
+                return VK_FORMAT_D24_UNORM_S8_UINT;
+
+            default:
+                NOVA_LOG(ERROR) << "Unknown pixel format, returning RGBA8";
+                return VK_FORMAT_R8G8B8A8_UNORM;
+        }
+    }
+
+    VkDescriptorType to_vk_descriptor_type(const DescriptorType type) {
+        switch(type) {
+            case DescriptorType::CombinedImageSampler:
+                return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
+            case DescriptorType::UniformBuffer:
+                return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+            case DescriptorType::StorageBuffer:
+                return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+
+            default:
+                return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        }
+    }
+
+    VkShaderStageFlags to_vk_shader_stage_flags(const ShaderStageFlags flags) {
+        VkShaderStageFlags vk_flags = 0;
+
+        if(flags & ShaderStageFlags::Vertex) {
+            vk_flags |= VK_SHADER_STAGE_VERTEX_BIT;
+        }
+        if(flags & ShaderStageFlags::TessellationControl) {
+            vk_flags |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+        }
+        if(flags & ShaderStageFlags::TessellationEvaluation) {
+            vk_flags |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+        }
+        if(flags & ShaderStageFlags::Geometry) {
+            vk_flags |= VK_SHADER_STAGE_GEOMETRY_BIT;
+        }
+        if(flags & ShaderStageFlags::Fragment) {
+            vk_flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+        }
+        if(flags & ShaderStageFlags::Compute) {
+            vk_flags |= VK_SHADER_STAGE_COMPUTE_BIT;
+        }
+        if(flags & ShaderStageFlags::Raygen) {
+            vk_flags |= VK_SHADER_STAGE_RAYGEN_BIT_NV;
+        }
+        if(flags & ShaderStageFlags::AnyHit) {
+            vk_flags |= VK_SHADER_STAGE_ANY_HIT_BIT_NV;
+        }
+        if(flags & ShaderStageFlags::ClosestHit) {
+            vk_flags |= VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV;
+        }
+        if(flags & ShaderStageFlags::Miss) {
+            vk_flags |= VK_SHADER_STAGE_MISS_BIT_NV;
+        }
+        if(flags & ShaderStageFlags::Intersection) {
+            vk_flags |= VK_SHADER_STAGE_INTERSECTION_BIT_NV;
+        }
+        if(flags & ShaderStageFlags::Task) {
+            vk_flags |= VK_SHADER_STAGE_TASK_BIT_NV;
+        }
+        if(flags & ShaderStageFlags::Mesh) {
+            vk_flags |= VK_SHADER_STAGE_MESH_BIT_NV;
+        }
+
+        return vk_flags;
+    }
+
+    std::string to_string(VkResult result) {
         switch(result) {
             case VK_SUCCESS:
                 return "VK_SUCCESS";
@@ -161,37 +452,37 @@ namespace nova::renderer {
         static std::vector<VkVertexInputBindingDescription> input_descriptions = {
             VkVertexInputBindingDescription{
                 0,                          // binding
-                sizeof(full_vertex),        // stride
+                sizeof(FullVertex),         // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 1,                          // binding
-                sizeof(full_vertex),        // stride
+                sizeof(FullVertex),         // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 2,                          // binding
-                sizeof(full_vertex),        // stride
+                sizeof(FullVertex),         // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 3,                          // binding
-                sizeof(full_vertex),        // stride
+                sizeof(FullVertex),         // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 4,                          // binding
-                sizeof(full_vertex),        // stride
+                sizeof(FullVertex),         // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 5,                          // binding
-                sizeof(full_vertex),        // stride
+                sizeof(FullVertex),         // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
             VkVertexInputBindingDescription{
                 6,                          // binding
-                sizeof(full_vertex),        // stride
+                sizeof(FullVertex),         // stride
                 VK_VERTEX_INPUT_RATE_VERTEX // input rate
             },
         };
@@ -260,4 +551,8 @@ namespace nova::renderer {
 
         return attribute_descriptions;
     }
-} // namespace nova::renderer
+
+    bool operator&(const ShaderStageFlags& lhs, const ShaderStageFlags& rhs) {
+        return static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs);
+    }
+} // namespace nova::renderer::rhi

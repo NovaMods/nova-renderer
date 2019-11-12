@@ -2,18 +2,16 @@
 
 #include <fmt/format.h>
 
-namespace nova::renderer {
+namespace ntl {
+    NovaError::NovaError(const std::string& message) : message(std::move(message)) {}
 
-    nova_error::nova_error(std::string message) : message(std::move(message)) {}
-
-    nova_error::nova_error(std::string message, nova_error cause) : message(std::move(message)) {
-        this->cause = std::make_unique<nova_error>();
-        *this->cause = std::forward<nova_error>(cause);
+    NovaError::NovaError(const std::string& message, NovaError cause) : message(std::move(message)),
+    cause(std::make_unique<NovaError>(std::forward<NovaError>(cause))) {
     }
 
-    std::string nova_error::to_string() const {
+    std::string NovaError::to_string() const {
         if(cause) {
-            return fmt::format(fmt("{:s}\nCaused by: {:s}"), message, cause->to_string());
+            return fmt::format(fmt("{:s}\nCaused by: {:s}"), message.c_str(), cause->to_string().c_str()).c_str();
         } else {
             return message;
         }

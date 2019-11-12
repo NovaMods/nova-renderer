@@ -1,558 +1,347 @@
-#include "dx12_render_engine.hpp"
-
-#include <algorithm>
-
+#pragma warning(push, 0)
 #include <D3DCompiler.h>
 #include <d3d12sdklayers.h>
-#include <spirv_cross.hpp>
-#include "d3dx12.h" // Can be identified as "external" header
+#include <spirv_hlsl.hpp>
+#pragma warning pop
 
-#include "nova_renderer/nova_renderer.hpp"
-#include "../../util/windows.hpp"
-#include "../../loading/shaderpack/render_graph_builder.hpp"
+#include "nova_renderer/util/platform.hpp"
+
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "../../util/logger.hpp"
 #include "../../util/windows_utils.hpp"
+#include "../../windowing/win32_window.hpp"
+#include "d3dx12.h"
+#include "dx12_command_list.hpp"
+#include "dx12_render_engine.hpp"
+#include "dx12_structs.hpp"
+#include "dx12_swapchain.hpp"
 #include "dx12_utils.hpp"
-#include "vertex_attributes.hpp"
 
-namespace nova::renderer {
-    dx12_render_engine::dx12_render_engine(nova_settings& settings)
-        : render_engine(settings), num_in_flight_frames(settings.max_in_flight_frames) {
-        NOVA_LOG(INFO) << "Initializing Direct3D 12 rendering";
+using Microsoft::WRL::ComPtr;
 
+#define CPU_FENCE_SIGNALED 16
+#define GPU_FENCE_SIGNALED 32
+
+namespace nova::renderer::rhi {
+    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(&mallocator, settings) {
         create_device();
-        create_rtv_command_queue();
-        create_full_frame_fences();
 
-        std::vector<command_list_base*> direct_buffers;
-        direct_buffers.reserve(32); // Not sure how many we need, this should be enough
-        buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_DIRECT, direct_buffers);
+        create_queues();
 
-        std::vector<command_list_base*> copy_buffers;
-        copy_buffers.reserve(32);
-        buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_COPY, copy_buffers);
+        create_command_allocators();
 
-        std::vector<command_list_base*> compute_buffers;
-        compute_buffers.reserve(32);
-        buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_COMPUTE, compute_buffers);
-
-        open_window(settings.window.width, settings.window.height);
-    }
-
-    void dx12_render_engine::open_window(uint32_t width, uint32_t height) {
-        window = std::make_unique<win32_window>(width, height);
-        create_swapchain();
-        create_render_target_descriptor_heap();
-    }
-
-    std::string dx12_render_engine::get_engine_name() { return "DirectX 12"; }
-
-    void dx12_render_engine::create_device() {
-        //#ifndef NDEBUG
-        ComPtr<ID3D12Debug> debug_controller;
-        D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
-        debug_controller->EnableDebugLayer();
-        //#endif
-
-        NOVA_LOG(TRACE) << "Creating DX12 device";
-
-        HRESULT hr = CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&dxgi_factory));
-        if(FAILED(hr)) {
-            NOVA_LOG(FATAL) << "Could not create DXGI Factory";
-            throw render_engine_initialization_exception("Could not create DXGI Factory");
-        }
-        NOVA_LOG(TRACE) << "Device created";
-
-        ComPtr<IDXGIAdapter1> adapter;
-
-        uint32_t adapter_index = 0;
-        bool adapter_found = false;
-
-        while(dxgi_factory->EnumAdapters1(adapter_index, &adapter) != DXGI_ERROR_NOT_FOUND) {
-            DXGI_ADAPTER_DESC1 desc;
-            adapter->GetDesc1(&desc);
-
-            if(desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
-                // Ignore software devices
-                adapter_index++;
-                continue;
-            }
-
-            // Direct3D 12 is feature level 11.
-            //
-            // cool
-            hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr);
-            if(SUCCEEDED(hr)) {
-                adapter_found = true;
-                break;
-            }
-
-            adapter_index++;
-        }
-
-        if(!adapter_found) {
-            NOVA_LOG(FATAL) << "Could not find a GPU that supports DX12";
-            throw render_engine_initialization_exception("Could not find a GPU that supports DX12");
-        }
-
-        NOVA_LOG(TRACE) << "Adapter found";
-
-        hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
-        if(FAILED(hr)) {
-            NOVA_LOG(FATAL) << "Could not create Dx12 device";
-            throw render_engine_initialization_exception("Could not create Dx12 device");
-        }
-    }
-
-    void dx12_render_engine::create_rtv_command_queue() {
-        D3D12_COMMAND_QUEUE_DESC rtv_queue_desc = {};
-
-        HRESULT hr = device->CreateCommandQueue(&rtv_queue_desc, IID_PPV_ARGS(&direct_command_queue));
-        if(FAILED(hr)) {
-            NOVA_LOG(FATAL) << "Could not create main command queue";
-            throw render_engine_initialization_exception("Could not create main command queue");
-        }
-    }
-
-    void dx12_render_engine::create_swapchain() {
-        if(!window) {
-            NOVA_LOG(FATAL) << "Cannot initialize the swapchain before the window!";
-            throw render_engine_initialization_exception("Cannot initialize the swapchain before the window");
-        }
-
-        const auto& window_size = window->get_window_size();
-
-        DXGI_SAMPLE_DESC sample_desc = {};
-        sample_desc.Count = 1;
-
-        DXGI_SWAP_CHAIN_DESC1 swapchain_description{};
-        swapchain_description.Width = window_size.x;
-        swapchain_description.Height = window_size.y;
-        swapchain_description.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-
-        swapchain_description.SampleDesc = sample_desc;
-        swapchain_description.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapchain_description.BufferCount = FRAME_BUFFER_COUNT;
-
-        swapchain_description.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-
-        ComPtr<IDXGISwapChain1> swapchain_uncast;
-        // No target window specified in DXGI_SWAP_CHAIN_DESC, and no window associated with owning factory. [ MISCELLANEOUS ERROR #6: ]
-        HRESULT hr = dxgi_factory->CreateSwapChainForHwnd(direct_command_queue.Get(),
-                                                          window->get_window_handle(),
-                                                          &swapchain_description,
-                                                          nullptr,
-                                                          nullptr,
-                                                          &swapchain_uncast);
-        if(FAILED(hr)) {
-            NOVA_LOG(FATAL) << "Could not create swapchain";
-            if(hr == DXGI_ERROR_INVALID_CALL) {
-                NOVA_LOG(INFO) << "Invalid call - one or more of the parameters was wrong";
-            } else if(hr == DXGI_STATUS_OCCLUDED) {
-                NOVA_LOG(INFO) << "Fullscreen is unavailable";
-            } else if(hr == E_OUTOFMEMORY) {
-                NOVA_LOG(INFO) << "Out of memory. Soz bro :/";
-            }
-
-            throw render_engine_initialization_exception("Could not create swapchain");
-        }
-
-        swapchain_uncast->QueryInterface(IID_PPV_ARGS(&swapchain));
-    }
-
-    void dx12_render_engine::create_render_target_descriptor_heap() {
-        D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_descriptor = {};
-        rtv_heap_descriptor.NumDescriptors = FRAME_BUFFER_COUNT;
-        rtv_heap_descriptor.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-
-        // The heap isn't visible to shaders because shaders don't need to read the swapchain... but we still need a
-        // descriptor heap
-        rtv_heap_descriptor.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-        HRESULT hr = device->CreateDescriptorHeap(&rtv_heap_descriptor, IID_PPV_ARGS(&rtv_descriptor_heap));
-        if(FAILED(hr)) {
-            NOVA_LOG(FATAL) << "Could not create descriptor heap for the RTV";
-            throw render_engine_initialization_exception("Could not create descriptor head for the RTV");
-        }
+        open_window_and_create_swapchain(settings.settings.window, settings.settings.max_in_flight_frames);
 
         rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+        dsv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+        cbv_srv_uav_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-        CD3DX12_CPU_DESCRIPTOR_HANDLE rtv_handle(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart());
+        if(settings.settings.debug.enabled) {
+            setup_debug_output();
+        }
+    }
 
-        for(uint32_t i = 0; i < FRAME_BUFFER_COUNT; i++) {
-            ComPtr<ID3D12Resource> rendertarget;
-            hr = swapchain->GetBuffer(i, IID_PPV_ARGS(&rendertarget));
-            if(FAILED(hr)) {
-                NOVA_LOG(FATAL) << "Could not create RTV for swapchain image " << i;
-                throw render_engine_initialization_exception("Could not create RTV for swapchain");
+    void D3D12RenderEngine::set_num_renderpasses(const uint32_t num_renderpasses) {
+        D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_descriptor = {};
+        rtv_heap_descriptor.NumDescriptors = num_renderpasses * 8;
+        rtv_heap_descriptor.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+
+        HRESULT hr = device->CreateDescriptorHeap(&rtv_heap_descriptor, IID_PPV_ARGS(&rtv_descriptor_heap));
+        if(FAILED(hr)) {
+            NOVA_LOG(FATAL) << "Could not create RTV descriptor heap: " << get_last_windows_error() << " (" << to_string(hr) << ")";
+        }
+
+        D3D12_DESCRIPTOR_HEAP_DESC dsv_heap_desc = {};
+        dsv_heap_desc.NumDescriptors = num_renderpasses;
+        dsv_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+
+        hr = device->CreateDescriptorHeap(&dsv_heap_desc, IID_PPV_ARGS(&dsv_descriptor_heap));
+        if(FAILED(hr)) {
+            NOVA_LOG(FATAL) << "Could not create DSV descriptor heap: " << get_last_windows_error() << " (" << to_string(hr) << ")";
+        }
+    }
+
+    ntl::Result<DeviceMemory*> D3D12RenderEngine::allocate_device_memory(const uint64_t size,
+                                                                         const MemoryUsage type,
+                                                                         const ObjectType allowed_objects) {
+        auto* memory = new DX12DeviceMemory;
+
+        D3D12_HEAP_DESC desc = {};
+        desc.SizeInBytes = size;
+        desc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+        desc.Properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+
+        switch(type) {
+            case MemoryUsage::DeviceOnly:
+                desc.Properties.Type = D3D12_HEAP_TYPE_DEFAULT;
+                break;
+
+            case MemoryUsage::LowFrequencyUpload:
+                [[fallthrough]];
+            case MemoryUsage::StagingBuffer:
+                desc.Properties.Type = D3D12_HEAP_TYPE_UPLOAD;
+        }
+
+        desc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+
+        switch(allowed_objects) {
+            case ObjectType::Buffer:
+                desc.Flags = D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES;
+                break;
+
+            case ObjectType::Texture:
+                desc.Flags = D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES | D3D12_HEAP_FLAG_DENY_BUFFERS;
+                break;
+
+            case ObjectType::RenderTexture:
+                desc.Flags = D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES;
+                break;
+
+            case ObjectType::SwapchainSurface:
+                desc.Flags = D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES | D3D12_HEAP_FLAG_ALLOW_DISPLAY;
+                break;
+
+            case ObjectType::Any:
+                break;
+        }
+
+        if(type == MemoryUsage::DeviceOnly) {
+            adapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &local_info);
+
+            if(size > local_info.AvailableForReservation) {
+                return ntl::Result<DeviceMemory*>(ntl::NovaError("Not enough space for memory allocation"));
             }
 
-            rendertargets.push_back(rendertarget);
+        } else {
+            adapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &non_local_info);
+
+            if(size > non_local_info.AvailableForReservation) {
+                return ntl::Result<DeviceMemory*>(ntl::NovaError("Not enough space for memory allocation"));
+            }
+        }
+
+        const auto result = device->CreateHeap(&desc, IID_PPV_ARGS(&memory->heap));
+        if(SUCCEEDED(result)) {
+            return ntl::Result<DeviceMemory*>(memory);
+
+        } else {
+            return ntl::Result<DeviceMemory*>(ntl::NovaError(to_string(result)));
+        }
+    }
+
+    ntl::Result<Renderpass*> D3D12RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data,
+                                                                  const glm::uvec2& /* framebuffer_size */) {
+        auto* renderpass = new DX12Renderpass;
+
+        return ntl::Result<Renderpass*>(renderpass);
+    }
+
+    Framebuffer* D3D12RenderEngine::create_framebuffer(const Renderpass* /* renderpass */,
+                                                       const std::vector<Image*>& color_attachments,
+                                                       const std::optional<Image*> depth_attachment,
+                                                       const glm::uvec2& framebuffer_size) {
+        const size_t attachment_count = color_attachments.size();
+        auto* framebuffer = new DX12Framebuffer;
+        framebuffer->rtv_descriptors.reserve(attachment_count);
+
+        std::vector<ID3D12Resource*> rendertargets;
+        rendertargets.reserve(attachment_count);
+
+        CD3DX12_CPU_DESCRIPTOR_HANDLE base_rtv_descriptor(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
+                                                          next_rtv_descriptor_index,
+                                                          rtv_descriptor_size);
+
+        for(uint32_t i = 0; i < color_attachments.size(); i++) {
+            const Image* attachment = color_attachments.at(i);
+            const auto* d3d12_image = static_cast<const DX12Image*>(attachment);
+
+            rendertargets.emplace_back(d3d12_image->resource.Get());
+
+            framebuffer->rtv_descriptors.emplace_back(base_rtv_descriptor);
+            framebuffer->rtv_descriptors.at(i).Offset(i, rtv_descriptor_size);
 
             // Create the Render Target View, which binds the swapchain buffer to the RTV handle
-            device->CreateRenderTargetView(rendertargets[i].Get(), nullptr, rtv_handle);
-
-            // Increment the RTV handle
-            rtv_handle.Offset(1, rtv_descriptor_size);
-        }
-    }
-
-    std::shared_ptr<iwindow> dx12_render_engine::get_window() const { return window; }
-
-    void dx12_render_engine::render_frame() {
-        wait_for_previous_frame();
-
-        try_to_free_command_lists();
-
-        gfx_command_list* present_commands = get_graphics_command_list();
-        HRESULT hr = present_commands->allocator->Reset();
-        if(FAILED(hr)) {
-            NOVA_LOG(WARN) << "Could not reset command list allocator, memory usage will likely increase dramatically";
+            device->CreateRenderTargetView(d3d12_image->resource.Get(), nullptr, framebuffer->rtv_descriptors.at(i));
         }
 
-        present_commands->list->Reset(present_commands->allocator.Get(), nullptr);
+        next_rtv_descriptor_index += attachment_count;
 
-        CD3DX12_RESOURCE_BARRIER to_render_target = CD3DX12_RESOURCE_BARRIER::Transition(rendertargets[frame_index].Get(),
-                                                                                         D3D12_RESOURCE_STATE_PRESENT,
-                                                                                         D3D12_RESOURCE_STATE_RENDER_TARGET);
-        present_commands->list->ResourceBarrier(1, &to_render_target);
+        if(depth_attachment) {
+            const auto* dx12_depth_attachment = static_cast<DX12Image*>(*depth_attachment);
+            CD3DX12_CPU_DESCRIPTOR_HANDLE dsv_descriptor(dsv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
+                                                         next_dsv_descriptor_index,
+                                                         dsv_descriptor_size);
+            next_dsv_descriptor_index++;
 
-        CD3DX12_CPU_DESCRIPTOR_HANDLE current_framebuffer_rtv(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
-                                                              frame_index,
-                                                              rtv_descriptor_size);
-        present_commands->list->OMSetRenderTargets(1, &current_framebuffer_rtv, false, nullptr);
+            framebuffer->dsv_descriptor = std::make_optional<D3D12_CPU_DESCRIPTOR_HANDLE>(dsv_descriptor);
 
-        glm::vec4 clear_color(0, 0.2f, 0.4f, 1.0f);
-        present_commands->list->ClearRenderTargetView(current_framebuffer_rtv, &clear_color.x, 0, nullptr);
-
-        CD3DX12_RESOURCE_BARRIER to_presentable = CD3DX12_RESOURCE_BARRIER::Transition(rendertargets[frame_index].Get(),
-                                                                                       D3D12_RESOURCE_STATE_RENDER_TARGET,
-                                                                                       D3D12_RESOURCE_STATE_PRESENT);
-        present_commands->list->ResourceBarrier(1, &to_presentable);
-
-        present_commands->list->Close();
-
-        ID3D12CommandList* commands[] = {present_commands->list.Get()};
-        direct_command_queue->ExecuteCommandLists(1, commands);
-        direct_command_queue->Signal(present_commands->submission_fence.Get(), present_commands->fence_value);
-
-        direct_command_queue->Signal(frame_fences.at(frame_index).Get(), frame_fence_values.at(frame_index));
-
-        swapchain->Present(0, 0);
-
-        release_command_list(present_commands);
-    }
-
-    void dx12_render_engine::wait_for_previous_frame() { // Wait for the previous frame at our index to finish
-        frame_index = swapchain->GetCurrentBackBufferIndex();
-        if(frame_fences.at(frame_index)->GetCompletedValue() < frame_fence_values.at(frame_index)) {
-            frame_fences.at(frame_index)->SetEventOnCompletion(frame_fence_values.at(frame_index), full_frame_fence_event);
-            WaitForSingleObject(full_frame_fence_event, INFINITE);
-        }
-        // There is enough space in a 32-bit integer to run Nova at 60 fps for almost three years. Running Nova
-        // continuously for more than one year is not supported
-        frame_fence_values[frame_index]++;
-    }
-
-    command_list* dx12_render_engine::allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) const {
-        ComPtr<ID3D12CommandAllocator> allocator;
-        HRESULT hr = device->CreateCommandAllocator(command_list_type, IID_PPV_ARGS(&allocator));
-        if(FAILED(hr)) {
-            NOVA_LOG(FATAL) << "Could not create command buffer";
-            throw render_engine_initialization_exception("Could not create command buffer");
+            device->CreateDepthStencilView(dx12_depth_attachment->resource.Get(), nullptr, *framebuffer->dsv_descriptor);
         }
 
-        ComPtr<ID3D12CommandList> list;
-        hr = device->CreateCommandList(0, command_list_type, allocator.Get(), nullptr, IID_PPV_ARGS(&list));
-        if(FAILED(hr)) {
-            NOVA_LOG(ERROR) << "Could not create a command list of type " << (uint32_t) command_list_type;
-            throw render_engine_initialization_exception("Could not create command list");
+        framebuffer->size = framebuffer_size;
+
+        return framebuffer;
+    }
+
+    ntl::Result<PipelineInterface*> D3D12RenderEngine::create_pipeline_interface(
+        const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
+        const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+        const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
+        auto* pipeline_interface = new DX12PipelineInterface;
+        pipeline_interface->bindings = bindings;
+
+        pipeline_interface->table_layouts.reserve(16);
+
+        for(const auto& [binding_name, binding] : bindings) {
+            pipeline_interface->table_layouts[binding.set].reserve(16);
+            pipeline_interface->table_layouts[binding.set].push_back(binding);
         }
 
-        ComPtr<ID3D12Fence> fence;
-        device->CreateFence(1, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
-
-        auto* cmd_list = new command_list;
-        cmd_list->list = list;
-        cmd_list->allocator = allocator;
-        cmd_list->submission_fence = fence;
-        cmd_list->type = command_list_type;
-
-        return cmd_list;
-    }
-
-    gfx_command_list* dx12_render_engine::get_graphics_command_list() {
-        std::lock_guard<std::mutex> lock(buffer_pool_mutex);
-        gfx_command_list* new_list;
-        auto& buffers = buffer_pool.at(D3D12_COMMAND_LIST_TYPE_DIRECT);
-        if(buffers.empty()) {
-            command_list* alloc_list = allocate_command_list(D3D12_COMMAND_LIST_TYPE_DIRECT);
-
-            ComPtr<ID3D12GraphicsCommandList> graphics_list;
-            alloc_list->list->QueryInterface(IID_PPV_ARGS(&graphics_list));
-            graphics_list->Close();
-
-            new_list = new gfx_command_list;
-            new_list->list = graphics_list;
-            new_list->type = alloc_list->type;
-            new_list->allocator = alloc_list->allocator;
-            new_list->submission_fence = alloc_list->submission_fence;
-            new_list->fence_value = alloc_list->fence_value;
-        } else {
-            command_list_base* pool_list = buffers.back();
-            pool_list->is_done = false;
-            buffers.pop_back();
-
-            // CLion complains about the static cast but dynasmic_cast doesn't work since gfx_command_list doesn't have
-            // a vtable
-            new_list = static_cast<gfx_command_list*>(pool_list);
+        for(const auto& [set, bindings] : pipeline_interface->table_layouts) {
+            if(set > pipeline_interface->table_layouts.size()) {
+                return ntl::Result<PipelineInterface*>(
+                    ntl::NovaError("Pipeline interface doesn't use descriptor sets sequentially, but it needs to"));
+            }
         }
 
-        return new_list;
-    }
+        const UINT num_sets = static_cast<UINT>(pipeline_interface->table_layouts.size());
 
-    void dx12_render_engine::release_command_list(command_list_base* list) {
-        std::lock_guard<std::mutex> lock(lists_to_free_mutex);
-        lists_to_free.push_back(list);
-    }
+        D3D12_ROOT_SIGNATURE_DESC root_sig_desc = {};
+        root_sig_desc.NumParameters = num_sets;
+        root_sig_desc.pParameters = new D3D12_ROOT_PARAMETER[num_sets];
 
-    void dx12_render_engine::create_full_frame_fences() {
-        frame_fence_values.resize(num_in_flight_frames);
+        // Make a descriptor table for each descriptor set
+        for(uint32_t set = 0; set < num_sets; set++) {
+            std::vector<ResourceBindingDescription>& descriptor_layouts = pipeline_interface->table_layouts.at(set);
+            auto& param = const_cast<D3D12_ROOT_PARAMETER&>(root_sig_desc.pParameters[set]);
+            param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 
-        frame_fences.resize(num_in_flight_frames);
+            param.DescriptorTable.NumDescriptorRanges = static_cast<UINT>(descriptor_layouts.size());
+            param.DescriptorTable.pDescriptorRanges = new D3D12_DESCRIPTOR_RANGE[descriptor_layouts.size()];
 
-        HRESULT hr;
+            for(uint32_t i = 0; i < descriptor_layouts.size(); i++) {
+                const ResourceBindingDescription& desc = descriptor_layouts.at(i);
 
-        for(uint32_t i = 0; i < num_in_flight_frames; i++) {
-            ComPtr<ID3D12Fence> fence;
-            hr = device->CreateFence(1, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
-            if(SUCCEEDED(hr)) {
-                frame_fences[i] = fence;
+                // Microsoft's sample DX12 renderer uses const_cast don't yell at me
+                auto& descriptor_range = const_cast<D3D12_DESCRIPTOR_RANGE&>(param.DescriptorTable.pDescriptorRanges[i]);
+                descriptor_range.RangeType = to_dx12_range_type(desc.type);
+                descriptor_range.NumDescriptors = desc.count;
+                descriptor_range.BaseShaderRegister = desc.binding;
+                descriptor_range.RegisterSpace = 0;
+                descriptor_range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+            }
+        }
+
+        ComPtr<ID3DBlob> root_sig_blob;
+        ComPtr<ID3DBlob> error_blob;
+
+        const HRESULT res = D3D12SerializeRootSignature(&root_sig_desc,
+                                                        D3D_ROOT_SIGNATURE_VERSION_1_1,
+                                                        root_sig_blob.GetAddressOf(),
+                                                        error_blob.GetAddressOf());
+        if(!SUCCEEDED(res)) {
+            if(error_blob) {
+                const std::string err_str = static_cast<const char*>(error_blob->GetBufferPointer());
+                return ntl::Result<PipelineInterface*>(
+                    MAKE_ERROR("Could not create pipeline interface: {:s} ({:s})", err_str, to_string(res)));
             } else {
-                NOVA_LOG(FATAL) << "Could not create fence for from index " << frame_index;
-                throw render_engine_initialization_exception("Could not create fence for from index " + std::to_string(frame_index));
-            }
-        }
-        NOVA_LOG(TRACE) << "Created full-frame fences";
-
-        full_frame_fence_event = CreateEvent(nullptr, false, false, nullptr);
-    }
-
-    void dx12_render_engine::set_shaderpack(const shaderpack_data& data) {
-        // Let's build our data from the ground up!
-        // To load a new shaderpack, we need to first clear out all the data from the old shaderpack. Then, we can
-        // make the new dynamic textures and samplers, then the PSOs, then the material definitions, then the
-        // renderpasses
-        // Except DX12 doesn't have a renderpass - but that's fine. We can put the necessary data together and pretend
-
-        NOVA_LOG(DEBUG) << "DX12 render engine loading a new shaderpack";
-
-        // Clear out the old shaderpack's data, including samplers
-        dynamic_textures.clear();
-
-        NOVA_LOG(DEBUG) << "Cleared data from old shaderpack";
-
-        // Build up E V E R Y T H I N G
-        render_passes.clear();
-        render_passes.reserve(data.passes.size());
-        for(const render_pass_data& pass_data : data.passes) {
-            render_passes[pass_data.name] = pass_data;
-        }
-        ordered_passes = order_passes(render_passes);
-
-        NOVA_LOG(DEBUG) << "Flattened frame graph";
-
-        create_gpu_query_heap(ordered_passes.size());
-
-        std::vector<render_pass_data> passes_in_submission_order;
-        passes_in_submission_order.reserve(ordered_passes.size());
-        for(const std::string& pass_name : ordered_passes) {
-            passes_in_submission_order.push_back(render_passes.at(pass_name));
-        }
-        create_dynamic_textures(data.resources.textures, passes_in_submission_order);
-
-        make_pipeline_state_objects(data.pipelines);
-    }
-
-    result<renderable_id_t> dx12_render_engine::add_renderable(const static_mesh_renderable_data& data) {
-        static_cast<void>(data);
-        return result<renderable_id_t>(4);
-    }
-
-    void dx12_render_engine::set_renderable_visibility(renderable_id_t id, bool is_visible) {
-        static_cast<void>(id);
-        static_cast<void>(is_visible);
-    }
-
-    void dx12_render_engine::delete_renderable(renderable_id_t id) { static_cast<void>(id); }
-
-    result<mesh_id_t> dx12_render_engine::add_mesh(const mesh_data&) {
-        // TODO
-
-        mesh_id_t id = 1;
-        return result<mesh_id_t>(std::move(id));
-    }
-
-    void dx12_render_engine::delete_mesh(uint32_t) {
-        // TODO
-    }
-
-    void dx12_render_engine::try_to_free_command_lists() {
-        std::lock_guard<std::mutex> lock(lists_to_free_mutex);
-
-        for(command_list_base* list : lists_to_free) {
-            if(list->submission_fence->GetCompletedValue() == list->fence_value) {
-                // Command list is done!
-                std::lock_guard<std::mutex> pool_lock(buffer_pool_mutex);
-                list->is_done = true;
-                buffer_pool.at(list->type).push_back(list);
+                return ntl::Result<PipelineInterface*>(MAKE_ERROR("Could not create pipeline interface: {:s}", to_string(res)));
             }
         }
 
-        const auto erase_itr = std::remove_if(lists_to_free.begin(), lists_to_free.end(), [](const command_list_base* list) {
-            return list->is_done;
-        });
-        lists_to_free.erase(erase_itr, lists_to_free.end());
+        device->CreateRootSignature(1,
+                                    root_sig_blob->GetBufferPointer(),
+                                    root_sig_blob->GetBufferSize(),
+                                    IID_PPV_ARGS(&pipeline_interface->root_sig));
+
+        pipeline_interface->color_attachments = color_attachments;
+        pipeline_interface->depth_texture = depth_texture;
+
+        return ntl::Result(static_cast<PipelineInterface*>(pipeline_interface));
     }
 
-    void dx12_render_engine::create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas,
-                                                     std::vector<render_pass_data> passes) {
-        std::unordered_map<std::string, texture_resource_data> textures;
-        for(const texture_resource_data& data : texture_datas) {
-            textures[data.name] = data;
+    DescriptorPool* D3D12RenderEngine::create_descriptor_pool(uint32_t /* num_sampled_images */,
+                                                              uint32_t /* num_samplers */,
+                                                              uint32_t /* num_uniform_buffers */) {
+        auto* pool = new DX12DescriptorPool; // This seems wrong
+        return pool;
+    }
+
+    std::vector<DescriptorSet*> D3D12RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
+                                                                          DescriptorPool* /* pool */) {
+        // Create a descriptor heap for each descriptor set
+        // This is kinda gross and maybe I'll move to something else eventually but I gotta get past this code
+
+        // send help
+
+        const auto* dx12_pipeline_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
+
+        const auto num_sets = static_cast<const uint32_t>(dx12_pipeline_interface->table_layouts.size());
+
+        std::vector<DescriptorSet*> descriptor_sets;
+        descriptor_sets.reserve(num_sets);
+
+        for(uint32_t i = 0; i < num_sets; i++) {
+            const std::vector<ResourceBindingDescription> bindings_for_set = dx12_pipeline_interface->table_layouts.at(i);
+
+            auto* set = new DX12DescriptorSet;
+
+            D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+            desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+            desc.NumDescriptors = static_cast<uint32_t>(bindings_for_set.size());
+            desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+            desc.NodeMask = 0;
+
+            device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&set->heap));
+
+            descriptor_sets.push_back(set);
         }
 
-        std::unordered_map<std::string, range> resource_used_range;
-        std::vector<std::string> resources_in_order;
-        determine_usage_order_of_textures(passes, resource_used_range, resources_in_order);
+        return descriptor_sets;
+    }
 
-        NOVA_LOG(TRACE) << "Ordered resources";
+    void D3D12RenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
+        // We want to create descriptors in the heaps in the order of their bindings
+        for(const DescriptorSetWrite& write : writes) {
+            const auto* set = static_cast<const DX12DescriptorSet*>(write.set);
+            CD3DX12_CPU_DESCRIPTOR_HANDLE write_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(set->heap->GetCPUDescriptorHandleForHeapStart(),
+                                                                                       cbv_srv_uav_descriptor_size * write.binding);
 
-        const std::unordered_map<std::string, std::string> aliases = determine_aliasing_of_textures(textures,
-                                                                                                    resource_used_range,
-                                                                                                    resources_in_order);
-        NOVA_LOG(TRACE) << "Figured out which resources can be aliased";
+            switch(write.type) {
+                case DescriptorType::CombinedImageSampler: {
+                    const DescriptorImageUpdate* image_update = write.image_info;
+                    const auto* image = static_cast<const DX12Image*>(image_update->image);
+                    D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+                    srv_desc.Format = to_dxgi_format(image_update->format.pixel_format);
+                    srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+                    srv_desc.Texture2D.MostDetailedMip = 0;
+                    srv_desc.Texture2D.MipLevels = 1;
+                    srv_desc.Texture2D.PlaneSlice = 0;
+                    srv_desc.Texture2D.ResourceMinLODClamp = 0;
 
-        glm::uvec2 swapchain_dimensions;
-        swapchain->GetSourceSize(&swapchain_dimensions.x, &swapchain_dimensions.y);
+                    device->CreateShaderResourceView(image->resource.Get(), &srv_desc, write_handle);
 
-        // For each texture:
-        //  - If it isn't in the aliases map, create a new texture with its format and add it to the textures map
-        //  - If it is in the aliases map, follow its chain of aliases
+                } break;
 
-        for(const auto& named_texture : textures) {
-            std::string texture_name = named_texture.first;
-            while(aliases.find(texture_name) != aliases.end()) {
-                NOVA_LOG(TRACE) << "Resource " << texture_name << " is aliased with " << aliases.at(texture_name);
-                texture_name = aliases.at(texture_name);
-            }
+                case DescriptorType::UniformBuffer: {
+                } break;
 
-            // We've found the first texture in this alias chain - let's create an actual texture for it if needed
-            if(dynamic_tex_name_to_idx.find(texture_name) == dynamic_tex_name_to_idx.end()) {
-                NOVA_LOG(TRACE) << "Need to create it";
-                // The texture we're all aliasing doesn't have a real texture yet. Let's fix that
-                const texture_format& format = textures.at(texture_name).format;
+                case DescriptorType::StorageBuffer: {
+                } break;
 
-                glm::uvec2 dimensions;
-                if(format.dimension_type == texture_dimension_type_enum::Absolute) {
-                    dimensions.x = static_cast<uint32_t>(format.width);
-                    dimensions.y = static_cast<uint32_t>(format.height);
-                } else {
-                    dimensions = swapchain_dimensions;
-                    dimensions.x *= static_cast<uint32_t>(format.width);
-                    dimensions.y *= static_cast<uint32_t>(format.height);
-                }
-
-                const DXGI_FORMAT dx12_format = to_dxgi_format(format.pixel_format);
-
-                DXGI_SAMPLE_DESC sample_desc = {};
-                sample_desc.Count = 1;
-                sample_desc.Quality = 1;
-
-                D3D12_RESOURCE_DESC texture_desc = {};
-                texture_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-                texture_desc.Alignment = 0;
-                texture_desc.Width = dimensions.x;
-                texture_desc.Height = dimensions.y;
-                texture_desc.DepthOrArraySize = 1;
-                texture_desc.MipLevels = 1;
-                texture_desc.Format = dx12_format;
-                texture_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-                texture_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-                texture_desc.SampleDesc = sample_desc;
-
-                if(format.pixel_format == pixel_format_enum::Depth || format.pixel_format == pixel_format_enum::DepthStencil) {
-                    texture_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-                }
-
-                ComPtr<ID3D12Resource> texture;
-                auto heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-                const HRESULT hr = device->CreateCommittedResource(&heap_props,
-                                                                   D3D12_HEAP_FLAG_NONE,
-                                                                   &texture_desc,
-                                                                   D3D12_RESOURCE_STATE_RENDER_TARGET,
-                                                                   nullptr,
-                                                                   IID_PPV_ARGS(&texture));
-
-                if(FAILED(hr)) {
-                    std::string error_description;
-                    switch(hr) {
-                        case E_OUTOFMEMORY:
-                            error_description = "Out of memory";
-                            break;
-
-                        case E_INVALIDARG:
-                            error_description = "One or more arguments are invalid";
-                            break;
-                    }
-
-                    NOVA_LOG(ERROR) << "Could not create texture " << texture_name << ": Error code " << hr << ", Error description '"
-                                    << error_description << ", Windows error: '" << get_last_windows_error() << "'";
-
-                    continue;
-                }
-                texture->SetName(s2ws(texture_name).c_str());
-
-                const uint32_t new_tex_index = static_cast<uint32_t>(dynamic_textures.size());
-                dynamic_textures[texture_name] = dx12_texture(textures.at(texture_name), texture);
-                dynamic_tex_name_to_idx.emplace(texture_name, new_tex_index);
-
-                NOVA_LOG(TRACE) << "Added texture " << texture_name << " to the dynamic textures";
-                NOVA_LOG(TRACE) << "set dynamic_texture_to_idx[" << texture_name << "] = " << new_tex_index;
-            } else {
-                NOVA_LOG(TRACE) << "The physical resource already exists, so we're just gonna use that";
-                // The texture we're aliasing already has a real texture behind it - so let's use that
-                dynamic_tex_name_to_idx[named_texture.first] = dynamic_tex_name_to_idx[texture_name];
+                default:;
             }
         }
     }
 
-    void dx12_render_engine::create_gpu_query_heap(size_t num_queries) {
-        D3D12_QUERY_HEAP_DESC heap_desc = {};
-        heap_desc.Count = static_cast<UINT>(num_queries);
-        heap_desc.NodeMask = 0;
-        heap_desc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
+    ntl::Result<Pipeline*> D3D12RenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
+                                                              const shaderpack::PipelineCreateInfo& data) {
+        const auto* dx12_pipeline_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
 
-        device->CreateQueryHeap(&heap_desc, IID_PPV_ARGS(&renderpass_timestamp_query_heap));
-    }
+        auto* pipeline = new_object<DX12Pipeline>();
 
-    void dx12_render_engine::make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines) {
-        std::vector<pipeline> future_pipelines(pipelines.size());
-        std::size_t write_pipeline = 0;
-
-        for(const pipeline_data& data : pipelines) {
-            if(!data.name.empty()) {
-                future_pipelines[write_pipeline] = make_single_pso(data);
-                write_pipeline++;
-            }
-        }
-    }
-
-    pipeline dx12_render_engine::make_single_pso(const pipeline_data& input) {
-        const render_pass_data& render_pass = render_passes.at(input.pass);
-        const auto states_begin = input.states.begin();
-        const auto states_end = input.states.end();
-        pipeline output;
+        const auto states_begin = data.states.begin();
+        const auto states_end = data.states.end();
 
         D3D12_GRAPHICS_PIPELINE_STATE_DESC pipeline_state_desc = {};
 
@@ -564,26 +353,26 @@ namespace nova::renderer {
         spirv_cross::CompilerHLSL::Options options = {};
         options.shader_model = 51;
 
-        ComPtr<ID3DBlob> vertex_blob = compile_shader(input.vertex_shader, "vs_5_1", options, shader_inputs);
+        ComPtr<ID3DBlob> vertex_blob = compile_shader(data.vertex_shader, "vs_5_1", options, shader_inputs);
         pipeline_state_desc.VS.BytecodeLength = vertex_blob->GetBufferSize();
         pipeline_state_desc.VS.pShaderBytecode = vertex_blob->GetBufferPointer();
 
-        if(input.geometry_shader) {
-            ComPtr<ID3DBlob> geometry_blob = compile_shader(*input.geometry_shader, "gs_5_1", options, shader_inputs);
+        if(data.geometry_shader) {
+            ComPtr<ID3DBlob> geometry_blob = compile_shader(*data.geometry_shader, "gs_5_1", options, shader_inputs);
             pipeline_state_desc.GS.BytecodeLength = geometry_blob->GetBufferSize();
             pipeline_state_desc.GS.pShaderBytecode = geometry_blob->GetBufferPointer();
         }
 
-        if(input.tessellation_control_shader) {
-            ComPtr<ID3DBlob> tessellation_control_blob = compile_shader(*input.tessellation_control_shader,
+        if(data.tessellation_control_shader) {
+            ComPtr<ID3DBlob> tessellation_control_blob = compile_shader(*data.tessellation_control_shader,
                                                                         "hs_5_1",
                                                                         options,
                                                                         shader_inputs);
             pipeline_state_desc.HS.BytecodeLength = tessellation_control_blob->GetBufferSize();
             pipeline_state_desc.HS.pShaderBytecode = tessellation_control_blob->GetBufferPointer();
         }
-        if(input.tessellation_evaluation_shader) {
-            ComPtr<ID3DBlob> tessellation_evaluation_blob = compile_shader(*input.tessellation_evaluation_shader,
+        if(data.tessellation_evaluation_shader) {
+            ComPtr<ID3DBlob> tessellation_evaluation_blob = compile_shader(*data.tessellation_evaluation_shader,
                                                                            "ds_5_1",
                                                                            options,
                                                                            shader_inputs);
@@ -591,29 +380,30 @@ namespace nova::renderer {
             pipeline_state_desc.DS.pShaderBytecode = tessellation_evaluation_blob->GetBufferPointer();
         }
 
-        if(input.fragment_shader) {
-            ComPtr<ID3DBlob> fragment_blob = compile_shader(*input.fragment_shader, "ps_5_1", options, shader_inputs);
+        if(data.fragment_shader) {
+            ComPtr<ID3DBlob> fragment_blob = compile_shader(*data.fragment_shader, "ps_5_1", options, shader_inputs);
             pipeline_state_desc.PS.BytecodeLength = fragment_blob->GetBufferSize();
             pipeline_state_desc.PS.pShaderBytecode = fragment_blob->GetBufferPointer();
         }
 
-        output.root_signature = create_root_signature(shader_inputs);
-        pipeline_state_desc.pRootSignature = output.root_signature.Get();
+        pipeline->root_signature = dx12_pipeline_interface->root_sig.Get();
+        pipeline_state_desc.pRootSignature = pipeline->root_signature.Get();
 
         /*
          * Blend state
          */
 
-        pipeline_state_desc.BlendState.AlphaToCoverageEnable = std::find(states_begin, states_end, state_enum::EnableAlphaToCoverage) !=
-                                                               states_end;
+        pipeline_state_desc.BlendState.AlphaToCoverageEnable = std::find(states_begin,
+                                                                         states_end,
+                                                                         shaderpack::StateEnum::EnableAlphaToCoverage) != states_end;
         pipeline_state_desc.BlendState.IndependentBlendEnable = false;
         D3D12_RENDER_TARGET_BLEND_DESC& blend_state = pipeline_state_desc.BlendState.RenderTarget[0];
-        blend_state.BlendEnable = std::find(states_begin, states_end, state_enum::Blending) != states_end;
-        blend_state.SrcBlend = to_dx12_blend(input.source_blend_factor);
-        blend_state.DestBlend = to_dx12_blend(input.destination_blend_factor);
+        blend_state.BlendEnable = std::find(states_begin, states_end, shaderpack::StateEnum::Blending) != states_end;
+        blend_state.SrcBlend = to_dx12_blend(data.source_blend_factor);
+        blend_state.DestBlend = to_dx12_blend(data.destination_blend_factor);
         blend_state.BlendOp = D3D12_BLEND_OP_ADD;
-        blend_state.SrcBlendAlpha = to_dx12_blend(input.source_blend_factor);
-        blend_state.DestBlendAlpha = to_dx12_blend(input.destination_blend_factor);
+        blend_state.SrcBlendAlpha = to_dx12_blend(data.source_blend_factor);
+        blend_state.DestBlendAlpha = to_dx12_blend(data.destination_blend_factor);
         blend_state.BlendOpAlpha = D3D12_BLEND_OP_ADD;
         blend_state.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
         pipeline_state_desc.SampleMask = 0xFFFFFFFF;
@@ -624,18 +414,20 @@ namespace nova::renderer {
 
         D3D12_RASTERIZER_DESC& raster_desc = pipeline_state_desc.RasterizerState;
         raster_desc.FillMode = D3D12_FILL_MODE_SOLID;
-        if(std::find(states_begin, states_end, state_enum::InvertCulling) != states_end) {
+        if(std::find(states_begin, states_end, shaderpack::StateEnum::InvertCulling) != states_end) {
             raster_desc.CullMode = D3D12_CULL_MODE_FRONT;
-        } else if(std::find(states_begin, states_end, state_enum::DisableCulling) != states_end) {
+
+        } else if(std::find(states_begin, states_end, shaderpack::StateEnum::DisableCulling) != states_end) {
             raster_desc.CullMode = D3D12_CULL_MODE_NONE;
+
         } else {
             raster_desc.CullMode = D3D12_CULL_MODE_BACK;
         }
         raster_desc.FrontCounterClockwise = true;
-        raster_desc.DepthBias = static_cast<UINT>(std::round(input.depth_bias));
-        raster_desc.SlopeScaledDepthBias = input.slope_scaled_depth_bias;
+        raster_desc.DepthBias = static_cast<UINT>(std::round(data.depth_bias));
+        raster_desc.SlopeScaledDepthBias = data.slope_scaled_depth_bias;
         raster_desc.DepthClipEnable = true;
-        if(input.msaa_support != msaa_support_enum::None) {
+        if(data.msaa_support != shaderpack::MsaaSupportEnum::None) {
             raster_desc.MultisampleEnable = true;
         }
         raster_desc.ForcedSampleCount = 0;
@@ -646,26 +438,26 @@ namespace nova::renderer {
          */
 
         D3D12_DEPTH_STENCIL_DESC& ds_desc = pipeline_state_desc.DepthStencilState;
-        ds_desc.DepthEnable = std::find(states_begin, states_end, state_enum::DisableDepthTest) == states_end;
-        if(std::find(states_begin, states_end, state_enum::DisableDepthWrite) != states_end) {
+        ds_desc.DepthEnable = std::find(states_begin, states_end, shaderpack::StateEnum::DisableDepthTest) == states_end;
+        if(std::find(states_begin, states_end, shaderpack::StateEnum::DisableDepthWrite) != states_end) {
             ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
         } else {
             ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
         }
 
-        ds_desc.DepthFunc = to_dx12_compare_func(input.depth_func);
-        ds_desc.StencilEnable = std::find(states_begin, states_end, state_enum::EnableStencilTest) != states_end;
-        ds_desc.StencilReadMask = input.stencil_read_mask;
-        ds_desc.StencilWriteMask = input.stencil_write_mask;
-        if(input.front_face) {
-            const stencil_op_state& front_face = *input.front_face;
+        ds_desc.DepthFunc = to_dx12_compare_func(data.depth_func);
+        ds_desc.StencilEnable = std::find(states_begin, states_end, shaderpack::StateEnum::EnableStencilTest) != states_end;
+        ds_desc.StencilReadMask = data.stencil_read_mask;
+        ds_desc.StencilWriteMask = data.stencil_write_mask;
+        if(data.front_face) {
+            const shaderpack::StencilOpState& front_face = *data.front_face;
             ds_desc.FrontFace.StencilFailOp = to_dx12_stencil_op(front_face.fail_op);
             ds_desc.FrontFace.StencilDepthFailOp = to_dx12_stencil_op(front_face.depth_fail_op);
             ds_desc.FrontFace.StencilPassOp = to_dx12_stencil_op(front_face.pass_op);
             ds_desc.FrontFace.StencilFunc = to_dx12_compare_func(front_face.compare_op);
         }
-        if(input.back_face) {
-            const stencil_op_state& back_face = *input.back_face;
+        if(data.back_face) {
+            const shaderpack::StencilOpState& back_face = *data.back_face;
             ds_desc.BackFace.StencilFailOp = to_dx12_stencil_op(back_face.fail_op);
             ds_desc.BackFace.StencilDepthFailOp = to_dx12_stencil_op(back_face.depth_fail_op);
             ds_desc.BackFace.StencilPassOp = to_dx12_stencil_op(back_face.pass_op);
@@ -676,24 +468,7 @@ namespace nova::renderer {
          * Input description
          */
 
-        const std::unordered_map<vertex_field_enum, vertex_attribute> all_formats = get_all_vertex_attributes();
-
-        std::vector<D3D12_INPUT_ELEMENT_DESC> input_descs;
-        input_descs.reserve(input.vertex_fields.size());
-        for(const vertex_field_data& vertex_field : input.vertex_fields) {
-            const vertex_attribute& attr = all_formats.at(vertex_field.field);
-
-            D3D12_INPUT_ELEMENT_DESC desc = {};
-            desc.SemanticName = vertex_field.semantic_name.data();
-            desc.Format = attr.format;
-            desc.InputSlot = 0;
-            desc.AlignedByteOffset = attr.offset;
-            desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
-            desc.InstanceDataStepRate = 0;
-
-            input_descs.push_back(desc);
-        }
-
+        const std::vector<D3D12_INPUT_ELEMENT_DESC> input_descs = get_input_descriptions();
         pipeline_state_desc.InputLayout.NumElements = static_cast<UINT>(input_descs.size());
         pipeline_state_desc.InputLayout.pInputElementDescs = input_descs.data();
 
@@ -702,20 +477,21 @@ namespace nova::renderer {
          */
 
         pipeline_state_desc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
-        pipeline_state_desc.PrimitiveTopologyType = to_dx12_topology(input.primitive_mode);
+        pipeline_state_desc.PrimitiveTopologyType = to_dx12_topology(data.primitive_mode);
 
         /*
          * Render targets
          */
 
         uint32_t i = 0;
-        for(i = 0; i < render_pass.texture_outputs.size(); i++) {
-            const texture_attachment& attachment = render_pass.texture_outputs.at(i);
-            const dx12_texture& tex = dynamic_textures.at(attachment.name);
-            if(tex.is_depth_texture()) {
-                pipeline_state_desc.DSVFormat = tex.get_dxgi_format();
+        for(i = 0; i < dx12_pipeline_interface->color_attachments.size(); i++) {
+            const shaderpack::TextureAttachmentInfo& attachment_info = dx12_pipeline_interface->color_attachments.at(i);
+            if(attachment_info.pixel_format == shaderpack::PixelFormatEnum::Depth ||
+               attachment_info.pixel_format == shaderpack::PixelFormatEnum::DepthStencil) {
+                pipeline_state_desc.DSVFormat = to_dxgi_format(attachment_info.pixel_format);
+
             } else {
-                pipeline_state_desc.RTVFormats[i] = to_dxgi_format(tex.get_data().format.pixel_format);
+                pipeline_state_desc.RTVFormats[i] = to_dxgi_format(attachment_info.pixel_format);
             }
         }
         pipeline_state_desc.NumRenderTargets = i;
@@ -724,7 +500,7 @@ namespace nova::renderer {
          * Multisampling
          */
 
-        if(input.msaa_support != msaa_support_enum::None) {
+        if(data.msaa_support != shaderpack::MsaaSupportEnum::None) {
             pipeline_state_desc.SampleDesc.Count = 4;
             pipeline_state_desc.SampleDesc.Quality = 1;
         }
@@ -733,7 +509,7 @@ namespace nova::renderer {
          * Debugging
          */
 
-        if(nova_renderer::get_instance()->get_settings().debug.enabled) {
+        if(settings.settings.debug.enabled) {
             pipeline_state_desc.Flags = D3D12_PIPELINE_STATE_FLAG_TOOL_DEBUG;
         }
 
@@ -741,37 +517,455 @@ namespace nova::renderer {
          * PSO creation!
          */
 
-        const HRESULT hr = device->CreateGraphicsPipelineState(&pipeline_state_desc, IID_PPV_ARGS(&output.pso));
+        const HRESULT hr = device->CreateGraphicsPipelineState(&pipeline_state_desc, IID_PPV_ARGS(&pipeline->pso));
         if(FAILED(hr)) {
-            throw shader_compilation_failed("Could not create PSO");
+            return ntl::Result<Pipeline*>(MAKE_ERROR("Could not create PSO: {:s}", to_string(hr)));
         }
 
-        return output;
+        return ntl::Result(static_cast<Pipeline*>(pipeline));
     }
 
-    void add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type,
-                                          const D3D12_SHADER_INPUT_BIND_DESC& bind_desc,
-                                          const uint32_t set,
-                                          std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
-        D3D12_DESCRIPTOR_RANGE1 range = {};
-        range.BaseShaderRegister = bind_desc.BindPoint;
-        range.RegisterSpace = bind_desc.Space;
-        range.NumDescriptors = 1;
-        range.RangeType = descriptor_type;
-        range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    Buffer* D3D12RenderEngine::create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory) {
+        auto* buffer = new_object<DX12Buffer>();
 
-        tables[set].push_back(range);
+        D3D12_RESOURCE_STATES states = {};
+        switch(info.buffer_usage) {
+            case BufferUsage::UniformBuffer: {
+                states = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+            } break;
+
+            // Create the buffers as copy destinations. We'll change their state after we've copied to them
+            case BufferUsage::IndexBuffer:
+                [[fallthrough]];
+            case BufferUsage::VertexBuffer: {
+                states = D3D12_RESOURCE_STATE_COPY_DEST;
+            } break;
+
+            case BufferUsage::StagingBuffer: {
+                states = D3D12_RESOURCE_STATE_GENERIC_READ;
+            } break;
+
+            default:;
+        }
+
+        D3D12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(info.size);
+        const D3D12_RESOURCE_ALLOCATION_INFO allocation_desc = device->GetResourceAllocationInfo(0, 1, &resource_desc);
+
+        const auto allocation = memory.allocate(allocation_desc.SizeInBytes);
+        const auto* dx12_memory = static_cast<DX12DeviceMemory*>(allocation.memory);
+
+        device->CreatePlacedResource(dx12_memory->heap.Get(),
+                                     allocation.allocation_info.offset.b_count(),
+                                     &resource_desc,
+                                     states,
+                                     nullptr,
+                                     IID_PPV_ARGS(&buffer->resource));
+
+        buffer->size = bvestl::polyalloc::Bytes(allocation.allocation_info.size);
+
+        return buffer;
     }
 
-    ComPtr<ID3DBlob> compile_shader(const shader_source& shader,
+    void D3D12RenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const Buffer* buffer) {
+        const auto dx_buffer = static_cast<const DX12Buffer*>(buffer);
+
+        D3D12_RANGE mapped_range;
+        mapped_range.Begin = offset;
+        mapped_range.End = offset + num_bytes;
+
+        void* mapped_buffer;
+        dx_buffer->resource->Map(0, &mapped_range, &mapped_buffer);
+        std::memcpy(mapped_buffer, data, num_bytes);
+        dx_buffer->resource->Unmap(0, &mapped_range);
+    }
+
+    Image* D3D12RenderEngine::create_image(const shaderpack::TextureCreateInfo& info) {
+        const auto image = new_object<DX12Image>();
+        image->type = ResourceType::Image;
+
+        const shaderpack::TextureFormat& format = info.format;
+
+        glm::uvec2 dimensions;
+        if(format.dimension_type == shaderpack::TextureDimensionTypeEnum::Absolute) {
+            dimensions.x = static_cast<uint32_t>(format.width);
+            dimensions.y = static_cast<uint32_t>(format.height);
+        } else {
+            dimensions = swapchain->get_size();
+        }
+
+        const DXGI_FORMAT dx12_format = to_dxgi_format(format.pixel_format);
+
+        DXGI_SAMPLE_DESC sample_desc;
+        sample_desc.Count = 1;
+        sample_desc.Quality = 1;
+
+        D3D12_RESOURCE_DESC texture_desc = {};
+        texture_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        texture_desc.Alignment = 0;
+        texture_desc.Width = dimensions.x;
+        texture_desc.Height = dimensions.y;
+        texture_desc.DepthOrArraySize = 1;
+        texture_desc.MipLevels = 1;
+        texture_desc.Format = dx12_format;
+        texture_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+        texture_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+        texture_desc.SampleDesc = sample_desc;
+
+        D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+        if(format.pixel_format == shaderpack::PixelFormatEnum::Depth || format.pixel_format == shaderpack::PixelFormatEnum::DepthStencil) {
+            texture_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+            state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+            image->is_depth_tex = true;
+        }
+
+        auto heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+        const HRESULT hr = device->CreateCommittedResource(&heap_props,
+                                                           D3D12_HEAP_FLAG_NONE,
+                                                           &texture_desc,
+                                                           state,
+                                                           nullptr,
+                                                           IID_PPV_ARGS(image->resource.GetAddressOf()));
+
+        if(SUCCEEDED(hr)) {
+            image->resource->SetName(s2ws(info.name).c_str());
+            return image;
+
+        } else {
+            NOVA_LOG(ERROR) << "Could not create texture " << info.name << ": Error code " << hr << ", Error description: " << to_string(hr)
+                            << ", Windows error: '" << get_last_windows_error() << "'";
+            return nullptr;
+        }
+    }
+
+    Semaphore* D3D12RenderEngine::create_semaphore() {
+        auto* semaphore = new DX12Semaphore;
+
+        device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(semaphore->fence.GetAddressOf()));
+
+        return semaphore;
+    }
+
+    std::vector<Semaphore*> D3D12RenderEngine::create_semaphores(uint32_t num_semaphores) {
+        std::vector<Semaphore*> semaphores;
+        semaphores.reserve(num_semaphores);
+
+        for(int i = 0; i < num_semaphores; i++) {
+            semaphores.push_back(create_semaphore());
+        }
+
+        return semaphores;
+    }
+
+    Fence* D3D12RenderEngine::create_fence(const bool signaled) {
+        auto* fence = new_object<DX12Fence>();
+
+        const uint32_t initial_value = signaled ? CPU_FENCE_SIGNALED : 0;
+
+        device->CreateFence(initial_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence->fence.GetAddressOf()));
+        fence->event = CreateEvent(nullptr, false, signaled, nullptr);
+        fence->fence->SetEventOnCompletion(CPU_FENCE_SIGNALED, fence->event);
+
+        return fence;
+    }
+
+    std::vector<Fence*> D3D12RenderEngine::create_fences(const uint32_t num_fences, const bool signaled) {
+        std::vector<Fence*> fences;
+        fences.reserve(num_fences);
+
+        const uint32_t initial_value = signaled ? CPU_FENCE_SIGNALED : 0;
+        for(uint32_t i = 0; i < num_fences; i++) {
+            auto* fence = new_object<DX12Fence>();
+
+            device->CreateFence(initial_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence->fence.GetAddressOf()));
+            fence->event = CreateEvent(nullptr, false, signaled, nullptr);
+
+            fences.emplace_back(fence);
+        }
+
+        return fences;
+    }
+
+    void D3D12RenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
+        std::vector<HANDLE> all_events;
+        all_events.reserve(fences.size());
+
+        for(const Fence* fence : fences) {
+            const auto* dx_fence = static_cast<const DX12Fence*>(fence);
+            all_events.push_back(dx_fence->event);
+        }
+
+        WaitForMultipleObjects(all_events.size(), all_events.data(), true, INFINITE);
+    }
+
+    void D3D12RenderEngine::reset_fences(const std::vector<Fence*>& fences) {
+        for(Fence* fence : fences) {
+            auto* dx12_fence = static_cast<DX12Fence*>(fence);
+            ResetEvent(dx12_fence->event);
+        }
+    }
+
+    void D3D12RenderEngine::destroy_renderpass(Renderpass* /* pass */) { // No work needed, DX12Renderpasses don't own any GPU objects
+    }
+
+    void D3D12RenderEngine::destroy_framebuffer(Framebuffer* framebuffer) {
+        auto* d3d12_framebuffer = static_cast<DX12Framebuffer*>(framebuffer);
+
+        // TODO: Some way to free the framebuffer's RTV descriptors? Probably we'll just destroy all the rendergraph framebuffers together,
+        // completely clearing out the RTV descriptor heap
+    }
+
+    void D3D12RenderEngine::destroy_pipeline_interface(PipelineInterface* pipeline_interface) {
+        auto* dx12_interface = static_cast<DX12PipelineInterface*>(pipeline_interface);
+
+        dx12_interface->root_sig = nullptr;
+    }
+
+    void D3D12RenderEngine::destroy_pipeline(Pipeline* pipeline) {
+        auto* dx_pipeline = static_cast<DX12Pipeline*>(pipeline);
+        dx_pipeline->pso = nullptr;
+        dx_pipeline->root_signature = nullptr;
+    }
+
+    void D3D12RenderEngine::destroy_texture(Image* resource) {
+        auto* d3d12_framebuffer = static_cast<DX12Image*>(resource);
+        d3d12_framebuffer->resource = nullptr;
+    }
+
+    void D3D12RenderEngine::destroy_semaphores(std::vector<Semaphore*>& semaphores) {
+        for(Semaphore* semaphore : semaphores) {
+            auto* dx_semaphore = static_cast<DX12Semaphore*>(semaphore);
+            dx_semaphore->fence = nullptr;
+        }
+    }
+
+    void D3D12RenderEngine::destroy_fences(std::vector<Fence*>& fences) {
+        for(Fence* fence : fences) {
+            auto* dx_fence = static_cast<DX12Fence*>(fence);
+            dx_fence->fence = nullptr;
+            CloseHandle(dx_fence->event);
+        }
+    }
+
+    CommandList* D3D12RenderEngine::get_command_list(const uint32_t thread_idx,
+                                                     const QueueType needed_queue_type,
+                                                     const CommandList::Level level) {
+        D3D12_COMMAND_LIST_TYPE command_list_type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+        if(level == CommandList::Level::Secondary) {
+            command_list_type = D3D12_COMMAND_LIST_TYPE_BUNDLE;
+
+        } else {
+            switch(needed_queue_type) {
+                case QueueType::Graphics:
+                    command_list_type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+                    break;
+
+                case QueueType::Transfer:
+                    command_list_type = D3D12_COMMAND_LIST_TYPE_COPY;
+                    break;
+
+                case QueueType::AsyncCompute:
+                    command_list_type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+                    break;
+            }
+        }
+
+        const ComPtr<ID3D12CommandAllocator> command_allocator = command_allocators.at(thread_idx).at(command_list_type);
+
+        ComPtr<ID3D12CommandList> list;
+        device->CreateCommandList(0, command_list_type, command_allocator.Get(), nullptr, IID_PPV_ARGS(&list));
+
+        ComPtr<ID3D12GraphicsCommandList> graphics_list;
+        list->QueryInterface(IID_PPV_ARGS(&graphics_list));
+
+        return new_object<Dx12CommandList>(graphics_list);
+    }
+
+    void D3D12RenderEngine::submit_command_list(CommandList* cmds,
+                                                const QueueType queue,
+                                                Fence* fence_to_signal,
+                                                const std::vector<Semaphore*>& wait_semaphores,
+                                                const std::vector<Semaphore*>& signal_semaphores) {
+        auto* dx_cmds = static_cast<Dx12CommandList*>(cmds);
+        dx_cmds->cmds->Close();
+
+        ComPtr<ID3D12CommandQueue> dx_queue;
+        switch(queue) {
+            case QueueType::Graphics:
+                dx_queue = direct_command_queue;
+                break;
+
+            case QueueType::Transfer:
+                dx_queue = copy_command_queue;
+                break;
+
+            case QueueType::AsyncCompute:
+                dx_queue = compute_command_queue;
+                break;
+        }
+
+        ID3D12GraphicsCommandList* gfx_cmds = dx_cmds->cmds.Get();
+        ID3D12CommandList* submittable_cmds;
+        gfx_cmds->QueryInterface(IID_PPV_ARGS(&submittable_cmds));
+
+        for(const Semaphore* semaphore : wait_semaphores) {
+            const auto* dx_semaphore = static_cast<const DX12Semaphore*>(semaphore);
+            dx_queue->Wait(dx_semaphore->fence.Get(), GPU_FENCE_SIGNALED);
+        }
+        dx_queue->ExecuteCommandLists(1, &submittable_cmds);
+
+        for(const Semaphore* semaphore : signal_semaphores) {
+            const auto* dx_semaphore = static_cast<const DX12Semaphore*>(semaphore);
+            dx_queue->Signal(dx_semaphore->fence.Get(), GPU_FENCE_SIGNALED);
+        }
+
+        if(fence_to_signal) {
+            const auto* dx_signal_fence = static_cast<const DX12Fence*>(fence_to_signal);
+            dx_queue->Signal(dx_signal_fence->fence.Get(), CPU_FENCE_SIGNALED);
+            dx_signal_fence->fence->SetEventOnCompletion(CPU_FENCE_SIGNALED, dx_signal_fence->event);
+        }
+    }
+
+    void D3D12RenderEngine::open_window_and_create_swapchain(const NovaSettings::WindowOptions& options, const uint32_t num_frames) {
+        window = std::make_unique<Win32Window>(options);
+
+        auto* win32_window = static_cast<Win32Window*>(window.get());
+
+        const auto window_handle = win32_window->get_window_handle();
+
+        swapchain = new DX12Swapchain(this,
+                                      dxgi_factory.Get(),
+                                      device.Get(),
+                                      window_handle,
+                                      glm::uvec2{options.height, options.width},
+                                      num_frames,
+                                      direct_command_queue.Get());
+    }
+
+    void D3D12RenderEngine::create_device() {
+        if(settings.settings.debug.enabled && settings.settings.debug.enable_validation_layers) {
+            ComPtr<ID3D12Debug> debug_controller;
+            D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
+            debug_controller->EnableDebugLayer();
+
+            if(settings.settings.debug.enable_gpu_based_validation) {
+                ComPtr<ID3D12Debug1> debug1;
+                const auto hr = debug_controller->QueryInterface(IID_PPV_ARGS(&debug1));
+                if(SUCCEEDED(hr)) {
+                    debug1->SetEnableGPUBasedValidation(true);
+                }
+            }
+        }
+
+        NOVA_LOG(TRACE) << "Creating DX12 device";
+
+        CHECK_ERROR(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&dxgi_factory)), "Could not create DXGI Factory");
+
+        NOVA_LOG(TRACE) << "Device created";
+
+        ComPtr<IDXGIAdapter1> adapter1;
+
+        uint32_t adapter_index = 0;
+        bool adapter_found = false;
+
+        while(dxgi_factory->EnumAdapters1(adapter_index, &adapter1) != DXGI_ERROR_NOT_FOUND) {
+            DXGI_ADAPTER_DESC1 desc;
+            adapter1->GetDesc1(&desc);
+
+            if(desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
+                // Ignore software devices
+                adapter_index++;
+                continue;
+            }
+
+            // Direct3D 12 is feature level 11.
+            //
+            // cool
+            const HRESULT hr = D3D12CreateDevice(adapter1.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
+            if(SUCCEEDED(hr)) {
+                adapter_found = true;
+                adapter1->QueryInterface(IID_PPV_ARGS(&adapter));
+
+                if(adapter) {
+                    adapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &local_info);
+                    adapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &non_local_info);
+
+                } else {
+                    NOVA_LOG(ERROR) << "Needed adapter interface not supported";
+                }
+
+                break;
+            }
+
+            adapter_index++;
+        }
+
+        if(!adapter_found) {
+            NOVA_LOG(ERROR) << "Could not find a GPU that supports DX12";
+        }
+    }
+
+    void D3D12RenderEngine::create_queues() {
+        D3D12_COMMAND_QUEUE_DESC rtv_queue_desc = {};
+        rtv_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+        CHECK_ERROR(device->CreateCommandQueue(&rtv_queue_desc, IID_PPV_ARGS(&direct_command_queue)),
+                    "Could not create main command queue");
+
+        D3D12_COMMAND_QUEUE_DESC compute_queue_desc = {};
+        compute_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+        CHECK_ERROR(device->CreateCommandQueue(&compute_queue_desc, IID_PPV_ARGS(&compute_command_queue)),
+                    "Could not create asymc compute command queue");
+
+        D3D12_COMMAND_QUEUE_DESC copy_queue_desc = {};
+        copy_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
+        CHECK_ERROR(device->CreateCommandQueue(&copy_queue_desc, IID_PPV_ARGS(&copy_command_queue)), "Could not create copy command queue");
+    }
+
+    void D3D12RenderEngine::create_command_allocators() {
+        // TODO: Make this real
+        const uint32_t num_threads = 1;
+
+        command_allocators.reserve(num_threads);
+        for(uint32_t i = 0; i < num_threads; i++) {
+            std::unordered_map<D3D12_COMMAND_LIST_TYPE, ComPtr<ID3D12CommandAllocator>> allocators_for_one_thread;
+            allocators_for_one_thread.reserve(3);
+
+            ComPtr<ID3D12CommandAllocator> direct_command_allocator;
+            device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(direct_command_allocator.GetAddressOf()));
+            allocators_for_one_thread.emplace(D3D12_COMMAND_LIST_TYPE_DIRECT, direct_command_allocator);
+
+            ComPtr<ID3D12CommandAllocator> compute_command_allocator;
+            device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COMPUTE, IID_PPV_ARGS(compute_command_allocator.GetAddressOf()));
+            allocators_for_one_thread.emplace(D3D12_COMMAND_LIST_TYPE_COMPUTE, compute_command_allocator);
+
+            ComPtr<ID3D12CommandAllocator> copy_command_allocator;
+            device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COPY, IID_PPV_ARGS(copy_command_allocator.GetAddressOf()));
+            allocators_for_one_thread.emplace(D3D12_COMMAND_LIST_TYPE_COPY, copy_command_allocator);
+
+            command_allocators.push_back(allocators_for_one_thread);
+        }
+    }
+
+    void D3D12RenderEngine::setup_debug_output() {
+        const auto hr = device->QueryInterface(IID_PPV_ARGS(&info_queue));
+        if(SUCCEEDED(hr)) {
+            info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+            info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+
+        } else {
+            NOVA_LOG(ERROR) << "Could not set up debugging: " << to_string(hr);
+        }
+    }
+
+    ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,
                                     const std::string& target,
                                     const spirv_cross::CompilerHLSL::Options& options,
                                     std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
 
-        spirv_cross::CompilerHLSL shader_compiler(shader.source);
-        shader_compiler.set_hlsl_options(options);
+        auto* shader_compiler = new spirv_cross::CompilerHLSL(shader.source);
+        shader_compiler->set_hlsl_options(options);
 
-        const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
+        const spirv_cross::ShaderResources resources = shader_compiler->get_shader_resources();
 
         // Make maps of all the types of things we care about
         std::unordered_map<std::string, spirv_cross::Resource> spirv_sampled_images;
@@ -786,7 +980,7 @@ namespace nova::renderer {
             spirv_uniform_buffers[uniform_buffer.name] = uniform_buffer;
         }
 
-        std::string shader_hlsl = shader_compiler.compile();
+        const auto& shader_hlsl = shader_compiler->compile();
 
         const fs::path& filename = shader.filename;
         fs::path debug_path = filename.filename();
@@ -813,19 +1007,21 @@ namespace nova::renderer {
             std::stringstream ss;
             ss << "Could not compile vertex shader for pipeline " << filename.string() << ": "
                << static_cast<char*>(shader_compile_errors->GetBufferPointer());
-            throw shader_compilation_failed(ss.str());
+            return {};
         }
 
         ComPtr<ID3D12ShaderReflection> shader_reflector;
         hr = D3DReflect(shader_blob->GetBufferPointer(), shader_blob->GetBufferSize(), IID_PPV_ARGS(&shader_reflector));
         if(FAILED(hr)) {
-            throw shader_reflection_failed("Could not create reflector, error code " + std::to_string(hr));
+            NOVA_LOG(ERROR) << "Could not create reflector, error code " << std::to_string(hr);
+            return {};
         }
 
         D3D12_SHADER_DESC shader_desc;
         hr = shader_reflector->GetDesc(&shader_desc);
         if(FAILED(hr)) {
-            throw shader_reflection_failed("Could not get shader description");
+            NOVA_LOG(ERROR) << "Could not get shader description";
+            return {};
         }
 
         std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC> shader_inputs(shader_desc.BoundResources);
@@ -835,7 +1031,8 @@ namespace nova::renderer {
             D3D12_SHADER_INPUT_BIND_DESC bind_desc;
             hr = shader_reflector->GetResourceBindingDesc(i, &bind_desc);
             if(FAILED(hr)) {
-                throw shader_reflection_failed("Could not get description for bind point " + std::to_string(i));
+                NOVA_LOG(ERROR) << "Could not get description for bind point " << std::to_string(i);
+                return {};
             }
 
             D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type = {};
@@ -846,7 +1043,7 @@ namespace nova::renderer {
                 case D3D_SIT_CBUFFER:
                     descriptor_type = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
                     spirv_resource = spirv_uniform_buffers.at(bind_desc.Name);
-                    set = shader_compiler.get_decoration(spirv_resource.id, spv::DecorationDescriptorSet);
+                    set = shader_compiler->get_decoration(spirv_resource.id, spv::DecorationDescriptorSet);
                     add_resource_to_descriptor_table(descriptor_type, bind_desc, set, tables);
                     break;
 
@@ -854,7 +1051,7 @@ namespace nova::renderer {
                 case D3D_SIT_TBUFFER:
                     descriptor_type = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
                     spirv_resource = spirv_sampled_images.at(bind_desc.Name);
-                    set = shader_compiler.get_decoration(spirv_resource.id, spv::DecorationDescriptorSet);
+                    set = shader_compiler->get_decoration(spirv_resource.id, spv::DecorationDescriptorSet);
                     add_resource_to_descriptor_table(descriptor_type, bind_desc, set, tables);
 
                     // Also add a descriptor table entry for the sampler
@@ -865,13 +1062,7 @@ namespace nova::renderer {
                     descriptor_type = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
                     break;
 
-                case D3D_SIT_STRUCTURED:
-                case D3D_SIT_UAV_RWTYPED:
-                case D3D_SIT_UAV_RWSTRUCTURED:
-                case D3D_SIT_UAV_RWBYTEADDRESS:
-                case D3D_SIT_UAV_APPEND_STRUCTURED:
-                case D3D_SIT_UAV_CONSUME_STRUCTURED:
-                case D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER:
+                default:
                     descriptor_type = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
                     break;
             }
@@ -880,99 +1071,17 @@ namespace nova::renderer {
         return shader_blob;
     }
 
-    ComPtr<ID3D12RootSignature> dx12_render_engine::create_root_signature(
-        const std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) const {
-        std::vector<D3D12_ROOT_PARAMETER1> params(tables.size());
-        std::size_t cur_param = 0;
-        for(const auto& table : tables) {
-            D3D12_ROOT_PARAMETER1& parameter = params.at(cur_param);
-            parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-            parameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-            parameter.DescriptorTable.NumDescriptorRanges = static_cast<UINT>(table.second.size());
-            parameter.DescriptorTable.pDescriptorRanges = table.second.data();
+    void add_resource_to_descriptor_table(const D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type,
+                                          const D3D12_SHADER_INPUT_BIND_DESC& bind_desc,
+                                          const uint32_t set,
+                                          std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
+        D3D12_DESCRIPTOR_RANGE1 range = {};
+        range.BaseShaderRegister = bind_desc.BindPoint;
+        range.RegisterSpace = bind_desc.Space;
+        range.NumDescriptors = 1;
+        range.RangeType = descriptor_type;
+        range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-            cur_param++;
-        }
-
-        D3D12_VERSIONED_ROOT_SIGNATURE_DESC versioned_sig = {};
-        versioned_sig.Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
-        versioned_sig.Desc_1_1.NumParameters = static_cast<UINT>(params.size());
-        versioned_sig.Desc_1_1.pParameters = params.data();
-
-        ComPtr<ID3DBlob> compiled_root_sig;
-        ComPtr<ID3DBlob> root_sig_compile_error;
-        HRESULT hr = D3D12SerializeVersionedRootSignature(&versioned_sig, &compiled_root_sig, &root_sig_compile_error);
-        if(FAILED(hr)) {
-            const std::string root_sig_compile_error_str = static_cast<char*>(root_sig_compile_error->GetBufferPointer());
-            throw shader_compilation_failed("Could not compile root signature: " + root_sig_compile_error_str);
-        }
-
-        ComPtr<ID3D12RootSignature> root_sig;
-        hr = device->CreateRootSignature(0,
-                                         compiled_root_sig->GetBufferPointer(),
-                                         compiled_root_sig->GetBufferSize(),
-                                         IID_PPV_ARGS(&root_sig));
-        if(FAILED(hr)) {
-            throw shader_compilation_failed("Could not create root signature");
-        }
-
-        return root_sig;
+        tables[set].push_back(range);
     }
-
-    bool operator==(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2) {
-        if(param1.ParameterType != param2.ParameterType) {
-            return false;
-        }
-
-        switch(param1.ParameterType) {
-            case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
-                return param1.DescriptorTable == param2.DescriptorTable;
-
-            case D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS:
-                return param1.Constants == param2.Constants;
-
-            case D3D12_ROOT_PARAMETER_TYPE_CBV:
-            case D3D12_ROOT_PARAMETER_TYPE_SRV:
-            case D3D12_ROOT_PARAMETER_TYPE_UAV:
-                return param1.Descriptor == param2.Descriptor;
-
-            default:
-                return false;
-        }
-    }
-
-    bool operator!=(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2) { return !(param1 == param2); }
-
-    bool operator==(const D3D12_ROOT_DESCRIPTOR_TABLE1& table1, const D3D12_ROOT_DESCRIPTOR_TABLE1& table2) {
-        if(table1.NumDescriptorRanges != table2.NumDescriptorRanges) {
-            return false;
-        }
-
-        for(uint32_t i = 0; i < table1.NumDescriptorRanges; i++) {
-            if(table1.pDescriptorRanges[i] != table2.pDescriptorRanges[i]) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool operator!=(const D3D12_ROOT_DESCRIPTOR_TABLE1& table1, const D3D12_ROOT_DESCRIPTOR_TABLE1& table2) { return !(table1 == table2); }
-
-    bool operator==(const D3D12_DESCRIPTOR_RANGE1& range1, const D3D12_DESCRIPTOR_RANGE1& range2) {
-        return range1.RangeType == range2.RangeType && range1.NumDescriptors == range2.NumDescriptors &&
-               range1.BaseShaderRegister == range2.BaseShaderRegister && range1.RegisterSpace == range2.RegisterSpace &&
-               range1.Flags == range2.Flags && range1.OffsetInDescriptorsFromTableStart == range2.OffsetInDescriptorsFromTableStart;
-    }
-
-    bool operator!=(const D3D12_DESCRIPTOR_RANGE1& range1, const D3D12_DESCRIPTOR_RANGE1& range2) { return !(range1 == range2); }
-
-    bool operator==(const D3D12_ROOT_CONSTANTS& lhs, const D3D12_ROOT_CONSTANTS& rhs) {
-        return lhs.ShaderRegister == rhs.ShaderRegister && lhs.RegisterSpace == rhs.RegisterSpace &&
-               lhs.Num32BitValues == rhs.Num32BitValues;
-    }
-
-    bool operator==(const D3D12_ROOT_DESCRIPTOR1& lhs, const D3D12_ROOT_DESCRIPTOR1& rhs) {
-        return lhs.ShaderRegister == rhs.ShaderRegister && lhs.RegisterSpace == rhs.RegisterSpace && lhs.Flags == rhs.Flags;
-    }
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi

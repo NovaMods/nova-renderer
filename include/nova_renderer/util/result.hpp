@@ -4,46 +4,58 @@
 #include <memory>
 #include <string>
 
+// ReSharper thinks that the include isn't used, but it's used in a macro so it needs to be here
+// ReSharper disable once CppUnusedIncludeDirective
 #include <fmt/format.h>
 
-#include "utils.hpp"
-
-namespace nova::renderer {
-    struct nova_error {
+namespace ntl {
+    struct NovaError {
         std::string message = "";
 
-        std::unique_ptr<nova_error> cause;
+        std::unique_ptr<NovaError> cause;
+        
+        explicit NovaError(const std::string& message);
 
-        nova_error() = default;
-
-        explicit nova_error(std::string message);
-
-        nova_error(std::string message, nova_error cause);
+        NovaError(const std::string& message, NovaError cause);
 
         [[nodiscard]] std::string to_string() const;
     };
 
-    inline nova_error operator""_err(const char* str, std::size_t size) { return nova_error(std::string(str, size)); }
+    inline NovaError operator""_err(const char* str, const std::size_t size) { return NovaError(std::string(str, size)); }
 
-    template <typename ValueType>
-    struct result {
+    template <typename ValueType, typename ErrorType = NovaError>
+    struct [[nodiscard]] Result {
         union {
             ValueType value;
-            nova_error error;
+            ErrorType error;
         };
 
         bool has_value = false;
 
-        explicit result(ValueType&& value) : value(value), has_value(true) {}
+        explicit Result(ValueType&& value) : value(value), has_value(true) {}
 
-        explicit result(const ValueType& value) : value(value), has_value(true) {}
+        explicit Result(const ValueType& value) : value(value), has_value(true) {}
 
-        explicit result(nova_error error) : error(std::move(error)) {}
+        explicit Result(ErrorType error) : error(std::move(error)) {}
 
-        result(const result<ValueType>& other) = delete;
-        result<ValueType>& operator=(const result<ValueType>& other) = delete;
+        explicit Result(const Result<ValueType, ErrorType>& other) {
+            if(other.has_value) {
+                value = other.value;
+            } else {
+                error = other.error;
+            }
+        };
+        Result& operator=(const Result<ValueType, ErrorType>& other) {
+            if(other.has_value) {
+                value = other.value;
+            } else {
+                error = other.error;
+            }
 
-        result(result<ValueType>&& old) noexcept {
+            return *this;
+        };
+
+        explicit Result(Result<ValueType, ErrorType>&& old) noexcept {
             if(old.has_value) {
                 value = std::move(old.value);
                 old.value = {};
@@ -55,7 +67,7 @@ namespace nova::renderer {
             }
         };
 
-        result<ValueType>& operator=(result<ValueType>&& old) noexcept {
+        Result& operator=(Result<ValueType, ErrorType>&& old) noexcept {
             if(old.has_value) {
                 value = old.value;
                 old.value = {};
@@ -69,33 +81,33 @@ namespace nova::renderer {
             return *this;
         };
 
-        ~result() {
+        ~Result() {
             if(has_value) {
                 value.~ValueType();
             } else {
-                error.~nova_error();
+                error.~ErrorType();
             }
         }
 
         template <typename FuncType>
-        auto map(FuncType&& func) -> result<decltype(func(value))> {
+        auto map(FuncType&& func) -> Result<decltype(func(value))> {
             using RetVal = decltype(func(value));
 
             if(has_value) {
-                return result<RetVal>(func(value));
+                return Result<RetVal>(func(value));
             } else {
-                return result<RetVal>(std::move(error));
+                return Result<RetVal>(std::move(error));
             }
         }
 
         template <typename FuncType>
-        auto flatMap(FuncType&& func) -> result<decltype(func(value).value)> {
+        auto flat_map(FuncType&& func) -> Result<decltype(func(value).value)> {
             using RetVal = decltype(func(value).value);
 
             if(has_value) {
                 return func(value);
             } else {
-                return result<RetVal>(std::move(error));
+                return Result<RetVal>(std::move(error));
             }
         }
 
@@ -106,12 +118,20 @@ namespace nova::renderer {
             }
         }
 
-        void on_error(std::function<void(const nova_error&)> error_func) const {
+        void on_error(std::function<void(const ErrorType&)> error_func) const {
             if(!has_value) {
                 error_func(error);
             }
         }
+
+        // ReSharper disable once CppNonExplicitConversionOperator
+        operator bool() const { return has_value; }
+
+        ValueType operator*() { return value; }
     };
 
-#define MAKE_ERROR(s, ...) nova_error(fmt::format(fmt(s), __VA_ARGS__))
-} // namespace nova::renderer
+    template <typename ValueType>
+    Result(ValueType value)->Result<ValueType>;
+
+#define MAKE_ERROR(s, ...) ::ntl::NovaError(fmt::format(fmt(s), __VA_ARGS__).c_str())
+} // namespace ntl

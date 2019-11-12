@@ -1,5 +1,9 @@
-#include "nova_renderer/util/utils.hpp"
+/*!
+ * \author David
+ * \date 18-May-16.
+ */
 
+#include "nova_renderer/util/utils.hpp"
 #include "logger.hpp"
 
 namespace nova::renderer {
@@ -7,9 +11,9 @@ namespace nova::renderer {
     std::vector<std::string> split(const std::string& s, char delim) {
         std::vector<std::string> tokens;
         std::string token;
-        std::istringstream tokenStream(s);
+        std::istringstream tokenStream(s.c_str());
         while(std::getline(tokenStream, token, delim)) {
-            tokens.push_back(token);
+            tokens.push_back(token.c_str());
         }
         return tokens;
     }
@@ -17,13 +21,13 @@ namespace nova::renderer {
     std::string join(const std::vector<std::string>& strings, const std::string& joiner = ", ") {
         std::stringstream ss;
         for(size_t i = 0; i < strings.size(); i++) {
-            ss << strings[i];
+            ss << strings[i].c_str();
             if(i < strings.size() - 1) {
-                ss << joiner;
+                ss << joiner.c_str();
             }
         }
 
-        return ss.str();
+        return ss.str().c_str();
     }
 
     std::string print_color(unsigned int color) {
@@ -35,7 +39,7 @@ namespace nova::renderer {
         std::stringstream str;
         str << "(" << red << ", " << green << ", " << blue << ", " << alpha << ")";
 
-        return str.str();
+        return str.str().c_str();
     }
 
     std::string print_array(int* const data, int size) {
@@ -45,7 +49,7 @@ namespace nova::renderer {
             ss << data[i] << " ";
         }
 
-        return ss.str();
+        return ss.str().c_str();
     }
 
     bool ends_with(const std::string& string, const std::string& ending) {
@@ -58,7 +62,7 @@ namespace nova::renderer {
     void write_to_file(const std::string& data, const fs::path& filepath) {
         std::ofstream os(filepath);
         if(os.good()) {
-            os << data;
+            os << data.c_str();
         }
         os.close();
     }
@@ -70,26 +74,4 @@ namespace nova::renderer {
         }
         os.close();
     }
-
-    nova_exception::nova_exception() : msg(generate_msg(typeid(*this).name(), std::nullopt)) {}
-
-    nova_exception::nova_exception(const std::exception& cause) : msg(generate_msg("", cause)) {}
-
-    nova_exception::nova_exception(const std::string& msg) : msg(generate_msg(msg, std::nullopt)) {}
-
-    nova_exception::nova_exception(const std::string& msg, const std::exception& cause) : msg(generate_msg(msg, cause)) {}
-
-    std::string nova_exception::generate_msg(const std::string& msg, const std::optional<std::exception>& exception) {
-        std::stringstream ss;
-
-        ss << msg;
-
-        if(exception) {
-            ss << "\nCaused by: " << exception->what();
-        }
-
-        return ss.str();
-    }
-
-    const char* nova_exception::what() const noexcept { return msg.c_str(); }
 } // namespace nova::renderer

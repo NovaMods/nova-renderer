@@ -1,35 +1,38 @@
 #include "renderdoc.hpp"
 
+#include "../util/logger.hpp"
 #include "nova_renderer/util/platform.hpp"
 #include "nova_renderer/util/utils.hpp"
-
-#include "../util/logger.hpp"
 
 #if defined(NOVA_WINDOWS)
 #include "../util/windows.hpp"
 #include "../util/windows_utils.hpp"
+
+// Fucking hell
+#ifdef ERROR
+#undef ERROR
+#endif
 #elif defined(NOVA_LINUX)
 #include <dlfcn.h>
-
 #include "../util/linux_utils.hpp"
 #endif
 
 namespace nova::renderer {
-    result<RENDERDOC_API_1_3_0*> load_renderdoc(const std::string& renderdoc_dll_path) {
+    ntl::Result<RENDERDOC_API_1_3_0*> load_renderdoc(const std::string& renderdoc_dll_path) {
 #if defined(NOVA_WINDOWS)
-        using HINSTANCE = HINSTANCE__* const;
-        HINSTANCE renderdoc_dll = LoadLibrary(renderdoc_dll_path.c_str());
+        using Hinstance = HINSTANCE__* const;
+        Hinstance renderdoc_dll = LoadLibrary(renderdoc_dll_path.c_str());
         if(!renderdoc_dll) {
             const std::string error = get_last_windows_error();
-            return result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc. Error: {:s}", error));
+            return ntl::Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc. Error: {:s}", error.c_str()));
         }
 
-        NOVA_LOG(TRACE) << "Loaded RenderDoc DLL from " << renderdoc_dll_path;
+        NOVA_LOG(TRACE) << "Loaded RenderDoc DLL from " << renderdoc_dll_path.c_str();
 
         const auto get_api = reinterpret_cast<pRENDERDOC_GetAPI>(GetProcAddress(renderdoc_dll, "RENDERDOC_GetAPI"));
         if(!get_api) {
             const std::string error = get_last_windows_error();
-            return result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc DLL. Error: {:s}", error));
+            return ntl::Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc DLL. Error: {:s}", error.c_str()));
         }
 
 #elif defined(NOVA_LINUX)
@@ -38,13 +41,13 @@ namespace nova::renderer {
             // Try to load system-wide version of renderdoc
             renderdoc_so = dlopen("librenderdoc.so", RTLD_NOW);
             if(renderdoc_so == nullptr) {
-                return result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc DLL. Error: {:s}", dlerror()));
+                return ntl::Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc DLL. Error: {:s}", dlerror()));
             }
         }
 
         const auto get_api = reinterpret_cast<pRENDERDOC_GetAPI>(dlsym(renderdoc_so, "RENDERDOC_GetAPI"));
         if(get_api == nullptr) {
-            return result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not find the RenderDoc API loading function. Error: {:s}", dlerror()));
+            return ntl::Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not find the RenderDoc API loading function. Error: {:s}", dlerror()));
         }
 #endif
 
@@ -53,10 +56,10 @@ namespace nova::renderer {
         if(ret != 1) {
             NOVA_LOG(ERROR) << "Could not load RenderDoc API";
 
-            return result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc API. Error code {:d}", ret));
+            return ntl::Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc API. Error code {:d}", ret));
         }
 
         NOVA_LOG(TRACE) << "Loaded RenderDoc 1.3 API";
-        return result(api);
+        return ntl::Result(api);
     }
 } // namespace nova::renderer

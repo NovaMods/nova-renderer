@@ -1,7 +1,9 @@
+/*!
+ * \author ddubois
+ * \date 10-Oct-18.
+ */
+
 #include "windows_utils.hpp"
-
-#include <string>
-
 #include "windows.hpp"
 
 std::wstring s2ws(const std::string& s) {

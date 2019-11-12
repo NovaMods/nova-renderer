@@ -1,15 +1,18 @@
 /*!
  * \brief Contains a bunch of utility functions which may or may not be actually used anywhere
+ *
+ * \author David
+ * \date 18-May-16.
  */
 
-#pragma once
+#ifndef RENDERER_UTILS_H
+#define RENDERER_UTILS_H
 
 #include <algorithm>
-#include <exception>
-#include <fstream>
-#include <optional>
 #include <string>
 #include <vector>
+
+#include <fstream>
 
 #include "filesystem.hpp"
 
@@ -41,35 +44,8 @@ namespace nova::renderer {
     void write_to_file(const std::string& data, const fs::path& filepath);
 
     void write_to_file(const std::vector<uint32_t>& data, const fs::path& filepath);
-
-    class nova_exception : public std::exception {
-    private:
-        std::string msg;
-
-        std::string generate_msg(const std::string& msg, const std::optional<std::exception>& exception);
-
-    public:
-        nova_exception();
-        explicit nova_exception(const std::string& msg);
-
-        explicit nova_exception(const std::exception& cause);
-        nova_exception(const std::string& msg, const std::exception& cause);
-        [[nodiscard]] const char* what() const noexcept override;
-    };
-
+    
 #define FORMAT(s, ...) fmt::format(fmt(s), __VA_ARGS__)
-
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define NOVA_EXCEPTION(name)                                                                                                               \
-    /* NOLINTNEXTLINE(bugprone-macro-parentheses)*/                                                                                        \
-    class name : public ::nova::renderer::nova_exception {                                                                                 \
-    public:                                                                                                                                \
-        name(){};                                                                                                                          \
-        explicit name(const std::string& msg) : ::nova::renderer::nova_exception(msg){};                                                   \
-                                                                                                                                           \
-        explicit name(const std::exception& cause) : ::nova::renderer::nova_exception(cause){};                                            \
-        name(const std::string& msg, const std::exception& cause) : ::nova::renderer::nova_exception(msg, cause){};                        \
-    }
-
-    NOVA_EXCEPTION(out_of_gpu_memory);
 } // namespace nova::renderer
+
+#endif // RENDERER_UTILS_H

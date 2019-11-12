@@ -1,36 +1,80 @@
 #include "dx12_utils.hpp"
 
-namespace nova::renderer {
-    D3D12_BLEND to_dx12_blend(const blend_factor_enum blend_factor) {
+#include "nova_renderer/renderables.hpp"
+
+namespace nova::renderer::rhi {
+    D3D12_RESOURCE_STATES to_dx12_state(const ResourceState state) {
+        switch(state) {
+            case ResourceState::Common:
+                return D3D12_RESOURCE_STATE_COMMON;
+
+            case ResourceState::RenderTarget:
+                return D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+            case ResourceState::DepthWrite:
+                return D3D12_RESOURCE_STATE_DEPTH_WRITE;
+
+            case ResourceState::DepthRead:
+                return D3D12_RESOURCE_STATE_DEPTH_READ;
+
+            case ResourceState::PresentSource:
+                return D3D12_RESOURCE_STATE_PRESENT;
+
+            case ResourceState::UniformBuffer:
+                [[fallthrough]];
+            case ResourceState::VertexBuffer:
+                return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+
+            case ResourceState::IndexBuffer:
+                return D3D12_RESOURCE_STATE_INDEX_BUFFER;
+
+            case ResourceState::ShaderRead:
+                return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+
+            case ResourceState::ShaderWrite:
+                return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
+            case ResourceState::CopySource:
+                return D3D12_RESOURCE_STATE_COPY_SOURCE;
+
+            case ResourceState::CopyDestination:
+                return D3D12_RESOURCE_STATE_COPY_DEST;
+
+            default:
+                return D3D12_RESOURCE_STATE_COMMON;
+        }
+    }
+
+    D3D12_BLEND to_dx12_blend(const shaderpack::BlendFactorEnum blend_factor) {
         switch(blend_factor) {
-            case blend_factor_enum::One:
+            case shaderpack::BlendFactorEnum::One:
                 return D3D12_BLEND_ONE;
 
-            case blend_factor_enum::Zero:
+            case shaderpack::BlendFactorEnum::Zero:
                 return D3D12_BLEND_ZERO;
 
-            case blend_factor_enum::SrcColor:
+            case shaderpack::BlendFactorEnum::SrcColor:
                 return D3D12_BLEND_SRC_COLOR;
 
-            case blend_factor_enum::DstColor:
+            case shaderpack::BlendFactorEnum::DstColor:
                 return D3D12_BLEND_DEST_COLOR;
 
-            case blend_factor_enum::OneMinusSrcColor:
+            case shaderpack::BlendFactorEnum::OneMinusSrcColor:
                 return D3D12_BLEND_INV_SRC_COLOR;
 
-            case blend_factor_enum::OneMinusDstColor:
+            case shaderpack::BlendFactorEnum::OneMinusDstColor:
                 return D3D12_BLEND_INV_DEST_COLOR;
 
-            case blend_factor_enum::SrcAlpha:
+            case shaderpack::BlendFactorEnum::SrcAlpha:
                 return D3D12_BLEND_SRC_ALPHA;
 
-            case blend_factor_enum::DstAlpha:
+            case shaderpack::BlendFactorEnum::DstAlpha:
                 return D3D12_BLEND_DEST_ALPHA;
 
-            case blend_factor_enum::OneMinusSrcAlpha:
+            case shaderpack::BlendFactorEnum::OneMinusSrcAlpha:
                 return D3D12_BLEND_INV_SRC_ALPHA;
 
-            case blend_factor_enum::OneMinusDstAlpha:
+            case shaderpack::BlendFactorEnum::OneMinusDstAlpha:
                 return D3D12_BLEND_INV_DEST_ALPHA;
 
             default:
@@ -38,30 +82,30 @@ namespace nova::renderer {
         }
     }
 
-    D3D12_COMPARISON_FUNC to_dx12_compare_func(const compare_op_enum depth_func) {
+    D3D12_COMPARISON_FUNC to_dx12_compare_func(const shaderpack::CompareOpEnum depth_func) {
         switch(depth_func) {
-            case compare_op_enum::Never:
+            case shaderpack::CompareOpEnum::Never:
                 return D3D12_COMPARISON_FUNC_NEVER;
 
-            case compare_op_enum::Less:
+            case shaderpack::CompareOpEnum::Less:
                 return D3D12_COMPARISON_FUNC_LESS;
 
-            case compare_op_enum::LessEqual:
+            case shaderpack::CompareOpEnum::LessEqual:
                 return D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
-            case compare_op_enum::Greater:
+            case shaderpack::CompareOpEnum::Greater:
                 return D3D12_COMPARISON_FUNC_GREATER;
 
-            case compare_op_enum::GreaterEqual:
+            case shaderpack::CompareOpEnum::GreaterEqual:
                 return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
 
-            case compare_op_enum::Equal:
+            case shaderpack::CompareOpEnum::Equal:
                 return D3D12_COMPARISON_FUNC_EQUAL;
 
-            case compare_op_enum::NotEqual:
+            case shaderpack::CompareOpEnum::NotEqual:
                 return D3D12_COMPARISON_FUNC_NOT_EQUAL;
 
-            case compare_op_enum::Always:
+            case shaderpack::CompareOpEnum::Always:
                 return D3D12_COMPARISON_FUNC_ALWAYS;
 
             default:
@@ -69,35 +113,35 @@ namespace nova::renderer {
         }
     }
 
-    D3D12_STENCIL_OP to_dx12_stencil_op(const stencil_op_enum op) {
+    D3D12_STENCIL_OP to_dx12_stencil_op(const shaderpack::StencilOpEnum op) {
         switch(op) {
-            case stencil_op_enum::Keep:
+            case shaderpack::StencilOpEnum::Keep:
                 return D3D12_STENCIL_OP_KEEP;
-            case stencil_op_enum::Zero:
+            case shaderpack::StencilOpEnum::Zero:
                 return D3D12_STENCIL_OP_ZERO;
-            case stencil_op_enum::Replace:
+            case shaderpack::StencilOpEnum::Replace:
                 return D3D12_STENCIL_OP_REPLACE;
-            case stencil_op_enum::Incr:
+            case shaderpack::StencilOpEnum::Incr:
                 return D3D12_STENCIL_OP_INCR;
-            case stencil_op_enum::IncrWrap:
+            case shaderpack::StencilOpEnum::IncrWrap:
                 return D3D12_STENCIL_OP_INCR_SAT;
-            case stencil_op_enum::Decr:
+            case shaderpack::StencilOpEnum::Decr:
                 return D3D12_STENCIL_OP_DECR;
-            case stencil_op_enum::DecrWrap:
+            case shaderpack::StencilOpEnum::DecrWrap:
                 return D3D12_STENCIL_OP_DECR_SAT;
-            case stencil_op_enum::Invert:
+            case shaderpack::StencilOpEnum::Invert:
                 return D3D12_STENCIL_OP_INVERT;
             default:
                 return D3D12_STENCIL_OP_KEEP;
         }
     }
 
-    D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(const primitive_topology_enum primitive_mode) {
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(const shaderpack::PrimitiveTopologyEnum primitive_mode) {
         switch(primitive_mode) {
-            case primitive_topology_enum::Triangles:
+            case shaderpack::PrimitiveTopologyEnum::Triangles:
                 return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
-            case primitive_topology_enum::Lines:
+            case shaderpack::PrimitiveTopologyEnum::Lines:
                 return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
 
             default:
@@ -105,29 +149,142 @@ namespace nova::renderer {
         }
     }
 
-    enum DXGI_FORMAT to_dxgi_format(const pixel_format_enum pixel_format) {
+    enum DXGI_FORMAT to_dxgi_format(const shaderpack::PixelFormatEnum pixel_format) {
         switch(pixel_format) {
-            case pixel_format_enum::RGBA8:
+            case shaderpack::PixelFormatEnum::RGBA8:
                 return DXGI_FORMAT_R8G8B8A8_UNORM;
 
-            case pixel_format_enum::RGBA16F:
+            case shaderpack::PixelFormatEnum::RGBA16F:
                 return DXGI_FORMAT_R16G16B16A16_FLOAT;
 
-                return DXGI_FORMAT_R32G32B32_FLOAT;
-
-            case pixel_format_enum::RGBA32F:
+            case shaderpack::PixelFormatEnum::RGBA32F:
                 return DXGI_FORMAT_R32G32B32A32_FLOAT;
 
-            case pixel_format_enum::Depth:
+            case shaderpack::PixelFormatEnum::Depth:
                 return DXGI_FORMAT_D32_FLOAT;
 
-            case pixel_format_enum::DepthStencil:
+            case shaderpack::PixelFormatEnum::DepthStencil:
                 return DXGI_FORMAT_D24_UNORM_S8_UINT;
 
             default:
                 return DXGI_FORMAT_R8G8B8A8_UNORM;
-                ;
         }
     }
 
-} // namespace nova::renderer
+    D3D12_DESCRIPTOR_RANGE_TYPE to_dx12_range_type(DescriptorType type) {
+        switch(type) {
+            case DescriptorType::CombinedImageSampler:
+                return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+            case DescriptorType::UniformBuffer:
+                return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+
+            case DescriptorType::StorageBuffer:
+                return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+
+            default:
+                return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+        }
+    }
+
+    std::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions() {
+        static std::vector<D3D12_INPUT_ELEMENT_DESC> input_element_descriptions =
+            {// Position
+             D3D12_INPUT_ELEMENT_DESC{
+                 "POSITION",                                 // SemanticName
+                 0,                                          // SemanticIndex
+                 DXGI_FORMAT_R32G32B32_FLOAT,                // Format
+                 0,                                          // InputSlot
+                 sizeof(FullVertex),                         // AlignedByOffset
+                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
+                 0                                           // InstanceDataStepRate
+             },
+
+             // Normal
+             D3D12_INPUT_ELEMENT_DESC{
+                 "NORMAL",                                   // SemanticName
+                 0,                                          // SemanticIndex
+                 DXGI_FORMAT_R32G32B32_FLOAT,                // Format
+                 0,                                          // InputSlot
+                 sizeof(FullVertex),                         // AlignedByOffset
+                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
+                 0                                           // InstanceDataStepRate
+             },
+
+             // Tangent
+             D3D12_INPUT_ELEMENT_DESC{
+                 "TANGENT",                                  // SemanticName
+                 0,                                          // SemanticIndex
+                 DXGI_FORMAT_R32G32B32_FLOAT,                // Format
+                 0,                                          // InputSlot
+                 sizeof(FullVertex),                         // AlignedByOffset
+                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
+                 0                                           // InstanceDataStepRate
+             },
+
+             // Main UV
+             D3D12_INPUT_ELEMENT_DESC{
+                 "TEXCOORD",                                 // SemanticName
+                 0,                                          // SemanticIndex
+                 DXGI_FORMAT_R32G32_FLOAT,                   // Format
+                 0,                                          // InputSlot
+                 sizeof(FullVertex),                         // AlignedByOffset
+                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
+                 0                                           // InstanceDataStepRate
+             },
+
+             // Lightmap UV
+             D3D12_INPUT_ELEMENT_DESC{
+                 "LMUV",                                     // SemanticName
+                 0,                                          // SemanticIndex
+                 DXGI_FORMAT_R16G16_FLOAT,                   // Format
+                 0,                                          // InputSlot
+                 sizeof(FullVertex),                         // AlignedByOffset
+                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
+                 0                                           // InstanceDataStepRate
+             },
+
+             // Virtual texture ID
+             D3D12_INPUT_ELEMENT_DESC{
+                 "VTEX_ID",                                  // SemanticName
+                 0,                                          // SemanticIndex
+                 DXGI_FORMAT_R32_UINT,                       // Format
+                 0,                                          // InputSlot
+                 sizeof(FullVertex),                         // AlignedByOffset
+                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
+                 0                                           // InstanceDataStepRate
+             },
+
+             // Additional Data
+             D3D12_INPUT_ELEMENT_DESC{
+                 "TANGENT",                                  // SemanticName
+                 0,                                          // SemanticIndex
+                 DXGI_FORMAT_R32G32B32A32_FLOAT,             // Format
+                 0,                                          // InputSlot
+                 sizeof(FullVertex),                         // AlignedByOffset
+                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
+                 0                                           // InstanceDataStepRate
+             }};
+
+        return input_element_descriptions;
+    }
+
+    std::string to_string(const HRESULT hr) {
+        switch(hr) {
+            case DXGI_ERROR_INVALID_CALL:
+                return "Invalid call - one or more of the parameters was wrong";
+
+            case DXGI_STATUS_OCCLUDED:
+                return "Fullscreen is unavailable";
+
+            case E_OUTOFMEMORY:
+                return "Out of memory";
+
+            case E_INVALIDARG:
+                return "One or more arguments are invalid";
+
+            default:
+                return "Unknown error";
+        }
+    }
+} // namespace nova::renderer::rhi

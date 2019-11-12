@@ -3,13 +3,13 @@
 #include <fstream>
 #include <iostream>
 
-#include "../../include/nova_renderer/nova_renderer.hpp"
-#include "../../include/nova_renderer/nova_settings.hpp"
-#include "../../include/nova_renderer/util/platform.hpp"
 #include "../../src/loading/zip_folder_accessor.hpp"
+#include "nova_renderer/nova_renderer.hpp"
+#include "nova_renderer/nova_settings.hpp"
+#include "nova_renderer/util/platform.hpp"
 #ifdef _WIN32
 #include <direct.h>
-
+#include <Windows.h>
 #include "../../src/render_engine/dx12/dx12_render_engine.hpp"
 #define getcwd _getcwd
 #else
@@ -32,37 +32,52 @@
         auto error_log = std::make_shared<std::ofstream>();                                                                                \
         error_log->open("test_error_log.log");                                                                                             \
         auto test_log = std::make_shared<std::ofstream>("test_log.log");                                                                   \
-        auto& log = nova::renderer::logger::instance;                                                                                      \
+        auto& log = nova::renderer::Logger::instance;                                                                                      \
         log.add_log_handler(nova::renderer::TRACE, [test_log](auto msg) {                                                                  \
-            std::cout << "TRACE: " << msg << std::endl;                                                                                    \
-            *test_log << "TRACE: " << msg << std::endl;                                                                                    \
+            std::cout << "TRACE: " << msg.c_str() << std::endl;                                                                                    \
+            *test_log << "TRACE: " << msg.c_str() << std::endl;                                                                                    \
         });                                                                                                                                \
         log.add_log_handler(nova::renderer::DEBUG, [test_log](auto msg) {                                                                  \
-            std::cout << "DEBUG: " << msg << std::endl;                                                                                    \
-            *test_log << "DEBUG: " << msg << std::endl;                                                                                    \
+            std::cout << "DEBUG: " << msg.c_str() << std::endl;                                                                                    \
+            *test_log << "DEBUG: " << msg.c_str() << std::endl;                                                                                    \
         });                                                                                                                                \
         log.add_log_handler(nova::renderer::INFO, [test_log](auto msg) {                                                                   \
-            std::cout << "INFO: " << msg << std::endl;                                                                                     \
-            *test_log << "INFO: " << msg << std::endl;                                                                                     \
+            std::cout << "INFO: " << msg.c_str() << std::endl;                                                                                     \
+            *test_log << "INFO: " << msg.c_str() << std::endl;                                                                                     \
         });                                                                                                                                \
         log.add_log_handler(nova::renderer::WARN, [test_log](auto msg) {                                                                   \
-            std::cerr << "WARN: " << msg << std::endl;                                                                                     \
-            *test_log << "WARN: " << msg << std::endl;                                                                                     \
+            std::cerr << "WARN: " << msg.c_str() << std::endl;                                                                                     \
+            *test_log << "WARN: " << msg.c_str() << std::endl;                                                                                     \
         });                                                                                                                                \
         log.add_log_handler(nova::renderer::ERROR, [test_log, error_log](auto msg) {                                                       \
-            std::cerr << "ERROR: " << msg << std::endl;                                                                                    \
-            *error_log << "ERROR: " << msg << std::endl << std::flush;                                                                     \
-            *test_log << "ERROR: " << msg << std::endl;                                                                                    \
+            std::cerr << "ERROR: " << msg.c_str() << std::endl;                                                                                    \
+            *error_log << "ERROR: " << msg.c_str() << std::endl << std::flush;                                                                     \
+            *test_log << "ERROR: " << msg.c_str() << std::endl;                                                                                    \
         });                                                                                                                                \
         log.add_log_handler(nova::renderer::FATAL, [test_log, error_log](auto msg) {                                                       \
-            std::cerr << "FATAL: " << msg << std::endl;                                                                                    \
-            *error_log << "FATAL: " << msg << std::endl << std::flush;                                                                     \
-            *test_log << "FATAL: " << msg << std::endl;                                                                                    \
+            std::cerr << "FATAL: " << msg.c_str() << std::endl;                                                                                    \
+            *error_log << "FATAL: " << msg.c_str() << std::endl << std::flush;                                                                     \
+            *test_log << "FATAL: " << msg.c_str() << std::endl;                                                                                    \
         });                                                                                                                                \
         log.add_log_handler(nova::renderer::MAX_LEVEL, [test_log, error_log](auto msg) {                                                   \
-            std::cerr << "MAX_LEVEL: " << msg << std::endl;                                                                                \
-            *error_log << "MAX_LEVEL: " << msg << std::endl << std::flush;                                                                 \
-            *test_log << "MAX_LEVEL: " << msg << std::endl;                                                                                \
+            std::cerr << "MAX_LEVEL: " << msg.c_str() << std::endl;                                                                                \
+            *error_log << "MAX_LEVEL: " << msg.c_str() << std::endl << std::flush;                                                                 \
+            *test_log << "MAX_LEVEL: " << msg.c_str() << std::endl;                                                                                \
         });                                                                                                                                \
     }
+#endif
+
+#ifndef TEST_CONFIGURE_RUNTIME
+#ifdef _WIN32
+#define TEST_CONFIGURE_RUNTIME \
+[] { \
+    SetErrorMode(SEM_NOGPFAULTERRORBOX); \
+    _set_abort_behavior(0, _WRITE_ABORT_MSG); \
+    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG); \
+    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG); \
+    _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG); \
+}
+#else
+#define TEST_CONFIGURE_RUNTIME()
+#endif
 #endif

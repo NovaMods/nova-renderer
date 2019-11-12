@@ -1,15 +1,18 @@
-#pragma once
+/*!
+ * \author ddubois
+ * \date 17-Sep-18.
+ */
 
+#ifndef NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP
+#define NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP
+
+#include <nova_renderer/shaderpack_data.hpp>
 #include <string>
 #include <unordered_map>
+#include "nova_renderer/util/result.hpp"
 
-#include "nova_renderer/shaderpack_data.hpp"
-
-namespace nova::renderer {
-    NOVA_EXCEPTION(pass_ordering_exception);
-    NOVA_EXCEPTION(circular_rendergraph_exception);
-
-    struct range {
+namespace nova::renderer::shaderpack {
+    struct Range {
         uint32_t first_write_pass = ~0U;
         uint32_t last_write_pass = 0;
         uint32_t first_read_pass = ~0U;
@@ -27,7 +30,7 @@ namespace nova::renderer {
 
         [[nodiscard]] unsigned first_used_pass() const;
 
-        [[nodiscard]] bool is_disjoint_with(const range& other) const;
+        [[nodiscard]] bool is_disjoint_with(const Range& other) const;
     };
 
     /*!
@@ -36,7 +39,7 @@ namespace nova::renderer {
      * \param passes A map from pass name to pass of all the passes to order
      * \return The names of the passes in submission order
      */
-    std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass_data>& passes);
+    ntl::Result<std::vector<RenderPassCreateInfo>> order_passes(const std::vector<RenderPassCreateInfo>& passes);
 
     /*!
      * \brief Puts textures in usage order and determines which have overlapping usage ranges
@@ -47,8 +50,8 @@ namespace nova::renderer {
      * \param resource_used_range A map to hold the usage ranges of each texture
      * \param resources_in_order A vector to hold the textures in usage order
      */
-    void determine_usage_order_of_textures(const std::vector<render_pass_data>& passes,
-                                           std::unordered_map<std::string, range>& resource_used_range,
+    void determine_usage_order_of_textures(const std::vector<RenderPassCreateInfo>& passes,
+                                           std::unordered_map<std::string, Range>& resource_used_range,
                                            std::vector<std::string>& resources_in_order);
 
     /*!
@@ -61,7 +64,9 @@ namespace nova::renderer {
      * \return A map from texture name to the name of the texture the first texture can be aliased with
      */
     std::unordered_map<std::string, std::string> determine_aliasing_of_textures(
-        const std::unordered_map<std::string, texture_resource_data>& textures,
-        const std::unordered_map<std::string, range>& resource_used_range,
+        const std::unordered_map<std::string, TextureCreateInfo>& textures,
+        const std::unordered_map<std::string, Range>& resource_used_range,
         const std::vector<std::string>& resources_in_order);
-} // namespace nova::renderer
+} // namespace nova::renderer::shaderpack
+
+#endif // NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP

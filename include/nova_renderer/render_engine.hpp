@@ -2,17 +2,24 @@
 
 #include <memory>
 
-#include "nova_settings.hpp"
-#include "renderables.hpp"
-#include "shaderpack_data.hpp"
-#include "util/platform.hpp"
-#include "util/result.hpp"
-#include "util/utils.hpp"
-#include "window.hpp"
+#include "nova_renderer/command_list.hpp"
+#include "nova_renderer/nova_settings.hpp"
+#include "nova_renderer/shaderpack_data.hpp"
+#include "nova_renderer/util/platform.hpp"
+#include "nova_renderer/util/result.hpp"
+#include "nova_renderer/util/utils.hpp"
+#include "nova_renderer/window.hpp"
 
-namespace nova::renderer {
-    NOVA_EXCEPTION(render_engine_initialization_exception);
-    NOVA_EXCEPTION(render_engine_rendering_exception);
+#include "rhi_types.hpp"
+
+namespace nova::renderer::rhi {
+    struct Fence;
+    struct Image;
+    struct Semaphore;
+
+    class Swapchain;
+
+#define NUM_THREADS 1
 
     /*!
      * \brief Abstract class for render backends
@@ -21,89 +28,218 @@ namespace nova::renderer {
      * All functions must be called after init(nova::settings) has been called except
      *   explicitly marked in the documentation
      */
-    class render_engine {
+    class RenderEngine {
     public:
-        render_engine(render_engine&& other) = delete;
-        render_engine& operator=(render_engine&& other) noexcept = delete;
+        NovaSettingsAccessManager& settings;
 
-        render_engine(const render_engine& other) = delete;
-        render_engine& operator=(const render_engine& other) = delete;
+        RenderEngine(RenderEngine&& other) = delete;
+        RenderEngine& operator=(RenderEngine&& other) noexcept = delete;
+
+        RenderEngine(const RenderEngine& other) = delete;
+        RenderEngine& operator=(const RenderEngine& other) = delete;
 
         /*!
          * \brief Needed to make destructor of subclasses called
          */
-        virtual ~render_engine() = default;
+        virtual ~RenderEngine() = default;
 
-        [[nodiscard]] virtual std::shared_ptr<iwindow> get_window() const = 0;
-
-        /*!
-         * \brief Loads the specified shaderpack, building API-specific data structures
-         *
-         * \param data The shaderpack to load
-         */
-        virtual void set_shaderpack(const shaderpack_data& data) = 0;
+        [[nodiscard]] Window& get_window() const;
 
         /*!
-         * \brief Adds a new static mesh renderable to this render engine
-         *
-         * A static mesh renderable tells Nova to render a specific mesh with a specific material and a specific
-         * transform. Static mesh renderables cannot be updated after creation, letting Nova bake them together if
-         * doing so would help performance
-         *
-         * \param data The initial data for this static mesh renderable. Includes things like initial transform, mesh,
-         * and material
-         *
-         * \return The ID of the newly created renderable
+         * \brief Allows the user to set an allocator that will be used for per-shaderpack objects. This allocator will
+         * be cleaned up wen a new shaderpack is loaded, so I don't need to worry about cleaning up my memory before
+         * that
          */
-        virtual result<renderable_id_t> add_renderable(const static_mesh_renderable_data& data) = 0;
+        void set_shaderpack_data_allocator(const bvestl::polyalloc::allocator_handle& allocator_handle);
+
+        virtual void set_num_renderpasses(uint32_t num_renderpasses) = 0;
+
+        [[nodiscard]] virtual ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size,
+                                                                                MemoryUsage type,
+                                                                                ObjectType allowed_objects) = 0;
 
         /*!
-         * \brief Sets the visibility of the renderable with the provided ID
+         * \brief Creates a renderpass from the provided data
          *
-         * This method allows the host application to perform its own culling on renderables. If the host application
-         * marks a renderable as invisible, that renderable will _always_ be invisible. If the host application marks
-         * a renderable as visible, however, Nova will perform its own culling, which may cause Nova to not render your
-         * renderable anyways
+         * Renderpasses are created 100% upfront, meaning that the caller can't change anything about a renderpass
+         * after it's been created
          *
-         * \param id The ID of the renderable to set the visibility of
-         * \param is_visible If false, the specified renderable will not be rendered. If true, Nova will render the
-         * renderable if the renderable would be visible
+         * \param data The data to create a renderpass from
+         * \param framebuffer_size The size in pixels of the framebuffer that the renderpass will write to
+         *
+         * \return The newly created renderpass
          */
-        virtual void set_renderable_visibility(renderable_id_t id, bool is_visible) = 0;
+        [[nodiscard]] virtual ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data,
+                                                                         const glm::uvec2& framebuffer_size) = 0;
+
+        [[nodiscard]] virtual Framebuffer* create_framebuffer(const Renderpass* renderpass,
+                                                              const std::vector<Image*>& color_attachments,
+                                                              const std::optional<Image*> depth_attachment,
+                                                              const glm::uvec2& framebuffer_size) = 0;
+
+        [[nodiscard]] virtual ntl::Result<PipelineInterface*> create_pipeline_interface(
+            const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
+            const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) = 0;
+
+        [[nodiscard]] virtual DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
+                                                                     uint32_t num_samplers,
+                                                                     uint32_t num_uniform_buffers) = 0;
+
+        [[nodiscard]] virtual std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
+                                                                                 DescriptorPool* pool) = 0;
+
+        virtual void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) = 0;
+
+        [[nodiscard]] virtual ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
+                                                                     const shaderpack::PipelineCreateInfo& data) = 0;
 
         /*!
-         * \brief Deletes a renderable from Nova
-         *
-         * \param id The ID of the renderable to delete
+         * \brief Creates a buffer with undefined contents
          */
-        virtual void delete_renderable(renderable_id_t id) = 0;
+        [[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory) = 0;
 
         /*!
-         * \brief Adds a mesh to this render engine
+         * \brief Creates a buffer, initializing its contents with the provided initial data
          *
-         * The provided mesh data is uploaded to the GPU. The mesh's identifier is returned to you. This is all you
-         * need for the operations that a Nova render engine supports
-         *
-         * \param mesh The mesh data to send to the GPU
-         * \return The ID of the mesh that was just created
+         * D3D12 and Vulkan have different rules that conflict when you're trying to upload data to a vertex or index buffer. This method
+         * smooths over that so I don't need to care about API differences
          */
-        virtual result<mesh_id_t> add_mesh(const mesh_data& mesh) = 0;
+        /*[[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info,
+                                                    DeviceMemoryResource& memory,
+                                                    uint64_t initial_data_size,
+                                                    void* initial_data) = 0;
+                                                    */
+        /*!
+         * \brief Writes data to a buffer
+         *
+         * This method always writes the data from byte 0 to byte num_bytes. It does not let you use an offset for either reading from
+         * the data or writing to the buffer
+         *
+         * The CPU must be able to write directly to the buffer for this method to work. If the buffer is device local, this method will
+         * fail in a horrible way
+         *
+         * \param data The data to upload
+         * \param num_bytes The number of bytes to write
+         * \param offset The offset from the start of the buffer to write the data at
+         * \param buffer The buffer to write to
+         */
+        virtual void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) = 0;
+
+        [[nodiscard]] virtual Image* create_image(const shaderpack::TextureCreateInfo& info) = 0;
+
+        [[nodiscard]] virtual Semaphore* create_semaphore() = 0;
+
+        [[nodiscard]] virtual std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) = 0;
+
+        [[nodiscard]] virtual Fence* create_fence(bool signaled = false) = 0;
+
+        [[nodiscard]] virtual std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) = 0;
 
         /*!
-         * \brief Deletes the mesh with the provided ID from the GPU
+         * \blocks the fence until all fences are signaled
          *
-         * \param mesh_id The ID of the mesh to delete
+         * Fences are waited on for an infinite time
+         *
+         * \param fences All the fences to wait for
          */
-        virtual void delete_mesh(uint32_t mesh_id) = 0;
+        virtual void wait_for_fences(std::vector<Fence*> fences) = 0;
+
+        virtual void reset_fences(const std::vector<Fence*>& fences) = 0;
 
         /*!
-         * \brief Renders a frame like so well, you guys
+         * \brief Clean up any GPU objects a Renderpass may own
+         *
+         * While Renderpasses are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
+         * need to clean up their GPU objects
          */
-        virtual void render_frame() = 0;
+        virtual void destroy_renderpass(Renderpass* pass) = 0;
+
+        /*!
+         * \brief Clean up any GPU objects a Framebuffer may own
+         *
+         * While Framebuffers are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
+         * need to clean up their GPU objects
+         */
+        virtual void destroy_framebuffer(Framebuffer* framebuffer) = 0;
+
+        /*!
+         * \brief Clean up any GPU objects a PipelineInterface may own
+         *
+         * While PipelineInterfaces are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we
+         * still need to clean up their GPU objects
+         */
+        virtual void destroy_pipeline_interface(PipelineInterface* pipeline_interface) = 0;
+
+        /*!
+         * \brief Clean up any GPU objects a Pipeline may own
+         *
+         * While Pipelines are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
+         * need to clean up their GPU objects
+         */
+        virtual void destroy_pipeline(Pipeline* pipeline) = 0;
+
+        /*!
+         * \brief Clean up any GPU objects an Image may own
+         *
+         * While Images are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still need
+         * to clean up their GPU objects
+         */
+        virtual void destroy_texture(Image* resource) = 0;
+
+        /*!
+         * \brief Clean up any GPU objects a Semaphores may own
+         *
+         * While Semaphores are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
+         * need to clean up their GPU objects
+         */
+        virtual void destroy_semaphores(std::vector<Semaphore*>& semaphores) = 0;
+
+        /*!
+         * \brief Clean up any GPU objects a Fence may own
+         *
+         * While Fence are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still need to
+         * clean up their GPU objects
+         */
+        virtual void destroy_fences(std::vector<Fence*>& fences) = 0;
+
+        [[nodiscard]] Swapchain* get_swapchain() const;
+
+        /*!
+         * \brief Allocates a new command list that can be used from the provided thread and has the desired type
+         *
+         * Ownership of the command list is given to the caller. You can record your commands into it, then submit it
+         * to a queue. Submitting it gives ownership back to the render engine, and recording commands into a
+         * submitted command list is not supported
+         *
+         * There is one command list pool per swapchain image per thread. All the pools for one swapchain image are
+         * reset at the beginning of a frame that renders to that swapchain image. This means that any command list
+         * allocated in one frame will not be valid in the next frame. DO NOT hold on to command lists
+         *
+         * Command lists allocated by this method are returned ready to record commands into - the caller doesn't need
+         * to begin the command list
+         */
+        virtual CommandList* get_command_list(uint32_t thread_idx,
+                                              QueueType needed_queue_type,
+                                              CommandList::Level level = CommandList::Level::Primary) = 0;
+
+        virtual void submit_command_list(CommandList* cmds,
+                                         QueueType queue,
+                                         Fence* fence_to_signal = nullptr,
+                                         const std::vector<Semaphore*>& wait_semaphores = {},
+                                         const std::vector<Semaphore*>& signal_semaphores = {}) = 0;
 
     protected:
+        std::unique_ptr<Window> window;
+
+        glm::uvec2 swapchain_size = {};
+        Swapchain* swapchain = nullptr;
+
+        bvestl::polyalloc::allocator_handle shaderpack_allocator;
+
         /*!
          * \brief Initializes the engine, does **NOT** open any window
+         * \param allocator The allocator nova is using
          * \param settings The settings passed to nova
          *
          * Intentionally does nothing. This constructor serves mostly to ensure that concrete render engines have a
@@ -111,15 +247,22 @@ namespace nova::renderer {
          *
          * \attention Called by nova
          */
-        explicit render_engine(nova_settings& settings) : settings(settings){};
+        explicit RenderEngine(bvestl::polyalloc::Allocator* allocator,
+                              NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)
+            : settings(settings),
+              swapchain_size(settings.settings.window.width, settings.settings.window.height),
+              shaderpack_allocator(allocator){};
 
-        /*!
-         * \brief Initializes the window with the given size, and creates the swapchain for that window
-         * \param width The width, in pixels, of the desired window
-         * \param height The height, in pixels of the desired window
-         */
-        virtual void open_window(uint32_t width, uint32_t height) = 0;
+        template <typename AllocType>
+        AllocType* new_object() {
+            void* mem = shaderpack_allocator.allocate(sizeof(AllocType));
+            return new(mem) AllocType;
+        }
 
-        nova_settings& settings;
+        template <typename AllocType, typename... ArgTypes>
+        AllocType* new_object(ArgTypes&&... args) {
+            void* mem = shaderpack_allocator.allocate(sizeof(AllocType));
+            return new(mem) AllocType(std::forward<ArgTypes>(args)...);
+        }
     };
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi

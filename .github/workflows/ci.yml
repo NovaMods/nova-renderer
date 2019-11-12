@@ -39,31 +39,13 @@ jobs:
         run: pacman --noconfirm -Syu
       # 2. Install the required dependencies
       - name: Install dependencies
-        run: pacman --noconfirm -S cmake binutils gcc python3 git vulkan-devel ninja tar unzip which ${{ matrix.cc }}
+        run: pacman --noconfirm -S cmake binutils gcc python3 git vulkan-devel ninja tar unzip which libxinerama ${{ matrix.cc }}
       # 3. Checkout the repository, this is done via a github action
       - name: Checkout repository
         uses: actions/checkout@master
-      # 4. Prepare nova
-      #    Currently there are 2 different build methods in use with nova,
-      #    so check which one the branch we are on is using and adjust as required
-      - name: Prepare
-        shell: bash
-        run: |
-          if [[ -f "build.py" ]]; then
-              # The new build.py method is easy, just run it with python
-              # and we are good to go
-              python3 build.py
-          else
-              # The fiddly part, this will require a manual install of vcpkg... lets do it
-              git clone https://github.com/microsoft/vcpkg vcpkg
-              pushd vcpkg
-              bash bootstrap-vcpkg.sh
-              export PATH=`pwd`:$PATH
-              popd
-              # Now vcpkg should be set up
-              bash setup-linux.sh
-          fi
-      # 5. Configure with CMake
+        with:
+          submodules: true
+      # 4. Configure with CMake
       - name: Configure with CMake
         run: |
           mkdir build
@@ -71,16 +53,16 @@ jobs:
           cmake .. -G"Ninja"         \
             -DNOVA_TEST=ON           \
             -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
-      # 6. Build with CMake
+            -Wno-dev
+      # 5. Build with CMake
       - name: Build with CMake
         working-directory: build
         run: cmake --build .
-      # 7. Run the unit tests
+      # 6. Run the unit tests
       - name: Run unit tests
         working-directory: build
         run: ./nova-test-unit --gtest_color=yes
-      # 8. Prepare artifacts for uploading
+      # 7. Prepare artifacts for uploading
       - name: Prepare artifacts
         run: |
           # Binary artifacts
@@ -89,11 +71,11 @@ jobs:
           cp build/nova-test-unit artifacts
           cp build/nova-test-end-to-end artifacts
           cp build/libnova-renderer.a artifacts
-      # 9. Upload binary artifacts
+      # 8. Upload binary artifacts
       - name: Upload binary artifacts
         uses: actions/upload-artifact@master
         with:
-          name: binary-linux-${{ matrix.compiler }}
+          name: binary-linux-${{ matrix.cc }}
           path: artifacts
 
   build-windows:
@@ -104,10 +86,7 @@ jobs:
     # Used for supplying the vulkan version
     strategy:
       matrix:
-        vulkan: [1.1.121.2]
-
-    env:
-      VULKAN_SDK: C:\\VulkanSDK\\${{ matrix.vulkan }}
+        vulkan: [1.1.126.0]
 
     name: build-windows-msvc
 
@@ -121,45 +100,38 @@ jobs:
           -o VulkanSDK-Installer.exe
       # 2. Install the VulkanSDK
       - name: Install VulkanSDK
-        run: .\VulkanSDK-Installer.exe /S
+        run: |
+          .\VulkanSDK-Installer.exe /S
+          sleep 60s
       # 3. Checkout the repository, this is done via a github action
       - name: Checkout repository
         uses: actions/checkout@master
-      # 4. Prepare nova
-      #    Currently there are 2 different build methods in use with nova,
-      #    so check which one the branch we are on is using and adjust as required
-      - name: Prepare
-        shell: bash
-        run: |
-          if [[ -f "build.py" ]]; then
-              # The new build.py method is easy, just run it with python
-              # and we are good to go
-              python build.py
-          else
-              # vcpkg is provided via the system
-              powershell .\\setup-windows.ps1
-          fi
-      # 5. Configure with CMake
+        with:
+          submodules: true
+      # 4. Configure with CMake
       - name: Configure with CMake
         shell: bash
+        env:
+          VULKAN_SDK: C:\\VulkanSDK\\${{ matrix.vulkan }}
         run: |
           mkdir build
           cd build
+          echo $VULKAN_SDK
           cmake .. -G "Visual Studio 16 2019" -A x64            \
             -DNOVA_TEST=ON                                      \
             -DCMAKE_BUILD_TYPE=Debug                            \
-            -DCMAKE_TOOLCHAIN_FILE="${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
-      # 6. Build with CMake
+            -Wno-dev
+      # 5. Build with CMake
       - name: Build with CMake
         working-directory: build
         shell: bash
         run: cmake --build .
-      # 7. Run the unit tests
+      # 6. Run the unit tests
       - name: Run unit tests
         working-directory: build/Debug
         shell: bash
         run: ./nova-test-unit.exe --gtest_color=yes
-      # 8. Prepare artifacts for uploading
+      # 7. Prepare artifacts for uploading
       - name: Prepare artifacts
         shell: bash
         run: |
@@ -169,7 +141,7 @@ jobs:
           cp build/Debug/nova-test-unit.exe artifacts
           cp build/Debug/nova-test-end-to-end.exe artifacts
           cp build/Debug/nova-renderer.lib artifacts
-      # 9. Upload binary artifacts
+      # 8. Upload binary artifacts
       - name: Upload binary artifacts
         uses: actions/upload-artifact@master
         with:

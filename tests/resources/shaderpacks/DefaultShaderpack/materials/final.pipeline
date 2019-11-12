@@ -1,6 +1,6 @@
 {
-    "name": "Final",
-    "pass": "Final",
+    "name": "final",
+    "pass": "final",
     "states": [
         "DisableAlphaWrite",
         "DisableDepthWrite",

@@ -32,7 +32,6 @@
 
 #include <atomic>
 #include <cassert>
-#include <memory>
 #include <vector>
 
 constexpr static size_t CACHE_LINE_SIZE = 64;
@@ -134,8 +133,8 @@ namespace nova::ttl {
                     if(!std::atomic_compare_exchange_strong_explicit(&m_top,
                                                                      &t,
                                                                      t + 1,
-                                                                     std::memory_order_seq_cst,
-                                                                     std::memory_order_relaxed)) {
+                                                                       std::memory_order_seq_cst,
+                                                                       std::memory_order_relaxed)) {
                         /* Failed race. */
                         result = false;
                     }
@@ -164,12 +163,12 @@ namespace nova::ttl {
                 /* Non-empty queue. */
                 circular_array* array = m_array.load(std::memory_order_consume);
                 *value = array->get(t);
-
+                
                 return std::atomic_compare_exchange_strong_explicit(&m_top,
                                                                     &t,
                                                                     t + 1,
-                                                                    std::memory_order_seq_cst,
-                                                                    std::memory_order_relaxed);
+                                                                          std::memory_order_seq_cst,
+                                                                          std::memory_order_relaxed);
             }
 
             return false;

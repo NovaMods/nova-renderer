@@ -3,219 +3,179 @@
 #include "nova_renderer/render_engine.hpp"
 
 #include <memory>
-#include <mutex>
-#include <unordered_map>
 
+#pragma warning(push, 0)
+#include <d3d12.h>
+#include <d3d12shader.h>
+#include <dxgi1_4.h>
 #include <spirv_hlsl.hpp>
 #include <wrl.h>
-#include <DirectXMath.h>
-#include <d3d12.h>
-#include <dxgi1_2.h>
-#include <dxgi1_4.h>
+#pragma warning(pop)
 
-#include "win32_window.hpp"
-#include "../../loading/shaderpack/render_graph_builder.hpp"
-#include "dx12_texture.hpp"
+#include "dx12_swapchain.hpp"
+// TODO: Not always use mallocator
+#include "../../memory/mallocator.hpp"
 
-using Microsoft::WRL::ComPtr;
+// Make sure we don't pollute includees with windows.h problems
+// TODO: Convert to modules and watch this problem _finally_ start to go away
+#ifdef ERROR
+#undef ERROR
+#endif
 
-namespace nova::ttl {
-    class task_scheduler;
-}
-
-namespace nova::renderer {
-
-    struct command_list_base {
-        ComPtr<ID3D12CommandAllocator> allocator;
-        D3D12_COMMAND_LIST_TYPE type;
-        ComPtr<ID3D12Fence> submission_fence;
-        uint32_t fence_value = 0;
-        bool is_done = false;
-    };
-
-    struct command_list : public command_list_base {
-        ComPtr<ID3D12CommandList> list;
-    };
-
-    struct gfx_command_list : public command_list_base {
-        ComPtr<ID3D12GraphicsCommandList> list;
-    };
-
-    struct pipeline {
-        ComPtr<ID3D12PipelineState> pso;
-        ComPtr<ID3D12RootSignature> root_signature;
-    };
-
-#define FRAME_BUFFER_COUNT 3
+namespace nova::renderer::rhi {
     /*!
-     * \brief Implements a render engine for DirectX 12
+     * \brief D3D12 implementation of a render engine
      */
-    class dx12_render_engine : public render_engine {
+    class D3D12RenderEngine final : public RenderEngine {
     public:
+        explicit D3D12RenderEngine(NovaSettingsAccessManager& settings);
+
+        D3D12RenderEngine(D3D12RenderEngine&& old) noexcept = delete;
+        D3D12RenderEngine& operator=(D3D12RenderEngine&& old) noexcept = delete;
+
+        D3D12RenderEngine(const D3D12RenderEngine& other) = delete;
+        D3D12RenderEngine& operator=(const D3D12RenderEngine& other) = delete;
+
+        virtual ~D3D12RenderEngine() = default;
+
+        // Inherited via render_engine
+        void set_num_renderpasses(uint32_t num_renderpasses) override;
+
+        ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage type, ObjectType allowed_objects) override;
+
+        ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data,
+                                                   const glm::uvec2& framebuffer_size) override;
+
+        Framebuffer* create_framebuffer(const Renderpass* renderpass,
+                                        const std::vector<Image*>& color_attachments,
+                                        const std::optional<Image*> depth_attachment,
+                                        const glm::uvec2& framebuffer_size) override;
+
+        ntl::Result<PipelineInterface*> create_pipeline_interface(
+            const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
+            const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override;
+
+        DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images, uint32_t num_samplers, uint32_t num_uniform_buffers) override;
+
         /*!
-         * \brief Initializes DX12
-         * \param settings The settings that may or may not influence initialization
+         * \brief Creates all the descriptor sets that are needed for this pipeline interface
+         *
+         * Currently I create a separate descriptor heap for each descriptor set. This is fairly easy and closely
+         * mimics what Vulkan does. However, I have no idea at all about how performant this is. I've heard that using
+         * a single descriptor heap is noticeably better, but I've also heard that this only applies to XBox. Further
+         * research and testing is needed to resolve this
          */
-        explicit dx12_render_engine(nova_settings& settings);
+        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface, DescriptorPool* pool) override;
 
-        static std::string get_engine_name();
+        void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override;
 
-        /**
-         * render_engine overrides
-         */
+        ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override;
 
-        std::shared_ptr<iwindow> get_window() const override;
+        Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory) override;
 
-        void set_shaderpack(const shaderpack_data& data) override;
+        void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) override;
 
-        result<renderable_id_t> add_renderable(const static_mesh_renderable_data& data) override;
+        Image* create_image(const shaderpack::TextureCreateInfo& info) override;
 
-        void set_renderable_visibility(renderable_id_t id, bool is_visible) override;
+        Semaphore* create_semaphore() override;
 
-        void delete_renderable(renderable_id_t id) override;
+        std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override;
 
-        result<mesh_id_t> add_mesh(const mesh_data&) override;
+        Fence* create_fence(bool signaled = false) override;
 
-        void delete_mesh(uint32_t) override;
+        std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override;
 
-        void render_frame() override;
+        void wait_for_fences(std::vector<Fence*> fences) override;
+
+        void reset_fences(const std::vector<Fence*>& fences) override;
+
+        void destroy_renderpass(Renderpass* pass) override;
+
+        void destroy_framebuffer(Framebuffer* framebuffer) override;
+
+        void destroy_pipeline_interface(PipelineInterface* pipeline_interface) override;
+
+        void destroy_pipeline(Pipeline* pipeline) override;
+
+        void destroy_texture(Image* resource) override;
+
+        void destroy_semaphores(std::vector<Semaphore*>& semaphores) override;
+
+        void destroy_fences(std::vector<Fence*>& fences) override;
+
+        CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override;
+
+        void submit_command_list(CommandList* cmds,
+                                 QueueType queue,
+                                 Fence* fence_to_signal = nullptr,
+                                 const std::vector<Semaphore*>& wait_semaphores = {},
+                                 const std::vector<Semaphore*>& signal_semaphores = {}) override;
+
+        void open_window_and_create_swapchain(const NovaSettings::WindowOptions& options, uint32_t num_frames);
 
     private:
-        // direct3d stuff
-        ComPtr<IDXGIFactory2> dxgi_factory;
+        // TODO: Not always use mallocator
+        bvestl::polyalloc::Mallocator mallocator;
 
-        ComPtr<ID3D12Device> device; // direct3d device
+        Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi_factory;
 
-        ComPtr<IDXGISwapChain3> swapchain; // swapchain used to switch between render targets
+        Microsoft::WRL::ComPtr<IDXGIAdapter3> adapter;
+        Microsoft::WRL::ComPtr<ID3D12Device> device; // direct3d device
 
-        ComPtr<ID3D12CommandQueue> direct_command_queue; // container for command lists
+        Microsoft::WRL::ComPtr<ID3D12CommandQueue> direct_command_queue;
+        Microsoft::WRL::ComPtr<ID3D12CommandQueue> compute_command_queue;
+        Microsoft::WRL::ComPtr<ID3D12CommandQueue> copy_command_queue;
 
-        ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap; // a descriptor heap to hold resources like the render targets
+        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap;
+        uint32_t next_rtv_descriptor_index = 0;
 
-        std::vector<ComPtr<ID3D12Resource>> rendertargets; // number of render targets equal to buffer count
+        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsv_descriptor_heap;
+        uint32_t next_dsv_descriptor_index = 0;
 
-        ComPtr<ID3D12QueryHeap> renderpass_timestamp_query_heap;
+        uint32_t rtv_descriptor_size = 0;
+        uint32_t dsv_descriptor_size = 0;
+        uint32_t cbv_srv_uav_descriptor_size = 0;
 
-        uint32_t rtv_descriptor_size; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
-
-        // Maps from command buffer type to command buffer list
-        std::unordered_map<D3D12_COMMAND_LIST_TYPE, std::vector<command_list_base*>> buffer_pool;
-        std::mutex buffer_pool_mutex;
-
-        /*
-         * Synchronization is hard
-         *
-         * Nova renders the first frame. It gets all the command lists it needs, records them, and they get added to
-         * this map.
-         *
-         * Nova renders the second frame. It looks at all these command lists to see if any are done executing. If so,
-         * they can be reused. If not, it makes new ones
-         *
-         * Nova renders the third frame. Once again it reuses any command lists that have finished executing, and
-         * allocates whatever it needs.
-         *
-         * Now we get to the fourth frame. Nova has a maximum number of in-flight frames, which defaults to three. The
-         * fourth frame has to wait for the first frame to finish
-         */
-        std::vector<command_list_base*> lists_to_free;
-        std::mutex lists_to_free_mutex;
-
-        uint32_t frame_index = 0;
-
-        uint32_t num_in_flight_frames = 3;
-
-        std::vector<ComPtr<ID3D12Fence>> frame_fences;
-        std::vector<uint32_t> frame_fence_values;
-        HANDLE full_frame_fence_event;
+        DXGI_QUERY_VIDEO_MEMORY_INFO local_info;
+        DXGI_QUERY_VIDEO_MEMORY_INFO non_local_info;
 
         /*!
-         * \brief All the textures that the loaded shaderpack has created
+         * \brief The index in the vector is the thread index
          */
-        std::unordered_map<std::string, dx12_texture> dynamic_textures;
-        std::unordered_map<std::string, uint32_t> dynamic_tex_name_to_idx;
+        std::vector<std::unordered_map<D3D12_COMMAND_LIST_TYPE, Microsoft::WRL::ComPtr<ID3D12CommandAllocator>>> command_allocators;
 
-        /*!
-         * \brief The passes in the current frame graph, in submission order
-         */
-        std::unordered_map<std::string, render_pass_data> render_passes;
-        std::vector<std::string> ordered_passes;
-
-        std::shared_ptr<win32_window> window;
-
+#pragma region Initialization
         void create_device();
 
-        void create_rtv_command_queue();
+        void create_queues();
 
-    protected:
-        void open_window(uint32_t width, uint32_t height) override;
-
-    private:
         /*!
-         * \brief Creates the swapchain from the size of the window
+         * \brief Creates the pre-thread command allocators that we use at runtime
+         */
+        void create_command_allocators();
+
+        /*!
+         * \brief Sets up a few things to make the debugging experience much nicer
          *
-         * \pre the window must be initialized
+         * - Enables breakpoints on errors and corruption messages
+         * - Will tell the debug layer to output to stdout whenever I figure out how to do that
          */
-        void create_swapchain();
+        void setup_debug_output();
+#pragma endregion
 
-        /*!
-         * \brief Creates the descriptor heap for the swapchain
-         */
-        void create_render_target_descriptor_heap();
-
-        command_list* allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) const;
-
-        gfx_command_list* get_graphics_command_list();
-
-        void release_command_list(command_list_base* list);
-
-        void create_full_frame_fences();
-
-        void wait_for_previous_frame();
-
-        void try_to_free_command_lists();
-
-        void create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas, std::vector<render_pass_data> passes);
-
-        void make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines);
-
-        pipeline make_single_pso(const pipeline_data& input);
-
-        ComPtr<ID3D12RootSignature> create_root_signature(
-            const std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) const;
-
-        /*!
-         * \brief Creates a timestamp query heap with enough space to time every render pass
-         *
-         * \param num_queries The number of queries the heap needs to support
-         */
-        void create_gpu_query_heap(size_t num_queries);
+#pragma region Helpers
+        Microsoft::WRL::ComPtr<ID3D12InfoQueue> info_queue = nullptr;
+#pragma endregion
     };
 
-    /*!
-     * \brief Compiles the provided shader_source into a DirectX 12 shader
-     *
-     * \param shader The shader_source to compile. `shader.source` should be SPIR-V code
-     * \param target The shader target to compile to. Shader model 5.1 is recommended
-     * \param options Any options to use when compiling this shader
-     * \param tables All the descriptor tables that this shader declares
-     *
-     * \return The compiled shader
-     */
-    ComPtr<ID3DBlob> compile_shader(const shader_source& shader,
-                                    const std::string& target,
-                                    const spirv_cross::CompilerHLSL::Options& options,
-                                    std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
+    Microsoft::WRL::ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,
+                                                    const std::string& target,
+                                                    const spirv_cross::CompilerHLSL::Options& options,
+                                                    std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
 
-    bool operator==(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2);
-    bool operator!=(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2);
-
-    bool operator==(const D3D12_ROOT_DESCRIPTOR_TABLE1& table1, const D3D12_ROOT_DESCRIPTOR_TABLE1& table2);
-    bool operator!=(const D3D12_ROOT_DESCRIPTOR_TABLE1& table1, const D3D12_ROOT_DESCRIPTOR_TABLE1& table2);
-
-    bool operator==(const D3D12_DESCRIPTOR_RANGE1& range1, const D3D12_DESCRIPTOR_RANGE1& range2);
-    bool operator!=(const D3D12_DESCRIPTOR_RANGE1& range1, const D3D12_DESCRIPTOR_RANGE1& range2);
-
-    bool operator==(const D3D12_ROOT_CONSTANTS& lhs, const D3D12_ROOT_CONSTANTS& rhs);
-
-    bool operator==(const D3D12_ROOT_DESCRIPTOR1& lhs, const D3D12_ROOT_DESCRIPTOR1& rhs);
-} // namespace nova::renderer
+    void add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type,
+                                          const D3D12_SHADER_INPUT_BIND_DESC& bind_desc,
+                                          uint32_t set,
+                                          std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
+} // namespace nova::renderer::rhi

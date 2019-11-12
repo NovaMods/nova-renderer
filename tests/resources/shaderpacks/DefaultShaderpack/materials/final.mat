@@ -3,8 +3,8 @@
     "filter": "geometry_type::fullscreen_quad",
     "passes": [
         {
-            "name": "main",
-            "pipeline": "Final",
+            "name": "final",
+            "pipeline": "final",
             "bindings": {
                 "per_model_uniforms": "NovaModelMatrixBuffer"
             }
