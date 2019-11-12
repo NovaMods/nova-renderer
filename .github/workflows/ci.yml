@@ -167,7 +167,7 @@ jobs:
           mkdir artifacts/docs
           cp -r docs/* artifacts/docs
           cp LICENSE artifacts/docs
-          cp readme.md artifacts/docs
+          cp README.md artifacts/docs
 
           # Headers
           mkdir artifacts/headers
