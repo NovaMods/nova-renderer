@@ -56,7 +56,7 @@ cmake --build build
 If you have the ninja build tool, it is the recommended way of building.
 
 ```
-# Generate Visual Studio Project
+# Generate build.ninja
 cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -GNinja -Wno-dev
 # Build from command line, or open into Visual Studio
 ninja -C build
@@ -65,7 +65,7 @@ ninja -C build
 If you don't have ninja, use regular make.
 
 ```
-# Generate Ninja
+# Generate makefile
 cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -Wno-dev
 # Build from command line
 make -C build -j$(nproc)
