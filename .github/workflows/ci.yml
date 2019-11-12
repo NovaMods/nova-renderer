@@ -114,14 +114,6 @@ jobs:
         env:
           VULKAN_SDK: C:\\VulkanSDK\\${{ matrix.vulkan }}
         run: |
-          echo "Inspecting root"
-          ls C:\\
-          echo "Inspecting VulkanSDK"
-          ls C:\\VulkanSDK
-          echo "Inspecting specific version"
-          ls C:\\VulkanSDK\\1.1.121.2
-          echo "Inspecting include directory"
-          ls C:\\VulkanSDK\\1.1.121.2\\Include
           mkdir build
           cd build
           echo $VULKAN_SDK
@@ -135,10 +127,10 @@ jobs:
         shell: bash
         run: cmake --build .
       # 6. Run the unit tests
-      - name: Run unit tests
-        working-directory: build/Debug
-        shell: bash
-        run: ./nova-test-unit.exe --gtest_color=yes
+      # - name: Run unit tests
+      #   working-directory: build/Debug
+      #   shell: bash
+      #   run: ./nova-test-unit.exe --gtest_color=yes
       # 7. Prepare artifacts for uploading
       - name: Prepare artifacts
         shell: bash
