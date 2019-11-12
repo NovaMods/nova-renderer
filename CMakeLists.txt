@@ -353,6 +353,7 @@ target_link_directories(nova-renderer PUBLIC $ENV{VULKAN_SDK}/Lib)
 # Compilation definitions indicating enabled backends
 if(NOVA_ENABLE_VULKAN_RHI)
     target_compile_definitions(nova-renderer PUBLIC NOVA_VULKAN_RHI)
+    target_include_directories(nova-renderer PRIVATE Vulkan_INCLUDE_DIR)
 endif()
 
 if(NOVA_ENABLE_D3D12_RHI)
