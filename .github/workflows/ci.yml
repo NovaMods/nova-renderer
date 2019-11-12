@@ -115,6 +115,7 @@ jobs:
         run: |
           mkdir build
           cd build
+          echo $VULKAN_SDK
           cmake .. -G "Visual Studio 16 2019" -A x64            \
             -DNOVA_TEST=ON                                      \
             -DCMAKE_BUILD_TYPE=Debug                            \
