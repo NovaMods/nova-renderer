@@ -113,9 +113,13 @@ jobs:
       - name: Configure with CMake
         shell: bash
         run: |
+          echo "Inspecting root"
           ls C:\\
+          echo "Inspecting VulkanSDK"
           ls C:\\VulkanSDK
+          echo "Inspecting specific version"
           ls C:\\VulkanSDK\\1.1.121.2
+          echo "Inspecting include directory"
           ls C:\\VulkanSDK\\1.1.121.2\\Include
           mkdir build
           cd build
