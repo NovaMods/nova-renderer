@@ -59,9 +59,9 @@ jobs:
         working-directory: build
         run: cmake --build .
       # 6. Run the unit tests
-      # - name: Run unit tests
-      #   working-directory: build
-      #   run: ./nova-test-unit --gtest_color=yes
+      - name: Run unit tests
+        working-directory: build
+        run: ./nova-test-unit --gtest_color=yes
       # 7. Prepare artifacts for uploading
       - name: Prepare artifacts
         run: |
@@ -127,10 +127,10 @@ jobs:
         shell: bash
         run: cmake --build .
       # 6. Run the unit tests
-      # - name: Run unit tests
-      #   working-directory: build/Debug
-      #   shell: bash
-      #   run: ./nova-test-unit.exe --gtest_color=yes
+      - name: Run unit tests
+        working-directory: build/Debug
+        shell: bash
+        run: ./nova-test-unit.exe --gtest_color=yes
       # 7. Prepare artifacts for uploading
       - name: Prepare artifacts
         shell: bash
