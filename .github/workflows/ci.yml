@@ -113,6 +113,10 @@ jobs:
       - name: Configure with CMake
         shell: bash
         run: |
+          ls C:\
+          ls C:\VulkanSDK
+          ls C:\VulkanSDK\1.1.121.2
+          ls C:\VulkanSDK\1.1.121.2\Include
           mkdir build
           cd build
           echo $VULKAN_SDK
