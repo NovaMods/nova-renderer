@@ -88,9 +88,6 @@ jobs:
       matrix:
         vulkan: [1.1.121.2]
 
-    env:
-      VULKAN_SDK: C:\VulkanSDK\${{ matrix.vulkan }}
-
     name: build-windows-msvc
 
     steps:
@@ -103,7 +100,9 @@ jobs:
           -o VulkanSDK-Installer.exe
       # 2. Install the VulkanSDK
       - name: Install VulkanSDK
-        run: .\VulkanSDK-Installer.exe /S
+        run: |
+          .\VulkanSDK-Installer.exe /S
+          sleep 60s
       # 3. Checkout the repository, this is done via a github action
       - name: Checkout repository
         uses: actions/checkout@master
@@ -112,6 +111,8 @@ jobs:
       # 4. Configure with CMake
       - name: Configure with CMake
         shell: bash
+        env:
+          VULKAN_SDK: C:\\VulkanSDK\\${{ matrix.vulkan }}
         run: |
           echo "Inspecting root"
           ls C:\\
