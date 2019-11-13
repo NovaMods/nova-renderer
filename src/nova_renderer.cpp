@@ -621,14 +621,11 @@ namespace nova::renderer {
         new_binding.count = 1;
         new_binding.stages = shader_stage;
 
-        const std::string resource_name = resource.name.c_str();
+        const std::string& resource_name = resource.name;
 
-        if(bindings.find(resource_name) == bindings.end()) {
-            // Totally new binding!
-            bindings[resource_name] = new_binding;
-        } else {
+        if(const auto itr = bindings.find(resource_name); itr != bindings.end()) {
             // Existing binding. Is it the same as our binding?
-            rhi::ResourceBindingDescription& existing_binding = bindings.at(resource_name);
+            rhi::ResourceBindingDescription& existing_binding = itr->second;
             if(existing_binding != new_binding) {
                 // They have two different bindings with the same name. Not allowed
                 NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name
@@ -638,6 +635,10 @@ namespace nova::renderer {
                 // Same binding, probably at different stages - let's fix that
                 existing_binding.stages |= shader_stage;
             }
+
+        } else {
+            // Totally new binding!
+            bindings[resource_name] = new_binding;
         }
     }
 
