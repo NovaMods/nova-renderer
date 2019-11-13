@@ -497,6 +497,9 @@ namespace nova::renderer {
         std::vector<rhi::DescriptorImageUpdate> image_updates;
         image_updates.reserve(bindings.size());
 
+        std::vector<rhi::DescriptorBufferUpdate> buffer_updates;
+        buffer_updates.reserve(bindings.size());
+
         for(const auto& [descriptor_name, resource_name] : bindings) {
             const rhi::ResourceBindingDescription& binding_desc = descriptor_descriptions.at(descriptor_name);
             const rhi::DescriptorSet* descriptor_set = material.descriptor_sets.at(binding_desc.set);
@@ -523,6 +526,8 @@ namespace nova::renderer {
 
             } else if(const auto builtin_buffer_itr = builtin_buffers.find(resource_name); builtin_buffer_itr != builtin_buffers.end()) {
                 const rhi::Buffer* buffer = builtin_buffer_itr->second;
+
+                rhi::Desc
 
             } else {
                 is_known = false;
