@@ -20,26 +20,22 @@ namespace nova::renderer::rhi {
 #define NUM_THREADS 1
 
     /*!
-     * \brief Abstract class for render backends
-     *
-     * The constructor should not make any initialization
-     * All functions must be called after init(nova::settings) has been called except
-     *   explicitly marked in the documentation
+     * \brief Interface to a logical device which can render to an operating system window
      */
-    class RenderEngine {
+    class RenderDevice {
     public:
         NovaSettingsAccessManager& settings;
 
-        RenderEngine(RenderEngine&& other) = delete;
-        RenderEngine& operator=(RenderEngine&& other) noexcept = delete;
+        RenderDevice(RenderDevice&& other) = delete;
+        RenderDevice& operator=(RenderDevice&& other) noexcept = delete;
 
-        RenderEngine(const RenderEngine& other) = delete;
-        RenderEngine& operator=(const RenderEngine& other) = delete;
+        RenderDevice(const RenderDevice& other) = delete;
+        RenderDevice& operator=(const RenderDevice& other) = delete;
 
         /*!
          * \brief Needed to make destructor of subclasses called
          */
-        virtual ~RenderEngine() = default;
+        virtual ~RenderDevice() = default;
 
         [[nodiscard]] Window& get_window() const;
 
@@ -234,7 +230,7 @@ namespace nova::renderer::rhi {
          *
          * \attention Called by the various render engine implementations
          */
-        explicit RenderEngine(bvestl::polyalloc::Allocator* allocator,
+        explicit RenderDevice(bvestl::polyalloc::Allocator* allocator,
                               NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)
             : settings(settings),
               swapchain_size(settings.settings.window.width, settings.settings.window.height),

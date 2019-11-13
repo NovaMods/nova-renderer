@@ -15,7 +15,7 @@ namespace nova::renderer::rhi {
     /*!
      * \brief OpenGL 4.6 RHI backend. Optimized for Nvidia GPUs
      */
-    class Gl4NvRenderEngine final : public RenderEngine {
+    class Gl4NvRenderEngine final : public RenderDevice {
     public:
         explicit Gl4NvRenderEngine(NovaSettingsAccessManager& settings);
 

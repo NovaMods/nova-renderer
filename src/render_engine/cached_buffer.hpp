@@ -5,7 +5,7 @@
 
 namespace nova::renderer {
     namespace rhi {
-        class RenderEngine;
+        class RenderDevice;
     }
 
     /*!
@@ -14,7 +14,7 @@ namespace nova::renderer {
     template <typename BufferData>
     class CachedBuffer {
     public:
-        explicit CachedBuffer(DeviceMemoryResource& buffer_memory, rhi::RenderEngine& render_engine) : render_engine(&render_engine) {
+        explicit CachedBuffer(DeviceMemoryResource& buffer_memory, rhi::RenderDevice& render_engine) : render_engine(&render_engine) {
             rhi::BufferCreateInfo create_info = {};
             create_info.size = sizeof(BufferData);
             create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
@@ -28,7 +28,7 @@ namespace nova::renderer {
         }
 
     private:
-        rhi::RenderEngine* render_engine;
+        rhi::RenderDevice* render_engine;
 
         rhi::Buffer* gpu_buffer;
     };

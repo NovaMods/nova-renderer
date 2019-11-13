@@ -186,7 +186,7 @@ namespace nova::renderer {
 
         RenderableId add_renderable_for_material(const FullMaterialPassName& material_name, const StaticMeshRenderableData& renderable);
 
-        [[nodiscard]] rhi::RenderEngine* get_engine() const;
+        [[nodiscard]] rhi::RenderDevice* get_engine() const;
 
         static NovaRenderer* initialize(const NovaSettings& settings);
 
@@ -196,7 +196,7 @@ namespace nova::renderer {
 
     private:
         NovaSettingsAccessManager render_settings;
-        std::unique_ptr<rhi::RenderEngine> rhi;
+        std::unique_ptr<rhi::RenderDevice> rhi;
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
@@ -325,8 +325,7 @@ namespace nova::renderer {
         uint64_t frame_count = 0;
         uint8_t cur_frame_idx = 0;
 
-        rhi::Buffer* per_frame_data_buffer;
-        rhi::Buffer* model_matrix_buffer;
+        std::unordered_map<std::string, rhi::Buffer*> builtin_buffers;
         uint32_t cur_model_matrix_index = 0;
 
         std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;

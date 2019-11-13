@@ -16,7 +16,7 @@ namespace nova::renderer::rhi {
     /*!
      * \brief Vulkan implementation of a render engine
      */
-    class VulkanRenderEngine final : public RenderEngine {
+    class VulkanRenderEngine final : public RenderDevice {
     public:
         // Global Vulkan objects
         VkInstance instance;

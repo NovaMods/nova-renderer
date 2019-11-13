@@ -26,7 +26,7 @@ namespace nova::renderer::rhi {
     /*!
      * \brief D3D12 implementation of a render engine
      */
-    class D3D12RenderEngine final : public RenderEngine {
+    class D3D12RenderEngine final : public RenderDevice {
     public:
         explicit D3D12RenderEngine(NovaSettingsAccessManager& settings);
 

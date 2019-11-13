@@ -23,6 +23,7 @@
 #include "memory/system_memory_allocator.hpp"
 #include "render_objects/uniform_structs.hpp"
 
+#include "nova_renderer/util/platform.hpp"
 // D3D12 MUST be included first because the Vulkan include undefines FAR, yet the D3D12 headers need FAR
 // Windows considered harmful
 #if defined(NOVA_WINDOWS) && defined(NOVA_D3D12_RHI)
@@ -520,6 +521,9 @@ namespace nova::renderer {
 
                 writes.push_back(write);
 
+            } else if(const auto builtin_buffer_itr = builtin_buffers.find(resource_name); builtin_buffer_itr != builtin_buffers.end()) {
+                const rhi::Buffer* buffer = builtin_buffer_itr->second;
+
             } else {
                 is_known = false;
             }
@@ -833,7 +837,7 @@ namespace nova::renderer {
         return id;
     }
 
-    rhi::RenderEngine* NovaRenderer::get_engine() const { return rhi.get(); }
+    rhi::RenderDevice* NovaRenderer::get_engine() const { return rhi.get(); }
 
     NovaRenderer* NovaRenderer::get_instance() { return instance.get(); }
 
@@ -918,13 +922,15 @@ namespace nova::renderer {
         per_frame_data_create_info.size = sizeof(PerFrameUniforms);
         per_frame_data_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
-        per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory);
+        auto* per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory);
+        builtin_buffers.emplace("NovaPerFrameUBO", per_frame_data_buffer);
 
         // Buffer for each drawcall's model matrix
         rhi::BufferCreateInfo model_matrix_buffer_create_info = {};
         model_matrix_buffer_create_info.size = sizeof(glm::mat4) * 0xFFFF;
         model_matrix_buffer_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
-        model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info, *ubo_memory);
+        auto* model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info, *ubo_memory);
+        builtin_buffers.emplace("NovaModelMatrixBuffer", model_matrix_buffer);
     }
 } // namespace nova::renderer
