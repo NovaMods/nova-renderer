@@ -494,12 +494,6 @@ namespace nova::renderer {
         std::vector<rhi::DescriptorSetWrite> writes;
         writes.reserve(bindings.size());
 
-        std::vector<rhi::DescriptorImageUpdate> image_updates;
-        image_updates.reserve(bindings.size());
-
-        std::vector<rhi::DescriptorBufferUpdate> buffer_updates;
-        buffer_updates.reserve(bindings.size());
-
         for(const auto& [descriptor_name, resource_name] : bindings) {
             const rhi::ResourceBindingDescription& binding_desc = descriptor_descriptions.at(descriptor_name);
             const rhi::DescriptorSet* descriptor_set = material.descriptor_sets.at(binding_desc.set);
@@ -512,14 +506,9 @@ namespace nova::renderer {
             if(dynamic_textures.find(resource_name) != dynamic_textures.end()) {
                 const rhi::Image* image = dynamic_textures.at(resource_name);
 
-                rhi::DescriptorImageUpdate image_update = {};
-                image_update.image = image;
-                image_update.sampler = point_sampler;
-                image_update.format = dynamic_texture_infos.at(resource_name).format;
-
-                image_updates.push_back(image_update);
-
-                write.image_info = &(*image_updates.end());
+                write.image_info.image = image;
+                write.image_info.sampler = point_sampler;
+                write.image_info.format = dynamic_texture_infos.at(resource_name).format;
                 write.type = rhi::DescriptorType::CombinedImageSampler;
 
                 writes.push_back(write);
@@ -527,7 +516,10 @@ namespace nova::renderer {
             } else if(const auto builtin_buffer_itr = builtin_buffers.find(resource_name); builtin_buffer_itr != builtin_buffers.end()) {
                 const rhi::Buffer* buffer = builtin_buffer_itr->second;
 
-                rhi::Desc
+                write.buffer_info.buffer = buffer;
+                write.type = rhi::DescriptorType::UniformBuffer;
+
+                writes.push_back(write);
 
             } else {
                 is_known = false;
