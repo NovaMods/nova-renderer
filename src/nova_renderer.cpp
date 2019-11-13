@@ -769,6 +769,7 @@ namespace nova::renderer {
 
         for(const StaticMeshRenderCommand& command : batch.renderables) {
             if(command.is_visible) {
+                auto* model_matrix_buffer = builtin_buffers.at("NovaModelMatrixBuffer");
                 rhi->write_data_to_buffer(&command.model_matrix,
                                           sizeof(glm::mat4),
                                           cur_model_matrix_index * sizeof(glm::mat4),
