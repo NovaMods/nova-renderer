@@ -17,6 +17,21 @@ namespace nova::renderer::rhi {
 
     class Swapchain;
 
+	/*!
+	 * \brief Information about hte capabilities and limits of the device we're running on
+	 */
+    struct DeviceCapabilities {
+        uint64_t max_uniform_buffer_size;
+        uint64_t max_texture_size;
+
+		uint64_t total_device_memory;
+        uint64_t total_host_memory;
+		bool is_uma;
+
+        bool supports_raytracing;
+        bool supports_mesh_shaders;
+    };
+
 #define NUM_THREADS 1
 
     /*!
@@ -219,6 +234,8 @@ namespace nova::renderer::rhi {
         Swapchain* swapchain = nullptr;
 
         bvestl::polyalloc::allocator_handle shaderpack_allocator;
+
+		DeviceCapabilities capabilities;
 
         /*!
          * \brief Initializes the engine, does **NOT** open any window
