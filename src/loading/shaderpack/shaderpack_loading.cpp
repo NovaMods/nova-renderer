@@ -225,7 +225,7 @@ namespace nova::renderer::shaderpack {
 
     ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         NOVA_LOG(TRACE) << "load_dynamic_resource_file called";
-        std::string resources_string = folder_access->read_text_file("resources.json");
+        const std::string resources_string = folder_access->read_text_file("resources.json");
         try {
             auto json_resources = nlohmann::json::parse(resources_string.c_str());
             const ValidationReport report = validate_shaderpack_resources_data(json_resources);

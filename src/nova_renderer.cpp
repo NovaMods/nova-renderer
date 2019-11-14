@@ -12,7 +12,9 @@
 #pragma warning(pop)
 
 #include "nova_renderer/command_list.hpp"
+#include "nova_renderer/constants.hpp"
 #include "nova_renderer/swapchain.hpp"
+#include "nova_renderer/util/platform.hpp"
 
 #include "debugging/renderdoc.hpp"
 #include "loading/shaderpack/render_graph_builder.hpp"
@@ -22,7 +24,6 @@
 #include "memory/mallocator.hpp"
 #include "memory/system_memory_allocator.hpp"
 #include "render_objects/uniform_structs.hpp"
-
 // D3D12 MUST be included first because the Vulkan include undefines FAR, yet the D3D12 headers need FAR
 // Windows considered harmful
 #if defined(NOVA_WINDOWS) && defined(NOVA_D3D12_RHI)
@@ -174,6 +175,7 @@ namespace nova::renderer {
         {
             rhi::BufferCreateInfo staging_vertex_buffer_create_info = vertex_buffer_create_info;
             staging_vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
+
             rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info, *staging_buffer_memory);
             rhi->write_data_to_buffer(mesh_data.vertex_data.data(),
                                       mesh_data.vertex_data.size() * sizeof(FullVertex),
@@ -493,9 +495,6 @@ namespace nova::renderer {
         std::vector<rhi::DescriptorSetWrite> writes;
         writes.reserve(bindings.size());
 
-        std::vector<rhi::DescriptorImageUpdate> image_updates;
-        image_updates.reserve(bindings.size());
-
         for(const auto& [descriptor_name, resource_name] : bindings) {
             const rhi::ResourceBindingDescription& binding_desc = descriptor_descriptions.at(descriptor_name);
             const rhi::DescriptorSet* descriptor_set = material.descriptor_sets.at(binding_desc.set);
@@ -504,27 +503,25 @@ namespace nova::renderer {
             write.set = descriptor_set;
             write.binding = binding_desc.binding;
 
-            bool is_known = true;
-            if(dynamic_textures.find(resource_name) != dynamic_textures.end()) {
-                const rhi::Image* image = dynamic_textures.at(resource_name);
+            if(const auto dyn_tex_itr = dynamic_textures.find(resource_name); dyn_tex_itr != dynamic_textures.end()) {
+                const rhi::Image* image = dyn_tex_itr->second;
 
-                rhi::DescriptorImageUpdate image_update = {};
-                image_update.image = image;
-                image_update.sampler = point_sampler;
-                image_update.format = dynamic_texture_infos.at(resource_name).format;
-
-                image_updates.push_back(image_update);
-
-                write.image_info = &(*image_updates.end());
+                write.image_info.image = image;
+                write.image_info.sampler = point_sampler;
+                write.image_info.format = dynamic_texture_infos.at(resource_name).format;
                 write.type = rhi::DescriptorType::CombinedImageSampler;
 
                 writes.push_back(write);
 
-            } else {
-                is_known = false;
-            }
+            } else if(const auto builtin_buffer_itr = builtin_buffers.find(resource_name); builtin_buffer_itr != builtin_buffers.end()) {
+                const rhi::Buffer* buffer = builtin_buffer_itr->second;
 
-            if(!is_known) {
+                write.buffer_info.buffer = buffer;
+                write.type = rhi::DescriptorType::UniformBuffer;
+
+                writes.push_back(write);
+
+            } else {
                 NOVA_LOG(ERROR) << "Resource " << resource_name.c_str() << " is not known to Nova";
             }
         }
@@ -620,14 +617,11 @@ namespace nova::renderer {
         new_binding.count = 1;
         new_binding.stages = shader_stage;
 
-        const std::string resource_name = resource.name.c_str();
+        const std::string& resource_name = resource.name;
 
-        if(bindings.find(resource_name) == bindings.end()) {
-            // Totally new binding!
-            bindings[resource_name] = new_binding;
-        } else {
+        if(const auto itr = bindings.find(resource_name); itr != bindings.end()) {
             // Existing binding. Is it the same as our binding?
-            rhi::ResourceBindingDescription& existing_binding = bindings.at(resource_name);
+            rhi::ResourceBindingDescription& existing_binding = itr->second;
             if(existing_binding != new_binding) {
                 // They have two different bindings with the same name. Not allowed
                 NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name
@@ -637,6 +631,10 @@ namespace nova::renderer {
                 // Same binding, probably at different stages - let's fix that
                 existing_binding.stages |= shader_stage;
             }
+
+        } else {
+            // Totally new binding!
+            bindings[resource_name] = new_binding;
         }
     }
 
@@ -768,6 +766,7 @@ namespace nova::renderer {
 
         for(const StaticMeshRenderCommand& command : batch.renderables) {
             if(command.is_visible) {
+                auto* model_matrix_buffer = builtin_buffers.at(MODEL_MATRIX_BUFFER_NAME);
                 rhi->write_data_to_buffer(&command.model_matrix,
                                           sizeof(glm::mat4),
                                           cur_model_matrix_index * sizeof(glm::mat4),
@@ -777,6 +776,7 @@ namespace nova::renderer {
         }
 
         if(start_index != cur_model_matrix_index) {
+            // TODO: There's probably a better way to do this
             const std::vector<rhi::Buffer*> vertex_buffers = {batch.vertex_buffer,
                                                               batch.vertex_buffer,
                                                               batch.vertex_buffer,
@@ -797,14 +797,14 @@ namespace nova::renderer {
         const RenderableId id = next_renderable_id.load();
         next_renderable_id.fetch_add(1);
 
-        auto pos = material_pass_keys.find(material_name);
+        const auto pos = material_pass_keys.find(material_name);
         if(pos == material_pass_keys.end()) {
             NOVA_LOG(ERROR) << "No material named " << material_name.material_name << " for pass " << material_name.pass_name;
             return std::numeric_limits<uint64_t>::max();
         }
 
         // Figure out where to put the renderable
-        const MaterialPassKey& pass_key = material_pass_keys.at(material_name);
+        const MaterialPassKey& pass_key = pos->second;
 
         Renderpass& renderpass = renderpasses.at(pass_key.renderpass_index);
         Pipeline& pipeline = renderpass.pipelines.at(pass_key.pipeline_index);
@@ -823,7 +823,7 @@ namespace nova::renderer {
                     command.model_matrix = glm::rotate(command.model_matrix, renderable.initial_rotation.x, {1, 0, 0});
                     command.model_matrix = glm::rotate(command.model_matrix, renderable.initial_rotation.y, {0, 1, 0});
                     command.model_matrix = glm::rotate(command.model_matrix, renderable.initial_rotation.z, {0, 0, 1});
-                    command.model_matrix = glm::scale(command.model_matrix, renderable.initial_scale);
+                    command.model_matrix = glm::scale(command.model_matrix, renderable.initial_scale); // Uniform scaling only
 
                     batch.renderables.emplace_back(command);
                 }
@@ -874,7 +874,7 @@ namespace nova::renderer {
         const uint64_t ubo_memory_size = sizeof(PerFrameUniforms) + sizeof(glm::mat4) * 0xFFFF;
         const ntl::Result<DeviceMemoryResource*>
             ubo_memory_result = rhi->allocate_device_memory(ubo_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
-                                    .map([&](rhi::DeviceMemory* memory) {
+                                    .map([=](rhi::DeviceMemory* memory) {
                                         auto* allocator = new BumpPointAllocationStrategy(Bytes(ubo_memory_size), Bytes(sizeof(glm::mat4)));
                                         return new DeviceMemoryResource(memory, allocator);
                                     });
@@ -892,7 +892,7 @@ namespace nova::renderer {
             staging_memory_result = rhi->allocate_device_memory(staging_memory_size.b_count(),
                                                                 rhi::MemoryUsage::StagingBuffer,
                                                                 rhi::ObjectType::Buffer)
-                                        .map([&](rhi::DeviceMemory* memory) {
+                                        .map([=](rhi::DeviceMemory* memory) {
                                             auto* allocator = new BumpPointAllocationStrategy(staging_memory_size, 64_b);
                                             return new DeviceMemoryResource(memory, allocator);
                                         });
@@ -918,13 +918,15 @@ namespace nova::renderer {
         per_frame_data_create_info.size = sizeof(PerFrameUniforms);
         per_frame_data_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
-        per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory);
+        auto* per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory);
+        builtin_buffers.emplace(PER_FRAME_DATA_NAME, per_frame_data_buffer);
 
         // Buffer for each drawcall's model matrix
         rhi::BufferCreateInfo model_matrix_buffer_create_info = {};
         model_matrix_buffer_create_info.size = sizeof(glm::mat4) * 0xFFFF;
         model_matrix_buffer_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
-        model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info, *ubo_memory);
+        auto* model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info, *ubo_memory);
+        builtin_buffers.emplace(MODEL_MATRIX_BUFFER_NAME, model_matrix_buffer);
     }
 } // namespace nova::renderer

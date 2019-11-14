@@ -152,11 +152,37 @@ namespace nova::renderer::rhi {
         Sampler* sampler;
     };
 
+    struct DescriptorBufferWrite {
+        const Buffer* buffer;
+    };
+
     struct DescriptorSetWrite {
+        /*!
+         * \brief Pointer to the descriptor set to write to
+         */
         const DescriptorSet* set;
+
+        /*!
+         * \brief The specific binding in the set that you want to write to
+         */
         uint32_t binding;
-        DescriptorImageUpdate* image_info;
+
+        /*!
+         * \brief The type of descriptor you're writing to
+         */
         DescriptorType type;
+
+        union {
+            /*!
+             * \brief Information to update an image descriptor
+             */
+            DescriptorImageUpdate image_info;
+
+            /*!
+             * \brief Information to update a buffer descriptor
+             */
+            DescriptorBufferWrite buffer_info;
+        };
     };
 #pragma endregion
 

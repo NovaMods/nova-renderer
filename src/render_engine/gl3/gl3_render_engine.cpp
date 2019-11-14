@@ -112,14 +112,16 @@ namespace nova::renderer::rhi {
             switch(write.type) {
 
                 case DescriptorType::CombinedImageSampler: {
-                    DescriptorImageUpdate* image_update = write.image_info;
-                    const auto* cimage = static_cast<const Gl3Image*>(image_update->image);
+                    const auto* cimage = static_cast<const Gl3Image*>(write.image_info.image);
                     auto* image = const_cast<Gl3Image*>(cimage);
                     descriptor.resource = image;
                 } break;
 
                 case DescriptorType::UniformBuffer: {
-                    NOVA_LOG(WARN) << __FILE__ << "(" << __LINE__ << "): Unimplemented";
+                    const auto* cbuffer = static_cast<const Gl3Buffer*>(write.buffer_info.buffer);
+                    auto* buffer = const_cast<Gl3Buffer*>(cbuffer);
+                    descriptor.resource = buffer;
+
                 } break;
 
                 case DescriptorType::StorageBuffer: {

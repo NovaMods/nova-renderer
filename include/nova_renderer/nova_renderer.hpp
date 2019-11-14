@@ -325,8 +325,7 @@ namespace nova::renderer {
         uint64_t frame_count = 0;
         uint8_t cur_frame_idx = 0;
 
-        rhi::Buffer* per_frame_data_buffer;
-        rhi::Buffer* model_matrix_buffer;
+        std::unordered_map<std::string, rhi::Buffer*> builtin_buffers;
         uint32_t cur_model_matrix_index = 0;
 
         std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;

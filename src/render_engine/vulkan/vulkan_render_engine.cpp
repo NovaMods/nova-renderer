@@ -496,6 +496,9 @@ namespace nova::renderer::rhi {
 
         std::vector<VkDescriptorImageInfo> image_infos;
         image_infos.reserve(writes.size());
+                
+        std::vector<VkDescriptorBufferInfo> buffer_infos;
+        buffer_infos.reserve(writes.size());
 
         for(const DescriptorSetWrite& write : writes) {
             VkWriteDescriptorSet vk_write = {};
@@ -508,9 +511,9 @@ namespace nova::renderer::rhi {
             switch(write.type) {
                 case DescriptorType::CombinedImageSampler: {
                     VkDescriptorImageInfo vk_image_info = {};
-                    vk_image_info.imageView = image_view_for_image(write.image_info->image);
+                    vk_image_info.imageView = image_view_for_image(write.image_info.image);
                     vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    vk_image_info.sampler = static_cast<VulkanSampler*>(write.image_info->sampler)->sampler;
+                    vk_image_info.sampler = static_cast<VulkanSampler*>(write.image_info.sampler)->sampler;
 
                     image_infos.push_back(vk_image_info);
 
@@ -521,6 +524,19 @@ namespace nova::renderer::rhi {
                 } break;
 
                 case DescriptorType::UniformBuffer: {
+                    const VulkanBuffer* vk_buffer = static_cast<const VulkanBuffer*>(write.buffer_info.buffer);
+
+                    VkDescriptorBufferInfo vk_buffer_info = {};
+                    vk_buffer_info.buffer = vk_buffer->buffer;
+                    vk_buffer_info.offset = vk_buffer->memory.allocation_info.offset.b_count();
+                    vk_buffer_info.range = vk_buffer->memory.allocation_info.size.b_count();
+
+                    buffer_infos.push_back(vk_buffer_info);
+
+                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    vk_write.pBufferInfo = &buffer_infos.at(buffer_infos.size() - 1);
+
+                    vk_writes.push_back(vk_write);
                 } break;
 
                 case DescriptorType::StorageBuffer: {

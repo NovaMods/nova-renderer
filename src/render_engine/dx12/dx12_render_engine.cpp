@@ -309,10 +309,10 @@ namespace nova::renderer::rhi {
 
             switch(write.type) {
                 case DescriptorType::CombinedImageSampler: {
-                    const DescriptorImageUpdate* image_update = write.image_info;
-                    const auto* image = static_cast<const DX12Image*>(image_update->image);
+                    const auto* image = static_cast<const DX12Image*>(write.image_info.image);
+
                     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
-                    srv_desc.Format = to_dxgi_format(image_update->format.pixel_format);
+                    srv_desc.Format = to_dxgi_format(write.image_info.format.pixel_format);
                     srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
                     srv_desc.Texture2D.MostDetailedMip = 0;
                     srv_desc.Texture2D.MipLevels = 1;
@@ -324,6 +324,14 @@ namespace nova::renderer::rhi {
                 } break;
 
                 case DescriptorType::UniformBuffer: {
+                    const auto* buffer = static_cast<const DX12Buffer*>(write.buffer_info.buffer);
+
+                    D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc = {};
+                    cbv_desc.BufferLocation = buffer->resource->GetGPUVirtualAddress();
+                    cbv_desc.SizeInBytes = buffer->size.b_count();
+
+                    device->CreateConstantBufferView(&cbv_desc, write_handle);
+
                 } break;
 
                 case DescriptorType::StorageBuffer: {
@@ -646,7 +654,7 @@ namespace nova::renderer::rhi {
         return semaphore;
     }
 
-    std::vector<Semaphore*> D3D12RenderEngine::create_semaphores(uint32_t num_semaphores) {
+    std::vector<Semaphore*> D3D12RenderEngine::create_semaphores(const uint32_t num_semaphores) {
         std::vector<Semaphore*> semaphores;
         semaphores.reserve(num_semaphores);
 

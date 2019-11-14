@@ -109,11 +109,11 @@ set(NOVA_SOURCE
         include/nova_renderer/shaderpack_data.hpp
         include/nova_renderer/window.hpp
         include/nova_renderer/bytes.hpp
-        include/nova_renderer/render_graph.hpp
         include/nova_renderer/allocation_strategy.hpp
         include/nova_renderer/allocation_structs.hpp
         include/nova_renderer/bytes.hpp
         include/nova_renderer/polyalloc.hpp
+        include/nova_renderer/constants.hpp
 
         src/nova_renderer.cpp
         src/render_engine/render_engine.cpp
@@ -172,7 +172,6 @@ set(NOVA_SOURCE
         src/memory/bytes.cpp
         src/memory/mallocator.cpp
         src/memory/system_memory_allocator.cpp
-
         )
 
 #################################################################

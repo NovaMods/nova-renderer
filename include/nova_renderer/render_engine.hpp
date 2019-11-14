@@ -5,9 +5,7 @@
 #include "nova_renderer/command_list.hpp"
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
-#include "nova_renderer/util/platform.hpp"
 #include "nova_renderer/util/result.hpp"
-#include "nova_renderer/util/utils.hpp"
 #include "nova_renderer/window.hpp"
 
 #include "rhi_types.hpp"
@@ -22,11 +20,7 @@ namespace nova::renderer::rhi {
 #define NUM_THREADS 1
 
     /*!
-     * \brief Abstract class for render backends
-     *
-     * The constructor should not make any initialization
-     * All functions must be called after init(nova::settings) has been called except
-     *   explicitly marked in the documentation
+     * \brief Interface to a logical device which can render to an operating system window
      */
     class RenderEngine {
     public:
@@ -99,17 +93,6 @@ namespace nova::renderer::rhi {
          */
         [[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory) = 0;
 
-        /*!
-         * \brief Creates a buffer, initializing its contents with the provided initial data
-         *
-         * D3D12 and Vulkan have different rules that conflict when you're trying to upload data to a vertex or index buffer. This method
-         * smooths over that so I don't need to care about API differences
-         */
-        /*[[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info,
-                                                    DeviceMemoryResource& memory,
-                                                    uint64_t initial_data_size,
-                                                    void* initial_data) = 0;
-                                                    */
         /*!
          * \brief Writes data to a buffer
          *
@@ -245,7 +228,7 @@ namespace nova::renderer::rhi {
          * Intentionally does nothing. This constructor serves mostly to ensure that concrete render engines have a
          * constructor that takes in some settings
          *
-         * \attention Called by nova
+         * \attention Called by the various render engine implementations
          */
         explicit RenderEngine(bvestl::polyalloc::Allocator* allocator,
                               NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)
