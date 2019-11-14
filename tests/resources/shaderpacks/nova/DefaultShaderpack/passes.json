@@ -1,0 +1,29 @@
+[
+    {
+        "name": "Forward",
+        "textureOutputs": [
+            {
+                "name": "LitWorld",
+                "clear": true
+            }
+        ],
+        "depthTexture": {
+            "name": "DepthBuffer",
+            "clear": true
+        },
+        "bufferInputs": [
+            "NovaMegaMesh_Vertices",
+            "NovaMegaMesh_Indices"
+        ]
+    }, 
+    {
+        "name": "Final",
+        "textureInputs": ["LitWorld"],
+        "textureOutputs": [
+            {
+                "name": "Backbuffer",
+                "clear": false
+            }
+        ]
+    }
+]

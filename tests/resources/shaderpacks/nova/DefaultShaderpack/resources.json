@@ -1,0 +1,29 @@
+{
+    "textures": [
+        {
+            "name": "LitWorld",
+            "format": {
+                "pixelFormat": "RGBA8",
+                "dimensionType": "ScreenRelative",
+                "width": 1,
+                "height": 1
+            }
+        },
+        {
+            "name": "DepthBuffer",
+            "format": {
+                "pixelFormat": "Depth",
+                "dimensionType": "ScreenRelative",
+                "width": 1,
+                "height": 1
+            }
+        }
+    ],
+    "samplers": [
+        {
+            "name": "Point",
+            "filter": "Point",
+            "wrapMode": "Clamp"
+        }
+    ]
+}
