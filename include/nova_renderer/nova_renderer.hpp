@@ -196,7 +196,7 @@ namespace nova::renderer {
 
     private:
         NovaSettingsAccessManager render_settings;
-        std::unique_ptr<rhi::RenderDevice> device;
+        std::unique_ptr<rhi::RenderDevice> rhi;
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
