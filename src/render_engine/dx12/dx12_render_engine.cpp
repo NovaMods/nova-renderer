@@ -654,7 +654,7 @@ namespace nova::renderer::rhi {
         return semaphore;
     }
 
-    std::vector<Semaphore*> D3D12RenderEngine::create_semaphores(uint32_t num_semaphores) {
+    std::vector<Semaphore*> D3D12RenderEngine::create_semaphores(const uint32_t num_semaphores) {
         std::vector<Semaphore*> semaphores;
         semaphores.reserve(num_semaphores);
 
