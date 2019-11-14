@@ -796,14 +796,14 @@ namespace nova::renderer {
         const RenderableId id = next_renderable_id.load();
         next_renderable_id.fetch_add(1);
 
-        auto pos = material_pass_keys.find(material_name);
+        const auto pos = material_pass_keys.find(material_name);
         if(pos == material_pass_keys.end()) {
             NOVA_LOG(ERROR) << "No material named " << material_name.material_name << " for pass " << material_name.pass_name;
             return std::numeric_limits<uint64_t>::max();
         }
 
         // Figure out where to put the renderable
-        const MaterialPassKey& pass_key = material_pass_keys.at(material_name);
+        const MaterialPassKey& pass_key = pos->second;
 
         Renderpass& renderpass = renderpasses.at(pass_key.renderpass_index);
         Pipeline& pipeline = renderpass.pipelines.at(pass_key.pipeline_index);
@@ -822,7 +822,7 @@ namespace nova::renderer {
                     command.model_matrix = glm::rotate(command.model_matrix, renderable.initial_rotation.x, {1, 0, 0});
                     command.model_matrix = glm::rotate(command.model_matrix, renderable.initial_rotation.y, {0, 1, 0});
                     command.model_matrix = glm::rotate(command.model_matrix, renderable.initial_rotation.z, {0, 0, 1});
-                    command.model_matrix = glm::scale(command.model_matrix, renderable.initial_scale);
+                    command.model_matrix = glm::scale(command.model_matrix, renderable.initial_scale);	// Uniform scaling only
 
                     batch.renderables.emplace_back(command);
                 }

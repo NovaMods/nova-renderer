@@ -172,8 +172,6 @@ set(NOVA_SOURCE
         src/memory/bytes.cpp
         src/memory/mallocator.cpp
         src/memory/system_memory_allocator.cpp
-
-		src/render_engine/cached_buffer.hpp
         )
 
 #################################################################
