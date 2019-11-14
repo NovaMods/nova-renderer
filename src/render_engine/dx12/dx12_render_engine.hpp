@@ -24,6 +24,13 @@
 
 namespace nova::renderer::rhi {
     /*!
+     * \brief D3D12-specific capabilities
+     */
+    struct D3D12DeviceCapabilities {
+        bool supports_renderpasses;
+    };
+
+    /*!
      * \brief D3D12 implementation of a render engine
      */
     class D3D12RenderEngine final : public RenderEngine {
@@ -115,13 +122,16 @@ namespace nova::renderer::rhi {
         void open_window_and_create_swapchain(const NovaSettings::WindowOptions& options, uint32_t num_frames);
 
     private:
-        // TODO: Not always use mallocator
+        D3D12DeviceCapabilities d3d12_capabilities;
+
+        // TODO: don't always use mallocator
         bvestl::polyalloc::Mallocator mallocator;
 
         Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi_factory;
 
         Microsoft::WRL::ComPtr<IDXGIAdapter3> adapter;
-        Microsoft::WRL::ComPtr<ID3D12Device> device; // direct3d device
+        Microsoft::WRL::ComPtr<ID3D12Device> device;
+        Microsoft::WRL::ComPtr<ID3D12Device4> device4;
 
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> direct_command_queue;
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> compute_command_queue;
@@ -162,6 +172,11 @@ namespace nova::renderer::rhi {
          * - Will tell the debug layer to output to stdout whenever I figure out how to do that
          */
         void setup_debug_output();
+
+        /*!
+         * \brief Queries the hardware for its capabilities and limits
+         */
+        void determine_device_capabilities();
 #pragma endregion
 
 #pragma region Helpers

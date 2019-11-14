@@ -39,6 +39,8 @@ namespace nova::renderer::rhi {
         if(settings.settings.debug.enabled) {
             setup_debug_output();
         }
+
+		determine_device_capabilities();
     }
 
     void D3D12RenderEngine::set_num_renderpasses(const uint32_t num_renderpasses) {
@@ -963,6 +965,19 @@ namespace nova::renderer::rhi {
         } else {
             NOVA_LOG(ERROR) << "Could not set up debugging: " << to_string(hr);
         }
+    }
+
+    void D3D12RenderEngine::determine_device_capabilities() {
+        const auto hr = device->QueryInterface(IID_PPV_ARGS(device4.GetAddressOf()));
+        capabilities.supports_raytracing = SUCCEEDED(hr);
+
+        // Constants from https://docs.microsoft.com/en-us/windows/win32/direct3d12/hardware-feature-levels
+        capabilities.max_texture_size = 16384;
+
+        D3D12_FEATURE_DATA_ARCHITECTURE architecture_data;
+        device->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE, &architecture_data, sizeof(architecture_data));
+        capabilities.is_uma = architecture_data.CacheCoherentUMA;
+
     }
 
     ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,
