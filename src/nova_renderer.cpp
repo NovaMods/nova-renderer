@@ -766,7 +766,7 @@ namespace nova::renderer {
 
         for(const StaticMeshRenderCommand& command : batch.renderables) {
             if(command.is_visible) {
-                auto* model_matrix_buffer = builtin_buffers.at(ModelMatrixBufferName);
+                auto* model_matrix_buffer = builtin_buffers.at(MODEL_MATRIX_BUFFER_NAME);
                 rhi->write_data_to_buffer(&command.model_matrix,
                                           sizeof(glm::mat4),
                                           cur_model_matrix_index * sizeof(glm::mat4),
@@ -919,7 +919,7 @@ namespace nova::renderer {
         per_frame_data_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
         auto* per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory);
-        builtin_buffers.emplace(PerFrameDataName, per_frame_data_buffer);
+        builtin_buffers.emplace(PER_FRAME_DATA_NAME, per_frame_data_buffer);
 
         // Buffer for each drawcall's model matrix
         rhi::BufferCreateInfo model_matrix_buffer_create_info = {};
@@ -927,6 +927,6 @@ namespace nova::renderer {
         model_matrix_buffer_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
         auto* model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info, *ubo_memory);
-        builtin_buffers.emplace(ModelMatrixBufferName, model_matrix_buffer);
+        builtin_buffers.emplace(MODEL_MATRIX_BUFFER_NAME, model_matrix_buffer);
     }
 } // namespace nova::renderer

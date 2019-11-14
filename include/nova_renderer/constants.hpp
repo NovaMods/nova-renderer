@@ -5,6 +5,6 @@
 #include <string>
 
 namespace nova::renderer {
-    const std::string ModelMatrixBufferName = "NovaModelMatrixUBO";
-    const std::string PerFrameDataName = "NovaPerFrameUBO";
+    const std::string MODEL_MATRIX_BUFFER_NAME = "NovaModelMatrixUBO";
+    const std::string PER_FRAME_DATA_NAME = "NovaPerFrameUBO";
 }
