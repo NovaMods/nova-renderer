@@ -23,7 +23,7 @@ using Microsoft::WRL::ComPtr;
 #define GPU_FENCE_SIGNALED 32
 
 namespace nova::renderer::rhi {
-    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings) : RenderDevice(&mallocator, settings) {
+    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(&mallocator, settings) {
         create_device();
 
         create_queues();

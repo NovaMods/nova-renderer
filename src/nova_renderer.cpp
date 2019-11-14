@@ -833,7 +833,7 @@ namespace nova::renderer {
         return id;
     }
 
-    rhi::RenderDevice* NovaRenderer::get_engine() const { return rhi.get(); }
+    rhi::RenderEngine* NovaRenderer::get_engine() const { return rhi.get(); }
 
     NovaRenderer* NovaRenderer::get_instance() { return instance.get(); }
 

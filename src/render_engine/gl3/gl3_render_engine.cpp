@@ -10,7 +10,7 @@
 #include "gl3_swapchain.hpp"
 
 namespace nova::renderer::rhi {
-    Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings) : RenderDevice(&mallocator, settings) {
+    Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(&mallocator, settings) {
 
         window = std::make_unique<GlfwWindow>(settings.settings);
 

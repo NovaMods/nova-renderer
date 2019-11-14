@@ -22,20 +22,20 @@ namespace nova::renderer::rhi {
     /*!
      * \brief Interface to a logical device which can render to an operating system window
      */
-    class RenderDevice {
+    class RenderEngine {
     public:
         NovaSettingsAccessManager& settings;
 
-        RenderDevice(RenderDevice&& other) = delete;
-        RenderDevice& operator=(RenderDevice&& other) noexcept = delete;
+        RenderEngine(RenderEngine&& other) = delete;
+        RenderEngine& operator=(RenderEngine&& other) noexcept = delete;
 
-        RenderDevice(const RenderDevice& other) = delete;
-        RenderDevice& operator=(const RenderDevice& other) = delete;
+        RenderEngine(const RenderEngine& other) = delete;
+        RenderEngine& operator=(const RenderEngine& other) = delete;
 
         /*!
          * \brief Needed to make destructor of subclasses called
          */
-        virtual ~RenderDevice() = default;
+        virtual ~RenderEngine() = default;
 
         [[nodiscard]] Window& get_window() const;
 
@@ -230,7 +230,7 @@ namespace nova::renderer::rhi {
          *
          * \attention Called by the various render engine implementations
          */
-        explicit RenderDevice(bvestl::polyalloc::Allocator* allocator,
+        explicit RenderEngine(bvestl::polyalloc::Allocator* allocator,
                               NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)
             : settings(settings),
               swapchain_size(settings.settings.window.width, settings.settings.window.height),

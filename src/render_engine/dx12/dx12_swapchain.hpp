@@ -10,11 +10,11 @@
 #include "nova_renderer/swapchain.hpp"
 
 namespace nova::renderer::rhi {
-    class RenderDevice;
+    class RenderEngine;
 
     class DX12Swapchain final : public Swapchain {
     public:
-        DX12Swapchain(RenderDevice* rhi,
+        DX12Swapchain(RenderEngine* rhi,
                       IDXGIFactory4* dxgi,
                       ID3D12Device* device,
                       HWND window,
@@ -35,7 +35,7 @@ namespace nova::renderer::rhi {
 
         uint32_t cur_frame_index = 0;
 
-        RenderDevice* rhi;
+        RenderEngine* rhi;
 
         Microsoft::WRL::ComPtr<IDXGISwapChain3> swapchain;
 

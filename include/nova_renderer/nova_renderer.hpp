@@ -186,7 +186,7 @@ namespace nova::renderer {
 
         RenderableId add_renderable_for_material(const FullMaterialPassName& material_name, const StaticMeshRenderableData& renderable);
 
-        [[nodiscard]] rhi::RenderDevice* get_engine() const;
+        [[nodiscard]] rhi::RenderEngine* get_engine() const;
 
         static NovaRenderer* initialize(const NovaSettings& settings);
 
@@ -196,7 +196,7 @@ namespace nova::renderer {
 
     private:
         NovaSettingsAccessManager render_settings;
-        std::unique_ptr<rhi::RenderDevice> rhi;
+        std::unique_ptr<rhi::RenderEngine> rhi;
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;

@@ -9,7 +9,7 @@
 #include "dx12_utils.hpp"
 
 namespace nova::renderer::rhi {
-    DX12Swapchain::DX12Swapchain(RenderDevice* rhi,
+    DX12Swapchain::DX12Swapchain(RenderEngine* rhi,
                                  IDXGIFactory4* dxgi,
                                  ID3D12Device* device,
                                  HWND window,
