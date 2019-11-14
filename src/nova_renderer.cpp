@@ -13,6 +13,7 @@
 
 #include "nova_renderer/command_list.hpp"
 #include "nova_renderer/swapchain.hpp"
+#include "nova_renderer/constants.hpp"
 
 #include "debugging/renderdoc.hpp"
 #include "loading/shaderpack/render_graph_builder.hpp"
@@ -922,7 +923,7 @@ namespace nova::renderer {
         per_frame_data_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
         auto* per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory);
-        builtin_buffers.emplace("NovaPerFrameUBO", per_frame_data_buffer);
+        builtin_buffers.emplace(PerFrameDataName, per_frame_data_buffer);
 
         // Buffer for each drawcall's model matrix
         rhi::BufferCreateInfo model_matrix_buffer_create_info = {};
@@ -930,6 +931,6 @@ namespace nova::renderer {
         model_matrix_buffer_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
         auto* model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info, *ubo_memory);
-        builtin_buffers.emplace("NovaModelMatrixBuffer", model_matrix_buffer);
+        builtin_buffers.emplace(ModelMatrixBufferName, model_matrix_buffer);
     }
 } // namespace nova::renderer

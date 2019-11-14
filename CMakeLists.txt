@@ -113,6 +113,7 @@ set(NOVA_SOURCE
         include/nova_renderer/allocation_structs.hpp
         include/nova_renderer/bytes.hpp
         include/nova_renderer/polyalloc.hpp
+        include/nova_renderer/constants.hpp
 
         src/nova_renderer.cpp
         src/render_engine/render_engine.cpp
