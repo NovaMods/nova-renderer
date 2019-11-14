@@ -519,7 +519,6 @@ build/
 build-vcpkg/
 
 **.generated.hlsl
-/tests/resources
 /3rdparty/enkiTS
 
 # clang-format crash dumps cause my code is too powerful for a formatter
