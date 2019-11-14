@@ -771,7 +771,7 @@ namespace nova::renderer {
 
         for(const StaticMeshRenderCommand& command : batch.renderables) {
             if(command.is_visible) {
-                auto* model_matrix_buffer = builtin_buffers.at("NovaModelMatrixBuffer");
+                auto* model_matrix_buffer = builtin_buffers.at(ModelMatrixBufferName);
                 rhi->write_data_to_buffer(&command.model_matrix,
                                           sizeof(glm::mat4),
                                           cur_model_matrix_index * sizeof(glm::mat4),
@@ -781,6 +781,7 @@ namespace nova::renderer {
         }
 
         if(start_index != cur_model_matrix_index) {
+			// TODO: There's probably a better way to do this
             const std::vector<rhi::Buffer*> vertex_buffers = {batch.vertex_buffer,
                                                               batch.vertex_buffer,
                                                               batch.vertex_buffer,
