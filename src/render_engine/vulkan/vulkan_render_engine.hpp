@@ -152,6 +152,13 @@ namespace nova::renderer::rhi {
 
         void enable_debug_output();
 
+        /*!
+         * \brief Copies device information, such as hardware limits and memory architecture, to the API-agnostic DeviceInfo struct
+         *
+         * This allows things outside of a render engine to make decisions based on GPU information
+         */
+        void save_device_info();
+
         void create_device_and_queues();
 
         static bool does_device_support_extensions(VkPhysicalDevice device);

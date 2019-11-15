@@ -1208,6 +1208,10 @@ namespace nova::renderer::rhi {
         NOVA_CHECK_RESULT(vkCreateDebugUtilsMessengerEXT(instance, &debug_create_info, nullptr, &debug_callback));
     }
 
+    void VulkanRenderEngine::save_device_info() {
+        
+    }
+
     void VulkanRenderEngine::create_device_and_queues() {
         uint32_t device_count;
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
@@ -1276,6 +1280,8 @@ namespace nova::renderer::rhi {
         vkGetPhysicalDeviceFeatures(gpu.phys_device, &gpu.supported_features);
 
         vkGetPhysicalDeviceMemoryProperties(gpu.phys_device, &gpu.memory_properties);
+
+        save_device_info();
 
         const float priority = 1.0;
 

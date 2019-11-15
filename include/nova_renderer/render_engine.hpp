@@ -17,10 +17,21 @@ namespace nova::renderer::rhi {
 
     class Swapchain;
 
+    /*!
+     * \brief All the GPU architectures that Nova cares about, at whatever granularity is most useful
+     */
+    enum GpuArchitecture {
+        Amd,
+        Nvidia,
+        Intel,
+    };
+
 	/*!
 	 * \brief Information about hte capabilities and limits of the device we're running on
 	 */
-    struct DeviceCapabilities {
+    struct DeviceInfo {
+        GpuArchitecture architecture;
+
         uint64_t max_uniform_buffer_size;
         uint64_t max_texture_size;
 
@@ -235,7 +246,7 @@ namespace nova::renderer::rhi {
 
         bvestl::polyalloc::allocator_handle shaderpack_allocator;
 
-		DeviceCapabilities capabilities;
+		DeviceInfo capabilities;
 
         /*!
          * \brief Initializes the engine, does **NOT** open any window
