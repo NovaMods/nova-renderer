@@ -25,6 +25,7 @@
 
 #include "../../util/memory_utils.hpp"
 #include "../configuration.hpp"
+#include "nova_renderer/constants.hpp"
 
 namespace nova::renderer::rhi {
     VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)
@@ -1222,7 +1223,7 @@ namespace nova::renderer::rhi {
             VkPhysicalDevice current_device = physical_devices[device_idx];
             vkGetPhysicalDeviceProperties(current_device, &gpu.props);
 
-            if(gpu.props.vendorID == 0x8086 &&
+            if(gpu.props.vendorID == INTEL_PCI_VENDOR_ID &&
                device_count - 1 > device_idx) { // Intel GPU... they are not powerful and we have more available, so skip it
                 continue;
             }
