@@ -20,17 +20,18 @@ namespace nova::renderer::rhi {
     /*!
      * \brief All the GPU architectures that Nova cares about, at whatever granularity is most useful
      */
-    enum GpuArchitecture {
+    enum class DeviceArchitecture {
         Amd,
         Nvidia,
         Intel,
+        Unknown,
     };
 
 	/*!
 	 * \brief Information about hte capabilities and limits of the device we're running on
 	 */
     struct DeviceInfo {
-        GpuArchitecture architecture;
+        DeviceArchitecture architecture;
 
         uint64_t max_uniform_buffer_size;
         uint64_t max_texture_size;
@@ -50,6 +51,8 @@ namespace nova::renderer::rhi {
      */
     class RenderEngine {
     public:
+        DeviceInfo info;
+
         NovaSettingsAccessManager& settings;
 
         RenderEngine(RenderEngine&& other) = delete;
