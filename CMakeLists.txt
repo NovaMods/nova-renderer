@@ -76,6 +76,7 @@ endif()
 #################################
 include(ClangFormat)
 include(ClangTidy)
+include(InstallGitHooks)
 include(RemovePermissive)
 include(CompilerOptionsUtils)
 include(CheckCXXCompilerFlag)

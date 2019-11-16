@@ -22,5 +22,3 @@ if [[ ! -f ".git/hooks/.dirty" ]]; then
         cp tools/git-hooks/* .git/hooks
     fi
 fi
-
-cargo fmt
