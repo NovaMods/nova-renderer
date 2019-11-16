@@ -21,27 +21,28 @@ namespace nova::renderer::rhi {
      * \brief All the GPU architectures that Nova cares about, at whatever granularity is most useful
      */
     enum class DeviceArchitecture {
+        Unknown,
+
         Amd,
         Nvidia,
         Intel,
-        Unknown,
     };
 
 	/*!
 	 * \brief Information about hte capabilities and limits of the device we're running on
 	 */
     struct DeviceInfo {
-        DeviceArchitecture architecture;
+        DeviceArchitecture architecture = DeviceArchitecture::Unknown;
 
-        uint64_t max_uniform_buffer_size;
-        uint64_t max_texture_size;
+        uint64_t max_uniform_buffer_size = 0;
+        uint64_t max_texture_size = 0;
 
-		uint64_t total_device_memory;
-        uint64_t total_host_memory;
-		bool is_uma;
+		uint64_t total_device_memory = 0;
+        uint64_t total_host_memory = 0;
+        bool is_uma = false;
 
-        bool supports_raytracing;
-        bool supports_mesh_shaders;
+        bool supports_raytracing = false;
+        bool supports_mesh_shaders = false;
     };
 
 #define NUM_THREADS 1
