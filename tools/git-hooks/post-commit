@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [[ -f ".git/hooks/.dirty" ]]; then
+    echo -e "\e[31;1mOld .dirty marked detected, clearing and updating installed revision\e[0m"
+    git_rev=$(git rev-parse HEAD)
+    rm .git/hooks/.dirty
+    echo "${git_rev}" > .git/hooks/hooks-revision
+    echo -e "\e[32;1mUpdated git hooks revision to \e[33;1m${git_rev} \e[32;1mand removed old .dirty file."
+fi
+
+if [[ -f ".git/hooks/.changed" ]]; then
+    git_rev=$(git rev-parse HEAD)
+    rm .git/hooks/.changed
+    echo "${git_rev}" > .git/hooks/hooks-revision
+    echo "${git_rev}" > tools/git-hooks/hooks-revision
+    git add tools/git-hooks/hooks-revision > /dev/null
+    git commit --amend --no-edit --no-verify > /dev/null
+    echo -e "\e[32;1mUpdated git hooks revision to \e[33;1m${git_rev}\e[0m"
+fi
