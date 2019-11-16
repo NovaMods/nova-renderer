@@ -1229,7 +1229,21 @@ namespace nova::renderer::rhi {
 
         info.max_uniform_buffer_size = gpu.props.limits.maxUniformBufferRange;
         info.max_texture_size = gpu.props.limits.maxImageDimension2D;
+
+        // TODO: Something smarter when Intel releases discreet GPUS
+        // TODO: Handle integrated AMD GPUs
         info.is_uma = info.architecture == DeviceArchitecture::Intel;
+
+        uint32_t extension_count;
+        vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, nullptr);
+        std::vector<VkExtensionProperties> available(extension_count);
+        vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, available.data());
+
+        // TODO: Update as more GPUs support hardware raytracing
+        info.supports_raytracing = std::find(available.begin(), available.end(), "VK_NV_ray_tracing") != available.end();
+
+        // TODO: Update as more GPUs support mesh shaders
+        info.supports_mesh_shaders = std::find(available.begin(), available.end(), "VK_NV_mesh_shader") != available.end();
     }
 
     void VulkanRenderEngine::create_device_and_queues() {
