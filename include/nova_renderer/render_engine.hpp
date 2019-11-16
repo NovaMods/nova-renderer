@@ -38,7 +38,6 @@ namespace nova::renderer::rhi {
         uint64_t max_texture_size = 0;
 
 		uint64_t total_device_memory = 0;
-        uint64_t total_host_memory = 0;
         bool is_uma = false;
 
         bool supports_raytracing = false;

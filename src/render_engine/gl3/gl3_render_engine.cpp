@@ -3,6 +3,7 @@
 #include <spirv_glsl.hpp>
 
 #include "nova_renderer/renderables.hpp"
+#include "nova_renderer/util/platform.hpp"
 
 #include "../../util/logger.hpp"
 #include "gl3_command_list.hpp"
@@ -33,8 +34,21 @@ namespace nova::renderer::rhi {
         glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_block_size);
         info.max_uniform_buffer_size = static_cast<uint32_t>(max_uniform_block_size);
 
+        // uhm this is a 32-bit number
+        //
+        // i guess opengl cant use more than 4.7 gb vram lmao
+        // #sorrynvidia
         GLint device_memory_size;
         glGetIntegerv(GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX, &device_memory_size);
+        info.total_device_memory = static_cast<uint64_t>(device_memory_size);
+
+        info.is_uma = info.architecture == DeviceArchitecture::Intel;
+
+        // OpenGL doesn't support raytracing at all :(
+        // @nvidia fix plz
+        info.supports_raytracing = false;
+
+        info.supports_mesh_shaders = GL_NV_mesh_shader > 0;
     }
 
     void Gl4NvRenderEngine::set_initial_state() {
