@@ -102,6 +102,8 @@ namespace nova::renderer::rhi {
 
         std::unordered_map<std::string, shaderpack::SamplerCreateInfo> samplers;
 
+        void save_device_info();
+
         static void set_initial_state();
 
 #pragma region Command list execution

@@ -11,10 +11,11 @@
 
 namespace nova::renderer::rhi {
     Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(&mallocator, settings) {
-
         window = std::make_unique<GlfwWindow>(settings.settings);
 
         gladLoadGLLoader(GlfwWindow::get_gl_proc_address);
+
+        save_device_info();
 
         swapchain = new Gl3Swapchain(settings.settings.max_in_flight_frames, window->get_window_size());
 
@@ -22,6 +23,19 @@ namespace nova::renderer::rhi {
     }
 
     Gl4NvRenderEngine::~Gl4NvRenderEngine() { delete swapchain; }
+
+    void Gl4NvRenderEngine::save_device_info() {
+        GLint max_texture_size;
+        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+        info.max_texture_size = static_cast<uint32_t>(max_texture_size);
+
+        GLint max_uniform_block_size;
+        glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_block_size);
+        info.max_uniform_buffer_size = static_cast<uint32_t>(max_uniform_block_size);
+
+        GLint device_memory_size;
+        glGetIntegerv(GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX, &device_memory_size);
+    }
 
     void Gl4NvRenderEngine::set_initial_state() {
         glEnable(GL_TEXTURE_2D);
