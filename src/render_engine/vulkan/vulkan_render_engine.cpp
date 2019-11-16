@@ -1232,385 +1232,389 @@ namespace nova::renderer::rhi {
         info.is_uma = info.architecture == DeviceArchitecture::Intel;
     }
 
-        void VulkanRenderEngine::create_device_and_queues() {
-            uint32_t device_count;
-            NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
-            auto physical_devices = std::vector<VkPhysicalDevice>(device_count);
-            NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, physical_devices.data()));
+    void VulkanRenderEngine::create_device_and_queues() {
+        uint32_t device_count;
+        NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
+        auto physical_devices = std::vector<VkPhysicalDevice>(device_count);
+        NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, physical_devices.data()));
 
-            uint32_t graphics_family_idx = 0xFFFFFFFF;
-            uint32_t compute_family_idx = 0xFFFFFFFF;
-            uint32_t copy_family_idx = 0xFFFFFFFF;
+        uint32_t graphics_family_idx = 0xFFFFFFFF;
+        uint32_t compute_family_idx = 0xFFFFFFFF;
+        uint32_t copy_family_idx = 0xFFFFFFFF;
 
-            for(uint32_t device_idx = 0; device_idx < device_count; device_idx++) {
-                graphics_family_idx = 0xFFFFFFFF;
-                VkPhysicalDevice current_device = physical_devices[device_idx];
-                vkGetPhysicalDeviceProperties(current_device, &gpu.props);
+        for(uint32_t device_idx = 0; device_idx < device_count; device_idx++) {
+            graphics_family_idx = 0xFFFFFFFF;
+            VkPhysicalDevice current_device = physical_devices[device_idx];
+            vkGetPhysicalDeviceProperties(current_device, &gpu.props);
 
-                if(gpu.props.vendorID == INTEL_PCI_VENDOR_ID &&
-                   device_count - 1 > device_idx) { // Intel GPU... they are not powerful and we have more available, so skip it
+            const bool is_intel_gpu = gpu.props.vendorID == INTEL_PCI_VENDOR_ID;
+            const bool more_gpus_available = device_count - 1 > device_idx;
+            if(is_intel_gpu && more_gpus_available) {
+                // Intel GPU _probably_ isn't as powerful as a discreet GPU, and if there's more than one GPU then the other one(s) are
+                // _probably_ discreet GPUs, so let's not use the Intel GPU and instead use the discreet GPU
+                // TODO: Make a local device for the integrated GPU when we figure out multi-GPU
+                // TODO: Rework this code when Intel releases discreet GPUs
+                continue;
+            }
+
+            if(!does_device_support_extensions(current_device)) {
+                continue;
+            }
+
+            uint32_t queue_family_count;
+            vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, nullptr);
+            gpu.queue_family_props.resize(queue_family_count);
+            vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, gpu.queue_family_props.data());
+
+            for(uint32_t queue_idx = 0; queue_idx < queue_family_count; queue_idx++) {
+                const VkQueueFamilyProperties current_properties = gpu.queue_family_props[queue_idx];
+                if(current_properties.queueCount < 1) {
                     continue;
                 }
 
-                if(!does_device_support_extensions(current_device)) {
-                    continue;
+                VkBool32 supports_present = VK_FALSE;
+                NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(current_device, queue_idx, surface, &supports_present));
+                const VkQueueFlags supports_graphics = current_properties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
+                if((supports_graphics != 0U) && supports_present == VK_TRUE && graphics_family_idx == 0xFFFFFFFF) {
+                    graphics_family_idx = queue_idx;
                 }
 
-                uint32_t queue_family_count;
-                vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, nullptr);
-                gpu.queue_family_props.resize(queue_family_count);
-                vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, gpu.queue_family_props.data());
-
-                for(uint32_t queue_idx = 0; queue_idx < queue_family_count; queue_idx++) {
-                    const VkQueueFamilyProperties current_properties = gpu.queue_family_props[queue_idx];
-                    if(current_properties.queueCount < 1) {
-                        continue;
-                    }
-
-                    VkBool32 supports_present = VK_FALSE;
-                    NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(current_device, queue_idx, surface, &supports_present));
-                    const VkQueueFlags supports_graphics = current_properties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
-                    if((supports_graphics != 0U) && supports_present == VK_TRUE && graphics_family_idx == 0xFFFFFFFF) {
-                        graphics_family_idx = queue_idx;
-                    }
-
-                    const VkQueueFlags supports_compute = current_properties.queueFlags & VK_QUEUE_COMPUTE_BIT;
-                    if((supports_compute != 0U) && compute_family_idx == 0xFFFFFFFF) {
-                        compute_family_idx = queue_idx;
-                    }
-
-                    const VkQueueFlags supports_copy = current_properties.queueFlags & VK_QUEUE_TRANSFER_BIT;
-                    if((supports_copy != 0U) && copy_family_idx == 0xFFFFFFFF) {
-                        copy_family_idx = queue_idx;
-                    }
+                const VkQueueFlags supports_compute = current_properties.queueFlags & VK_QUEUE_COMPUTE_BIT;
+                if((supports_compute != 0U) && compute_family_idx == 0xFFFFFFFF) {
+                    compute_family_idx = queue_idx;
                 }
 
-                if(graphics_family_idx != 0xFFFFFFFF) {
-                    NOVA_LOG(INFO) << fmt::format(fmt("Selected GPU {:s}"), gpu.props.deviceName);
-                    gpu.phys_device = current_device;
+                const VkQueueFlags supports_copy = current_properties.queueFlags & VK_QUEUE_TRANSFER_BIT;
+                if((supports_copy != 0U) && copy_family_idx == 0xFFFFFFFF) {
+                    copy_family_idx = queue_idx;
+                }
+            }
+
+            if(graphics_family_idx != 0xFFFFFFFF) {
+                NOVA_LOG(INFO) << fmt::format(fmt("Selected GPU {:s}"), gpu.props.deviceName);
+                gpu.phys_device = current_device;
+                break;
+            }
+        }
+
+        if(gpu.phys_device == nullptr) {
+            NOVA_LOG(ERROR) << "Failed to find good GPU";
+            return;
+        }
+
+        vkGetPhysicalDeviceFeatures(gpu.phys_device, &gpu.supported_features);
+
+        vkGetPhysicalDeviceMemoryProperties(gpu.phys_device, &gpu.memory_properties);
+
+        save_device_info();
+
+        const float priority = 1.0;
+
+        VkDeviceQueueCreateInfo graphics_queue_create_info{};
+        graphics_queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        graphics_queue_create_info.pNext = nullptr;
+        graphics_queue_create_info.flags = 0;
+        graphics_queue_create_info.queueCount = 1;
+        graphics_queue_create_info.queueFamilyIndex = graphics_family_idx;
+        graphics_queue_create_info.pQueuePriorities = &priority;
+
+        std::vector<VkDeviceQueueCreateInfo> queue_create_infos = {graphics_queue_create_info};
+
+        VkPhysicalDeviceFeatures physical_device_features{};
+        physical_device_features.geometryShader = VK_TRUE;
+        physical_device_features.tessellationShader = VK_TRUE;
+        physical_device_features.samplerAnisotropy = VK_TRUE;
+
+        VkDeviceCreateInfo device_create_info{};
+        device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        device_create_info.pNext = nullptr;
+        device_create_info.flags = 0;
+        device_create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
+        device_create_info.pQueueCreateInfos = queue_create_infos.data();
+        device_create_info.pEnabledFeatures = &physical_device_features;
+        device_create_info.enabledExtensionCount = 1;
+        const char* swapchain_extension = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+        device_create_info.ppEnabledExtensionNames = &swapchain_extension;
+        device_create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layer_names.size());
+        if(!enabled_layer_names.empty()) {
+            device_create_info.ppEnabledLayerNames = enabled_layer_names.data();
+        }
+
+        NOVA_CHECK_RESULT(vkCreateDevice(gpu.phys_device, &device_create_info, nullptr, &device));
+
+        graphics_family_index = graphics_family_idx;
+        vkGetDeviceQueue(device, graphics_family_idx, 0, &graphics_queue);
+        compute_family_index = compute_family_idx;
+        vkGetDeviceQueue(device, compute_family_idx, 0, &compute_queue);
+        transfer_family_index = copy_family_idx;
+        vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
+    }
+
+    bool VulkanRenderEngine::does_device_support_extensions(VkPhysicalDevice device) {
+        uint32_t extension_count;
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
+        std::vector<VkExtensionProperties> available(extension_count);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available.data());
+
+        std::set<std::string> required = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        for(const auto& extension : available) {
+            required.erase(static_cast<const char*>(extension.extensionName));
+        }
+
+        return required.empty();
+    }
+
+    void VulkanRenderEngine::create_swapchain() {
+        // Check what formats our rendering supports, and create a swapchain with one of those formats
+
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.phys_device, surface, &gpu.surface_capabilities);
+
+        uint32_t num_surface_formats;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, nullptr);
+        gpu.surface_formats.resize(num_surface_formats);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, gpu.surface_formats.data());
+
+        uint32_t num_surface_present_modes;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, nullptr);
+        std::vector<VkPresentModeKHR> present_modes(num_surface_present_modes);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, present_modes.data());
+
+        swapchain = new VulkanSwapchain(NUM_IN_FLIGHT_FRAMES, *this, window->get_window_size(), present_modes);
+
+        swapchain_size = window->get_window_size();
+    }
+
+    void VulkanRenderEngine::create_per_thread_command_pools() {
+        const uint32_t num_threads = 1; // TODO: Make this real
+        command_pools_by_thread_idx.reserve(num_threads);
+
+        for(uint32_t i = 0; i < num_threads; i++) {
+            command_pools_by_thread_idx.push_back(make_new_command_pools());
+        }
+    }
+
+    std::unordered_map<uint32_t, VkCommandPool> VulkanRenderEngine::make_new_command_pools() const {
+        std::vector<uint32_t> queue_indices;
+        queue_indices.push_back(graphics_family_index);
+        queue_indices.push_back(transfer_family_index);
+        queue_indices.push_back(compute_family_index);
+
+        std::unordered_map<uint32_t, VkCommandPool> pools_by_queue;
+        pools_by_queue.reserve(3);
+
+        for(const uint32_t queue_index : queue_indices) {
+            VkCommandPoolCreateInfo command_pool_create_info;
+            command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+            command_pool_create_info.pNext = nullptr;
+            command_pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+            command_pool_create_info.queueFamilyIndex = queue_index;
+
+            VkCommandPool command_pool;
+            NOVA_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool));
+            pools_by_queue[queue_index] = command_pool;
+        }
+
+        return pools_by_queue;
+    }
+
+    uint32_t VulkanRenderEngine::find_memory_type_with_flags(const uint32_t search_flags, const MemorySearchMode search_mode) const {
+        for(uint32_t i = 0; i < gpu.memory_properties.memoryTypeCount; i++) {
+            const VkMemoryType& memory_type = gpu.memory_properties.memoryTypes[i];
+            switch(search_mode) {
+                case MemorySearchMode::Exact:
+                    if(memory_type.propertyFlags == search_flags) {
+                        return i;
+                    }
                     break;
-                }
-            }
 
-            if(gpu.phys_device == nullptr) {
-                NOVA_LOG(ERROR) << "Failed to find good GPU";
-                return;
-            }
-
-            vkGetPhysicalDeviceFeatures(gpu.phys_device, &gpu.supported_features);
-
-            vkGetPhysicalDeviceMemoryProperties(gpu.phys_device, &gpu.memory_properties);
-
-            save_device_info();
-
-            const float priority = 1.0;
-
-            VkDeviceQueueCreateInfo graphics_queue_create_info{};
-            graphics_queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-            graphics_queue_create_info.pNext = nullptr;
-            graphics_queue_create_info.flags = 0;
-            graphics_queue_create_info.queueCount = 1;
-            graphics_queue_create_info.queueFamilyIndex = graphics_family_idx;
-            graphics_queue_create_info.pQueuePriorities = &priority;
-
-            std::vector<VkDeviceQueueCreateInfo> queue_create_infos = {graphics_queue_create_info};
-
-            VkPhysicalDeviceFeatures physical_device_features{};
-            physical_device_features.geometryShader = VK_TRUE;
-            physical_device_features.tessellationShader = VK_TRUE;
-            physical_device_features.samplerAnisotropy = VK_TRUE;
-
-            VkDeviceCreateInfo device_create_info{};
-            device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-            device_create_info.pNext = nullptr;
-            device_create_info.flags = 0;
-            device_create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
-            device_create_info.pQueueCreateInfos = queue_create_infos.data();
-            device_create_info.pEnabledFeatures = &physical_device_features;
-            device_create_info.enabledExtensionCount = 1;
-            const char* swapchain_extension = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
-            device_create_info.ppEnabledExtensionNames = &swapchain_extension;
-            device_create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layer_names.size());
-            if(!enabled_layer_names.empty()) {
-                device_create_info.ppEnabledLayerNames = enabled_layer_names.data();
-            }
-
-            NOVA_CHECK_RESULT(vkCreateDevice(gpu.phys_device, &device_create_info, nullptr, &device));
-
-            graphics_family_index = graphics_family_idx;
-            vkGetDeviceQueue(device, graphics_family_idx, 0, &graphics_queue);
-            compute_family_index = compute_family_idx;
-            vkGetDeviceQueue(device, compute_family_idx, 0, &compute_queue);
-            transfer_family_index = copy_family_idx;
-            vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
-        }
-
-        bool VulkanRenderEngine::does_device_support_extensions(VkPhysicalDevice device) {
-            uint32_t extension_count;
-            vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
-            std::vector<VkExtensionProperties> available(extension_count);
-            vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available.data());
-
-            std::set<std::string> required = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-            for(const auto& extension : available) {
-                required.erase(static_cast<const char*>(extension.extensionName));
-            }
-
-            return required.empty();
-        }
-
-        void VulkanRenderEngine::create_swapchain() {
-            // Check what formats our rendering supports, and create a swapchain with one of those formats
-
-            vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.phys_device, surface, &gpu.surface_capabilities);
-
-            uint32_t num_surface_formats;
-            vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, nullptr);
-            gpu.surface_formats.resize(num_surface_formats);
-            vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, gpu.surface_formats.data());
-
-            uint32_t num_surface_present_modes;
-            vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, nullptr);
-            std::vector<VkPresentModeKHR> present_modes(num_surface_present_modes);
-            vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, present_modes.data());
-
-            swapchain = new VulkanSwapchain(NUM_IN_FLIGHT_FRAMES, *this, window->get_window_size(), present_modes);
-
-            swapchain_size = window->get_window_size();
-        }
-
-        void VulkanRenderEngine::create_per_thread_command_pools() {
-            const uint32_t num_threads = 1; // TODO: Make this real
-            command_pools_by_thread_idx.reserve(num_threads);
-
-            for(uint32_t i = 0; i < num_threads; i++) {
-                command_pools_by_thread_idx.push_back(make_new_command_pools());
-            }
-        }
-
-        std::unordered_map<uint32_t, VkCommandPool> VulkanRenderEngine::make_new_command_pools() const {
-            std::vector<uint32_t> queue_indices;
-            queue_indices.push_back(graphics_family_index);
-            queue_indices.push_back(transfer_family_index);
-            queue_indices.push_back(compute_family_index);
-
-            std::unordered_map<uint32_t, VkCommandPool> pools_by_queue;
-            pools_by_queue.reserve(3);
-
-            for(const uint32_t queue_index : queue_indices) {
-                VkCommandPoolCreateInfo command_pool_create_info;
-                command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-                command_pool_create_info.pNext = nullptr;
-                command_pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-                command_pool_create_info.queueFamilyIndex = queue_index;
-
-                VkCommandPool command_pool;
-                NOVA_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool));
-                pools_by_queue[queue_index] = command_pool;
-            }
-
-            return pools_by_queue;
-        }
-
-        uint32_t VulkanRenderEngine::find_memory_type_with_flags(const uint32_t search_flags, const MemorySearchMode search_mode) const {
-            for(uint32_t i = 0; i < gpu.memory_properties.memoryTypeCount; i++) {
-                const VkMemoryType& memory_type = gpu.memory_properties.memoryTypes[i];
-                switch(search_mode) {
-                    case MemorySearchMode::Exact:
-                        if(memory_type.propertyFlags == search_flags) {
-                            return i;
-                        }
-                        break;
-
-                    case MemorySearchMode::Fuzzy:
-                        if((memory_type.propertyFlags & search_flags) != 0) {
-                            return i;
-                        }
-                        break;
-                }
-            }
-
-            return VK_MAX_MEMORY_TYPES;
-        }
-
-        std::vector<VkDescriptorSetLayout> VulkanRenderEngine::create_descriptor_set_layouts(
-            const std::unordered_map<std::string, ResourceBindingDescription>& all_bindings) const {
-
-            /*
-             * A few tasks to accomplish:
-             * - Take the unordered map of descriptor sets (all_bindings) and convert it into
-             *      VkDescriptorSetLayoutCreateInfo structs, ordering everything along the way
-             * -
-             */
-
-            std::vector<std::vector<VkDescriptorSetLayoutBinding>> bindings_by_set;
-            bindings_by_set.resize(all_bindings.size());
-
-            for(const auto& named_binding : all_bindings) {
-                const ResourceBindingDescription& binding = named_binding.second;
-                if(binding.set >= bindings_by_set.size()) {
-                    NOVA_LOG(ERROR) << "You've skipped one or more descriptor sets! Don't do that, Nova can't handle it";
-                    continue;
-                }
-
-                VkDescriptorSetLayoutBinding descriptor_binding = {};
-                descriptor_binding.binding = binding.binding;
-                descriptor_binding.descriptorType = to_vk_descriptor_type(binding.type);
-                descriptor_binding.descriptorCount = binding.count;
-                descriptor_binding.stageFlags = to_vk_shader_stage_flags(binding.stages);
-
-                bindings_by_set[binding.set].push_back(descriptor_binding);
-            }
-
-            std::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos = {};
-            dsl_create_infos.reserve(bindings_by_set.size());
-            for(const auto& bindings : bindings_by_set) {
-                VkDescriptorSetLayoutCreateInfo create_info = {};
-                create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-                create_info.bindingCount = static_cast<uint32_t>(bindings.size());
-                create_info.pBindings = bindings.data();
-
-                dsl_create_infos.push_back(create_info);
-            }
-
-            std::vector<VkDescriptorSetLayout> layouts;
-            layouts.resize(dsl_create_infos.size());
-            for(size_t i = 0; i < dsl_create_infos.size(); i++) {
-                vkCreateDescriptorSetLayout(device, &dsl_create_infos[i], nullptr, &layouts[i]);
-            }
-
-            return layouts;
-        }
-
-        VkImageView VulkanRenderEngine::image_view_for_image(const Image* image) {
-            // TODO: This method is terrible. We shouldn't tie image views to images, we should let everything that wants
-            // to use the image create its own image view
-
-            const auto* vk_image = static_cast<const VulkanImage*>(image);
-
-            return vk_image->image_view;
-        }
-
-        VkCommandBufferLevel VulkanRenderEngine::to_vk_command_buffer_level(const CommandList::Level level) {
-            switch(level) {
-                case CommandList::Level::Primary:
-                    return VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-
-                case CommandList::Level::Secondary:
-                    return VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-            }
-
-            return VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        }
-
-        VkShaderModule VulkanRenderEngine::create_shader_module(const std::vector<uint32_t>& spirv) const {
-            VkShaderModuleCreateInfo shader_module_create_info;
-            shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-            shader_module_create_info.pNext = nullptr;
-            shader_module_create_info.flags = 0;
-            shader_module_create_info.pCode = spirv.data();
-            shader_module_create_info.codeSize = spirv.size() * 4;
-
-            VkShaderModule module;
-            NOVA_CHECK_RESULT(vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module));
-
-            return module;
-        }
-
-        VKAPI_ATTR VkBool32 VKAPI_CALL
-        VulkanRenderEngine::debug_report_callback(const VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
-                                                  const VkDebugUtilsMessageTypeFlagsEXT message_types,
-                                                  const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
-                                                  void* render_engine) {
-            std::string type = "General";
-            if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) != 0U) {
-                type = "Validation";
-            } else if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) != 0U) {
-                type = "Performance";
-            }
-
-            std::stringstream ss;
-            ss << "[" << type << "]";
-            if(callback_data->queueLabelCount != 0) {
-                ss << " Queues: ";
-                for(uint32_t i = 0; i < callback_data->queueLabelCount; i++) {
-                    ss << callback_data->pQueueLabels[i].pLabelName;
-                    if(i != callback_data->queueLabelCount - 1) {
-                        ss << ", ";
+                case MemorySearchMode::Fuzzy:
+                    if((memory_type.propertyFlags & search_flags) != 0) {
+                        return i;
                     }
+                    break;
+            }
+        }
+
+        return VK_MAX_MEMORY_TYPES;
+    }
+
+    std::vector<VkDescriptorSetLayout> VulkanRenderEngine::create_descriptor_set_layouts(
+        const std::unordered_map<std::string, ResourceBindingDescription>& all_bindings) const {
+
+        /*
+         * A few tasks to accomplish:
+         * - Take the unordered map of descriptor sets (all_bindings) and convert it into
+         *      VkDescriptorSetLayoutCreateInfo structs, ordering everything along the way
+         * -
+         */
+
+        std::vector<std::vector<VkDescriptorSetLayoutBinding>> bindings_by_set;
+        bindings_by_set.resize(all_bindings.size());
+
+        for(const auto& named_binding : all_bindings) {
+            const ResourceBindingDescription& binding = named_binding.second;
+            if(binding.set >= bindings_by_set.size()) {
+                NOVA_LOG(ERROR) << "You've skipped one or more descriptor sets! Don't do that, Nova can't handle it";
+                continue;
+            }
+
+            VkDescriptorSetLayoutBinding descriptor_binding = {};
+            descriptor_binding.binding = binding.binding;
+            descriptor_binding.descriptorType = to_vk_descriptor_type(binding.type);
+            descriptor_binding.descriptorCount = binding.count;
+            descriptor_binding.stageFlags = to_vk_shader_stage_flags(binding.stages);
+
+            bindings_by_set[binding.set].push_back(descriptor_binding);
+        }
+
+        std::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos = {};
+        dsl_create_infos.reserve(bindings_by_set.size());
+        for(const auto& bindings : bindings_by_set) {
+            VkDescriptorSetLayoutCreateInfo create_info = {};
+            create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            create_info.bindingCount = static_cast<uint32_t>(bindings.size());
+            create_info.pBindings = bindings.data();
+
+            dsl_create_infos.push_back(create_info);
+        }
+
+        std::vector<VkDescriptorSetLayout> layouts;
+        layouts.resize(dsl_create_infos.size());
+        for(size_t i = 0; i < dsl_create_infos.size(); i++) {
+            vkCreateDescriptorSetLayout(device, &dsl_create_infos[i], nullptr, &layouts[i]);
+        }
+
+        return layouts;
+    }
+
+    VkImageView VulkanRenderEngine::image_view_for_image(const Image* image) {
+        // TODO: This method is terrible. We shouldn't tie image views to images, we should let everything that wants
+        // to use the image create its own image view
+
+        const auto* vk_image = static_cast<const VulkanImage*>(image);
+
+        return vk_image->image_view;
+    }
+
+    VkCommandBufferLevel VulkanRenderEngine::to_vk_command_buffer_level(const CommandList::Level level) {
+        switch(level) {
+            case CommandList::Level::Primary:
+                return VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+            case CommandList::Level::Secondary:
+                return VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+        }
+
+        return VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    }
+
+    VkShaderModule VulkanRenderEngine::create_shader_module(const std::vector<uint32_t>& spirv) const {
+        VkShaderModuleCreateInfo shader_module_create_info;
+        shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        shader_module_create_info.pNext = nullptr;
+        shader_module_create_info.flags = 0;
+        shader_module_create_info.pCode = spirv.data();
+        shader_module_create_info.codeSize = spirv.size() * 4;
+
+        VkShaderModule module;
+        NOVA_CHECK_RESULT(vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module));
+
+        return module;
+    }
+
+    VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderEngine::debug_report_callback(const VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+                                                                             const VkDebugUtilsMessageTypeFlagsEXT message_types,
+                                                                             const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+                                                                             void* render_engine) {
+        std::string type = "General";
+        if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) != 0U) {
+            type = "Validation";
+        } else if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) != 0U) {
+            type = "Performance";
+        }
+
+        std::stringstream ss;
+        ss << "[" << type << "]";
+        if(callback_data->queueLabelCount != 0) {
+            ss << " Queues: ";
+            for(uint32_t i = 0; i < callback_data->queueLabelCount; i++) {
+                ss << callback_data->pQueueLabels[i].pLabelName;
+                if(i != callback_data->queueLabelCount - 1) {
+                    ss << ", ";
                 }
             }
+        }
 
-            ss << " ";
+        ss << " ";
 
-            if(callback_data->cmdBufLabelCount != 0) {
-                ss << "Command Buffers: ";
-                for(uint32_t i = 0; i < callback_data->cmdBufLabelCount; i++) {
-                    ss << callback_data->pCmdBufLabels[i].pLabelName;
-                    if(i != callback_data->cmdBufLabelCount - 1) {
-                        ss << ", ";
-                    }
+        if(callback_data->cmdBufLabelCount != 0) {
+            ss << "Command Buffers: ";
+            for(uint32_t i = 0; i < callback_data->cmdBufLabelCount; i++) {
+                ss << callback_data->pCmdBufLabels[i].pLabelName;
+                if(i != callback_data->cmdBufLabelCount - 1) {
+                    ss << ", ";
                 }
             }
+        }
 
-            ss << " ";
+        ss << " ";
 
-            if(callback_data->objectCount != 0) {
-                ss << "Objects: ";
-                for(uint32_t i = 0; i < callback_data->objectCount; i++) {
-                    ss << to_string(callback_data->pObjects[i].objectType);
-                    if(callback_data->pObjects[i].pObjectName != nullptr) {
-                        ss << " \"" << callback_data->pObjects[i].pObjectName << "\"";
-                    }
-                    ss << " (" << std::hex << callback_data->pObjects[i].objectHandle << std::dec << ") ";
-                    if(i != callback_data->objectCount - 1) {
-                        ss << ", ";
-                    }
+        if(callback_data->objectCount != 0) {
+            ss << "Objects: ";
+            for(uint32_t i = 0; i < callback_data->objectCount; i++) {
+                ss << to_string(callback_data->pObjects[i].objectType);
+                if(callback_data->pObjects[i].pObjectName != nullptr) {
+                    ss << " \"" << callback_data->pObjects[i].pObjectName << "\"";
+                }
+                ss << " (" << std::hex << callback_data->pObjects[i].objectHandle << std::dec << ") ";
+                if(i != callback_data->objectCount - 1) {
+                    ss << ", ";
                 }
             }
+        }
 
-            ss << " ";
+        ss << " ";
 
-            if(callback_data->pMessage != nullptr) {
-                ss << callback_data->pMessage;
-            }
+        if(callback_data->pMessage != nullptr) {
+            ss << callback_data->pMessage;
+        }
 
-            const std::string msg = ss.str();
+        const std::string msg = ss.str();
 
-            if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
-                NOVA_LOG(ERROR) << "[" << type << "] " << msg;
+        if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
+            NOVA_LOG(ERROR) << "[" << type << "] " << msg;
 #ifdef NOVA_LINUX
-                nova_backtrace();
+            nova_backtrace();
 #endif
 
-                auto* vk_render_engine = reinterpret_cast<VulkanRenderEngine*>(render_engine);
-                if(vk_render_engine->settings->debug.break_on_validation_errors) {
+            auto* vk_render_engine = reinterpret_cast<VulkanRenderEngine*>(render_engine);
+            if(vk_render_engine->settings->debug.break_on_validation_errors) {
 #if defined(NOVA_WINDOWS)
-                    DebugBreak();
+                DebugBreak();
 #elif defined(NOVA_LINUX)
-                    std::raise(SIGINT);
+                std::raise(SIGINT);
 #endif
-                }
-
-            } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {
-                // Warnings may hint at unexpected / non-spec API usage
-                NOVA_LOG(WARN) << "[" << type << "] " << msg;
-
-            } else if(((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) != 0) &&
-                      ((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U)) { // No validation info!
-                // Informal messages that may become handy during debugging
-                NOVA_LOG(INFO) << "[" << type << "] " << msg;
-
-            } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) != 0) {
-                // Diagnostic info from the Vulkan loader and layers
-                // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
-                NOVA_LOG(DEBUG) << "[" << type << "] " << msg;
-
-            } else if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U) { // No validation info!
-                // Catch-all to be super sure
-                NOVA_LOG(INFO) << "[" << type << "]" << msg;
             }
 
-            return VK_FALSE;
+        } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {
+            // Warnings may hint at unexpected / non-spec API usage
+            NOVA_LOG(WARN) << "[" << type << "] " << msg;
+
+        } else if(((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) != 0) &&
+                  ((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U)) { // No validation info!
+            // Informal messages that may become handy during debugging
+            NOVA_LOG(INFO) << "[" << type << "] " << msg;
+
+        } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) != 0) {
+            // Diagnostic info from the Vulkan loader and layers
+            // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
+            NOVA_LOG(DEBUG) << "[" << type << "] " << msg;
+
+        } else if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U) { // No validation info!
+            // Catch-all to be super sure
+            NOVA_LOG(INFO) << "[" << type << "]" << msg;
         }
-    } // namespace nova::renderer::rhi
+
+        return VK_FALSE;
+    }
+} // namespace nova::renderer::rhi
