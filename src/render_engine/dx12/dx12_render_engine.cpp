@@ -959,8 +959,11 @@ namespace nova::renderer::rhi {
     void D3D12RenderEngine::setup_debug_output() {
         const auto hr = device->QueryInterface(IID_PPV_ARGS(&info_queue));
         if(SUCCEEDED(hr)) {
-            info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
-            info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+            // Separate ifs for error handling and logic flow
+            if(settings->debug.break_on_validation_errors) {
+                info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+                info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+            }
 
         } else {
             NOVA_LOG(ERROR) << "Could not set up debugging: " << to_string(hr);

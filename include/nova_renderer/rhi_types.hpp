@@ -160,7 +160,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Pointer to the descriptor set to write to
          */
-        const DescriptorSet* set;
+        DescriptorSet* set;
 
         /*!
          * \brief The specific binding in the set that you want to write to

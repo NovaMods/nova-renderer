@@ -4,11 +4,10 @@
 
 #include "nova_renderer/command_list.hpp"
 #include "nova_renderer/nova_settings.hpp"
+#include "nova_renderer/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/window.hpp"
-
-#include "rhi_types.hpp"
 
 namespace nova::renderer::rhi {
     struct Fence;
@@ -28,16 +27,16 @@ namespace nova::renderer::rhi {
         Intel,
     };
 
-	/*!
-	 * \brief Information about hte capabilities and limits of the device we're running on
-	 */
+    /*!
+     * \brief Information about hte capabilities and limits of the device we're running on
+     */
     struct DeviceInfo {
         DeviceArchitecture architecture = DeviceArchitecture::Unknown;
 
         uint64_t max_uniform_buffer_size = 0;
         uint64_t max_texture_size = 0;
 
-		uint64_t total_device_memory = 0;
+        uint64_t total_device_memory = 0;
         bool is_uma = false;
 
         bool supports_raytracing = false;
@@ -249,7 +248,7 @@ namespace nova::renderer::rhi {
 
         bvestl::polyalloc::allocator_handle shaderpack_allocator;
 
-		DeviceInfo capabilities;
+        DeviceInfo capabilities;
 
         /*!
          * \brief Initializes the engine, does **NOT** open any window

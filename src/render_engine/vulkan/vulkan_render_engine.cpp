@@ -41,6 +41,8 @@ namespace nova::renderer::rhi {
 
         create_device_and_queues();
 
+        save_device_info();
+
         if(settings.settings.debug.enabled) {
             // Late init, can only be used when the device has already been created
             vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
@@ -1319,8 +1321,6 @@ namespace nova::renderer::rhi {
         vkGetPhysicalDeviceFeatures(gpu.phys_device, &gpu.supported_features);
 
         vkGetPhysicalDeviceMemoryProperties(gpu.phys_device, &gpu.memory_properties);
-
-        save_device_info();
 
         const float priority = 1.0;
 

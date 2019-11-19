@@ -26,6 +26,21 @@ namespace nova::renderer::rhi {
     Gl4NvRenderEngine::~Gl4NvRenderEngine() { delete swapchain; }
 
     void Gl4NvRenderEngine::save_device_info() {
+        const GLubyte* raw_vendor_string = glGetString(GL_VENDOR);
+        const std::string vendor_string(reinterpret_cast<const char*>(raw_vendor_string));
+        std::transform(vendor_string.begin(), vendor_string.end(), vendor_string.begin(), [](const char c) { return std::tolower(c); });
+
+        // If this bs doesn't work then all well guess it's time to yeet OpenGL like everyone wants me to
+        if(vendor_string.find("nvidia") != std::string::npos) {
+            info.architecture = DeviceArchitecture::Nvidia;
+
+        } else if(vendor_string.find("intel") != std::string::npos) {
+            info.architecture = DeviceArchitecture::Intel;
+
+        } else if(vendor_string.find("amd") != std::string::npos || vendor_string.find("ati") != std::string::npos) {
+            info.architecture = DeviceArchitecture::Amd;
+        }
+
         GLint max_texture_size;
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
         info.max_texture_size = static_cast<uint32_t>(max_texture_size);
@@ -38,9 +53,12 @@ namespace nova::renderer::rhi {
         //
         // i guess opengl cant use more than 4.7 gb vram lmao
         // #sorrynvidia
-        GLint device_memory_size;
-        glGetIntegerv(GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX, &device_memory_size);
-        info.total_device_memory = static_cast<uint64_t>(device_memory_size);
+        GLint device_memory_size[4] = {0, 0, 0, 0};
+        glGetIntegerv(GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX, device_memory_size);
+        // TODO: Also support getting device memory amount on AMD and Intel I guess ugh
+        // This is why OpenGL is stupid: no notion of "I'm running on a real device with physical limits"
+
+        info.total_device_memory = static_cast<uint64_t>(device_memory_size[0]);
 
         info.is_uma = info.architecture == DeviceArchitecture::Intel;
 
@@ -48,7 +66,7 @@ namespace nova::renderer::rhi {
         // @nvidia fix plz
         info.supports_raytracing = false;
 
-        info.supports_mesh_shaders = GL_NV_mesh_shader > 0;
+        info.supports_mesh_shaders = GLAD_GL_NV_mesh_shader > 0;
     }
 
     void Gl4NvRenderEngine::set_initial_state() {
@@ -66,7 +84,7 @@ namespace nova::renderer::rhi {
         glEnableVertexAttribArray(6);
     }
 
-    void Gl4NvRenderEngine::set_num_renderpasses([[maybe_unused]] uint32_t num_renderpasses) {
+    void Gl4NvRenderEngine::set_num_renderpasses(uint32_t /* num_renderpasses */) {
         // Gl3 doesn't need to do anything either
     }
 
@@ -109,7 +127,7 @@ namespace nova::renderer::rhi {
                                                               const uint32_t num_samplers,
                                                               const uint32_t num_uniform_buffers) {
         auto* pool = new Gl3DescriptorPool(shaderpack_allocator);
-        pool->descriptors.resize(static_cast<std::size_t>(num_sampled_images + num_uniform_buffers));
+        pool->descriptors.resize(static_cast<std::size_t>(num_sampled_images) + num_uniform_buffers);
         pool->sampler_sets.resize(num_samplers);
 
         return pool;
@@ -133,8 +151,8 @@ namespace nova::renderer::rhi {
 
     void Gl4NvRenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
         for(DescriptorSetWrite& write : writes) {
-            const auto* cset = static_cast<const Gl3DescriptorSet*>(write.set);
-            auto* set = const_cast<Gl3DescriptorSet*>(cset); // I have a few regrets
+            const auto* const_set = static_cast<const Gl3DescriptorSet*>(write.set);
+            auto* set = const_cast<Gl3DescriptorSet*>(const_set); // I have a few regrets
             Gl3Descriptor& descriptor = set->descriptors.at(write.binding);
 
             switch(write.type) {
@@ -475,6 +493,7 @@ namespace nova::renderer::rhi {
     }
 
     void Gl4NvRenderEngine::copy_buffers_impl(const Gl3BufferCopyCommand& buffer_copy) {
+        // Try really hard to trick OpenGL into using the DMA queue
         glBindBuffer(GL_COPY_READ_BUFFER, buffer_copy.source_buffer);
         glBindBuffer(GL_COPY_WRITE_BUFFER, buffer_copy.destination_buffer);
 
