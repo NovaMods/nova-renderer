@@ -1241,11 +1241,21 @@ namespace nova::renderer::rhi {
         std::vector<VkExtensionProperties> available_extensions(extension_count);
         vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, available_extensions.data());
 
+        auto extension_name_match = [](const char* ext_name, const VkExtensionProperties& ext_props) {
+            return std::strcmp(ext_name, ext_props.extensionName) == 0;
+        };
+
         // TODO: Update as more GPUs support hardware raytracing
-        info.supports_raytracing = std::find(available_extensions.begin(), available_extensions.end(), "VK_NV_ray_tracing") != available_extensions.end();
+        const auto rt_ext_itr_bullshit = std::find_if(available_extensions.begin(),
+                                                      available_extensions.end(),
+                                                      std::bind(extension_name_match, VK_NV_RAY_TRACING_EXTENSION_NAME));
+        info.supports_raytracing = rt_ext_itr_bullshit != available_extensions.end();
 
         // TODO: Update as more GPUs support mesh shaders
-        info.supports_mesh_shaders = std::find(available_extensions.begin(), available_extensions.end(), "VK_NV_mesh_shader") != available_extensions.end();
+        const auto mesh_shader_ext_itr = std::find_if(available_extensions.begin(),
+                                                      available_extensions.end(),
+                                                      std::bind(extension_name_match, VK_NV_MESH_SHADER_SPEC_VERSION));
+        info.supports_mesh_shaders = mesh_shader_ext_itr != available_extensions.end();
     }
 
     void VulkanRenderEngine::create_device_and_queues() {
