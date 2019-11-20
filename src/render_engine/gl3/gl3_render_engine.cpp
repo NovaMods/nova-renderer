@@ -27,7 +27,7 @@ namespace nova::renderer::rhi {
 
     void Gl4NvRenderEngine::save_device_info() {
         const GLubyte* raw_vendor_string = glGetString(GL_VENDOR);
-        const std::string vendor_string(reinterpret_cast<const char*>(raw_vendor_string));
+        std::string vendor_string(reinterpret_cast<const char*>(raw_vendor_string));
         std::transform(vendor_string.begin(), vendor_string.end(), vendor_string.begin(), [](const char c) { return std::tolower(c); });
 
         // If this bs doesn't work then all well guess it's time to yeet OpenGL like everyone wants me to
@@ -47,7 +47,7 @@ namespace nova::renderer::rhi {
 
         GLint max_uniform_block_size;
         glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_block_size);
-        info.max_uniform_buffer_size = static_cast<uint32_t>(max_uniform_block_size);
+        gl_info.max_uniform_buffer_size = static_cast<uint32_t>(max_uniform_block_size);
 
         info.is_uma = info.architecture == DeviceArchitecture::Intel;
 

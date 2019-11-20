@@ -8,12 +8,16 @@
 #include "../../windowing/glfw_window.hpp"
 #include "gl3_command_list.hpp"
 
-// TODO: Not always use mallocator
+// TODO: Don't always use mallocator
 #include "../../memory/mallocator.hpp"
 
 namespace nova::renderer::rhi {
+    struct NvGlDeviceInfo {
+        uint32_t max_uniform_buffer_size = 0;
+    };
+
     /*!
-     * \brief OpenGL 4.6 RHI backend. Optimized for Nvidia GPUs
+     * \brief OpenGL 4.5 RHI backend. Optimized for Nvidia GPUs
      */
     class Gl4NvRenderEngine final : public RenderEngine {
     public:
@@ -95,6 +99,8 @@ namespace nova::renderer::rhi {
                                  const std::vector<Semaphore*>& signal_semaphores = {}) override;
 
     private:
+        NvGlDeviceInfo gl_info;
+
         // TODO: Not always use mallocator
         bvestl::polyalloc::Mallocator mallocator;
 
