@@ -49,17 +49,6 @@ namespace nova::renderer::rhi {
         glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_block_size);
         info.max_uniform_buffer_size = static_cast<uint32_t>(max_uniform_block_size);
 
-        // uhm this is a 32-bit number
-        //
-        // i guess opengl cant use more than 4.7 gb vram lmao
-        // #sorrynvidia
-        GLint device_memory_size[4] = {0, 0, 0, 0};
-        glGetIntegerv(GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX, device_memory_size);
-        // TODO: Also support getting device memory amount on AMD and Intel I guess ugh
-        // This is why OpenGL is stupid: no notion of "I'm running on a real device with physical limits"
-
-        info.total_device_memory = static_cast<uint64_t>(device_memory_size[0]);
-
         info.is_uma = info.architecture == DeviceArchitecture::Intel;
 
         // OpenGL doesn't support raytracing at all :(
