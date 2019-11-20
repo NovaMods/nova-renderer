@@ -13,6 +13,10 @@ namespace nova::renderer::rhi {
         VkDeviceSize amount_allocated = 0;
     };
 
+    struct VulkanDeviceInfo {
+        uint64_t max_uniform_buffer_size = 0;
+    };
+
     /*!
      * \brief Vulkan implementation of a render engine
      */
@@ -122,6 +126,8 @@ namespace nova::renderer::rhi {
         void open_window_and_create_surface(const NovaSettings::WindowOptions& options);
 
     private:
+        VulkanDeviceInfo vk_info;
+
         // TODO: Don't always use mallocator
         bvestl::polyalloc::Mallocator mallocator;
 

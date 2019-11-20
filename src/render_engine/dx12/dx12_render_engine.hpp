@@ -27,6 +27,7 @@ namespace nova::renderer::rhi {
      * \brief D3D12-specific capabilities
      */
     struct D3D12DeviceCapabilities {
+        D3D_FEATURE_LEVEL feature_level;
         bool supports_renderpasses;
     };
 

@@ -33,7 +33,6 @@ namespace nova::renderer::rhi {
     struct DeviceInfo {
         DeviceArchitecture architecture = DeviceArchitecture::Unknown;
 
-        uint64_t max_uniform_buffer_size = 0;
         uint64_t max_texture_size = 0;
 
         bool is_uma = false;
@@ -246,8 +245,6 @@ namespace nova::renderer::rhi {
         Swapchain* swapchain = nullptr;
 
         bvestl::polyalloc::allocator_handle shaderpack_allocator;
-
-        DeviceInfo capabilities;
 
         /*!
          * \brief Initializes the engine, does **NOT** open any window

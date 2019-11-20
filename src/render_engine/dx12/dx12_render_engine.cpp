@@ -991,14 +991,19 @@ namespace nova::renderer::rhi {
         }
 
         const auto hr = device->QueryInterface(IID_PPV_ARGS(device4.GetAddressOf()));
-        capabilities.supports_raytracing = SUCCEEDED(hr);
+        info.supports_raytracing = SUCCEEDED(hr);
+
+        D3D12_FEATURE_DATA_FEATURE_LEVELS feature_levels;
+        device->CheckFeatureSupport(D3D12_FEATURE_FEATURE_LEVELS, &feature_levels, sizeof(feature_levels));
+        d3d12_capabilities.feature_level = feature_levels.MaxSupportedFeatureLevel;
 
         // Constants from https://docs.microsoft.com/en-us/windows/win32/direct3d12/hardware-feature-levels
-        capabilities.max_texture_size = 16384;
+        // TODO: Revisit these limits if/when we get features levels above 12.1
+        info.max_texture_size = 16384;
 
         D3D12_FEATURE_DATA_ARCHITECTURE architecture_data;
         device->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE, &architecture_data, sizeof(architecture_data));
-        capabilities.is_uma = architecture_data.CacheCoherentUMA;
+        info.is_uma = architecture_data.CacheCoherentUMA;
     }
 
     ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,

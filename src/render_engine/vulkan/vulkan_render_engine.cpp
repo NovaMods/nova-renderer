@@ -1229,7 +1229,7 @@ namespace nova::renderer::rhi {
                 info.architecture = DeviceArchitecture::Unknown;
         }
 
-        info.max_uniform_buffer_size = gpu.props.limits.maxUniformBufferRange;
+        vk_info.max_uniform_buffer_size = gpu.props.limits.maxUniformBufferRange;
         info.max_texture_size = gpu.props.limits.maxImageDimension2D;
 
         // TODO: Something smarter when Intel releases discreet GPUS
@@ -1238,14 +1238,14 @@ namespace nova::renderer::rhi {
 
         uint32_t extension_count;
         vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, nullptr);
-        std::vector<VkExtensionProperties> available(extension_count);
-        vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, available.data());
+        std::vector<VkExtensionProperties> available_extensions(extension_count);
+        vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, available_extensions.data());
 
         // TODO: Update as more GPUs support hardware raytracing
-        info.supports_raytracing = std::find(available.begin(), available.end(), "VK_NV_ray_tracing") != available.end();
+        info.supports_raytracing = std::find(available_extensions.begin(), available_extensions.end(), "VK_NV_ray_tracing") != available_extensions.end();
 
         // TODO: Update as more GPUs support mesh shaders
-        info.supports_mesh_shaders = std::find(available.begin(), available.end(), "VK_NV_mesh_shader") != available.end();
+        info.supports_mesh_shaders = std::find(available_extensions.begin(), available_extensions.end(), "VK_NV_mesh_shader") != available_extensions.end();
     }
 
     void VulkanRenderEngine::create_device_and_queues() {
