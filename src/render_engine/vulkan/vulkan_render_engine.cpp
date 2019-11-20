@@ -1241,20 +1241,23 @@ namespace nova::renderer::rhi {
         std::vector<VkExtensionProperties> available_extensions(extension_count);
         vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, available_extensions.data());
 
-        auto extension_name_match = [](const char* ext_name, const VkExtensionProperties& ext_props) {
+        auto extension_name_match = [](const char* ext_name, const VkExtensionProperties& ext_props) -> bool {
             return std::strcmp(ext_name, ext_props.extensionName) == 0;
         };
 
+        // TODO: use std::bind_front instead of std::bind when C++20 drops
+        using namespace std::placeholders;
+
         // TODO: Update as more GPUs support hardware raytracing
-        const auto rt_ext_itr_bullshit = std::find_if(available_extensions.begin(),
-                                                      available_extensions.end(),
-                                                      std::bind(extension_name_match, VK_NV_RAY_TRACING_EXTENSION_NAME));
-        info.supports_raytracing = rt_ext_itr_bullshit != available_extensions.end();
+        const auto rt_ext_itr = std::find_if(available_extensions.begin(),
+                                             available_extensions.end(),
+                                             std::bind(extension_name_match, VK_NV_RAY_TRACING_EXTENSION_NAME, _1));
+        info.supports_raytracing = rt_ext_itr != available_extensions.end();
 
         // TODO: Update as more GPUs support mesh shaders
         const auto mesh_shader_ext_itr = std::find_if(available_extensions.begin(),
                                                       available_extensions.end(),
-                                                      std::bind(extension_name_match, VK_NV_MESH_SHADER_SPEC_VERSION));
+                                                      std::bind(extension_name_match, VK_NV_MESH_SHADER_EXTENSION_NAME, _1));
         info.supports_mesh_shaders = mesh_shader_ext_itr != available_extensions.end();
     }
 
