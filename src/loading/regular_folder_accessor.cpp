@@ -58,7 +58,7 @@ namespace nova::renderer {
 
     bool RegularFolderAccessor::does_resource_exist_on_filesystem(const fs::path& resource_path) {
         // NOVA_LOG(TRACE) << "Checking resource existence for " << resource_path;
-        const std::string resource_string = resource_path.string().c_str();
+        const std::string resource_string = resource_path.string();
         const auto existence_maybe = does_resource_exist_in_map(resource_string);
         if(existence_maybe) {
             // NOVA_LOG(TRACE) << "Does " << resource_path << " exist? " << *existence_maybe;
