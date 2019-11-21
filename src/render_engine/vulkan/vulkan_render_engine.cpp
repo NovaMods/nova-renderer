@@ -23,9 +23,10 @@
 
 #endif
 
+#include "nova_renderer/constants.hpp"
+
 #include "../../util/memory_utils.hpp"
 #include "../configuration.hpp"
-#include "nova_renderer/constants.hpp"
 
 namespace nova::renderer::rhi {
     VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)
@@ -39,6 +40,8 @@ namespace nova::renderer::rhi {
         open_window_and_create_surface(settings.settings.window);
 
         create_device_and_queues();
+
+        save_device_info();
 
         if(settings.settings.debug.enabled) {
             // Late init, can only be used when the device has already been created
@@ -497,7 +500,7 @@ namespace nova::renderer::rhi {
 
         std::vector<VkDescriptorImageInfo> image_infos;
         image_infos.reserve(writes.size());
-                
+
         std::vector<VkDescriptorBufferInfo> buffer_infos;
         buffer_infos.reserve(writes.size());
 
@@ -1208,6 +1211,56 @@ namespace nova::renderer::rhi {
         NOVA_CHECK_RESULT(vkCreateDebugUtilsMessengerEXT(instance, &debug_create_info, nullptr, &debug_callback));
     }
 
+    void VulkanRenderEngine::save_device_info() {
+        switch(gpu.props.vendorID) {
+            case AMD_PCI_VENDOR_ID:
+                info.architecture = DeviceArchitecture::Amd;
+                break;
+
+            case INTEL_PCI_VENDOR_ID:
+                info.architecture = DeviceArchitecture::Intel;
+                break;
+
+            case NVIDIA_PCI_VENDOR_ID:
+                info.architecture = DeviceArchitecture::Nvidia;
+                break;
+
+            default:
+                info.architecture = DeviceArchitecture::Unknown;
+        }
+
+        vk_info.max_uniform_buffer_size = gpu.props.limits.maxUniformBufferRange;
+        info.max_texture_size = gpu.props.limits.maxImageDimension2D;
+
+        // TODO: Something smarter when Intel releases discreet GPUS
+        // TODO: Handle integrated AMD GPUs
+        info.is_uma = info.architecture == DeviceArchitecture::Intel;
+
+        uint32_t extension_count;
+        vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, nullptr);
+        std::vector<VkExtensionProperties> available_extensions(extension_count);
+        vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, available_extensions.data());
+
+        const auto extension_name_matcher = [](const char* ext_name) {
+            return [=](const VkExtensionProperties& ext_props) -> bool { return std::strcmp(ext_name, ext_props.extensionName) == 0; };
+        };
+
+        // TODO: use std::bind_front instead of std::bind when C++20 drops
+        using namespace std::placeholders;
+
+        // TODO: Update as more GPUs support hardware raytracing
+        const auto rt_ext_itr = std::find_if(available_extensions.begin(),
+                                             available_extensions.end(),
+                                             extension_name_matcher(VK_NV_RAY_TRACING_EXTENSION_NAME));
+        info.supports_raytracing = rt_ext_itr != available_extensions.end();
+
+        // TODO: Update as more GPUs support mesh shaders
+        const auto mesh_shader_ext_itr = std::find_if(available_extensions.begin(),
+                                                      available_extensions.end(),
+                                                      extension_name_matcher(VK_NV_MESH_SHADER_EXTENSION_NAME));
+        info.supports_mesh_shaders = mesh_shader_ext_itr != available_extensions.end();
+    }
+
     void VulkanRenderEngine::create_device_and_queues() {
         uint32_t device_count;
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
@@ -1223,8 +1276,13 @@ namespace nova::renderer::rhi {
             VkPhysicalDevice current_device = physical_devices[device_idx];
             vkGetPhysicalDeviceProperties(current_device, &gpu.props);
 
-            if(gpu.props.vendorID == INTEL_PCI_VENDOR_ID &&
-               device_count - 1 > device_idx) { // Intel GPU... they are not powerful and we have more available, so skip it
+            const bool is_intel_gpu = gpu.props.vendorID == INTEL_PCI_VENDOR_ID;
+            const bool more_gpus_available = device_count - 1 > device_idx;
+            if(is_intel_gpu && more_gpus_available) {
+                // Intel GPU _probably_ isn't as powerful as a discreet GPU, and if there's more than one GPU then the other one(s) are
+                // _probably_ discreet GPUs, so let's not use the Intel GPU and instead use the discreet GPU
+                // TODO: Make a local device for the integrated GPU when we figure out multi-GPU
+                // TODO: Rework this code when Intel releases discreet GPUs
                 continue;
             }
 

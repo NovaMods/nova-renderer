@@ -4,11 +4,10 @@
 
 #include "nova_renderer/command_list.hpp"
 #include "nova_renderer/nova_settings.hpp"
+#include "nova_renderer/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/window.hpp"
-
-#include "rhi_types.hpp"
 
 namespace nova::renderer::rhi {
     struct Fence;
@@ -17,6 +16,31 @@ namespace nova::renderer::rhi {
 
     class Swapchain;
 
+    /*!
+     * \brief All the GPU architectures that Nova cares about, at whatever granularity is most useful
+     */
+    enum class DeviceArchitecture {
+        Unknown,
+
+        Amd,
+        Nvidia,
+        Intel,
+    };
+
+    /*!
+     * \brief Information about hte capabilities and limits of the device we're running on
+     */
+    struct DeviceInfo {
+        DeviceArchitecture architecture = DeviceArchitecture::Unknown;
+
+        uint64_t max_texture_size = 0;
+
+        bool is_uma = false;
+
+        bool supports_raytracing = false;
+        bool supports_mesh_shaders = false;
+    };
+
 #define NUM_THREADS 1
 
     /*!
@@ -24,6 +48,8 @@ namespace nova::renderer::rhi {
      */
     class RenderEngine {
     public:
+        DeviceInfo info;
+
         NovaSettingsAccessManager& settings;
 
         RenderEngine(RenderEngine&& other) = delete;

@@ -16,7 +16,7 @@
 #include "dx12_structs.hpp"
 #include "dx12_swapchain.hpp"
 #include "dx12_utils.hpp"
-
+#include "nova_renderer/constants.hpp"
 using Microsoft::WRL::ComPtr;
 
 #define CPU_FENCE_SIGNALED 16
@@ -39,6 +39,8 @@ namespace nova::renderer::rhi {
         if(settings.settings.debug.enabled) {
             setup_debug_output();
         }
+
+        determine_device_capabilities();
     }
 
     void D3D12RenderEngine::set_num_renderpasses(const uint32_t num_renderpasses) {
@@ -957,12 +959,51 @@ namespace nova::renderer::rhi {
     void D3D12RenderEngine::setup_debug_output() {
         const auto hr = device->QueryInterface(IID_PPV_ARGS(&info_queue));
         if(SUCCEEDED(hr)) {
-            info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
-            info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+            // Separate ifs for error handling and logic flow
+            if(settings->debug.break_on_validation_errors) {
+                info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+                info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+            }
 
         } else {
             NOVA_LOG(ERROR) << "Could not set up debugging: " << to_string(hr);
         }
+    }
+
+    void D3D12RenderEngine::determine_device_capabilities() {
+        DXGI_ADAPTER_DESC2 adapter_desc;
+        adapter->GetDesc2(&adapter_desc);
+        switch(adapter_desc.VendorId) {
+            case AMD_PCI_VENDOR_ID:
+                info.architecture = DeviceArchitecture::Amd;
+                break;
+
+            case INTEL_PCI_VENDOR_ID:
+                info.architecture = DeviceArchitecture::Intel;
+                break;
+
+            case NVIDIA_PCI_VENDOR_ID:
+                info.architecture = DeviceArchitecture::Nvidia;
+                break;
+
+            default:
+                info.architecture = DeviceArchitecture::Unknown;
+        }
+
+        const auto hr = device->QueryInterface(IID_PPV_ARGS(device4.GetAddressOf()));
+        info.supports_raytracing = SUCCEEDED(hr);
+
+        D3D12_FEATURE_DATA_FEATURE_LEVELS feature_levels;
+        device->CheckFeatureSupport(D3D12_FEATURE_FEATURE_LEVELS, &feature_levels, sizeof(feature_levels));
+        d3d12_capabilities.feature_level = feature_levels.MaxSupportedFeatureLevel;
+
+        // Constants from https://docs.microsoft.com/en-us/windows/win32/direct3d12/hardware-feature-levels
+        // TODO: Revisit these limits if/when we get features levels above 12.1
+        info.max_texture_size = 16384;
+
+        D3D12_FEATURE_DATA_ARCHITECTURE architecture_data;
+        device->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE, &architecture_data, sizeof(architecture_data));
+        info.is_uma = architecture_data.CacheCoherentUMA;
     }
 
     ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,

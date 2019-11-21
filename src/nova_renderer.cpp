@@ -497,7 +497,7 @@ namespace nova::renderer {
 
         for(const auto& [descriptor_name, resource_name] : bindings) {
             const rhi::ResourceBindingDescription& binding_desc = descriptor_descriptions.at(descriptor_name);
-            const rhi::DescriptorSet* descriptor_set = material.descriptor_sets.at(binding_desc.set);
+            rhi::DescriptorSet* descriptor_set = material.descriptor_sets.at(binding_desc.set);
 
             rhi::DescriptorSetWrite write = {};
             write.set = descriptor_set;

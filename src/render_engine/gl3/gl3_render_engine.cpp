@@ -3,6 +3,7 @@
 #include <spirv_glsl.hpp>
 
 #include "nova_renderer/renderables.hpp"
+#include "nova_renderer/util/platform.hpp"
 
 #include "../../util/logger.hpp"
 #include "gl3_command_list.hpp"
@@ -11,10 +12,11 @@
 
 namespace nova::renderer::rhi {
     Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(&mallocator, settings) {
-
         window = std::make_unique<GlfwWindow>(settings.settings);
 
         gladLoadGLLoader(GlfwWindow::get_gl_proc_address);
+
+        save_device_info();
 
         swapchain = new Gl3Swapchain(settings.settings.max_in_flight_frames, window->get_window_size());
 
@@ -22,6 +24,39 @@ namespace nova::renderer::rhi {
     }
 
     Gl4NvRenderEngine::~Gl4NvRenderEngine() { delete swapchain; }
+
+    void Gl4NvRenderEngine::save_device_info() {
+        const GLubyte* raw_vendor_string = glGetString(GL_VENDOR);
+        std::string vendor_string(reinterpret_cast<const char*>(raw_vendor_string));
+        std::transform(vendor_string.begin(), vendor_string.end(), vendor_string.begin(), [](const char c) { return std::tolower(c); });
+
+        // If this bs doesn't work then all well guess it's time to yeet OpenGL like everyone wants me to
+        if(vendor_string.find("nvidia") != std::string::npos) {
+            info.architecture = DeviceArchitecture::Nvidia;
+
+        } else if(vendor_string.find("intel") != std::string::npos) {
+            info.architecture = DeviceArchitecture::Intel;
+
+        } else if(vendor_string.find("amd") != std::string::npos || vendor_string.find("ati") != std::string::npos) {
+            info.architecture = DeviceArchitecture::Amd;
+        }
+
+        GLint max_texture_size;
+        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+        info.max_texture_size = static_cast<uint32_t>(max_texture_size);
+
+        GLint max_uniform_block_size;
+        glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_block_size);
+        gl_info.max_uniform_buffer_size = static_cast<uint32_t>(max_uniform_block_size);
+
+        info.is_uma = info.architecture == DeviceArchitecture::Intel;
+
+        // OpenGL doesn't support raytracing at all :(
+        // @nvidia fix plz
+        info.supports_raytracing = false;
+
+        info.supports_mesh_shaders = GLAD_GL_NV_mesh_shader > 0;
+    }
 
     void Gl4NvRenderEngine::set_initial_state() {
         glEnable(GL_TEXTURE_2D);
@@ -38,7 +73,7 @@ namespace nova::renderer::rhi {
         glEnableVertexAttribArray(6);
     }
 
-    void Gl4NvRenderEngine::set_num_renderpasses([[maybe_unused]] uint32_t num_renderpasses) {
+    void Gl4NvRenderEngine::set_num_renderpasses(uint32_t /* num_renderpasses */) {
         // Gl3 doesn't need to do anything either
     }
 
@@ -81,7 +116,7 @@ namespace nova::renderer::rhi {
                                                               const uint32_t num_samplers,
                                                               const uint32_t num_uniform_buffers) {
         auto* pool = new Gl3DescriptorPool(shaderpack_allocator);
-        pool->descriptors.resize(static_cast<std::size_t>(num_sampled_images + num_uniform_buffers));
+        pool->descriptors.resize(static_cast<std::size_t>(num_sampled_images) + num_uniform_buffers);
         pool->sampler_sets.resize(num_samplers);
 
         return pool;
@@ -105,8 +140,8 @@ namespace nova::renderer::rhi {
 
     void Gl4NvRenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
         for(DescriptorSetWrite& write : writes) {
-            const auto* cset = static_cast<const Gl3DescriptorSet*>(write.set);
-            auto* set = const_cast<Gl3DescriptorSet*>(cset); // I have a few regrets
+            const auto* const_set = static_cast<const Gl3DescriptorSet*>(write.set);
+            auto* set = const_cast<Gl3DescriptorSet*>(const_set); // I have a few regrets
             Gl3Descriptor& descriptor = set->descriptors.at(write.binding);
 
             switch(write.type) {
@@ -447,6 +482,7 @@ namespace nova::renderer::rhi {
     }
 
     void Gl4NvRenderEngine::copy_buffers_impl(const Gl3BufferCopyCommand& buffer_copy) {
+        // Try really hard to trick OpenGL into using the DMA queue
         glBindBuffer(GL_COPY_READ_BUFFER, buffer_copy.source_buffer);
         glBindBuffer(GL_COPY_WRITE_BUFFER, buffer_copy.destination_buffer);
 
