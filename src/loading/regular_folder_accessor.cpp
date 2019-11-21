@@ -1,7 +1,5 @@
 #include "regular_folder_accessor.hpp"
 
-#include <fstream>
-
 #include "../util/logger.hpp"
 
 namespace nova::renderer {
@@ -20,28 +18,28 @@ namespace nova::renderer {
             NOVA_LOG(ERROR) << "Resource at path " << full_resource_path.string() << " does not exist";
         }
 
-        // std::vector<uint8_t> buf;
-        std::ifstream resource_stream(full_resource_path);
-        if(!resource_stream.good()) {
+        FILE* resource_file = std::fopen(full_resource_path.string().c_str(), "r");
+        if(!resource_file) {
             // Error reading this file - it can't be read again in the future
-            const auto resource_string = full_resource_path.string().c_str();
+            const auto& resource_string = full_resource_path.string();
 
             resource_existence.emplace(resource_string, false);
             NOVA_LOG(ERROR) << "Could not load resource at path " << resource_string;
+
+            return {};
         }
 
-        std::string buf;
+        std::fseek(resource_file, 0, SEEK_END);
+        const auto file_size = std::ftell(resource_file);
+
         std::string file_string;
+        file_string.resize(file_size);
 
-        while(getline(resource_stream, buf)) {
-            // uint8_t val;
-            // resource_stream >> val;
-            // buf.push_back(val);
-            file_string += buf.c_str();
-            file_string += "\n";
-        }
+        std::fseek(resource_file, 0, SEEK_SET);
 
-        // buf.push_back(0);
+        std::fread(file_string.data(), sizeof(char), file_size, resource_file);
+
+        std::fclose(resource_file);
 
         return file_string;
     }
@@ -60,7 +58,7 @@ namespace nova::renderer {
 
     bool RegularFolderAccessor::does_resource_exist_on_filesystem(const fs::path& resource_path) {
         // NOVA_LOG(TRACE) << "Checking resource existence for " << resource_path;
-        const std::string resource_string = resource_path.string().c_str();
+        const std::string& resource_string = resource_path.string();
         const auto existence_maybe = does_resource_exist_in_map(resource_string);
         if(existence_maybe) {
             // NOVA_LOG(TRACE) << "Does " << resource_path << " exist? " << *existence_maybe;
