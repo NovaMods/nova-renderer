@@ -21,7 +21,7 @@ namespace nova::renderer {
         FILE* resource_file = std::fopen(full_resource_path.string().c_str(), "r");
         if(!resource_file) {
             // Error reading this file - it can't be read again in the future
-            const auto resource_string = full_resource_path.string().c_str();
+            const auto& resource_string = full_resource_path.string();
 
             resource_existence.emplace(resource_string, false);
             NOVA_LOG(ERROR) << "Could not load resource at path " << resource_string;
@@ -58,7 +58,7 @@ namespace nova::renderer {
 
     bool RegularFolderAccessor::does_resource_exist_on_filesystem(const fs::path& resource_path) {
         // NOVA_LOG(TRACE) << "Checking resource existence for " << resource_path;
-        const std::string resource_string = resource_path.string();
+        const std::string& resource_string = resource_path.string();
         const auto existence_maybe = does_resource_exist_in_map(resource_string);
         if(existence_maybe) {
             // NOVA_LOG(TRACE) << "Does " << resource_path << " exist? " << *existence_maybe;
