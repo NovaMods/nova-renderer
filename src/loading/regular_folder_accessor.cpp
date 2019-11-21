@@ -20,9 +20,8 @@ namespace nova::renderer {
             NOVA_LOG(ERROR) << "Resource at path " << full_resource_path.string() << " does not exist";
         }
 
-        // std::vector<uint8_t> buf;
-        std::ifstream resource_stream(full_resource_path);
-        if(!resource_stream.good()) {
+        FILE* resource_file = std::fopen(full_resource_path.string().c_str(), "r");
+        if(!resource_file) {
             // Error reading this file - it can't be read again in the future
             const auto resource_string = full_resource_path.string().c_str();
 
