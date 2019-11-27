@@ -86,11 +86,6 @@ if(NOT NOVA_PACKAGE)
     include(InstallGitHooks)
 endif()
 
-# Only install the git hooks if we're not being included in someone else's project
-if(NOT NOVA_PACKAGE)
-    include(InstallGitHooks)
-endif()
-
 set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
 
 #################################
