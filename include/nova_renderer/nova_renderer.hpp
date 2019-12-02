@@ -366,10 +366,10 @@ namespace nova::renderer {
         void record_renderpass(Renderpass& renderpass, rhi::CommandList* cmds);
 
         void record_pipeline(Pipeline& pipeline, rhi::CommandList* cmds);
-
         void record_material_pass(MaterialPass& pass, rhi::CommandList* cmds);
 
-        void record_rendering_static_mesh_batch(MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
+        void record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
+        void record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
 #pragma endregion
     };
 } // namespace nova::renderer

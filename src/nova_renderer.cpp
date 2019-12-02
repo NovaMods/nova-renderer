@@ -147,7 +147,10 @@ namespace nova::renderer {
 
         rhi::CommandList* cmds = rhi->get_command_list(0, rhi::QueueType::Graphics);
 
-        // TODO: Upload procedural mesh staging buffers to the procedural meshes
+        // This may or may not work well lmao
+        for(auto& [id, proc_mesh] : proc_meshes) {
+            proc_mesh.record_commands_to_upload_data(cmds, cur_frame_idx);
+        }
 
         for(Renderpass& renderpass : renderpasses) {
             record_renderpass(renderpass, cmds);
@@ -768,12 +771,16 @@ namespace nova::renderer {
     void NovaRenderer::record_material_pass(MaterialPass& pass, rhi::CommandList* cmds) {
         cmds->bind_descriptor_sets(pass.descriptor_sets, pass.pipeline_interface);
 
-        for(MeshBatch<StaticMeshRenderCommand>& batch : pass.static_mesh_draws) {
+        for(const MeshBatch<StaticMeshRenderCommand>& batch : pass.static_mesh_draws) {
+            record_rendering_static_mesh_batch(batch, cmds);
+        }
+
+        for(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch : pass.static_procedural_mesh_draws) {
             record_rendering_static_mesh_batch(batch, cmds);
         }
     }
 
-    void NovaRenderer::record_rendering_static_mesh_batch(MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds) {
+    void NovaRenderer::record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds) {
         const uint32_t start_index = cur_model_matrix_index;
 
         for(const StaticMeshRenderCommand& command : batch.commands) {
@@ -801,6 +808,38 @@ namespace nova::renderer {
 
             cmds->draw_indexed_mesh(static_cast<uint32_t>(batch.index_buffer->size / sizeof(uint32_t)),
                                     cur_model_matrix_index - start_index);
+        }
+    }
+
+    void NovaRenderer::record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds) {
+        const uint32_t start_index = cur_model_matrix_index;
+
+        for (const StaticMeshRenderCommand& command : batch.commands) {
+            if (command.is_visible) {
+                auto* model_matrix_buffer = builtin_buffers.at(MODEL_MATRIX_BUFFER_NAME);
+                rhi->write_data_to_buffer(&command.model_matrix,
+                    sizeof(glm::mat4),
+                    cur_model_matrix_index * sizeof(glm::mat4),
+                    model_matrix_buffer);
+                cur_model_matrix_index++;
+            }
+        }
+
+        if (start_index != cur_model_matrix_index) {
+        const auto& [vertex_buffer, index_buffer] = batch.mesh->get_buffers_for_frame(cur_frame_idx);
+            // TODO: There's probably a better way to do this
+            const std::vector<rhi::Buffer*> vertex_buffers = { vertex_buffer,
+                                                              vertex_buffer,
+                                                              vertex_buffer,
+                                                              vertex_buffer,
+                                                              vertex_buffer,
+                                                              vertex_buffer,
+                                                              vertex_buffer };
+            cmds->bind_vertex_buffers(vertex_buffers);
+            cmds->bind_index_buffer(index_buffer);
+
+            cmds->draw_indexed_mesh(static_cast<uint32_t>(index_buffer->size / sizeof(uint32_t)),
+                cur_model_matrix_index - start_index);
         }
     }
 

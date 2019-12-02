@@ -13,7 +13,7 @@ namespace nova::renderer {
     public:
         MapAccessor(std::unordered_map<KeyType, ValueType>& map, const KeyType key) : map(map), key(key) {}
 
-        ValueType* operator->() {
+        ValueType* operator->() const {
             return &map[key];
         }
 

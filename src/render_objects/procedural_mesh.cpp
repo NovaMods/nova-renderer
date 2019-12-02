@@ -196,4 +196,11 @@ namespace nova::renderer {
 
         cmds->resource_barriers(PipelineStageFlags::Transfer, PipelineStageFlags::TopOfPipe, barriers_after_upload);
     }
+
+    std::tuple<Buffer*, Buffer*> ProceduralMesh::get_buffers_for_frame(const uint8_t frame_idx) const {
+        auto* vertex_buffer = vertex_buffers.at(frame_idx);
+        auto* index_buffer = index_buffers.at(frame_idx);
+
+        return {vertex_buffer, index_buffer};
+    }
 } // namespace nova::renderer

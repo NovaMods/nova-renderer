@@ -48,7 +48,7 @@ namespace nova::renderer::rhi {
         transition_swapchain_images_into_color_attachment_layout(vk_images);
     }
 
-    uint32_t VulkanSwapchain::acquire_next_swapchain_image() {
+    uint8_t VulkanSwapchain::acquire_next_swapchain_image() {
         auto* fence = render_engine.create_fence();
         auto* vk_fence = static_cast<VulkanFence*>(fence);
 
@@ -71,7 +71,7 @@ namespace nova::renderer::rhi {
         // Block until we have the swapchain image in order to mimic D3D12. TODO: Reevaluate this decision
         render_engine.wait_for_fences({vk_fence});
 
-        return acquired_image_idx;
+        return static_cast<uint8_t>(acquired_image_idx);
     }
 
     void VulkanSwapchain::present(const uint32_t image_idx) {

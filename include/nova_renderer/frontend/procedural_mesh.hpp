@@ -21,6 +21,8 @@ namespace nova::renderer {
      */
     class ProceduralMesh {
     public:
+        ProceduralMesh() = default;
+
         /*!
          * \brief Creates a new procedural mesh which has the specified amount of space
          *
@@ -56,6 +58,11 @@ namespace nova::renderer {
          * \param frame_idx The index of the frame to write the data to
          */
         void record_commands_to_upload_data(rhi::CommandList* cmds, uint8_t frame_idx);
+
+        /*!
+         * \brief Returns the vertex and index buffer for the provided frame
+         */
+        [[nodiscard]] std::tuple<rhi::Buffer*, rhi::Buffer*> get_buffers_for_frame(uint8_t frame_idx) const;
 
     private:
         rhi::RenderEngine* device;
