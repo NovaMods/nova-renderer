@@ -28,7 +28,7 @@ namespace nova::renderer {
     }
 
 #pragma region Runtime optimized data
-    template <typename RenderableType>
+    template <typename RenderCommandType>
     struct MeshBatch {
         rhi::Buffer* vertex_buffer = nullptr;
         rhi::Buffer* index_buffer = nullptr;
@@ -43,13 +43,34 @@ namespace nova::renderer {
          */
         rhi::Buffer* per_renderable_data = nullptr;
 
-        std::vector<RenderableType> renderables;
+        std::vector<RenderCommandType> commands;
+    };
+
+    template<typename RenderCommandType>
+    struct ProceduralMeshBatch {
+        MapAccessor<MeshId, ProceduralMesh> mesh;
+        
+        /*!
+         * \brief A buffer to hold all the per-draw data
+         *
+         * For example, a non-animated mesh just needs a mat4 for its model matrix
+         *
+         * This buffer gets re-written to every frame, since the number of renderables in this mesh batch might have changed. If there's
+         * more renderables than the buffer can hold, it gets reallocated from the RHI
+         */
+        rhi::Buffer* per_renderable_data = nullptr;
+
+        std::vector<RenderCommandType> commands;
+
+        ProceduralMeshBatch(std::unordered_map<MeshId, ProceduralMesh>& meshes, MeshId key) : mesh(meshes, key) {}
     };
 
     struct MaterialPass {
         // Descriptors for the material pass
 
         std::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
+        std::vector<ProceduralMeshBatch<StaticMeshRenderCommand>> static_procedural_mesh_draws;
+
         std::vector<rhi::DescriptorSet*> descriptor_sets;
         const rhi::PipelineInterface* pipeline_interface = nullptr;
     };

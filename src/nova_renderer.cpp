@@ -774,7 +774,7 @@ namespace nova::renderer {
     void NovaRenderer::record_rendering_static_mesh_batch(MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds) {
         const uint32_t start_index = cur_model_matrix_index;
 
-        for(const StaticMeshRenderCommand& command : batch.renderables) {
+        for(const StaticMeshRenderCommand& command : batch.commands) {
             if(command.is_visible) {
                 auto* model_matrix_buffer = builtin_buffers.at(MODEL_MATRIX_BUFFER_NAME);
                 rhi->write_data_to_buffer(&command.model_matrix,
@@ -820,35 +820,57 @@ namespace nova::renderer {
         Pipeline& pipeline = renderpass.pipelines.at(pass_key.pipeline_index);
         MaterialPass& material = pipeline.passes.at(pass_key.material_pass_index);
 
+        StaticMeshRenderCommand command = make_render_command(renderable, id);
+
         if(const auto itr = meshes.find(renderable.mesh); itr != meshes.end()) {
             const Mesh& mesh = itr->second;
 
             if(renderable.is_static) {
-                StaticMeshRenderCommand command = make_render_command(renderable, id);
-
-                bool need_to_add_mesh = true;
+                bool need_to_add_batch = true;
 
                 for(MeshBatch<StaticMeshRenderCommand>& batch : material.static_mesh_draws) {
                     if(batch.vertex_buffer == mesh.vertex_buffer) {
-                        batch.renderables.emplace_back(command);
+                        batch.commands.emplace_back(command);
 
-                        need_to_add_mesh = false;
+                        need_to_add_batch = false;
                         break;
                     }
                 }
 
-                if(need_to_add_mesh) {
+                if(need_to_add_batch) {
                     MeshBatch<StaticMeshRenderCommand> batch;
                     batch.vertex_buffer = mesh.vertex_buffer;
                     batch.index_buffer = mesh.index_buffer;
-                    batch.renderables.emplace_back(command);
+                    batch.commands.emplace_back(command);
 
                     material.static_mesh_draws.emplace_back(batch);
                 }
             }
 
         } else if(const auto proc_itr = proc_meshes.find(renderable.mesh); proc_itr != proc_meshes.end()) {
+            if(renderable.is_static) {
+                bool need_to_add_batch = false;
+
+                for (ProceduralMeshBatch<StaticMeshRenderCommand>& batch : material.static_procedural_mesh_draws) {
+                    if (batch.mesh.get_key() == renderable.mesh) {
+                        batch.commands.emplace_back(command);
+
+                        need_to_add_batch = false;
+                        break;
+                    }
+                }
+
+                if (need_to_add_batch) {
+                    ProceduralMeshBatch<StaticMeshRenderCommand> batch(proc_meshes, renderable.mesh);
+                    batch.commands.emplace_back(command);
+
+                    material.static_procedural_mesh_draws.emplace_back(batch);
+                }
+            }
+        } else {
+            NOVA_LOG(ERROR) << "Could not find a mesh with ID " << renderable.mesh;
         }
+
         return id;
     }
 
