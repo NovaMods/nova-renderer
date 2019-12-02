@@ -135,6 +135,7 @@ set(NOVA_SOURCE
 		
         src/render_objects/procedural_mesh.cpp
         src/render_objects/uniform_structs.hpp
+        src/render_objects/renderables.cpp
 
         src/util/logger.cpp
         src/util/logger.hpp

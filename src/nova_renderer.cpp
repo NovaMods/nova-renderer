@@ -255,7 +255,7 @@ namespace nova::renderer {
         MeshId our_id = next_mesh_id;
         next_mesh_id++;
 
-        proc_meshes.emplace(our_id, vertex_size, index_size, *rhi.get());
+        proc_meshes.emplace(our_id, ProceduralMesh(vertex_size, index_size, *rhi.get()));
 
         return MapAccessor<MeshId, ProceduralMesh>(proc_meshes, our_id);
     }
@@ -820,26 +820,35 @@ namespace nova::renderer {
         Pipeline& pipeline = renderpass.pipelines.at(pass_key.pipeline_index);
         MaterialPass& material = pipeline.passes.at(pass_key.material_pass_index);
 
-        const Mesh& mesh = meshes.at(renderable.mesh);
+        if(const auto itr = meshes.find(renderable.mesh); itr != meshes.end()) {
+            const Mesh& mesh = itr->second;
 
-        if(renderable.is_static) {
-            for(MeshBatch<StaticMeshRenderCommand>& batch : material.static_mesh_draws) {
-                if(batch.vertex_buffer == mesh.vertex_buffer) {
-                    StaticMeshRenderCommand command = {};
-                    command.id = id;
-                    command.is_visible = true;
-                    // TODO: Make sure this is accurate
-                    command.model_matrix = glm::translate(command.model_matrix, renderable.initial_position);
-                    command.model_matrix = glm::rotate(command.model_matrix, renderable.initial_rotation.x, {1, 0, 0});
-                    command.model_matrix = glm::rotate(command.model_matrix, renderable.initial_rotation.y, {0, 1, 0});
-                    command.model_matrix = glm::rotate(command.model_matrix, renderable.initial_rotation.z, {0, 0, 1});
-                    command.model_matrix = glm::scale(command.model_matrix, renderable.initial_scale); // Uniform scaling only
+            if(renderable.is_static) {
+                StaticMeshRenderCommand command = make_render_command(renderable, id);
 
+                bool need_to_add_mesh = true;
+
+                for(MeshBatch<StaticMeshRenderCommand>& batch : material.static_mesh_draws) {
+                    if(batch.vertex_buffer == mesh.vertex_buffer) {
+                        batch.renderables.emplace_back(command);
+
+                        need_to_add_mesh = false;
+                        break;
+                    }
+                }
+
+                if(need_to_add_mesh) {
+                    MeshBatch<StaticMeshRenderCommand> batch;
+                    batch.vertex_buffer = mesh.vertex_buffer;
+                    batch.index_buffer = mesh.index_buffer;
                     batch.renderables.emplace_back(command);
+
+                    material.static_mesh_draws.emplace_back(batch);
                 }
             }
-        }
 
+        } else if(const auto proc_itr = proc_meshes.find(renderable.mesh); proc_itr != proc_meshes.end()) {
+        }
         return id;
     }
 

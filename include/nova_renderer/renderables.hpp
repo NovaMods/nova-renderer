@@ -1,6 +1,8 @@
 #pragma once
 
 #include <atomic>
+#include <string>
+#include <vector>
 
 #include <glm/glm.hpp>
 
@@ -62,4 +64,6 @@ namespace nova::renderer {
     };
 
     struct StaticMeshRenderCommand : RenderableBase {};
+
+    StaticMeshRenderCommand make_render_command(const StaticMeshRenderableData& data, RenderableId id);
 } // namespace nova::renderer
