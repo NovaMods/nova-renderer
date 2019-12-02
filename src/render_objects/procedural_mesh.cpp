@@ -10,7 +10,7 @@
 namespace nova::renderer {
     using namespace rhi;
 
-    ProceduralMesh::ProceduralMesh(uint64_t vertex_buffer_size, uint64_t index_buffer_size, RenderEngine& device)
+    ProceduralMesh::ProceduralMesh(const uint64_t vertex_buffer_size, const uint64_t index_buffer_size, RenderEngine& device)
         : render_engine(device)
 #ifndef NDEBUG
           ,
@@ -69,13 +69,42 @@ namespace nova::renderer {
     }
 
     void ProceduralMesh::set_vertex_data(const void* data, const uint64_t size) {
-        render_engine.write_data_to_buffer(data, size, 0, cached_vertex_buffer);
-        num_vertex_bytes_to_upload = size;
+#ifndef NDEBUG
+        if(size > vertex_buffer_size) {
+            NOVA_LOG(ERROR) << "Cannot upload vertex data. There's only space for " << vertex_buffer_size << " bytes, you tried to upload "
+                            << size << ". Truncating vertex data to fit";
+
+            render_engine.write_data_to_buffer(data, vertex_buffer_size, 0, cached_vertex_buffer);
+            num_vertex_bytes_to_upload = vertex_buffer_size;
+
+        } else {
+#endif
+
+            render_engine.write_data_to_buffer(data, size, 0, cached_vertex_buffer);
+            num_vertex_bytes_to_upload = size;
+
+#ifndef NDEBUG
+        }
+#endif
     }
 
     void ProceduralMesh::set_index_data(const void* data, const uint64_t size) {
-        render_engine.write_data_to_buffer(data, size, 0, cached_index_buffer);
-        num_index_bytes_to_upload = size;
+#ifndef NDEBUG
+        if(size > index_buffer_size) {
+            NOVA_LOG(ERROR) << "Cannot upload index data. There's only space for " << index_buffer_size << " bytes, you tried to upload "
+                            << size << ". Truncating vertex data to fit";
+
+            render_engine.write_data_to_buffer(data, index_buffer_size, 0, cached_index_buffer);
+            num_index_bytes_to_upload = index_buffer_size;
+
+        } else {
+#endif
+            render_engine.write_data_to_buffer(data, size, 0, cached_index_buffer);
+            num_index_bytes_to_upload = size;
+
+#ifndef NDEBUG
+        }
+#endif
     }
 
     void ProceduralMesh::record_commands_to_upload_data(CommandList* cmds, const uint8_t frame_idx) {
