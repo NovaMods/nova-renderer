@@ -2,8 +2,8 @@
 
 #include <array>
 #include <memory>
-#include <string>
 #include <mutex>
+#include <string>
 
 #include "nova_renderer/device_memory_resource.hpp"
 #include "nova_renderer/nova_settings.hpp"
@@ -11,8 +11,9 @@
 #include "nova_renderer/render_engine.hpp"
 #include "nova_renderer/renderdoc_app.h"
 
-#include "renderables.hpp"
 #include "constants.hpp"
+#include "renderables.hpp"
+#include "util/container_accessor.hpp"
 
 namespace spirv_cross {
     class CompilerGLSL;
@@ -20,6 +21,8 @@ namespace spirv_cross {
 } // namespace spirv_cross
 
 namespace nova::renderer {
+    class ProceduralMesh;
+
     namespace rhi {
         class Swapchain;
     }
@@ -175,6 +178,11 @@ namespace nova::renderer {
         [[nodiscard]] MeshId create_mesh(const MeshData& mesh_data);
 
         /*!
+         * \brief Creates a procedural mesh, returning both its mesh id and 
+         */
+        [[nodiscard]] MapAccessor<MeshId, ProceduralMesh> create_procedural_mesh(uint64_t vertex_size, uint64_t index_size);
+
+        /*!
          * \brief Destroys the mesh with the provided ID, freeing up whatever VRAM it was using
          *
          * In debug builds, this method checks that no renderables are using the mesh
@@ -184,7 +192,8 @@ namespace nova::renderer {
         void destroy_mesh(MeshId mesh_to_destroy);
 #pragma endregion
 
-        RenderableId add_renderable_for_material(const FullMaterialPassName& material_name, const StaticMeshRenderableData& renderable);
+        [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
+                                                               const StaticMeshRenderableData& renderable);
 
         [[nodiscard]] rhi::RenderEngine* get_engine() const;
 
@@ -319,6 +328,7 @@ namespace nova::renderer {
         MeshId next_mesh_id = 0;
 
         std::unordered_map<MeshId, Mesh> meshes;
+        std::unordered_map<MeshId, ProceduralMesh> proc_meshes;
 #pragma endregion
 
 #pragma region Rendering

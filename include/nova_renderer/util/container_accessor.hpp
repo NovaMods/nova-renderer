@@ -8,17 +8,21 @@ namespace nova::renderer {
      *
      * How this isn't in the standard library, idk
      */
-    template<typename T>
-    class VectorAccessor {
+    template<typename KeyType, typename ValueType>
+    class MapAccessor {
     public:
-        VectorAccessor(const std::vector<T>& vec, const std::size_t idx) : vec(vec), idx(idx) {}
+        MapAccessor(std::unordered_map<KeyType, ValueType>& map, const KeyType key) : map(map), key(key) {}
 
-        T* operator->() {
-            return &vec[idx];
+        ValueType* operator->() {
+            return &map[key];
+        }
+
+        KeyType get_key() const {
+            return key;
         }
 
     private:
-        std::vector<T>& vec;
-        std::size_t idx;
+        std::unordered_map<KeyType, ValueType>& map;
+        KeyType key;
     };
 }
