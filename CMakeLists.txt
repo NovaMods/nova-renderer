@@ -115,6 +115,7 @@ set(NOVA_SOURCE
         include/nova_renderer/bytes.hpp
         include/nova_renderer/polyalloc.hpp
         include/nova_renderer/constants.hpp
+        include/nova_renderer/frontend/procedural_mesh.hpp
 
         src/nova_renderer.cpp
         src/render_engine/render_engine.cpp
@@ -130,7 +131,8 @@ set(NOVA_SOURCE
         src/loading/json_utils.hpp
 
         src/settings/nova_settings.cpp
-
+		
+        src/render_objects/procedural_mesh.cpp
         src/render_objects/uniform_structs.hpp
 
         src/util/logger.cpp
