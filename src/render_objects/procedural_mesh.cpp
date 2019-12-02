@@ -82,8 +82,8 @@ namespace nova::renderer {
         const bool should_upload_vertex_buffer = num_vertex_bytes_to_upload > 0;
         const bool should_upload_index_buffer = num_index_bytes_to_upload > 0;
 
-		auto* cur_vertex_buffer = vertex_buffers.at(frame_idx);
-		auto* cur_index_buffer = index_buffers.at(frame_idx);
+        auto* cur_vertex_buffer = vertex_buffers.at(frame_idx);
+        auto* cur_index_buffer = index_buffers.at(frame_idx);
 
         std::vector<ResourceBarrier> barriers_before_upload;
 
@@ -104,17 +104,17 @@ namespace nova::renderer {
 
         if(should_upload_index_buffer) {
             ResourceBarrier barrier_before_index_upload = {};
-			barrier_before_index_upload.resource_to_barrier = cur_index_buffer;
-			barrier_before_index_upload.access_before_barrier = AccessFlags::IndexRead;
-			barrier_before_index_upload.access_after_barrier = AccessFlags::MemoryWrite;
-			barrier_before_index_upload.old_state = ResourceState::IndexBuffer;
-			barrier_before_index_upload.new_state = ResourceState::CopyDestination;
-			barrier_before_index_upload.source_queue = QueueType::Graphics;
-			barrier_before_index_upload.destination_queue = QueueType::Transfer;
-			barrier_before_index_upload.buffer_memory_barrier.offset = 0;
-			barrier_before_index_upload.buffer_memory_barrier.size = num_vertex_bytes_to_upload;
+            barrier_before_index_upload.resource_to_barrier = cur_index_buffer;
+            barrier_before_index_upload.access_before_barrier = AccessFlags::IndexRead;
+            barrier_before_index_upload.access_after_barrier = AccessFlags::MemoryWrite;
+            barrier_before_index_upload.old_state = ResourceState::IndexBuffer;
+            barrier_before_index_upload.new_state = ResourceState::CopyDestination;
+            barrier_before_index_upload.source_queue = QueueType::Graphics;
+            barrier_before_index_upload.destination_queue = QueueType::Transfer;
+            barrier_before_index_upload.buffer_memory_barrier.offset = 0;
+            barrier_before_index_upload.buffer_memory_barrier.size = num_vertex_bytes_to_upload;
 
-			barriers_before_upload.push_back(barrier_before_index_upload);
+            barriers_before_upload.push_back(barrier_before_index_upload);
         }
 
         if(barriers_before_upload.empty()) {
@@ -128,7 +128,7 @@ namespace nova::renderer {
         }
 
         if(should_upload_index_buffer) {
-			cmds->copy_buffer(cur_index_buffer, 0, cached_index_buffer, 0, num_index_bytes_to_upload);
+            cmds->copy_buffer(cur_index_buffer, 0, cached_index_buffer, 0, num_index_bytes_to_upload);
         }
 
         std::vector<ResourceBarrier> barriers_after_upload;
@@ -147,23 +147,23 @@ namespace nova::renderer {
             barriers_after_upload.push_back(barrier_after_vertex_upload);
         }
 
-		if (should_upload_index_buffer) {
-			ResourceBarrier barrier_after_index_upload = {};
-			barrier_after_index_upload.resource_to_barrier = cur_index_buffer;
-			barrier_after_index_upload.access_before_barrier = AccessFlags::MemoryWrite;
-			barrier_after_index_upload.access_after_barrier = AccessFlags::IndexRead;
-			barrier_after_index_upload.old_state = ResourceState::CopyDestination;
-			barrier_after_index_upload.new_state = ResourceState::IndexBuffer;
-			barrier_after_index_upload.source_queue = QueueType::Graphics;
-			barrier_after_index_upload.destination_queue = QueueType::Graphics;
-			barrier_after_index_upload.buffer_memory_barrier.offset = 0;
-			barrier_after_index_upload.buffer_memory_barrier.size = num_index_bytes_to_upload;
-			barriers_after_upload.push_back(barrier_after_index_upload);
-		}
+        if(should_upload_index_buffer) {
+            ResourceBarrier barrier_after_index_upload = {};
+            barrier_after_index_upload.resource_to_barrier = cur_index_buffer;
+            barrier_after_index_upload.access_before_barrier = AccessFlags::MemoryWrite;
+            barrier_after_index_upload.access_after_barrier = AccessFlags::IndexRead;
+            barrier_after_index_upload.old_state = ResourceState::CopyDestination;
+            barrier_after_index_upload.new_state = ResourceState::IndexBuffer;
+            barrier_after_index_upload.source_queue = QueueType::Graphics;
+            barrier_after_index_upload.destination_queue = QueueType::Graphics;
+            barrier_after_index_upload.buffer_memory_barrier.offset = 0;
+            barrier_after_index_upload.buffer_memory_barrier.size = num_index_bytes_to_upload;
+            barriers_after_upload.push_back(barrier_after_index_upload);
+        }
 
-		if (barriers_after_upload.empty()) {
-			return;
-		}
+        if(barriers_after_upload.empty()) {
+            return;
+        }
 
         cmds->resource_barriers(PipelineStageFlags::Transfer, PipelineStageFlags::TopOfPipe, barriers_after_upload);
     }
