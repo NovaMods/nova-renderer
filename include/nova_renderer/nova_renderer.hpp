@@ -14,6 +14,7 @@
 #include "constants.hpp"
 #include "renderables.hpp"
 #include "util/container_accessor.hpp"
+#include "frontend/procedural_mesh.hpp"
 
 namespace spirv_cross {
     class CompilerGLSL;
@@ -21,8 +22,6 @@ namespace spirv_cross {
 } // namespace spirv_cross
 
 namespace nova::renderer {
-    class ProceduralMesh;
-
     namespace rhi {
         class Swapchain;
     }

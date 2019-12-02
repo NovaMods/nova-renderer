@@ -28,7 +28,7 @@ namespace nova::renderer {
          * \param index_buffer_size The number of bytes that the index buffer needs
          * \param device The device to create the buffers on
          */
-        ProceduralMesh(uint64_t vertex_buffer_size, uint64_t index_buffer_size, rhi::RenderEngine& device);
+        ProceduralMesh(uint64_t vertex_buffer_size, uint64_t index_buffer_size, rhi::RenderEngine* device);
 
         /*!
          * \brief Sets the data to upload to the vertex buffer
@@ -58,7 +58,7 @@ namespace nova::renderer {
         void record_commands_to_upload_data(rhi::CommandList* cmds, uint8_t frame_idx);
 
     private:
-        rhi::RenderEngine& render_engine;
+        rhi::RenderEngine* device;
 
         std::array<rhi::Buffer*, NUM_IN_FLIGHT_FRAMES> vertex_buffers;
         std::array<rhi::Buffer*, NUM_IN_FLIGHT_FRAMES> index_buffers;

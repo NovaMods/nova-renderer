@@ -10,8 +10,8 @@
 namespace nova::renderer {
     using namespace rhi;
 
-    ProceduralMesh::ProceduralMesh(const uint64_t vertex_buffer_size, const uint64_t index_buffer_size, RenderEngine& device)
-        : render_engine(device)
+    ProceduralMesh::ProceduralMesh(const uint64_t vertex_buffer_size, const uint64_t index_buffer_size, RenderEngine* device)
+        : device(device)
 #ifndef NDEBUG
           ,
           vertex_buffer_size(vertex_buffer_size),
@@ -24,7 +24,7 @@ namespace nova::renderer {
         const auto device_memory_size = host_memory_size * 3;
 
         // TODO: Don't allocate a separate device memory for each procedural mesh
-        device.allocate_device_memory(device_memory_size.b_count(), MemoryUsage::LowFrequencyUpload, ObjectType::Buffer)
+        device->allocate_device_memory(device_memory_size.b_count(), MemoryUsage::LowFrequencyUpload, ObjectType::Buffer)
             .map([&](DeviceMemory* memory) {
                 // TODO: Find a good way to keep these around
                 const auto
@@ -34,12 +34,12 @@ namespace nova::renderer {
 
                 const auto vertex_create_info = BufferCreateInfo{vertex_buffer_size, BufferUsage::VertexBuffer};
                 for(auto& vertex_buffer : vertex_buffers) {
-                    vertex_buffer = device.create_buffer(vertex_create_info, memory_resource);
+                    vertex_buffer = device->create_buffer(vertex_create_info, memory_resource);
                 }
 
                 const auto index_create_info = BufferCreateInfo{index_buffer_size, BufferUsage::IndexBuffer};
                 for(auto& index_buffer : index_buffers) {
-                    index_buffer = device.create_buffer(index_create_info, memory_resource);
+                    index_buffer = device->create_buffer(index_create_info, memory_resource);
                 }
 
                 return true;
@@ -49,7 +49,7 @@ namespace nova::renderer {
                 // TODO: Propagate the error
             });
 
-        device.allocate_device_memory(host_memory_size.b_count(), MemoryUsage::StagingBuffer, ObjectType::Buffer)
+        device->allocate_device_memory(host_memory_size.b_count(), MemoryUsage::StagingBuffer, ObjectType::Buffer)
             .map([&](DeviceMemory* memory) {
                 // TODO: Find a good way to keep these around
                 const auto
@@ -57,8 +57,8 @@ namespace nova::renderer {
                                                                                                        host_memory_size);
                 auto memory_resource = DeviceMemoryResource(memory, allocation_strategy.get());
 
-                cached_vertex_buffer = device.create_buffer({vertex_buffer_size, BufferUsage::StagingBuffer}, memory_resource);
-                cached_index_buffer = device.create_buffer({index_buffer_size, BufferUsage::StagingBuffer}, memory_resource);
+                cached_vertex_buffer = device->create_buffer({vertex_buffer_size, BufferUsage::StagingBuffer}, memory_resource);
+                cached_index_buffer = device->create_buffer({index_buffer_size, BufferUsage::StagingBuffer}, memory_resource);
 
                 return true;
             })
@@ -74,13 +74,13 @@ namespace nova::renderer {
             NOVA_LOG(ERROR) << "Cannot upload vertex data. There's only space for " << vertex_buffer_size << " bytes, you tried to upload "
                             << size << ". Truncating vertex data to fit";
 
-            render_engine.write_data_to_buffer(data, vertex_buffer_size, 0, cached_vertex_buffer);
+            device->write_data_to_buffer(data, vertex_buffer_size, 0, cached_vertex_buffer);
             num_vertex_bytes_to_upload = vertex_buffer_size;
 
         } else {
 #endif
 
-            render_engine.write_data_to_buffer(data, size, 0, cached_vertex_buffer);
+            device->write_data_to_buffer(data, size, 0, cached_vertex_buffer);
             num_vertex_bytes_to_upload = size;
 
 #ifndef NDEBUG
@@ -94,12 +94,12 @@ namespace nova::renderer {
             NOVA_LOG(ERROR) << "Cannot upload index data. There's only space for " << index_buffer_size << " bytes, you tried to upload "
                             << size << ". Truncating vertex data to fit";
 
-            render_engine.write_data_to_buffer(data, index_buffer_size, 0, cached_index_buffer);
+            device->write_data_to_buffer(data, index_buffer_size, 0, cached_index_buffer);
             num_index_bytes_to_upload = index_buffer_size;
 
         } else {
 #endif
-            render_engine.write_data_to_buffer(data, size, 0, cached_index_buffer);
+            device->write_data_to_buffer(data, size, 0, cached_index_buffer);
             num_index_bytes_to_upload = size;
 
 #ifndef NDEBUG

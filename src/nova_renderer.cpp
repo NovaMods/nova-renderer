@@ -147,6 +147,8 @@ namespace nova::renderer {
 
         rhi::CommandList* cmds = rhi->get_command_list(0, rhi::QueueType::Graphics);
 
+        // TODO: Upload procedural mesh staging buffers to the procedural meshes
+
         for(Renderpass& renderpass : renderpasses) {
             record_renderpass(renderpass, cmds);
         }
@@ -255,7 +257,7 @@ namespace nova::renderer {
         MeshId our_id = next_mesh_id;
         next_mesh_id++;
 
-        proc_meshes.emplace(our_id, ProceduralMesh(vertex_size, index_size, *rhi.get()));
+        proc_meshes.emplace(our_id, ProceduralMesh(vertex_size, index_size, rhi.get()));
 
         return MapAccessor<MeshId, ProceduralMesh>(proc_meshes, our_id);
     }
