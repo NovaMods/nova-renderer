@@ -7,9 +7,10 @@
 
 namespace nova::renderer {
     namespace rhi {
+        struct Buffer;
+
         class CommandList;
         class RenderEngine;
-        class Buffer;
     } // namespace rhi
 
     /*!

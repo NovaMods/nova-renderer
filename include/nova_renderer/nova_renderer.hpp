@@ -11,8 +11,8 @@
 #include "nova_renderer/render_engine.hpp"
 #include "nova_renderer/renderdoc_app.h"
 
-#include "../../src/render_engine/configuration.hpp"
 #include "renderables.hpp"
+#include "constants.hpp"
 
 namespace spirv_cross {
     class CompilerGLSL;

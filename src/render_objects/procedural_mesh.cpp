@@ -42,7 +42,7 @@ namespace nova::renderer {
                     index_buffer = device.create_buffer(index_create_info, memory_resource);
                 }
 
-                return ntl::Result<bool>(true);
+                return true;
             })
             .on_error([](const ntl::NovaError& error) {
                 NOVA_LOG(ERROR) << "Could not allocate device memory for procedural mesh. Error: " << error.to_string();
@@ -60,7 +60,7 @@ namespace nova::renderer {
                 cached_vertex_buffer = device.create_buffer({vertex_buffer_size, BufferUsage::StagingBuffer}, memory_resource);
                 cached_index_buffer = device.create_buffer({index_buffer_size, BufferUsage::StagingBuffer}, memory_resource);
 
-                return ntl::Result<bool>(true);
+                return true;
             })
             .on_error([](const ntl::NovaError& error) {
                 NOVA_LOG(ERROR) << "Could not allocate host memory for procedural mesh. Error: " << error.to_string();

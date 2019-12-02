@@ -97,6 +97,7 @@ set(NOVA_SOURCE
         include/nova_renderer/util/platform.hpp
         include/nova_renderer/util/result.hpp
         include/nova_renderer/util/utils.hpp
+        include/nova_renderer/util/container_accessor.hpp
 
         include/nova_renderer/command_list.hpp
         include/nova_renderer/device_memory_resource.hpp
