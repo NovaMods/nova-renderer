@@ -11,11 +11,17 @@ namespace nova::renderer {
     public:
         MapAccessor(std::unordered_map<KeyType, ValueType>* map, const KeyType key) : map(map), key(key) {}
 
-        ValueType* operator->() const {
+        MapAccessor(const MapAccessor& other) = default;
+        MapAccessor& operator=(const MapAccessor & other) = default;
+
+        MapAccessor(MapAccessor&& old) noexcept = default;
+        MapAccessor& operator=(MapAccessor&& old) noexcept = default;
+
+        [[nodiscard]] ValueType* operator->() const {
             return &map->at(key);
         }
 
-        KeyType get_key() const {
+        [[nodiscard]] KeyType get_key() const {
             return key;
         }
 
