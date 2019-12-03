@@ -26,7 +26,6 @@
 #include "nova_renderer/constants.hpp"
 
 #include "../../util/memory_utils.hpp"
-#include "../configuration.hpp"
 
 namespace nova::renderer::rhi {
     VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)

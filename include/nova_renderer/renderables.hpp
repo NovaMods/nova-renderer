@@ -1,6 +1,8 @@
 #pragma once
 
 #include <atomic>
+#include <string>
+#include <vector>
 
 #include <glm/glm.hpp>
 
@@ -53,7 +55,7 @@ namespace nova::renderer {
         std::vector<std::string> passes;
     };
 
-    struct RenderableBase {
+    struct RenderCommand {
         RenderableId id = 0;
 
         bool is_visible = true;
@@ -61,5 +63,7 @@ namespace nova::renderer {
         glm::mat4 model_matrix = glm::mat4(1);
     };
 
-    struct StaticMeshRenderCommand : RenderableBase {};
+    struct StaticMeshRenderCommand : RenderCommand {};
+
+    StaticMeshRenderCommand make_render_command(const StaticMeshRenderableData& data, RenderableId id);
 } // namespace nova::renderer

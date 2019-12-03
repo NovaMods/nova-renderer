@@ -42,7 +42,7 @@ namespace nova::renderer::rhi {
 
 // Only validate errors in debug mode
 // Release mode needs to be fast A F
-#ifndef NDEBUG
+#ifdef NOVA_DEBUG
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define NOVA_CHECK_RESULT(expr)                                                                                                            \
     {                                                                                                                                      \

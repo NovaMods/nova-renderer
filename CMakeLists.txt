@@ -36,6 +36,8 @@ option(NOVA_ENABLE_VULKAN_RHI "Compile the Vulkan RHI backend" ON)
 option(NOVA_ENABLE_D3D12_RHI "Compile the D3D12 RHI backend" ON)
 option(NOVA_ENABLE_OPENGL_RHI "Compile the OpenGL 3 backend" ON)
 
+option(NOVA_FORCE_DEBUGGING "Force compiling all the debugging and validation code" OFF)
+
 if(NOVA_ENABLE_D3D12_API AND NOT WIN32)
     message(WARNING "Nova can only compile its D3D12 RHI backend on Windows 10. You're now on Windows 10, so I'm disabling the D3D12 RHI backend")
     set(NOVA_ENABLE_D3D12_RHI_BACKEND OFF)
@@ -101,6 +103,7 @@ set(NOVA_SOURCE
         include/nova_renderer/util/platform.hpp
         include/nova_renderer/util/result.hpp
         include/nova_renderer/util/utils.hpp
+        include/nova_renderer/util/container_accessor.hpp
 
         include/nova_renderer/command_list.hpp
         include/nova_renderer/device_memory_resource.hpp
@@ -119,6 +122,7 @@ set(NOVA_SOURCE
         include/nova_renderer/bytes.hpp
         include/nova_renderer/polyalloc.hpp
         include/nova_renderer/constants.hpp
+        include/nova_renderer/frontend/procedural_mesh.hpp
 
         src/nova_renderer.cpp
         src/render_engine/render_engine.cpp
@@ -134,8 +138,10 @@ set(NOVA_SOURCE
         src/loading/json_utils.hpp
 
         src/settings/nova_settings.cpp
-
+		
+        src/render_objects/procedural_mesh.cpp
         src/render_objects/uniform_structs.hpp
+        src/render_objects/renderables.cpp
 
         src/util/logger.cpp
         src/util/logger.hpp
@@ -344,6 +350,13 @@ set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
 target_compile_definitions(nova-renderer PUBLIC FMT_STRING_ALIAS=1)
+
+if(NOVA_FORCE_DEBUGGING) 
+    target_compile_definitions(nova-renderer PUBLIC NOVA_DEBUG)
+else()
+    target_compile_definitions(nova-renderer PUBLIC $<$<CONFIG:Debug>:NOVA_DEBUG>)
+endif()
+
 target_include_directories(nova-renderer PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $ENV{VULKAN_SDK}/Include
@@ -367,26 +380,6 @@ if(NOVA_ENABLE_OPENGL_RHI)
 endif()
 
 include(GNUInstallDirs)
-
-# TODO: Never care about CMake packages ever again
-# install(
-#     TARGETS nova-renderer
-#     EXPORT nova-renderer-config
-#     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/
-#     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/
-#     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/
-# )
-# 
-# install(
-#     EXPORT nova-renderer-config DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/nova-renderer
-#     NAMESPACE nova-renderer::
-# )
-# 
-# install(
-#     DIRECTORY ${CMAKE_SOURCE_DIR}/src/
-#     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nova-renderer
-#     FILES_MATCHING PATTERN "*.hpp*"
-# )
 
 ##################################
 # Add extra warnings if possible #

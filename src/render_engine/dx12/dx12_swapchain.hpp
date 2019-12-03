@@ -25,7 +25,7 @@ namespace nova::renderer::rhi {
         ~DX12Swapchain() override = default;
 
 #pragma region Swapchain implementation
-        uint32_t acquire_next_swapchain_image() override;
+        uint8_t acquire_next_swapchain_image() override;
 
         void present(uint32_t image_idx) override;
 #pragma endregion

@@ -24,7 +24,7 @@ namespace nova::renderer::rhi {
         create_per_frame_resources(device);
     }
 
-    uint32_t DX12Swapchain::acquire_next_swapchain_image() { return swapchain->GetCurrentBackBufferIndex(); }
+    uint8_t DX12Swapchain::acquire_next_swapchain_image() { return static_cast<uint8_t>(swapchain->GetCurrentBackBufferIndex()); }
 
     void DX12Swapchain::present(uint32_t /* image_idx */) { swapchain->Present(0, DXGI_PRESENT_RESTRICT_TO_OUTPUT); }
 

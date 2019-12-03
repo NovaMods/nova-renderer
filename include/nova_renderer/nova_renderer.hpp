@@ -2,8 +2,8 @@
 
 #include <array>
 #include <memory>
-#include <string>
 #include <mutex>
+#include <string>
 
 #include "nova_renderer/device_memory_resource.hpp"
 #include "nova_renderer/nova_settings.hpp"
@@ -11,8 +11,10 @@
 #include "nova_renderer/render_engine.hpp"
 #include "nova_renderer/renderdoc_app.h"
 
-#include "../../src/render_engine/configuration.hpp"
+#include "constants.hpp"
 #include "renderables.hpp"
+#include "util/container_accessor.hpp"
+#include "frontend/procedural_mesh.hpp"
 
 namespace spirv_cross {
     class CompilerGLSL;
@@ -25,7 +27,7 @@ namespace nova::renderer {
     }
 
 #pragma region Runtime optimized data
-    template <typename RenderableType>
+    template <typename RenderCommandType>
     struct MeshBatch {
         rhi::Buffer* vertex_buffer = nullptr;
         rhi::Buffer* index_buffer = nullptr;
@@ -40,13 +42,34 @@ namespace nova::renderer {
          */
         rhi::Buffer* per_renderable_data = nullptr;
 
-        std::vector<RenderableType> renderables;
+        std::vector<RenderCommandType> commands;
+    };
+
+    template<typename RenderCommandType>
+    struct ProceduralMeshBatch {
+        MapAccessor<MeshId, ProceduralMesh> mesh;
+        
+        /*!
+         * \brief A buffer to hold all the per-draw data
+         *
+         * For example, a non-animated mesh just needs a mat4 for its model matrix
+         *
+         * This buffer gets re-written to every frame, since the number of renderables in this mesh batch might have changed. If there's
+         * more renderables than the buffer can hold, it gets reallocated from the RHI
+         */
+        rhi::Buffer* per_renderable_data = nullptr;
+
+        std::vector<RenderCommandType> commands;
+
+        ProceduralMeshBatch(std::unordered_map<MeshId, ProceduralMesh>& meshes, MeshId key) : mesh(meshes, key) {}
     };
 
     struct MaterialPass {
         // Descriptors for the material pass
 
         std::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
+        std::vector<ProceduralMeshBatch<StaticMeshRenderCommand>> static_procedural_mesh_draws;
+
         std::vector<rhi::DescriptorSet*> descriptor_sets;
         const rhi::PipelineInterface* pipeline_interface = nullptr;
     };
@@ -175,6 +198,11 @@ namespace nova::renderer {
         [[nodiscard]] MeshId create_mesh(const MeshData& mesh_data);
 
         /*!
+         * \brief Creates a procedural mesh, returning both its mesh id and 
+         */
+        [[nodiscard]] MapAccessor<MeshId, ProceduralMesh> create_procedural_mesh(uint64_t vertex_size, uint64_t index_size);
+
+        /*!
          * \brief Destroys the mesh with the provided ID, freeing up whatever VRAM it was using
          *
          * In debug builds, this method checks that no renderables are using the mesh
@@ -184,7 +212,8 @@ namespace nova::renderer {
         void destroy_mesh(MeshId mesh_to_destroy);
 #pragma endregion
 
-        RenderableId add_renderable_for_material(const FullMaterialPassName& material_name, const StaticMeshRenderableData& renderable);
+        [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
+                                                               const StaticMeshRenderableData& renderable);
 
         [[nodiscard]] rhi::RenderEngine* get_engine() const;
 
@@ -319,6 +348,7 @@ namespace nova::renderer {
         MeshId next_mesh_id = 0;
 
         std::unordered_map<MeshId, Mesh> meshes;
+        std::unordered_map<MeshId, ProceduralMesh> proc_meshes;
 #pragma endregion
 
 #pragma region Rendering
@@ -336,10 +366,10 @@ namespace nova::renderer {
         void record_renderpass(Renderpass& renderpass, rhi::CommandList* cmds);
 
         void record_pipeline(Pipeline& pipeline, rhi::CommandList* cmds);
-
         void record_material_pass(MaterialPass& pass, rhi::CommandList* cmds);
 
-        void record_rendering_static_mesh_batch(MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
+        void record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
+        void record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
 #pragma endregion
     };
 } // namespace nova::renderer
