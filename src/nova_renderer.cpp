@@ -896,7 +896,7 @@ namespace nova::renderer {
                 }
 
                 if (need_to_add_batch) {
-                    ProceduralMeshBatch<StaticMeshRenderCommand> batch(proc_meshes, renderable.mesh);
+                    ProceduralMeshBatch<StaticMeshRenderCommand> batch(&proc_meshes, renderable.mesh);
                     batch.commands.emplace_back(command);
 
                     material.static_procedural_mesh_draws.emplace_back(batch);
