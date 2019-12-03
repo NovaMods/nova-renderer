@@ -36,7 +36,7 @@ option(NOVA_ENABLE_VULKAN_RHI "Compile the Vulkan RHI backend" ON)
 option(NOVA_ENABLE_D3D12_RHI "Compile the D3D12 RHI backend" ON)
 option(NOVA_ENABLE_OPENGL_RHI "Compile the OpenGL 3 backend" ON)
 
-option(NOVA_FORCE_DEBUGGING "Force compiling all the debugging and validation code" ON)
+option(NOVA_FORCE_DEBUGGING "Force compiling all the debugging and validation code" OFF)
 
 if(NOVA_ENABLE_D3D12_API AND NOT WIN32)
     message(WARNING "Nova can only compile its D3D12 RHI backend on Windows 10. You're now on Windows 10, so I'm disabling the D3D12 RHI backend")
