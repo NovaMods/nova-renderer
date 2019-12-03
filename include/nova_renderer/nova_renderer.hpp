@@ -225,7 +225,9 @@ namespace nova::renderer {
 
     private:
         NovaSettingsAccessManager render_settings;
+
         std::unique_ptr<rhi::RenderEngine> rhi;
+        std::shared_ptr<Window> window;
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;

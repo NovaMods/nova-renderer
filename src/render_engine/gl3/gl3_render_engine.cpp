@@ -12,9 +12,9 @@
 
 namespace nova::renderer::rhi {
     Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(&mallocator, settings) {
-        window = std::make_unique<GlfwWindow>(settings.settings);
+        window = std::make_unique<Window>(settings.settings);
 
-        gladLoadGLLoader(GlfwWindow::get_gl_proc_address);
+        gladLoadGLLoader(Window::get_gl_proc_address);
 
         save_device_info();
 

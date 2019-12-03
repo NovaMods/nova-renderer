@@ -67,7 +67,7 @@ namespace nova::renderer {
 
         // Render one frame to upload mesh data
         renderer->execute_frame();
-        window.on_frame_end();
+        window.swap_backbuffer();
 
         StaticMeshRenderableData data = {};
         data.mesh = mesh_id;
@@ -77,7 +77,7 @@ namespace nova::renderer {
 
         while (!window.should_close()) {
             renderer->execute_frame();
-            window.on_frame_end();
+            window.swap_backbuffer();
         }
 
         NovaRenderer::deinitialize();

@@ -172,6 +172,8 @@ set(NOVA_SOURCE
 
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
+        
+        src/windowing/window.cpp
 
         src/memory/device_memory_resource.cpp
         src/memory/block_allocation_strategy.hpp
@@ -212,13 +214,9 @@ set(NOVA_HEADERS
 set(WINDOWS_NOVA_SOURCE
         src/util/windows_utils.cpp
         src/util/windows_utils.hpp
-        src/windowing/win32_window.hpp
-        src/windowing/win32_window.cpp
         )
 
 set(UNIX_NOVA_SOURCE
-        src/windowing/x11_window.cpp
-        src/windowing/x11_window.hpp
         src/util/linux_utils.cpp
         src/util/linux_utils.hpp
         )
@@ -270,8 +268,6 @@ if(NOVA_ENABLE_OPENGL_RHI)
             src/render_engine/gl3/glad/glad.h
             src/render_engine/gl3/glad.c
             src/render_engine/gl3/gl3_structs.hpp
-            src/windowing/glfw_window.cpp
-            src/windowing/glfw_window.hpp
             )
 endif()
 
