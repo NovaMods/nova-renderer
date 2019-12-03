@@ -23,7 +23,7 @@ namespace nova::renderer {
         const auto host_memory_size = aligned_vertex_buffer_size + aligned_index_buffer_size;
         const auto device_memory_size = host_memory_size * 3;
 
-        // TODO: Don't allocate a separate device memory for each procedural mesh
+        // TODO: Don't allocate a separate DeviceMemory for each procedural mesh
         device->allocate_device_memory(device_memory_size.b_count(), MemoryUsage::LowFrequencyUpload, ObjectType::Buffer)
             .map([&](DeviceMemory* memory) {
                 // TODO: Find a good way to keep these around
