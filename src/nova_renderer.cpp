@@ -262,7 +262,7 @@ namespace nova::renderer {
 
         proc_meshes.emplace(our_id, ProceduralMesh(vertex_size, index_size, rhi.get()));
 
-        return MapAccessor<MeshId, ProceduralMesh>(proc_meshes, our_id);
+        return MapAccessor<MeshId, ProceduralMesh>(&proc_meshes, our_id);
     }
 
     void NovaRenderer::load_shaderpack(const std::string& shaderpack_name) {
@@ -896,7 +896,7 @@ namespace nova::renderer {
                 }
 
                 if (need_to_add_batch) {
-                    ProceduralMeshBatch<StaticMeshRenderCommand> batch(proc_meshes, renderable.mesh);
+                    ProceduralMeshBatch<StaticMeshRenderCommand> batch(&proc_meshes, renderable.mesh);
                     batch.commands.emplace_back(command);
 
                     material.static_procedural_mesh_draws.emplace_back(batch);

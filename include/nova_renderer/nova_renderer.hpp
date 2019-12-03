@@ -61,7 +61,7 @@ namespace nova::renderer {
 
         std::vector<RenderCommandType> commands;
 
-        ProceduralMeshBatch(std::unordered_map<MeshId, ProceduralMesh>& meshes, MeshId key) : mesh(meshes, key) {}
+        ProceduralMeshBatch(std::unordered_map<MeshId, ProceduralMesh>* meshes, const MeshId key) : mesh(meshes, key) {}
     };
 
     struct MaterialPass {
