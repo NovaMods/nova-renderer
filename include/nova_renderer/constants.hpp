@@ -5,8 +5,8 @@
 #include <string>
 
 namespace nova::renderer {
-    constexpr std::string_view MODEL_MATRIX_BUFFER_NAME = "NovaModelMatrixUBO";
-    constexpr std::string_view PER_FRAME_DATA_NAME = "NovaPerFrameUBO";
+    const std::string MODEL_MATRIX_BUFFER_NAME = "NovaModelMatrixUBO";
+    const std::string PER_FRAME_DATA_NAME = "NovaPerFrameUBO";
 
     constexpr uint32_t AMD_PCI_VENDOR_ID = 0x1022;
     constexpr uint32_t INTEL_PCI_VENDOR_ID = 8086;
