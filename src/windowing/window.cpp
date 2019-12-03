@@ -1,6 +1,10 @@
 #include "nova_renderer/window.hpp"
 
 #include <GLFW/glfw3.h>
+#if WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#endif
+#include <GLFW/glfw3native.h>
 
 #include "nova_renderer/nova_renderer.hpp"
 
@@ -79,6 +83,10 @@ namespace nova::renderer {
 
         return {width, height};
     }
+
+#if WIN32
+    HWND Window::get_window_handle() const { return glfwGetWin32Window(window); }
+#endif
 
 #if NOVA_OPENGL_RHI
     void Window::swap_backbuffer() const { glfwSwapBuffers(window); }

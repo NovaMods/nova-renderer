@@ -212,6 +212,7 @@ set(NOVA_HEADERS
 # Select platform dependent code #
 ##################################
 set(WINDOWS_NOVA_SOURCE
+        src/util/windows.hpp
         src/util/windows_utils.cpp
         src/util/windows_utils.hpp
         )

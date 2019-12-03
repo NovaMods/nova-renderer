@@ -63,8 +63,6 @@ namespace nova::renderer::rhi {
          */
         virtual ~RenderEngine() = default;
 
-        [[nodiscard]] Window& get_window() const;
-
         /*!
          * \brief Allows the user to set an allocator that will be used for per-shaderpack objects. This allocator will
          * be cleaned up wen a new shaderpack is loaded, so I don't need to worry about cleaning up my memory before
@@ -239,7 +237,7 @@ namespace nova::renderer::rhi {
                                          const std::vector<Semaphore*>& signal_semaphores = {}) = 0;
 
     protected:
-        std::unique_ptr<Window> window;
+        std::shared_ptr<Window> window;
 
         glm::uvec2 swapchain_size = {};
         Swapchain* swapchain = nullptr;
@@ -250,6 +248,7 @@ namespace nova::renderer::rhi {
          * \brief Initializes the engine, does **NOT** open any window
          * \param allocator The allocator nova is using
          * \param settings The settings passed to nova
+         * \param window The OS window that we'll be rendering to
          *
          * Intentionally does nothing. This constructor serves mostly to ensure that concrete render engines have a
          * constructor that takes in some settings
@@ -257,10 +256,8 @@ namespace nova::renderer::rhi {
          * \attention Called by the various render engine implementations
          */
         explicit RenderEngine(bvestl::polyalloc::Allocator* allocator,
-                              NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)
-            : settings(settings),
-              swapchain_size(settings.settings.window.width, settings.settings.window.height),
-              shaderpack_allocator(allocator){};
+                              NovaSettingsAccessManager& settings,
+                              const std::shared_ptr<Window> window);
 
         template <typename AllocType>
         AllocType* new_object() {

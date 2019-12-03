@@ -836,18 +836,15 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void D3D12RenderEngine::open_window_and_create_swapchain(const NovaSettings::WindowOptions& options, const uint32_t num_frames) {
-        window = std::make_unique<Win32Window>(options);
-
-        auto* win32_window = static_cast<Win32Window*>(window.get());
-
-        const auto window_handle = win32_window->get_window_handle();
+    void D3D12RenderEngine::create_swapchain(const uint32_t num_frames) {
+        const auto window_handle = window->get_window_handle();
+        const auto window_size = window->get_window_size();
 
         swapchain = new DX12Swapchain(this,
                                       dxgi_factory.Get(),
                                       device.Get(),
                                       window_handle,
-                                      glm::uvec2{options.height, options.width},
+                                      glm::uvec2{ window_size.x, window_size.y},
                                       num_frames,
                                       direct_command_queue.Get());
     }

@@ -100,21 +100,21 @@ namespace nova::renderer {
 #if defined(NOVA_WINDOWS) && defined(NOVA_D3D12_RHI)
             {
                 MTR_SCOPE("Init", "InitDirect3D12RenderEngine");
-                rhi = std::make_unique<rhi::D3D12RenderEngine>(render_settings);
+                rhi = std::make_unique<rhi::D3D12RenderEngine>(render_settings, window);
             } break;
 #endif
 
 #if defined(NOVA_VULKAN_RHI)
             case GraphicsApi::Vulkan: {
                 MTR_SCOPE("Init", "InitVulkanRenderEngine");
-                rhi = std::make_unique<rhi::VulkanRenderEngine>(render_settings);
+                rhi = std::make_unique<rhi::VulkanRenderEngine>(render_settings, window);
             } break;
 #endif
 
 #if defined(NOVA_OPENGL_RHI)
             case GraphicsApi::NvGl4: {
                 MTR_SCOPE("Init", "InitGL3RenderEngine");
-                rhi = std::make_unique<rhi::Gl4NvRenderEngine>(render_settings);
+                rhi = std::make_unique<rhi::Gl4NvRenderEngine>(render_settings, window);
             } break;
 #endif
             default: {
@@ -811,29 +811,29 @@ namespace nova::renderer {
         }
     }
 
-    void NovaRenderer::record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds) {
+    void NovaRenderer::record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
+                                                          rhi::CommandList* cmds) {
         const uint32_t start_index = cur_model_matrix_index;
 
-        for (const StaticMeshRenderCommand& command : batch.commands) {
-            if (command.is_visible) {
+        for(const StaticMeshRenderCommand& command : batch.commands) {
+            if(command.is_visible) {
                 auto* model_matrix_buffer = builtin_buffers.at(MODEL_MATRIX_BUFFER_NAME);
                 rhi->write_data_to_buffer(&command.model_matrix,
-                    sizeof(glm::mat4),
-                    cur_model_matrix_index * sizeof(glm::mat4),
-                    model_matrix_buffer);
+                                          sizeof(glm::mat4),
+                                          cur_model_matrix_index * sizeof(glm::mat4),
+                                          model_matrix_buffer);
                 cur_model_matrix_index++;
             }
         }
 
-        if (start_index != cur_model_matrix_index) {
-        const auto& [vertex_buffer, index_buffer] = batch.mesh->get_buffers_for_frame(cur_frame_idx);
+        if(start_index != cur_model_matrix_index) {
+            const auto& [vertex_buffer, index_buffer] = batch.mesh->get_buffers_for_frame(cur_frame_idx);
             // TODO: There's probably a better way to do this
-            const std::vector<rhi::Buffer*> vertex_buffers = { 7, vertex_buffer };
+            const std::vector<rhi::Buffer*> vertex_buffers = {7, vertex_buffer};
             cmds->bind_vertex_buffers(vertex_buffers);
             cmds->bind_index_buffer(index_buffer);
 
-            cmds->draw_indexed_mesh(static_cast<uint32_t>(index_buffer->size / sizeof(uint32_t)),
-                cur_model_matrix_index - start_index);
+            cmds->draw_indexed_mesh(static_cast<uint32_t>(index_buffer->size / sizeof(uint32_t)), cur_model_matrix_index - start_index);
         }
     }
 
@@ -886,8 +886,8 @@ namespace nova::renderer {
             if(renderable.is_static) {
                 bool need_to_add_batch = false;
 
-                for (ProceduralMeshBatch<StaticMeshRenderCommand>& batch : material.static_procedural_mesh_draws) {
-                    if (batch.mesh.get_key() == renderable.mesh) {
+                for(ProceduralMeshBatch<StaticMeshRenderCommand>& batch : material.static_procedural_mesh_draws) {
+                    if(batch.mesh.get_key() == renderable.mesh) {
                         batch.commands.emplace_back(command);
 
                         need_to_add_batch = false;
@@ -895,7 +895,7 @@ namespace nova::renderer {
                     }
                 }
 
-                if (need_to_add_batch) {
+                if(need_to_add_batch) {
                     ProceduralMeshBatch<StaticMeshRenderCommand> batch(&proc_meshes, renderable.mesh);
                     batch.commands.emplace_back(command);
 
@@ -910,6 +910,8 @@ namespace nova::renderer {
     }
 
     rhi::RenderEngine* NovaRenderer::get_engine() const { return rhi.get(); }
+
+    std::shared_ptr<Window> NovaRenderer::get_window() const { return window; }
 
     NovaRenderer* NovaRenderer::get_instance() { return instance.get(); }
 

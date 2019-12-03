@@ -36,7 +36,7 @@ namespace nova::renderer::rhi {
      */
     class D3D12RenderEngine final : public RenderEngine {
     public:
-        explicit D3D12RenderEngine(NovaSettingsAccessManager& settings);
+        explicit D3D12RenderEngine(NovaSettingsAccessManager& settings, std::shared_ptr<Window> window);
 
         D3D12RenderEngine(D3D12RenderEngine&& old) noexcept = delete;
         D3D12RenderEngine& operator=(D3D12RenderEngine&& old) noexcept = delete;
@@ -120,7 +120,7 @@ namespace nova::renderer::rhi {
                                  const std::vector<Semaphore*>& wait_semaphores = {},
                                  const std::vector<Semaphore*>& signal_semaphores = {}) override;
 
-        void open_window_and_create_swapchain(const NovaSettings::WindowOptions& options, uint32_t num_frames);
+        void create_swapchain(uint32_t num_frames);
 
     private:
         D3D12DeviceCapabilities d3d12_capabilities;

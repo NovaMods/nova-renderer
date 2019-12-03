@@ -7,6 +7,10 @@
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/window.hpp"
 
+#if WIN32
+#include "nova_renderer/util/windows.hpp"
+#endif
+
 // ReSharper disable once CppInconsistentNaming
 struct GLFWwindow;
 
@@ -44,6 +48,16 @@ namespace nova::renderer {
         [[nodiscard]] bool should_close() const;
 
         [[nodiscard]] glm::uvec2 get_window_size() const;
+
+#if WIN32
+        [[nodiscard]] HWND get_window_handle() const;
+
+#elif __linux__
+        [[nodiscard]] Window get_window_handle() const;
+
+        [[nodiscard]] Display* get_display() const;
+
+#endif
 
 #if NOVA_OPENGL_RHI
         void swap_backbuffer() const;
