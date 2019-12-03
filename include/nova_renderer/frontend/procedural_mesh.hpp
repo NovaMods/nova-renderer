@@ -76,7 +76,7 @@ namespace nova::renderer {
         uint64_t num_vertex_bytes_to_upload = 0;
         uint64_t num_index_bytes_to_upload = 0;
 
-#ifndef NDEBUG
+#ifdef NOVA_DEBUG
         uint64_t vertex_buffer_size;
         uint64_t index_buffer_size;
 #endif

@@ -26,7 +26,7 @@ namespace nova::renderer::rhi {
 
     [[nodiscard]] std::string to_string(HRESULT hr);
 
-#ifndef NDEBUG
+#ifdef NOVA_DEBUG
 #define CHECK_ERROR(expr, msg)                                                                                                             \
     {                                                                                                                                      \
         HRESULT hr = expr;                                                                                                                 \

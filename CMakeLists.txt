@@ -344,6 +344,9 @@ set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
 target_compile_definitions(nova-renderer PUBLIC FMT_STRING_ALIAS=1)
+if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+    target_compile_definitions(nova-renderer PUBLIC NOVA_DEBUG)
+endif()
 target_include_directories(nova-renderer PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $ENV{VULKAN_SDK}/Include
@@ -367,26 +370,6 @@ if(NOVA_ENABLE_OPENGL_RHI)
 endif()
 
 include(GNUInstallDirs)
-
-# TODO: Never care about CMake packages ever again
-# install(
-#     TARGETS nova-renderer
-#     EXPORT nova-renderer-config
-#     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/
-#     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/
-#     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/
-# )
-# 
-# install(
-#     EXPORT nova-renderer-config DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/nova-renderer
-#     NAMESPACE nova-renderer::
-# )
-# 
-# install(
-#     DIRECTORY ${CMAKE_SOURCE_DIR}/src/
-#     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nova-renderer
-#     FILES_MATCHING PATTERN "*.hpp*"
-# )
 
 ##################################
 # Add extra warnings if possible #
