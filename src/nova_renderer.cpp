@@ -828,13 +828,7 @@ namespace nova::renderer {
         if (start_index != cur_model_matrix_index) {
         const auto& [vertex_buffer, index_buffer] = batch.mesh->get_buffers_for_frame(cur_frame_idx);
             // TODO: There's probably a better way to do this
-            const std::vector<rhi::Buffer*> vertex_buffers = { vertex_buffer,
-                                                              vertex_buffer,
-                                                              vertex_buffer,
-                                                              vertex_buffer,
-                                                              vertex_buffer,
-                                                              vertex_buffer,
-                                                              vertex_buffer };
+            const std::vector<rhi::Buffer*> vertex_buffers = { 7, vertex_buffer };
             cmds->bind_vertex_buffers(vertex_buffers);
             cmds->bind_index_buffer(index_buffer);
 
