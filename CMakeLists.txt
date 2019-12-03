@@ -344,9 +344,8 @@ set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
 target_compile_definitions(nova-renderer PUBLIC FMT_STRING_ALIAS=1)
-if(CMAKE_BUILD_TYPE MATCHES DEBUG)
-    target_compile_definitions(nova-renderer PUBLIC NOVA_DEBUG)
-endif()
+target_compile_definitions(nova-renderer PUBLIC $<$<CONFIG:Debug>:NOVA_DEBUG>)
+
 target_include_directories(nova-renderer PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $ENV{VULKAN_SDK}/Include
