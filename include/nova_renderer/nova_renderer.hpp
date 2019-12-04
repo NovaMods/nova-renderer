@@ -12,9 +12,9 @@
 #include "nova_renderer/renderdoc_app.h"
 
 #include "constants.hpp"
+#include "frontend/procedural_mesh.hpp"
 #include "renderables.hpp"
 #include "util/container_accessor.hpp"
-#include "frontend/procedural_mesh.hpp"
 
 namespace spirv_cross {
     class CompilerGLSL;
@@ -45,10 +45,10 @@ namespace nova::renderer {
         std::vector<RenderCommandType> commands;
     };
 
-    template<typename RenderCommandType>
+    template <typename RenderCommandType>
     struct ProceduralMeshBatch {
         MapAccessor<MeshId, ProceduralMesh> mesh;
-        
+
         /*!
          * \brief A buffer to hold all the per-draw data
          *
@@ -198,7 +198,7 @@ namespace nova::renderer {
         [[nodiscard]] MeshId create_mesh(const MeshData& mesh_data);
 
         /*!
-         * \brief Creates a procedural mesh, returning both its mesh id and 
+         * \brief Creates a procedural mesh, returning both its mesh id and
          */
         [[nodiscard]] MapAccessor<MeshId, ProceduralMesh> create_procedural_mesh(uint64_t vertex_size, uint64_t index_size);
 
@@ -217,6 +217,8 @@ namespace nova::renderer {
 
         [[nodiscard]] rhi::RenderEngine* get_engine() const;
 
+        [[nodiscard]] std::shared_ptr<NovaWindow> get_window() const;
+
         static NovaRenderer* initialize(const NovaSettings& settings);
 
         static NovaRenderer* get_instance();
@@ -225,7 +227,9 @@ namespace nova::renderer {
 
     private:
         NovaSettingsAccessManager render_settings;
+
         std::unique_ptr<rhi::RenderEngine> rhi;
+        std::shared_ptr<NovaWindow> window;
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;

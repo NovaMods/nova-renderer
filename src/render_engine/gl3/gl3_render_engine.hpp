@@ -1,11 +1,11 @@
 #pragma once
 
 #include "nova_renderer/render_engine.hpp"
+#include "nova_renderer/window.hpp"
 
 // BE CAREFUL WHERE WE INCLUDE GLAD
 #include "glad/glad.h"
 
-#include "../../windowing/glfw_window.hpp"
 #include "gl3_command_list.hpp"
 
 // TODO: Don't always use mallocator
@@ -21,7 +21,7 @@ namespace nova::renderer::rhi {
      */
     class Gl4NvRenderEngine final : public RenderEngine {
     public:
-        explicit Gl4NvRenderEngine(NovaSettingsAccessManager& settings);
+        Gl4NvRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window);
 
         Gl4NvRenderEngine(Gl4NvRenderEngine&& other) = delete;
         Gl4NvRenderEngine& operator=(Gl4NvRenderEngine&& other) noexcept = delete;

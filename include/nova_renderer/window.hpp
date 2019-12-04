@@ -1,36 +1,77 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <functional>
 
-#include "nova_renderer/util/utils.hpp"
+#include <glm/vec2.hpp>
+
+#include "nova_renderer/nova_settings.hpp"
+#include "nova_renderer/util/platform.hpp"
+#include "nova_renderer/window.hpp"
+
+#if NOVA_WINDOWS
+#include "nova_renderer/util/windows.hpp"
+
+#elif NOVA_LINUX
+#include "nova_renderer/util/x11_but_good.hpp"
+#endif
+
+// ReSharper disable once CppInconsistentNaming
+struct GLFWwindow;
 
 namespace nova::renderer {
-    /*!
-     * \brief A platform-independent window interface
+    /**
+     * \brief GLFW wrapper that does a few nice things that Nova likes
      */
-    class Window {
+    class NovaWindow {
     public:
-        virtual ~Window() = default;
+        explicit NovaWindow(const NovaSettings& options);
+        ~NovaWindow();
+        NovaWindow(NovaWindow&& other) noexcept = delete;
+        NovaWindow& operator=(NovaWindow&& other) noexcept = delete;
+
+        NovaWindow(const NovaWindow& other) = delete;
+        NovaWindow& operator=(const NovaWindow& other) = delete;
 
         /*!
-         * \brief Handles what should happen when the frame is done. This includes telling the operating system that
-         * we're still alive
-         */
-        virtual void on_frame_end() = 0;
-
-        /*!
-         * \brief Returns true if the window should close
+         * \brief Registers a new key input callback
          *
-         * While a fully native program can handle program shutdown entirely on its own, Nova needs a way for the game
-         * it's running in to know if the user has requested window closing. This method is that way
+         * This callback will key called for every key press event that this window receives
+         *
+         * \param key_callback Callback for when a key is received. Intentionally a std::function so I can easily add
+         * it to a vector
          */
-        [[nodiscard]] virtual bool should_close() const = 0;
+        void register_key_callback(std::function<void(uint32_t)>&& key_callback);
 
         /*!
-         * \brief Gets the current window size
-         *
-         * \return The current size of the window
+         * \brief Sends the provided key to all registered key callbacks
          */
-        [[nodiscard]] virtual glm::uvec2 get_window_size() const = 0;
+        void process_key(int key);
+
+        void poll_input() const;
+
+        [[nodiscard]] bool should_close() const;
+
+        [[nodiscard]] glm::uvec2 get_window_size() const;
+
+#if NOVA_WINDOWS
+        [[nodiscard]] HWND get_window_handle() const;
+
+#elif NOVA_LINUX
+        [[nodiscard]] Window get_window_handle() const;
+
+        [[nodiscard]] Display* get_display() const;
+
+#endif
+
+#if NOVA_OPENGL_RHI
+        void swap_backbuffer() const;
+
+        static void* get_gl_proc_address(const char* proc_name);
+#endif
+
+    private:
+        GLFWwindow* window = nullptr;
+
+        std::vector<std::function<void(uint32_t)>> key_callbacks;
     };
 } // namespace nova::renderer

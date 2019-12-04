@@ -4,6 +4,7 @@
 #include <set>
 
 #include "nova_renderer/allocation_structs.hpp"
+#include "nova_renderer/window.hpp"
 
 #include "../../util/logger.hpp"
 #include "vk_structs.hpp"
@@ -14,12 +15,9 @@
 #ifdef NOVA_LINUX
 #define NOVA_VK_XLIB
 #include "../../util/linux_utils.hpp"
-#include "../../windowing/x11_window.hpp"
 
 #elif defined(NOVA_WINDOWS)
-#define NOVA_USE_WIN32
-#include "../../util/windows.hpp"
-#include "../../windowing/win32_window.hpp"
+#include "nova_renderer/util/windows.hpp"
 
 #endif
 
@@ -28,15 +26,15 @@
 #include "../../util/memory_utils.hpp"
 
 namespace nova::renderer::rhi {
-    VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings) // NOLINT(cppcoreguidelines-pro-type-member-init)
-        : RenderEngine(&mallocator, settings) {
+    VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window)
+        : RenderEngine(&mallocator, settings, window) {
         create_instance();
 
         if(settings.settings.debug.enabled) {
             enable_debug_output();
         }
 
-        open_window_and_create_surface(settings.settings.window);
+        create_surface();
 
         create_device_and_queues();
 
@@ -1103,29 +1101,22 @@ namespace nova::renderer::rhi {
         return 999999; // Will probably cause a crash, which is actually what we want rn
     }
 
-    void VulkanRenderEngine::open_window_and_create_surface(const NovaSettings::WindowOptions& options) {
+    void VulkanRenderEngine::create_surface() {
 #ifdef NOVA_LINUX
-        window = std::make_unique<X11Window>(options);
-
         VkXlibSurfaceCreateInfoKHR x_surface_create_info;
         x_surface_create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
         x_surface_create_info.pNext = nullptr;
         x_surface_create_info.flags = 0;
 
-        auto* x11_window_ptr = dynamic_cast<X11Window*>(window.get());
-        x_surface_create_info.dpy = x11_window_ptr->get_display();
-        x_surface_create_info.window = x11_window_ptr->get_x11_window();
+        x_surface_create_info.dpy = window->get_display();
+        x_surface_create_info.window = window->get_window_handle();
 
         NOVA_CHECK_RESULT(vkCreateXlibSurfaceKHR(instance, &x_surface_create_info, nullptr, &surface));
 
 #elif defined(NOVA_WINDOWS)
-        window = std::make_unique<Win32Window>(options);
-
         VkWin32SurfaceCreateInfoKHR win32_surface_create = {};
         win32_surface_create.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-        Window* window_ptr = window.get();
-        auto* win32_window_ptr = static_cast<Win32Window*>(window_ptr);
-        win32_surface_create.hwnd = win32_window_ptr->get_window_handle();
+        win32_surface_create.hwnd = window->get_window_handle();
 
         NOVA_CHECK_RESULT(vkCreateWin32SurfaceKHR(instance, &win32_surface_create, nullptr, &surface));
 

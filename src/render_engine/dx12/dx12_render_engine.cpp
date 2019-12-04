@@ -4,33 +4,33 @@
 #include <spirv_hlsl.hpp>
 #pragma warning pop
 
+#include "nova_renderer/constants.hpp"
 #include "nova_renderer/util/platform.hpp"
 
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "../../util/logger.hpp"
 #include "../../util/windows_utils.hpp"
-#include "../../windowing/win32_window.hpp"
 #include "d3dx12.h"
 #include "dx12_command_list.hpp"
 #include "dx12_render_engine.hpp"
 #include "dx12_structs.hpp"
 #include "dx12_swapchain.hpp"
 #include "dx12_utils.hpp"
-#include "nova_renderer/constants.hpp"
 using Microsoft::WRL::ComPtr;
 
 #define CPU_FENCE_SIGNALED 16
 #define GPU_FENCE_SIGNALED 32
 
 namespace nova::renderer::rhi {
-    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(&mallocator, settings) {
+    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window)
+        : RenderEngine(&mallocator, settings, window) {
         create_device();
 
         create_queues();
 
         create_command_allocators();
 
-        open_window_and_create_swapchain(settings.settings.window, settings.settings.max_in_flight_frames);
+        create_swapchain(settings.settings.max_in_flight_frames);
 
         rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
         dsv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
@@ -836,18 +836,15 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void D3D12RenderEngine::open_window_and_create_swapchain(const NovaSettings::WindowOptions& options, const uint32_t num_frames) {
-        window = std::make_unique<Win32Window>(options);
-
-        auto* win32_window = static_cast<Win32Window*>(window.get());
-
-        const auto window_handle = win32_window->get_window_handle();
+    void D3D12RenderEngine::create_swapchain(const uint32_t num_frames) {
+        const auto window_handle = window->get_window_handle();
+        const auto window_size = window->get_window_size();
 
         swapchain = new DX12Swapchain(this,
                                       dxgi_factory.Get(),
                                       device.Get(),
                                       window_handle,
-                                      glm::uvec2{options.height, options.width},
+                                      glm::uvec2{window_size.x, window_size.y},
                                       num_frames,
                                       direct_command_queue.Get());
     }

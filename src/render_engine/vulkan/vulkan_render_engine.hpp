@@ -45,7 +45,7 @@ namespace nova::renderer::rhi {
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
         PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;
 
-        VulkanRenderEngine(NovaSettingsAccessManager& settings);
+        VulkanRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window);
 
         VulkanRenderEngine(VulkanRenderEngine&& old) noexcept = delete;
         VulkanRenderEngine& operator=(VulkanRenderEngine&& old) noexcept = delete;
@@ -123,7 +123,7 @@ namespace nova::renderer::rhi {
         [[nodiscard]] uint32_t get_queue_family_index(QueueType type) const;
 
     protected:
-        void open_window_and_create_surface(const NovaSettings::WindowOptions& options);
+        void create_surface();
 
     private:
         VulkanDeviceInfo vk_info;
