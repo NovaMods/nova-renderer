@@ -10,6 +10,9 @@
 
 #if NOVA_WINDOWS
 #include "nova_renderer/util/windows.hpp"
+
+#elif NOVA_LINUX
+#include <X11/Xlib.h>
 #endif
 
 // ReSharper disable once CppInconsistentNaming
