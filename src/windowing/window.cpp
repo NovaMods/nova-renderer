@@ -1,8 +1,18 @@
 #include "nova_renderer/window.hpp"
 
-#include "nova_renderer/util/platform.hpp"
+#include <GLFW/glfw3.h>
+#if NOVA_WINDOWS
+#define GLFW_EXPOSE_NATIVE_WIN32
+#elif NOVA_LINUX
+typedef int Bool;   // Because X11 is stupid
+#define GLFW_EXPOSE_NATIVE_X11
+#endif
+// We have to include this here so it exists before we #undef Bool, but ReSharper doesn't know the horrors of X11
+// ReSharper disable once CppUnusedIncludeDirective
+#include <GLFW/glfw3native.h>
 
 #include "nova_renderer/nova_renderer.hpp"
+#include "nova_renderer/util/platform.hpp"
 
 #include "../util/logger.hpp"
 
