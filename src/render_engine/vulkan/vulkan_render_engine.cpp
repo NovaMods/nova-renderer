@@ -27,7 +27,7 @@
 #include "../../util/memory_utils.hpp"
 
 namespace nova::renderer::rhi {
-    VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings, std::shared_ptr<Window> window)
+    VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<Window> window)
         : RenderEngine(&mallocator, settings, window) {
         create_instance();
 
@@ -35,7 +35,7 @@ namespace nova::renderer::rhi {
             enable_debug_output();
         }
 
-        open_window_and_create_surface(settings.settings.window);
+        create_surface();
 
         create_device_and_queues();
 
@@ -1102,16 +1102,15 @@ namespace nova::renderer::rhi {
         return 999999; // Will probably cause a crash, which is actually what we want rn
     }
 
-    void VulkanRenderEngine::create_surface(const NovaSettings::WindowOptions& options) {
+    void VulkanRenderEngine::create_surface() {
 #ifdef NOVA_LINUX
         VkXlibSurfaceCreateInfoKHR x_surface_create_info;
         x_surface_create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
         x_surface_create_info.pNext = nullptr;
         x_surface_create_info.flags = 0;
 
-        auto* x11_window_ptr = dynamic_cast<X11Window*>(window.get());
-        x_surface_create_info.dpy = x11_window_ptr->get_display();
-        x_surface_create_info.window = x11_window_ptr->get_window_handle();
+        x_surface_create_info.dpy = window->get_display();
+        x_surface_create_info.window = window->get_window_handle();
 
         NOVA_CHECK_RESULT(vkCreateXlibSurfaceKHR(instance, &x_surface_create_info, nullptr, &surface));
 

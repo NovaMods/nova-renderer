@@ -3,6 +3,8 @@
 #include <GLFW/glfw3.h>
 #if WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
+#elif __linux__
+#define GLFW_EXPOSE_NATIVE_X11
 #endif
 #include <GLFW/glfw3native.h>
 
@@ -86,6 +88,11 @@ namespace nova::renderer {
 
 #if WIN32
     HWND Window::get_window_handle() const { return glfwGetWin32Window(window); }
+
+#elif __linux__
+    Window Window::get_window_handle() const { return glfwGetX11Window(window); };
+
+    Display* Window::get_display() const { return glfwGetX11Display(window); };
 #endif
 
 #if NOVA_OPENGL_RHI

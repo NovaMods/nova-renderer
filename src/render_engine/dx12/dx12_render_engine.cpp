@@ -9,7 +9,6 @@
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "../../util/logger.hpp"
 #include "../../util/windows_utils.hpp"
-#include "../../windowing/win32_window.hpp"
 #include "d3dx12.h"
 #include "dx12_command_list.hpp"
 #include "dx12_render_engine.hpp"
@@ -23,14 +22,14 @@ using Microsoft::WRL::ComPtr;
 #define GPU_FENCE_SIGNALED 32
 
 namespace nova::renderer::rhi {
-    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings) : RenderEngine(&mallocator, settings) {
+    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings, std::shared_ptr<Window> window) : RenderEngine(&mallocator, settings, window) {
         create_device();
 
         create_queues();
 
         create_command_allocators();
 
-        open_window_and_create_swapchain(settings.settings.window, settings.settings.max_in_flight_frames);
+        create_swapchain(settings.settings.max_in_flight_frames);
 
         rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
         dsv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
