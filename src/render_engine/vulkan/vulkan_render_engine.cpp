@@ -17,7 +17,6 @@
 #include "../../util/linux_utils.hpp"
 
 #elif defined(NOVA_WINDOWS)
-#define NOVA_USE_WIN32
 #include "nova_renderer/util/windows.hpp"
 
 #endif

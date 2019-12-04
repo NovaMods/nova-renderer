@@ -5,7 +5,7 @@
 #include "nova_renderer/util/utils.hpp"
 
 #if defined(NOVA_WINDOWS)
-#include "../util/windows.hpp"
+#include "nova_renderer/util/windows.hpp"
 #include "../util/windows_utils.hpp"
 
 // Fucking hell

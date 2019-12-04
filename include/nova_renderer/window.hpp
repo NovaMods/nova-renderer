@@ -6,8 +6,9 @@
 
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/window.hpp"
+#include "nova_renderer/util/platform.hpp"
 
-#if WIN32
+#if NOVA_WINDOWS
 #include "nova_renderer/util/windows.hpp"
 #endif
 
@@ -49,10 +50,10 @@ namespace nova::renderer {
 
         [[nodiscard]] glm::uvec2 get_window_size() const;
 
-#if WIN32
+#if NOVA_WINDOWS
         [[nodiscard]] HWND get_window_handle() const;
 
-#elif __linux__
+#elif NOVA_LINUX
         [[nodiscard]] Window get_window_handle() const;
 
         [[nodiscard]] Display* get_display() const;

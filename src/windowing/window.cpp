@@ -1,9 +1,11 @@
 #include "nova_renderer/window.hpp"
 
+#include "nova_renderer/util/platform.hpp"
+
 #include <GLFW/glfw3.h>
-#if WIN32
+#if NOVA_WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
-#elif __linux__
+#elif NOVA_LINUX
 #define GLFW_EXPOSE_NATIVE_X11
 #endif
 #include <GLFW/glfw3native.h>
@@ -86,10 +88,10 @@ namespace nova::renderer {
         return {width, height};
     }
 
-#if WIN32
+#if NOVA_WINDOWS
     HWND Window::get_window_handle() const { return glfwGetWin32Window(window); }
 
-#elif __linux__
+#elif NOVA_LINUX
     Window Window::get_window_handle() const { return glfwGetX11Window(window); };
 
     Display* Window::get_display() const { return glfwGetX11Display(window); };
