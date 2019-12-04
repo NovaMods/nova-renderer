@@ -96,7 +96,7 @@ namespace nova::renderer {
 #elif NOVA_LINUX
     Window NovaWindow::get_window_handle() const { return glfwGetX11Window(window); };
 
-    Display* NovaWindow::get_display() const { return glfwGetX11Display(window); };
+    Display* NovaWindow::get_display() const { return glfwGetX11Display(); };
 #endif
 
 #if NOVA_OPENGL_RHI
