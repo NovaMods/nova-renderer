@@ -38,15 +38,20 @@ namespace nova::renderer {
          * This callback will key called for every key press event that this window receives
          *
          * \param key_callback Callback for when a key is received. Intentionally a std::function so I can easily add
-         * it to a vector. First parameter to this function is the key code, second is whether the key was pressed this frame, third is the
-         * modifier key, if any
+         * it to a vector. First parameter to this function is the key code, second is whether the key was pressed
+         * this frame, third is if control is down, fourth is if shift is down
          */
-        void register_key_callback(std::function<void(uint32_t, bool, uint32_t)>&& key_callback);
+        void register_key_callback(std::function<void(uint32_t, bool, bool, bool)>&& key_callback);
 
         /*!
-         * \brief Sends the provided key to all registered key callbacks
+         * \brief Registers a new mouse position callback
+         *
+         * Mouse position callback gets called when the mouse position changed
+         *
+         * \param mouse_callback Callback for when mouse input is received. The first parameter is the mouse's X
+         * position, the second if the Y position
          */
-        void process_key(int key);
+        void register_mouse_callback(std::function<void(double, double)>&& mouse_callback);
 
         void poll_input() const;
 
@@ -73,6 +78,16 @@ namespace nova::renderer {
     private:
         GLFWwindow* window = nullptr;
 
-        std::vector<std::function<void(uint32_t, bool, uint32_t)>> key_callbacks;
+        std::vector<std::function<void(uint32_t, bool, bool, bool)>> key_callbacks;
+
+        std::vector<std::function<void(double, double)>> mouse_callbacks;
+
+        static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+        static void glfw_mouse_callback(GLFWwindow* window, double x_position, double y_position);
+
+        void broadcast_key_event(int key, bool is_press, bool is_control_down, bool is_shift_down);
+
+        void broadcast_mouse_position(double x_position, double y_position);
     };
 } // namespace nova::renderer
