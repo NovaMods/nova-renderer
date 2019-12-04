@@ -524,6 +524,7 @@ namespace nova::renderer {
                 write.image_info.image = image;
                 write.image_info.sampler = point_sampler;
                 write.image_info.format = dynamic_texture_infos.at(resource_name).format;
+                
                 write.type = rhi::DescriptorType::CombinedImageSampler;
 
                 writes.push_back(write);
