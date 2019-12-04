@@ -2,14 +2,6 @@
 
 #include "nova_renderer/util/platform.hpp"
 
-#include <GLFW/glfw3.h>
-#if NOVA_WINDOWS
-#define GLFW_EXPOSE_NATIVE_WIN32
-#elif NOVA_LINUX
-#define GLFW_EXPOSE_NATIVE_X11
-#endif
-#include <GLFW/glfw3native.h>
-
 #include "nova_renderer/nova_renderer.hpp"
 
 #include "../util/logger.hpp"

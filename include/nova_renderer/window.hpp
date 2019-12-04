@@ -2,11 +2,20 @@
 
 #include <functional>
 
+#include <GLFW/glfw3.h>
 #include <glm/vec2.hpp>
+#if NOVA_WINDOWS
+#define GLFW_EXPOSE_NATIVE_WIN32
+#elif NOVA_LINUX
+#define GLFW_EXPOSE_NATIVE_X11
+#endif
+// We have to include this here so it exists before we #undef Bool, but ReSharper doesn't know the horrors of X11
+// ReSharper disable once CppUnusedIncludeDirective
+#include <GLFW/glfw3native.h>
 
 #include "nova_renderer/nova_settings.hpp"
-#include "nova_renderer/window.hpp"
 #include "nova_renderer/util/platform.hpp"
+#include "nova_renderer/window.hpp"
 
 #if NOVA_WINDOWS
 #include "nova_renderer/util/windows.hpp"
@@ -14,9 +23,6 @@
 #elif NOVA_LINUX
 #include "nova_renderer/util/x11_but_good.hpp"
 #endif
-
-// ReSharper disable once CppInconsistentNaming
-struct GLFWwindow;
 
 namespace nova::renderer {
     /**
