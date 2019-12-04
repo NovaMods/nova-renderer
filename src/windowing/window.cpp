@@ -4,7 +4,7 @@
 #if NOVA_WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
 #elif NOVA_LINUX
-typedef int Bool;   // Because X11 is stupid
+typedef int Bool; // Because X11 is stupid
 #define GLFW_EXPOSE_NATIVE_X11
 #endif
 // We have to include this here so it exists before we #undef Bool, but ReSharper doesn't know the horrors of X11
@@ -22,6 +22,13 @@ void glfw_key_callback(GLFWwindow* window, const int key, int /* scancode */, co
     if(action == GLFW_PRESS) {
         void* user_data = glfwGetWindowUserPointer(window);
         auto* my_window = static_cast<nova::renderer::NovaWindow*>(user_data);
+
+        const bool is_control_down = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
+			glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS;
+
+        const bool is_shift_down = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+			glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
+
         my_window->process_key(key);
     }
 }
@@ -68,7 +75,9 @@ namespace nova::renderer {
         glfwTerminate();
     }
 
-    void NovaWindow::register_key_callback(std::function<void(uint32_t)>&& key_callback) { key_callbacks.push_back(key_callback); }
+    void NovaWindow::register_key_callback(std::function<void(uint32_t, bool, uint32_t)>&& key_callback) {
+        key_callbacks.push_back(key_callback);
+    }
 
     void NovaWindow::process_key(const int key) {
         for(const auto& callback : key_callbacks) {

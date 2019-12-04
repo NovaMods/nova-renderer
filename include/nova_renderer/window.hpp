@@ -38,9 +38,10 @@ namespace nova::renderer {
          * This callback will key called for every key press event that this window receives
          *
          * \param key_callback Callback for when a key is received. Intentionally a std::function so I can easily add
-         * it to a vector
+         * it to a vector. First parameter to this function is the key code, second is whether the key was pressed this frame, third is the
+         * modifier key, if any
          */
-        void register_key_callback(std::function<void(uint32_t)>&& key_callback);
+        void register_key_callback(std::function<void(uint32_t, bool, uint32_t)>&& key_callback);
 
         /*!
          * \brief Sends the provided key to all registered key callbacks
@@ -72,6 +73,6 @@ namespace nova::renderer {
     private:
         GLFWwindow* window = nullptr;
 
-        std::vector<std::function<void(uint32_t)>> key_callbacks;
+        std::vector<std::function<void(uint32_t, bool, uint32_t)>> key_callbacks;
     };
 } // namespace nova::renderer
