@@ -237,7 +237,7 @@ namespace nova::renderer::rhi {
                                          const std::vector<Semaphore*>& signal_semaphores = {}) = 0;
 
     protected:
-        std::shared_ptr<Window> window;
+        std::shared_ptr<NovaWindow> window;
 
         glm::uvec2 swapchain_size = {};
         Swapchain* swapchain = nullptr;
@@ -255,7 +255,7 @@ namespace nova::renderer::rhi {
          *
          * \attention Called by the various render engine implementations
          */
-        RenderEngine(bvestl::polyalloc::Allocator* allocator, NovaSettingsAccessManager& settings, const std::shared_ptr<Window>& window);
+        RenderEngine(bvestl::polyalloc::Allocator* allocator, NovaSettingsAccessManager& settings, std::shared_ptr<NovaWindow> window);
 
         template <typename AllocType>
         AllocType* new_object() {

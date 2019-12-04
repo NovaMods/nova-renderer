@@ -45,7 +45,7 @@ namespace nova::renderer::rhi {
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
         PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;
 
-        VulkanRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<Window>& window);
+        VulkanRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window);
 
         VulkanRenderEngine(VulkanRenderEngine&& old) noexcept = delete;
         VulkanRenderEngine& operator=(VulkanRenderEngine&& old) noexcept = delete;

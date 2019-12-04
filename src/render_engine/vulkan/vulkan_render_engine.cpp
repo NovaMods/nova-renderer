@@ -26,7 +26,7 @@
 #include "../../util/memory_utils.hpp"
 
 namespace nova::renderer::rhi {
-    VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<Window>& window)
+    VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window)
         : RenderEngine(&mallocator, settings, window) {
         create_instance();
 

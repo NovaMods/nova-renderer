@@ -1,3 +1,4 @@
+#include <utility>
 #include "nova_renderer/render_engine.hpp"
 
 namespace nova::renderer::rhi {
@@ -9,9 +10,9 @@ namespace nova::renderer::rhi {
 
     RenderEngine::RenderEngine(bvestl::polyalloc::Allocator* allocator,
                                NovaSettingsAccessManager& settings,
-                               const std::shared_ptr<Window>& window)
+                               std::shared_ptr<NovaWindow> window)
         : settings(settings),
-          window(window),
+          window(std::move(window)),
           swapchain_size(settings.settings.window.width, settings.settings.window.height),
           shaderpack_allocator(allocator) {}
 } // namespace nova::renderer::rhi

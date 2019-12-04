@@ -22,15 +22,15 @@ namespace nova::renderer {
     /**
      * \brief GLFW wrapper that does a few nice things that Nova likes
      */
-    class Window {
+    class NovaWindow {
     public:
-        explicit Window(const NovaSettings& options);
-        ~Window();
-        Window(Window&& other) noexcept = delete;
-        Window& operator=(Window&& other) noexcept = delete;
+        explicit NovaWindow(const NovaSettings& options);
+        ~NovaWindow();
+        NovaWindow(NovaWindow&& other) noexcept = delete;
+        NovaWindow& operator=(NovaWindow&& other) noexcept = delete;
 
-        Window(const Window& other) = delete;
-        Window& operator=(const Window& other) = delete;
+        NovaWindow(const NovaWindow& other) = delete;
+        NovaWindow& operator=(const NovaWindow& other) = delete;
 
         /*!
          * \brief Registers a new key input callback

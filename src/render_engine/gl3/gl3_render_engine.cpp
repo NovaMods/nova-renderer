@@ -11,9 +11,9 @@
 #include "gl3_swapchain.hpp"
 
 namespace nova::renderer::rhi {
-    Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<Window>& window)
+    Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window)
         : RenderEngine(&mallocator, settings, window) {
-        gladLoadGLLoader(Window::get_gl_proc_address);
+        gladLoadGLLoader(NovaWindow::get_gl_proc_address);
 
         save_device_info();
 

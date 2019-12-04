@@ -911,7 +911,7 @@ namespace nova::renderer {
 
     rhi::RenderEngine* NovaRenderer::get_engine() const { return rhi.get(); }
 
-    std::shared_ptr<Window> NovaRenderer::get_window() const { return window; }
+    std::shared_ptr<NovaWindow> NovaRenderer::get_window() const { return window; }
 
     NovaRenderer* NovaRenderer::get_instance() { return instance.get(); }
 

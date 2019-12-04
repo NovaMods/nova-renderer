@@ -36,7 +36,7 @@ namespace nova::renderer::rhi {
      */
     class D3D12RenderEngine final : public RenderEngine {
     public:
-        D3D12RenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<Window>& window);
+        D3D12RenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window);
 
         D3D12RenderEngine(D3D12RenderEngine&& old) noexcept = delete;
         D3D12RenderEngine& operator=(D3D12RenderEngine&& old) noexcept = delete;

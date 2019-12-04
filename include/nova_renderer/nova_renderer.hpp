@@ -217,7 +217,7 @@ namespace nova::renderer {
 
         [[nodiscard]] rhi::RenderEngine* get_engine() const;
 
-        [[nodiscard]] std::shared_ptr<Window> get_window() const;
+        [[nodiscard]] std::shared_ptr<NovaWindow> get_window() const;
 
         static NovaRenderer* initialize(const NovaSettings& settings);
 
@@ -229,7 +229,7 @@ namespace nova::renderer {
         NovaSettingsAccessManager render_settings;
 
         std::unique_ptr<rhi::RenderEngine> rhi;
-        std::shared_ptr<Window> window;
+        std::shared_ptr<NovaWindow> window;
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;

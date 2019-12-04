@@ -21,13 +21,13 @@ void glfw_error_callback(const int error, const char* desc) { NOVA_LOG(ERROR) <<
 void glfw_key_callback(GLFWwindow* window, const int key, int /* scancode */, const int action, int /* mods */) {
     if(action == GLFW_PRESS) {
         void* user_data = glfwGetWindowUserPointer(window);
-        auto* my_window = static_cast<nova::renderer::Window*>(user_data);
+        auto* my_window = static_cast<nova::renderer::NovaWindow*>(user_data);
         my_window->process_key(key);
     }
 }
 
 namespace nova::renderer {
-    Window::Window(const NovaSettings& options) {
+    NovaWindow::NovaWindow(const NovaSettings& options) {
         if(!glfwInit()) {
             NOVA_LOG(FATAL) << "Failed to init GLFW";
             return;
@@ -63,14 +63,14 @@ namespace nova::renderer {
         glfwSetKeyCallback(window, glfw_key_callback);
     }
 
-    Window::~Window() {
+    NovaWindow::~NovaWindow() {
         glfwDestroyWindow(window);
         glfwTerminate();
     }
 
-    void Window::register_key_callback(std::function<void(uint32_t)>&& key_callback) { key_callbacks.push_back(key_callback); }
+    void NovaWindow::register_key_callback(std::function<void(uint32_t)>&& key_callback) { key_callbacks.push_back(key_callback); }
 
-    void Window::process_key(const int key) {
+    void NovaWindow::process_key(const int key) {
         for(const auto& callback : key_callbacks) {
             callback(key);
         }
@@ -78,11 +78,11 @@ namespace nova::renderer {
 
     // This _can_ be static, but I don't want it to be
     // ReSharper disable once CppMemberFunctionMayBeStatic
-    void Window::poll_input() const { glfwPollEvents(); }
+    void NovaWindow::poll_input() const { glfwPollEvents(); }
 
-    bool Window::should_close() const { return glfwWindowShouldClose(window); }
+    bool NovaWindow::should_close() const { return glfwWindowShouldClose(window); }
 
-    glm::uvec2 Window::get_window_size() const {
+    glm::uvec2 NovaWindow::get_window_size() const {
         int width;
         int height;
         glfwGetFramebufferSize(window, &width, &height);
@@ -91,17 +91,17 @@ namespace nova::renderer {
     }
 
 #if NOVA_WINDOWS
-    HWND Window::get_window_handle() const { return glfwGetWin32Window(window); }
+    HWND NovaWindow::get_window_handle() const { return glfwGetWin32Window(window); }
 
 #elif NOVA_LINUX
-    Window Window::get_window_handle() const { return glfwGetX11Window(window); };
+    Window NovaWindow::get_window_handle() const { return glfwGetX11Window(window); };
 
-    Display* Window::get_display() const { return glfwGetX11Display(window); };
+    Display* NovaWindow::get_display() const { return glfwGetX11Display(window); };
 #endif
 
 #if NOVA_OPENGL_RHI
-    void Window::swap_backbuffer() const { glfwSwapBuffers(window); }
+    void NovaWindow::swap_backbuffer() const { glfwSwapBuffers(window); }
 
-    void* Window::get_gl_proc_address(const char* proc_name) { return reinterpret_cast<void*>(glfwGetProcAddress(proc_name)); }
+    void* NovaWindow::get_gl_proc_address(const char* proc_name) { return reinterpret_cast<void*>(glfwGetProcAddress(proc_name)); }
 #endif
 } // namespace nova::renderer
