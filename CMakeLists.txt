@@ -218,6 +218,7 @@ set(WINDOWS_NOVA_SOURCE
         )
 
 set(UNIX_NOVA_SOURCE
+        include/nova_renderer/util/x11_but_good.hpp
         src/util/linux_utils.cpp
         src/util/linux_utils.hpp
         )

@@ -12,7 +12,7 @@
 #include "nova_renderer/util/windows.hpp"
 
 #elif NOVA_LINUX
-#include <X11/Xlib.h>
+#include "nova_renderer/util/x11_but_good.hpp"
 #endif
 
 // ReSharper disable once CppInconsistentNaming
