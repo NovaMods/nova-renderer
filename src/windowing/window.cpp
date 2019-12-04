@@ -32,11 +32,18 @@ namespace nova::renderer {
         my_window->broadcast_key_event(key, action == GLFW_PRESS, is_control_down, is_shift_down);
     }
 
-    void NovaWindow::glfw_mouse_callback(GLFWwindow* window, double x_position, double y_position) {
+    void NovaWindow::glfw_mouse_callback(GLFWwindow* window, const double x_position, const double y_position) {
         void* user_data = glfwGetWindowUserPointer(window);
         auto* my_window = static_cast<NovaWindow*>(user_data);
 
         my_window->broadcast_mouse_position(x_position, y_position);
+    }
+
+    void NovaWindow::glfw_mouse_button_callback(GLFWwindow* window, const int button, const int action, int /* mods */) {
+		void* user_data = glfwGetWindowUserPointer(window);
+		auto* my_window = static_cast<NovaWindow*>(user_data);
+
+        my_window->broadcast_mouse_button(button, action == GLFW_PRESS);
     }
 
     NovaWindow::NovaWindow(const NovaSettings& options) {
@@ -88,6 +95,10 @@ namespace nova::renderer {
         mouse_callbacks.emplace_back(mouse_callback);
     }
 
+    void NovaWindow::register_mouse_button_callback(std::function<void(uint32_t, bool)>&& mouse_callback) {
+        mouse_button_callbacks.emplace_back(mouse_callback);
+    }
+
     void NovaWindow::broadcast_key_event(const int key, const bool is_press, const bool is_control_down, const bool is_shift_down) {
         for(const auto& callback : key_callbacks) {
             callback(key, is_press, is_control_down, is_shift_down);
@@ -97,6 +108,12 @@ namespace nova::renderer {
     void NovaWindow::broadcast_mouse_position(const double x_position, const double y_position) {
         for(const auto& callback : mouse_callbacks) {
             callback(x_position, y_position);
+        }
+    }
+
+    void NovaWindow::broadcast_mouse_button(const int button, const bool is_press) {
+        for(const auto& callback : mouse_button_callbacks) {
+            callback(button, is_press);
         }
     }
 

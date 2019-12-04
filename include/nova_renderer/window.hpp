@@ -53,6 +53,16 @@ namespace nova::renderer {
          */
         void register_mouse_callback(std::function<void(double, double)>&& mouse_callback);
 
+        /*!
+         * \brief Registers a new mouse button callback
+         *
+         * This callback gets invoked whenever the user presses a mouse button
+         *
+         * \param mouse_callback Callback for when a mouse button is pressed. First parameter is the mouse button,
+         * second parameter is if it was pressed
+         */
+        void register_mouse_button_callback(std::function<void(uint32_t, bool)>&& mouse_callback);
+
         void poll_input() const;
 
         [[nodiscard]] bool should_close() const;
@@ -82,12 +92,18 @@ namespace nova::renderer {
 
         std::vector<std::function<void(double, double)>> mouse_callbacks;
 
+        std::vector<std::function<void(uint32_t, bool)>> mouse_button_callbacks;
+
         static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
         static void glfw_mouse_callback(GLFWwindow* window, double x_position, double y_position);
 
+        static void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+
         void broadcast_key_event(int key, bool is_press, bool is_control_down, bool is_shift_down);
 
         void broadcast_mouse_position(double x_position, double y_position);
+
+        void broadcast_mouse_button(int button, bool is_press);
     };
 } // namespace nova::renderer
