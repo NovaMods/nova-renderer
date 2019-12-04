@@ -255,9 +255,7 @@ namespace nova::renderer::rhi {
          *
          * \attention Called by the various render engine implementations
          */
-        explicit RenderEngine(bvestl::polyalloc::Allocator* allocator,
-                              NovaSettingsAccessManager& settings,
-                              const std::shared_ptr<Window> window);
+        RenderEngine(bvestl::polyalloc::Allocator* allocator, NovaSettingsAccessManager& settings, const std::shared_ptr<Window>& window);
 
         template <typename AllocType>
         AllocType* new_object() {

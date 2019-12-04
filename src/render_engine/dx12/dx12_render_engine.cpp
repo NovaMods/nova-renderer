@@ -4,6 +4,7 @@
 #include <spirv_hlsl.hpp>
 #pragma warning pop
 
+#include "nova_renderer/constants.hpp"
 #include "nova_renderer/util/platform.hpp"
 
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
@@ -15,14 +16,14 @@
 #include "dx12_structs.hpp"
 #include "dx12_swapchain.hpp"
 #include "dx12_utils.hpp"
-#include "nova_renderer/constants.hpp"
 using Microsoft::WRL::ComPtr;
 
 #define CPU_FENCE_SIGNALED 16
 #define GPU_FENCE_SIGNALED 32
 
 namespace nova::renderer::rhi {
-    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings, std::shared_ptr<Window> window) : RenderEngine(&mallocator, settings, window) {
+    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<Window>& window)
+        : RenderEngine(&mallocator, settings, window) {
         create_device();
 
         create_queues();
@@ -843,7 +844,7 @@ namespace nova::renderer::rhi {
                                       dxgi_factory.Get(),
                                       device.Get(),
                                       window_handle,
-                                      glm::uvec2{ window_size.x, window_size.y},
+                                      glm::uvec2{window_size.x, window_size.y},
                                       num_frames,
                                       direct_command_queue.Get());
     }

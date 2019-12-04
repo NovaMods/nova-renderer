@@ -1,8 +1,8 @@
 #pragma once
 
-#include "nova_renderer/render_engine.hpp"
-
 #include <memory>
+
+#include "nova_renderer/render_engine.hpp"
 
 #pragma warning(push, 0)
 #include <d3d12.h>
@@ -36,7 +36,7 @@ namespace nova::renderer::rhi {
      */
     class D3D12RenderEngine final : public RenderEngine {
     public:
-        D3D12RenderEngine(NovaSettingsAccessManager& settings, std::shared_ptr<Window> window);
+        D3D12RenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<Window>& window);
 
         D3D12RenderEngine(D3D12RenderEngine&& old) noexcept = delete;
         D3D12RenderEngine& operator=(D3D12RenderEngine&& old) noexcept = delete;

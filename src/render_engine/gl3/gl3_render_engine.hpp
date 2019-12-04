@@ -21,7 +21,7 @@ namespace nova::renderer::rhi {
      */
     class Gl4NvRenderEngine final : public RenderEngine {
     public:
-        Gl4NvRenderEngine(NovaSettingsAccessManager& settings, std::shared_ptr<Window> window);
+        Gl4NvRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<Window>& window);
 
         Gl4NvRenderEngine(Gl4NvRenderEngine&& other) = delete;
         Gl4NvRenderEngine& operator=(Gl4NvRenderEngine&& other) noexcept = delete;

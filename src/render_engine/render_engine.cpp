@@ -9,7 +9,7 @@ namespace nova::renderer::rhi {
 
     RenderEngine::RenderEngine(bvestl::polyalloc::Allocator* allocator,
                                NovaSettingsAccessManager& settings,
-                               const std::shared_ptr<Window> window)
+                               const std::shared_ptr<Window>& window)
         : settings(settings),
           window(window),
           swapchain_size(settings.settings.window.width, settings.settings.window.height),
