@@ -4,7 +4,7 @@
 #if NOVA_WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
 #elif NOVA_LINUX
-typedef int Bool;   // Because X11 is stupid
+typedef int Bool; // Because X11 is stupid
 #define GLFW_EXPOSE_NATIVE_X11
 #endif
 // We have to include this here so it exists before we #undef Bool, but ReSharper doesn't know the horrors of X11
@@ -18,15 +18,34 @@ typedef int Bool;   // Because X11 is stupid
 
 void glfw_error_callback(const int error, const char* desc) { NOVA_LOG(ERROR) << "GLFW error(" << error << ") " << desc; }
 
-void glfw_key_callback(GLFWwindow* window, const int key, int /* scancode */, const int action, int /* mods */) {
-    if(action == GLFW_PRESS) {
-        void* user_data = glfwGetWindowUserPointer(window);
-        auto* my_window = static_cast<nova::renderer::NovaWindow*>(user_data);
-        my_window->process_key(key);
-    }
-}
-
 namespace nova::renderer {
+    void NovaWindow::glfw_key_callback(GLFWwindow* window, const int key, int /* scancode */, const int action, int /* mods */) {
+        void* user_data = glfwGetWindowUserPointer(window);
+        auto* my_window = static_cast<NovaWindow*>(user_data);
+
+        const bool is_control_down = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
+                                     glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS;
+
+        const bool is_shift_down = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+                                   glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
+
+        my_window->broadcast_key_event(key, action == GLFW_PRESS, is_control_down, is_shift_down);
+    }
+
+    void NovaWindow::glfw_mouse_callback(GLFWwindow* window, const double x_position, const double y_position) {
+        void* user_data = glfwGetWindowUserPointer(window);
+        auto* my_window = static_cast<NovaWindow*>(user_data);
+
+        my_window->broadcast_mouse_position(x_position, y_position);
+    }
+
+    void NovaWindow::glfw_mouse_button_callback(GLFWwindow* window, const int button, const int action, int /* mods */) {
+        void* user_data = glfwGetWindowUserPointer(window);
+        auto* my_window = static_cast<NovaWindow*>(user_data);
+
+        my_window->broadcast_mouse_button(button, action == GLFW_PRESS);
+    }
+
     NovaWindow::NovaWindow(const NovaSettings& options) {
         if(!glfwInit()) {
             NOVA_LOG(FATAL) << "Failed to init GLFW";
@@ -60,7 +79,7 @@ namespace nova::renderer {
         }
 
         glfwSetWindowUserPointer(window, this);
-        glfwSetKeyCallback(window, glfw_key_callback);
+        glfwSetKeyCallback(window, &NovaWindow::glfw_key_callback);
     }
 
     NovaWindow::~NovaWindow() {
@@ -68,11 +87,33 @@ namespace nova::renderer {
         glfwTerminate();
     }
 
-    void NovaWindow::register_key_callback(std::function<void(uint32_t)>&& key_callback) { key_callbacks.push_back(key_callback); }
+    void NovaWindow::register_key_callback(std::function<void(uint32_t, bool, bool, bool)> key_callback) {
+        key_callbacks.emplace_back(std::move(key_callback));
+    }
 
-    void NovaWindow::process_key(const int key) {
+    void NovaWindow::register_mouse_callback(std::function<void(double, double)> mouse_callback) {
+        mouse_callbacks.emplace_back(std::move(mouse_callback));
+    }
+
+    void NovaWindow::register_mouse_button_callback(std::function<void(uint32_t, bool)> mouse_callback) {
+        mouse_button_callbacks.emplace_back(std::move(mouse_callback));
+    }
+
+    void NovaWindow::broadcast_key_event(const int key, const bool is_press, const bool is_control_down, const bool is_shift_down) {
         for(const auto& callback : key_callbacks) {
-            callback(key);
+            callback(key, is_press, is_control_down, is_shift_down);
+        }
+    }
+
+    void NovaWindow::broadcast_mouse_position(const double x_position, const double y_position) {
+        for(const auto& callback : mouse_callbacks) {
+            callback(x_position, y_position);
+        }
+    }
+
+    void NovaWindow::broadcast_mouse_button(const int button, const bool is_pressed) {
+        for(const auto& callback : mouse_button_callbacks) {
+            callback(button, is_pressed);
         }
     }
 
