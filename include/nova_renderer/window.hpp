@@ -41,7 +41,7 @@ namespace nova::renderer {
          * it to a vector. First parameter to this function is the key code, second is whether the key was pressed
          * this frame, third is if control is down, fourth is if shift is down
          */
-        void register_key_callback(std::function<void(uint32_t, bool, bool, bool)>&& key_callback);
+        void register_key_callback(std::function<void(uint32_t, bool, bool, bool)> key_callback);
 
         /*!
          * \brief Registers a new mouse position callback
@@ -51,7 +51,7 @@ namespace nova::renderer {
          * \param mouse_callback Callback for when mouse input is received. The first parameter is the mouse's X
          * position, the second if the Y position
          */
-        void register_mouse_callback(std::function<void(double, double)>&& mouse_callback);
+        void register_mouse_callback(std::function<void(double, double)> mouse_callback);
 
         /*!
          * \brief Registers a new mouse button callback
@@ -61,7 +61,7 @@ namespace nova::renderer {
          * \param mouse_callback Callback for when a mouse button is pressed. First parameter is the mouse button,
          * second parameter is if it was pressed
          */
-        void register_mouse_button_callback(std::function<void(uint32_t, bool)>&& mouse_callback);
+        void register_mouse_button_callback(std::function<void(uint32_t, bool)> mouse_callback);
 
         void poll_input() const;
 
@@ -104,6 +104,6 @@ namespace nova::renderer {
 
         void broadcast_mouse_position(double x_position, double y_position);
 
-        void broadcast_mouse_button(int button, bool is_press);
+        void broadcast_mouse_button(int button, bool is_pressed);
     };
 } // namespace nova::renderer

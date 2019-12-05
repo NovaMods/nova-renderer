@@ -40,8 +40,8 @@ namespace nova::renderer {
     }
 
     void NovaWindow::glfw_mouse_button_callback(GLFWwindow* window, const int button, const int action, int /* mods */) {
-		void* user_data = glfwGetWindowUserPointer(window);
-		auto* my_window = static_cast<NovaWindow*>(user_data);
+        void* user_data = glfwGetWindowUserPointer(window);
+        auto* my_window = static_cast<NovaWindow*>(user_data);
 
         my_window->broadcast_mouse_button(button, action == GLFW_PRESS);
     }
@@ -87,16 +87,16 @@ namespace nova::renderer {
         glfwTerminate();
     }
 
-    void NovaWindow::register_key_callback(std::function<void(uint32_t, bool, bool, bool)>&& key_callback) {
-        key_callbacks.emplace_back(key_callback);
+    void NovaWindow::register_key_callback(std::function<void(uint32_t, bool, bool, bool)> key_callback) {
+        key_callbacks.emplace_back(std::move(key_callback));
     }
 
-    void NovaWindow::register_mouse_callback(std::function<void(double, double)>&& mouse_callback) {
-        mouse_callbacks.emplace_back(mouse_callback);
+    void NovaWindow::register_mouse_callback(std::function<void(double, double)> mouse_callback) {
+        mouse_callbacks.emplace_back(std::move(mouse_callback));
     }
 
-    void NovaWindow::register_mouse_button_callback(std::function<void(uint32_t, bool)>&& mouse_callback) {
-        mouse_button_callbacks.emplace_back(mouse_callback);
+    void NovaWindow::register_mouse_button_callback(std::function<void(uint32_t, bool)> mouse_callback) {
+        mouse_button_callbacks.emplace_back(std::move(mouse_callback));
     }
 
     void NovaWindow::broadcast_key_event(const int key, const bool is_press, const bool is_control_down, const bool is_shift_down) {
@@ -111,9 +111,9 @@ namespace nova::renderer {
         }
     }
 
-    void NovaWindow::broadcast_mouse_button(const int button, const bool is_press) {
+    void NovaWindow::broadcast_mouse_button(const int button, const bool is_pressed) {
         for(const auto& callback : mouse_button_callbacks) {
-            callback(button, is_press);
+            callback(button, is_pressed);
         }
     }
 
