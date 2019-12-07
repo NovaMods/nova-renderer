@@ -155,15 +155,27 @@ namespace nova::renderer::rhi {
         };
     };
 
-    struct DescriptorImageUpdate {
+    struct DescriptorImageInfo {
         const Image* image;
         shaderpack::TextureFormat format;
         Sampler* sampler;
     };
 
-    struct DescriptorBufferWrite {
+    struct DescriptorBufferInfo {
         const Buffer* buffer;
     };
+
+	union DescriptorResourceInfo {
+		/*!
+		 * \brief Information to update an image descriptor
+		 */
+		DescriptorImageInfo image_info;
+
+		/*!
+		 * \brief Information to update a buffer descriptor
+		 */
+		DescriptorBufferInfo buffer_info;
+	};
 
     struct DescriptorSetWrite {
         /*!
@@ -174,24 +186,17 @@ namespace nova::renderer::rhi {
         /*!
          * \brief The specific binding in the set that you want to write to
          */
-        uint32_t binding;
+        uint32_t first_binding;
 
         /*!
          * \brief The type of descriptor you're writing to
          */
         DescriptorType type;
 
-        union {
-            /*!
-             * \brief Information to update an image descriptor
-             */
-            DescriptorImageUpdate image_info;
-
-            /*!
-             * \brief Information to update a buffer descriptor
-             */
-            DescriptorBufferWrite buffer_info;
-        };
+        /*!
+         * \brief Information about th
+         */
+        std::vector<DescriptorResourceInfo> bindings;
     };
 #pragma endregion
 
