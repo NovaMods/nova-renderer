@@ -63,8 +63,17 @@ namespace nova::renderer::rhi {
 
         /*!
          * \brief Number of bindings. Useful if you have an array of descriptors
+         *
+         * If this is a unbounded array, this count is the upper limit on the size of the array
          */
         uint32_t count;
+
+        /*!
+         * \brief If true, this binding is an unbounded array
+         *
+         * Unbounded descriptors must be the final binding in their descriptor set
+         */
+        bool is_unbounded;
 
         /*!
          * \brief The type of object that will be bound
