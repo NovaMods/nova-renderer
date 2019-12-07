@@ -1479,8 +1479,10 @@ namespace nova::renderer::rhi {
         std::vector<std::vector<VkDescriptorSetLayoutBinding>> bindings_by_set;
         bindings_by_set.resize(all_bindings.size());
 
-        for(const auto& named_binding : all_bindings) {
-            const ResourceBindingDescription& binding = named_binding.second;
+        std::vector<std::vector<VkDescriptorBindingFlagsEXT>> binding_flags_by_set;
+        binding_flags_by_set.resize(all_bindings.size());
+
+        for(const auto& [name, binding] : all_bindings) {
             if(binding.set >= bindings_by_set.size()) {
                 NOVA_LOG(ERROR) << "You've skipped one or more descriptor sets! Don't do that, Nova can't handle it";
                 continue;
@@ -1492,16 +1494,36 @@ namespace nova::renderer::rhi {
             descriptor_binding.descriptorCount = binding.count;
             descriptor_binding.stageFlags = to_vk_shader_stage_flags(binding.stages);
 
+            if(binding.is_unbounded) {
+                binding_flags_by_set[binding.set].push_back(VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT);
+
+            } else {
+                binding_flags_by_set[binding.set].push_back(0);
+            }
+
             bindings_by_set[binding.set].push_back(descriptor_binding);
         }
 
         std::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos = {};
         dsl_create_infos.reserve(bindings_by_set.size());
+
+		std::vector<VkDescriptorSetLayoutCreateInfo> flag_infos = {};
+		flag_infos.reserve(bindings_by_set.size());
+
         for(const auto& bindings : bindings_by_set) {
             VkDescriptorSetLayoutCreateInfo create_info = {};
             create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
             create_info.bindingCount = static_cast<uint32_t>(bindings.size());
             create_info.pBindings = bindings.data();
+
+            const auto& flags = binding_flags_by_set.at(dsl_create_infos.size());
+            VkDescriptorSetLayoutBindingFlagsCreateInfoEXT binding_flags = {};
+            binding_flags.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT;
+            binding_flags.bindingCount = static_cast<uint32_t>(flags.size());
+            binding_flags.pBindingFlags = flags.data();
+            flag_infos.emplace_back(binding_flags);
+
+            create_info.pNext = &(*flag_infos.end());
 
             dsl_create_infos.push_back(create_info);
         }
