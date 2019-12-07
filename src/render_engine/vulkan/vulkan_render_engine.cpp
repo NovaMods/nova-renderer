@@ -1359,6 +1359,15 @@ namespace nova::renderer::rhi {
             device_create_info.ppEnabledLayerNames = enabled_layer_names.data();
         }
 
+        // Set up descriptor indexing
+		// Currently Nova only cares about indexing for texture descriptors
+        VkPhysicalDeviceDescriptorIndexingFeaturesEXT descriptor_indexing_features = {};
+        descriptor_indexing_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
+		descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+		descriptor_indexing_features.runtimeDescriptorArray = true;
+        descriptor_indexing_features.descriptorBindingVariableDescriptorCount = VK_TRUE;
+        device_create_info.pNext = &descriptor_indexing_features;
+
         NOVA_CHECK_RESULT(vkCreateDevice(gpu.phys_device, &device_create_info, nullptr, &device));
 
         graphics_family_index = graphics_family_idx;
