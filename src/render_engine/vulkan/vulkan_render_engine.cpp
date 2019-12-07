@@ -505,42 +505,55 @@ namespace nova::renderer::rhi {
             VkWriteDescriptorSet vk_write = {};
             vk_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             vk_write.dstSet = static_cast<const VulkanDescriptorSet*>(write.set)->descriptor_set;
-            vk_write.dstBinding = write.binding;
-            vk_write.descriptorCount = 1;
+            vk_write.dstBinding = write.first_binding;
+            vk_write.descriptorCount = write.bindings.size();
             vk_write.dstArrayElement = 0;
 
             switch(write.type) {
                 case DescriptorType::CombinedImageSampler: {
-                    VkDescriptorImageInfo vk_image_info = {};
-                    vk_image_info.imageView = image_view_for_image(write.image_info.image);
-                    vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    vk_image_info.sampler = static_cast<VulkanSampler*>(write.image_info.sampler)->sampler;
+                    const auto write_begin_idx = image_infos.size();
 
-                    image_infos.push_back(vk_image_info);
-
+                    std::transform(write.bindings.begin(),
+                                   write.bindings.end(),
+                                   std::back_insert_iterator<std::vector<VkDescriptorImageInfo>>(image_infos),
+                                   [&](const DescriptorResourceInfo& info) {
+                                       VkDescriptorImageInfo vk_image_info = {};
+									   vk_image_info.imageView = image_view_for_image(info.image_info.image);
+                                       vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                                       vk_image_info.sampler = static_cast<VulkanSampler*>(info.image_info.sampler)->sampler;
+                                       return vk_image_info;
+                                   });
+                    
                     vk_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    vk_write.pImageInfo = &image_infos.at(image_infos.size() - 1);
+                    vk_write.pImageInfo = &image_infos[write_begin_idx];
 
                     vk_writes.push_back(vk_write);
                 } break;
 
                 case DescriptorType::UniformBuffer: {
-                    const VulkanBuffer* vk_buffer = static_cast<const VulkanBuffer*>(write.buffer_info.buffer);
+					const auto write_begin_idx = image_infos.size();
 
-                    VkDescriptorBufferInfo vk_buffer_info = {};
-                    vk_buffer_info.buffer = vk_buffer->buffer;
-                    vk_buffer_info.offset = vk_buffer->memory.allocation_info.offset.b_count();
-                    vk_buffer_info.range = vk_buffer->memory.allocation_info.size.b_count();
+					std::transform(write.bindings.begin(),
+						write.bindings.end(),
+						std::back_insert_iterator<std::vector<VkDescriptorBufferInfo>>(buffer_infos),
+						[&](const DescriptorResourceInfo& info) {
+							const VulkanBuffer* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
 
-                    buffer_infos.push_back(vk_buffer_info);
+							VkDescriptorBufferInfo vk_buffer_info = {};
+							vk_buffer_info.buffer = vk_buffer->buffer;
+							vk_buffer_info.offset = vk_buffer->memory.allocation_info.offset.b_count();
+							vk_buffer_info.range = vk_buffer->memory.allocation_info.size.b_count();
+							return vk_buffer_info;
+						});
 
-                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                    vk_write.pBufferInfo = &buffer_infos.at(buffer_infos.size() - 1);
+					vk_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+					vk_write.pBufferInfo = &buffer_infos[write_begin_idx];
 
-                    vk_writes.push_back(vk_write);
+					vk_writes.push_back(vk_write);
                 } break;
 
                 case DescriptorType::StorageBuffer: {
+                    // TODO
                 } break;
 
                 default:;
@@ -1360,11 +1373,11 @@ namespace nova::renderer::rhi {
         }
 
         // Set up descriptor indexing
-		// Currently Nova only cares about indexing for texture descriptors
+        // Currently Nova only cares about indexing for texture descriptors
         VkPhysicalDeviceDescriptorIndexingFeaturesEXT descriptor_indexing_features = {};
         descriptor_indexing_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
-		descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
-		descriptor_indexing_features.runtimeDescriptorArray = true;
+        descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+        descriptor_indexing_features.runtimeDescriptorArray = true;
         descriptor_indexing_features.descriptorBindingVariableDescriptorCount = VK_TRUE;
         device_create_info.pNext = &descriptor_indexing_features;
 
@@ -1507,8 +1520,8 @@ namespace nova::renderer::rhi {
         std::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos = {};
         dsl_create_infos.reserve(bindings_by_set.size());
 
-		std::vector<VkDescriptorSetLayoutCreateInfo> flag_infos = {};
-		flag_infos.reserve(bindings_by_set.size());
+        std::vector<VkDescriptorSetLayoutCreateInfo> flag_infos = {};
+        flag_infos.reserve(bindings_by_set.size());
 
         for(const auto& bindings : bindings_by_set) {
             VkDescriptorSetLayoutCreateInfo create_info = {};
