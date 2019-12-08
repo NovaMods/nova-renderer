@@ -517,22 +517,23 @@ namespace nova::renderer {
             rhi::DescriptorSetWrite write = {};
             write.set = descriptor_set;
             write.first_binding = binding_desc.binding;
+            rhi::DescriptorResourceInfo& resource_info = write.bindings.at(0);
 
             if(const auto dyn_tex_itr = dynamic_textures.find(resource_name); dyn_tex_itr != dynamic_textures.end()) {
-                const rhi::Image* image = dyn_tex_itr->second;
+                rhi::Image* image = dyn_tex_itr->second;
 
-                write.image_info.image = image;
-                write.image_info.sampler = point_sampler;
-                write.image_info.format = dynamic_texture_infos.at(resource_name).format;
+				resource_info.image_info.image = image;
+				resource_info.image_info.sampler = point_sampler;
+				resource_info.image_info.format = dynamic_texture_infos.at(resource_name).format;
                 
                 write.type = rhi::DescriptorType::CombinedImageSampler;
 
                 writes.push_back(write);
 
             } else if(const auto builtin_buffer_itr = builtin_buffers.find(resource_name); builtin_buffer_itr != builtin_buffers.end()) {
-                const rhi::Buffer* buffer = builtin_buffer_itr->second;
+                rhi::Buffer* buffer = builtin_buffer_itr->second;
 
-                write.buffer_info.buffer = buffer;
+				resource_info.buffer_info.buffer = buffer;
                 write.type = rhi::DescriptorType::UniformBuffer;
 
                 writes.push_back(write);

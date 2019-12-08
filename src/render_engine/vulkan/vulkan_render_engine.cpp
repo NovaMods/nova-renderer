@@ -506,7 +506,7 @@ namespace nova::renderer::rhi {
             vk_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             vk_write.dstSet = static_cast<const VulkanDescriptorSet*>(write.set)->descriptor_set;
             vk_write.dstBinding = write.first_binding;
-            vk_write.descriptorCount = write.bindings.size();
+            vk_write.descriptorCount = static_cast<uint32_t>(write.bindings.size());
             vk_write.dstArrayElement = 0;
 
             switch(write.type) {
@@ -1520,7 +1520,7 @@ namespace nova::renderer::rhi {
         std::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos = {};
         dsl_create_infos.reserve(bindings_by_set.size());
 
-        std::vector<VkDescriptorSetLayoutCreateInfo> flag_infos = {};
+        std::vector<VkDescriptorSetLayoutBindingFlagsCreateInfoEXT> flag_infos = {};
         flag_infos.reserve(bindings_by_set.size());
 
         for(const auto& bindings : bindings_by_set) {
