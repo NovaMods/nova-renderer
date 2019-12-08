@@ -537,7 +537,7 @@ namespace nova::renderer::rhi {
 						write.bindings.end(),
 						std::back_insert_iterator<std::vector<VkDescriptorBufferInfo>>(buffer_infos),
 						[&](const DescriptorResourceInfo& info) {
-							const VulkanBuffer* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
+							const auto* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
 
 							VkDescriptorBufferInfo vk_buffer_info = {};
 							vk_buffer_info.buffer = vk_buffer->buffer;
