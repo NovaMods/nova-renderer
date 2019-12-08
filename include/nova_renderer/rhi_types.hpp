@@ -156,13 +156,13 @@ namespace nova::renderer::rhi {
     };
 
     struct DescriptorImageInfo {
-        const Image* image;
+        Image* image;
         shaderpack::TextureFormat format;
         Sampler* sampler;
     };
 
     struct DescriptorBufferInfo {
-        const Buffer* buffer;
+        Buffer* buffer;
     };
 
 	union DescriptorResourceInfo {
