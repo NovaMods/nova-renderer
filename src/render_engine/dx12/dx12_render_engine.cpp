@@ -306,34 +306,43 @@ namespace nova::renderer::rhi {
         // We want to create descriptors in the heaps in the order of their bindings
         for(const DescriptorSetWrite& write : writes) {
             const auto* set = static_cast<const DX12DescriptorSet*>(write.set);
-            CD3DX12_CPU_DESCRIPTOR_HANDLE write_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(set->heap->GetCPUDescriptorHandleForHeapStart(),
-                                                                                       cbv_srv_uav_descriptor_size * write.binding);
+
+			CD3DX12_CPU_DESCRIPTOR_HANDLE write_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(set->heap->GetCPUDescriptorHandleForHeapStart(),
+				cbv_srv_uav_descriptor_size * write.first_binding);
 
             switch(write.type) {
                 case DescriptorType::CombinedImageSampler: {
-                    const auto* image = static_cast<const DX12Image*>(write.image_info.image);
+                    for(uint32_t i = 0; i < write.bindings.size(); i++) {
+                        const auto& binding = write.bindings.at(i);
+                        const auto* image = static_cast<const DX12Image*>(binding.image_info.image);
 
-                    D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
-                    srv_desc.Format = to_dxgi_format(write.image_info.format.pixel_format);
-                    srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-                    srv_desc.Texture2D.MostDetailedMip = 0;
-                    srv_desc.Texture2D.MipLevels = 1;
-                    srv_desc.Texture2D.PlaneSlice = 0;
-                    srv_desc.Texture2D.ResourceMinLODClamp = 0;
+						write_handle.Offset(i, cbv_srv_uav_descriptor_size);
 
-                    device->CreateShaderResourceView(image->resource.Get(), &srv_desc, write_handle);
+                        D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+                        srv_desc.Format = to_dxgi_format(binding.image_info.format.pixel_format);
+                        srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+                        srv_desc.Texture2D.MostDetailedMip = 0;
+                        srv_desc.Texture2D.MipLevels = 1;
+                        srv_desc.Texture2D.PlaneSlice = 0;
+                        srv_desc.Texture2D.ResourceMinLODClamp = 0;
 
+                        device->CreateShaderResourceView(image->resource.Get(), &srv_desc, write_handle);
+					}
                 } break;
 
                 case DescriptorType::UniformBuffer: {
-                    const auto* buffer = static_cast<const DX12Buffer*>(write.buffer_info.buffer);
+					for (uint32_t i = 0; i < write.bindings.size(); i++) {
+						const auto& binding = write.bindings.at(i);
+						const auto* buffer = static_cast<const DX12Buffer*>(binding.buffer_info.buffer);
 
-                    D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc = {};
-                    cbv_desc.BufferLocation = buffer->resource->GetGPUVirtualAddress();
-                    cbv_desc.SizeInBytes = buffer->size.b_count();
+						write_handle.Offset(i, cbv_srv_uav_descriptor_size);
 
-                    device->CreateConstantBufferView(&cbv_desc, write_handle);
+						D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc = {};
+						cbv_desc.BufferLocation = buffer->resource->GetGPUVirtualAddress();
+						cbv_desc.SizeInBytes = buffer->size.b_count();
 
+						device->CreateConstantBufferView(&cbv_desc, write_handle);
+					}
                 } break;
 
                 case DescriptorType::StorageBuffer: {
