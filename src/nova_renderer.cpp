@@ -516,7 +516,7 @@ namespace nova::renderer {
 
             rhi::DescriptorSetWrite write = {};
             write.set = descriptor_set;
-            write.binding = binding_desc.binding;
+            write.first_binding = binding_desc.binding;
 
             if(const auto dyn_tex_itr = dynamic_textures.find(resource_name); dyn_tex_itr != dynamic_textures.end()) {
                 const rhi::Image* image = dyn_tex_itr->second;
