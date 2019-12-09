@@ -307,8 +307,8 @@ namespace nova::renderer::rhi {
         for(const DescriptorSetWrite& write : writes) {
             const auto* set = static_cast<const DX12DescriptorSet*>(write.set);
 
-			CD3DX12_CPU_DESCRIPTOR_HANDLE write_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(set->heap->GetCPUDescriptorHandleForHeapStart(),
-				cbv_srv_uav_descriptor_size * write.first_binding);
+            CD3DX12_CPU_DESCRIPTOR_HANDLE write_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(set->heap->GetCPUDescriptorHandleForHeapStart(),
+                                                                                       cbv_srv_uav_descriptor_size * write.first_binding);
 
             switch(write.type) {
                 case DescriptorType::CombinedImageSampler: {
@@ -316,7 +316,7 @@ namespace nova::renderer::rhi {
                         const auto& binding = write.bindings.at(i);
                         const auto* image = static_cast<const DX12Image*>(binding.image_info.image);
 
-						write_handle.Offset(i, cbv_srv_uav_descriptor_size);
+                        write_handle.Offset(i, cbv_srv_uav_descriptor_size);
 
                         D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
                         srv_desc.Format = to_dxgi_format(binding.image_info.format.pixel_format);
@@ -327,22 +327,22 @@ namespace nova::renderer::rhi {
                         srv_desc.Texture2D.ResourceMinLODClamp = 0;
 
                         device->CreateShaderResourceView(image->resource.Get(), &srv_desc, write_handle);
-					}
+                    }
                 } break;
 
                 case DescriptorType::UniformBuffer: {
-					for (uint32_t i = 0; i < write.bindings.size(); i++) {
-						const auto& binding = write.bindings.at(i);
-						const auto* buffer = static_cast<const DX12Buffer*>(binding.buffer_info.buffer);
+                    for(uint32_t i = 0; i < write.bindings.size(); i++) {
+                        const auto& binding = write.bindings.at(i);
+                        const auto* buffer = static_cast<const DX12Buffer*>(binding.buffer_info.buffer);
 
-						write_handle.Offset(i, cbv_srv_uav_descriptor_size);
+                        write_handle.Offset(i, cbv_srv_uav_descriptor_size);
 
-						D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc = {};
-						cbv_desc.BufferLocation = buffer->resource->GetGPUVirtualAddress();
-						cbv_desc.SizeInBytes = buffer->size.b_count();
+                        D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc = {};
+                        cbv_desc.BufferLocation = buffer->resource->GetGPUVirtualAddress();
+                        cbv_desc.SizeInBytes = buffer->size.b_count();
 
-						device->CreateConstantBufferView(&cbv_desc, write_handle);
-					}
+                        device->CreateConstantBufferView(&cbv_desc, write_handle);
+                    }
                 } break;
 
                 case DescriptorType::StorageBuffer: {
@@ -996,10 +996,16 @@ namespace nova::renderer::rhi {
                 info.architecture = DeviceArchitecture::Unknown;
         }
 
-        const auto hr = device->QueryInterface(IID_PPV_ARGS(device4.GetAddressOf()));
+        auto hr = device->QueryInterface(IID_PPV_ARGS(device4.GetAddressOf()));
         info.supports_raytracing = SUCCEEDED(hr);
 
-        D3D12_FEATURE_DATA_FEATURE_LEVELS feature_levels;
+        D3D_FEATURE_LEVEL requested_feature_levels[4] = {D3D_FEATURE_LEVEL_11_0,
+                                                         D3D_FEATURE_LEVEL_11_1,
+                                                         D3D_FEATURE_LEVEL_12_0,
+                                                         D3D_FEATURE_LEVEL_12_1};
+        D3D12_FEATURE_DATA_FEATURE_LEVELS feature_levels = {};
+        feature_levels.NumFeatureLevels = 4;
+        feature_levels.pFeatureLevelsRequested = requested_feature_levels;
         device->CheckFeatureSupport(D3D12_FEATURE_FEATURE_LEVELS, &feature_levels, sizeof(feature_levels));
         d3d12_capabilities.feature_level = feature_levels.MaxSupportedFeatureLevel;
 
@@ -1007,7 +1013,7 @@ namespace nova::renderer::rhi {
         // TODO: Revisit these limits if/when we get features levels above 12.1
         info.max_texture_size = 16384;
 
-        D3D12_FEATURE_DATA_ARCHITECTURE architecture_data;
+        D3D12_FEATURE_DATA_ARCHITECTURE architecture_data = {};
         device->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE, &architecture_data, sizeof(architecture_data));
         info.is_uma = architecture_data.CacheCoherentUMA;
     }
