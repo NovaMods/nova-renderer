@@ -634,6 +634,11 @@ namespace nova::renderer {
         new_binding.count = 1;
         new_binding.stages = shader_stage;
 
+        const spirv_cross::SPIRType& type_information = shader_compiler.get_type(resource.type_id);
+        if(!type_information.array.empty()) {
+            new_binding.count = type_information.array[0];
+        }
+
         const std::string& resource_name = resource.name;
 
         if(const auto itr = bindings.find(resource_name); itr != bindings.end()) {
