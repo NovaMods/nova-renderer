@@ -524,10 +524,10 @@ namespace nova::renderer {
             if(const auto dyn_tex_itr = dynamic_textures.find(resource_name); dyn_tex_itr != dynamic_textures.end()) {
                 rhi::Image* image = dyn_tex_itr->second;
 
-				resource_info.image_info.image = image;
-				resource_info.image_info.sampler = point_sampler;
-				resource_info.image_info.format = dynamic_texture_infos.at(resource_name).format;
-                
+                resource_info.image_info.image = image;
+                resource_info.image_info.sampler = point_sampler;
+                resource_info.image_info.format = dynamic_texture_infos.at(resource_name).format;
+
                 write.type = rhi::DescriptorType::CombinedImageSampler;
 
                 writes.push_back(write);
@@ -535,7 +535,7 @@ namespace nova::renderer {
             } else if(const auto builtin_buffer_itr = builtin_buffers.find(resource_name); builtin_buffer_itr != builtin_buffers.end()) {
                 rhi::Buffer* buffer = builtin_buffer_itr->second;
 
-				resource_info.buffer_info.buffer = buffer;
+                resource_info.buffer_info.buffer = buffer;
                 write.type = rhi::DescriptorType::UniformBuffer;
 
                 writes.push_back(write);
@@ -639,6 +639,8 @@ namespace nova::renderer {
         const spirv_cross::SPIRType& type_information = shader_compiler.get_type(resource.type_id);
         if(!type_information.array.empty()) {
             new_binding.count = type_information.array[0];
+            // All arrays are unbounded until I figure out how to use SPIRV-Cross to detect unbounded arrays
+            new_binding.is_unbounded = true;
         }
 
         const std::string& resource_name = resource.name;
