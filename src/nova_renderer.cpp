@@ -69,6 +69,8 @@ namespace nova::renderer {
 
         MTR_SCOPE("Init", "nova_renderer::nova_renderer");
 
+        window = std::make_shared<NovaWindow>(settings);
+
         if(settings.debug.renderdoc.enabled) {
             MTR_SCOPE("Init", "LoadRenderdoc");
             auto rd_load_result = load_renderdoc(settings.debug.renderdoc.renderdoc_dll_path);

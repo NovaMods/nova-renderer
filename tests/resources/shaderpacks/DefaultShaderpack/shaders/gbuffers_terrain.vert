@@ -62,6 +62,8 @@ layout(set = 0, binding = 0) readonly buffer per_model_uniforms {
     mat4 modelMatrices[];
 };
 
+layout(set = 0, binding = 1) uniform texture2D font_textures[];
+
 layout(location = 0) out vec2 uv;
 layout(location = 1) out vec4 color;
 layout(location = 2) out vec2 lightmap_uv;
