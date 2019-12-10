@@ -1461,7 +1461,7 @@ namespace nova::renderer::rhi {
         if(!required.empty()) {
             std::stringstream ss;
             for(const auto& extension : required) {
-                ss << extension;
+                ss << extension << ", ";
             }
 
             NOVA_LOG(WARN) << "Device does not support these required extensions: " << ss.str();
