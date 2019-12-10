@@ -854,6 +854,7 @@ namespace nova::renderer::rhi {
         image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
         if(format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT) {
             image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+            image->is_depth_tex = true;
         } else {
             image_create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
         }
@@ -884,36 +885,56 @@ namespace nova::renderer::rhi {
             const auto* vk_image_memory = static_cast<const VulkanDeviceMemory*>(image_memory.value);
             vkBindImageMemory(device, image->image, vk_image_memory->memory, 0);
 
+            // Quick command list to transition the image to the correct layout
+            CommandList* list = get_command_list(0, QueueType::Graphics, CommandList::Level::Primary);
+            auto* cmds = static_cast<VulkanCommandList*>(list);
+
+            VkImageMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.image = image->image;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            barrier.subresourceRange.layerCount = 1;
+            barrier.subresourceRange.levelCount = 1;
+
             if(image->is_depth_tex) {
-                VkImageMemoryBarrier barrier = {};
-                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                barrier.image = image->image;
-                barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
                 barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
                 barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-                barrier.subresourceRange.layerCount = 1;
-                barrier.subresourceRange.levelCount = 1;
 
-                CommandList* list = get_command_list(0, QueueType::Graphics, CommandList::Level::Primary);
-                VulkanCommandList* cmds = static_cast<VulkanCommandList*>(list);
                 vkCmdPipelineBarrier(cmds->cmds,
-                                     VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-                                     VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
-                                     0,
-                                     0,
-                                     nullptr,
-                                     0,
-                                     nullptr,
-                                     1,
-                                     &barrier);
+                    VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                    VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+                    0,
+                    0,
+                    nullptr,
+                    0,
+                    nullptr,
+                    1,
+                    &barrier);
 
-                Fence* fence = create_fence();
-                submit_command_list(list, QueueType::Graphics, fence, {}, {});
+            } else {
+                barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-                wait_for_fences({fence});
+                vkCmdPipelineBarrier(cmds->cmds,
+                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                    0,
+                    0,
+                    nullptr,
+                    0,
+                    nullptr,
+                    1,
+                    &barrier);
             }
+
+            Fence* fence = create_fence();
+            submit_command_list(list, QueueType::Graphics, fence, {}, {});
+
+            wait_for_fences({ fence });
 
             VkImageViewCreateInfo image_view_create_info = {};
             image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
