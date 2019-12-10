@@ -1171,8 +1171,6 @@ namespace nova::renderer::rhi {
 #error Unsupported Operating system
 #endif
 
-        enabled_extension_names.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
-
         std::vector<VkValidationFeatureEnableEXT> enabled_validation_features = {VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT};
 
         if(settings.settings.debug.enabled) {
@@ -1267,6 +1265,8 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderEngine::create_device_and_queues() {
+        static std::vector<std::string> device_extensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME };
+
         uint32_t device_count;
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
         auto physical_devices = std::vector<VkPhysicalDevice>(device_count);
@@ -1291,7 +1291,7 @@ namespace nova::renderer::rhi {
                 continue;
             }
 
-            if(!does_device_support_extensions(current_device)) {
+            if(!does_device_support_extensions(current_device, device_extensions)) {
                 continue;
             }
 
@@ -1364,9 +1364,9 @@ namespace nova::renderer::rhi {
         device_create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
         device_create_info.pQueueCreateInfos = queue_create_infos.data();
         device_create_info.pEnabledFeatures = &physical_device_features;
-        device_create_info.enabledExtensionCount = 1;
-        const char* swapchain_extension = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
-        device_create_info.ppEnabledExtensionNames = &swapchain_extension;
+
+        device_create_info.enabledExtensionCount = static_cast<uint32_t>(device_extensions.size());
+        device_create_info.ppEnabledExtensionNames = device_extensions.data();
         device_create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layer_names.size());
         if(!enabled_layer_names.empty()) {
             device_create_info.ppEnabledLayerNames = enabled_layer_names.data();
@@ -1391,15 +1391,28 @@ namespace nova::renderer::rhi {
         vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
     }
 
-    bool VulkanRenderEngine::does_device_support_extensions(VkPhysicalDevice device) {
+    bool VulkanRenderEngine::does_device_support_extensions(VkPhysicalDevice device, const std::vector<char*>& required_device_extensions) {
         uint32_t extension_count;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
         std::vector<VkExtensionProperties> available(extension_count);
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available.data());
 
-        std::set<std::string> required = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        std::set<std::string> required;
+        for(const auto* extension : required_device_extensions) {
+            required.emplace(extension);
+        }
+
         for(const auto& extension : available) {
             required.erase(static_cast<const char*>(extension.extensionName));
+        }
+
+        if(!required.empty()) {
+            std::stringstream ss;
+            for(const auto& extension : required) {
+                ss << extension;
+            }
+
+            NOVA_LOG(WARN) << "Device does not support these required extensions: " << ss.str();
         }
 
         return required.empty();

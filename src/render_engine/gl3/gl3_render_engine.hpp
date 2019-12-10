@@ -20,6 +20,9 @@ namespace nova::renderer::rhi {
      * \brief OpenGL 4.5 RHI backend. Optimized for Nvidia GPUs
      */
     class Gl4NvRenderEngine final : public RenderEngine {
+        // Some optimizations that still need to happen:
+        // - Compile shaders to ARB assembly in 1500 ms or less
+        // - Only one VAO
     public:
         Gl4NvRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window);
 
