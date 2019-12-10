@@ -1,12 +1,14 @@
 #include "vulkan_render_engine.hpp"
 
 #include <csignal>
-#include <set>
+#include <unordered_set>
 
 #include "nova_renderer/allocation_structs.hpp"
+#include "nova_renderer/constants.hpp"
 #include "nova_renderer/window.hpp"
 
 #include "../../util/logger.hpp"
+#include "../../util/memory_utils.hpp"
 #include "vk_structs.hpp"
 #include "vulkan_command_list.hpp"
 #include "vulkan_utils.hpp"
@@ -20,10 +22,6 @@
 #include "nova_renderer/util/windows.hpp"
 
 #endif
-
-#include "nova_renderer/constants.hpp"
-
-#include "../../util/memory_utils.hpp"
 
 namespace nova::renderer::rhi {
     VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window)
@@ -903,15 +901,15 @@ namespace nova::renderer::rhi {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
                 vkCmdPipelineBarrier(cmds->cmds,
-                    VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-                    VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-                    0,
-                    0,
-                    nullptr,
-                    0,
-                    nullptr,
-                    1,
-                    &barrier);
+                                     VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                                     VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+                                     0,
+                                     0,
+                                     nullptr,
+                                     0,
+                                     nullptr,
+                                     1,
+                                     &barrier);
 
             } else {
                 barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -920,21 +918,21 @@ namespace nova::renderer::rhi {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
                 vkCmdPipelineBarrier(cmds->cmds,
-                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                    0,
-                    0,
-                    nullptr,
-                    0,
-                    nullptr,
-                    1,
-                    &barrier);
+                                     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                     0,
+                                     0,
+                                     nullptr,
+                                     0,
+                                     nullptr,
+                                     1,
+                                     &barrier);
             }
 
             Fence* fence = create_fence();
             submit_command_list(list, QueueType::Graphics, fence, {}, {});
 
-            wait_for_fences({ fence });
+            wait_for_fences({fence});
 
             VkImageViewCreateInfo image_view_create_info = {};
             image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1449,7 +1447,7 @@ namespace nova::renderer::rhi {
         std::vector<VkExtensionProperties> available(extension_count);
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available.data());
 
-        std::set<std::string> required;
+        std::unordered_set<std::string> required;
         for(const auto* extension : required_device_extensions) {
             required.emplace(extension);
         }

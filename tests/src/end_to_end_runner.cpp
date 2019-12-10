@@ -35,7 +35,7 @@ namespace nova::renderer {
         NOVA_LOG(DEBUG) << "Predefined resources at: " << CMAKE_DEFINED_RESOURCES_PREFIX;
 
         NovaSettings settings;
-        settings.api = GraphicsApi::D3D12;
+        settings.api = GraphicsApi::Vulkan;
         settings.vulkan.application_name = "Nova Renderer test";
         settings.vulkan.application_version = {0, 9, 0};
         settings.debug.enabled = true;
