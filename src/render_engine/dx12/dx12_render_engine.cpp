@@ -312,8 +312,8 @@ namespace nova::renderer::rhi {
 
             switch(write.type) {
                 case DescriptorType::CombinedImageSampler: {
-                    for(uint32_t i = 0; i < write.bindings.size(); i++) {
-                        const auto& binding = write.bindings.at(i);
+                    for(uint32_t i = 0; i < write.resources.size(); i++) {
+                        const auto& binding = write.resources.at(i);
                         const auto* image = static_cast<const DX12Image*>(binding.image_info.image);
 
                         write_handle.Offset(i, cbv_srv_uav_descriptor_size);
@@ -331,8 +331,8 @@ namespace nova::renderer::rhi {
                 } break;
 
                 case DescriptorType::UniformBuffer: {
-                    for(uint32_t i = 0; i < write.bindings.size(); i++) {
-                        const auto& binding = write.bindings.at(i);
+                    for(uint32_t i = 0; i < write.resources.size(); i++) {
+                        const auto& binding = write.resources.at(i);
                         const auto* buffer = static_cast<const DX12Buffer*>(binding.buffer_info.buffer);
 
                         write_handle.Offset(i, cbv_srv_uav_descriptor_size);

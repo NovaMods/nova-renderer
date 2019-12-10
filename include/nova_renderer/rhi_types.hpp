@@ -52,7 +52,7 @@ namespace nova::renderer::rhi {
 
     struct ResourceBindingDescription {
         /*!
-         * \brief Descriptor set that his binding belongs to
+         * \brief Descriptor set that this binding belongs to
          */
         uint32_t set;
 
@@ -194,9 +194,11 @@ namespace nova::renderer::rhi {
         DescriptorType type;
 
         /*!
-         * \brief Information about th
+         * \brief All the resources to bind to this descriptor
+         *
+         * You may only bind multiple resources if the descriptor is an array descriptor. Knowing whether you're binding to an array descriptor or not is your responsibility
          */
-        std::vector<DescriptorResourceInfo> bindings;
+        std::vector<DescriptorResourceInfo> resources;
     };
 #pragma endregion
 
