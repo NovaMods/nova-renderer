@@ -506,15 +506,15 @@ namespace nova::renderer::rhi {
             vk_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             vk_write.dstSet = static_cast<const VulkanDescriptorSet*>(write.set)->descriptor_set;
             vk_write.dstBinding = write.first_binding;
-            vk_write.descriptorCount = static_cast<uint32_t>(write.bindings.size());
+            vk_write.descriptorCount = static_cast<uint32_t>(write.resources.size());
             vk_write.dstArrayElement = 0;
 
             switch(write.type) {
                 case DescriptorType::CombinedImageSampler: {
                     const auto write_begin_idx = image_infos.size();
 
-                    std::transform(write.bindings.begin(),
-                                   write.bindings.end(),
+                    std::transform(write.resources.begin(),
+                                   write.resources.end(),
                                    std::back_insert_iterator<std::vector<VkDescriptorImageInfo>>(image_infos),
                                    [&](const DescriptorResourceInfo& info) {
                                        VkDescriptorImageInfo vk_image_info = {};
@@ -533,8 +533,8 @@ namespace nova::renderer::rhi {
                 case DescriptorType::UniformBuffer: {
                     const auto write_begin_idx = image_infos.size();
 
-                    std::transform(write.bindings.begin(),
-                                   write.bindings.end(),
+                    std::transform(write.resources.begin(),
+                                   write.resources.end(),
                                    std::back_insert_iterator<std::vector<VkDescriptorBufferInfo>>(buffer_infos),
                                    [&](const DescriptorResourceInfo& info) {
                                        const auto* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
