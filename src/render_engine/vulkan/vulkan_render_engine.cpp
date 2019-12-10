@@ -302,7 +302,7 @@ namespace nova::renderer::rhi {
 
         auto* framebuffer = new_object<VulkanFramebuffer>();
         framebuffer->size = framebuffer_size;
-        framebuffer->num_attachments = static_cast<uint32_t>(color_attachments.size());
+        framebuffer->num_attachments = static_cast<uint32_t>(attachment_views.size());
 
         NOVA_CHECK_RESULT(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer->framebuffer));
 
@@ -1265,7 +1265,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderEngine::create_device_and_queues() {
-        static std::vector<std::string> device_extensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME };
+        static std::vector<char*> device_extensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME };
 
         uint32_t device_count;
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
@@ -1549,7 +1549,7 @@ namespace nova::renderer::rhi {
             binding_flags.pBindingFlags = flags.data();
             flag_infos.emplace_back(binding_flags);
 
-            create_info.pNext = &(*flag_infos.end());
+            create_info.pNext = &flag_infos[flag_infos.size() - 1];
 
             dsl_create_infos.push_back(create_info);
         }
