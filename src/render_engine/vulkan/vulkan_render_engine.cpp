@@ -518,12 +518,12 @@ namespace nova::renderer::rhi {
                                    std::back_insert_iterator<std::vector<VkDescriptorImageInfo>>(image_infos),
                                    [&](const DescriptorResourceInfo& info) {
                                        VkDescriptorImageInfo vk_image_info = {};
-									   vk_image_info.imageView = image_view_for_image(info.image_info.image);
+                                       vk_image_info.imageView = image_view_for_image(info.image_info.image);
                                        vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                                        vk_image_info.sampler = static_cast<VulkanSampler*>(info.image_info.sampler)->sampler;
                                        return vk_image_info;
                                    });
-                    
+
                     vk_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     vk_write.pImageInfo = &image_infos[write_begin_idx];
 
@@ -531,25 +531,25 @@ namespace nova::renderer::rhi {
                 } break;
 
                 case DescriptorType::UniformBuffer: {
-					const auto write_begin_idx = image_infos.size();
+                    const auto write_begin_idx = image_infos.size();
 
-					std::transform(write.bindings.begin(),
-						write.bindings.end(),
-						std::back_insert_iterator<std::vector<VkDescriptorBufferInfo>>(buffer_infos),
-						[&](const DescriptorResourceInfo& info) {
-							const auto* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
+                    std::transform(write.bindings.begin(),
+                                   write.bindings.end(),
+                                   std::back_insert_iterator<std::vector<VkDescriptorBufferInfo>>(buffer_infos),
+                                   [&](const DescriptorResourceInfo& info) {
+                                       const auto* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
 
-							VkDescriptorBufferInfo vk_buffer_info = {};
-							vk_buffer_info.buffer = vk_buffer->buffer;
-							vk_buffer_info.offset = vk_buffer->memory.allocation_info.offset.b_count();
-							vk_buffer_info.range = vk_buffer->memory.allocation_info.size.b_count();
-							return vk_buffer_info;
-						});
+                                       VkDescriptorBufferInfo vk_buffer_info = {};
+                                       vk_buffer_info.buffer = vk_buffer->buffer;
+                                       vk_buffer_info.offset = vk_buffer->memory.allocation_info.offset.b_count();
+                                       vk_buffer_info.range = vk_buffer->memory.allocation_info.size.b_count();
+                                       return vk_buffer_info;
+                                   });
 
-					vk_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-					vk_write.pBufferInfo = &buffer_infos[write_begin_idx];
+                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    vk_write.pBufferInfo = &buffer_infos[write_begin_idx];
 
-					vk_writes.push_back(vk_write);
+                    vk_writes.push_back(vk_write);
                 } break;
 
                 case DescriptorType::StorageBuffer: {

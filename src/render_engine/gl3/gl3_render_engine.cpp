@@ -144,18 +144,18 @@ namespace nova::renderer::rhi {
             switch(write.type) {
                 case DescriptorType::CombinedImageSampler: {
                     for(uint32_t i = 0; i < write.bindings.size(); i++) {
-						Gl3Descriptor& descriptor = set->descriptors.at(write.first_binding + i);
+                        Gl3Descriptor& descriptor = set->descriptors.at(write.first_binding + i);
                         auto* image = static_cast<Gl3Image*>(write.bindings.at(i).image_info.image);
                         descriptor.resource = image;
                     }
                 } break;
 
                 case DescriptorType::UniformBuffer: {
-					for (uint32_t i = 0; i < write.bindings.size(); i++) {
-						Gl3Descriptor& descriptor = set->descriptors.at(write.first_binding + i);
-						auto* buffer = static_cast<Gl3Buffer*>(write.bindings.at(i).buffer_info.buffer);
-						descriptor.resource = buffer;
-					}
+                    for(uint32_t i = 0; i < write.bindings.size(); i++) {
+                        Gl3Descriptor& descriptor = set->descriptors.at(write.first_binding + i);
+                        auto* buffer = static_cast<Gl3Buffer*>(write.bindings.at(i).buffer_info.buffer);
+                        descriptor.resource = buffer;
+                    }
 
                 } break;
 
