@@ -272,7 +272,9 @@ namespace nova::renderer::rhi {
 
         info.clipped = VK_TRUE;
 
-        vkCreateSwapchainKHR(render_engine.device, &info, nullptr, &swapchain);
+        auto res = vkCreateSwapchainKHR(render_engine.device, &info, nullptr, &swapchain);
+
+        NOVA_LOG(ERROR) << res;
 
         swapchain_format = surface_format.format;
         this->present_mode = present_mode;

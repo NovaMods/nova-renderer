@@ -52,7 +52,7 @@ namespace nova::renderer::rhi {
 
     struct ResourceBindingDescription {
         /*!
-         * \brief Descriptor set that his binding belongs to
+         * \brief Descriptor set that this binding belongs to
          */
         uint32_t set;
 
@@ -63,8 +63,17 @@ namespace nova::renderer::rhi {
 
         /*!
          * \brief Number of bindings. Useful if you have an array of descriptors
+         *
+         * If this is a unbounded array, this count is the upper limit on the size of the array
          */
         uint32_t count;
+
+        /*!
+         * \brief If true, this binding is an unbounded array
+         *
+         * Unbounded descriptors must be the final binding in their descriptor set
+         */
+        bool is_unbounded;
 
         /*!
          * \brief The type of object that will be bound
@@ -146,15 +155,27 @@ namespace nova::renderer::rhi {
         };
     };
 
-    struct DescriptorImageUpdate {
-        const Image* image;
+    struct DescriptorImageInfo {
+        Image* image;
         shaderpack::TextureFormat format;
         Sampler* sampler;
     };
 
-    struct DescriptorBufferWrite {
-        const Buffer* buffer;
+    struct DescriptorBufferInfo {
+        Buffer* buffer;
     };
+
+	union DescriptorResourceInfo {
+		/*!
+		 * \brief Information to update an image descriptor
+		 */
+		DescriptorImageInfo image_info;
+
+		/*!
+		 * \brief Information to update a buffer descriptor
+		 */
+		DescriptorBufferInfo buffer_info;
+	};
 
     struct DescriptorSetWrite {
         /*!
@@ -165,24 +186,19 @@ namespace nova::renderer::rhi {
         /*!
          * \brief The specific binding in the set that you want to write to
          */
-        uint32_t binding;
+        uint32_t first_binding;
 
         /*!
          * \brief The type of descriptor you're writing to
          */
         DescriptorType type;
 
-        union {
-            /*!
-             * \brief Information to update an image descriptor
-             */
-            DescriptorImageUpdate image_info;
-
-            /*!
-             * \brief Information to update a buffer descriptor
-             */
-            DescriptorBufferWrite buffer_info;
-        };
+        /*!
+         * \brief All the resources to bind to this descriptor
+         *
+         * You may only bind multiple resources if the descriptor is an array descriptor. Knowing whether you're binding to an array descriptor or not is your responsibility
+         */
+        std::vector<DescriptorResourceInfo> resources;
     };
 #pragma endregion
 

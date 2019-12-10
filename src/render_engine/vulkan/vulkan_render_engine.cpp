@@ -1,12 +1,14 @@
 #include "vulkan_render_engine.hpp"
 
 #include <csignal>
-#include <set>
+#include <unordered_set>
 
 #include "nova_renderer/allocation_structs.hpp"
+#include "nova_renderer/constants.hpp"
 #include "nova_renderer/window.hpp"
 
 #include "../../util/logger.hpp"
+#include "../../util/memory_utils.hpp"
 #include "vk_structs.hpp"
 #include "vulkan_command_list.hpp"
 #include "vulkan_utils.hpp"
@@ -20,10 +22,6 @@
 #include "nova_renderer/util/windows.hpp"
 
 #endif
-
-#include "nova_renderer/constants.hpp"
-
-#include "../../util/memory_utils.hpp"
 
 namespace nova::renderer::rhi {
     VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window)
@@ -302,7 +300,7 @@ namespace nova::renderer::rhi {
 
         auto* framebuffer = new_object<VulkanFramebuffer>();
         framebuffer->size = framebuffer_size;
-        framebuffer->num_attachments = static_cast<uint32_t>(color_attachments.size());
+        framebuffer->num_attachments = static_cast<uint32_t>(attachment_views.size());
 
         NOVA_CHECK_RESULT(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer->framebuffer));
 
@@ -505,42 +503,55 @@ namespace nova::renderer::rhi {
             VkWriteDescriptorSet vk_write = {};
             vk_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             vk_write.dstSet = static_cast<const VulkanDescriptorSet*>(write.set)->descriptor_set;
-            vk_write.dstBinding = write.binding;
-            vk_write.descriptorCount = 1;
+            vk_write.dstBinding = write.first_binding;
+            vk_write.descriptorCount = static_cast<uint32_t>(write.resources.size());
             vk_write.dstArrayElement = 0;
 
             switch(write.type) {
                 case DescriptorType::CombinedImageSampler: {
-                    VkDescriptorImageInfo vk_image_info = {};
-                    vk_image_info.imageView = image_view_for_image(write.image_info.image);
-                    vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    vk_image_info.sampler = static_cast<VulkanSampler*>(write.image_info.sampler)->sampler;
+                    const auto write_begin_idx = image_infos.size();
 
-                    image_infos.push_back(vk_image_info);
+                    std::transform(write.resources.begin(),
+                                   write.resources.end(),
+                                   std::back_insert_iterator<std::vector<VkDescriptorImageInfo>>(image_infos),
+                                   [&](const DescriptorResourceInfo& info) {
+                                       VkDescriptorImageInfo vk_image_info = {};
+                                       vk_image_info.imageView = image_view_for_image(info.image_info.image);
+                                       vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                                       vk_image_info.sampler = static_cast<VulkanSampler*>(info.image_info.sampler)->sampler;
+                                       return vk_image_info;
+                                   });
 
                     vk_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    vk_write.pImageInfo = &image_infos.at(image_infos.size() - 1);
+                    vk_write.pImageInfo = &image_infos[write_begin_idx];
 
                     vk_writes.push_back(vk_write);
                 } break;
 
                 case DescriptorType::UniformBuffer: {
-                    const VulkanBuffer* vk_buffer = static_cast<const VulkanBuffer*>(write.buffer_info.buffer);
+                    const auto write_begin_idx = image_infos.size();
 
-                    VkDescriptorBufferInfo vk_buffer_info = {};
-                    vk_buffer_info.buffer = vk_buffer->buffer;
-                    vk_buffer_info.offset = vk_buffer->memory.allocation_info.offset.b_count();
-                    vk_buffer_info.range = vk_buffer->memory.allocation_info.size.b_count();
+                    std::transform(write.resources.begin(),
+                                   write.resources.end(),
+                                   std::back_insert_iterator<std::vector<VkDescriptorBufferInfo>>(buffer_infos),
+                                   [&](const DescriptorResourceInfo& info) {
+                                       const auto* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
 
-                    buffer_infos.push_back(vk_buffer_info);
+                                       VkDescriptorBufferInfo vk_buffer_info = {};
+                                       vk_buffer_info.buffer = vk_buffer->buffer;
+                                       vk_buffer_info.offset = vk_buffer->memory.allocation_info.offset.b_count();
+                                       vk_buffer_info.range = vk_buffer->memory.allocation_info.size.b_count();
+                                       return vk_buffer_info;
+                                   });
 
                     vk_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                    vk_write.pBufferInfo = &buffer_infos.at(buffer_infos.size() - 1);
+                    vk_write.pBufferInfo = &buffer_infos[write_begin_idx];
 
                     vk_writes.push_back(vk_write);
                 } break;
 
                 case DescriptorType::StorageBuffer: {
+                    // TODO
                 } break;
 
                 default:;
@@ -841,6 +852,7 @@ namespace nova::renderer::rhi {
         image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
         if(format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT) {
             image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+            image->is_depth_tex = true;
         } else {
             image_create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
         }
@@ -870,6 +882,57 @@ namespace nova::renderer::rhi {
         if(image_memory) {
             const auto* vk_image_memory = static_cast<const VulkanDeviceMemory*>(image_memory.value);
             vkBindImageMemory(device, image->image, vk_image_memory->memory, 0);
+
+            // Quick command list to transition the image to the correct layout
+            CommandList* list = get_command_list(0, QueueType::Graphics, CommandList::Level::Primary);
+            auto* cmds = static_cast<VulkanCommandList*>(list);
+
+            VkImageMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.image = image->image;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            barrier.subresourceRange.layerCount = 1;
+            barrier.subresourceRange.levelCount = 1;
+
+            if(image->is_depth_tex) {
+                barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+                barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+                vkCmdPipelineBarrier(cmds->cmds,
+                                     VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                                     VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+                                     0,
+                                     0,
+                                     nullptr,
+                                     0,
+                                     nullptr,
+                                     1,
+                                     &barrier);
+
+            } else {
+                barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+                vkCmdPipelineBarrier(cmds->cmds,
+                                     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                     0,
+                                     0,
+                                     nullptr,
+                                     0,
+                                     nullptr,
+                                     1,
+                                     &barrier);
+            }
+
+            Fence* fence = create_fence();
+            submit_command_list(list, QueueType::Graphics, fence, {}, {});
+
+            wait_for_fences({fence});
 
             VkImageViewCreateInfo image_view_create_info = {};
             image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1252,6 +1315,8 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderEngine::create_device_and_queues() {
+        static std::vector<char*> device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME};
+
         uint32_t device_count;
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
         auto physical_devices = std::vector<VkPhysicalDevice>(device_count);
@@ -1276,7 +1341,7 @@ namespace nova::renderer::rhi {
                 continue;
             }
 
-            if(!does_device_support_extensions(current_device)) {
+            if(!does_device_support_extensions(current_device, device_extensions)) {
                 continue;
             }
 
@@ -1349,13 +1414,22 @@ namespace nova::renderer::rhi {
         device_create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
         device_create_info.pQueueCreateInfos = queue_create_infos.data();
         device_create_info.pEnabledFeatures = &physical_device_features;
-        device_create_info.enabledExtensionCount = 1;
-        const char* swapchain_extension = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
-        device_create_info.ppEnabledExtensionNames = &swapchain_extension;
+
+        device_create_info.enabledExtensionCount = static_cast<uint32_t>(device_extensions.size());
+        device_create_info.ppEnabledExtensionNames = device_extensions.data();
         device_create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layer_names.size());
         if(!enabled_layer_names.empty()) {
             device_create_info.ppEnabledLayerNames = enabled_layer_names.data();
         }
+
+        // Set up descriptor indexing
+        // Currently Nova only cares about indexing for texture descriptors
+        VkPhysicalDeviceDescriptorIndexingFeaturesEXT descriptor_indexing_features = {};
+        descriptor_indexing_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
+        descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+        descriptor_indexing_features.runtimeDescriptorArray = true;
+        descriptor_indexing_features.descriptorBindingVariableDescriptorCount = VK_TRUE;
+        device_create_info.pNext = &descriptor_indexing_features;
 
         NOVA_CHECK_RESULT(vkCreateDevice(gpu.phys_device, &device_create_info, nullptr, &device));
 
@@ -1367,15 +1441,28 @@ namespace nova::renderer::rhi {
         vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
     }
 
-    bool VulkanRenderEngine::does_device_support_extensions(VkPhysicalDevice device) {
+    bool VulkanRenderEngine::does_device_support_extensions(VkPhysicalDevice device, const std::vector<char*>& required_device_extensions) {
         uint32_t extension_count;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
         std::vector<VkExtensionProperties> available(extension_count);
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available.data());
 
-        std::set<std::string> required = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        std::unordered_set<std::string> required;
+        for(const auto* extension : required_device_extensions) {
+            required.emplace(extension);
+        }
+
         for(const auto& extension : available) {
             required.erase(static_cast<const char*>(extension.extensionName));
+        }
+
+        if(!required.empty()) {
+            std::stringstream ss;
+            for(const auto& extension : required) {
+                ss << extension << ", ";
+            }
+
+            NOVA_LOG(WARN) << "Device does not support these required extensions: " << ss.str();
         }
 
         return required.empty();
@@ -1468,8 +1555,10 @@ namespace nova::renderer::rhi {
         std::vector<std::vector<VkDescriptorSetLayoutBinding>> bindings_by_set;
         bindings_by_set.resize(all_bindings.size());
 
-        for(const auto& named_binding : all_bindings) {
-            const ResourceBindingDescription& binding = named_binding.second;
+        std::vector<std::vector<VkDescriptorBindingFlagsEXT>> binding_flags_by_set;
+        binding_flags_by_set.resize(all_bindings.size());
+
+        for(const auto& [name, binding] : all_bindings) {
             if(binding.set >= bindings_by_set.size()) {
                 NOVA_LOG(ERROR) << "You've skipped one or more descriptor sets! Don't do that, Nova can't handle it";
                 continue;
@@ -1481,16 +1570,36 @@ namespace nova::renderer::rhi {
             descriptor_binding.descriptorCount = binding.count;
             descriptor_binding.stageFlags = to_vk_shader_stage_flags(binding.stages);
 
+            if(binding.is_unbounded) {
+                binding_flags_by_set[binding.set].push_back(VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT);
+
+            } else {
+                binding_flags_by_set[binding.set].push_back(0);
+            }
+
             bindings_by_set[binding.set].push_back(descriptor_binding);
         }
 
         std::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos = {};
         dsl_create_infos.reserve(bindings_by_set.size());
+
+        std::vector<VkDescriptorSetLayoutBindingFlagsCreateInfoEXT> flag_infos = {};
+        flag_infos.reserve(bindings_by_set.size());
+
         for(const auto& bindings : bindings_by_set) {
             VkDescriptorSetLayoutCreateInfo create_info = {};
             create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
             create_info.bindingCount = static_cast<uint32_t>(bindings.size());
             create_info.pBindings = bindings.data();
+
+            const auto& flags = binding_flags_by_set.at(dsl_create_infos.size());
+            VkDescriptorSetLayoutBindingFlagsCreateInfoEXT binding_flags = {};
+            binding_flags.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT;
+            binding_flags.bindingCount = static_cast<uint32_t>(flags.size());
+            binding_flags.pBindingFlags = flags.data();
+            flag_infos.emplace_back(binding_flags);
+
+            create_info.pNext = &flag_infos[flag_infos.size() - 1];
 
             dsl_create_infos.push_back(create_info);
         }

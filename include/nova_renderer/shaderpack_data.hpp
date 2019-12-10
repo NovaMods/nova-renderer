@@ -211,6 +211,11 @@ namespace nova::renderer::shaderpack {
 
     enum class TextureDimensionTypeEnum { ScreenRelative, Absolute };
 
+    enum class ImageUsage {
+        RenderTarget,
+        SampledImage,
+    };
+
     /*!
      * \brief Defines a sampler to use for a texture
      *
@@ -448,6 +453,8 @@ namespace nova::renderer::shaderpack {
          * If you use `Backbuffer`, then all fields are ignored since the backbuffer is always bound to output location 0
          */
         std::string name;
+
+        ImageUsage usage;
 
         TextureFormat format{};
     };

@@ -69,6 +69,8 @@ namespace nova::renderer {
 
         MTR_SCOPE("Init", "nova_renderer::nova_renderer");
 
+        window = std::make_shared<NovaWindow>(settings);
+
         if(settings.debug.renderdoc.enabled) {
             MTR_SCOPE("Init", "LoadRenderdoc");
             auto rd_load_result = load_renderdoc(settings.debug.renderdoc.renderdoc_dll_path);
@@ -451,7 +453,6 @@ namespace nova::renderer {
                     }
                 }
             }
-
             renderpass.id = static_cast<uint32_t>(renderpass_metadatas.size());
 
             renderpasses.push_back(renderpass);
@@ -516,23 +517,25 @@ namespace nova::renderer {
 
             rhi::DescriptorSetWrite write = {};
             write.set = descriptor_set;
-            write.binding = binding_desc.binding;
+            write.first_binding = binding_desc.binding;
+            write.resources.emplace_back();
+            rhi::DescriptorResourceInfo& resource_info = write.resources[0];
 
             if(const auto dyn_tex_itr = dynamic_textures.find(resource_name); dyn_tex_itr != dynamic_textures.end()) {
-                const rhi::Image* image = dyn_tex_itr->second;
+                rhi::Image* image = dyn_tex_itr->second;
 
-                write.image_info.image = image;
-                write.image_info.sampler = point_sampler;
-                write.image_info.format = dynamic_texture_infos.at(resource_name).format;
-                
+                resource_info.image_info.image = image;
+                resource_info.image_info.sampler = point_sampler;
+                resource_info.image_info.format = dynamic_texture_infos.at(resource_name).format;
+
                 write.type = rhi::DescriptorType::CombinedImageSampler;
 
                 writes.push_back(write);
 
             } else if(const auto builtin_buffer_itr = builtin_buffers.find(resource_name); builtin_buffer_itr != builtin_buffers.end()) {
-                const rhi::Buffer* buffer = builtin_buffer_itr->second;
+                rhi::Buffer* buffer = builtin_buffer_itr->second;
 
-                write.buffer_info.buffer = buffer;
+                resource_info.buffer_info.buffer = buffer;
                 write.type = rhi::DescriptorType::UniformBuffer;
 
                 writes.push_back(write);
@@ -632,6 +635,13 @@ namespace nova::renderer {
         new_binding.type = type;
         new_binding.count = 1;
         new_binding.stages = shader_stage;
+
+        const spirv_cross::SPIRType& type_information = shader_compiler.get_type(resource.type_id);
+        if(!type_information.array.empty()) {
+            new_binding.count = type_information.array[0];
+            // All arrays are unbounded until I figure out how to use SPIRV-Cross to detect unbounded arrays
+            new_binding.is_unbounded = true;
+        }
 
         const std::string& resource_name = resource.name;
 

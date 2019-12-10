@@ -139,22 +139,23 @@ namespace nova::renderer::rhi {
 
     void Gl4NvRenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
         for(DescriptorSetWrite& write : writes) {
-            const auto* const_set = static_cast<const Gl3DescriptorSet*>(write.set);
-            auto* set = const_cast<Gl3DescriptorSet*>(const_set); // I have a few regrets
-            Gl3Descriptor& descriptor = set->descriptors.at(write.binding);
+            auto* set = static_cast<Gl3DescriptorSet*>(write.set);
 
             switch(write.type) {
-
                 case DescriptorType::CombinedImageSampler: {
-                    const auto* cimage = static_cast<const Gl3Image*>(write.image_info.image);
-                    auto* image = const_cast<Gl3Image*>(cimage);
-                    descriptor.resource = image;
+                    for(uint32_t i = 0; i < write.resources.size(); i++) {
+                        Gl3Descriptor& descriptor = set->descriptors.at(write.first_binding + i);
+                        auto* image = static_cast<Gl3Image*>(write.resources.at(i).image_info.image);
+                        descriptor.resource = image;
+                    }
                 } break;
 
                 case DescriptorType::UniformBuffer: {
-                    const auto* cbuffer = static_cast<const Gl3Buffer*>(write.buffer_info.buffer);
-                    auto* buffer = const_cast<Gl3Buffer*>(cbuffer);
-                    descriptor.resource = buffer;
+                    for(uint32_t i = 0; i < write.resources.size(); i++) {
+                        Gl3Descriptor& descriptor = set->descriptors.at(write.first_binding + i);
+                        auto* buffer = static_cast<Gl3Buffer*>(write.resources.at(i).buffer_info.buffer);
+                        descriptor.resource = buffer;
+                    }
 
                 } break;
 

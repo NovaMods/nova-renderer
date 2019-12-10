@@ -62,6 +62,9 @@ namespace nova::renderer {
             if(options.debug.enabled) {
                 glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
             }
+
+        } else {
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         }
 
         window = glfwCreateWindow(static_cast<int>(options.window.width),
