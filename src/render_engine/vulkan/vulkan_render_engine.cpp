@@ -884,6 +884,37 @@ namespace nova::renderer::rhi {
             const auto* vk_image_memory = static_cast<const VulkanDeviceMemory*>(image_memory.value);
             vkBindImageMemory(device, image->image, vk_image_memory->memory, 0);
 
+            if(image->is_depth_tex) {
+                VkImageMemoryBarrier barrier = {};
+                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier.image = image->image;
+                barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+                barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                barrier.subresourceRange.layerCount = 1;
+                barrier.subresourceRange.levelCount = 1;
+
+                CommandList* list = get_command_list(0, QueueType::Graphics, CommandList::Level::Primary);
+                VulkanCommandList* cmds = static_cast<VulkanCommandList*>(list);
+                vkCmdPipelineBarrier(cmds->cmds,
+                                     VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+                                     VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
+                                     0,
+                                     0,
+                                     nullptr,
+                                     0,
+                                     nullptr,
+                                     1,
+                                     &barrier);
+
+                Fence* fence = create_fence();
+                submit_command_list(list, QueueType::Graphics, fence, {}, {});
+
+                wait_for_fences({fence});
+            }
+
             VkImageViewCreateInfo image_view_create_info = {};
             image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             image_view_create_info.image = image->image;
@@ -1265,7 +1296,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderEngine::create_device_and_queues() {
-        static std::vector<char*> device_extensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME };
+        static std::vector<char*> device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME};
 
         uint32_t device_count;
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));

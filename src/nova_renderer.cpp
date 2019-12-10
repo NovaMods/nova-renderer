@@ -453,7 +453,6 @@ namespace nova::renderer {
                     }
                 }
             }
-
             renderpass.id = static_cast<uint32_t>(renderpass_metadatas.size());
 
             renderpasses.push_back(renderpass);
