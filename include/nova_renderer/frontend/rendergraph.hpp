@@ -44,20 +44,24 @@ namespace nova::renderer {
         ProceduralMeshBatch(std::unordered_map<MeshId, ProceduralMesh>* meshes, const MeshId key) : mesh(meshes, key) {}
     };
 
-    struct MaterialPass {
-        // Descriptors for the material pass
-
+    class MaterialPass {
+    public:
         std::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
         std::vector<ProceduralMeshBatch<StaticMeshRenderCommand>> static_procedural_mesh_draws;
 
         std::vector<rhi::DescriptorSet*> descriptor_sets;
         const rhi::PipelineInterface* pipeline_interface = nullptr;
+
+        void record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx);
     };
 
-    struct Pipeline {
+    class Pipeline {
+    public:
         rhi::Pipeline* pipeline = nullptr;
 
         std::vector<MaterialPass> passes;
+
+        void record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx);
     };
 
     class Renderpass {
@@ -82,7 +86,7 @@ namespace nova::renderer {
          *
          * The first parameter to this function is this exact renderpass, the second parameter is the command list to record into
          */
-        std::optional<std::function<void(const Renderpass&, rhi::CommandList*, const FrameContext&)>> record;
+        void set_record_func(std::function<void(const Renderpass&, rhi::CommandList*, FrameContext&)> record_func);
 
         /*!
          * \brief Records this renderpass into the provided command list
@@ -90,10 +94,12 @@ namespace nova::renderer {
          * If this renderpass has a custom `record` function, this method will call that function. If not, it will simply render all the
          * drawcalls in this renderpass
          */
-        void record_into_command_list(rhi::CommandList* cmds, const FrameContext& ctx);
+        void record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx);
 
     private:
-        void record_default_render(rhi::CommandList* cmds, const FrameContext& ctx);
+        std::optional<std::function<void(const Renderpass&, rhi::CommandList*, FrameContext&)>> record_func;
+
+        void record_default_render(rhi::CommandList* cmds, FrameContext& ctx);
     };
 
     struct Mesh {
