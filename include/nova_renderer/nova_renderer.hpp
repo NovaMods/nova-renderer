@@ -81,7 +81,6 @@ namespace nova::renderer {
 
         NovaRenderer(NovaRenderer&& other) noexcept = delete;
         NovaRenderer& operator=(NovaRenderer&& other) noexcept = delete;
-
         NovaRenderer(const NovaRenderer& other) = delete;
         NovaRenderer& operator=(const NovaRenderer& other) = delete;
 
@@ -140,6 +139,10 @@ namespace nova::renderer {
          */
         void destroy_mesh(MeshId mesh_to_destroy);
 #pragma endregion
+
+        #pragma region Resources
+        rhi::Buffer* get_builtin_buffer(const std::string& buffer_name) const;
+        #pragma endregion
 
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
                                                                const StaticMeshRenderableData& renderable);

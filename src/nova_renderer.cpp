@@ -848,6 +848,8 @@ namespace nova::renderer {
         }
     }
 
+    rhi::Buffer* NovaRenderer::get_builtin_buffer(const std::string& buffer_name) const { return builtin_buffers.at(buffer_name); }
+
     RenderableId NovaRenderer::add_renderable_for_material(const FullMaterialPassName& material_name,
                                                            const StaticMeshRenderableData& renderable) {
         const RenderableId id = next_renderable_id.load();

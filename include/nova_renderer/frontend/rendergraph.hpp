@@ -1,10 +1,12 @@
 #pragma once
 
+#include <mutex>
+
+#include "nova_renderer/frame_context.hpp"
 #include "nova_renderer/frontend/procedural_mesh.hpp"
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
-#include "nova_renderer/frame_context.hpp"
 
 namespace nova::renderer {
     template <typename RenderCommandType>
@@ -53,6 +55,12 @@ namespace nova::renderer {
         const rhi::PipelineInterface* pipeline_interface = nullptr;
 
         void record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx);
+
+    private:
+        static void record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds, FrameContext& ctx);
+        static void record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
+                                                rhi::CommandList* cmds,
+                                                FrameContext& ctx);
     };
 
     class Pipeline {
@@ -79,7 +87,9 @@ namespace nova::renderer {
         std::vector<rhi::ResourceBarrier> write_texture_barriers;
 
         /*!
-         * \brief Optional record function for this renderpass
+         * \brief Tells this renderpass to use the provided function to record itself into a command list
+         *
+         * Nova expects that you'll only call this method once ever. Otherwise, you may run into all kinds of threading issues
          *
          * This member allows a host application to register a custom command list recording function for this renderpass. It paves the way
          * for shaderpacks with render scripts
