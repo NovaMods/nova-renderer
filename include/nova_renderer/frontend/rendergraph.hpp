@@ -53,14 +53,6 @@ namespace nova::renderer {
 
         std::vector<rhi::DescriptorSet*> descriptor_sets;
         const rhi::PipelineInterface* pipeline_interface = nullptr;
-
-        void record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx);
-
-    private:
-        static void record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds, FrameContext& ctx);
-        static void record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
-                                                rhi::CommandList* cmds,
-                                                FrameContext& ctx);
     };
 
     class Pipeline {
@@ -68,8 +60,6 @@ namespace nova::renderer {
         rhi::Pipeline* pipeline = nullptr;
 
         std::vector<MaterialPass> passes;
-
-        void record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx);
     };
 
     class Renderpass {
@@ -89,27 +79,14 @@ namespace nova::renderer {
         /*!
          * \brief Tells this renderpass to use the provided function to record itself into a command list
          *
-         * Nova expects that you'll only call this method once ever. Otherwise, you may run into all kinds of threading issues
+         * Nova expects that you'll only set this variable once ever. Otherwise, you may run into all kinds of threading issues
          *
          * This member allows a host application to register a custom command list recording function for this renderpass. It paves the way
          * for shaderpacks with render scripts
          *
          * The first parameter to this function is this exact renderpass, the second parameter is the command list to record into
          */
-        void set_record_func(std::function<void(const Renderpass&, rhi::CommandList*, FrameContext&)> record_func);
-
-        /*!
-         * \brief Records this renderpass into the provided command list
-         *
-         * If this renderpass has a custom `record` function, this method will call that function. If not, it will simply render all the
-         * drawcalls in this renderpass
-         */
-        void record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx);
-
-    private:
         std::optional<std::function<void(const Renderpass&, rhi::CommandList*, FrameContext&)>> record_func;
-
-        void record_default_render(rhi::CommandList* cmds, FrameContext& ctx);
     };
 
     struct Mesh {
@@ -118,4 +95,16 @@ namespace nova::renderer {
 
         uint32_t num_indices = 0;
     };
+
+    /*!
+     * \brief Records this renderpass into the provided command list
+     *
+     * If this renderpass has a custom `record` function, this method will call that function. If not, it will simply render all the
+     * drawcalls in this renderpass
+     *
+     * \param renderpass The renderpass to record
+     * \param cmds The command list to record the renderpass into
+     * \param ctx The per-frame data for the current frame
+     */
+    void record_renderpass(const Renderpass& renderpass, rhi::CommandList* cmds, FrameContext& ctx);
 } // namespace nova::renderer
