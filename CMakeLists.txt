@@ -117,6 +117,7 @@ set(NOVA_SOURCE
         include/nova_renderer/bytes.hpp
         include/nova_renderer/polyalloc.hpp
         include/nova_renderer/constants.hpp
+        include/nova_renderer/frame_context.hpp
         include/nova_renderer/rhi/forward_decls.hpp
         include/nova_renderer/rhi/command_list.hpp
         include/nova_renderer/rhi/rhi_enums.hpp
@@ -143,6 +144,7 @@ set(NOVA_SOURCE
         src/render_objects/procedural_mesh.cpp
         src/render_objects/uniform_structs.hpp
         src/render_objects/renderables.cpp
+        src/renderer/rendergraph.cpp
 
         src/util/logger.cpp
         src/util/logger.hpp

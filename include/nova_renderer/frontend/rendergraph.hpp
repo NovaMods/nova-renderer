@@ -4,6 +4,7 @@
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
+#include "nova_renderer/frame_context.hpp"
 
 namespace nova::renderer {
     template <typename RenderCommandType>
@@ -59,7 +60,8 @@ namespace nova::renderer {
         std::vector<MaterialPass> passes;
     };
 
-    struct Renderpass {
+    class Renderpass {
+    public:
         uint32_t id = 0;
 
         rhi::Renderpass* renderpass = nullptr;
@@ -80,7 +82,7 @@ namespace nova::renderer {
          *
          * The first parameter to this function is this exact renderpass, the second parameter is the command list to record into
          */
-        std::optional<std::function<void(const Renderpass&, rhi::CommandList*)>> record;
+        std::optional<std::function<void(const Renderpass&, rhi::CommandList*, const FrameContext&)>> record;
 
         /*!
          * \brief Records this renderpass into the provided command list
@@ -88,7 +90,10 @@ namespace nova::renderer {
          * If this renderpass has a custom `record` function, this method will call that function. If not, it will simply render all the
          * drawcalls in this renderpass
          */
-        void record_into_command_list(rhi::CommandList* cmds);
+        void record_into_command_list(rhi::CommandList* cmds, const FrameContext& ctx);
+
+    private:
+        void record_default_render(rhi::CommandList* cmds, const FrameContext& ctx);
     };
 
     struct Mesh {
