@@ -89,13 +89,6 @@ namespace nova::renderer {
         std::optional<std::function<void(const Renderpass&, rhi::CommandList*, FrameContext&)>> record_func;
     };
 
-    struct Mesh {
-        rhi::Buffer* vertex_buffer = nullptr;
-        rhi::Buffer* index_buffer = nullptr;
-
-        uint32_t num_indices = 0;
-    };
-
     /*!
      * \brief Records this renderpass into the provided command list
      *
@@ -106,5 +99,5 @@ namespace nova::renderer {
      * \param cmds The command list to record the renderpass into
      * \param ctx The per-frame data for the current frame
      */
-    void record_renderpass(const Renderpass& renderpass, rhi::CommandList* cmds, FrameContext& ctx);
+    void record_into_command_list(const Renderpass& renderpass, rhi::CommandList* cmds, FrameContext& ctx);
 } // namespace nova::renderer

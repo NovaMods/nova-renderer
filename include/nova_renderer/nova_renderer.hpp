@@ -29,6 +29,12 @@ namespace nova::renderer {
     }
 
 #pragma region Runtime optimized data
+    struct Mesh {
+        rhi::Buffer* vertex_buffer = nullptr;
+        rhi::Buffer* index_buffer = nullptr;
+
+        uint32_t num_indices = 0;
+    };
 #pragma endregion
 
 #pragma region metadata

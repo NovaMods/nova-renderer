@@ -13,6 +13,7 @@
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/frontend/procedural_mesh.hpp"
+#include "nova_renderer/frontend/rendergraph.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/rhi/swapchain.hpp"
 #include "nova_renderer/util/platform.hpp"
@@ -154,8 +155,14 @@ namespace nova::renderer {
             proc_mesh.record_commands_to_upload_data(cmds, cur_frame_idx);
         }
 
-        for(Renderpass& renderpass : renderpasses) {
-            record_renderpass(renderpass, cmds);
+        FrameContext ctx = {};
+        ctx.frame_count = frame_count;
+        ctx.nova = this;
+        ctx.swapchain_framebuffer = swapchain->get_framebuffer(cur_frame_idx);
+        ctx.swapchain_image = swapchain->get_image(cur_frame_idx);
+
+        for(const Renderpass& renderpass : renderpasses) {
+            record_into_command_list(renderpass, cmds, ctx);
         }
 
         rhi->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences.at(cur_frame_idx));
