@@ -6,6 +6,8 @@
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/util/platform.hpp"
+#include "nova_renderer/bytes.hpp"
+#include "nova_renderer/rhi/device_memory_resource.hpp"
 
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "../../util/logger.hpp"

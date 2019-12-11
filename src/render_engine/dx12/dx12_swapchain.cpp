@@ -1,6 +1,6 @@
 #include "dx12_swapchain.hpp"
 
-#include "nova_renderer/render_engine.hpp"
+#include "nova_renderer/rhi/render_engine.hpp"
 
 #include "../../util/logger.hpp"
 #include "../../util/windows_utils.hpp"

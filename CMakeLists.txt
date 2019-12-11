@@ -105,15 +105,10 @@ set(NOVA_SOURCE
         include/nova_renderer/util/utils.hpp
         include/nova_renderer/util/container_accessor.hpp
 
-        include/nova_renderer/command_list.hpp
-        include/nova_renderer/device_memory_resource.hpp
         include/nova_renderer/nova_renderer.hpp
         include/nova_renderer/nova_settings.hpp
-        include/nova_renderer/render_engine.hpp
         include/nova_renderer/renderables.hpp
         include/nova_renderer/renderdoc_app.h
-        include/nova_renderer/rhi_enums.hpp
-        include/nova_renderer/rhi_types.hpp
         include/nova_renderer/shaderpack_data.hpp
         include/nova_renderer/window.hpp
         include/nova_renderer/bytes.hpp
@@ -122,10 +117,16 @@ set(NOVA_SOURCE
         include/nova_renderer/bytes.hpp
         include/nova_renderer/polyalloc.hpp
         include/nova_renderer/constants.hpp
+        include/nova_renderer/rhi/forward_decls.hpp
+        include/nova_renderer/rhi/command_list.hpp
+        include/nova_renderer/rhi/rhi_enums.hpp
+        include/nova_renderer/rhi/rhi_types.hpp
+        include/nova_renderer/rhi/render_engine.hpp
+        include/nova_renderer/rhi/device_memory_resource.hpp
         include/nova_renderer/frontend/procedural_mesh.hpp
+        include/nova_renderer/frontend/rendergraph.hpp
 
         src/nova_renderer.cpp
-        src/render_engine/render_engine.cpp
 
         src/loading/zip_folder_accessor.hpp
         src/loading/regular_folder_accessor.hpp
@@ -158,7 +159,6 @@ set(NOVA_SOURCE
         src/loading/shaderpack/render_graph_builder.cpp
         src/loading/shaderpack/render_graph_builder.hpp
 
-        src/render_engine/command_list.cpp
         src/render_engine/rhi_types.cpp
         src/render_engine/render_engine.cpp
         src/render_engine/swapchain.cpp
@@ -200,7 +200,7 @@ set(NOVA_HEADERS
         include/nova_renderer/nova_renderer.hpp
         include/nova_renderer/shaderpack_data.hpp
         include/nova_renderer/nova_settings.hpp
-        include/nova_renderer/render_engine.hpp
+        include/nova_renderer/rhi/render_engine.hpp
         include/nova_renderer/window.hpp
         include/nova_renderer/util/utils.hpp
         include/nova_renderer/renderables.hpp

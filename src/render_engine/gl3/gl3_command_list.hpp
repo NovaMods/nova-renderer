@@ -5,7 +5,7 @@
 
 #ifndef NOVA_RENDERER_GL_2_COMMAND_LIST_HPP
 #define NOVA_RENDERER_GL_2_COMMAND_LIST_HPP
-#include "nova_renderer/command_list.hpp"
+#include "nova_renderer/rhi/command_list.hpp"
 
 #include "gl3_structs.hpp"
 #include "glad/glad.h"

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "nova_renderer/polyalloc.hpp"
 #include "nova_renderer/allocation_structs.hpp"
 #include "nova_renderer/allocation_strategy.hpp"
 #include "nova_renderer/bytes.hpp"

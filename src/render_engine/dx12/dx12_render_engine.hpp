@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "nova_renderer/render_engine.hpp"
+#include "nova_renderer/rhi/render_engine.hpp"
 
 #pragma warning(push, 0)
 #include <d3d12.h>

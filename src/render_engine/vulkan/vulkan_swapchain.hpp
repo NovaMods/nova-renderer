@@ -11,7 +11,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-#include "nova_renderer/swapchain.hpp"
+#include "nova_renderer/rhi/swapchain.hpp"
 
 namespace nova::renderer::rhi {
     struct Fence;

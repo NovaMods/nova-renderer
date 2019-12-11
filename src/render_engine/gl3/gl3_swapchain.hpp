@@ -1,5 +1,5 @@
 #pragma once
-#include "nova_renderer/swapchain.hpp"
+#include "nova_renderer/rhi/swapchain.hpp"
 
 namespace nova::renderer::rhi {
     class Gl3Swapchain final : public Swapchain {

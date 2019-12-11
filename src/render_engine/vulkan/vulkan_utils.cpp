@@ -1,6 +1,6 @@
 #include "vulkan_utils.hpp"
 
-#include "nova_renderer/render_engine.hpp"
+#include "nova_renderer/rhi/render_engine.hpp"
 #include "nova_renderer/renderables.hpp"
 
 #include "../../util/logger.hpp"

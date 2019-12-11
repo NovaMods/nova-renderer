@@ -2,19 +2,21 @@
 
 #include <memory>
 
-#include "nova_renderer/command_list.hpp"
 #include "nova_renderer/nova_settings.hpp"
-#include "nova_renderer/rhi_types.hpp"
+#include "nova_renderer/polyalloc.hpp"
+#include "nova_renderer/rhi/command_list.hpp"
+#include "nova_renderer/rhi/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/window.hpp"
 
-namespace nova::renderer::rhi {
-    struct Fence;
-    struct Image;
-    struct Semaphore;
+namespace nova {
+    namespace renderer {
+        struct DeviceMemoryResource;
+    }
+} // namespace nova
 
-    class Swapchain;
+namespace nova::renderer::rhi {
 
     /*!
      * \brief All the GPU architectures that Nova cares about, at whatever granularity is most useful

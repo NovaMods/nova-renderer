@@ -11,8 +11,10 @@
 #include <mutex>
 #include <unordered_map>
 
+#include "nova_renderer/polyalloc.hpp"
+#include "nova_renderer/rhi/rhi_types.hpp"
+
 #include "glad/glad.h"
-#include "nova_renderer/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
     // Holds all the state for an OpenGL sampler object, which may or may not be an actual thing in 3.1
@@ -56,8 +58,7 @@ namespace nova::renderer::rhi {
     };
 
     struct Gl3DescriptorPool : DescriptorPool {
-        Gl3DescriptorPool(const bvestl::polyalloc::allocator_handle& descriptor_allocator)
-            : descriptor_allocator(descriptor_allocator) {}
+        Gl3DescriptorPool(const bvestl::polyalloc::allocator_handle& descriptor_allocator) : descriptor_allocator(descriptor_allocator) {}
 
         std::vector<Gl3Descriptor> descriptors;
         std::vector<Gl3SamplerDescriptor> sampler_sets;

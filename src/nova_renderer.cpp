@@ -11,10 +11,10 @@
 #include <spirv_glsl.hpp>
 #pragma warning(pop)
 
-#include "nova_renderer/command_list.hpp"
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/frontend/procedural_mesh.hpp"
-#include "nova_renderer/swapchain.hpp"
+#include "nova_renderer/rhi/command_list.hpp"
+#include "nova_renderer/rhi/swapchain.hpp"
 #include "nova_renderer/util/platform.hpp"
 
 #include "debugging/renderdoc.hpp"

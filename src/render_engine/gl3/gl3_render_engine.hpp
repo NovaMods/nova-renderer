@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nova_renderer/render_engine.hpp"
+#include "nova_renderer/rhi/render_engine.hpp"
 #include "nova_renderer/window.hpp"
 
 // BE CAREFUL WHERE WE INCLUDE GLAD

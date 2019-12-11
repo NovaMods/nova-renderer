@@ -1,13 +1,10 @@
-/*!
- * \author ddubois
- * \date 30-Mar-19.
- */
-
 #pragma once
 
-#include "nova_renderer/command_list.hpp"
-
 #include <vulkan/vulkan.h>
+
+#include "nova_renderer/rhi/command_list.hpp"
+#include "nova_renderer/rhi/rhi_enums.hpp"
+#include "nova_renderer/rhi/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
     class VulkanRenderEngine;
@@ -39,8 +36,7 @@ namespace nova::renderer::rhi {
 
         void bind_pipeline(const Pipeline* pipeline) override;
 
-        void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
-                                  const PipelineInterface* pipeline_interface) override;
+        void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets, const PipelineInterface* pipeline_interface) override;
 
         void bind_vertex_buffers(const std::vector<Buffer*>& buffers) override;
 

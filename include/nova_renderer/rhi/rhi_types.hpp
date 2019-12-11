@@ -5,10 +5,9 @@
 
 #include <glm/glm.hpp>
 
-#include "nova_renderer/rhi_enums.hpp"
-
-#include "device_memory_resource.hpp"
-#include "shaderpack_data.hpp"
+#include "nova_renderer/rhi/forward_decls.hpp"
+#include "nova_renderer/rhi/rhi_enums.hpp"
+#include "nova_renderer/shaderpack_data.hpp"
 
 namespace nova::renderer::rhi {
 

@@ -1,4 +1,4 @@
-#include "nova_renderer/rhi_types.hpp"
+#include "nova_renderer/rhi/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
     bool ResourceBindingDescription::operator==(const ResourceBindingDescription& other) {
