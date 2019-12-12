@@ -82,6 +82,8 @@ namespace nova::renderer {
             record_into_command_list(pipeline, cmds, ctx);
         }
 
+        cmds->end_renderpass();
+
         if(renderpass.writes_to_backbuffer) {
             rhi::ResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = ctx.swapchain_image;
