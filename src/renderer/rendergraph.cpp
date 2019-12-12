@@ -29,28 +29,24 @@ namespace nova::renderer {
         }
     }
 
-    void default_record_into_command_list(const Renderpass& renderpass, rhi::CommandList* cmds, FrameContext& ctx) {
-        // TODO: Figure if any of these barriers are implicit
-        // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource instead of
-        // using a robust default
-
-        if(!renderpass.read_texture_barriers.empty()) {
+    void Renderpass::record_pre_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx)  const {
+        if(!read_texture_barriers.empty()) {
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
             cmds->resource_barriers(rhi::PipelineStageFlags::ColorAttachmentOutput,
                                     rhi::PipelineStageFlags::FragmentShader,
-                                    renderpass.read_texture_barriers);
+                                    read_texture_barriers);
         }
 
-        if(!renderpass.write_texture_barriers.empty()) {
+        if(!write_texture_barriers.empty()) {
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
             cmds->resource_barriers(rhi::PipelineStageFlags::ColorAttachmentOutput,
                                     rhi::PipelineStageFlags::FragmentShader,
-                                    renderpass.write_texture_barriers);
+                                    write_texture_barriers);
         }
 
-        if(renderpass.writes_to_backbuffer) {
+        if(writes_to_backbuffer) {
             rhi::ResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = ctx.swapchain_image;
             backbuffer_barrier.access_before_barrier = rhi::AccessFlags::MemoryRead;
@@ -67,24 +63,10 @@ namespace nova::renderer {
                                     rhi::PipelineStageFlags::ColorAttachmentOutput,
                                     {backbuffer_barrier});
         }
+    }
 
-        const auto framebuffer = [&] {
-            if(!renderpass.writes_to_backbuffer) {
-                return renderpass.framebuffer;
-            } else {
-                return ctx.swapchain_framebuffer;
-            }
-        }();
-
-        cmds->begin_renderpass(renderpass.renderpass, framebuffer);
-
-        for(const Pipeline& pipeline : renderpass.pipelines) {
-            record_into_command_list(pipeline, cmds, ctx);
-        }
-
-        cmds->end_renderpass();
-
-        if(renderpass.writes_to_backbuffer) {
+    void Renderpass::record_post_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const {
+        if(writes_to_backbuffer) {
             rhi::ResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = ctx.swapchain_image;
             backbuffer_barrier.access_before_barrier = rhi::AccessFlags::ColorAttachmentWrite;
@@ -101,6 +83,35 @@ namespace nova::renderer {
                                     rhi::PipelineStageFlags::BottomOfPipe,
                                     {backbuffer_barrier});
         }
+    }
+
+    rhi::Framebuffer* Renderpass::get_framebuffer(const FrameContext& ctx) const {
+        if (!writes_to_backbuffer) {
+            return framebuffer;
+        }
+        else {
+            return ctx.swapchain_framebuffer;
+        }
+    }
+
+    void default_record_into_command_list(const Renderpass& renderpass, rhi::CommandList* cmds, FrameContext& ctx) {
+        // TODO: Figure if any of these barriers are implicit
+        // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource instead of
+        // using a robust default
+
+        renderpass.record_pre_renderpass_barriers(cmds, ctx);
+
+        const auto framebuffer = renderpass.get_framebuffer(ctx);
+
+        cmds->begin_renderpass(renderpass.renderpass, framebuffer);
+
+        for(const Pipeline& pipeline : renderpass.pipelines) {
+            record_into_command_list(pipeline, cmds, ctx);
+        }
+
+        cmds->end_renderpass();
+
+        renderpass.record_post_renderpass_barriers(cmds, ctx);
     }
 
     void record_into_command_list(const Pipeline& pipeline, rhi::CommandList* cmds, FrameContext& ctx) {

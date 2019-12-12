@@ -87,6 +87,15 @@ namespace nova::renderer {
          * The first parameter to this function is this exact renderpass, the second parameter is the command list to record into
          */
         std::optional<std::function<void(const Renderpass&, rhi::CommandList*, FrameContext&)>> record_func;
+
+        void record_pre_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const;
+
+        void record_post_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const;
+
+        /*!
+         * \brief Returns the framebuffer that this renderpass should render to
+         */
+        [[nodiscard]] rhi::Framebuffer* get_framebuffer(const FrameContext& ctx) const;
     };
 
     /*!
