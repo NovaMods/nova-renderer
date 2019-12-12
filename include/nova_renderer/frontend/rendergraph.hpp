@@ -1,7 +1,5 @@
 #pragma once
 
-#include <mutex>
-
 #include "nova_renderer/frame_context.hpp"
 #include "nova_renderer/frontend/procedural_mesh.hpp"
 #include "nova_renderer/renderables.hpp"
@@ -9,6 +7,7 @@
 #include "nova_renderer/util/container_accessor.hpp"
 
 namespace nova::renderer {
+#pragma region Structs for rendering
     template <typename RenderCommandType>
     struct MeshBatch {
         rhi::Buffer* vertex_buffer = nullptr;
@@ -54,9 +53,13 @@ namespace nova::renderer {
         std::vector<rhi::DescriptorSet*> descriptor_sets;
         const rhi::PipelineInterface* pipeline_interface = nullptr;
 
-        void record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const;
-        static void record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds, FrameContext& ctx);
-        static void record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds, FrameContext& ctx);
+        void record(rhi::CommandList* cmds, FrameContext& ctx) const;
+        static void record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch,
+                                                       rhi::CommandList* cmds,
+                                                       FrameContext& ctx);
+        static void record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
+                                                       rhi::CommandList* cmds,
+                                                       FrameContext& ctx);
     };
 
     class Pipeline {
@@ -65,8 +68,44 @@ namespace nova::renderer {
 
         std::vector<MaterialPass> passes;
 
-        void record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const;
+        void record(rhi::CommandList* cmds, FrameContext& ctx) const;
     };
+#pragma endregion
+
+#pragma region Metadata structs
+    struct FullMaterialPassName {
+        std::string material_name;
+        std::string pass_name;
+
+        bool operator==(const FullMaterialPassName& other) const;
+    };
+
+    struct FullMaterialPassNameHasher {
+        std::size_t operator()(const FullMaterialPassName& name) const;
+    };
+
+    struct MaterialPassKey {
+        uint32_t renderpass_index;
+        uint32_t pipeline_index;
+        uint32_t material_pass_index;
+    };
+
+    struct MaterialPassMetadata {
+        shaderpack::MaterialPass data;
+    };
+
+    struct PipelineMetadata {
+        shaderpack::PipelineCreateInfo data;
+
+        std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher> material_metadatas{};
+    };
+
+    struct RenderpassMetadata {
+        shaderpack::RenderPassCreateInfo data;
+
+        std::unordered_map<std::string, PipelineMetadata> pipeline_metadata{};
+    };
+#pragma endregion
 
     class Renderpass {
     public:
@@ -94,9 +133,9 @@ namespace nova::renderer {
          */
         std::optional<std::function<void(const Renderpass&, rhi::CommandList*, FrameContext&)>> record_func;
 
-        void record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const;
+        void record(rhi::CommandList* cmds, FrameContext& ctx) const;
 
-        void default_record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const;
+        void default_record(rhi::CommandList* cmds, FrameContext& ctx) const;
 
         void record_pre_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const;
 
@@ -106,5 +145,35 @@ namespace nova::renderer {
          * \brief Returns the framebuffer that this renderpass should render to
          */
         [[nodiscard]] rhi::Framebuffer* get_framebuffer(const FrameContext& ctx) const;
+    };
+
+    class Rendergraph {
+    public:
+        /*!
+         * \brief Records this render graph with the provided frame context
+         */
+        void record(rhi::CommandList* cmds, FrameContext& ctx);
+
+        /*!
+         * \brief Returns a renderpass with the provided name
+         *
+         * The reference to the renderpass is valid until you load a new renderpack
+         */
+        const Renderpass& get_renderpass(const std::string& name) const;
+
+    private:
+        /*!
+         * \brief The renderpasses in the shaderpack, in submission order
+         *
+         * Each renderpass contains all the pipelines that use it. Each pipeline has all the material passes that use
+         * it, and each material pass has all the meshes that are drawn with it, and each mesh has all the renderables
+         * that use it
+         *
+         * Basically this vector contains all the data you need to render a frame
+         */
+        std::vector<Renderpass> renderpasses;
+
+        std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
+        std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
     };
 } // namespace nova::renderer

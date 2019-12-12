@@ -161,8 +161,8 @@ namespace nova::renderer {
         ctx.swapchain_framebuffer = swapchain->get_framebuffer(cur_frame_idx);
         ctx.swapchain_image = swapchain->get_image(cur_frame_idx);
 
-        for(const Renderpass& renderpass : renderpasses) {
-            renderpass.record_into_command_list(cmds, ctx);
+        if(rendergraph) {
+            rendergraph->record(cmds, ctx);
         }
 
         rhi->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences.at(cur_frame_idx));

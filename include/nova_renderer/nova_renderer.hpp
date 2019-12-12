@@ -37,41 +37,6 @@ namespace nova::renderer {
     };
 #pragma endregion
 
-#pragma region metadata
-    struct FullMaterialPassName {
-        std::string material_name;
-        std::string pass_name;
-
-        bool operator==(const FullMaterialPassName& other) const;
-    };
-
-    struct FullMaterialPassNameHasher {
-        std::size_t operator()(const FullMaterialPassName& name) const;
-    };
-
-    struct MaterialPassKey {
-        uint32_t renderpass_index;
-        uint32_t pipeline_index;
-        uint32_t material_pass_index;
-    };
-
-    struct MaterialPassMetadata {
-        shaderpack::MaterialPass data;
-    };
-
-    struct PipelineMetadata {
-        shaderpack::PipelineCreateInfo data;
-
-        std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher> material_metadatas{};
-    };
-
-    struct RenderpassMetadata {
-        shaderpack::RenderPassCreateInfo data;
-
-        std::unordered_map<std::string, PipelineMetadata> pipeline_metadata{};
-    };
-#pragma endregion
-
     struct ResourceBinding {};
 
     /*!
@@ -217,17 +182,6 @@ namespace nova::renderer {
 
         std::mutex shaderpack_loading_mutex;
 
-        /*!
-         * \brief The renderpasses in the shaderpack, in submission order
-         *
-         * Each renderpass contains all the pipelines that use it. Each pipeline has all the material passes that use
-         * it, and each material pass has all the meshes that are drawn with it, and each mesh has all the renderables
-         * that use it
-         *
-         * Basically this vector contains all the data you need to render a frame
-         */
-        std::vector<Renderpass> renderpasses;
-
         std::unordered_map<std::string, rhi::Image*> dynamic_textures;
         std::unordered_map<std::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
 
@@ -303,15 +257,7 @@ namespace nova::renderer {
 
         std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;
 
-        std::vector<RenderpassMetadata> renderpass_metadatas;
-        std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
-
-        /*!
-         * \brief Returns a renderpass with the provided name
-         *
-         * The reference to the renderpass is valid until you load a new shaderpack
-         */
-        const Renderpass& get_renderpass(const std::string& name) const;
+        std::unique_ptr<Rendergraph> rendergraph;
 #pragma endregion
     };
 } // namespace nova::renderer

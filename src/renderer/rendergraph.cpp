@@ -7,13 +7,13 @@
 #include "../util/logger.hpp"
 
 namespace nova::renderer {
-    void Renderpass::record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const {
+    void Renderpass::record(rhi::CommandList* cmds, FrameContext& ctx) const {
         if(record_func) {
             // Gotta unwrap the optional ugh
             (*record_func)(*this, cmds, ctx);
 
         } else {
-            default_record_into_command_list(cmds, ctx);
+            default_record(cmds, ctx);
         }
     }
 
@@ -81,7 +81,13 @@ namespace nova::renderer {
         }
     }
 
-    void Renderpass::default_record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const {
+    void Rendergraph::record(rhi::CommandList* cmds, FrameContext& ctx) {
+        for(const auto& renderpass : renderpasses) {
+            renderpass.record(cmds, ctx);
+        }
+    }
+
+    void Renderpass::default_record(rhi::CommandList* cmds, FrameContext& ctx) const {
         // TODO: Figure if any of these barriers are implicit
         // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource instead of
         // using a robust default
@@ -93,7 +99,7 @@ namespace nova::renderer {
         cmds->begin_renderpass(renderpass, framebuffer);
 
         for(const Pipeline& pipeline : pipelines) {
-            pipeline.record_into_command_list(cmds, ctx);
+            pipeline.record(cmds, ctx);
         }
 
         cmds->end_renderpass();
@@ -101,7 +107,7 @@ namespace nova::renderer {
         record_post_renderpass_barriers(cmds, ctx);
     }
 
-    void MaterialPass::record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const {
+    void MaterialPass::record(rhi::CommandList* cmds, FrameContext& ctx) const {
         cmds->bind_descriptor_sets(descriptor_sets, pipeline_interface);
 
         for(const MeshBatch<StaticMeshRenderCommand>& batch : static_mesh_draws) {
@@ -165,11 +171,11 @@ namespace nova::renderer {
         }
     }
 
-    void Pipeline::record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const {
+    void Pipeline::record(rhi::CommandList* cmds, FrameContext& ctx) const {
         cmds->bind_pipeline(pipeline);
 
         for(const MaterialPass& pass : passes) {
-            pass.record_into_command_list(cmds, ctx);
+            pass.record(cmds, ctx);
         }
     }
 } // namespace nova::renderer
