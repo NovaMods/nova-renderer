@@ -305,6 +305,13 @@ namespace nova::renderer {
 
         std::vector<RenderpassMetadata> renderpass_metadatas;
         std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
+
+        /*!
+         * \brief Returns a renderpass with the provided name
+         *
+         * The reference to the renderpass is valid until you load a new shaderpack
+         */
+        const Renderpass& get_renderpass(const std::string& name) const;
 #pragma endregion
     };
 } // namespace nova::renderer
