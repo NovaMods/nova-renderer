@@ -173,6 +173,8 @@ namespace nova::renderer {
          */
         std::vector<Renderpass> renderpasses;
 
+        // TODO: Find a good way to store the draw commands outside of the render graph
+
         std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
         std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
     };
