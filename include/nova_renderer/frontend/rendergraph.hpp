@@ -53,6 +53,10 @@ namespace nova::renderer {
 
         std::vector<rhi::DescriptorSet*> descriptor_sets;
         const rhi::PipelineInterface* pipeline_interface = nullptr;
+
+        void record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const;
+        static void record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds, FrameContext& ctx);
+        static void record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds, FrameContext& ctx);
     };
 
     class Pipeline {
@@ -60,6 +64,8 @@ namespace nova::renderer {
         rhi::Pipeline* pipeline = nullptr;
 
         std::vector<MaterialPass> passes;
+
+        void record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const;
     };
 
     class Renderpass {
@@ -88,6 +94,10 @@ namespace nova::renderer {
          */
         std::optional<std::function<void(const Renderpass&, rhi::CommandList*, FrameContext&)>> record_func;
 
+        void record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const;
+
+        void default_record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const;
+
         void record_pre_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const;
 
         void record_post_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const;
@@ -97,16 +107,4 @@ namespace nova::renderer {
          */
         [[nodiscard]] rhi::Framebuffer* get_framebuffer(const FrameContext& ctx) const;
     };
-
-    /*!
-     * \brief Records this renderpass into the provided command list
-     *
-     * If this renderpass has a custom `record` function, this method will call that function. If not, it will simply render all the
-     * drawcalls in this renderpass
-     *
-     * \param renderpass The renderpass to record
-     * \param cmds The command list to record the renderpass into
-     * \param ctx The per-frame data for the current frame
-     */
-    void record_into_command_list(const Renderpass& renderpass, rhi::CommandList* cmds, FrameContext& ctx);
 } // namespace nova::renderer

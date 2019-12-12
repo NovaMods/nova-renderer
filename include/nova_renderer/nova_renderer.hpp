@@ -146,8 +146,9 @@ namespace nova::renderer {
         void destroy_mesh(MeshId mesh_to_destroy);
 #pragma endregion
 
+        // TODO: make a resource manager of some sort and name it something that doesn't make graphite mad
         #pragma region Resources
-        rhi::Buffer* get_builtin_buffer(const std::string& buffer_name) const;
+        [[nodiscard]] rhi::Buffer* get_builtin_buffer(const std::string& buffer_name) const;
         #pragma endregion
 
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
@@ -304,14 +305,6 @@ namespace nova::renderer {
 
         std::vector<RenderpassMetadata> renderpass_metadatas;
         std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
-
-        void record_renderpass(Renderpass& renderpass, rhi::CommandList* cmds);
-
-        void record_pipeline(Pipeline& pipeline, rhi::CommandList* cmds);
-        void record_material_pass(MaterialPass& pass, rhi::CommandList* cmds);
-
-        void record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
-        void record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
 #pragma endregion
     };
 } // namespace nova::renderer

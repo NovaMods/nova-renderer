@@ -7,29 +7,17 @@
 #include "../util/logger.hpp"
 
 namespace nova::renderer {
-    void default_record_into_command_list(const Renderpass& renderpass, rhi::CommandList* cmds, FrameContext& ctx);
-
-    void record_into_command_list(const Pipeline& pipeline, rhi::CommandList* cmds, FrameContext& ctx);
-
-    void record_into_command_list(const MaterialPass& pass, rhi::CommandList* cmds, FrameContext& ctx);
-
-    void record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds, FrameContext& ctx);
-
-    void record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
-                                            rhi::CommandList* cmds,
-                                            FrameContext& ctx);
-
-    void record_into_command_list(const Renderpass& renderpass, rhi::CommandList* cmds, FrameContext& ctx) {
-        if(renderpass.record_func) {
+    void Renderpass::record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const {
+        if(record_func) {
             // Gotta unwrap the optional ugh
-            (*renderpass.record_func)(renderpass, cmds, ctx);
+            (*record_func)(*this, cmds, ctx);
 
         } else {
-            default_record_into_command_list(renderpass, cmds, ctx);
+            default_record_into_command_list(cmds, ctx);
         }
     }
 
-    void Renderpass::record_pre_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx)  const {
+    void Renderpass::record_pre_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const {
         if(!read_texture_barriers.empty()) {
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
@@ -86,64 +74,57 @@ namespace nova::renderer {
     }
 
     rhi::Framebuffer* Renderpass::get_framebuffer(const FrameContext& ctx) const {
-        if (!writes_to_backbuffer) {
+        if(!writes_to_backbuffer) {
             return framebuffer;
-        }
-        else {
+        } else {
             return ctx.swapchain_framebuffer;
         }
     }
 
-    void default_record_into_command_list(const Renderpass& renderpass, rhi::CommandList* cmds, FrameContext& ctx) {
+    void Renderpass::default_record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const {
         // TODO: Figure if any of these barriers are implicit
         // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource instead of
         // using a robust default
 
-        renderpass.record_pre_renderpass_barriers(cmds, ctx);
+        record_pre_renderpass_barriers(cmds, ctx);
 
-        const auto framebuffer = renderpass.get_framebuffer(ctx);
+        const auto framebuffer = get_framebuffer(ctx);
 
-        cmds->begin_renderpass(renderpass.renderpass, framebuffer);
+        cmds->begin_renderpass(renderpass, framebuffer);
 
-        for(const Pipeline& pipeline : renderpass.pipelines) {
-            record_into_command_list(pipeline, cmds, ctx);
+        for(const Pipeline& pipeline : pipelines) {
+            pipeline.record_into_command_list(cmds, ctx);
         }
 
         cmds->end_renderpass();
 
-        renderpass.record_post_renderpass_barriers(cmds, ctx);
+        record_post_renderpass_barriers(cmds, ctx);
     }
 
-    void record_into_command_list(const Pipeline& pipeline, rhi::CommandList* cmds, FrameContext& ctx) {
-        cmds->bind_pipeline(pipeline.pipeline);
+    void MaterialPass::record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const {
+        cmds->bind_descriptor_sets(descriptor_sets, pipeline_interface);
 
-        for(const MaterialPass& pass : pipeline.passes) {
-            record_into_command_list(pass, cmds, ctx);
-        }
-    }
-
-    void record_into_command_list(const MaterialPass& pass, rhi::CommandList* cmds, FrameContext& ctx) {
-        cmds->bind_descriptor_sets(pass.descriptor_sets, pass.pipeline_interface);
-
-        for(const MeshBatch<StaticMeshRenderCommand>& batch : pass.static_mesh_draws) {
+        for(const MeshBatch<StaticMeshRenderCommand>& batch : static_mesh_draws) {
             record_rendering_static_mesh_batch(batch, cmds, ctx);
         }
 
-        for(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch : pass.static_procedural_mesh_draws) {
+        for(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch : static_procedural_mesh_draws) {
             record_rendering_static_mesh_batch(batch, cmds, ctx);
         }
     }
 
-    void record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds, FrameContext& ctx) {
+    void MaterialPass::record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch,
+                                                          rhi::CommandList* cmds,
+                                                          FrameContext& ctx) {
         const uint64_t start_index = ctx.cur_model_matrix_index;
 
         for(const StaticMeshRenderCommand& command : batch.commands) {
             if(command.is_visible) {
                 auto* model_matrix_buffer = ctx.nova->get_builtin_buffer(MODEL_MATRIX_BUFFER_NAME);
                 ctx.nova->get_engine()->write_data_to_buffer(&command.model_matrix,
-                                                            sizeof(glm::mat4),
-                                                            ctx.cur_model_matrix_index * sizeof(glm::mat4),
-                                                            model_matrix_buffer);
+                                                             sizeof(glm::mat4),
+                                                             ctx.cur_model_matrix_index * sizeof(glm::mat4),
+                                                             model_matrix_buffer);
                 ctx.cur_model_matrix_index++;
             }
         }
@@ -159,18 +140,18 @@ namespace nova::renderer {
         }
     }
 
-    void record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
-                                            rhi::CommandList* cmds,
-                                            FrameContext& ctx) {
+    void MaterialPass::record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
+                                                          rhi::CommandList* cmds,
+                                                          FrameContext& ctx) {
         const uint64_t start_index = ctx.cur_model_matrix_index;
 
         for(const StaticMeshRenderCommand& command : batch.commands) {
             if(command.is_visible) {
                 auto* model_matrix_buffer = ctx.nova->get_builtin_buffer(MODEL_MATRIX_BUFFER_NAME);
                 ctx.nova->get_engine()->write_data_to_buffer(&command.model_matrix,
-                    sizeof(glm::mat4),
-                    ctx.cur_model_matrix_index * sizeof(glm::mat4),
-                    model_matrix_buffer);
+                                                             sizeof(glm::mat4),
+                                                             ctx.cur_model_matrix_index * sizeof(glm::mat4),
+                                                             model_matrix_buffer);
                 ctx.cur_model_matrix_index++;
             }
         }
@@ -181,6 +162,14 @@ namespace nova::renderer {
             const std::vector<rhi::Buffer*> vertex_buffers = {7, vertex_buffer};
             cmds->bind_vertex_buffers(vertex_buffers);
             cmds->bind_index_buffer(index_buffer);
+        }
+    }
+
+    void Pipeline::record_into_command_list(rhi::CommandList* cmds, FrameContext& ctx) const {
+        cmds->bind_pipeline(pipeline);
+
+        for(const MaterialPass& pass : passes) {
+            pass.record_into_command_list(cmds, ctx);
         }
     }
 } // namespace nova::renderer

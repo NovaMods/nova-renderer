@@ -36,7 +36,7 @@ namespace nova::renderer {
 
         std::fseek(resource_file, 0, SEEK_SET);
 
-        std::fread(file_string.data(), sizeof(char), file_size, resource_file);
+        std::fread(&file_string[0], sizeof(char), file_size, resource_file);
 
         std::fclose(resource_file);
 
