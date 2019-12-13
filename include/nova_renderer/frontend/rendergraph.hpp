@@ -146,36 +146,4 @@ namespace nova::renderer {
          */
         [[nodiscard]] rhi::Framebuffer* get_framebuffer(const FrameContext& ctx) const;
     };
-
-    class Rendergraph {
-    public:
-        /*!
-         * \brief Records this render graph with the provided frame context
-         */
-        void record(rhi::CommandList* cmds, FrameContext& ctx);
-
-        /*!
-         * \brief Returns a renderpass with the provided name
-         *
-         * The reference to the renderpass is valid until you load a new renderpack
-         */
-        const Renderpass& get_renderpass(const std::string& name) const;
-
-    private:
-        /*!
-         * \brief The renderpasses in the shaderpack, in submission order
-         *
-         * Each renderpass contains all the pipelines that use it. Each pipeline has all the material passes that use
-         * it, and each material pass has all the meshes that are drawn with it, and each mesh has all the renderables
-         * that use it
-         *
-         * Basically this vector contains all the data you need to render a frame
-         */
-        std::vector<Renderpass> renderpasses;
-
-        // TODO: Find a good way to store the draw commands outside of the render graph
-
-        std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
-        std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
-    };
 } // namespace nova::renderer

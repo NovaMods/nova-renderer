@@ -111,10 +111,10 @@ namespace nova::renderer {
         void destroy_mesh(MeshId mesh_to_destroy);
 #pragma endregion
 
-        // TODO: make a resource manager of some sort and name it something that doesn't make graphite mad
-        #pragma region Resources
+// TODO: make a resource manager of some sort and name it something that doesn't make graphite mad
+#pragma region Resources
         [[nodiscard]] rhi::Buffer* get_builtin_buffer(const std::string& buffer_name) const;
-        #pragma endregion
+#pragma endregion
 
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
                                                                const StaticMeshRenderableData& renderable);
@@ -182,6 +182,17 @@ namespace nova::renderer {
 
         std::mutex shaderpack_loading_mutex;
 
+        /*!
+         * \brief The renderpasses in the shaderpack, in submission order
+         *
+         * Each renderpass contains all the pipelines that use it. Each pipeline has all the material passes that use
+         * it, and each material pass has all the meshes that are drawn with it, and each mesh has all the renderables
+         * that use it
+         *
+         * Basically this vector contains all the data you need to render a frame
+         */
+        std::vector<Renderpass> renderpasses;
+
         std::unordered_map<std::string, rhi::Image*> dynamic_textures;
         std::unordered_map<std::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
 
@@ -236,8 +247,6 @@ namespace nova::renderer {
                                              const spirv_cross::Resource& resource,
                                              rhi::DescriptorType type);
 
-        void destroy_render_passes();
-
         void destroy_dynamic_resources();
 #pragma endregion
 
@@ -257,7 +266,8 @@ namespace nova::renderer {
 
         std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;
 
-        std::unique_ptr<Rendergraph> rendergraph;
+        std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
+        std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
 #pragma endregion
     };
 } // namespace nova::renderer

@@ -148,6 +148,8 @@ namespace nova::renderer {
 
         rhi->reset_fences({frame_fences.at(cur_frame_idx)});
 
+        // TODO: Figure out wtf I'm supposed to do about UI
+
         rhi::CommandList* cmds = rhi->get_command_list(0, rhi::QueueType::Graphics);
 
         // This may or may not work well lmao
@@ -161,8 +163,8 @@ namespace nova::renderer {
         ctx.swapchain_framebuffer = swapchain->get_framebuffer(cur_frame_idx);
         ctx.swapchain_image = swapchain->get_image(cur_frame_idx);
 
-        if(rendergraph) {
-            rendergraph->record(cmds, ctx);
+        for(const auto& renderpass : renderpasses) {
+            renderpass.record(cmds, ctx);
         }
 
         rhi->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences.at(cur_frame_idx));
@@ -281,10 +283,9 @@ namespace nova::renderer {
         const shaderpack::ShaderpackData data = shaderpack::load_shaderpack_data(fs::path(shaderpack_name.c_str()));
 
         if(shaderpack_loaded) {
-            destroy_render_passes();
-
             destroy_dynamic_resources();
 
+            destroy_renderpasses();
             NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
         }
 
@@ -310,6 +311,7 @@ namespace nova::renderer {
     void NovaRenderer::create_render_passes(const std::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
                                             const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
                                             const std::vector<shaderpack::MaterialData>& materials) {
+
         rhi->set_num_renderpasses(static_cast<uint32_t>(pass_create_infos.size()));
 
         uint32_t total_num_descriptors = 0;
@@ -463,7 +465,7 @@ namespace nova::renderer {
             renderpass.id = static_cast<uint32_t>(renderpass_metadatas.size());
 
             renderpasses.push_back(renderpass);
-            renderpass_metadatas.push_back(metadata);
+            renderpass_metadatas.emplace(create_info.name, metadata);
         }
     }
 
@@ -669,25 +671,6 @@ namespace nova::renderer {
             // Totally new binding!
             bindings[resource_name] = new_binding;
         }
-    }
-
-    void NovaRenderer::destroy_render_passes() {
-        for(Renderpass& renderpass : renderpasses) {
-            rhi->destroy_renderpass(renderpass.renderpass);
-            rhi->destroy_framebuffer(renderpass.framebuffer);
-
-            for(Pipeline& pipeline : renderpass.pipelines) {
-                rhi->destroy_pipeline(pipeline.pipeline);
-
-                for(MaterialPass& material_pass : pipeline.passes) {
-                    (void) material_pass;
-                    // TODO: Destroy descriptors for material
-                    // TODO: Have a way to save mesh data somewhere outside of the render graph, then process it cleanly here
-                }
-            }
-        }
-
-        renderpasses.clear();
     }
 
     void NovaRenderer::destroy_dynamic_resources() {

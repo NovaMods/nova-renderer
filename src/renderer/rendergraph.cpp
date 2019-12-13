@@ -81,12 +81,6 @@ namespace nova::renderer {
         }
     }
 
-    void Rendergraph::record(rhi::CommandList* cmds, FrameContext& ctx) {
-        for(const auto& renderpass : renderpasses) {
-            renderpass.record(cmds, ctx);
-        }
-    }
-
     void Renderpass::default_record(rhi::CommandList* cmds, FrameContext& ctx) const {
         // TODO: Figure if any of these barriers are implicit
         // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource instead of
