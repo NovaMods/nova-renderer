@@ -73,6 +73,22 @@ namespace nova::renderer {
         void load_shaderpack(const std::string& shaderpack_name);
 
         /*!
+         * \brief Gives Nova a function to use to render UI
+         *
+         * This function will be executed inside a renderpass with one RGBA8 output texture with alpha blending enabled
+         *
+         * The first parameter to the function is the command list it must record UI rendering into, and the second parameter is the
+         * rendering context for the current frame
+         *
+         * Before calling this function, Nova records commands to begin a renderpass with one RGBA8 color attachment and one D24S8
+         * depth/stencil attachment. After calling this function, Nova records commands to end that same renderpass. This allows the host
+         * application to only care about rendering the UI, instead of worrying about any pass scheduling concerns
+         *
+         * \param ui_function The function to execute each time Nova needs to render UI
+         */
+        void set_ui_render_function(std::function<void(rhi::CommandList*, FrameContext&)> ui_function);
+
+        /*!
          * \brief Executes a single frame
          */
         void execute_frame();
@@ -248,6 +264,8 @@ namespace nova::renderer {
                                              rhi::DescriptorType type);
 
         void destroy_dynamic_resources();
+
+        void destroy_renderpasses();
 #pragma endregion
 
 #pragma region Meshes
@@ -268,6 +286,9 @@ namespace nova::renderer {
 
         std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
         std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
+
+        std::mutex ui_function_mutex;
+        std::optional<std::function<void(rhi::CommandList*, FrameContext&)>> ui_render_function;
 #pragma endregion
     };
 } // namespace nova::renderer

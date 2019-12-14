@@ -300,6 +300,11 @@ namespace nova::renderer {
         NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name.c_str() << " loaded successfully";
     }
 
+    void NovaRenderer::set_ui_render_function(std::function<void(rhi::CommandList*, FrameContext&)> ui_function) {
+        std::lock_guard l(ui_function_mutex);
+        ui_render_function = ui_function;
+    }
+
     void NovaRenderer::create_dynamic_textures(const std::vector<shaderpack::TextureCreateInfo>& texture_create_infos) {
         for(const shaderpack::TextureCreateInfo& create_info : texture_create_infos) {
             rhi::Image* new_texture = rhi->create_image(create_info);
@@ -681,6 +686,23 @@ namespace nova::renderer {
         dynamic_textures.clear();
 
         // TODO: Also destroy dynamic buffers, when we have support for those
+    }
+
+    void NovaRenderer::destroy_renderpasses() {
+        for(Renderpass& renderpass : renderpasses) {
+            rhi->destroy_renderpass(renderpass.renderpass);
+            rhi->destroy_framebuffer(renderpass.framebuffer);
+
+            for(Pipeline& pipeline : renderpass.pipelines) {
+                rhi->destroy_pipeline(pipeline.pipeline);
+
+                for(MaterialPass& material_pass : pipeline.passes) {
+                    (void) material_pass;
+                    // TODO: Destroy descriptors for material
+                    // TODO: Have a way to save mesh data somewhere outside of the render graph, then process it cleanly here
+                }
+            }
+        }
     }
 
     rhi::Buffer* NovaRenderer::get_builtin_buffer(const std::string& buffer_name) const { return builtin_buffers.at(buffer_name); }
