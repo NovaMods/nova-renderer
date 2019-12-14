@@ -7,6 +7,10 @@
 #include "nova_renderer/util/container_accessor.hpp"
 
 namespace nova::renderer {
+    namespace shaderpack {
+        struct RenderPassCreateInfo;
+    };
+
 #pragma region Structs for rendering
     template <typename RenderCommandType>
     struct MeshBatch {
@@ -146,4 +150,6 @@ namespace nova::renderer {
          */
         [[nodiscard]] rhi::Framebuffer* get_framebuffer(const FrameContext& ctx) const;
     };
+
+    const shaderpack::RenderPassCreateInfo& get_ui_pass();
 } // namespace nova::renderer

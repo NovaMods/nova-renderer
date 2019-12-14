@@ -3,6 +3,7 @@
 #include "nova_renderer/nova_renderer.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
+#include "nova_renderer/shaderpack_data.hpp"
 
 #include "../util/logger.hpp"
 
@@ -79,6 +80,19 @@ namespace nova::renderer {
         } else {
             return ctx.swapchain_framebuffer;
         }
+    }
+
+    const shaderpack::RenderPassCreateInfo& get_ui_pass() {
+        static shaderpack::RenderPassCreateInfo
+            ui_pass_data{"UI",
+                         {},
+                         {},
+                         {shaderpack::TextureAttachmentInfo{"UI", shaderpack::PixelFormatEnum::RGBA8, true}},
+                         shaderpack::TextureAttachmentInfo{"UI Depth", shaderpack::PixelFormatEnum::DepthStencil, true},
+                         {},
+                         {}};
+
+        return ui_pass_data;
     }
 
     void Renderpass::default_record(rhi::CommandList* cmds, FrameContext& ctx) const {
