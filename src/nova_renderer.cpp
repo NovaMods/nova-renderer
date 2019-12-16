@@ -14,8 +14,10 @@
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/frontend/procedural_mesh.hpp"
 #include "nova_renderer/frontend/rendergraph.hpp"
+#include "nova_renderer/frontend/ui_renderer.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/rhi/swapchain.hpp"
+#include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/platform.hpp"
 
 #include "debugging/renderdoc.hpp"
@@ -39,9 +41,6 @@
 #include "render_engine/gl3/gl3_render_engine.hpp"
 #endif
 
-#include "nova_renderer/frontend/ui_renderer.hpp"
-
-#include "util/logger.hpp"
 using namespace bvestl::polyalloc;
 using namespace bvestl::polyalloc::operators;
 
@@ -305,12 +304,11 @@ namespace nova::renderer {
         // Currently the only builtin pass we have is the UI pass
         // As we add more passes, we'll probably need to keep more of the create info at runtime to be better able to insert passes wherever
         // we want
-        for (const std::string& builtin_pass_name : data.graph_data.builtin_passes) {
-            if (const auto& itr = builtin_renderpasses.find(builtin_pass_name); itr != builtin_renderpasses.end()) {
+        for(const std::string& builtin_pass_name : data.graph_data.builtin_passes) {
+            if(const auto& itr = builtin_renderpasses.find(builtin_pass_name); itr != builtin_renderpasses.end()) {
                 renderpasses.emplace_back(itr->second);
 
-            }
-            else {
+            } else {
                 NOVA_LOG(ERROR) << "Could not find builtin pass with name " << builtin_pass_name;
             }
         }
@@ -915,7 +913,7 @@ namespace nova::renderer {
 
             shaderpack::RenderPassCreateInfo ui = {};
             ui.name = UI_RENDER_PASS_NAME;
-            ui.texture_inputs = { BACKBUFFER_NAME };
+            ui.texture_inputs = {BACKBUFFER_NAME};
             ui.texture_outputs = {{BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false}};
 
             add_render_pass(ui, {}, {}, nullptr, ui_renderpass);

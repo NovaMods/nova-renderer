@@ -3,9 +3,8 @@
 #include <array>
 #include <memory>
 
+#include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/utils.hpp"
-
-#include "../util/logger.hpp"
 
 namespace nova::renderer {
     ZipFolderAccessor::ZipFolderAccessor(const fs::path& folder) : FolderAccessorBase(folder), files(new FileTreeNode) {

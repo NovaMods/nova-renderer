@@ -2,11 +2,13 @@
 
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
+#include "nova_renderer/util/logger.hpp"
 
 #include "../memory/block_allocation_strategy.hpp"
 #include "../memory/mallocator.hpp"
-#include "../util/logger.hpp"
 #include "../util/memory_utils.hpp"
+
+using namespace bvestl::polyalloc;
 
 namespace nova::renderer {
     using namespace rhi;
@@ -19,28 +21,27 @@ namespace nova::renderer {
           index_buffer_size(index_buffer_size)
 #endif
     {
-        const auto aligned_vertex_buffer_size = bvestl::polyalloc::align(vertex_buffer_size, 256);
-        const auto aligned_index_buffer_size = bvestl::polyalloc::align(index_buffer_size, 256);
+        const auto aligned_vertex_buffer_size = align(vertex_buffer_size, 256);
+        const auto aligned_index_buffer_size = align(index_buffer_size, 256);
         const auto host_memory_size = aligned_vertex_buffer_size + aligned_index_buffer_size;
         const auto device_memory_size = host_memory_size * 3;
+
+        device_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(new Mallocator(), device_memory_size);
+        host_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(new Mallocator(), host_memory_size);
 
         // TODO: Don't allocate a separate DeviceMemory for each procedural mesh
         device->allocate_device_memory(device_memory_size.b_count(), MemoryUsage::LowFrequencyUpload, ObjectType::Buffer)
             .map([&](DeviceMemory* memory) {
-                // TODO: Find a good way to keep these around
-                const auto
-                    allocation_strategy = std::make_unique<bvestl::polyalloc::BlockAllocationStrategy>(new bvestl::polyalloc::Mallocator(),
-                                                                                                       device_memory_size);
-                auto memory_resource = DeviceMemoryResource(memory, allocation_strategy.get());
+                device_buffers_memory = std::make_unique<DeviceMemoryResource>(memory, device_memory_allocation_strategy.get());
 
                 const auto vertex_create_info = BufferCreateInfo{vertex_buffer_size, BufferUsage::VertexBuffer};
                 for(auto& vertex_buffer : vertex_buffers) {
-                    vertex_buffer = device->create_buffer(vertex_create_info, memory_resource);
+                    vertex_buffer = device->create_buffer(vertex_create_info, *device_buffers_memory);
                 }
 
                 const auto index_create_info = BufferCreateInfo{index_buffer_size, BufferUsage::IndexBuffer};
                 for(auto& index_buffer : index_buffers) {
-                    index_buffer = device->create_buffer(index_create_info, memory_resource);
+                    index_buffer = device->create_buffer(index_create_info, *device_buffers_memory);
                 }
 
                 return true;
@@ -52,14 +53,10 @@ namespace nova::renderer {
 
         device->allocate_device_memory(host_memory_size.b_count(), MemoryUsage::StagingBuffer, ObjectType::Buffer)
             .map([&](DeviceMemory* memory) {
-                // TODO: Find a good way to keep these around
-                const auto
-                    allocation_strategy = std::make_unique<bvestl::polyalloc::BlockAllocationStrategy>(new bvestl::polyalloc::Mallocator(),
-                                                                                                       host_memory_size);
-                auto memory_resource = DeviceMemoryResource(memory, allocation_strategy.get());
+                cached_buffers_memory = std::make_unique<DeviceMemoryResource>(memory, host_memory_allocation_strategy.get());
 
-                cached_vertex_buffer = device->create_buffer({vertex_buffer_size, BufferUsage::StagingBuffer}, memory_resource);
-                cached_index_buffer = device->create_buffer({index_buffer_size, BufferUsage::StagingBuffer}, memory_resource);
+                cached_vertex_buffer = device->create_buffer({vertex_buffer_size, BufferUsage::StagingBuffer}, *cached_buffers_memory);
+                cached_index_buffer = device->create_buffer({index_buffer_size, BufferUsage::StagingBuffer}, *cached_buffers_memory);
 
                 return true;
             })

@@ -1,9 +1,10 @@
 #include "vulkan_command_list.hpp"
 
+#include "nova_renderer/util/logger.hpp"
+
 #include "vk_structs.hpp"
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
-#include "../../util/logger.hpp"
 
 namespace nova::renderer::rhi {
     VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine* render_engine)

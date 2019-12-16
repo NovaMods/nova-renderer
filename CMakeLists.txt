@@ -103,6 +103,7 @@ set(NOVA_SOURCE
         include/nova_renderer/util/platform.hpp
         include/nova_renderer/util/result.hpp
         include/nova_renderer/util/utils.hpp
+        include/nova_renderer/util/logger.hpp
         include/nova_renderer/util/container_accessor.hpp
 
         include/nova_renderer/nova_renderer.hpp
@@ -149,7 +150,6 @@ set(NOVA_SOURCE
         src/renderer/ui/ui_renderer.cpp
 
         src/util/logger.cpp
-        src/util/logger.hpp
         src/util/utils.cpp
         src/util/result.cpp
 

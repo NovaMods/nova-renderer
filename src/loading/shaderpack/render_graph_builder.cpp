@@ -9,8 +9,8 @@
 
 #include <minitrace.h>
 
-#include "../../util/logger.hpp"
 #include "nova_renderer/constants.hpp"
+#include "nova_renderer/util/logger.hpp"
 
 namespace nova::renderer::shaderpack {
     /*!

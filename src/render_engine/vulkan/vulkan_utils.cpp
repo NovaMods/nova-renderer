@@ -1,9 +1,8 @@
 #include "vulkan_utils.hpp"
 
-#include "nova_renderer/rhi/render_engine.hpp"
 #include "nova_renderer/renderables.hpp"
-
-#include "../../util/logger.hpp"
+#include "nova_renderer/rhi/render_engine.hpp"
+#include "nova_renderer/util/logger.hpp"
 
 namespace nova::renderer::rhi {
     VkImageLayout to_vk_image_layout(const ResourceState layout) {
@@ -34,7 +33,7 @@ namespace nova::renderer::rhi {
 
             case ResourceState::PresentSource:
                 return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-                               
+
             default:
                 NOVA_LOG(ERROR) << static_cast<uint32_t>(layout) << " is not a valid image state";
                 return VK_IMAGE_LAYOUT_GENERAL;

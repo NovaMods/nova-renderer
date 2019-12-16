@@ -4,7 +4,8 @@
  */
 
 #include "nova_renderer/util/utils.hpp"
-#include "logger.hpp"
+
+#include "nova_renderer/util/logger.hpp"
 
 namespace nova::renderer {
     // taken from https://www.fluentcpp.com/2017/04/21/how-to-split-a-string-in-c/

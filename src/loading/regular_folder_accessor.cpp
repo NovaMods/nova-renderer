@@ -1,6 +1,6 @@
 #include "regular_folder_accessor.hpp"
 
-#include "../util/logger.hpp"
+#include "nova_renderer/util/logger.hpp"
 
 namespace nova::renderer {
     RegularFolderAccessor::RegularFolderAccessor(const fs::path& folder) : FolderAccessorBase(folder) {}

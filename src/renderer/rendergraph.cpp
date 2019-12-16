@@ -4,8 +4,7 @@
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
-
-#include "../util/logger.hpp"
+#include "nova_renderer/util/logger.hpp"
 
 namespace nova::renderer {
     void Renderpass::render(rhi::CommandList* cmds, FrameContext& ctx) {

@@ -10,7 +10,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "../util/logger.hpp"
+#include "nova_renderer/util/logger.hpp"
 
 namespace nova::renderer {
     // Keeps the compiler happy
