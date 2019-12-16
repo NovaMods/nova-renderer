@@ -8,6 +8,8 @@
 #include <glslang/Include/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
 
+#include "nova_renderer/constants.hpp"
+
 #include "../../tasks/task_scheduler.hpp"
 #include "../folder_accessor.hpp"
 #include "../json_utils.hpp"
@@ -18,7 +20,6 @@
 #include "json_interop.hpp"
 #include "render_graph_builder.hpp"
 #include "shaderpack_validator.hpp"
-#include "nova_renderer/constants.hpp"
 
 namespace nova::renderer::shaderpack {
     // Removed from the GLSLang version we're using
@@ -204,7 +205,12 @@ namespace nova::renderer::shaderpack {
 
         ShaderpackData data{};
         data.resources = load_dynamic_resources_file(folder_access);
-        data.graph_data = load_rendergraph_file(folder_access).value; // TODO: Gracefully handle errors
+        const auto& graph_data = load_rendergraph_file(folder_access);
+        if(graph_data) {
+            data.graph_data = *graph_data;
+        } else {
+            NOVA_LOG(ERROR) << "Could not load render graph file. Error: " << graph_data.error.to_string();
+        }
         data.pipelines = load_pipeline_files(folder_access);
         data.materials = load_material_files(folder_access);
 
@@ -266,7 +272,7 @@ namespace nova::renderer::shaderpack {
                                                     const auto output_itr = std::find_if(pass.texture_outputs.begin(),
                                                                                          pass.texture_outputs.end(),
                                                                                          [](const TextureAttachmentInfo& tex) {
-                                                                                             return tex.name == "NovaFinal";
+                                                                                             return tex.name == BACKBUFFER_NAME;
                                                                                          });
 
                                                     return output_itr != pass.texture_outputs.end();
@@ -276,7 +282,7 @@ namespace nova::renderer::shaderpack {
                 return ntl::Result<RendergraphData>(rendergraph_file);
 
             } else {
-                return ntl::Result<RendergraphData>(ntl::NovaError("At least one pass must write to resource NovaFinal"));
+                return ntl::Result<RendergraphData>(MAKE_ERROR("At least one pass must write to the render target named {:s}", BACKBUFFER_NAME));
             }
         }
         catch(nlohmann::json::parse_error& err) {

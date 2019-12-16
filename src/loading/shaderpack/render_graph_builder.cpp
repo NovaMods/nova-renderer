@@ -10,6 +10,7 @@
 #include <minitrace.h>
 
 #include "../../util/logger.hpp"
+#include "nova_renderer/constants.hpp"
 
 namespace nova::renderer::shaderpack {
     /*!
@@ -118,7 +119,7 @@ namespace nova::renderer::shaderpack {
 
         NOVA_LOG(TRACE) << "First pass at ordering passes...";
         // The passes, in simple dependency order
-        if(resource_to_write_pass.find("Backbuffer") == resource_to_write_pass.end()) {
+        if(resource_to_write_pass.find(BACKBUFFER_NAME) == resource_to_write_pass.end()) {
             NOVA_LOG(ERROR)
                 << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
             return ntl::Result<std::vector<RenderPassCreateInfo>>(ntl::NovaError("Failed to order passes because no backbuffer was found"));

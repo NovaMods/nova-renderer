@@ -24,7 +24,7 @@
             ],
             "textureOutputs": [
                 {
-                    "name": "NovaFinal",
+                    "name": "NovaBackbuffer",
                     "clear": false
                 }
             ]

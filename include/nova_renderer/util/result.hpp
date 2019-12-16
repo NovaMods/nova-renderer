@@ -89,6 +89,14 @@ namespace ntl {
             }
         }
 
+        const ValueType* operator->() const {
+            return &value;
+        }
+
+        const ValueType& operator*() const {
+            return value;
+        }
+
         template <typename FuncType>
         auto map(FuncType&& func) -> Result<decltype(func(value))> {
             using RetVal = decltype(func(value));
