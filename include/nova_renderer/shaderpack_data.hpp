@@ -22,7 +22,7 @@
 #include "util/filesystem.hpp"
 
 namespace nova::renderer {
-    struct Renderpass;
+    class Renderpass;
 }
 
 namespace nova::renderer::shaderpack {
@@ -544,11 +544,6 @@ namespace nova::renderer::shaderpack {
          * \brief All the buffers that this renderpass writes to
          */
         std::vector<std::string> output_buffers{};
-
-        /*!
-         * \brief Function to use to record this render pass
-         */
-        std::optional<std::function<void(const Renderpass& pass, rhi::CommandList*, FrameContext&)>> record_func;
 
         RenderPassCreateInfo() = default;
     };

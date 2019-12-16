@@ -77,7 +77,8 @@ namespace nova::renderer {
         /*!
          * \brief Gives Nova a function to use to render UI
          *
-         * This function will be executed inside a renderpass with one RGBA8 output texture with alpha blending enabled
+         * This function will be executed inside the builtin UI renderpass. This renderpass takes the output of the 3D renderer, adds the UI
+         * on top of it, and writes that all to the backbuffer
          *
          * The first parameter to the function is the command list it must record UI rendering into, and the second parameter is the
          * rendering context for the current frame
@@ -88,7 +89,7 @@ namespace nova::renderer {
          *
          * \param ui_renderpass The renderpass to use for UI
          */
-        void set_ui_renderpass(Renderpass* ui_renderpass);
+        void set_ui_renderpass(const std::shared_ptr<Renderpass>& ui_renderpass);
 
         /*!
          * \brief Executes a single frame
@@ -204,7 +205,7 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Rendergraph
-        std::unordered_map<std::string, Renderpass*> builtin_renderpasses;
+        std::unordered_map<std::string, std::shared_ptr<Renderpass>> builtin_renderpasses;
 
         /*!
          * \brief The renderpasses in the shaderpack, in submission order
@@ -215,7 +216,7 @@ namespace nova::renderer {
          *
          * Basically this vector contains all the data you need to render a frame
          */
-        std::vector<Renderpass*> renderpasses;
+        std::vector<std::shared_ptr<Renderpass>> renderpasses;
 
         std::unordered_map<std::string, rhi::Image*> dynamic_textures;
         std::unordered_map<std::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
@@ -225,6 +226,27 @@ namespace nova::renderer {
         void create_render_passes(const std::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
                                   const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
                                   const std::vector<shaderpack::MaterialData>& materials);
+
+        /*!
+         * \brief Creates a single renderpass
+         *
+         * \param pipelines Create infos for all the pipelines that might use
+         * \param materials All the materials that are relevant to the renderer
+         * \param descriptor_pool Descriptor pool to use to allocate this renderpass's descriptors
+         * \param create_info Information about how to make the renderpass
+         * \param renderpass A pointer to a valid Renderpass object for this method to fill out
+         *
+         * \note The renderpass shared pointer comes from outside because the builtin passes need to use their own classes, but user passes
+         * need to use the default class. This isn't great but I like it a lot better than making this method templated
+         *
+         * TODO: Don't create pipelines or materials in this method. Split that out, so we can take pipelines and materials out of the
+         * renderpass struct
+         */
+        void add_render_pass(const shaderpack::RenderPassCreateInfo& create_info,
+                             const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
+                             const std::vector<shaderpack::MaterialData>& materials,
+                             rhi::DescriptorPool* descriptor_pool,
+                             const std::shared_ptr<Renderpass>& renderpass);
 
         void create_materials_for_pipeline(
             Pipeline& pipeline,

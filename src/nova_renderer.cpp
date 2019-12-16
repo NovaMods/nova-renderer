@@ -39,8 +39,9 @@
 #include "render_engine/gl3/gl3_render_engine.hpp"
 #endif
 
-#include "util/logger.hpp"
 #include "nova_renderer/frontend/ui_renderer.hpp"
+
+#include "util/logger.hpp"
 using namespace bvestl::polyalloc;
 using namespace bvestl::polyalloc::operators;
 
@@ -164,11 +165,10 @@ namespace nova::renderer {
         ctx.swapchain_image = swapchain->get_image(cur_frame_idx);
 
         for(const auto& renderpass : renderpasses) {
-            renderpass.render(cmds, ctx);
+            renderpass->render(cmds, ctx);
         }
 
         // Record the UI pass
-
 
         rhi->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences.at(cur_frame_idx));
 
@@ -292,15 +292,6 @@ namespace nova::renderer {
             NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
         }
 
-        for(const std::string& builtin_pass_name : data.graph_data.builtin_passes) {
-            if(const auto& itr = builtin_renderpasses.find(builtin_pass_name); itr != builtin_renderpasses.end()) {
-                data.graph_data.passes.emplace_back(itr->second);
-
-            } else {
-               NOVA_LOG(ERROR) << "Could not find builtin pass with name " << builtin_pass_name;
-            }
-        }
-
         data.graph_data.passes = shaderpack::order_passes(data.graph_data.passes).value; // TODO: Handle errors somehow
 
         create_dynamic_textures(data.resources.textures);
@@ -310,12 +301,26 @@ namespace nova::renderer {
 
         NOVA_LOG(DEBUG) << "Created render passes";
 
+        // Add builtin passes at the end of the submission
+        // Currently the only builtin pass we have is the UI pass
+        // As we add more passes, we'll probably need to keep more of the create info at runtime to be better able to insert passes wherever
+        // we want
+        for (const std::string& builtin_pass_name : data.graph_data.builtin_passes) {
+            if (const auto& itr = builtin_renderpasses.find(builtin_pass_name); itr != builtin_renderpasses.end()) {
+                renderpasses.emplace_back(itr->second);
+
+            }
+            else {
+                NOVA_LOG(ERROR) << "Could not find builtin pass with name " << builtin_pass_name;
+            }
+        }
+
         shaderpack_loaded = true;
 
         NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name.c_str() << " loaded successfully";
     }
 
-    void NovaRenderer::set_ui_renderpass(Renderpass* ui_renderpass) {
+    void NovaRenderer::set_ui_renderpass(const std::shared_ptr<Renderpass>& ui_renderpass) {
         std::lock_guard l(ui_function_mutex);
         builtin_renderpasses["NovaUI"] = ui_renderpass;
     }
@@ -344,149 +349,157 @@ namespace nova::renderer {
         rhi::DescriptorPool* descriptor_pool = rhi->create_descriptor_pool(total_num_descriptors, 5, total_num_descriptors);
 
         for(const shaderpack::RenderPassCreateInfo& create_info : pass_create_infos) {
-            Renderpass renderpass;
-            RenderpassMetadata metadata;
-            metadata.data = create_info;
+            std::shared_ptr<Renderpass> renderpass = std::make_shared<Renderpass>();
+            add_render_pass(create_info, pipelines, materials, descriptor_pool, renderpass);
+        }
+    }
 
-            std::vector<rhi::Image*> color_attachments;
-            color_attachments.reserve(create_info.texture_outputs.size());
+    void NovaRenderer::add_render_pass(const shaderpack::RenderPassCreateInfo& create_info,
+                                       const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
+                                       const std::vector<shaderpack::MaterialData>& materials,
+                                       rhi::DescriptorPool* descriptor_pool,
+                                       const std::shared_ptr<Renderpass>& renderpass) {
+        RenderpassMetadata metadata;
+        metadata.data = create_info;
 
-            glm::uvec2 framebuffer_size(0);
+        std::vector<rhi::Image*> color_attachments;
+        color_attachments.reserve(create_info.texture_outputs.size());
 
-            const auto num_attachments = create_info.depth_texture ? create_info.texture_outputs.size() + 1 :
-                                                                     create_info.texture_outputs.size();
-            std::vector<std::string> attachment_errors;
-            attachment_errors.reserve(num_attachments);
+        glm::uvec2 framebuffer_size(0);
 
-            bool writes_to_backbuffer = false;
+        const auto num_attachments = create_info.depth_texture ? create_info.texture_outputs.size() + 1 :
+                                                                 create_info.texture_outputs.size();
+        std::vector<std::string> attachment_errors;
+        attachment_errors.reserve(num_attachments);
 
-            for(const shaderpack::TextureAttachmentInfo& attachment_info : create_info.texture_outputs) {
-                if(attachment_info.name == "Backbuffer") {
-                    writes_to_backbuffer = true;
+        bool writes_to_backbuffer = false;
 
-                    if(create_info.texture_outputs.size() == 1) {
-                        renderpass.writes_to_backbuffer = true;
-                        renderpass.framebuffer = nullptr; // Will be resolved when rendering
+        for(const shaderpack::TextureAttachmentInfo& attachment_info : create_info.texture_outputs) {
+            if(attachment_info.name == "Backbuffer") {
+                writes_to_backbuffer = true;
 
-                    } else {
+                if(create_info.texture_outputs.size() == 1) {
+                    renderpass->writes_to_backbuffer = true;
+                    renderpass->framebuffer = nullptr; // Will be resolved when rendering
+
+                } else {
+                    attachment_errors.push_back(fmt::format(
+                        fmt("Pass {:s} writes to the backbuffer and {:d} other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures"),
+                        create_info.name,
+                        create_info.texture_outputs.size() - 1));
+                }
+
+            } else {
+                rhi::Image* image = dynamic_textures.at(attachment_info.name);
+                color_attachments.push_back(image);
+
+                const shaderpack::TextureCreateInfo& info = dynamic_texture_infos.at(attachment_info.name);
+                const glm::uvec2 attachment_size = info.format.get_size_in_pixels(
+                    {render_settings.settings.window.width, render_settings.settings.window.height});
+
+                if(framebuffer_size.x > 0) {
+                    if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {
                         attachment_errors.push_back(fmt::format(
-                            fmt("Pass {:s} writes to the backbuffer and {:d} other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures"),
+                            fmt("Attachment {:s} has a size of {:d}x{:d}, but the framebuffer for pass {:s} has a size of {:d}x{:d} - these must match! All attachments of a single renderpass must have the same size"),
+                            attachment_info.name,
+                            attachment_size.x,
+                            attachment_size.y,
                             create_info.name,
-                            create_info.texture_outputs.size() - 1));
+                            framebuffer_size.x,
+                            framebuffer_size.y));
                     }
 
                 } else {
-                    rhi::Image* image = dynamic_textures.at(attachment_info.name);
-                    color_attachments.push_back(image);
-
-                    const shaderpack::TextureCreateInfo& info = dynamic_texture_infos.at(attachment_info.name);
-                    const glm::uvec2 attachment_size = info.format.get_size_in_pixels(
-                        {render_settings.settings.window.width, render_settings.settings.window.height});
-
-                    if(framebuffer_size.x > 0) {
-                        if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {
-                            attachment_errors.push_back(fmt::format(
-                                fmt("Attachment {:s} has a size of {:d}x{:d}, but the framebuffer for pass {:s} has a size of {:d}x{:d} - these must match! All attachments of a single renderpass must have the same size"),
-                                attachment_info.name,
-                                attachment_size.x,
-                                attachment_size.y,
-                                create_info.name,
-                                framebuffer_size.x,
-                                framebuffer_size.y));
-                        }
-
-                    } else {
-                        framebuffer_size = attachment_size;
-                    }
+                    framebuffer_size = attachment_size;
                 }
             }
-
-            // Can't combine these if statements and I don't want to `.find` twice
-            const auto depth_attachment = [&]() -> std::optional<rhi::Image*> {
-                if(create_info.depth_texture) {
-                    if(const auto depth_tex_itr = dynamic_textures.find(create_info.depth_texture->name);
-                       depth_tex_itr != dynamic_textures.end()) {
-                        auto* image = depth_tex_itr->second;
-                        return std::make_optional<rhi::Image*>(image);
-                    }
-                }
-
-                return {};
-            }();
-
-            if(!attachment_errors.empty()) {
-                for(const auto& err : attachment_errors) {
-                    NOVA_LOG(ERROR) << err;
-                }
-
-                NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name
-                                << " because there were errors in the attachment specification. Look above this message for details";
-                continue;
-            }
-
-            ntl::Result<rhi::Renderpass*> renderpass_result = rhi->create_renderpass(create_info, framebuffer_size);
-            if(renderpass_result) {
-                renderpass.renderpass = renderpass_result.value;
-
-            } else {
-                NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name << ": " << renderpass_result.error.to_string();
-                continue;
-            }
-
-            // Backbuffer framebuffers are owned by the swapchain, not the renderpass that writes to them, so if the
-            // renderpass writes to the backbuffer then we don't need to create a framebuffer for it
-            if(!writes_to_backbuffer) {
-                renderpass.framebuffer = rhi->create_framebuffer(renderpass.renderpass,
-                                                                 color_attachments,
-                                                                 depth_attachment,
-                                                                 framebuffer_size);
-            }
-
-            renderpass.pipelines.reserve(pipelines.size());
-            for(const shaderpack::PipelineCreateInfo& pipeline_create_info : pipelines) {
-                if(pipeline_create_info.pass == create_info.name) {
-                    std::unordered_map<std::string, ResourceBinding> bindings;
-
-                    ntl::Result<rhi::PipelineInterface*> pipeline_interface = create_pipeline_interface(pipeline_create_info,
-                                                                                                        create_info.texture_outputs,
-                                                                                                        create_info.depth_texture);
-                    if(!pipeline_interface) {
-                        NOVA_LOG(ERROR) << "Pipeline " << create_info.name
-                                        << " has an invalid interface: " << pipeline_interface.error.to_string();
-                        continue;
-                    }
-
-                    ntl::Result<PipelineReturn> pipeline_result = create_graphics_pipeline(*pipeline_interface, pipeline_create_info);
-                    if(pipeline_result) {
-                        auto [pipeline, pipeline_metadata] = *pipeline_result;
-
-                        MaterialPassKey template_key = {};
-                        template_key.renderpass_index = static_cast<uint32_t>(renderpasses.size());
-                        template_key.pipeline_index = static_cast<uint32_t>(renderpass.pipelines.size());
-
-                        create_materials_for_pipeline(pipeline,
-                                                      pipeline_metadata.material_metadatas,
-                                                      materials,
-                                                      pipeline_create_info.name,
-                                                      *pipeline_interface,
-                                                      descriptor_pool,
-                                                      template_key);
-
-                        renderpass.pipelines.push_back(pipeline);
-
-                        metadata.pipeline_metadata.emplace(pipeline_create_info.name, pipeline_metadata);
-
-                    } else {
-                        NOVA_LOG(ERROR) << "Could not create pipeline " << pipeline_create_info.name << ": "
-                                        << pipeline_result.error.to_string();
-                    }
-                }
-            }
-            renderpass.id = static_cast<uint32_t>(renderpass_metadatas.size());
-
-            renderpasses.push_back(renderpass);
-            renderpass_metadatas.emplace(create_info.name, metadata);
         }
+
+        // Can't combine these if statements and I don't want to `.find` twice
+        const auto depth_attachment = [&]() -> std::optional<rhi::Image*> {
+            if(create_info.depth_texture) {
+                if(const auto depth_tex_itr = dynamic_textures.find(create_info.depth_texture->name);
+                   depth_tex_itr != dynamic_textures.end()) {
+                    auto* image = depth_tex_itr->second;
+                    return std::make_optional<rhi::Image*>(image);
+                }
+            }
+
+            return {};
+        }();
+
+        if(!attachment_errors.empty()) {
+            for(const auto& err : attachment_errors) {
+                NOVA_LOG(ERROR) << err;
+            }
+
+            NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name
+                            << " because there were errors in the attachment specification. Look above this message for details";
+            return;
+        }
+
+        ntl::Result<rhi::Renderpass*> renderpass_result = rhi->create_renderpass(create_info, framebuffer_size);
+        if(renderpass_result) {
+            renderpass->renderpass = renderpass_result.value;
+
+        } else {
+            NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name << ": " << renderpass_result.error.to_string();
+            return;
+        }
+
+        // Backbuffer framebuffers are owned by the swapchain, not the renderpass that writes to them, so if the
+        // renderpass writes to the backbuffer then we don't need to create a framebuffer for it
+        if(!writes_to_backbuffer) {
+            renderpass->framebuffer = rhi->create_framebuffer(renderpass->renderpass,
+                                                              color_attachments,
+                                                              depth_attachment,
+                                                              framebuffer_size);
+        }
+
+        renderpass->pipelines.reserve(pipelines.size());
+        for(const shaderpack::PipelineCreateInfo& pipeline_create_info : pipelines) {
+            if(pipeline_create_info.pass == create_info.name) {
+                std::unordered_map<std::string, ResourceBinding> bindings;
+
+                ntl::Result<rhi::PipelineInterface*> pipeline_interface = create_pipeline_interface(pipeline_create_info,
+                                                                                                    create_info.texture_outputs,
+                                                                                                    create_info.depth_texture);
+                if(!pipeline_interface) {
+                    NOVA_LOG(ERROR) << "Pipeline " << create_info.name
+                                    << " has an invalid interface: " << pipeline_interface.error.to_string();
+                    continue;
+                }
+
+                ntl::Result<PipelineReturn> pipeline_result = create_graphics_pipeline(*pipeline_interface, pipeline_create_info);
+                if(pipeline_result) {
+                    auto [pipeline, pipeline_metadata] = *pipeline_result;
+
+                    MaterialPassKey template_key = {};
+                    template_key.renderpass_index = static_cast<uint32_t>(renderpasses.size());
+                    template_key.pipeline_index = static_cast<uint32_t>(renderpass->pipelines.size());
+
+                    create_materials_for_pipeline(pipeline,
+                                                  pipeline_metadata.material_metadatas,
+                                                  materials,
+                                                  pipeline_create_info.name,
+                                                  *pipeline_interface,
+                                                  descriptor_pool,
+                                                  template_key);
+
+                    renderpass->pipelines.push_back(pipeline);
+
+                    metadata.pipeline_metadata.emplace(pipeline_create_info.name, pipeline_metadata);
+
+                } else {
+                    NOVA_LOG(ERROR) << "Could not create pipeline " << pipeline_create_info.name << ": "
+                                    << pipeline_result.error.to_string();
+                }
+            }
+        }
+        renderpass->id = static_cast<uint32_t>(renderpass_metadatas.size());
+
+        renderpasses.push_back(renderpass);
+        renderpass_metadatas.emplace(create_info.name, metadata);
     }
 
     void NovaRenderer::create_materials_for_pipeline(
@@ -704,17 +717,19 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::destroy_renderpasses() {
-        for(Renderpass& renderpass : renderpasses) {
-            rhi->destroy_renderpass(renderpass.renderpass);
-            rhi->destroy_framebuffer(renderpass.framebuffer);
+        for(const auto& renderpass : renderpasses) {
+            if(!renderpass->is_builtin) {
+                rhi->destroy_renderpass(renderpass->renderpass);
+                rhi->destroy_framebuffer(renderpass->framebuffer);
 
-            for(Pipeline& pipeline : renderpass.pipelines) {
-                rhi->destroy_pipeline(pipeline.pipeline);
+                for(Pipeline& pipeline : renderpass->pipelines) {
+                    rhi->destroy_pipeline(pipeline.pipeline);
 
-                for(MaterialPass& material_pass : pipeline.passes) {
-                    (void) material_pass;
-                    // TODO: Destroy descriptors for material
-                    // TODO: Have a way to save mesh data somewhere outside of the render graph, then process it cleanly here
+                    for(MaterialPass& material_pass : pipeline.passes) {
+                        (void) material_pass;
+                        // TODO: Destroy descriptors for material
+                        // TODO: Have a way to save mesh data somewhere outside of the render graph, then process it cleanly here
+                    }
                 }
             }
         }
@@ -736,8 +751,8 @@ namespace nova::renderer {
         // Figure out where to put the renderable
         const MaterialPassKey& pass_key = pos->second;
 
-        Renderpass& renderpass = renderpasses.at(pass_key.renderpass_index);
-        Pipeline& pipeline = renderpass.pipelines.at(pass_key.pipeline_index);
+        std::shared_ptr<Renderpass> renderpass = renderpasses.at(pass_key.renderpass_index);
+        Pipeline& pipeline = renderpass->pipelines.at(pass_key.pipeline_index);
         MaterialPass& material = pipeline.passes.at(pass_key.material_pass_index);
 
         StaticMeshRenderCommand command = make_render_command(renderable, id);
@@ -894,6 +909,20 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_builtin_renderpasses() {
-        builtin_renderpasses[ui_pass_name] = new NullUiRenderpass();
+        // UI render pass
+        {
+            const std::shared_ptr<Renderpass> ui_renderpass = std::make_shared<NullUiRenderpass>();
+
+            shaderpack::RenderPassCreateInfo ui = {};
+            ui.name = ui_pass_name;
+            ui.texture_inputs = {"NovaFinal"};
+            ui.texture_outputs = {{"NovaBackbuffer", shaderpack::PixelFormatEnum::RGBA8, false}};
+
+            add_render_pass(ui, {}, {}, nullptr, ui_renderpass);
+
+            ui_renderpass->is_builtin = true;
+
+            builtin_renderpasses[ui_pass_name] = ui_renderpass;
+        }
     }
 } // namespace nova::renderer

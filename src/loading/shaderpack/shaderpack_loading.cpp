@@ -253,7 +253,7 @@ namespace nova::renderer::shaderpack {
 
     ntl::Result<RendergraphData> load_rendergraph_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         NOVA_LOG(TRACE) << "load_passes_file called";
-        const auto passes_bytes = folder_access->read_text_file("passes.json");
+        const auto passes_bytes = folder_access->read_text_file("rendergraph.json");
         try {
             const auto json_passes = nlohmann::json::parse(passes_bytes);
 

@@ -133,6 +133,8 @@ namespace nova::renderer {
 
         uint32_t id = 0;
 
+        bool is_builtin = false;
+
         rhi::Renderpass* renderpass = nullptr;
         rhi::Framebuffer* framebuffer = nullptr;
 
