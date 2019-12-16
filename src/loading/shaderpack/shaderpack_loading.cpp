@@ -18,6 +18,7 @@
 #include "json_interop.hpp"
 #include "render_graph_builder.hpp"
 #include "shaderpack_validator.hpp"
+#include "nova_renderer/constants.hpp"
 
 namespace nova::renderer::shaderpack {
     // Removed from the GLSLang version we're using
@@ -152,7 +153,7 @@ namespace nova::renderer::shaderpack {
 
         for(auto& pass : data.graph_data.passes) {
             for(auto& output : pass.texture_outputs) {
-                if(output.name == "Backbuffer") {
+                if(output.name == BACKBUFFER_NAME) {
                     // Backbuffer is a special snowflake
                     continue;
 

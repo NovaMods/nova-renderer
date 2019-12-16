@@ -375,7 +375,7 @@ namespace nova::renderer {
         bool writes_to_backbuffer = false;
 
         for(const shaderpack::TextureAttachmentInfo& attachment_info : create_info.texture_outputs) {
-            if(attachment_info.name == "Backbuffer") {
+            if(attachment_info.name == BACKBUFFER_NAME) {
                 writes_to_backbuffer = true;
 
                 if(create_info.texture_outputs.size() == 1) {
@@ -915,8 +915,8 @@ namespace nova::renderer {
 
             shaderpack::RenderPassCreateInfo ui = {};
             ui.name = ui_pass_name;
-            ui.texture_inputs = {"NovaFinal"};
-            ui.texture_outputs = {{"NovaBackbuffer", shaderpack::PixelFormatEnum::RGBA8, false}};
+            ui.texture_inputs = { BACKBUFFER_NAME };
+            ui.texture_outputs = {{BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false}};
 
             add_render_pass(ui, {}, {}, nullptr, ui_renderpass);
 
