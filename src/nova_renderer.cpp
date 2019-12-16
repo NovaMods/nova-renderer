@@ -292,12 +292,21 @@ namespace nova::renderer {
             NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
         }
 
-        data.passes = shaderpack::order_passes(data.passes).value; // TODO: Handle errors somehow
+        for(const std::string& builtin_pass_name : data.graph_data.builtin_passes) {
+            if(const auto& itr = builtin_renderpasses.find(builtin_pass_name); itr != builtin_renderpasses.end()) {
+                data.graph_data.passes.emplace_back(itr->second);
+
+            } else {
+               NOVA_LOG(ERROR) << "Could not find builtin pass with name " << builtin_pass_name;
+            }
+        }
+
+        data.graph_data.passes = shaderpack::order_passes(data.graph_data.passes).value; // TODO: Handle errors somehow
 
         create_dynamic_textures(data.resources.textures);
         NOVA_LOG(DEBUG) << "Dynamic textures created";
 
-        create_render_passes(data.passes, data.pipelines, data.materials);
+        create_render_passes(data.graph_data.passes, data.pipelines, data.materials);
 
         NOVA_LOG(DEBUG) << "Created render passes";
 

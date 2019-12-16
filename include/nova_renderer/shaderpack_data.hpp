@@ -602,7 +602,7 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief All the renderpasses that this shaderpack needs, in submission order
          */
-        std::vector<RenderPassCreateInfo> passes;
+        RendergraphData graph_data;
 
         std::vector<MaterialData> materials;
 
