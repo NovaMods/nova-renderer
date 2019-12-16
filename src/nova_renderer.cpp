@@ -40,7 +40,7 @@
 #endif
 
 #include "util/logger.hpp"
-
+#include "nova_renderer/frontend/ui_renderer.hpp"
 using namespace bvestl::polyalloc;
 using namespace bvestl::polyalloc::operators;
 
@@ -306,9 +306,9 @@ namespace nova::renderer {
         NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name.c_str() << " loaded successfully";
     }
 
-    void NovaRenderer::set_ui_render_function(const std::function<void(const Renderpass&, rhi::CommandList*, FrameContext&)>& ui_function) {
+    void NovaRenderer::set_ui_renderpass(Renderpass* ui_renderpass) {
         std::lock_guard l(ui_function_mutex);
-        ui_render_function = ui_function;
+        builtin_renderpasses["NovaUI"] = ui_renderpass;
     }
 
     void NovaRenderer::create_dynamic_textures(const std::vector<shaderpack::TextureCreateInfo>& texture_create_infos) {
@@ -882,5 +882,9 @@ namespace nova::renderer {
 
         auto* model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info, *ubo_memory);
         builtin_buffers.emplace(MODEL_MATRIX_BUFFER_NAME, model_matrix_buffer);
+    }
+
+    void NovaRenderer::create_builtin_renderpasses() {
+        builtin_renderpasses[ui_pass_name] = new NullUiRenderpass();
     }
 } // namespace nova::renderer

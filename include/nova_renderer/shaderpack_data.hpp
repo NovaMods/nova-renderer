@@ -553,6 +553,21 @@ namespace nova::renderer::shaderpack {
         RenderPassCreateInfo() = default;
     };
 
+    /*!
+     * \brief All the data to create one rendergraph, including which builtin passes the renderpack wants to use in its rendergraph
+     */
+    struct RendergraphData {
+        /*!
+         * \brief The shaderpack-supplied passes
+         */
+        std::vector<RenderPassCreateInfo> passes;
+
+        /*!
+         * \brief Names of all the builtin renderpasses that the renderpack wants to use
+         */
+        std::vector<std::string> builtin_passes;
+    };
+
     struct MaterialPass {
         std::string name;
         std::string material_name;

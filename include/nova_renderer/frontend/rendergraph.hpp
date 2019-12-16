@@ -11,6 +11,7 @@ namespace nova::renderer {
         struct RenderPassCreateInfo;
     };
 
+    static std::string virtual_texture_id_pass_name = "NovaVTID";
     static std::string ui_pass_name = "UI";
 
 #pragma region Structs for rendering
@@ -120,7 +121,16 @@ namespace nova::renderer {
      */
     class Renderpass {
     public:
+        Renderpass() = default;
+
+        Renderpass(Renderpass&& old) noexcept = default;
+        Renderpass& operator=(Renderpass&& old) noexcept = default;
+
+        Renderpass(const Renderpass& other) = default;
+        Renderpass& operator=(const Renderpass& other) = default;
+
         virtual ~Renderpass() = default;
+
         uint32_t id = 0;
 
         rhi::Renderpass* renderpass = nullptr;
@@ -137,7 +147,7 @@ namespace nova::renderer {
 
         void record_pre_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const;
 
-        virtual void render_pass_contents(rhi::CommandList* cmds, FrameContext& ctx);
+        virtual void render_renderpass_contents(rhi::CommandList* cmds, FrameContext& ctx);
 
         void record_post_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const;
 

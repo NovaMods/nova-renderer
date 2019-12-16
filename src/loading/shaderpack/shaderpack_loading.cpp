@@ -250,6 +250,7 @@ namespace nova::renderer::shaderpack {
         const auto passes_bytes = folder_access->read_text_file("passes.json");
         try {
             const auto json_passes = nlohmann::json::parse(passes_bytes);
+            const auto rendergraph_file = json_passes.get<RendergraphData>();
             const auto passes = json_passes.get<std::vector<RenderPassCreateInfo>>();
 
             const auto final_itr = std::find_if(passes.begin(), passes.end(), [&](const RenderPassCreateInfo& pass) {

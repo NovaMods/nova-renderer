@@ -19,7 +19,7 @@ namespace nova::renderer {
 
         cmds->begin_renderpass(renderpass, framebuffer);
 
-        render_pass_contents(cmds, ctx);
+        render_renderpass_contents(cmds, ctx);
 
         cmds->end_renderpass();
 
@@ -62,7 +62,7 @@ namespace nova::renderer {
         }
     }
 
-    void Renderpass::render_pass_contents(rhi::CommandList* cmds, FrameContext& ctx) {
+    void Renderpass::render_renderpass_contents(rhi::CommandList* cmds, FrameContext& ctx) {
         // TODO: I _actually_ want to get all the draw commands from NovaRenderer, instead of storing them in this struct
         for(const Pipeline& pipeline : pipelines) {
             pipeline.record(cmds, ctx);

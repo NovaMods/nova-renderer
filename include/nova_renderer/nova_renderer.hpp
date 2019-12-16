@@ -24,6 +24,8 @@ namespace spirv_cross {
 } // namespace spirv_cross
 
 namespace nova::renderer {
+    class UiRenderpass;
+
     namespace rhi {
         class Swapchain;
     }
@@ -84,9 +86,9 @@ namespace nova::renderer {
          * depth/stencil attachment. After calling this function, Nova records commands to end that same renderpass. This allows the host
          * application to only care about rendering the UI, instead of worrying about any pass scheduling concerns
          *
-         * \param ui_function The function to execute each time Nova needs to render UI
+         * \param ui_renderpass The renderpass to use for UI
          */
-        void set_ui_render_function(const std::function<void(const Renderpass&, rhi::CommandList*, FrameContext&)>& ui_function);
+        void set_ui_renderpass(Renderpass* ui_renderpass);
 
         /*!
          * \brief Executes a single frame
@@ -189,14 +191,20 @@ namespace nova::renderer {
         void create_global_sync_objects();
 
         void create_uniform_buffers();
+
+        void create_builtin_renderpasses();
 #pragma endregion
 
-#pragma region Shaderpack
+#pragma region Renderpack
         using PipelineReturn = std::tuple<Pipeline, PipelineMetadata>;
 
         bool shaderpack_loaded = false;
 
         std::mutex shaderpack_loading_mutex;
+#pragma endregion
+
+#pragma region Rendergraph
+        std::unordered_map<std::string, Renderpass*> builtin_renderpasses;
 
         /*!
          * \brief The renderpasses in the shaderpack, in submission order
