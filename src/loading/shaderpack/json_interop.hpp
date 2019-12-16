@@ -6,6 +6,8 @@
 #ifndef NOVA_RENDERER_JSON_INTEROP_HPP
 #define NOVA_RENDERER_JSON_INTEROP_HPP
 
+#include <nlohmann/json.hpp>
+
 #include "nova_renderer/shaderpack_data.hpp"
 
 namespace nova::renderer::shaderpack {

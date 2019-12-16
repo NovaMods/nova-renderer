@@ -11,6 +11,8 @@ namespace nova::renderer {
         struct RenderPassCreateInfo;
     };
 
+    static std::string ui_pass_name = "UI";
+
 #pragma region Structs for rendering
     template <typename RenderCommandType>
     struct MeshBatch {
@@ -49,8 +51,7 @@ namespace nova::renderer {
         ProceduralMeshBatch(std::unordered_map<MeshId, ProceduralMesh>* meshes, const MeshId key) : mesh(meshes, key) {}
     };
 
-    class MaterialPass {
-    public:
+    struct MaterialPass {
         std::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
         std::vector<ProceduralMeshBatch<StaticMeshRenderCommand>> static_procedural_mesh_draws;
 
@@ -66,8 +67,7 @@ namespace nova::renderer {
                                                        FrameContext& ctx);
     };
 
-    class Pipeline {
-    public:
+    struct Pipeline {
         rhi::Pipeline* pipeline = nullptr;
 
         std::vector<MaterialPass> passes;
@@ -111,8 +111,16 @@ namespace nova::renderer {
     };
 #pragma endregion
 
+    /*!
+     * \brief Renderpass that's ready to be recorded into a command list
+     *
+     * Renderpass has two virtual methods: `record` and `record_inside_renderpass`. `record` records the renderpass in its entirety, while
+     * `record_inside_renderpass` only records the inside of the renderpass, not the work needed to begin or end it. I expect that most
+     * subclasses will only want to override `record_inside_renderpass`
+     */
     class Renderpass {
     public:
+        virtual ~Renderpass() = default;
         uint32_t id = 0;
 
         rhi::Renderpass* renderpass = nullptr;
@@ -125,23 +133,11 @@ namespace nova::renderer {
         std::vector<rhi::ResourceBarrier> read_texture_barriers;
         std::vector<rhi::ResourceBarrier> write_texture_barriers;
 
-        /*!
-         * \brief Tells this renderpass to use the provided function to record itself into a command list
-         *
-         * Nova expects that you'll only set this variable once ever. Otherwise, you may run into all kinds of threading issues
-         *
-         * This member allows a host application to register a custom command list recording function for this renderpass. It paves the way
-         * for shaderpacks with render scripts
-         *
-         * The first parameter to this function is this exact renderpass, the second parameter is the command list to record into
-         */
-        std::optional<std::function<void(const Renderpass&, rhi::CommandList*, FrameContext&)>> record_func;
-
-        void record(rhi::CommandList* cmds, FrameContext& ctx) const;
-
-        void default_record(rhi::CommandList* cmds, FrameContext& ctx) const;
+        virtual void render(rhi::CommandList* cmds, FrameContext& ctx);
 
         void record_pre_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const;
+
+        virtual void render_pass_contents(rhi::CommandList* cmds, FrameContext& ctx);
 
         void record_post_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const;
 
@@ -150,6 +146,4 @@ namespace nova::renderer {
          */
         [[nodiscard]] rhi::Framebuffer* get_framebuffer(const FrameContext& ctx) const;
     };
-
-    const shaderpack::RenderPassCreateInfo& get_ui_pass();
 } // namespace nova::renderer

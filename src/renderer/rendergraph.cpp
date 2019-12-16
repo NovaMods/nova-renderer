@@ -8,14 +8,22 @@
 #include "../util/logger.hpp"
 
 namespace nova::renderer {
-    void Renderpass::record(rhi::CommandList* cmds, FrameContext& ctx) const {
-        if(record_func) {
-            // Gotta unwrap the optional ugh
-            (*record_func)(*this, cmds, ctx);
+    void Renderpass::render(rhi::CommandList* cmds, FrameContext& ctx) {
+        // TODO: Figure if any of these barriers are implicit
+        // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource instead of
+        // using a robust default
 
-        } else {
-            default_record(cmds, ctx);
-        }
+        record_pre_renderpass_barriers(cmds, ctx);
+
+        const auto framebuffer = get_framebuffer(ctx);
+
+        cmds->begin_renderpass(renderpass, framebuffer);
+
+        render_pass_contents(cmds, ctx);
+
+        cmds->end_renderpass();
+
+        record_post_renderpass_barriers(cmds, ctx);
     }
 
     void Renderpass::record_pre_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const {
@@ -54,6 +62,13 @@ namespace nova::renderer {
         }
     }
 
+    void Renderpass::render_pass_contents(rhi::CommandList* cmds, FrameContext& ctx) {
+        // TODO: I _actually_ want to get all the draw commands from NovaRenderer, instead of storing them in this struct
+        for(const Pipeline& pipeline : pipelines) {
+            pipeline.record(cmds, ctx);
+        }
+    }
+
     void Renderpass::record_post_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const {
         if(writes_to_backbuffer) {
             rhi::ResourceBarrier backbuffer_barrier{};
@@ -80,40 +95,6 @@ namespace nova::renderer {
         } else {
             return ctx.swapchain_framebuffer;
         }
-    }
-
-    const shaderpack::RenderPassCreateInfo& get_ui_pass() {
-        static shaderpack::RenderPassCreateInfo
-            ui_pass_data{"UI",
-                         {},
-                         {},
-                         {shaderpack::TextureAttachmentInfo{"UI", shaderpack::PixelFormatEnum::RGBA8, true}},
-                         shaderpack::TextureAttachmentInfo{"UI Depth", shaderpack::PixelFormatEnum::DepthStencil, true},
-                         {},
-                         {}};
-
-        return ui_pass_data;
-    }
-
-    void Renderpass::default_record(rhi::CommandList* cmds, FrameContext& ctx) const {
-        // TODO: Figure if any of these barriers are implicit
-        // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource instead of
-        // using a robust default
-
-        record_pre_renderpass_barriers(cmds, ctx);
-
-        const auto framebuffer = get_framebuffer(ctx);
-
-        cmds->begin_renderpass(renderpass, framebuffer);
-
-        // TODO: I _actually_ want to get all the draw commands from NovaRenderer, instead of storing them in this struct
-        for(const Pipeline& pipeline : pipelines) {
-            pipeline.record(cmds, ctx);
-        }
-
-        cmds->end_renderpass();
-
-        record_post_renderpass_barriers(cmds, ctx);
     }
 
     void MaterialPass::record(rhi::CommandList* cmds, FrameContext& ctx) const {

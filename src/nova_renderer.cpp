@@ -164,8 +164,11 @@ namespace nova::renderer {
         ctx.swapchain_image = swapchain->get_image(cur_frame_idx);
 
         for(const auto& renderpass : renderpasses) {
-            renderpass.record(cmds, ctx);
+            renderpass.render(cmds, ctx);
         }
+
+        // Record the UI pass
+
 
         rhi->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences.at(cur_frame_idx));
 
@@ -280,7 +283,7 @@ namespace nova::renderer {
         MTR_SCOPE("ShaderpackLoading", "load_shaderpack");
         glslang::InitializeProcess();
 
-        const shaderpack::ShaderpackData data = shaderpack::load_shaderpack_data(fs::path(shaderpack_name.c_str()));
+        shaderpack::ShaderpackData data = shaderpack::load_shaderpack_data(fs::path(shaderpack_name.c_str()));
 
         if(shaderpack_loaded) {
             destroy_dynamic_resources();
@@ -289,10 +292,13 @@ namespace nova::renderer {
             NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
         }
 
+        data.passes = shaderpack::order_passes(data.passes).value; // TODO: Handle errors somehow
+
         create_dynamic_textures(data.resources.textures);
         NOVA_LOG(DEBUG) << "Dynamic textures created";
 
         create_render_passes(data.passes, data.pipelines, data.materials);
+
         NOVA_LOG(DEBUG) << "Created render passes";
 
         shaderpack_loaded = true;
@@ -300,7 +306,7 @@ namespace nova::renderer {
         NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name.c_str() << " loaded successfully";
     }
 
-    void NovaRenderer::set_ui_render_function(std::function<void(rhi::CommandList*, FrameContext&)> ui_function) {
+    void NovaRenderer::set_ui_render_function(const std::function<void(const Renderpass&, rhi::CommandList*, FrameContext&)>& ui_function) {
         std::lock_guard l(ui_function_mutex);
         ui_render_function = ui_function;
     }

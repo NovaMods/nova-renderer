@@ -197,7 +197,7 @@ namespace nova::renderer::shaderpack {
 
         ShaderpackData data{};
         data.resources = load_dynamic_resources_file(folder_access);
-        data.passes = load_passes_file(folder_access).value;    // TODO: Gracefully handle errors
+        data.passes = load_passes_file(folder_access).value; // TODO: Gracefully handle errors
         data.pipelines = load_pipeline_files(folder_access);
         data.materials = load_material_files(folder_access);
 
@@ -252,7 +252,20 @@ namespace nova::renderer::shaderpack {
             const auto json_passes = nlohmann::json::parse(passes_bytes);
             const auto passes = json_passes.get<std::vector<RenderPassCreateInfo>>();
 
-            return order_passes(passes);
+            const auto final_itr = std::find_if(passes.begin(), passes.end(), [&](const RenderPassCreateInfo& pass) {
+                const auto output_itr = std::find_if(pass.texture_outputs.begin(),
+                                                     pass.texture_outputs.end(),
+                                                     [](const TextureAttachmentInfo& tex) { return tex.name == "NovaFinal"; });
+
+                return output_itr != pass.texture_outputs.end();
+            });
+
+            if(final_itr != passes.end()) {
+                return ntl::Result<std::vector<RenderPassCreateInfo>>(passes);
+
+            } else {
+                return ntl::Result<std::vector<RenderPassCreateInfo>>(ntl::NovaError("At least one pass must write to resource NovaFinal"));
+            }
         }
         catch(nlohmann::json::parse_error& err) {
             return ntl::Result<std::vector<RenderPassCreateInfo>>(

@@ -126,6 +126,7 @@ set(NOVA_SOURCE
         include/nova_renderer/rhi/device_memory_resource.hpp
         include/nova_renderer/frontend/procedural_mesh.hpp
         include/nova_renderer/frontend/rendergraph.hpp
+        include/nova_renderer/frontend/ui_renderer.hpp
 
         src/nova_renderer.cpp
 
@@ -145,6 +146,7 @@ set(NOVA_SOURCE
         src/render_objects/uniform_structs.hpp
         src/render_objects/renderables.cpp
         src/renderer/rendergraph.cpp
+        src/renderer/ui/ui_renderer.cpp
 
         src/util/logger.cpp
         src/util/logger.hpp

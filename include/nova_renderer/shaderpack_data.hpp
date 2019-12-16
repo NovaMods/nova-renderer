@@ -9,17 +9,21 @@
 #define NOVA_RENDERER_SHADERPACK_DATA_HPP
 
 #include <cstdint>
-#include <nlohmann/json.hpp>
+#include <functional>
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "util/filesystem.hpp"
-#include "util/utils.hpp"
-
-#include <vulkan/vulkan.h>
 
 #include <glm/glm.hpp>
+#include <vulkan/vulkan.h>
+
+#include "frame_context.hpp"
+#include "util/filesystem.hpp"
+
+namespace nova::renderer {
+    struct Renderpass;
+}
 
 namespace nova::renderer::shaderpack {
     /*!
@@ -422,35 +426,35 @@ namespace nova::renderer::shaderpack {
          * \brief The name of the texture
          *
          * Nova implicitly defines a few textures for you to use:
-         * - ColorVirtualTexture
+         * - NovaColorVirtualTexture
          *      - Virtual texture atlas that holds color textures
          *      - Textures which have the exact name as requested by Minecraft are in this atlas
          *      - Things without a color texture get a pure white texture
          *      - Always has a format of R8G8B8A8
          *      - Can only be used as a pass's input
-         * - NormalVirtualTexture
+         * - NovaNormalVirtualTexture
          *      - Virtual texture atlas that holds normal textures
          *      - Textures which have `_n` after the name requested by Minecraft are in this atlas
          *      - If no normal texture exists for a given object, a texture with RGBA of (0, 0, 1, 1) is used
          *      - Always has a format of R8G8B8A8
          *      - Can only be used as a pass's input
-         * - DataVirtualTexture
+         * - NovaDataVirtualTexture
          *      - Virtual texture atlas that holds data textures
          *      - Textures which have a `_s` after the name requested by Minecraft are in this atlas
          *      - If no data texture exists for a given object, a texture with an RGBA of (0, 0, 0, 0) is used
          *      - Always has a format of R8G8B8A8
          *      - Can only be used as a pass's input
-         * - Lightmap
-         *      - Lightmap, loaded from the current resourcepack
-         *      - Format of RGB8
+         * - NovaLightmap
+         *      - Minecraft lightmap, loaded from the current resourcepack
+         *      - Format of RGBA8
          *      - Can only be used as an input
-         * - Backbuffer
+         * - NovaFinal
          *      - The texture that gets presented to the screen
          *      - Always has a format of RGB8
          *      - Can only be used as a pass's output
          *
          * If you use one of the virtual textures, then all fields except the binding are ignored
-         * If you use `Backbuffer`, then all fields are ignored since the backbuffer is always bound to output location 0
+         * If you use `NovaFinal`, then all fields are ignored since the backbuffer is always bound to output location 0
          */
         std::string name;
 
@@ -473,7 +477,7 @@ namespace nova::renderer::shaderpack {
          */
         std::string name{};
 
-		PixelFormatEnum pixel_format;
+        PixelFormatEnum pixel_format;
 
         /*!
          * \brief Whether to clear it
@@ -540,6 +544,11 @@ namespace nova::renderer::shaderpack {
          * \brief All the buffers that this renderpass writes to
          */
         std::vector<std::string> output_buffers{};
+
+        /*!
+         * \brief Function to use to record this render pass
+         */
+        std::optional<std::function<void(const Renderpass& pass, rhi::CommandList*, FrameContext&)>> record_func;
 
         RenderPassCreateInfo() = default;
     };
@@ -614,6 +623,6 @@ namespace nova::renderer::shaderpack {
     [[nodiscard]] std::string to_string(VertexFieldEnum val);
 
     [[nodiscard]] uint32_t pixel_format_to_pixel_width(PixelFormatEnum format);
-} // namespace nova::renderer
+} // namespace nova::renderer::shaderpack
 
 #endif // NOVA_RENDERER_SHADERPACK_DATA_HPP

@@ -80,13 +80,13 @@ namespace nova::renderer {
          * The first parameter to the function is the command list it must record UI rendering into, and the second parameter is the
          * rendering context for the current frame
          *
-         * Before calling this function, Nova records commands to begin a renderpass with one RGBA8 color attachment and one D24S8
+         * Before calling the UI render function, Nova records commands to begin a renderpass with one RGBA8 color attachment and one D24S8
          * depth/stencil attachment. After calling this function, Nova records commands to end that same renderpass. This allows the host
          * application to only care about rendering the UI, instead of worrying about any pass scheduling concerns
          *
          * \param ui_function The function to execute each time Nova needs to render UI
          */
-        void set_ui_render_function(std::function<void(rhi::CommandList*, FrameContext&)> ui_function);
+        void set_ui_render_function(const std::function<void(const Renderpass&, rhi::CommandList*, FrameContext&)>& ui_function);
 
         /*!
          * \brief Executes a single frame
@@ -207,7 +207,7 @@ namespace nova::renderer {
          *
          * Basically this vector contains all the data you need to render a frame
          */
-        std::vector<Renderpass> renderpasses;
+        std::vector<Renderpass*> renderpasses;
 
         std::unordered_map<std::string, rhi::Image*> dynamic_textures;
         std::unordered_map<std::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
@@ -288,7 +288,6 @@ namespace nova::renderer {
         std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
 
         std::mutex ui_function_mutex;
-        std::optional<std::function<void(rhi::CommandList*, FrameContext&)>> ui_render_function;
 #pragma endregion
     };
 } // namespace nova::renderer
