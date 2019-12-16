@@ -7,7 +7,7 @@ namespace nova::renderer {
         // Intentionally empty
     }
 
-    void NullUiRenderpass::render_ui(rhi::CommandList* cmds, FrameContext& ctx) const {
+    void NullUiRenderpass::render_ui(rhi::CommandList* cmds, FrameContext& ctx) {
         // Intentionally empty
     }
 } // namespace nova::renderer

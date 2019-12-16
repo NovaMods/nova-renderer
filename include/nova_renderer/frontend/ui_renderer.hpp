@@ -17,7 +17,7 @@ namespace nova::renderer {
          *
          * Clients of Nova must provide their own implementation of `UiRenderpass`. Nova will then use that implementation to
          */
-        virtual void render_ui(rhi::CommandList* cmds, FrameContext& ctx) const = 0;
+        virtual void render_ui(rhi::CommandList* cmds, FrameContext& ctx) = 0;
     };
 
     class NullUiRenderpass final : public UiRenderpass {
@@ -27,6 +27,6 @@ namespace nova::renderer {
         ~NullUiRenderpass() override = default;
 
     protected:
-        void render_ui(rhi::CommandList* cmds, FrameContext& ctx) const override;
+        void render_ui(rhi::CommandList* cmds, FrameContext& ctx) override;
     };
 } // namespace nova::renderer
