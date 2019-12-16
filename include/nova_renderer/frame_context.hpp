@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include <cstddef>
 
 #include "nova_renderer/rhi/forward_decls.hpp"
 

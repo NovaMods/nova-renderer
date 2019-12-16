@@ -914,7 +914,7 @@ namespace nova::renderer {
             const std::shared_ptr<Renderpass> ui_renderpass = std::make_shared<NullUiRenderpass>();
 
             shaderpack::RenderPassCreateInfo ui = {};
-            ui.name = ui_pass_name;
+            ui.name = UI_RENDER_PASS_NAME;
             ui.texture_inputs = { BACKBUFFER_NAME };
             ui.texture_outputs = {{BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false}};
 
@@ -922,7 +922,7 @@ namespace nova::renderer {
 
             ui_renderpass->is_builtin = true;
 
-            builtin_renderpasses[ui_pass_name] = ui_renderpass;
+            builtin_renderpasses[UI_RENDER_PASS_NAME] = ui_renderpass;
         }
     }
 } // namespace nova::renderer

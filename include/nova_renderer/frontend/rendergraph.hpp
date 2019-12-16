@@ -11,9 +11,6 @@ namespace nova::renderer {
         struct RenderPassCreateInfo;
     };
 
-    static std::string virtual_texture_id_pass_name = "NovaVTID";
-    static std::string ui_pass_name = "UI";
-
 #pragma region Structs for rendering
     template <typename RenderCommandType>
     struct MeshBatch {
