@@ -430,7 +430,7 @@ if(NOVA_ENABLE_OPENGL_RHI)
         message(FATAL_ERROR "GLFW target name could not be found")
     endif()
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} ${GLFW_TARGET_NAME})
-    target_include_directories(nova-renderer PUBLIC external/glfw/include)
+    target_include_directories(nova-renderer PUBLIC ${CMAKE_CURRENT_LIST_DIR}/external/glfw/include)
 endif()
 
 if(NOVA_ENABLE_D3D12_RHI)
