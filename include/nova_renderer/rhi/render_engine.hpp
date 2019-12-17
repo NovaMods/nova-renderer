@@ -135,7 +135,19 @@ namespace nova::renderer::rhi {
          */
         virtual void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) = 0;
 
+        /*!
+         * \brief Creates an empty image
+         *
+         * Useful when you want a render target, or you want to initialize the image on your own
+         */
         [[nodiscard]] virtual Image* create_image(const shaderpack::TextureCreateInfo& info) = 0;
+
+        /*!
+         * \brief Creates an image with the provided initial data
+         *
+         * Nova assumes that you're passing in the same number of bytes as (width * height * sizeof(pixel_format)). If you give it fewer, you won't party
+         */
+        [[nodiscard]] virtual Image* create_image(const shaderpack::TextureCreateInfo& info, void* initial_data) = 0;
 
         [[nodiscard]] virtual Semaphore* create_semaphore() = 0;
 
