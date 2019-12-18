@@ -142,13 +142,6 @@ namespace nova::renderer::rhi {
          */
         [[nodiscard]] virtual Image* create_image(const shaderpack::TextureCreateInfo& info) = 0;
 
-        /*!
-         * \brief Creates an image with the provided initial data
-         *
-         * Nova assumes that you're passing in the same number of bytes as (width * height * sizeof(pixel_format)). If you give it fewer, you won't party
-         */
-        [[nodiscard]] virtual Image* create_image(const shaderpack::TextureCreateInfo& info, void* initial_data) = 0;
-
         [[nodiscard]] virtual Semaphore* create_semaphore() = 0;
 
         [[nodiscard]] virtual std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) = 0;
