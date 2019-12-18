@@ -2,7 +2,7 @@
 
 namespace nova::renderer {
     UiRenderpass::UiRenderpass() {
-        // TODO: Create a renderpass for this render pass to use
+        rhi::RenderPassCreateInfo rp_info = {};
     }
 
     void UiRenderpass::render_renderpass_contents(rhi::CommandList* cmds, FrameContext& ctx) {}

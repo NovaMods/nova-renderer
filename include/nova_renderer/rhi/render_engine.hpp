@@ -89,7 +89,7 @@ namespace nova::renderer::rhi {
          *
          * \return The newly created renderpass
          */
-        [[nodiscard]] virtual ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data,
+        [[nodiscard]] virtual ntl::Result<Renderpass*> create_renderpass(const RenderPassCreateInfo& data,
                                                                          const glm::uvec2& framebuffer_size) = 0;
 
         [[nodiscard]] virtual Framebuffer* create_framebuffer(const Renderpass* renderpass,
