@@ -666,11 +666,6 @@ namespace nova::renderer::rhi {
         }
     }
 
-    Image* D3D12RenderEngine::create_image(const shaderpack::TextureCreateInfo& info, void* initial_data) {
-        Image* image = create_image(info);
-        auto* dx_image = static_cast<DX12Image*>(image);
-    }
-
     Semaphore* D3D12RenderEngine::create_semaphore() {
         auto* semaphore = new DX12Semaphore;
 

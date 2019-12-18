@@ -128,6 +128,7 @@ set(NOVA_SOURCE
         include/nova_renderer/frontend/procedural_mesh.hpp
         include/nova_renderer/frontend/rendergraph.hpp
         include/nova_renderer/frontend/ui_renderer.hpp
+        include/nova_renderer/frontend/resource_loader.hpp
 
         src/nova_renderer.cpp
 
@@ -148,6 +149,7 @@ set(NOVA_SOURCE
         src/render_objects/renderables.cpp
         src/renderer/rendergraph.cpp
         src/renderer/ui/ui_renderer.cpp
+        src/renderer/resource_loader.cpp
 
         src/util/logger.cpp
         src/util/utils.cpp

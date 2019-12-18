@@ -86,8 +86,6 @@ namespace nova::renderer::rhi {
 
         Image* create_image(const shaderpack::TextureCreateInfo& info) override;
 
-        Image* create_image(const shaderpack::TextureCreateInfo& info, void* initial_data) override;
-
         Semaphore* create_semaphore() override;
 
         std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override;
