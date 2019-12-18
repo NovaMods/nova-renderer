@@ -34,6 +34,10 @@ namespace nova::renderer::rhi {
 
     struct Sampler {};
 
+    struct TextureCreateInfo {
+        TextureUsage usage;
+    };
+
     struct Image : Resource {
         bool is_depth_tex = false;
     };
