@@ -7,12 +7,11 @@
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/window.hpp"
 
-#include "../../util/logger.hpp"
 #include "../../util/memory_utils.hpp"
 #include "vk_structs.hpp"
 #include "vulkan_command_list.hpp"
 #include "vulkan_utils.hpp"
-
+#include "nova_renderer/util/logger.hpp"
 // TODO: Move window creation out of the RHI
 #ifdef NOVA_LINUX
 #define NOVA_VK_XLIB

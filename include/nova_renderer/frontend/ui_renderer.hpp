@@ -9,6 +9,8 @@ namespace nova::renderer {
 
     class UiRenderpass : public Renderpass {
     public:
+        UiRenderpass();
+
         void render_renderpass_contents(rhi::CommandList* cmds, FrameContext& ctx) override;
 
     protected:

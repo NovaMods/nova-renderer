@@ -6,7 +6,7 @@
 #include <execinfo.h>
 #include <fmt/format.h>
 
-#include "logger.hpp"
+#include "nova_renderer/util/logger.hpp"
 
 void nova_backtrace() {
     std::array<void*, 50> array{};

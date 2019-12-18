@@ -233,6 +233,8 @@ namespace nova::renderer::shaderpack {
             return std::make_shared<RegularFolderAccessor>(path_to_shaderpack);
         }
 
+        NOVA_LOG(FATAL) << "No shaderpack accessor implementation found for name " << shaderpack_name;
+
         return {};
     }
 
