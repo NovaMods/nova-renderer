@@ -632,7 +632,14 @@ namespace nova::renderer::rhi {
         texture_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
         texture_desc.SampleDesc = sample_desc;
 
-        D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_RENDER_TARGET;
+        D3D12_RESOURCE_STATES state = [&] {
+            if(info.usage == shaderpack::ImageUsage::RenderTarget) {
+                return D3D12_RESOURCE_STATE_RENDER_TARGET;
+            } else {
+                // TODO: Figure out if the resource has to be both kinds of resources
+                return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+            }
+        }();
 
         if(format.pixel_format == shaderpack::PixelFormatEnum::Depth || format.pixel_format == shaderpack::PixelFormatEnum::DepthStencil) {
             texture_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
@@ -657,6 +664,11 @@ namespace nova::renderer::rhi {
                             << ", Windows error: '" << get_last_windows_error() << "'";
             return nullptr;
         }
+    }
+
+    Image* D3D12RenderEngine::create_image(const shaderpack::TextureCreateInfo& info, void* initial_data) {
+        Image* image = create_image(info);
+        auto* dx_image = static_cast<DX12Image*>(image);
     }
 
     Semaphore* D3D12RenderEngine::create_semaphore() {
