@@ -133,7 +133,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    ntl::Result<Renderpass*> D3D12RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data,
+    ntl::Result<Renderpass*> D3D12RenderEngine::create_renderpass(const RenderPassCreateInfo& data,
                                                                   const glm::uvec2& /* framebuffer_size */) {
         auto* renderpass = new DX12Renderpass;
 
