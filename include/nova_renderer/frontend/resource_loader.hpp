@@ -6,12 +6,7 @@
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
-
-namespace bvestl {
-    namespace polyalloc {
-        class Bytes;
-    }
-} // namespace bvestl
+#include <nova_renderer/memory/allocators.hpp>
 
 namespace nova::renderer {
     class NovaRenderer;
@@ -56,8 +51,12 @@ namespace nova::renderer {
          * \param data The initial data for this texture. Must be large enough to have all the pixels in the texture
          * \return The newly-created image, or nullptr if the image could not be created. Check the Nova logs to find out why
          */
-        [[nodiscard]] TextureResource create_texture(
-            const std::string& name, std::size_t width, std::size_t height, rhi::PixelFormat pixel_format, void* data);
+        [[nodiscard]] TextureResource create_texture(const std::string& name,
+                                                     std::size_t width,
+                                                     std::size_t height,
+                                                     rhi::PixelFormat pixel_format,
+                                                     void* data,
+                                                     mem::AllocatorHandle<>& allocator);
 
         /*!
          * \brief Retrieves the texture with the specified name
@@ -66,7 +65,11 @@ namespace nova::renderer {
 
         [[nodiscard]] std::optional<rhi::DescriptorSetWrite> get_descriptor_info_for_resource(const std::string& resource_name);
 
-        [[nodiscard]] TextureResource create_render_target(const std::string& name, size_t width, size_t height, rhi::PixelFormat pixel_format);
+        [[nodiscard]] TextureResource create_render_target(const std::string& name,
+                                                           size_t width,
+                                                           size_t height,
+                                                           rhi::PixelFormat pixel_format);
+
     private:
         NovaRenderer& renderer;
 

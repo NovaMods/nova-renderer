@@ -3,7 +3,7 @@
 #include "nova_renderer/nova_renderer.hpp"
 #include "nova_renderer/util/logger.hpp"
 
-using namespace bvestl::polyalloc;
+using namespace nova::mem;
 
 namespace nova::renderer {
     using namespace rhi;
@@ -18,8 +18,12 @@ namespace nova::renderer {
         allocate_staging_buffer_memory();
     }
 
-    TextureResource ResourceStorage::create_texture(
-        const std::string& name, const std::size_t width, const std::size_t height, const PixelFormat pixel_format, void* data) {
+    TextureResource ResourceStorage::create_texture(const std::string& name,
+                                                    const std::size_t width,
+                                                    const std::size_t height,
+                                                    const PixelFormat pixel_format,
+                                                    void* data,
+                                                    mem::AllocatorHandle<>& allocator) {
 
         TextureResource resource;
         resource.name = name;
@@ -39,10 +43,10 @@ namespace nova::renderer {
 
         const std::shared_ptr<Buffer> staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
 
-        resource.image = device->create_image(info);
+        resource.image = device->create_image(info, allocator);
         resource.image->is_dynamic = false;
 
-        CommandList* cmds = device->get_command_list(0, QueueType::Transfer);
+        CommandList* cmds = device->create_command_list(allocator, 0, QueueType::Transfer);
 
         ResourceBarrier initial_texture_barrier = {};
         initial_texture_barrier.resource_to_barrier = resource.image;
@@ -111,13 +115,18 @@ namespace nova::renderer {
     }
 
     void ResourceStorage::allocate_staging_buffer_memory() {
-        DeviceMemory*
-            memory = device->allocate_device_memory(STAGING_BUFFER_TOTAL_MEMORY_SIZE, MemoryUsage::StagingBuffer, ObjectType::Buffer).value;
+        DeviceMemory* memory = device
+                                   ->allocate_device_memory(STAGING_BUFFER_TOTAL_MEMORY_SIZE,
+                                                            MemoryUsage::StagingBuffer,
+                                                            ObjectType::Buffer,
+                                                            *staging_buffer_allocator)
+                                   .value;
 
-        staging_buffer_memory = new DeviceMemoryResource(memory,
-                                                         new BlockAllocationStrategy(*renderer.get_global_allocator(),
-                                                                                     Bytes(STAGING_BUFFER_TOTAL_MEMORY_SIZE),
-                                                                                     STAGING_BUFFER_ALIGNMENT));
+        auto* strat = staging_buffer_allocator->new_other_object<BlockAllocationStrategy>(*renderer.get_global_allocator(),
+                                                                                          Bytes(STAGING_BUFFER_TOTAL_MEMORY_SIZE),
+                                                                                          STAGING_BUFFER_ALIGNMENT);
+
+        staging_buffer_memory = new DeviceMemoryResource(memory, strat);
     }
 
     std::shared_ptr<Buffer> ResourceStorage::get_staging_buffer_with_size(const size_t size) {
@@ -142,7 +151,7 @@ namespace nova::renderer {
 
         const BufferCreateInfo info = {actual_size, BufferUsage::StagingBuffer};
 
-        Buffer* buffer = device->create_buffer(info, *staging_buffer_memory);
+        Buffer* buffer = device->create_buffer(info, *staging_buffer_memory, *staging_buffer_allocator);
         return std::shared_ptr<Buffer>(buffer, return_staging_buffer);
     }
 

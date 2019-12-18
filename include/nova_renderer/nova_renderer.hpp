@@ -97,7 +97,7 @@ namespace nova::renderer {
 
         NovaSettingsAccessManager& get_settings();
 
-        std::shared_ptr<bvestl::polyalloc::allocator_handle> get_global_allocator();
+        std::shared_ptr<mem::AllocatorHandle<>> get_global_allocator();
 
 #pragma region Meshes
         /*!
