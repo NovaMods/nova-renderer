@@ -17,6 +17,20 @@ namespace nova::renderer::rhi {
         Any,
     };
 
+    enum class PixelFormat {
+        Rgba8,
+        Rgba16F,
+        Rgba32F,
+        Depth32,
+        Depth24Stencil8,
+    };
+
+    enum class TextureUsage {
+        RenderTarget,
+        SampledRenderTarget,
+        SampledTexture,
+    };
+
     enum class DescriptorType { CombinedImageSampler, UniformBuffer, StorageBuffer };
 
     enum class AccessFlags {
