@@ -207,6 +207,7 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Rendergraph
+        std::unordered_map<std::string, rhi::Image*> builtin_images;
         std::unordered_map<std::string, std::shared_ptr<Renderpass>> builtin_renderpasses;
 
         /*!

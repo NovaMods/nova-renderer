@@ -458,6 +458,7 @@ namespace nova::renderer::shaderpack {
          */
         std::string name;
 
+        // TODO: Renderpack developers shouldn't have to worry about this
         ImageUsage usage;
 
         TextureFormat format{};
