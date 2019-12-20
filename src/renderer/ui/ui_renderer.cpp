@@ -16,6 +16,8 @@ namespace nova::renderer {
                 return true;
             })
             .on_error([](const ntl::NovaError& err) { NOVA_LOG(ERROR) << "Could not create UI renderpass: " << err.to_string(); });
+
+        writes_to_backbuffer = true;
     }
 
     void UiRenderpass::render_renderpass_contents(rhi::CommandList* cmds, FrameContext& ctx) {}
