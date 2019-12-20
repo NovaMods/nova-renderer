@@ -9,7 +9,7 @@ namespace nova::renderer {
 
     class UiRenderpass : public Renderpass {
     public:
-        UiRenderpass();
+        UiRenderpass(rhi::RenderEngine* device, const glm::vec2& framebuffer_size);
 
         void render_renderpass_contents(rhi::CommandList* cmds, FrameContext& ctx) override;
 
