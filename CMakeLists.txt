@@ -166,6 +166,8 @@ set(NOVA_SOURCE
         src/render_engine/rhi_types.cpp
         src/render_engine/render_engine.cpp
         src/render_engine/swapchain.cpp
+        src/render_engine/create_info_conversions.hpp
+        src/render_engine/create_info_conversions.cpp
 
         src/tasks/task_scheduler.cpp
         src/tasks/task_scheduler.hpp

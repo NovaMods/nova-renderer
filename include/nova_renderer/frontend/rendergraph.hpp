@@ -103,7 +103,7 @@ namespace nova::renderer {
     };
 
     struct RenderpassMetadata {
-        shaderpack::RenderPassCreateInfo data;
+        rhi::RenderPassCreateInfo data;
 
         std::unordered_map<std::string, PipelineMetadata> pipeline_metadata{};
     };

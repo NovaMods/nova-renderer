@@ -191,6 +191,8 @@ namespace nova::renderer {
 
         void create_global_sync_objects();
 
+        void create_builtin_textures();
+
         void create_uniform_buffers();
 
         void create_builtin_renderpasses();

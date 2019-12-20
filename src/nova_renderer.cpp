@@ -132,7 +132,11 @@ namespace nova::renderer {
 
         create_global_sync_objects();
 
+        create_builtin_textures();
+
         create_uniform_buffers();
+
+        create_builtin_renderpasses();
     }
 
     NovaRenderer::~NovaRenderer() { mtr_shutdown(); }
@@ -358,7 +362,7 @@ namespace nova::renderer {
                                        rhi::DescriptorPool* descriptor_pool,
                                        const std::shared_ptr<Renderpass>& renderpass) {
         RenderpassMetadata metadata;
-        metadata.data = create_info;
+        metadata.data = to_rhi_create_info(create_info);
 
         std::vector<rhi::Image*> color_attachments;
         color_attachments.reserve(create_info.texture_outputs.size());
@@ -885,6 +889,12 @@ namespace nova::renderer {
         const std::vector<rhi::Fence*>& fences = rhi->create_fences(NUM_IN_FLIGHT_FRAMES, true);
         for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
             frame_fences[i] = fences.at(i);
+        }
+    }
+
+    void NovaRenderer::create_builtin_textures() {
+        {
+            
         }
     }
 
