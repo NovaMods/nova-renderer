@@ -20,7 +20,7 @@ namespace nova::renderer {
         writes_to_backbuffer = true;
     }
 
-    void UiRenderpass::render_renderpass_contents(rhi::CommandList* cmds, FrameContext& ctx) {}
+    void UiRenderpass::render_renderpass_contents(rhi::CommandList* cmds, FrameContext& ctx) { render_ui(cmds, ctx); }
 
     NullUiRenderpass::NullUiRenderpass(rhi::RenderEngine* device, const glm::vec2& framebuffer_size)
         : UiRenderpass(device, framebuffer_size) {}
