@@ -5,10 +5,10 @@
 
 namespace nova::renderer {
     UiRenderpass::UiRenderpass(rhi::RenderEngine* device, const glm::vec2& framebuffer_size) {
-        rhi::RenderPassCreateInfo rp_info = {};
+        shaderpack::RenderPassCreateInfo rp_info = {};
         rp_info.name = UI_RENDER_PASS_NAME;
         rp_info.texture_inputs = {SCENE_OUTPUT_RENDER_TARGET};
-        rp_info.texture_outputs = {{BACKBUFFER_NAME, rhi::PixelFormat::RGBA8, false}};
+        rp_info.texture_outputs = {{BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false}};
 
         device->create_renderpass(rp_info, framebuffer_size)
             .map([&](rhi::Renderpass* rp) { renderpass = rp; })
@@ -17,11 +17,14 @@ namespace nova::renderer {
 
     void UiRenderpass::render_renderpass_contents(rhi::CommandList* cmds, FrameContext& ctx) {}
 
-    void NullUiRenderpass::render(rhi::CommandList* cmds, FrameContext& ctx) {
+    NullUiRenderpass::NullUiRenderpass(rhi::RenderEngine* device, const glm::vec2& framebuffer_size)
+        : UiRenderpass(device, framebuffer_size) {}
+
+    void NullUiRenderpass::render(rhi::CommandList* /* cmds */, FrameContext& /* ctx */) {
         // Intentionally empty
     }
 
-    void NullUiRenderpass::render_ui(rhi::CommandList* cmds, FrameContext& ctx) {
+    void NullUiRenderpass::render_ui(rhi::CommandList* /* cmds */, FrameContext& /* ctx */) {
         // Intentionally empty
     }
 } // namespace nova::renderer

@@ -24,6 +24,8 @@ namespace nova::renderer {
 
     class NullUiRenderpass final : public UiRenderpass {
     public:
+        NullUiRenderpass(rhi::RenderEngine* device, const glm::vec2& framebuffer_size);
+
         void render(rhi::CommandList* cmds, FrameContext& ctx) override;
 
         ~NullUiRenderpass() override = default;

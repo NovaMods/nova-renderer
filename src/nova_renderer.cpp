@@ -362,7 +362,7 @@ namespace nova::renderer {
                                        rhi::DescriptorPool* descriptor_pool,
                                        const std::shared_ptr<Renderpass>& renderpass) {
         RenderpassMetadata metadata;
-        metadata.data = to_rhi_create_info(create_info);
+        metadata.data = create_info;
 
         std::vector<rhi::Image*> color_attachments;
         color_attachments.reserve(create_info.texture_outputs.size());
