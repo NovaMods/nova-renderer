@@ -893,9 +893,7 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_builtin_textures() {
-        {
-            
-        }
+        {}
     }
 
     void NovaRenderer::create_uniform_buffers() {
@@ -919,7 +917,8 @@ namespace nova::renderer {
     void NovaRenderer::create_builtin_renderpasses() {
         // UI render pass
         {
-            const std::shared_ptr<Renderpass> ui_renderpass = std::make_shared<NullUiRenderpass>();
+            const std::shared_ptr<Renderpass> ui_renderpass = std::make_shared<NullUiRenderpass>(rhi.get(),
+                                                                                                 rhi->get_swapchain()->get_size());
 
             shaderpack::RenderPassCreateInfo ui = {};
             ui.name = UI_RENDER_PASS_NAME;

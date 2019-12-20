@@ -11,7 +11,10 @@ namespace nova::renderer {
         rp_info.texture_outputs = {{BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false}};
 
         device->create_renderpass(rp_info, framebuffer_size)
-            .map([&](rhi::Renderpass* rp) { renderpass = rp; })
+            .map([&](rhi::Renderpass* rp) {
+                renderpass = rp;
+                return true;
+            })
             .on_error([](const ntl::NovaError& err) { NOVA_LOG(ERROR) << "Could not create UI renderpass: " << err.to_string(); });
     }
 
