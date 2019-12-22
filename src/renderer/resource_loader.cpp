@@ -127,7 +127,7 @@ namespace nova::renderer {
                                                                                           Bytes(STAGING_BUFFER_TOTAL_MEMORY_SIZE),
                                                                                           STAGING_BUFFER_ALIGNMENT);
 
-        staging_buffer_memory = new DeviceMemoryResource(memory, strat);
+        staging_buffer_memory = staging_buffer_allocator->new_other_object<DeviceMemoryResource>(memory, strat);
     }
 
     std::shared_ptr<Buffer> ResourceStorage::get_staging_buffer_with_size(const size_t size) {

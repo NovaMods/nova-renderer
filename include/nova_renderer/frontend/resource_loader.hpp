@@ -3,10 +3,14 @@
 #include <cstddef>
 #include <unordered_map>
 
+#include "nova_renderer/memory/allocators.hpp"
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
-#include <nova_renderer/memory/allocators.hpp>
+
+namespace nova::mem {
+    class Bytes;
+}
 
 namespace nova::renderer {
     class NovaRenderer;
