@@ -1,5 +1,7 @@
 #include "nova_renderer/shaderpack_data.hpp"
 
+#include "nova_renderer/rhi/rhi_enums.hpp"
+
 #include "../json_utils.hpp"
 
 namespace nova::renderer::shaderpack {
@@ -583,6 +585,28 @@ namespace nova::renderer::shaderpack {
 
             default:
                 return 32;
+        }
+    }
+
+    PixelFormatEnum to_pixel_format_enum(const rhi::PixelFormat format) {
+        switch(format) {
+            case rhi::PixelFormat::Rgba8:
+                return PixelFormatEnum::RGBA8;
+
+            case rhi::PixelFormat::Rgba16F:
+                return PixelFormatEnum::RGBA16F;
+
+            case rhi::PixelFormat::Rgba32F:
+                return PixelFormatEnum::RGBA32F;
+
+            case rhi::PixelFormat::Depth32:
+                return PixelFormatEnum::Depth;
+
+            case rhi::PixelFormat::Depth24Stencil8:
+                return PixelFormatEnum::DepthStencil;
+
+            default:
+                return PixelFormatEnum::RGBA8;
         }
     }
 } // namespace nova::renderer::shaderpack

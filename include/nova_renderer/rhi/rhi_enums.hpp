@@ -63,6 +63,8 @@ namespace nova::renderer::rhi {
     };
 
     enum class ResourceState {
+        Undefined,
+
         Common,
 
         CopySource,

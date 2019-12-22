@@ -75,6 +75,8 @@ namespace nova::renderer::rhi {
                                  mem::Bytes source_offset,
                                  mem::Bytes num_bytes) = 0;
 
+        virtual void copy_buffer_to_image(Buffer* buffer, Image* image) = 0;
+
         /*!
          * \brief Executed a number of command lists
          *

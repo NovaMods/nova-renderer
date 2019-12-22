@@ -573,7 +573,7 @@ namespace nova::renderer {
 
             rhi::DescriptorSetWrite write = {};
             write.set = descriptor_set;
-            write.first_binding = binding_desc.binding;
+            write.binding = binding_desc.binding;
             write.resources.emplace_back();
             rhi::DescriptorResourceInfo& resource_info = write.resources[0];
 
@@ -750,6 +750,8 @@ namespace nova::renderer {
     }
 
     rhi::Buffer* NovaRenderer::get_builtin_buffer(const std::string& buffer_name) const { return builtin_buffers.at(buffer_name); }
+
+    rhi::Sampler* NovaRenderer::get_point_sampler() const { return point_sampler; }
 
     RenderableId NovaRenderer::add_renderable_for_material(const FullMaterialPassName& material_name,
                                                            const StaticMeshRenderableData& renderable) {

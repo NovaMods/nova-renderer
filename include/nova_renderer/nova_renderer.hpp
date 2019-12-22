@@ -132,6 +132,8 @@ namespace nova::renderer {
 // TODO: make a resource manager of some sort and name it something that doesn't make graphite mad
 #pragma region Resources
         [[nodiscard]] rhi::Buffer* get_builtin_buffer(const std::string& buffer_name) const;
+
+        rhi::Sampler* get_point_sampler() const;
 #pragma endregion
 
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,

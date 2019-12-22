@@ -513,7 +513,7 @@ namespace nova::renderer::rhi {
             VkWriteDescriptorSet vk_write = {};
             vk_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             vk_write.dstSet = static_cast<const VulkanDescriptorSet*>(write.set)->descriptor_set;
-            vk_write.dstBinding = write.first_binding;
+            vk_write.dstBinding = write.binding;
             vk_write.descriptorCount = static_cast<uint32_t>(write.resources.size());
             vk_write.dstArrayElement = 0;
 
