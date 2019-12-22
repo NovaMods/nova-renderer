@@ -5,6 +5,13 @@
 
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
+#include "nova_renderer/rhi/device_memory_resource.hpp"
+
+namespace bvestl {
+    namespace polyalloc {
+        class Bytes;
+    }
+}
 
 namespace nova::renderer {
     class NovaRenderer;
@@ -62,5 +69,18 @@ namespace nova::renderer {
         rhi::RenderEngine* device;
 
         std::unordered_map<std::string, Texture> textures;
+
+        DeviceMemoryResource* staging_buffer_memory;
+
+        std::unordered_map<size_t, std::vector<rhi::Buffer*>> staging_buffers;
+
+        void allocate_staging_buffer_memory();
+
+        /*!
+         * \brief Retrieves a staging buffer at least the specified size
+         *
+         * The actual buffer returned may be larger than what you need
+         */
+        std::shared_ptr<rhi::Buffer> get_staging_buffer_with_size(size_t size);
     };
 } // namespace nova::renderer

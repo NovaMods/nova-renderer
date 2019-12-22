@@ -53,6 +53,7 @@ namespace nova::renderer {
 
         NovaRenderer(NovaRenderer&& other) noexcept = delete;
         NovaRenderer& operator=(NovaRenderer&& other) noexcept = delete;
+
         NovaRenderer(const NovaRenderer& other) = delete;
         NovaRenderer& operator=(const NovaRenderer& other) = delete;
 
@@ -96,6 +97,8 @@ namespace nova::renderer {
         void execute_frame();
 
         NovaSettingsAccessManager& get_settings();
+
+        std::shared_ptr<bvestl::polyalloc::allocator_handle> get_global_allocator();
 
 #pragma region Meshes
         /*!

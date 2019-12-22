@@ -143,6 +143,10 @@ namespace nova::renderer {
 
     NovaSettingsAccessManager& NovaRenderer::get_settings() { return render_settings; }
 
+    std::shared_ptr<bvestl::polyalloc::allocator_handle> NovaRenderer::get_global_allocator() {
+        return global_allocator;
+    }
+
     void NovaRenderer::execute_frame() {
         MTR_SCOPE("RenderLoop", "execute_frame");
         frame_count++;
