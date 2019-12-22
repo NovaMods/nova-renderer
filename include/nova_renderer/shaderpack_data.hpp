@@ -19,6 +19,10 @@
 #include "util/filesystem.hpp"
 
 namespace nova::renderer {
+    namespace rhi {
+        enum class PixelFormat;
+    }
+
     class Renderpass;
 }
 
@@ -631,6 +635,8 @@ namespace nova::renderer::shaderpack {
     [[nodiscard]] std::string to_string(VertexFieldEnum val);
 
     [[nodiscard]] uint32_t pixel_format_to_pixel_width(PixelFormatEnum format);
+
+    [[nodiscard]] PixelFormatEnum to_pixel_format_enum(rhi::PixelFormat format);
 } // namespace nova::renderer::shaderpack
 
 #endif // NOVA_RENDERER_SHADERPACK_DATA_HPP

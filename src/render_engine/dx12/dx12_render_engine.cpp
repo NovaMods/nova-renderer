@@ -310,7 +310,7 @@ namespace nova::renderer::rhi {
             const auto* set = static_cast<const DX12DescriptorSet*>(write.set);
 
             CD3DX12_CPU_DESCRIPTOR_HANDLE write_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(set->heap->GetCPUDescriptorHandleForHeapStart(),
-                                                                                       cbv_srv_uav_descriptor_size * write.first_binding);
+                                                                                       cbv_srv_uav_descriptor_size * write.binding);
 
             switch(write.type) {
                 case DescriptorType::CombinedImageSampler: {

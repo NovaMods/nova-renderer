@@ -189,7 +189,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief The specific binding in the set that you want to write to
          */
-        uint32_t first_binding;
+        uint32_t binding;
 
         /*!
          * \brief The type of descriptor you're writing to

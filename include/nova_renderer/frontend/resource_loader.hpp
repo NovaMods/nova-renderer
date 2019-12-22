@@ -4,8 +4,11 @@
 #include <unordered_map>
 
 #include "nova_renderer/rhi/forward_decls.hpp"
+#include "nova_renderer/rhi/rhi_types.hpp"
 
 namespace nova::renderer {
+    class NovaRenderer;
+
     namespace rhi {
         enum class PixelFormat;
     }
@@ -15,14 +18,23 @@ namespace nova::renderer {
         enum class PixelFormatEnum;
     } // namespace shaderpack
 
+    struct Resource {
+    };
+
+    struct Texture : Resource {
+        shaderpack::TextureFormat format;
+
+        rhi::Image* texture;
+    };
+
     /*!
      * \brief Provides a means to access Nova's resources, and also helps in creating resources? IDK yet but that's fine
      *
      * Basically I need both a high-level API to make resources with, and I want to make those resource easy to access.
      */
-    class ResourceFactory {
+    class ResourceStorage {
     public:
-        explicit ResourceFactory(rhi::RenderEngine& device);
+        explicit ResourceStorage(NovaRenderer& renderer);
 
         /*!
          * \brief Creates a new dynamic texture with the provided initial texture data
@@ -34,7 +46,7 @@ namespace nova::renderer {
          * \param data The initial data for this texture. Must be large enough to have all the pixels in the texture
          * \return The newly-created image, or nullptr if the image could not be created. Check the Nova logs to find out why
          */
-        [[nodiscard]] rhi::Image* add_texture(
+        [[nodiscard]] rhi::Image* create_texture(
             const std::string& name, std::size_t width, std::size_t height, rhi::PixelFormat pixel_format, void* data);
 
         /*!
@@ -42,9 +54,13 @@ namespace nova::renderer {
          */
         [[nodiscard]] rhi::Image* get_texture(const std::string& name) const;
 
-    private:
-        rhi::RenderEngine& device;
+        [[nodiscard]] std::optional<rhi::DescriptorSetWrite> get_descriptor_info_for_resource(const std::string& resource_name);
 
-        std::unordered_map<std::string, rhi::Image*> textures;
+    private:
+        NovaRenderer& renderer;
+
+        rhi::RenderEngine* device;
+
+        std::unordered_map<std::string, Texture> textures;
     };
 } // namespace nova::renderer
