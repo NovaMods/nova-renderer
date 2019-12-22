@@ -22,9 +22,11 @@
 
 #endif
 
+using namespace nova::memory;
+
 namespace nova::renderer::rhi {
     VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window)
-        : RenderEngine(&mallocator, settings, window) {
+        : RenderEngine(new Allocator<>(std::pmr::new_delete_resource()), settings, window) {
         create_instance();
 
         if(settings.settings.debug.enabled) {
@@ -774,7 +776,7 @@ namespace nova::renderer::rhi {
 
         VkBufferCreateInfo vk_create_info = {};
         vk_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        vk_create_info.size = info.size;
+        vk_create_info.size = info.size.b_count();
         vk_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         switch(info.buffer_usage) {
@@ -818,7 +820,7 @@ namespace nova::renderer::rhi {
     void VulkanRenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const Buffer* buffer) {
         const auto* vulkan_buffer = static_cast<const VulkanBuffer*>(buffer);
 
-        const bvestl::polyalloc::AllocationInfo& allocation_info = vulkan_buffer->memory.allocation_info;
+        const nova::memory::AllocationInfo& allocation_info = vulkan_buffer->memory.allocation_info;
         const auto* memory = static_cast<const VulkanDeviceMemory*>(vulkan_buffer->memory.memory);
 
         // TODO: heap_mappings doesn't have the buffer's memory in it

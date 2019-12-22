@@ -23,9 +23,11 @@ using Microsoft::WRL::ComPtr;
 #define CPU_FENCE_SIGNALED 16
 #define GPU_FENCE_SIGNALED 32
 
+using namespace nova::memory;
+
 namespace nova::renderer::rhi {
     D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window)
-        : RenderEngine(&mallocator, settings, window) {
+        : RenderEngine(new Allocator<>(std::pmr::new_delete_resource()), settings, window) {
         create_device();
 
         create_queues();
@@ -569,7 +571,7 @@ namespace nova::renderer::rhi {
             default:;
         }
 
-        D3D12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(info.size);
+        D3D12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(info.size.b_count());
         const D3D12_RESOURCE_ALLOCATION_INFO allocation_desc = device->GetResourceAllocationInfo(0, 1, &resource_desc);
 
         const auto allocation = memory.allocate(allocation_desc.SizeInBytes);
@@ -582,7 +584,7 @@ namespace nova::renderer::rhi {
                                      nullptr,
                                      IID_PPV_ARGS(&buffer->resource));
 
-        buffer->size = bvestl::polyalloc::Bytes(allocation.allocation_info.size);
+        buffer->size = allocation.allocation_info.size;
 
         return buffer;
     }

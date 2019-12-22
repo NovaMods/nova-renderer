@@ -10,9 +10,11 @@
 #include "gl3_structs.hpp"
 #include "gl3_swapchain.hpp"
 
+using namespace nova::memory;
+
 namespace nova::renderer::rhi {
     Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window)
-        : RenderEngine(&mallocator, settings, window) {
+        : RenderEngine(new Allocator<>(std::pmr::new_delete_resource()), settings, window) {
         gladLoadGLLoader(NovaWindow::get_gl_proc_address);
 
         save_device_info();
@@ -127,7 +129,7 @@ namespace nova::renderer::rhi {
         std::vector<DescriptorSet*> sets;
 
         for(const auto& [name, desc] : pipeline_interface->bindings) {
-            void* new_set_mem = gl_descriptor_pool->descriptor_allocator.allocate(sizeof(Gl3DescriptorSet));
+            void* new_set_mem = gl_descriptor_pool->descriptor_allocator->allocate(1);
             auto* new_set = new(new_set_mem) Gl3DescriptorSet;
             sets.push_back(new_set);
 

@@ -1,14 +1,12 @@
 #include "nova_renderer/frontend/procedural_mesh.hpp"
 
-#include "nova_renderer/memory/block_allocation_strategy.hpp"
-#include "nova_renderer/memory/mallocator.hpp"
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
 #include "nova_renderer/util/logger.hpp"
 
 #include "../util/memory_utils.hpp"
 
-using namespace bvestl::polyalloc;
+using namespace nova::memory;
 
 namespace nova::renderer {
     using namespace rhi;
@@ -26,8 +24,10 @@ namespace nova::renderer {
         const auto host_memory_size = aligned_vertex_buffer_size + aligned_index_buffer_size;
         const auto device_memory_size = host_memory_size * 3;
 
-        device_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(new Mallocator(), device_memory_size);
-        host_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(new Mallocator(), host_memory_size);
+        allocator_memory = new Allocator<BlockAllocationStrategy::Block>(std::pmr::new_delete_resource());
+
+        device_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(allocator_memory, device_memory_size);
+        host_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(allocator_memory, host_memory_size);
 
         // TODO: Don't allocate a separate DeviceMemory for each procedural mesh
         device->allocate_device_memory(device_memory_size.b_count(), MemoryUsage::LowFrequencyUpload, ObjectType::Buffer)

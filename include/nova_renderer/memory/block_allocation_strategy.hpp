@@ -39,7 +39,7 @@ namespace nova::memory {
          * \param size The size of the memory that this boi can allocate from
          * \param alignment_in The alignment of all allocations from this allocator
          */
-        BlockAllocationStrategy(Allocator<Block>& allocator_in, Bytes size, Bytes alignment_in = Bytes(0));
+        BlockAllocationStrategy(Allocator<>* allocator_in, Bytes size, Bytes alignment_in = Bytes(0));
 
         ~BlockAllocationStrategy();
 
@@ -58,7 +58,7 @@ namespace nova::memory {
         void free(const AllocationInfo& alloc) override;
 
     private:
-        Allocator<Block>& allocator;
+        Allocator<Block>* allocator;
 
         Block* head;
 

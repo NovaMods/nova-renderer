@@ -79,13 +79,16 @@ namespace nova::renderer {
         uint64_t num_vertex_bytes_to_upload = 0;
         uint64_t num_index_bytes_to_upload = 0;
 
-#ifdef NOVA_DEBUG
-        uint64_t vertex_buffer_size;
-        uint64_t index_buffer_size;
+        memory::Allocator<memory::BlockAllocationStrategy::Block>* allocator_memory;
+
         std::unique_ptr<memory::BlockAllocationStrategy> device_memory_allocation_strategy;
         std::unique_ptr<memory::BlockAllocationStrategy> host_memory_allocation_strategy;
         std::unique_ptr<DeviceMemoryResource> device_buffers_memory;
         std::unique_ptr<DeviceMemoryResource> cached_buffers_memory;
+
+#ifdef NOVA_DEBUG
+        uint64_t vertex_buffer_size;
+        uint64_t index_buffer_size;
 #endif
     };
 } // namespace nova::renderer

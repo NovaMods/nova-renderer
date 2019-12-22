@@ -1,7 +1,5 @@
 #pragma once
 
-// TODO: Don't always use mallocator
-#include "nova_renderer/memory/mallocator.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
 
 #include "vk_structs.hpp"
@@ -126,9 +124,6 @@ namespace nova::renderer::rhi {
 
     private:
         VulkanDeviceInfo vk_info;
-
-        // TODO: Don't always use mallocator
-        bvestl::polyalloc::Mallocator mallocator;
 
         /*!
          * The index in the vector is the thread index, the key in the map is the queue family index

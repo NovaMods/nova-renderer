@@ -8,12 +8,13 @@
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
+#include "nova_renderer/memory/bytes.hpp"
 
 namespace nova::renderer::rhi {
 
 #pragma region Structs
     struct BufferCreateInfo {
-        uint64_t size = 0;
+        memory::Bytes size = 0;
 
         BufferUsage buffer_usage{};
     };
@@ -38,7 +39,7 @@ namespace nova::renderer::rhi {
     };
 
     struct Buffer : Resource {
-        size_t size = 0;
+        memory::Bytes size = 0;
     };
 
     struct Framebuffer {
@@ -148,8 +149,8 @@ namespace nova::renderer::rhi {
             } image_memory_barrier;
 
             struct {
-                uint64_t offset;
-                uint64_t size;
+                memory::Bytes offset;
+                memory::Bytes size;
             } buffer_memory_barrier;
         };
     };

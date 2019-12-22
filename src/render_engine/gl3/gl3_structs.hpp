@@ -11,8 +11,8 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "nova_renderer/memory/polyalloc.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
+#include "nova_renderer/memory/allocators.hpp"
 
 #include "glad/glad.h"
 
@@ -58,12 +58,12 @@ namespace nova::renderer::rhi {
     };
 
     struct Gl3DescriptorPool : DescriptorPool {
-        Gl3DescriptorPool(memory::allocator_handle& descriptor_allocator) : descriptor_allocator(descriptor_allocator) {}
+        Gl3DescriptorPool(memory::Allocator<Gl3DescriptorSet>* descriptor_allocator) : descriptor_allocator(descriptor_allocator) {}
 
         std::vector<Gl3Descriptor> descriptors;
         std::vector<Gl3SamplerDescriptor> sampler_sets;
 
-        memory::allocator_handle descriptor_allocator;
+        memory::Allocator<Gl3DescriptorSet>* descriptor_allocator;
     };
 
     struct Gl3Pipeline : Pipeline {

@@ -17,7 +17,6 @@
 #include "nova_renderer/frontend/ui_renderer.hpp"
 #include "nova_renderer/memory/block_allocation_strategy.hpp"
 #include "nova_renderer/memory/bump_point_allocation_strategy.hpp"
-#include "nova_renderer/memory/system_memory_allocator.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/rhi/swapchain.hpp"
 #include "nova_renderer/util/logger.hpp"
@@ -830,7 +829,7 @@ namespace nova::renderer {
                                                                                     rhi::MemoryUsage::DeviceOnly,
                                                                                     rhi::ObjectType::Buffer);
         const ntl::Result<DeviceMemoryResource*> mesh_memory_result = memory_result.map([&](rhi::DeviceMemory* memory) {
-            auto* allocator = new BlockAllocationStrategy(*global_allocator, Bytes(mesh_memory_size), 64_b);
+            auto* allocator = new BlockAllocationStrategy(global_allocator.get(), Bytes(mesh_memory_size), 64_b);
             return new DeviceMemoryResource(memory, allocator);
         });
 

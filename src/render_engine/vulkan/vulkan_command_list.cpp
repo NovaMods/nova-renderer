@@ -60,8 +60,8 @@ namespace nova::renderer::rhi {
                     buffer_barrier.srcQueueFamilyIndex = render_engine.get_queue_family_index(barrier.source_queue);
                     buffer_barrier.dstQueueFamilyIndex = render_engine.get_queue_family_index(barrier.destination_queue);
                     buffer_barrier.buffer = buffer->buffer;
-                    buffer_barrier.offset = barrier.buffer_memory_barrier.offset;
-                    buffer_barrier.size = barrier.buffer_memory_barrier.size;
+                    buffer_barrier.offset = barrier.buffer_memory_barrier.offset.b_count();
+                    buffer_barrier.size = barrier.buffer_memory_barrier.size.b_count();
 
                     buffer_barriers.push_back(buffer_barrier);
                 } break;

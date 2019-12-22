@@ -123,9 +123,6 @@ namespace nova::renderer::rhi {
     private:
         D3D12DeviceCapabilities d3d12_capabilities;
 
-        // TODO: don't always use mallocator
-        bvestl::polyalloc::Mallocator mallocator;
-
         Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi_factory;
 
         Microsoft::WRL::ComPtr<IDXGIAdapter3> adapter;

@@ -7,8 +7,11 @@
 using namespace nova::memory::operators;
 
 namespace nova::memory {
-    BlockAllocationStrategy::BlockAllocationStrategy(Allocator<Block>& allocator_in, const Bytes size, const Bytes alignment_in)
-        : allocator(allocator_in), memory_size(size), alignment(alignment_in) {
+    BlockAllocationStrategy::BlockAllocationStrategy(Allocator<>* allocator_in, const Bytes size, const Bytes alignment_in)
+        : memory_size(size), alignment(alignment_in) {
+
+        auto* block_allocator_mem = allocator_in->allocate(sizeof(Allocator<Block>));
+        allocator = new(block_allocator_mem) Allocator<Block>(allocator_in->resource());
 
         head = make_new_block(0_b, size);
     }
@@ -22,7 +25,7 @@ namespace nova::memory {
                 next = current->next;
             }
 
-            allocator.deallocate(current, 1);
+            allocator->deallocate(current, 1);
 
             current = next;
         }
@@ -87,7 +90,7 @@ namespace nova::memory {
 
             prev->size += block->size;
 
-            allocator.deallocate(block, 1);
+            allocator->deallocate(block, 1);
 
             block = prev;
         }
@@ -103,14 +106,14 @@ namespace nova::memory {
             block->next = next->next;
             block->size += next->size;
 
-            allocator.deallocate(next, 1);
+            allocator->deallocate(next, 1);
         }
 
         allocated -= alloc.size;
     }
 
     BlockAllocationStrategy::Block* BlockAllocationStrategy::make_new_block(const Bytes offset, const Bytes size) {
-        void* mem = allocator.allocate(1);
+        void* mem = allocator->allocate(1);
         auto* block = new(mem) Block;
         block->id = next_block_id;
         block->size = size;
