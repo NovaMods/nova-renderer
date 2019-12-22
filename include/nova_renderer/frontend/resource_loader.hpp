@@ -3,15 +3,15 @@
 #include <cstddef>
 #include <unordered_map>
 
+#include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
-#include "nova_renderer/rhi/device_memory_resource.hpp"
 
 namespace bvestl {
     namespace polyalloc {
         class Bytes;
     }
-}
+} // namespace bvestl
 
 namespace nova::renderer {
     class NovaRenderer;
@@ -25,13 +25,16 @@ namespace nova::renderer {
         enum class PixelFormatEnum;
     } // namespace shaderpack
 
-    struct Resource {
-    };
+    struct TextureResource {
+        std::string name;
 
-    struct Texture : Resource {
-        shaderpack::TextureFormat format;
+        rhi::Image* image;
 
-        rhi::Image* texture;
+        size_t width;
+
+        size_t height;
+
+        rhi::PixelFormat format;
     };
 
     /*!
@@ -53,22 +56,25 @@ namespace nova::renderer {
          * \param data The initial data for this texture. Must be large enough to have all the pixels in the texture
          * \return The newly-created image, or nullptr if the image could not be created. Check the Nova logs to find out why
          */
-        [[nodiscard]] rhi::Image* create_texture(
+        [[nodiscard]] TextureResource create_texture(
             const std::string& name, std::size_t width, std::size_t height, rhi::PixelFormat pixel_format, void* data);
 
         /*!
          * \brief Retrieves the texture with the specified name
          */
-        [[nodiscard]] rhi::Image* get_texture(const std::string& name) const;
+        [[nodiscard]] std::optional<TextureResource> get_texture(const std::string& name) const;
 
         [[nodiscard]] std::optional<rhi::DescriptorSetWrite> get_descriptor_info_for_resource(const std::string& resource_name);
 
+        [[nodiscard]] TextureResource create_render_target(const std::string& name, size_t width, size_t height, rhi::PixelFormat pixel_format);
     private:
         NovaRenderer& renderer;
 
         rhi::RenderEngine* device;
 
-        std::unordered_map<std::string, Texture> textures;
+        std::unordered_map<std::string, TextureResource> textures;
+
+        std::unordered_map<std::string, TextureResource> render_targets;
 
         DeviceMemoryResource* staging_buffer_memory;
 

@@ -609,4 +609,26 @@ namespace nova::renderer::shaderpack {
                 return PixelFormatEnum::RGBA8;
         }
     }
+
+    rhi::PixelFormat to_rhi_pixel_format(const PixelFormatEnum format) {
+        switch(format) {
+            case PixelFormatEnum::RGBA8:
+                return rhi::PixelFormat::Rgba8;
+
+            case PixelFormatEnum::RGBA16F:
+                return rhi::PixelFormat::Rgba16F;
+
+            case PixelFormatEnum::RGBA32F:
+                return rhi::PixelFormat::Rgba32F;
+
+            case PixelFormatEnum::Depth:
+                return rhi::PixelFormat::Depth32;
+
+            case PixelFormatEnum::DepthStencil:
+                return rhi::PixelFormat::Depth24Stencil8;
+
+            default:
+                return rhi::PixelFormat::Rgba8;
+        }
+    }
 } // namespace nova::renderer::shaderpack

@@ -16,6 +16,7 @@
 
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
+
 #include "util/filesystem.hpp"
 
 namespace nova::renderer {
@@ -24,7 +25,7 @@ namespace nova::renderer {
     }
 
     class Renderpass;
-}
+} // namespace nova::renderer
 
 namespace nova::renderer::shaderpack {
     /*!
@@ -637,6 +638,8 @@ namespace nova::renderer::shaderpack {
     [[nodiscard]] uint32_t pixel_format_to_pixel_width(PixelFormatEnum format);
 
     [[nodiscard]] PixelFormatEnum to_pixel_format_enum(rhi::PixelFormat format);
+
+    [[nodiscard]] rhi::PixelFormat to_rhi_pixel_format(PixelFormatEnum format);
 } // namespace nova::renderer::shaderpack
 
 #endif // NOVA_RENDERER_SHADERPACK_DATA_HPP
