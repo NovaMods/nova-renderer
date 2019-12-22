@@ -13,6 +13,8 @@
 #include "dx12_structs.hpp"
 
 namespace nova::renderer::rhi {
+    class D3D12RenderEngine;
+
     class Dx12CommandList final : public CommandList {
     public:
         Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmds;
@@ -46,10 +48,9 @@ namespace nova::renderer::rhi {
 
         void draw_indexed_mesh(uint32_t num_indices, uint32_t num_instances) override;
 
-        void upload_data_to_image(Image* image, void* data) override;
+        void upload_data_to_image(
+            Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, void* data) override;
     private:
-        Microsoft::WRL::ComPtr<ID3D12Device> device;
-
         Microsoft::WRL::ComPtr<ID3D12Heap> staging_buffer_heap;
     };
 } // namespace nova::renderer::rhi

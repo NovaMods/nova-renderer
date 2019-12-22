@@ -40,7 +40,6 @@ namespace nova::renderer::rhi {
 
         D3D12RenderEngine(D3D12RenderEngine&& old) noexcept = delete;
         D3D12RenderEngine& operator=(D3D12RenderEngine&& old) noexcept = delete;
-
         D3D12RenderEngine(const D3D12RenderEngine& other) = delete;
         D3D12RenderEngine& operator=(const D3D12RenderEngine& other) = delete;
 
