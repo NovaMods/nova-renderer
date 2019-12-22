@@ -16,6 +16,7 @@
 #include "frontend/procedural_mesh.hpp"
 #include "renderables.hpp"
 #include "util/container_accessor.hpp"
+#include "frontend/resource_loader.hpp"
 
 namespace spirv_cross {
     class CompilerGLSL;
@@ -37,8 +38,6 @@ namespace nova::renderer {
         uint32_t num_indices = 0;
     };
 #pragma endregion
-
-    struct ResourceBinding {};
 
     /*!
      * \brief Main class for Nova. Owns all of Nova's resources and provides a way to access them
@@ -136,7 +135,7 @@ namespace nova::renderer {
 #pragma region Resources
         [[nodiscard]] rhi::Buffer* get_builtin_buffer(const std::string& buffer_name) const;
 
-        rhi::Sampler* get_point_sampler() const;
+        [[nodiscard]] rhi::Sampler* get_point_sampler() const;
 #pragma endregion
 
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
@@ -179,6 +178,8 @@ namespace nova::renderer {
          * \brief Holds all the object loaded by the current rendergraph
          */
         std::shared_ptr<mem::AllocatorHandle<>> renderpack_allocator;
+
+        std::shared_ptr<ResourceStorage> resource_storage;
 
         std::unique_ptr<DeviceMemoryResource> mesh_memory;
 

@@ -18,8 +18,14 @@ namespace nova::renderer {
         allocate_staging_buffer_memory();
     }
 
-    Image* ResourceStorage::create_texture(
+    TextureResource ResourceStorage::create_texture(
         const std::string& name, const std::size_t width, const std::size_t height, const PixelFormat pixel_format, void* data) {
+
+        TextureResource resource;
+        resource.name = name;
+        resource.width = width;
+        resource.height = height;
+        resource.format = pixel_format;
 
         const size_t pixel_size = size_in_bytes(pixel_format);
 
@@ -33,13 +39,13 @@ namespace nova::renderer {
 
         const std::shared_ptr<Buffer> staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
 
-        Image* texture = device->create_image(info);
-        texture->is_dynamic = false;
+        resource.image = device->create_image(info);
+        resource.image->is_dynamic = false;
 
         CommandList* cmds = device->get_command_list(0, QueueType::Transfer);
 
         ResourceBarrier initial_texture_barrier = {};
-        initial_texture_barrier.resource_to_barrier = texture;
+        initial_texture_barrier.resource_to_barrier = resource.image;
         initial_texture_barrier.access_before_barrier = AccessFlags::CopyRead;
         initial_texture_barrier.access_after_barrier = AccessFlags::CopyWrite;
         initial_texture_barrier.old_state = ResourceState::Undefined;
@@ -47,14 +53,14 @@ namespace nova::renderer {
         initial_texture_barrier.image_memory_barrier.aspect = ImageAspectFlags::Color;
 
         cmds->resource_barriers(PipelineStageFlags::TopOfPipe, PipelineStageFlags::Transfer, {initial_texture_barrier});
-        cmds->upload_data_to_image(texture, width, height, pixel_size, staging_buffer.get(), data);
+        cmds->upload_data_to_image(resource.image, width, height, pixel_size, staging_buffer.get(), data);
 
         ResourceBarrier final_texture_barrier = {};
-        final_texture_barrier.resource_to_barrier = texture;
+        final_texture_barrier.resource_to_barrier = resource.image;
         final_texture_barrier.access_before_barrier = AccessFlags::CopyWrite;
         final_texture_barrier.access_after_barrier = AccessFlags::ShaderRead;
         final_texture_barrier.old_state = ResourceState::CopyDestination;
-        final_texture_barrier.new_state  = ResourceState::ShaderRead;
+        final_texture_barrier.new_state = ResourceState::ShaderRead;
         final_texture_barrier.image_memory_barrier.aspect = ImageAspectFlags::Color;
 
         cmds->resource_barriers(PipelineStageFlags::Transfer, PipelineStageFlags::AllGraphics, {final_texture_barrier});
@@ -64,15 +70,19 @@ namespace nova::renderer {
 
         // Be sure that the data copy is complete, so that this method doesn't return before the GPU is done with the staging buffer
         device->wait_for_fences({upload_done_fence});
+
+        textures.emplace(name, resource);
+
+        return resource;
     }
 
-    Image* ResourceStorage::get_texture(const std::string& name) const {
+    std::optional<TextureResource> ResourceStorage::get_texture(const std::string& name) const {
 #if NOVA_DEBUG
         if(const auto& itr = textures.find(name); itr != textures.end()) {
-            return itr->second.texture;
+            return std::make_optional<TextureResource>(itr->second.image);
         } else {
             NOVA_LOG(ERROR) << "Could not find image \"" << name << "\"";
-            return nullptr;
+            return std::nullopt;
         }
 #else
         return textures.at(name);
@@ -85,9 +95,12 @@ namespace nova::renderer {
             write.type = DescriptorType::CombinedImageSampler;
             auto& resource_write = write.resources.emplace_back();
 
-            resource_write.image_info.image = itr->second.texture;
+            resource_write.image_info.image = itr->second.image;
             resource_write.image_info.sampler = renderer.get_point_sampler();
-            resource_write.image_info.format = itr->second.format;
+            resource_write.image_info.format.pixel_format = to_pixel_format_enum(itr->second.format);
+            resource_write.image_info.format.dimension_type = TextureDimensionTypeEnum::Absolute;
+            resource_write.image_info.format.width = static_cast<float>(itr->second.width);
+            resource_write.image_info.format.height = static_cast<float>(itr->second.height);
 
             return write;
 

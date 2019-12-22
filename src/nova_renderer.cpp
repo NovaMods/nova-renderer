@@ -143,7 +143,7 @@ namespace nova::renderer {
 
     NovaSettingsAccessManager& NovaRenderer::get_settings() { return render_settings; }
 
-    std::shared_ptr<bvestl::polyalloc::allocator_handle> NovaRenderer::get_global_allocator() {
+    std::shared_ptr<allocator_handle> NovaRenderer::get_global_allocator() {
         return global_allocator;
     }
 
@@ -307,7 +307,7 @@ namespace nova::renderer {
             NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
         }
 
-        data.graph_data.passes = shaderpack::order_passes(data.graph_data.passes).value; // TODO: Handle errors somehow
+        data.graph_data.passes = order_passes(data.graph_data.passes).value; // TODO: Handle errors somehow
 
         create_dynamic_textures(data.resources.textures);
         NOVA_LOG(DEBUG) << "Dynamic textures created";
@@ -341,7 +341,11 @@ namespace nova::renderer {
 
     void NovaRenderer::create_dynamic_textures(const std::pmr::vector<shaderpack::TextureCreateInfo>& texture_create_infos) {
         for(const shaderpack::TextureCreateInfo& create_info : texture_create_infos) {
+            const auto size = create_info.format.get_size_in_pixels(rhi->get_swapchain()->get_size());
+
+            resource_storage->create_render_target(create_info.name, size.x, size.y, to_rhi_pixel_format(create_info.format.pixel_format));
             rhi::Image* new_texture = rhi->create_image(create_info, *renderpack_allocator);
+
             dynamic_textures.emplace(create_info.name, new_texture);
             dynamic_texture_infos.emplace(create_info.name, create_info);
         }
@@ -400,7 +404,7 @@ namespace nova::renderer {
                     renderpass->framebuffer = nullptr; // Will be resolved when rendering
 
                 } else {
-                    attachment_errors.push_back(fmt::format(
+                    attachment_errors.push_back(format(
                         fmt("Pass {:s} writes to the backbuffer and {:d} other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures"),
                         create_info.name,
                         create_info.texture_outputs.size() - 1));
@@ -416,7 +420,7 @@ namespace nova::renderer {
 
                 if(framebuffer_size.x > 0) {
                     if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {
-                        attachment_errors.push_back(fmt::format(
+                        attachment_errors.push_back(format(
                             fmt("Attachment {:s} has a size of {:d}x{:d}, but the framebuffer for pass {:s} has a size of {:d}x{:d} - these must match! All attachments of a single renderpass must have the same size"),
                             attachment_info.name,
                             attachment_size.x,
@@ -649,7 +653,7 @@ namespace nova::renderer {
             pipeline.pipeline = *rhi_pipeline;
 
         } else {
-            ntl::NovaError error = ntl::NovaError(fmt::format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name.c_str())
+            ntl::NovaError error = ntl::NovaError(format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name.c_str())
                                                       .c_str(),
                                                   std::move(rhi_pipeline.error));
             return ntl::Result<PipelineReturn>(std::move(error));
@@ -947,6 +951,8 @@ namespace nova::renderer {
 
         auto* per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory, *global_allocator);
         builtin_buffers.emplace(PER_FRAME_DATA_NAME, per_frame_data_buffer);
+
+
 
         // Buffer for each drawcall's model matrix
         rhi::BufferCreateInfo model_matrix_buffer_create_info = {};
