@@ -121,7 +121,6 @@ set(NOVA_SOURCE
         include/nova_renderer/memory/polyalloc.hpp
         include/nova_renderer/memory/block_allocation_strategy.hpp
         include/nova_renderer/memory/bump_point_allocation_strategy.hpp
-        include/nova_renderer/memory/mallocator.hpp
         include/nova_renderer/memory/system_memory_allocator.hpp
 
         include/nova_renderer/rhi/forward_decls.hpp
@@ -189,7 +188,6 @@ set(NOVA_SOURCE
         src/memory/block_allocation_strategy.cpp
         src/memory/bump_point_allocation_strategy.cpp
         src/memory/bytes.cpp
-        src/memory/mallocator.cpp
         src/memory/system_memory_allocator.cpp
         )
 
