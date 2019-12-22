@@ -609,6 +609,7 @@ namespace nova::renderer::shaderpack {
                 return PixelFormatEnum::RGBA8;
         }
     }
+<<<<<<< HEAD
 
     rhi::PixelFormat to_rhi_pixel_format(const PixelFormatEnum format) {
         switch(format) {
@@ -631,4 +632,6 @@ namespace nova::renderer::shaderpack {
                 return rhi::PixelFormat::Rgba8;
         }
     }
+=======
+>>>>>>> [renderer] Trying to build out texture creation and better abstractions
 } // namespace nova::renderer::shaderpack

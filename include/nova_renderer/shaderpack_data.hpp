@@ -1,12 +1,4 @@
-/*!
- * \brief Holds all the structs that correspond to the data in a shaderpack
- *
- * \author ddubois
- * \date 23-Aug-18.
- */
-
-#ifndef NOVA_RENDERER_SHADERPACK_DATA_HPP
-#define NOVA_RENDERER_SHADERPACK_DATA_HPP
+#pragma once
 
 #include <cstdint>
 #include <optional>
@@ -641,5 +633,3 @@ namespace nova::renderer::shaderpack {
 
     [[nodiscard]] rhi::PixelFormat to_rhi_pixel_format(PixelFormatEnum format);
 } // namespace nova::renderer::shaderpack
-
-#endif // NOVA_RENDERER_SHADERPACK_DATA_HPP

@@ -143,7 +143,7 @@ namespace nova::renderer {
 
     NovaSettingsAccessManager& NovaRenderer::get_settings() { return render_settings; }
 
-    std::shared_ptr<allocator_handle> NovaRenderer::get_global_allocator() {
+    std::shared_ptr<mem::AllocatorHandle<>> NovaRenderer::get_global_allocator() {
         return global_allocator;
     }
 

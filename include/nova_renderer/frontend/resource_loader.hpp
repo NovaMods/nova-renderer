@@ -75,6 +75,8 @@ namespace nova::renderer {
 
         rhi::RenderEngine* device;
 
+        std::unique_ptr<mem::AllocatorHandle<>> staging_buffer_allocator;
+
         std::unordered_map<std::string, TextureResource> textures;
 
         std::unordered_map<std::string, TextureResource> render_targets;

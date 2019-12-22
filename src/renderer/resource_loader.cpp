@@ -84,6 +84,7 @@ namespace nova::renderer {
 #if NOVA_DEBUG
         if(const auto& itr = textures.find(name); itr != textures.end()) {
             return std::make_optional<TextureResource>(itr->second.image);
+
         } else {
             NOVA_LOG(ERROR) << "Could not find image \"" << name << "\"";
             return std::nullopt;
