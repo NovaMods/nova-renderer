@@ -7,7 +7,7 @@
 using namespace nova::memory::operators;
 
 namespace nova::memory {
-    BlockAllocationStrategy::BlockAllocationStrategy(const Allocator<Block>& allocator_in, const Bytes size, const Bytes alignment_in)
+    BlockAllocationStrategy::BlockAllocationStrategy(Allocator<Block>& allocator_in, const Bytes size, const Bytes alignment_in)
         : allocator(allocator_in), memory_size(size), alignment(alignment_in) {
 
         head = make_new_block(0_b, size);

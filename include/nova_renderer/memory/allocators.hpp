@@ -2,7 +2,7 @@
 
 #include <memory_resource>
 
-namespace nova {
+namespace nova::memory {
     template<typename AllocatedType = std::byte>
     using Allocator = std::pmr::polymorphic_allocator<AllocatedType>;
 }

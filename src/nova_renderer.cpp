@@ -830,7 +830,7 @@ namespace nova::renderer {
                                                                                     rhi::MemoryUsage::DeviceOnly,
                                                                                     rhi::ObjectType::Buffer);
         const ntl::Result<DeviceMemoryResource*> mesh_memory_result = memory_result.map([&](rhi::DeviceMemory* memory) {
-            auto* allocator = new BlockAllocationStrategy(*global_allocator.get(), Bytes(mesh_memory_size), 64_b);
+            auto* allocator = new BlockAllocationStrategy(*global_allocator, Bytes(mesh_memory_size), 64_b);
             return new DeviceMemoryResource(memory, allocator);
         });
 
