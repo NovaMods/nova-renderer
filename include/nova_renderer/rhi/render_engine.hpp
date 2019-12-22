@@ -10,11 +10,9 @@
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/window.hpp"
 
-namespace nova {
-    namespace renderer {
-        struct DeviceMemoryResource;
-    }
-} // namespace nova
+namespace nova::renderer {
+    struct DeviceMemoryResource;
+} // namespace nova::renderer
 
 namespace nova::renderer::rhi {
 
