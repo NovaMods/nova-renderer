@@ -15,4 +15,4 @@ namespace nova::renderer::rhi {
     private:
         uint8_t cur_frame = 0;
     };
-}
+} // namespace nova::renderer::rhi

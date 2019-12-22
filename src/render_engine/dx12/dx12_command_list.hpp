@@ -37,14 +37,13 @@ namespace nova::renderer::rhi {
 
         void bind_pipeline(const Pipeline* pipeline) override;
 
-        void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
-                                  const PipelineInterface* pipeline_interface) override;
+        void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets, const PipelineInterface* pipeline_interface) override;
 
         void bind_vertex_buffers(const std::vector<Buffer*>& buffers) override;
-        
+
         void bind_index_buffer(const Buffer* buffer) override;
-        
-		void draw_indexed_mesh(uint32_t num_indices, uint32_t num_instances) override;
+
+        void draw_indexed_mesh(uint32_t num_indices, uint32_t num_instances) override;
 
     private:
         Microsoft::WRL::ComPtr<ID3D12Device> device;

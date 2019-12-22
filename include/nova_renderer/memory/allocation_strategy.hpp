@@ -6,8 +6,8 @@ namespace bvestl::polyalloc {
     struct AllocationInfo;
 
     /*!
-         * \brief Interface for an allocation strategy
-         */
+     * \brief Interface for an allocation strategy
+     */
     class AllocationStrategy {
     public:
         virtual ~AllocationStrategy() = default;
@@ -16,4 +16,4 @@ namespace bvestl::polyalloc {
 
         virtual void free(const AllocationInfo& alloc) = 0;
     };
-}
+} // namespace bvestl::polyalloc

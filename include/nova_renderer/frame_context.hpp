@@ -33,4 +33,4 @@ namespace nova::renderer {
 
         size_t cur_model_matrix_index = 0;
     };
-}
+} // namespace nova::renderer

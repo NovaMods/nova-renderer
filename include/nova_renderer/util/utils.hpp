@@ -9,10 +9,9 @@
 #define RENDERER_UTILS_H
 
 #include <algorithm>
+#include <fstream>
 #include <string>
 #include <vector>
-
-#include <fstream>
 
 #include "filesystem.hpp"
 
@@ -44,7 +43,7 @@ namespace nova::renderer {
     void write_to_file(const std::string& data, const fs::path& filepath);
 
     void write_to_file(const std::vector<uint32_t>& data, const fs::path& filepath);
-    
+
 #define FORMAT(s, ...) fmt::format(fmt(s), __VA_ARGS__)
 } // namespace nova::renderer
 

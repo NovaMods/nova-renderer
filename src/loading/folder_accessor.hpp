@@ -6,14 +6,15 @@
 #ifndef NOVA_RENDERER_RESOURCEPACK_H
 #define NOVA_RENDERER_RESOURCEPACK_H
 
+#include <memory>
 #include <mutex>
-#include "nova_renderer/util/filesystem.hpp"
-#include "nova_renderer/util/utils.hpp"
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <memory>
+
+#include "nova_renderer/util/filesystem.hpp"
+#include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
     /*!

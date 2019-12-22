@@ -13,7 +13,7 @@ namespace ntl {
         std::string message = "";
 
         std::unique_ptr<NovaError> cause;
-        
+
         explicit NovaError(const std::string& message);
 
         NovaError(const std::string& message, NovaError cause);
@@ -32,7 +32,7 @@ namespace ntl {
 
         bool has_value = false;
 
-        explicit Result(ValueType&& value) : value(value), has_value(true) {}
+        explicit Result(ValueType && value) : value(value), has_value(true) {}
 
         explicit Result(const ValueType& value) : value(value), has_value(true) {}
 
@@ -55,7 +55,7 @@ namespace ntl {
             return *this;
         };
 
-        explicit Result(Result<ValueType, ErrorType>&& old) noexcept {
+        explicit Result(Result<ValueType, ErrorType> && old) noexcept {
             if(old.has_value) {
                 value = std::move(old.value);
                 old.value = {};
@@ -89,16 +89,12 @@ namespace ntl {
             }
         }
 
-        const ValueType* operator->() const {
-            return &value;
-        }
+        const ValueType* operator->() const { return &value; }
 
-        const ValueType& operator*() const {
-            return value;
-        }
+        const ValueType& operator*() const { return value; }
 
         template <typename FuncType>
-        auto map(FuncType&& func) -> Result<decltype(func(value))> {
+        auto map(FuncType && func)->Result<decltype(func(value))> {
             using RetVal = decltype(func(value));
 
             if(has_value) {
@@ -109,7 +105,7 @@ namespace ntl {
         }
 
         template <typename FuncType>
-        auto flat_map(FuncType&& func) -> Result<decltype(func(value).value)> {
+        auto flat_map(FuncType && func)->Result<decltype(func(value).value)> {
             using RetVal = decltype(func(value).value);
 
             if(has_value) {
@@ -120,7 +116,7 @@ namespace ntl {
         }
 
         template <typename FuncType>
-        void if_present(FuncType&& func) {
+        void if_present(FuncType && func) {
             if(has_value) {
                 func(value);
             }

@@ -4,6 +4,7 @@
  */
 
 #include "windows_utils.hpp"
+
 #include "nova_renderer/util/windows.hpp"
 
 std::wstring s2ws(const std::string& s) {

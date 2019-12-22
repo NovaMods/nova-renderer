@@ -284,7 +284,8 @@ namespace nova::renderer::shaderpack {
                 return ntl::Result<RendergraphData>(rendergraph_file);
 
             } else {
-                return ntl::Result<RendergraphData>(MAKE_ERROR("At least one pass must write to the render target named {:s}", BACKBUFFER_NAME));
+                return ntl::Result<RendergraphData>(
+                    MAKE_ERROR("At least one pass must write to the render target named {:s}", BACKBUFFER_NAME));
             }
         }
         catch(nlohmann::json::parse_error& err) {

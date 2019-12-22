@@ -3,8 +3,8 @@
 #include <cstdint> // needed for uint****
 #include <vector>
 
-#include "nova_renderer/rhi/rhi_enums.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
+#include "nova_renderer/rhi/rhi_enums.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 namespace nova::renderer::rhi {

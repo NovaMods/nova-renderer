@@ -110,7 +110,7 @@ namespace nova::renderer::rhi {
     public:
         Gl3CommandList();
 
-        Gl3CommandList(Gl3CommandList&& old) noexcept = default;
+        Gl3CommandList(Gl3CommandList && old) noexcept = default;
         Gl3CommandList& operator=(Gl3CommandList&& old) noexcept = default;
 
         Gl3CommandList(const Gl3CommandList& other) = delete;
@@ -122,15 +122,15 @@ namespace nova::renderer::rhi {
                                PipelineStageFlags stages_after_barrier,
                                const std::vector<ResourceBarrier>& barriers) override;
 
-        void copy_buffer(Buffer* destination_buffer,
+        void copy_buffer(Buffer * destination_buffer,
                          uint64_t destination_offset,
-                         Buffer* source_buffer,
+                         Buffer * source_buffer,
                          uint64_t source_offset,
                          uint64_t num_bytes) override;
 
         void execute_command_lists(const std::vector<CommandList*>& lists) override;
 
-        void begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) override;
+        void begin_renderpass(Renderpass * renderpass, Framebuffer * framebuffer) override;
 
         void end_renderpass() override;
 

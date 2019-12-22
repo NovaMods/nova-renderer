@@ -1,6 +1,7 @@
 #include "shaderpack_validator.hpp"
 
 #include <array>
+
 #include <fmt/format.h>
 
 #include "nova_renderer/util/utils.hpp"

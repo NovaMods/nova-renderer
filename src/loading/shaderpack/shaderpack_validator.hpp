@@ -9,8 +9,9 @@
 #ifndef NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
 #define NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
 
-#include <nlohmann/json.hpp>
 #include <string>
+
+#include <nlohmann/json.hpp>
 
 #include "nova_renderer/util/utils.hpp"
 
@@ -76,6 +77,6 @@ namespace nova::renderer::shaderpack {
      * \return A list of all errors encountered when validating this material
      */
     ValidationReport validate_material(nlohmann::json& material_json);
-} // namespace nova::renderer
+} // namespace nova::renderer::shaderpack
 
 #endif // NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP

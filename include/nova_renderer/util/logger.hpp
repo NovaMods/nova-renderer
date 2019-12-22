@@ -47,7 +47,7 @@ namespace nova::renderer {
     // Todo: Fix this junk
     class _log_stream : public std::stringstream {
     private:
-		LogLevel level;
+        LogLevel level;
 
     public:
         explicit _log_stream(LogLevel level);
