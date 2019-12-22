@@ -2,8 +2,6 @@
 
 #include <memory>
 
-// TODO: Don't always use mallocator
-#include "nova_renderer/memory/mallocator.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
 
 #pragma warning(push, 0)

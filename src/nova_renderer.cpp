@@ -17,7 +17,6 @@
 #include "nova_renderer/frontend/ui_renderer.hpp"
 #include "nova_renderer/memory/block_allocation_strategy.hpp"
 #include "nova_renderer/memory/bump_point_allocation_strategy.hpp"
-#include "nova_renderer/memory/mallocator.hpp"
 #include "nova_renderer/memory/system_memory_allocator.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/rhi/swapchain.hpp"

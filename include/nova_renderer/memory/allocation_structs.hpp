@@ -2,7 +2,7 @@
 
 #include "nova_renderer/memory/bytes.hpp"
 
-namespace bvestl::polyalloc {
+namespace nova::memory {
     /*!
      * Information about an allocation from an allocation strategy
      */
@@ -23,4 +23,4 @@ namespace bvestl::polyalloc {
          */
         void* internal_data = nullptr;
     };
-} // namespace bvestl::polyalloc
+} // namespace nova::memory

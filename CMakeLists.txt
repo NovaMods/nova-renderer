@@ -118,7 +118,7 @@ set(NOVA_SOURCE
         include/nova_renderer/memory/bytes.hpp
         include/nova_renderer/memory/allocation_strategy.hpp
         include/nova_renderer/memory/allocation_structs.hpp
-        include/nova_renderer/memory/polyalloc.hpp
+        include/nova_renderer/memory/allocators.hpp
         include/nova_renderer/memory/block_allocation_strategy.hpp
         include/nova_renderer/memory/bump_point_allocation_strategy.hpp
         include/nova_renderer/memory/system_memory_allocator.hpp

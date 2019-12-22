@@ -2,7 +2,7 @@
 
 #include "nova_renderer/memory/bytes.hpp"
 
-namespace bvestl::polyalloc {
+namespace nova::memory {
     struct AllocationInfo;
 
     /*!
