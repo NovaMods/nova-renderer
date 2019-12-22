@@ -27,7 +27,7 @@ using namespace nova::memory;
 
 namespace nova::renderer::rhi {
     D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window)
-        : RenderEngine(new Allocator<>(std::pmr::new_delete_resource()), settings, window) {
+        : RenderEngine(new AllocatorHandle<>(std::pmr::new_delete_resource()), settings, window) {
         create_device();
 
         create_queues();

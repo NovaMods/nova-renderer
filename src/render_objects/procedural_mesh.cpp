@@ -24,7 +24,7 @@ namespace nova::renderer {
         const auto host_memory_size = aligned_vertex_buffer_size + aligned_index_buffer_size;
         const auto device_memory_size = host_memory_size * 3;
 
-        allocator_memory = new Allocator<BlockAllocationStrategy::Block>(std::pmr::new_delete_resource());
+        allocator_memory = new AllocatorHandle<BlockAllocationStrategy::Block>(std::pmr::new_delete_resource());
 
         device_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(allocator_memory, device_memory_size);
         host_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(allocator_memory, host_memory_size);

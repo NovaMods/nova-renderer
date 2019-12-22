@@ -14,7 +14,7 @@ using namespace nova::memory;
 
 namespace nova::renderer::rhi {
     Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window)
-        : RenderEngine(new Allocator<>(std::pmr::new_delete_resource()), settings, window) {
+        : RenderEngine(new AllocatorHandle<>(std::pmr::new_delete_resource()), settings, window) {
         gladLoadGLLoader(NovaWindow::get_gl_proc_address);
 
         save_device_info();
@@ -86,14 +86,14 @@ namespace nova::renderer::rhi {
 
     ntl::Result<Renderpass*> Gl4NvRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& /* data */,
                                                                   const glm::uvec2& /* framebuffer_size */) {
-        return ntl::Result<Renderpass*>(new Renderpass);
+        return ntl::Result<Renderpass*>(shaderpack_allocator->new_object<Renderpass>());
     }
 
     Framebuffer* Gl4NvRenderEngine::create_framebuffer(const Renderpass* /* renderpass */,
                                                        const std::vector<Image*>& color_attachments,
                                                        const std::optional<Image*> depth_attachment,
                                                        const glm::uvec2& /* framebuffer_size */) {
-        auto* framebuffer = new Gl3Framebuffer;
+        auto* framebuffer = shaderpack_allocator->new_object<Gl3Framebuffer>();
 
         glGenFramebuffers(1, &framebuffer->id);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->id);
@@ -123,7 +123,7 @@ namespace nova::renderer::rhi {
         auto* descriptor_memory_resource = shaderpack_allocator
                                                ->new_object<std::pmr::monotonic_buffer_resource>(descriptor_allocator_memory,
                                                                                                  needed_descriptor_memory);
-        auto* descriptor_allocator = shaderpack_allocator->new_object<Allocator<Gl3Descriptor>>(descriptor_memory_resource);
+        auto* descriptor_allocator = shaderpack_allocator->new_object<AllocatorHandle<Gl3Descriptor>>(descriptor_memory_resource);
 
         auto* pool = shaderpack_allocator->new_object<Gl3DescriptorPool>(descriptor_allocator);
 

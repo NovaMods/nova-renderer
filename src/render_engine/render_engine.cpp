@@ -3,13 +3,13 @@
 #include <utility>
 
 namespace nova::renderer::rhi {
-    void RenderEngine::set_shaderpack_data_allocator(memory::Allocator<>* allocator_handle) {
+    void RenderEngine::set_shaderpack_data_allocator(memory::AllocatorHandle<>* allocator_handle) {
         shaderpack_allocator = allocator_handle;
     }
 
     Swapchain* RenderEngine::get_swapchain() const { return swapchain; }
 
-    RenderEngine::RenderEngine(memory::Allocator<>* allocator,
+    RenderEngine::RenderEngine(memory::AllocatorHandle<>* allocator,
                                NovaSettingsAccessManager& settings,
                                std::shared_ptr<NovaWindow> window)
         : settings(settings),

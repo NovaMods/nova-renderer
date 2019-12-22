@@ -61,7 +61,7 @@ namespace nova::renderer::rhi {
         memory::Vector<Gl3Descriptor> descriptors;
         memory::Vector<Gl3SamplerDescriptor> sampler_sets;
 
-        memory::Allocator<Gl3DescriptorSet>* descriptor_allocator;
+        memory::AllocatorHandle<Gl3DescriptorSet>* descriptor_allocator;
     };
 
     struct Gl3Pipeline : Pipeline {

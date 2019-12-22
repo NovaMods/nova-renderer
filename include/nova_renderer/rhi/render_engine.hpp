@@ -2,14 +2,13 @@
 
 #include <memory>
 
-#include "nova_renderer/memory/polyalloc.hpp"
+#include "nova_renderer/memory/allocators.hpp"
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/window.hpp"
-#include "nova_renderer/memory/allocators.hpp"
 
 namespace nova::renderer {
     struct DeviceMemoryResource;
@@ -64,18 +63,12 @@ namespace nova::renderer::rhi {
          */
         virtual ~RenderEngine() = default;
 
-        /*!
-         * \brief Allows the user to set an allocator that will be used for per-shaderpack objects. This allocator will
-         * be cleaned up wen a new shaderpack is loaded, so I don't need to worry about cleaning up my memory before
-         * that
-         */
-        void set_shaderpack_data_allocator(memory::Allocator<>* allocator_handle);
-
         virtual void set_num_renderpasses(uint32_t num_renderpasses) = 0;
 
         [[nodiscard]] virtual ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size,
                                                                                 MemoryUsage type,
-                                                                                ObjectType allowed_objects) = 0;
+                                                                                ObjectType allowed_objects,
+                                                                                memory::AllocatorHandle<>* allocator = nullptr) = 0;
 
         /*!
          * \brief Creates a renderpass from the provided data
@@ -247,7 +240,6 @@ namespace nova::renderer::rhi {
 
         glm::uvec2 swapchain_size = {};
         Swapchain* swapchain = nullptr;
-        memory::Allocator<>* shaderpack_allocator;
 
         /*!
          * \brief Initializes the engine, does **NOT** open any window
@@ -260,7 +252,7 @@ namespace nova::renderer::rhi {
          *
          * \attention Called by the various render engine implementations
          */
-        RenderEngine(memory::Allocator<>* allocator, NovaSettingsAccessManager& settings, std::shared_ptr<NovaWindow> window);
+        RenderEngine(memory::AllocatorHandle<>* allocator, NovaSettingsAccessManager& settings, std::shared_ptr<NovaWindow> window);
 
         template <typename AllocType>
         AllocType* new_object() {

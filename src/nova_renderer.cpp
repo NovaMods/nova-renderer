@@ -821,7 +821,7 @@ namespace nova::renderer {
 
     void NovaRenderer::deinitialize() { instance.reset(); }
 
-    void NovaRenderer::create_global_allocator() { global_allocator = std::make_shared<Allocator<>>(std::pmr::new_delete_resource()); }
+    void NovaRenderer::create_global_allocator() { global_allocator = std::make_shared<AllocatorHandle<>>(std::pmr::new_delete_resource()); }
 
     void NovaRenderer::create_global_gpu_pools() {
         const uint64_t mesh_memory_size = 512000000;

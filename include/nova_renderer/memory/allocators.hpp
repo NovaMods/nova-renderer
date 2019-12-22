@@ -4,10 +4,10 @@
 
 namespace nova::memory {
     template <typename AllocatedType = std::byte>
-    class Allocator : public std::pmr::polymorphic_allocator<AllocatedType> {
+    class AllocatorHandle : public std::pmr::polymorphic_allocator<AllocatedType> {
     public:
         // ReSharper disable once CppNonExplicitConvertingConstructor
-        Allocator(std::pmr::memory_resource* memory) : std::pmr::polymorphic_allocator<AllocatedType>(memory) {}
+        AllocatorHandle(std::pmr::memory_resource* memory) : std::pmr::polymorphic_allocator<AllocatedType>(memory) {}
 
         template <typename... Args>
         AllocatedType* new_object(Args&&... args) {
@@ -15,13 +15,22 @@ namespace nova::memory {
             return new(mem) AllocatedType(std::forward<Args>(args)...);
         }
 
-        template <typename U, typename... Args, typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
+        template <typename U, typename... Args, std::enable_if_t<std::is_same_v<AllocatedType, std::byte>, int> = 0>
         U* new_object(Args&&... args) {
             auto* mem = this->allocate(sizeof(U));
             return new(mem) U(std::forward<Args>(args)...);
         }
+
+        /*!
+         * \brief Creates a new allocator which allocates from the same memory pool, but allocates a different type of object
+         */
+        template <typename U, std::enable_if_t<std::is_same_v<AllocatedType, std::byte>, int> = 0>
+        AllocatorHandle<U> specialize() {
+            auto* new_allocator = new_object<AllocatorHandle<U>>(resource());
+            return new_allocator;
+        }
     };
 
     template <typename ValueType>
-    using Vector = std::vector<ValueType, Allocator<ValueType>>;
+    using Vector = std::vector<ValueType, AllocatorHandle<ValueType>>;
 } // namespace nova::memory
