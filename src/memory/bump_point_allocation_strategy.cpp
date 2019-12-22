@@ -1,5 +1,5 @@
-#include "bump_point_allocation_strategy.hpp"
-#include "nova_renderer/allocation_structs.hpp"
+#include "nova_renderer/memory/bump_point_allocation_strategy.hpp"
+#include "nova_renderer/memory/allocation_structs.hpp"
 #include "../util/memory_utils.hpp"
 #include <cassert>
 

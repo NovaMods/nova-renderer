@@ -3,7 +3,7 @@
 #include <csignal>
 #include <unordered_set>
 
-#include "nova_renderer/allocation_structs.hpp"
+#include "nova_renderer/memory/allocation_structs.hpp"
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/window.hpp"
 

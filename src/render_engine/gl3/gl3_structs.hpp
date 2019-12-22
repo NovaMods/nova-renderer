@@ -11,7 +11,7 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "nova_renderer/polyalloc.hpp"
+#include "nova_renderer/memory//polyalloc.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 #include "glad/glad.h"

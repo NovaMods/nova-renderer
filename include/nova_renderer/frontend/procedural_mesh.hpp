@@ -5,10 +5,9 @@
 #include <optional>
 
 #include "nova_renderer/constants.hpp"
-#include "nova_renderer/rhi/forward_decls.hpp"
-
-#include "../../../src/memory/block_allocation_strategy.hpp"
+#include "nova_renderer/memory/block_allocation_strategy.hpp"
 #include "nova_renderer/rhi/device_memory_resource.hpp"
+#include "nova_renderer/rhi/forward_decls.hpp"
 
 namespace nova::renderer {
     namespace rhi {

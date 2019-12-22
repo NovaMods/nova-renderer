@@ -4,8 +4,8 @@
 #include <spirv_hlsl.hpp>
 #pragma warning pop
 
-#include "nova_renderer/bytes.hpp"
 #include "nova_renderer/constants.hpp"
+#include "nova_renderer/memory//bytes.hpp"
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/platform.hpp"

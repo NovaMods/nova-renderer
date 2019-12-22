@@ -15,6 +15,10 @@
 #include "nova_renderer/frontend/procedural_mesh.hpp"
 #include "nova_renderer/frontend/rendergraph.hpp"
 #include "nova_renderer/frontend/ui_renderer.hpp"
+#include "nova_renderer/memory/block_allocation_strategy.hpp"
+#include "nova_renderer/memory/bump_point_allocation_strategy.hpp"
+#include "nova_renderer/memory/mallocator.hpp"
+#include "nova_renderer/memory/system_memory_allocator.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/rhi/swapchain.hpp"
 #include "nova_renderer/util/logger.hpp"
@@ -23,10 +27,6 @@
 #include "debugging/renderdoc.hpp"
 #include "loading/shaderpack/render_graph_builder.hpp"
 #include "loading/shaderpack/shaderpack_loading.hpp"
-#include "memory/block_allocation_strategy.hpp"
-#include "memory/bump_point_allocation_strategy.hpp"
-#include "memory/mallocator.hpp"
-#include "memory/system_memory_allocator.hpp"
 #include "render_objects/uniform_structs.hpp"
 // D3D12 MUST be included first because the Vulkan include undefines FAR, yet the D3D12 headers need FAR
 // Windows considered harmful

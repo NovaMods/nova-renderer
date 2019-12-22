@@ -1,12 +1,11 @@
 #pragma once
 
+// TODO: Don't always use mallocator
+#include "nova_renderer/memory/mallocator.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
 
 #include "vk_structs.hpp"
 #include "vulkan_swapchain.hpp"
-
-// TODO: Don't always use mallocator
-#include "../../memory/mallocator.hpp"
 
 namespace nova::renderer::rhi {
     struct VulkanMemoryHeap : VkMemoryHeap {

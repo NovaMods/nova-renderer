@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nova_renderer/bytes.hpp"
+#include "nova_renderer/memory//bytes.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 
