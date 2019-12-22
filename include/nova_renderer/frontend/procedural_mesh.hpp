@@ -82,8 +82,8 @@ namespace nova::renderer {
 #ifdef NOVA_DEBUG
         uint64_t vertex_buffer_size;
         uint64_t index_buffer_size;
-        std::unique_ptr<bvestl::polyalloc::BlockAllocationStrategy> device_memory_allocation_strategy;
-        std::unique_ptr<bvestl::polyalloc::BlockAllocationStrategy> host_memory_allocation_strategy;
+        std::unique_ptr<memory::BlockAllocationStrategy> device_memory_allocation_strategy;
+        std::unique_ptr<memory::BlockAllocationStrategy> host_memory_allocation_strategy;
         std::unique_ptr<DeviceMemoryResource> device_buffers_memory;
         std::unique_ptr<DeviceMemoryResource> cached_buffers_memory;
 #endif

@@ -168,7 +168,7 @@ namespace nova::renderer {
          * Right now I throw this allocator at the GPU memory allocators, because they need some way to allocate memory and I'm not about to
          * try and band-aid aid things together. Future work will have a better way to bootstrap Nova's allocators
          */
-        std::shared_ptr<bvestl::polyalloc::allocator_handle> global_allocator;
+        std::shared_ptr<Allocator<>> global_allocator;
 
         std::unique_ptr<DeviceMemoryResource> mesh_memory;
 

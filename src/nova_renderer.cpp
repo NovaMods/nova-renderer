@@ -40,8 +40,8 @@
 #include "render_engine/gl3/gl3_render_engine.hpp"
 #endif
 
-using namespace bvestl::polyalloc;
-using namespace bvestl::polyalloc::operators;
+using namespace nova::memory;
+using namespace nova::memory::operators;
 
 const Bytes global_memory_pool_size = 1_gb;
 
@@ -822,15 +822,7 @@ namespace nova::renderer {
 
     void NovaRenderer::deinitialize() { instance.reset(); }
 
-    void NovaRenderer::create_global_allocator() {
-        auto* heap = new uint8_t[global_memory_pool_size.b_count()];
-        allocator_handle handle(new Mallocator);
-        std::unique_ptr<AllocationStrategy> allocation_strategy = std::make_unique<BlockAllocationStrategy>(handle,
-                                                                                                            global_memory_pool_size);
-
-        global_allocator = std::make_shared<allocator_handle>(
-            new SystemMemoryAllocator(heap, global_memory_pool_size, std::move(allocation_strategy)));
-    }
+    void NovaRenderer::create_global_allocator() { global_allocator = std::make_shared<Allocator<>>(std::pmr::new_delete_resource()); }
 
     void NovaRenderer::create_global_gpu_pools() {
         const uint64_t mesh_memory_size = 512000000;
