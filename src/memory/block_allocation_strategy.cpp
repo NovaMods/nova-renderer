@@ -87,7 +87,7 @@ namespace nova::memory {
 
             prev->size += block->size;
 
-            allocator.deallocate(block, sizeof(Block));
+            allocator.deallocate(block, 1);
 
             block = prev;
         }
