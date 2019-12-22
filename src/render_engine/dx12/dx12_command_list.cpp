@@ -9,7 +9,8 @@ using namespace nova::mem;
 namespace nova::renderer::rhi {
     using namespace Microsoft::WRL;
 
-    Dx12CommandList::Dx12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds) : cmds(std::move(cmds)) {}
+    Dx12CommandList::Dx12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds)
+        : cmds(std::move(cmds)) {}
 
     void Dx12CommandList::resource_barriers(PipelineStageFlags /* stages_before_barrier */,
                                             PipelineStageFlags /* stages_after_barrier */,
