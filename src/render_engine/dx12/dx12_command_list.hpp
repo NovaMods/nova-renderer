@@ -50,7 +50,10 @@ namespace nova::renderer::rhi {
 
         void upload_data_to_image(
             Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, void* data) override;
+    
     private:
+        Microsoft::WRL::ComPtr<ID3D12Device> device;
+
         Microsoft::WRL::ComPtr<ID3D12Heap> staging_buffer_heap;
     };
 } // namespace nova::renderer::rhi
