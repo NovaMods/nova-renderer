@@ -7,7 +7,7 @@ namespace nova::memory {
     class Allocator : public std::pmr::polymorphic_allocator<AllocatedType> {
     public:
         // ReSharper disable once CppNonExplicitConvertingConstructor
-        Allocator(std::pmr::memory_resource* memory) : std::pmr::polymorphic_allocator(memory) {}
+        Allocator(std::pmr::memory_resource* memory) : std::pmr::polymorphic_allocator<AllocatedType>(memory) {}
 
         template <typename... Args>
         AllocatedType* new_object(Args&&... args) {
@@ -15,12 +15,13 @@ namespace nova::memory {
             return new(mem) AllocatedType(std::forward<Args>(args)...);
         }
 
-        template <typename U,
-                  typename... Args,
-                  typename = typename std::enable_if<std::is_same<AllocatedType, std::byte>::value>::type>
+        template <typename U, typename... Args, typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
         U* new_object(Args&&... args) {
             auto* mem = this->allocate(sizeof(U));
             return new(mem) U(std::forward<Args>(args)...);
         }
     };
+
+    template <typename ValueType>
+    using Vector = std::vector<ValueType, Allocator<ValueType>>;
 } // namespace nova::memory

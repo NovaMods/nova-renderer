@@ -118,6 +118,7 @@ namespace nova::renderer::rhi {
                                                               const uint32_t num_uniform_buffers) {
         const size_t total_num_descriptors = num_sampled_images + num_samplers + num_uniform_buffers;
         const size_t needed_descriptor_memory = total_num_descriptors * sizeof(Gl3Descriptor);
+
         void* descriptor_allocator_memory = shaderpack_allocator->allocate(needed_descriptor_memory);
         auto* descriptor_memory_resource = shaderpack_allocator
                                                ->new_object<std::pmr::monotonic_buffer_resource>(descriptor_allocator_memory,
@@ -138,8 +139,7 @@ namespace nova::renderer::rhi {
         std::vector<DescriptorSet*> sets;
 
         for(const auto& [name, desc] : pipeline_interface->bindings) {
-            void* new_set_mem = gl_descriptor_pool->descriptor_allocator->allocate(1);
-            auto* new_set = new(new_set_mem) Gl3DescriptorSet;
+            auto* new_set = gl_descriptor_pool->descriptor_allocator->new_object();
             sets.push_back(new_set);
 
             new_set->descriptors.resize(desc.count);
