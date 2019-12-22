@@ -18,12 +18,23 @@ namespace nova::renderer {
         allocate_staging_buffer_memory();
     }
 
+<<<<<<< HEAD
     TextureResource ResourceStorage::create_texture(const std::string& name,
                                                     const std::size_t width,
                                                     const std::size_t height,
                                                     const PixelFormat pixel_format,
                                                     void* data,
                                                     mem::AllocatorHandle<>& allocator) {
+
+        TextureResource resource;
+        resource.name = name;
+        resource.width = width;
+        resource.height = height;
+        resource.format = pixel_format;
+=======
+    TextureResource ResourceStorage::create_texture(
+        const std::string& name, const std::size_t width, const std::size_t height, const PixelFormat pixel_format, void* data) {
+>>>>>>> [renderer] How do I render target
 
         TextureResource resource;
         resource.name = name;
@@ -43,7 +54,11 @@ namespace nova::renderer {
 
         const std::shared_ptr<Buffer> staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
 
+<<<<<<< HEAD
         resource.image = device->create_image(info, allocator);
+=======
+        resource.image = device->create_image(info);
+>>>>>>> [renderer] How do I render target
         resource.image->is_dynamic = false;
 
         CommandList* cmds = device->create_command_list(allocator, 0, QueueType::Transfer);
@@ -84,7 +99,10 @@ namespace nova::renderer {
 #if NOVA_DEBUG
         if(const auto& itr = textures.find(name); itr != textures.end()) {
             return std::make_optional<TextureResource>(itr->second.image);
+<<<<<<< HEAD
 
+=======
+>>>>>>> [renderer] How do I render target
         } else {
             NOVA_LOG(ERROR) << "Could not find image \"" << name << "\"";
             return std::nullopt;

@@ -74,7 +74,6 @@ namespace nova::renderer {
                                                            size_t height,
                                                            rhi::PixelFormat pixel_format);
 
-    private:
         NovaRenderer& renderer;
 
         rhi::RenderEngine* device;
