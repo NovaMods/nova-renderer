@@ -3,8 +3,8 @@
 #include <cstdint> // needed for uint****
 #include <vector>
 
-#include "nova_renderer/rhi/rhi_enums.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
+#include "nova_renderer/rhi/rhi_enums.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
@@ -72,7 +72,19 @@ namespace nova::renderer::rhi {
         virtual void copy_buffer(
             Buffer* destination_buffer, uint64_t destination_offset, Buffer* source_buffer, uint64_t source_offset, uint64_t num_bytes) = 0;
 
-        virtual void copy_buffer_to_image(Buffer* buffer, Image* image) = 0;
+        /*!
+         * \brief Uploads data to an image in the most API-optimal way
+         *
+         * \param image The image to upload the data to. Must be in the CopyDestination state
+         * \param width The width of the image in pixels
+         * \param height The height of the image in pixels
+         * \param bytes_per_pixel The number of bytes that each pixel uses
+         * \param staging_buffer The buffer to use to upload the data to the image. This buffer must be host writable, and must be in the
+         * CopySource state
+         * \param data A pointer to the data to upload to the image
+         */
+        virtual void upload_data_to_image(
+            Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, void* data) = 0;
 
         /*!
          * \brief Executed a number of command lists

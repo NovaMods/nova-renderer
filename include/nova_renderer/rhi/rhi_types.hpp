@@ -42,7 +42,7 @@ namespace nova::renderer::rhi {
     };
 
     struct Buffer : Resource {
-        uint32_t size = 0;
+        size_t size = 0;
     };
 
     struct Framebuffer {
