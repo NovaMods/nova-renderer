@@ -134,4 +134,20 @@ namespace nova::renderer::rhi {
     void Dx12CommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t num_instances) {
         cmds->DrawInstanced(num_indices, num_instances, 0, 0);
     }
+
+    void Dx12CommandList::upload_data_to_image(Image* image, void* data) {
+
+        const auto* dx_buffer = static_cast<const DX12Buffer*>(buffer);
+        const auto* dx_image = static_cast<const DX12Image*>(image);
+
+        CD3DX12_TEXTURE_COPY_LOCATION buffer_location(dx_buffer->resource.Get());
+        CD3DX12_TEXTURE_COPY_LOCATION image_location(dx_image->resource.Get());
+
+        D3D12_SUBRESOURCE_DATA subresource = {};
+        subresource.pData = image_data;
+        subresource.RowPitch = bytes_per_row;
+        subresource.SlicePitch = bytes_pre_row * texture_height;
+
+        UpdateSubresources(cmds.Get(), dx_image->resource.Get(), dx_buffer->resource.Get(), 0, 0, 1, &subresource);
+    }
 } // namespace nova::renderer::rhi

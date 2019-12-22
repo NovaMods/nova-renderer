@@ -46,7 +46,10 @@ namespace nova::renderer::rhi {
 
         void draw_indexed_mesh(uint32_t num_indices, uint32_t num_instances) override;
 
+        void upload_data_to_image(Image* image, void* data) override;
     private:
         Microsoft::WRL::ComPtr<ID3D12Device> device;
+
+        Microsoft::WRL::ComPtr<ID3D12Heap> staging_buffer_heap;
     };
 } // namespace nova::renderer::rhi
