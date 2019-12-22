@@ -116,7 +116,16 @@ namespace nova::renderer::rhi {
     DescriptorPool* Gl4NvRenderEngine::create_descriptor_pool(const uint32_t num_sampled_images,
                                                               const uint32_t num_samplers,
                                                               const uint32_t num_uniform_buffers) {
-        auto* pool = new Gl3DescriptorPool(shaderpack_allocator);
+        const size_t total_num_descriptors = num_sampled_images + num_samplers + num_uniform_buffers;
+        const size_t needed_descriptor_memory = total_num_descriptors * sizeof(Gl3Descriptor);
+        void* descriptor_allocator_memory = shaderpack_allocator->allocate(needed_descriptor_memory);
+        auto* descriptor_memory_resource = shaderpack_allocator
+                                               ->new_object<std::pmr::monotonic_buffer_resource>(descriptor_allocator_memory,
+                                                                                                 needed_descriptor_memory);
+        auto* descriptor_allocator = shaderpack_allocator->new_object<Allocator<Gl3Descriptor>>(descriptor_memory_resource);
+
+        auto* pool = shaderpack_allocator->new_object<Gl3DescriptorPool>(descriptor_allocator);
+
         pool->descriptors.resize(static_cast<std::size_t>(num_sampled_images) + num_uniform_buffers);
         pool->sampler_sets.resize(num_samplers);
 
@@ -266,7 +275,7 @@ namespace nova::renderer::rhi {
         }
 
         glBindBuffer(buffer_bind_target, buffer->id);
-        glBufferData(buffer_bind_target, info.size, nullptr, GL_STATIC_DRAW);
+        glBufferData(buffer_bind_target, info.size.b_count(), nullptr, GL_STATIC_DRAW);
 
         return buffer;
     }
