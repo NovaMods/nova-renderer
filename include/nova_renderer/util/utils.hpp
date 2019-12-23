@@ -1,12 +1,4 @@
-/*!
- * \brief Contains a bunch of utility functions which may or may not be actually used anywhere
- *
- * \author David
- * \date 18-May-16.
- */
-
-#ifndef RENDERER_UTILS_H
-#define RENDERER_UTILS_H
+#pragma once
 
 #include <algorithm>
 #include <fstream>
@@ -46,5 +38,3 @@ namespace nova::renderer {
 
 #define FORMAT(s, ...) fmt::format(fmt(s), __VA_ARGS__)
 } // namespace nova::renderer
-
-#endif // RENDERER_UTILS_H
