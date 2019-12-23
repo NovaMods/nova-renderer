@@ -143,7 +143,7 @@ namespace nova::renderer::rhi {
 
         for(const auto& [name, desc] : pipeline_interface->bindings) {
             auto* new_set = gl_descriptor_pool->descriptor_allocator->new_object();
-            new_set->descriptors = std::pmr::vector<Gl3Descriptor>(allocator.create_suballocator<Gl3Descriptor>());
+            new_set->descriptors = std::pmr::vector<Gl3Descriptor>(*allocator.create_suballocator<Gl3Descriptor>());
             new_set->descriptors.resize(desc.count);
             sets.push_back(new_set);
         }
@@ -200,7 +200,7 @@ namespace nova::renderer::rhi {
 
         pipeline->id = glCreateProgram();
 
-        std::pmr::vector<std::string> pipeline_creation_errors(allocator.create_suballocator<std::string>());
+        std::pmr::vector<std::string> pipeline_creation_errors(*internal_allocator.create_suballocator<std::string>());
         pipeline_creation_errors.reserve(4);
 
         const ntl::Result<GLuint>& vertex_shader = compile_shader(data.vertex_shader.source, GL_VERTEX_SHADER);
@@ -347,7 +347,7 @@ namespace nova::renderer::rhi {
     Semaphore* Gl4NvRenderEngine::create_semaphore(AllocatorHandle<>& allocator) { return allocator.new_other_object<Gl3Semaphore>(); }
 
     std::pmr::vector<Semaphore*> Gl4NvRenderEngine::create_semaphores(const uint32_t num_semaphores, AllocatorHandle<>& allocator) {
-        std::pmr::vector<Semaphore*> semaphores(num_semaphores, {}, allocator.create_suballocator<Semaphore*>());
+        std::pmr::vector<Semaphore*> semaphores(num_semaphores, nullptr, *allocator.create_suballocator<Semaphore*>());
 
         for(uint32_t i = 0; i < num_semaphores; i++) {
             semaphores[i] = allocator.new_other_object<Gl3Semaphore>();
@@ -365,7 +365,7 @@ namespace nova::renderer::rhi {
     std::pmr::vector<Fence*> Gl4NvRenderEngine::create_fences(AllocatorHandle<>& allocator,
                                                               const uint32_t num_fences,
                                                               const bool signaled) {
-        std::pmr::vector<Fence*> fences(allocator.create_suballocator<Fence*>());
+        std::pmr::vector<Fence*> fences(*allocator.create_suballocator<Fence*>());
         fences.reserve(num_fences);
 
         for(uint32_t i = 0; i < num_fences; i++) {
