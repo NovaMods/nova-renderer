@@ -1,4 +1,4 @@
-#include "nova_renderer/memory//bytes.hpp"
+#include "nova_renderer/memory/bytes.hpp"
 
 #include <ostream>
 
