@@ -23,7 +23,7 @@ using Microsoft::WRL::ComPtr;
 #define CPU_FENCE_SIGNALED 16
 #define GPU_FENCE_SIGNALED 32
 
-using namespace nova::memory;
+using namespace nova::mem;
 
 namespace nova::renderer::rhi {
     D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings,

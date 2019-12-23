@@ -22,7 +22,7 @@
 
 #endif
 
-using namespace nova::memory;
+using namespace nova::mem;
 
 namespace nova::renderer::rhi {
     VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings,

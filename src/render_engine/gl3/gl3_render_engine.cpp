@@ -10,12 +10,12 @@
 #include "gl3_structs.hpp"
 #include "gl3_swapchain.hpp"
 
-using namespace nova::memory;
+using namespace nova::mem;
 
 namespace nova::renderer::rhi {
     Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings,
                                          const std::shared_ptr<NovaWindow>& window,
-                                         memory::AllocatorHandle<>& allocator)
+                                         AllocatorHandle<>& allocator)
         : RenderEngine(allocator, settings, window) {
         gladLoadGLLoader(NovaWindow::get_gl_proc_address);
 
@@ -85,7 +85,7 @@ namespace nova::renderer::rhi {
         // Gl3 doesn't need to do anything either
     }
 
-    ntl::Result<DeviceMemory*> Gl4NvRenderEngine::allocate_device_memory(const uint64_t /* size */,
+    ntl::Result<DeviceMemory*> Gl4NvRenderEngine::allocate_device_memory(const Bytes /* size */,
                                                                          const MemoryUsage /* type */,
                                                                          const ObjectType /* allowed_objects */) {
         return ntl::Result(new DeviceMemory);
@@ -287,11 +287,14 @@ namespace nova::renderer::rhi {
         return buffer;
     }
 
-    void Gl4NvRenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const Buffer* buffer) {
+    void Gl4NvRenderEngine::write_data_to_buffer(const void* data,
+                                                 const Bytes num_bytes,
+                                                 const Bytes offset,
+                                                 const Buffer* buffer) {
         const auto* gl_buffer = static_cast<const Gl3Buffer*>(buffer);
 
         glBindBuffer(GL_COPY_READ_BUFFER, gl_buffer->id);
-        glBufferSubData(GL_COPY_READ_BUFFER, offset, num_bytes, data);
+        glBufferSubData(GL_COPY_READ_BUFFER, offset.b_count(), num_bytes.b_count(), data);
     }
 
     Image* Gl4NvRenderEngine::create_image(const shaderpack::TextureCreateInfo& info, AllocatorHandle<>& allocator) {
