@@ -62,7 +62,7 @@ namespace nova::renderer {
     }
 
     std::pmr::vector<fs::path> ZipFolderAccessor::get_all_items_in_folder(const fs::path& folder) {
-        const std::string folder_stringname = folder.string().c_str();
+        const std::string folder_stringname = folder.string();
         std::pmr::vector<std::string> folder_path_parts = split(folder_stringname, '/');
 
         FileTreeNode* cur_node = files.get();
