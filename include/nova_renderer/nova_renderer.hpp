@@ -155,7 +155,7 @@ namespace nova::renderer {
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
-        std::array<mem::AllocatorHandle<>, NUM_IN_FLIGHT_FRAMES> frame_allocators;
+        std::pmr::vector<mem::AllocatorHandle<>> frame_allocators;
         static std::unique_ptr<NovaRenderer> instance;
 
         rhi::Sampler* point_sampler;
@@ -169,6 +169,11 @@ namespace nova::renderer {
          * try and band-aid aid things together. Future work will have a better way to bootstrap Nova's allocators
          */
         std::shared_ptr<mem::AllocatorHandle<>> global_allocator;
+
+        /*!
+         * \brief Holds all the object loaded by the current rendergraph
+         */
+        std::shared_ptr<mem::AllocatorHandle<>> renderpack_allocator;
 
         std::unique_ptr<DeviceMemoryResource> mesh_memory;
 

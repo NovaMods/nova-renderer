@@ -6,7 +6,7 @@
  * \brief Some useful utilities
  */
 
-namespace nova::memory {
+namespace nova::mem {
     constexpr Bytes align(const Bytes value, const Bytes alignment) noexcept {
         // TODO: Make faster
         return alignment == Bytes(0) ? value : (value % alignment == Bytes(0) ? value : value + value % alignment);

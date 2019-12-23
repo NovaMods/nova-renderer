@@ -56,7 +56,7 @@ namespace nova::renderer::rhi {
         // Pretty sure Vulkan doesn't need to do anything here
     }
 
-    ntl::Result<DeviceMemory*> VulkanRenderEngine::allocate_device_memory(const uint64_t size,
+    ntl::Result<DeviceMemory*> VulkanRenderEngine::allocate_device_memory(const mem::Bytes size,
                                                                           const MemoryUsage usage,
                                                                           const ObjectType /* allowed_objects */,
                                                                           AllocatorHandle<>& allocator) {
@@ -64,7 +64,7 @@ namespace nova::renderer::rhi {
 
         VkMemoryAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        alloc_info.allocationSize = size;
+        alloc_info.allocationSize = size.b_count();
         alloc_info.memoryTypeIndex = VK_MAX_MEMORY_TYPES;
 
         // Find the memory type that we want
@@ -828,7 +828,10 @@ namespace nova::renderer::rhi {
         return buffer;
     }
 
-    void VulkanRenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const Buffer* buffer) {
+    void VulkanRenderEngine::write_data_to_buffer(const void* data,
+                                                  const mem::Bytes num_bytes,
+                                                  const mem::Bytes offset,
+                                                  const Buffer* buffer) {
         const auto* vulkan_buffer = static_cast<const VulkanBuffer*>(buffer);
 
         const AllocationInfo& allocation_info = vulkan_buffer->memory.allocation_info;
@@ -837,8 +840,8 @@ namespace nova::renderer::rhi {
         // TODO: heap_mappings doesn't have the buffer's memory in it
         // Alternately, the buffer's memory isn't in heap_mappings
         // Something something assuming constantly mapped?
-        uint8_t* mapped_bytes = static_cast<uint8_t*>(heap_mappings.at(memory->memory)) + allocation_info.offset.b_count() + offset;
-        memcpy(mapped_bytes, data, num_bytes);
+        uint8_t* mapped_bytes = static_cast<uint8_t*>(heap_mappings.at(memory->memory)) + allocation_info.offset.b_count() + offset.b_count();
+        memcpy(mapped_bytes, data, num_bytes.b_count());
     }
 
     Image* VulkanRenderEngine::create_image(const shaderpack::TextureCreateInfo& info, AllocatorHandle<>& allocator) {
@@ -1549,7 +1552,7 @@ namespace nova::renderer::rhi {
         return pools_by_queue;
     }
 
-    uint32_t VulkanRenderEngine::find_memory_type_with_flags(const uint32_t search_flags, const MemorySearchMode search_mode) const {
+    uint32_t VulkanRenderEngine::find_memory_type_with_flags(const uint32_t search_flags, const MemorySearchMode search_mode) {
         for(uint32_t i = 0; i < gpu.memory_properties.memoryTypeCount; i++) {
             const VkMemoryType& memory_type = gpu.memory_properties.memoryTypes[i];
             switch(search_mode) {

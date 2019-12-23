@@ -23,10 +23,10 @@ namespace nova::renderer::rhi {
                                const std::pmr::vector<ResourceBarrier>& barriers) override;
 
         void copy_buffer(Buffer* destination_buffer,
-                         uint64_t destination_offset,
+                         mem::Bytes destination_offset,
                          Buffer* source_buffer,
-                         uint64_t source_offset,
-                         uint64_t num_bytes) override;
+                         mem::Bytes source_offset,
+                         mem::Bytes num_bytes) override;
 
         void execute_command_lists(const std::pmr::vector<CommandList*>& lists) override;
 

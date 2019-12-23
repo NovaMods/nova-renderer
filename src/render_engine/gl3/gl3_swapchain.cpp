@@ -11,7 +11,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    uint8_t Gl3Swapchain::acquire_next_swapchain_image() {
+    uint8_t Gl3Swapchain::acquire_next_swapchain_image(mem::AllocatorHandle<>& /* allocator */) {
         const uint8_t ret_val = cur_frame;
         cur_frame++;
         if(cur_frame >= num_images) {

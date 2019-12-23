@@ -24,24 +24,24 @@ namespace nova::renderer {
         const auto host_memory_size = aligned_vertex_buffer_size + aligned_index_buffer_size;
         const auto device_memory_size = host_memory_size * 3;
 
-        allocator_memory = new AllocatorHandle<BlockAllocationStrategy::Block>(std::pmr::new_delete_resource());
+        allocator = std::make_unique<AllocatorHandle<>>(std::pmr::new_delete_resource());
 
-        device_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(allocator_memory, device_memory_size);
-        host_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(allocator_memory, host_memory_size);
+        device_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(allocator.get(), device_memory_size);
+        host_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(allocator.get(), host_memory_size);
 
         // TODO: Don't allocate a separate DeviceMemory for each procedural mesh
-        device->allocate_device_memory(device_memory_size.b_count(), MemoryUsage::LowFrequencyUpload, ObjectType::Buffer)
+        device->allocate_device_memory(device_memory_size.b_count(), MemoryUsage::LowFrequencyUpload, ObjectType::Buffer, *allocator)
             .map([&](DeviceMemory* memory) {
                 device_buffers_memory = std::make_unique<DeviceMemoryResource>(memory, device_memory_allocation_strategy.get());
 
                 const auto vertex_create_info = BufferCreateInfo{vertex_buffer_size, BufferUsage::VertexBuffer};
                 for(auto& vertex_buffer : vertex_buffers) {
-                    vertex_buffer = device->create_buffer(vertex_create_info, *device_buffers_memory);
+                    vertex_buffer = device->create_buffer(vertex_create_info, *device_buffers_memory, *allocator);
                 }
 
                 const auto index_create_info = BufferCreateInfo{index_buffer_size, BufferUsage::IndexBuffer};
                 for(auto& index_buffer : index_buffers) {
-                    index_buffer = device->create_buffer(index_create_info, *device_buffers_memory);
+                    index_buffer = device->create_buffer(index_create_info, *device_buffers_memory, *allocator);
                 }
 
                 return true;
@@ -51,12 +51,16 @@ namespace nova::renderer {
                 // TODO: Propagate the error
             });
 
-        device->allocate_device_memory(host_memory_size.b_count(), MemoryUsage::StagingBuffer, ObjectType::Buffer)
+        device->allocate_device_memory(host_memory_size.b_count(), MemoryUsage::StagingBuffer, ObjectType::Buffer, *allocator)
             .map([&](DeviceMemory* memory) {
                 cached_buffers_memory = std::make_unique<DeviceMemoryResource>(memory, host_memory_allocation_strategy.get());
 
-                cached_vertex_buffer = device->create_buffer({vertex_buffer_size, BufferUsage::StagingBuffer}, *cached_buffers_memory);
-                cached_index_buffer = device->create_buffer({index_buffer_size, BufferUsage::StagingBuffer}, *cached_buffers_memory);
+                cached_vertex_buffer = device->create_buffer({vertex_buffer_size, BufferUsage::StagingBuffer},
+                                                             *cached_buffers_memory,
+                                                             *allocator);
+                cached_index_buffer = device->create_buffer({index_buffer_size, BufferUsage::StagingBuffer},
+                                                            *cached_buffers_memory,
+                                                            *allocator);
 
                 return true;
             })

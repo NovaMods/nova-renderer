@@ -517,7 +517,7 @@ namespace nova::renderer::shaderpack {
                 NOVA_LOG(ERROR) << "Program failed to link: " << program_info_log << "\n" << program_debug_info_log;
             }
 
-            std::pmr::vector<uint32_t> spirv_std;
+            std::vector<uint32_t> spirv_std;
             GlslangToSpv(*program.getIntermediate(stage), spirv_std);
 
             std::pmr::vector<uint32_t> spirv(spirv_std.begin(), spirv_std.end());
@@ -565,7 +565,7 @@ namespace nova::renderer::shaderpack {
         }
 
         auto material = json_material.get<MaterialData>();
-        material.name = material_path.stem().string().c_str();
+        material.name = material_path.stem().string();
         NOVA_LOG(TRACE) << "Load of material " << material_path << " succeeded";
         return material;
     }

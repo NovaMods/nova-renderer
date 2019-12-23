@@ -24,7 +24,9 @@ namespace nova::renderer::rhi {
         create_per_frame_resources(device);
     }
 
-    uint8_t DX12Swapchain::acquire_next_swapchain_image() { return static_cast<uint8_t>(swapchain->GetCurrentBackBufferIndex()); }
+    uint8_t DX12Swapchain::acquire_next_swapchain_image(mem::AllocatorHandle<>& /* allocator */) {
+        return static_cast<uint8_t>(swapchain->GetCurrentBackBufferIndex());
+    }
 
     void DX12Swapchain::present(uint32_t /* image_idx */) { swapchain->Present(0, 0); }
 
@@ -91,7 +93,7 @@ namespace nova::renderer::rhi {
 
             framebuffers.push_back(framebuffer);
 
-            fences.push_back(rhi->create_fence(true));
+            fences.push_back(rhi->create_fence(*rhi->get_allocator(), true));
 
             // Increment the RTV handle
             rtv_handle = rtv_handle.Offset(1, rtv_descriptor_size);

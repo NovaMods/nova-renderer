@@ -208,7 +208,7 @@ namespace nova::renderer::rhi {
 
         for(const auto& [binding_name, binding] : bindings) {
             // emplace the allocator, which will hopefully convince the STL to make a new vector that uses that allocator
-            pipeline_interface->table_layouts.emplace(binding.set, allocator);
+            pipeline_interface->table_layouts.emplace(binding.set, std::pmr::vector<ResourceBindingDescription>(allocator));
             pipeline_interface->table_layouts[binding.set].reserve(16);
             pipeline_interface->table_layouts[binding.set].emplace_back(binding);
         }
@@ -601,10 +601,7 @@ namespace nova::renderer::rhi {
         return buffer;
     }
 
-    void D3D12RenderEngine::write_data_to_buffer(const void* data,
-                                                 const Bytes num_bytes,
-                                                 const Bytes offset,
-                                                 const Buffer* buffer) {
+    void D3D12RenderEngine::write_data_to_buffer(const void* data, const Bytes num_bytes, const Bytes offset, const Buffer* buffer) {
         const auto dx_buffer = static_cast<const DX12Buffer*>(buffer);
 
         D3D12_RANGE mapped_range;

@@ -81,14 +81,14 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanCommandList::copy_buffer(Buffer* destination_buffer,
-                                        const uint64_t destination_offset,
+                                        const mem::Bytes destination_offset,
                                         Buffer* source_buffer,
-                                        const uint64_t source_offset,
-                                        const uint64_t num_bytes) {
+                                        const mem::Bytes source_offset,
+                                        const mem::Bytes num_bytes) {
         VkBufferCopy copy;
-        copy.srcOffset = source_offset;
-        copy.dstOffset = destination_offset;
-        copy.size = num_bytes;
+        copy.srcOffset = source_offset.b_count();
+        copy.dstOffset = destination_offset.b_count();
+        copy.size = num_bytes.b_count();
         auto* vk_destination_buffer = static_cast<VulkanBuffer*>(destination_buffer);
         auto* vk_source_buffer = static_cast<VulkanBuffer*>(source_buffer);
 

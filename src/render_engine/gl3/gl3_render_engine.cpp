@@ -130,9 +130,12 @@ namespace nova::renderer::rhi {
         void* descriptor_memory = allocator.allocate(descriptor_memory_size);
         auto* descriptor_memory_resource = allocator.new_other_object<std::pmr::monotonic_buffer_resource>(descriptor_memory,
                                                                                                            descriptor_memory_size);
-        auto* descriptor_allocator = allocator.new_other_object<AllocatorHandle<Gl3Descriptor>>(descriptor_memory_resource);
+        auto* descriptor_allocator = allocator.new_other_object<AllocatorHandle<Gl3DescriptorSet>>(descriptor_memory_resource);
 
-        return allocator.new_other_object<Gl3DescriptorPool>(descriptor_allocator);
+        auto* other_obj = allocator.new_other_object<Gl3DescriptorPool>();
+        other_obj->descriptor_allocator = descriptor_allocator;
+
+        return other_obj;
     }
 
     std::pmr::vector<DescriptorSet*> Gl4NvRenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
@@ -287,10 +290,7 @@ namespace nova::renderer::rhi {
         return buffer;
     }
 
-    void Gl4NvRenderEngine::write_data_to_buffer(const void* data,
-                                                 const Bytes num_bytes,
-                                                 const Bytes offset,
-                                                 const Buffer* buffer) {
+    void Gl4NvRenderEngine::write_data_to_buffer(const void* data, const Bytes num_bytes, const Bytes offset, const Buffer* buffer) {
         const auto* gl_buffer = static_cast<const Gl3Buffer*>(buffer);
 
         glBindBuffer(GL_COPY_READ_BUFFER, gl_buffer->id);
@@ -519,9 +519,9 @@ namespace nova::renderer::rhi {
 
         glCopyBufferSubData(GL_COPY_READ_BUFFER,
                             GL_COPY_WRITE_BUFFER,
-                            buffer_copy.source_offset,
-                            buffer_copy.destination_offset,
-                            buffer_copy.num_bytes);
+                            buffer_copy.source_offset.b_count(),
+                            buffer_copy.destination_offset.b_count(),
+                            buffer_copy.num_bytes.b_count());
     }
 
     void Gl4NvRenderEngine::begin_renderpass_impl(const Gl3BeginRenderpassCommand& begin_renderpass) {

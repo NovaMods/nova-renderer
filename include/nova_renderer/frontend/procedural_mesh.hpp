@@ -79,7 +79,7 @@ namespace nova::renderer {
         uint64_t num_vertex_bytes_to_upload = 0;
         uint64_t num_index_bytes_to_upload = 0;
 
-        mem::AllocatorHandle<mem::BlockAllocationStrategy::Block>* allocator_memory;
+        std::unique_ptr<mem::AllocatorHandle<>> allocator;
 
         std::unique_ptr<mem::BlockAllocationStrategy> device_memory_allocation_strategy;
         std::unique_ptr<mem::BlockAllocationStrategy> host_memory_allocation_strategy;

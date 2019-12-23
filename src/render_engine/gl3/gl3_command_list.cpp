@@ -242,15 +242,15 @@ namespace nova::renderer::rhi {
 
     Gl3CommandList::Gl3CommandList() { commands.reserve(128); }
 
-    void Gl3CommandList::resource_barriers(PipelineStageFlags stages_before_barrier,
-                                           PipelineStageFlags stages_after_barrier,
-                                           const std::pmr::vector<ResourceBarrier>& barriers) {}
+    void Gl3CommandList::resource_barriers(PipelineStageFlags /* stages_before_barrier */,
+                                           PipelineStageFlags /* stages_after_barrier */,
+                                           const std::pmr::vector<ResourceBarrier>& /* barriers */) {}
 
     void Gl3CommandList::copy_buffer(Buffer* destination_buffer,
-                                     const uint64_t destination_offset,
+                                     const mem::Bytes destination_offset,
                                      Buffer* source_buffer,
-                                     const uint64_t source_offset,
-                                     const uint64_t num_bytes) {
+                                     const mem::Bytes source_offset,
+                                     const mem::Bytes num_bytes) {
         auto* dst_buf = reinterpret_cast<Gl3Buffer*>(destination_buffer);
         auto* src_buf = reinterpret_cast<Gl3Buffer*>(source_buffer);
 

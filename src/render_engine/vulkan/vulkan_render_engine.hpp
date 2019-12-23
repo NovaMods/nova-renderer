@@ -57,7 +57,7 @@ namespace nova::renderer::rhi {
 #pragma region Render engine interface
         void set_num_renderpasses(uint32_t num_renderpasses) override;
 
-        ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size,
+        ntl::Result<DeviceMemory*> allocate_device_memory(mem::Bytes size,
                                                           MemoryUsage usage,
                                                           ObjectType allowed_objects,
                                                           mem::AllocatorHandle<>& allocator) override;
@@ -95,7 +95,7 @@ namespace nova::renderer::rhi {
 
         Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory, mem::AllocatorHandle<>& allocator) override;
 
-        void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) override;
+        void write_data_to_buffer(const void* data, mem::Bytes num_bytes, mem::Bytes offset, const Buffer* buffer) override;
 
         Image* create_image(const shaderpack::TextureCreateInfo& info, mem::AllocatorHandle<>& allocator) override;
 
@@ -204,7 +204,7 @@ namespace nova::renderer::rhi {
          * \return The index of the memory type with the desired flags, or VK_MAX_MEMORY_TYPES if no memory types match the given flags
          */
         [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags,
-                                                           MemorySearchMode search_mode = MemorySearchMode::Fuzzy) const;
+                                                           MemorySearchMode search_mode = MemorySearchMode::Fuzzy);
 
         [[nodiscard]] VkShaderModule create_shader_module(const std::pmr::vector<uint32_t>& spirv) const;
 

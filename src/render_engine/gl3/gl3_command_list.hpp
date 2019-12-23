@@ -26,12 +26,12 @@ namespace nova::renderer::rhi {
 
     struct Gl3BufferCopyCommand {
         GLuint destination_buffer;
-        uint64_t destination_offset;
+        mem::Bytes destination_offset;
 
         GLuint source_buffer;
-        uint64_t source_offset;
+        mem::Bytes source_offset;
 
-        uint64_t num_bytes;
+        mem::Bytes num_bytes;
     };
 
     struct Gl3ExecuteCommandListsCommand {
@@ -122,11 +122,11 @@ namespace nova::renderer::rhi {
                                PipelineStageFlags stages_after_barrier,
                                const std::pmr::vector<ResourceBarrier>& barriers) override;
 
-        void copy_buffer(Buffer * destination_buffer,
-                         uint64_t destination_offset,
-                         Buffer * source_buffer,
-                         uint64_t source_offset,
-                         uint64_t num_bytes) override;
+        void copy_buffer(Buffer* destination_buffer,
+                         mem::Bytes destination_offset,
+                         Buffer* source_buffer,
+                         mem::Bytes source_offset,
+                         mem::Bytes num_bytes) override;
 
         void execute_command_lists(const std::pmr::vector<CommandList*>& lists) override;
 
