@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "nova_renderer/command_list.hpp"
+#include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 
 // idk maybe this header is included in places that already include Vulkan? Either way I want this include here and not anywhere else

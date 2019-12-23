@@ -5,11 +5,13 @@
 #include <mutex>
 #include <string>
 
-#include "nova_renderer/device_memory_resource.hpp"
+#include "nova_renderer/frontend/rendergraph.hpp"
+#include "nova_renderer/memory/polyalloc.hpp"
 #include "nova_renderer/nova_settings.hpp"
-#include "nova_renderer/polyalloc.hpp"
-#include "nova_renderer/render_engine.hpp"
 #include "nova_renderer/renderdoc_app.h"
+#include "nova_renderer/rhi/device_memory_resource.hpp"
+#include "nova_renderer/rhi/forward_decls.hpp"
+#include "nova_renderer/rhi/render_engine.hpp"
 
 #include "constants.hpp"
 #include "frontend/procedural_mesh.hpp"
@@ -22,118 +24,18 @@ namespace spirv_cross {
 } // namespace spirv_cross
 
 namespace nova::renderer {
+    class UiRenderpass;
+
     namespace rhi {
         class Swapchain;
     }
 
 #pragma region Runtime optimized data
-    template <typename RenderCommandType>
-    struct MeshBatch {
-        rhi::Buffer* vertex_buffer = nullptr;
-        rhi::Buffer* index_buffer = nullptr;
-
-        /*!
-         * \brief A buffer to hold all the per-draw data
-         *
-         * For example, a non-animated mesh just needs a mat4 for its model matrix
-         *
-         * This buffer gets re-written to every frame, since the number of renderables in this mesh batch might have changed. If there's
-         * more renderables than the buffer can hold, it gets reallocated from the RHI
-         */
-        rhi::Buffer* per_renderable_data = nullptr;
-
-        std::vector<RenderCommandType> commands;
-    };
-
-    template <typename RenderCommandType>
-    struct ProceduralMeshBatch {
-        MapAccessor<MeshId, ProceduralMesh> mesh;
-
-        /*!
-         * \brief A buffer to hold all the per-draw data
-         *
-         * For example, a non-animated mesh just needs a mat4 for its model matrix
-         *
-         * This buffer gets re-written to every frame, since the number of renderables in this mesh batch might have changed. If there's
-         * more renderables than the buffer can hold, it gets reallocated from the RHI
-         */
-        rhi::Buffer* per_renderable_data = nullptr;
-
-        std::vector<RenderCommandType> commands;
-
-        ProceduralMeshBatch(std::unordered_map<MeshId, ProceduralMesh>* meshes, const MeshId key) : mesh(meshes, key) {}
-    };
-
-    struct MaterialPass {
-        // Descriptors for the material pass
-
-        std::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
-        std::vector<ProceduralMeshBatch<StaticMeshRenderCommand>> static_procedural_mesh_draws;
-
-        std::vector<rhi::DescriptorSet*> descriptor_sets;
-        const rhi::PipelineInterface* pipeline_interface = nullptr;
-    };
-
-    struct Pipeline {
-        rhi::Pipeline* pipeline = nullptr;
-
-        std::vector<MaterialPass> passes;
-    };
-
-    struct Renderpass {
-        uint32_t id = 0;
-
-        rhi::Renderpass* renderpass = nullptr;
-        rhi::Framebuffer* framebuffer = nullptr;
-
-        std::vector<Pipeline> pipelines;
-
-        bool writes_to_backbuffer = false;
-
-        std::vector<rhi::ResourceBarrier> read_texture_barriers;
-        std::vector<rhi::ResourceBarrier> write_texture_barriers;
-    };
-
     struct Mesh {
         rhi::Buffer* vertex_buffer = nullptr;
         rhi::Buffer* index_buffer = nullptr;
 
         uint32_t num_indices = 0;
-    };
-#pragma endregion
-
-#pragma region metadata
-    struct FullMaterialPassName {
-        std::string material_name;
-        std::string pass_name;
-
-        bool operator==(const FullMaterialPassName& other) const;
-    };
-
-    struct FullMaterialPassNameHasher {
-        std::size_t operator()(const FullMaterialPassName& name) const;
-    };
-
-    struct MaterialPassKey {
-        uint32_t renderpass_index;
-        uint32_t pipeline_index;
-        uint32_t material_pass_index;
-    };
-
-    struct MaterialPassMetadata {
-        shaderpack::MaterialPass data;
-    };
-
-    struct PipelineMetadata {
-        shaderpack::PipelineCreateInfo data;
-
-        std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher> material_metadatas{};
-    };
-
-    struct RenderpassMetadata {
-        shaderpack::RenderPassCreateInfo data;
-
-        std::unordered_map<std::string, PipelineMetadata> pipeline_metadata{};
     };
 #pragma endregion
 
@@ -152,7 +54,6 @@ namespace nova::renderer {
 
         NovaRenderer(NovaRenderer&& other) noexcept = delete;
         NovaRenderer& operator=(NovaRenderer&& other) noexcept = delete;
-
         NovaRenderer(const NovaRenderer& other) = delete;
         NovaRenderer& operator=(const NovaRenderer& other) = delete;
 
@@ -172,6 +73,23 @@ namespace nova::renderer {
          * \param shaderpack_name The name of the shaderpack to load
          */
         void load_shaderpack(const std::string& shaderpack_name);
+
+        /*!
+         * \brief Gives Nova a function to use to render UI
+         *
+         * This function will be executed inside the builtin UI renderpass. This renderpass takes the output of the 3D renderer, adds the UI
+         * on top of it, and writes that all to the backbuffer
+         *
+         * The first parameter to the function is the command list it must record UI rendering into, and the second parameter is the
+         * rendering context for the current frame
+         *
+         * Before calling the UI render function, Nova records commands to begin a renderpass with one RGBA8 color attachment and one D24S8
+         * depth/stencil attachment. After calling this function, Nova records commands to end that same renderpass. This allows the host
+         * application to only care about rendering the UI, instead of worrying about any pass scheduling concerns
+         *
+         * \param ui_renderpass The renderpass to use for UI
+         */
+        void set_ui_renderpass(const std::shared_ptr<Renderpass>& ui_renderpass);
 
         /*!
          * \brief Executes a single frame
@@ -210,6 +128,11 @@ namespace nova::renderer {
          * \param mesh_to_destroy The handle of the mesh you want to destroy
          */
         void destroy_mesh(MeshId mesh_to_destroy);
+#pragma endregion
+
+// TODO: make a resource manager of some sort and name it something that doesn't make graphite mad
+#pragma region Resources
+        [[nodiscard]] rhi::Buffer* get_builtin_buffer(const std::string& buffer_name) const;
 #pragma endregion
 
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
@@ -268,15 +191,24 @@ namespace nova::renderer {
 
         void create_global_sync_objects();
 
+        void create_builtin_textures();
+
         void create_uniform_buffers();
+
+        void create_builtin_renderpasses();
 #pragma endregion
 
-#pragma region Shaderpack
+#pragma region Renderpack
         using PipelineReturn = std::tuple<Pipeline, PipelineMetadata>;
 
         bool shaderpack_loaded = false;
 
         std::mutex shaderpack_loading_mutex;
+#pragma endregion
+
+#pragma region Rendergraph
+        std::unordered_map<std::string, rhi::Image*> builtin_images;
+        std::unordered_map<std::string, std::shared_ptr<Renderpass>> builtin_renderpasses;
 
         /*!
          * \brief The renderpasses in the shaderpack, in submission order
@@ -287,7 +219,7 @@ namespace nova::renderer {
          *
          * Basically this vector contains all the data you need to render a frame
          */
-        std::vector<Renderpass> renderpasses;
+        std::vector<std::shared_ptr<Renderpass>> renderpasses;
 
         std::unordered_map<std::string, rhi::Image*> dynamic_textures;
         std::unordered_map<std::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
@@ -297,6 +229,27 @@ namespace nova::renderer {
         void create_render_passes(const std::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
                                   const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
                                   const std::vector<shaderpack::MaterialData>& materials);
+
+        /*!
+         * \brief Creates a single renderpass
+         *
+         * \param pipelines Create infos for all the pipelines that might use
+         * \param materials All the materials that are relevant to the renderer
+         * \param descriptor_pool Descriptor pool to use to allocate this renderpass's descriptors
+         * \param create_info Information about how to make the renderpass
+         * \param renderpass A pointer to a valid Renderpass object for this method to fill out
+         *
+         * \note The renderpass shared pointer comes from outside because the builtin passes need to use their own classes, but user passes
+         * need to use the default class. This isn't great but I like it a lot better than making this method templated
+         *
+         * TODO: Don't create pipelines or materials in this method. Split that out, so we can take pipelines and materials out of the
+         * renderpass struct
+         */
+        void add_render_pass(const shaderpack::RenderPassCreateInfo& create_info,
+                             const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
+                             const std::vector<shaderpack::MaterialData>& materials,
+                             rhi::DescriptorPool* descriptor_pool,
+                             const std::shared_ptr<Renderpass>& renderpass);
 
         void create_materials_for_pipeline(
             Pipeline& pipeline,
@@ -343,9 +296,9 @@ namespace nova::renderer {
                                              const spirv_cross::Resource& resource,
                                              rhi::DescriptorType type);
 
-        void destroy_render_passes();
-
         void destroy_dynamic_resources();
+
+        void destroy_renderpasses();
 #pragma endregion
 
 #pragma region Meshes
@@ -364,16 +317,10 @@ namespace nova::renderer {
 
         std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;
 
-        std::vector<RenderpassMetadata> renderpass_metadatas;
+        std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
         std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
 
-        void record_renderpass(Renderpass& renderpass, rhi::CommandList* cmds);
-
-        void record_pipeline(Pipeline& pipeline, rhi::CommandList* cmds);
-        void record_material_pass(MaterialPass& pass, rhi::CommandList* cmds);
-
-        void record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
-        void record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch, rhi::CommandList* cmds);
+        std::mutex ui_function_mutex;
 #pragma endregion
     };
 } // namespace nova::renderer

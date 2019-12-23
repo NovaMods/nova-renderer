@@ -1,7 +1,7 @@
-#include "logger.hpp"
+#include "nova_renderer/util/logger.hpp"
 
 namespace nova::renderer {
-	Logger Logger::instance;
+    Logger Logger::instance;
 
     void Logger::add_log_handler(LogLevel level, const std::function<void(std::string)>& log_handler) {
         log_handlers.emplace(level, log_handler);

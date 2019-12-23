@@ -1,4 +1,5 @@
 #include "gl3_swapchain.hpp"
+
 #include "gl3_structs.hpp"
 
 namespace nova::renderer::rhi {
@@ -20,7 +21,5 @@ namespace nova::renderer::rhi {
         return ret_val;
     }
 
-    void Gl3Swapchain::present(uint32_t /* image_idx */) {
-        glFlush();
-    }
+    void Gl3Swapchain::present(uint32_t /* image_idx */) { glFlush(); }
 } // namespace nova::renderer::rhi

@@ -12,9 +12,8 @@ typedef int Bool; // Because X11 is stupid
 #include <GLFW/glfw3native.h>
 
 #include "nova_renderer/nova_renderer.hpp"
+#include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/platform.hpp"
-
-#include "../util/logger.hpp"
 
 void glfw_error_callback(const int error, const char* desc) { NOVA_LOG(ERROR) << "GLFW error(" << error << ") " << desc; }
 

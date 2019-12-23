@@ -3,17 +3,11 @@
 #include <cstdint> // needed for uint****
 #include <vector>
 
-#include "nova_renderer/rhi_enums.hpp"
-#include "nova_renderer/util/utils.hpp"
+#include "nova_renderer/rhi/forward_decls.hpp"
+#include "nova_renderer/rhi/rhi_enums.hpp"
+#include "nova_renderer/rhi/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
-    struct Buffer;
-    struct DescriptorSet;
-    struct Framebuffer;
-    struct Pipeline;
-    struct PipelineInterface;
-    struct Renderpass;
-    struct ResourceBarrier;
 
     /*!
      * \brief An API-agnostic command list

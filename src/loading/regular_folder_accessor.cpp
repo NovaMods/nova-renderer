@@ -1,6 +1,6 @@
 #include "regular_folder_accessor.hpp"
 
-#include "../util/logger.hpp"
+#include "nova_renderer/util/logger.hpp"
 
 namespace nova::renderer {
     RegularFolderAccessor::RegularFolderAccessor(const fs::path& folder) : FolderAccessorBase(folder) {}
@@ -32,8 +32,7 @@ namespace nova::renderer {
         std::fseek(resource_file, 0, SEEK_END);
         const auto file_size = std::ftell(resource_file);
 
-        std::string file_string;
-        file_string.resize(file_size);
+        std::string file_string(file_size, 0);
 
         std::fseek(resource_file, 0, SEEK_SET);
 

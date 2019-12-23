@@ -7,11 +7,12 @@
 #define NOVA_RENDERER_FRAMEBUFFER_MANAGER_H
 
 #include <cstdint>
-#include <glm/glm.hpp>
 #include <vector>
+
+#include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
 
-#include "nova_renderer/swapchain.hpp"
+#include "nova_renderer/rhi/swapchain.hpp"
 
 namespace nova::renderer::rhi {
     struct Fence;
@@ -39,7 +40,7 @@ namespace nova::renderer::rhi {
 
         void present(uint32_t image_idx) override;
 #pragma endregion
-        
+
         [[nodiscard]] VkImageLayout get_layout(uint32_t frame_idx);
         [[nodiscard]] VkExtent2D get_swapchain_extent() const;
         [[nodiscard]] VkFormat get_swapchain_format() const;

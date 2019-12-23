@@ -6,6 +6,8 @@
 #ifndef NOVA_RENDERER_JSON_INTEROP_HPP
 #define NOVA_RENDERER_JSON_INTEROP_HPP
 
+#include <nlohmann/json.hpp>
+
 #include "nova_renderer/shaderpack_data.hpp"
 
 namespace nova::renderer::shaderpack {
@@ -28,6 +30,8 @@ namespace nova::renderer::shaderpack {
     void from_json(const nlohmann::json& j, RenderPassCreateInfo& pass);
 
     void from_json(const nlohmann::json& j, std::vector<RenderPassCreateInfo>& passes);
+
+    void from_json(const nlohmann::json& j, RendergraphData& data);
 
     void from_json(const nlohmann::json& j, MaterialPass& pass);
 

@@ -1,4 +1,5 @@
-#include "nova_renderer/bytes.hpp"
+#include "nova_renderer/memory/bytes.hpp"
+
 #include <ostream>
 
 std::ostream& bvestl::polyalloc::operator<<(std::ostream& os, Bytes b) {

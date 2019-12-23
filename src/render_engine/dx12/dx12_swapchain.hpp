@@ -7,7 +7,7 @@
 #include <wrl/client.h>
 #pragma warning(pop)
 
-#include "nova_renderer/swapchain.hpp"
+#include "nova_renderer/rhi/swapchain.hpp"
 
 namespace nova::renderer::rhi {
     class RenderEngine;

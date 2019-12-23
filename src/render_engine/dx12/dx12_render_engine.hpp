@@ -2,7 +2,9 @@
 
 #include <memory>
 
-#include "nova_renderer/render_engine.hpp"
+// TODO: Don't always use mallocator
+#include "nova_renderer/memory/mallocator.hpp"
+#include "nova_renderer/rhi/render_engine.hpp"
 
 #pragma warning(push, 0)
 #include <d3d12.h>
@@ -13,8 +15,6 @@
 #pragma warning(pop)
 
 #include "dx12_swapchain.hpp"
-// TODO: Not always use mallocator
-#include "../../memory/mallocator.hpp"
 
 // Make sure we don't pollute includees with windows.h problems
 // TODO: Convert to modules and watch this problem _finally_ start to go away

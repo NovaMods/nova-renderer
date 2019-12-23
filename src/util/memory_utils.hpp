@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nova_renderer/bytes.hpp"
+#include "nova_renderer/memory/bytes.hpp"
 
 /*!
  * \brief Some useful utilities

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nova_renderer/polyalloc.hpp"
+#include "nova_renderer/memory/polyalloc.hpp"
 
 namespace bvestl::polyalloc {
     /*!

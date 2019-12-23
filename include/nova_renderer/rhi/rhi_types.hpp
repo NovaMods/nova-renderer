@@ -5,10 +5,9 @@
 
 #include <glm/glm.hpp>
 
-#include "nova_renderer/rhi_enums.hpp"
-
-#include "device_memory_resource.hpp"
-#include "shaderpack_data.hpp"
+#include "nova_renderer/rhi/forward_decls.hpp"
+#include "nova_renderer/rhi/rhi_enums.hpp"
+#include "nova_renderer/shaderpack_data.hpp"
 
 namespace nova::renderer::rhi {
 
@@ -165,17 +164,17 @@ namespace nova::renderer::rhi {
         Buffer* buffer;
     };
 
-	union DescriptorResourceInfo {
-		/*!
-		 * \brief Information to update an image descriptor
-		 */
-		DescriptorImageInfo image_info;
+    union DescriptorResourceInfo {
+        /*!
+         * \brief Information to update an image descriptor
+         */
+        DescriptorImageInfo image_info;
 
-		/*!
-		 * \brief Information to update a buffer descriptor
-		 */
-		DescriptorBufferInfo buffer_info;
-	};
+        /*!
+         * \brief Information to update a buffer descriptor
+         */
+        DescriptorBufferInfo buffer_info;
+    };
 
     struct DescriptorSetWrite {
         /*!
@@ -196,7 +195,8 @@ namespace nova::renderer::rhi {
         /*!
          * \brief All the resources to bind to this descriptor
          *
-         * You may only bind multiple resources if the descriptor is an array descriptor. Knowing whether you're binding to an array descriptor or not is your responsibility
+         * You may only bind multiple resources if the descriptor is an array descriptor. Knowing whether you're binding to an array
+         * descriptor or not is your responsibility
          */
         std::vector<DescriptorResourceInfo> resources;
     };

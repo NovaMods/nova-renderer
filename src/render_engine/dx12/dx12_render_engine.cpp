@@ -5,10 +5,12 @@
 #pragma warning pop
 
 #include "nova_renderer/constants.hpp"
+#include "nova_renderer/memory//bytes.hpp"
+#include "nova_renderer/rhi/device_memory_resource.hpp"
+#include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/platform.hpp"
 
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
-#include "../../util/logger.hpp"
 #include "../../util/windows_utils.hpp"
 #include "d3dx12.h"
 #include "dx12_command_list.hpp"

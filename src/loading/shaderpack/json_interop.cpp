@@ -138,4 +138,9 @@ namespace nova::renderer::shaderpack {
             passes.push_back(node.get<RenderPassCreateInfo>());
         }
     }
+
+    void from_json(const nlohmann::json& j, RendergraphData& data) {
+        data.passes = get_json_array<RenderPassCreateInfo>(j, "passes");
+        data.builtin_passes = get_json_array<std::string>(j, "builtin_passes");
+    }
 } // namespace nova::renderer::shaderpack

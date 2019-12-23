@@ -1,4 +1,4 @@
-#include "nova_renderer/swapchain.hpp"
+#include "nova_renderer/rhi/swapchain.hpp"
 
 namespace nova::renderer::rhi {
     Swapchain::Swapchain(const uint32_t num_images, const glm::uvec2& size) : num_images(num_images), size(size) {}

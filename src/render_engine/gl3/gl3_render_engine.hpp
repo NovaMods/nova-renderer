@@ -1,15 +1,13 @@
 #pragma once
 
-#include "nova_renderer/render_engine.hpp"
+// TODO: Don't always use mallocator
+#include "nova_renderer/memory/mallocator.hpp"
+#include "nova_renderer/rhi/render_engine.hpp"
 #include "nova_renderer/window.hpp"
 
 // BE CAREFUL WHERE WE INCLUDE GLAD
-#include "glad/glad.h"
-
 #include "gl3_command_list.hpp"
-
-// TODO: Don't always use mallocator
-#include "../../memory/mallocator.hpp"
+#include "glad/glad.h"
 
 namespace nova::renderer::rhi {
     struct NvGlDeviceInfo {

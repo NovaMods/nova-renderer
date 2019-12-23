@@ -1,18 +1,9 @@
-/*!
- * \brief Contains a bunch of utility functions which may or may not be actually used anywhere
- *
- * \author David
- * \date 18-May-16.
- */
-
-#ifndef RENDERER_UTILS_H
-#define RENDERER_UTILS_H
+#pragma once
 
 #include <algorithm>
+#include <fstream>
 #include <string>
 #include <vector>
-
-#include <fstream>
 
 #include "filesystem.hpp"
 
@@ -44,8 +35,6 @@ namespace nova::renderer {
     void write_to_file(const std::string& data, const fs::path& filepath);
 
     void write_to_file(const std::vector<uint32_t>& data, const fs::path& filepath);
-    
+
 #define FORMAT(s, ...) fmt::format(fmt(s), __VA_ARGS__)
 } // namespace nova::renderer
-
-#endif // RENDERER_UTILS_H

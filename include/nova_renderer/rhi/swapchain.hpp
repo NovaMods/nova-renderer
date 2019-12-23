@@ -17,11 +17,11 @@ namespace nova::renderer::rhi {
 
         /*!
          * \brief Acquires the next image in the swapchain
-         * 
+         *
          * \return The index of the swapchain image we just acquired
          */
         virtual uint8_t acquire_next_swapchain_image() = 0;
-        
+
         /*!
          * \brief Presents the specified swapchain image
          */

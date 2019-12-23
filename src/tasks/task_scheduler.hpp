@@ -9,10 +9,12 @@
 #include <atomic>
 #include <cstdint>
 #include <functional>
-#include <memory>
 #include <future>
+#include <memory>
+
+#include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/utils.hpp"
-#include "../util/logger.hpp"
+
 #include "condition_counter.hpp"
 #include "wait_free_queue.hpp"
 

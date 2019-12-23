@@ -3,9 +3,9 @@
 #include <spirv_glsl.hpp>
 
 #include "nova_renderer/renderables.hpp"
+#include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/platform.hpp"
 
-#include "../../util/logger.hpp"
 #include "gl3_command_list.hpp"
 #include "gl3_structs.hpp"
 #include "gl3_swapchain.hpp"

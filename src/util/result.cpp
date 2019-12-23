@@ -5,9 +5,8 @@
 namespace ntl {
     NovaError::NovaError(const std::string& message) : message(std::move(message)) {}
 
-    NovaError::NovaError(const std::string& message, NovaError cause) : message(std::move(message)),
-    cause(std::make_unique<NovaError>(std::forward<NovaError>(cause))) {
-    }
+    NovaError::NovaError(const std::string& message, NovaError cause)
+        : message(std::move(message)), cause(std::make_unique<NovaError>(std::forward<NovaError>(cause))) {}
 
     std::string NovaError::to_string() const {
         if(cause) {
@@ -16,4 +15,4 @@ namespace ntl {
             return message;
         }
     }
-} // namespace nova::renderer
+} // namespace ntl

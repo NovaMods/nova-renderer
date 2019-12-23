@@ -1,19 +1,17 @@
 #include "renderdoc.hpp"
 
-#include "../util/logger.hpp"
+#include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/platform.hpp"
 #include "nova_renderer/util/utils.hpp"
 
 #if defined(NOVA_WINDOWS)
 #include "nova_renderer/util/windows.hpp"
+
 #include "../util/windows_utils.hpp"
 
-// Fucking hell
-#ifdef ERROR
-#undef ERROR
-#endif
 #elif defined(NOVA_LINUX)
 #include <dlfcn.h>
+
 #include "../util/linux_utils.hpp"
 #endif
 
@@ -47,7 +45,8 @@ namespace nova::renderer {
 
         const auto get_api = reinterpret_cast<pRENDERDOC_GetAPI>(dlsym(renderdoc_so, "RENDERDOC_GetAPI"));
         if(get_api == nullptr) {
-            return ntl::Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not find the RenderDoc API loading function. Error: {:s}", dlerror()));
+            return ntl::Result<RENDERDOC_API_1_3_0*>(
+                MAKE_ERROR("Could not find the RenderDoc API loading function. Error: {:s}", dlerror()));
         }
 #endif
 

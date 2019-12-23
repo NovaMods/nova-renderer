@@ -8,6 +8,8 @@
 #include <glslang/Include/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
 
+#include "nova_renderer/constants.hpp"
+
 #include "../../tasks/task_scheduler.hpp"
 #include "../folder_accessor.hpp"
 #include "../json_utils.hpp"
@@ -21,6 +23,7 @@
 
 namespace nova::renderer::shaderpack {
     // Removed from the GLSLang version we're using
+    // TODO: Copy and fill in with values from the RHI so we don't accidentally limit a shader
     const TBuiltInResource default_built_in_resource = {
         /* .MaxLights = */ 32,
         /* .MaxClipPlanes = */ 6,
@@ -131,7 +134,7 @@ namespace nova::renderer::shaderpack {
 
     ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
 
-    ntl::Result<std::vector<RenderPassCreateInfo>> load_passes_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
+    ntl::Result<RendergraphData> load_rendergraph_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
 
     std::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<FolderAccessorBase>& folder_access);
     PipelineCreateInfo load_single_pipeline(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& pipeline_path);
@@ -149,11 +152,16 @@ namespace nova::renderer::shaderpack {
     void fill_in_render_target_formats(ShaderpackData& data) {
         const auto& textures = data.resources.textures;
 
-        for(auto& pass : data.passes) {
+        for(auto& pass : data.graph_data.passes) {
             for(auto& output : pass.texture_outputs) {
-                if(output.name == "Backbuffer") {
+                if(output.name == BACKBUFFER_NAME) {
                     // Backbuffer is a special snowflake
                     continue;
+
+                } else if(output.name == "NovaFinal") {
+                    // Another special snowflake
+                    continue;
+                    // TODO: Figure out how to tell the loader about all the builtin resources
                 }
 
                 if(const auto& tex_itr = std::find_if(textures.begin(),
@@ -197,7 +205,12 @@ namespace nova::renderer::shaderpack {
 
         ShaderpackData data{};
         data.resources = load_dynamic_resources_file(folder_access);
-        data.passes = load_passes_file(folder_access).value;    // TODO: Gracefully handle errors
+        const auto& graph_data = load_rendergraph_file(folder_access);
+        if(graph_data) {
+            data.graph_data = *graph_data;
+        } else {
+            NOVA_LOG(ERROR) << "Could not load render graph file. Error: " << graph_data.error.to_string();
+        }
         data.pipelines = load_pipeline_files(folder_access);
         data.materials = load_material_files(folder_access);
 
@@ -219,6 +232,8 @@ namespace nova::renderer::shaderpack {
             // regular folder in shaderpacks folder
             return std::make_shared<RegularFolderAccessor>(path_to_shaderpack);
         }
+
+        NOVA_LOG(FATAL) << "No shaderpack accessor implementation found for name " << shaderpack_name;
 
         return {};
     }
@@ -245,18 +260,36 @@ namespace nova::renderer::shaderpack {
         return {};
     }
 
-    ntl::Result<std::vector<RenderPassCreateInfo>> load_passes_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
+    ntl::Result<RendergraphData> load_rendergraph_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         NOVA_LOG(TRACE) << "load_passes_file called";
-        const auto passes_bytes = folder_access->read_text_file("passes.json");
+        const auto passes_bytes = folder_access->read_text_file("rendergraph.json");
         try {
             const auto json_passes = nlohmann::json::parse(passes_bytes);
-            const auto passes = json_passes.get<std::vector<RenderPassCreateInfo>>();
 
-            return order_passes(passes);
+            auto rendergraph_file = json_passes.get<RendergraphData>();
+
+            const auto final_itr = std::find_if(rendergraph_file.passes.begin(),
+                                                rendergraph_file.passes.end(),
+                                                [&](const RenderPassCreateInfo& pass) {
+                                                    const auto output_itr = std::find_if(pass.texture_outputs.begin(),
+                                                                                         pass.texture_outputs.end(),
+                                                                                         [](const TextureAttachmentInfo& tex) {
+                                                                                             return tex.name == BACKBUFFER_NAME;
+                                                                                         });
+
+                                                    return output_itr != pass.texture_outputs.end();
+                                                });
+
+            if(final_itr != rendergraph_file.passes.end()) {
+                return ntl::Result<RendergraphData>(rendergraph_file);
+
+            } else {
+                return ntl::Result<RendergraphData>(
+                    MAKE_ERROR("At least one pass must write to the render target named {:s}", BACKBUFFER_NAME));
+            }
         }
         catch(nlohmann::json::parse_error& err) {
-            return ntl::Result<std::vector<RenderPassCreateInfo>>(
-                MAKE_ERROR("Could not parse your shaderpack's passes.json: {:s}", err.what()));
+            return ntl::Result<RendergraphData>(MAKE_ERROR("Could not parse your shaderpack's passes.json: {:s}", err.what()));
         }
     }
 

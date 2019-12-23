@@ -5,7 +5,8 @@
 
 #include "vulkan_swapchain.hpp"
 
-#include "../../util/logger.hpp"
+#include "nova_renderer/util/logger.hpp"
+
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
 
@@ -103,7 +104,7 @@ namespace nova::renderer::rhi {
             barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
             barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // Each swapchain image **will** be rendered to before it is
-                                                                          // presented
+                                                                 // presented
             barrier.subresourceRange.baseMipLevel = 0;
             barrier.subresourceRange.levelCount = 1;
             barrier.subresourceRange.baseArrayLayer = 0;

@@ -1,4 +1,4 @@
-#include "nova_renderer/device_memory_resource.hpp"
+#include "nova_renderer/rhi/device_memory_resource.hpp"
 
 namespace nova::renderer {
     DeviceMemoryResource::DeviceMemoryResource(rhi::DeviceMemory* memory, bvestl::polyalloc::AllocationStrategy* allocation_strategy)

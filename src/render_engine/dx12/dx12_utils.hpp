@@ -4,8 +4,8 @@
 #include <d3d12.h>
 #pragma warning(pop)
 
-#include <nova_renderer/shaderpack_data.hpp>
-#include "nova_renderer/command_list.hpp"
+#include "nova_renderer/rhi/command_list.hpp"
+#include "nova_renderer/shaderpack_data.hpp"
 
 namespace nova::renderer::rhi {
     [[nodiscard]] D3D12_RESOURCE_STATES to_dx12_state(ResourceState state);
@@ -37,4 +37,4 @@ namespace nova::renderer::rhi {
 #else
 #define CHECK_ERROR(expr, msg) expr;
 #endif
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi

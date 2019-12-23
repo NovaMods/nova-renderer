@@ -2,19 +2,19 @@
 
 #include <memory>
 
-#include "nova_renderer/command_list.hpp"
+#include "nova_renderer/memory/polyalloc.hpp"
 #include "nova_renderer/nova_settings.hpp"
-#include "nova_renderer/rhi_types.hpp"
+#include "nova_renderer/rhi/command_list.hpp"
+#include "nova_renderer/rhi/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/window.hpp"
 
-namespace nova::renderer::rhi {
-    struct Fence;
-    struct Image;
-    struct Semaphore;
+namespace nova::renderer {
+    struct DeviceMemoryResource;
+} // namespace nova::renderer
 
-    class Swapchain;
+namespace nova::renderer::rhi {
 
     /*!
      * \brief All the GPU architectures that Nova cares about, at whatever granularity is most useful
@@ -133,6 +133,11 @@ namespace nova::renderer::rhi {
          */
         virtual void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) = 0;
 
+        /*!
+         * \brief Creates an empty image
+         *
+         * Useful when you want a render target, or you want to initialize the image on your own
+         */
         [[nodiscard]] virtual Image* create_image(const shaderpack::TextureCreateInfo& info) = 0;
 
         [[nodiscard]] virtual Semaphore* create_semaphore() = 0;

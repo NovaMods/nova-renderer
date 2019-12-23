@@ -1,9 +1,10 @@
 #pragma once
 
+#include <memory>
+
 #include <miniz.h>
 
 #include "folder_accessor.hpp"
-#include <memory>
 
 namespace nova::renderer {
     struct FileTreeNode {
