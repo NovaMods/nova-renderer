@@ -29,7 +29,7 @@ namespace nova::renderer::shaderpack {
 
     void from_json(const nlohmann::json& j, RenderPassCreateInfo& pass);
 
-    void from_json(const nlohmann::json& j, std::vector<RenderPassCreateInfo>& passes);
+    void from_json(const nlohmann::json& j, std::pmr::vector<RenderPassCreateInfo>& passes);
 
     void from_json(const nlohmann::json& j, RendergraphData& data);
 

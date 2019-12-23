@@ -41,20 +41,23 @@ namespace nova::renderer::rhi {
                                                    const glm::uvec2& framebuffer_size) override;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
-                                        const std::vector<Image*>& color_attachments,
+                                        const std::pmr::vector<Image*>& color_attachments,
                                         const std::optional<Image*> depth_attachment,
                                         const glm::uvec2& framebuffer_size) override;
 
         DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images, uint32_t num_samplers, uint32_t num_uniform_buffers) override;
 
-        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface, DescriptorPool* pool) override;
+        std::pmr::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
+                                                           DescriptorPool* pool,
+                                                           memory::AllocatorHandle<>& allocator) override;
 
-        void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override;
+        void update_descriptor_sets(std::pmr::vector<DescriptorSetWrite>& writes) override;
 
         ntl::Result<PipelineInterface*> create_pipeline_interface(
             const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
-            const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override;
+            const std::pmr::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
+            memory::AllocatorHandle<>& allocator) override;
 
         ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override;
 
@@ -69,16 +72,16 @@ namespace nova::renderer::rhi {
 
         Image* create_image(const shaderpack::TextureCreateInfo& info) override;
 
-        Semaphore* create_semaphore() override;
-        std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override;
+        Semaphore* create_semaphore(memory::AllocatorHandle<>& allocator) override;
+        std::pmr::vector<Semaphore*> create_semaphores(uint32_t num_semaphores, memory::AllocatorHandle<>& allocator) override;
 
         Fence* create_fence(bool signaled = false) override;
 
-        std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override;
+        std::pmr::vector<Fence*> create_fences(memory::AllocatorHandle<>& allocator, uint32_t num_fences, bool signaled = false) override;
 
-        void wait_for_fences(std::vector<Fence*> fences) override;
+        void wait_for_fences(std::pmr::vector<Fence*> fences) override;
 
-        void reset_fences(const std::vector<Fence*>& fences) override;
+        void reset_fences(const std::pmr::vector<Fence*>& fences) override;
 
         void destroy_renderpass(Renderpass* pass) override;
 
@@ -86,18 +89,21 @@ namespace nova::renderer::rhi {
 
         void destroy_pipeline_interface(PipelineInterface* pipeline_interface) override;
 
-        void destroy_pipeline(Pipeline* pipeline) override;
-        void destroy_texture(Image* resource) override;
-        void destroy_semaphores(std::vector<Semaphore*>& semaphores) override;
-        void destroy_fences(std::vector<Fence*>& fences) override;
+        void destroy_pipeline(Pipeline* pipeline, memory::AllocatorHandle<>& allocator) override;
+
+        void destroy_texture(Image* resource, memory::AllocatorHandle<>& allocator) override;
+
+        void destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores, memory::AllocatorHandle<>& allocator) override;
+
+        void destroy_fences(std::pmr::vector<Fence*>& fences, memory::AllocatorHandle<>& allocator) override;
 
         CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level command_list_type) override;
 
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
                                  Fence* fence_to_signal = nullptr,
-                                 const std::vector<Semaphore*>& wait_semaphores = {},
-                                 const std::vector<Semaphore*>& signal_semaphores = {}) override;
+                                 const std::pmr::vector<Semaphore*>& wait_semaphores = {},
+                                 const std::pmr::vector<Semaphore*>& signal_semaphores = {}) override;
 
     private:
         NvGlDeviceInfo gl_info;
@@ -132,5 +138,5 @@ namespace nova::renderer::rhi {
 #pragma endregion
     };
 
-    ntl::Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, GLenum shader_type);
+    ntl::Result<GLuint> compile_shader(const std::pmr::vector<uint32_t>& spirv, GLenum shader_type);
 } // namespace nova::renderer::rhi

@@ -12,7 +12,7 @@ namespace nova::renderer {
 
         std::string read_text_file(const fs::path& resource_path) override final;
 
-        std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override final;
+        std::pmr::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override final;
 
     protected:
         bool does_resource_exist_on_filesystem(const fs::path& resource_path) override final;

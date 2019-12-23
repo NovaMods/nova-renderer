@@ -325,7 +325,7 @@ namespace nova::renderer {
         builtin_renderpasses["NovaUI"] = ui_renderpass;
     }
 
-    void NovaRenderer::create_dynamic_textures(const std::vector<shaderpack::TextureCreateInfo>& texture_create_infos) {
+    void NovaRenderer::create_dynamic_textures(const std::pmr::vector<shaderpack::TextureCreateInfo>& texture_create_infos) {
         for(const shaderpack::TextureCreateInfo& create_info : texture_create_infos) {
             rhi::Image* new_texture = rhi->create_image(create_info);
             dynamic_textures.emplace(create_info.name, new_texture);
@@ -333,9 +333,9 @@ namespace nova::renderer {
         }
     }
 
-    void NovaRenderer::create_render_passes(const std::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
-                                            const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
-                                            const std::vector<shaderpack::MaterialData>& materials) {
+    void NovaRenderer::create_render_passes(const std::pmr::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
+                                            const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipelines,
+                                            const std::pmr::vector<shaderpack::MaterialData>& materials) {
 
         rhi->set_num_renderpasses(static_cast<uint32_t>(pass_create_infos.size()));
 
@@ -355,21 +355,21 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::add_render_pass(const shaderpack::RenderPassCreateInfo& create_info,
-                                       const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
-                                       const std::vector<shaderpack::MaterialData>& materials,
+                                       const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipelines,
+                                       const std::pmr::vector<shaderpack::MaterialData>& materials,
                                        rhi::DescriptorPool* descriptor_pool,
                                        const std::shared_ptr<Renderpass>& renderpass) {
         RenderpassMetadata metadata;
         metadata.data = create_info;
 
-        std::vector<rhi::Image*> color_attachments;
+        std::pmr::vector<rhi::Image*> color_attachments;
         color_attachments.reserve(create_info.texture_outputs.size());
 
         glm::uvec2 framebuffer_size(0);
 
         const auto num_attachments = create_info.depth_texture ? create_info.texture_outputs.size() + 1 :
                                                                  create_info.texture_outputs.size();
-        std::vector<std::string> attachment_errors;
+        std::pmr::vector<std::string> attachment_errors;
         attachment_errors.reserve(num_attachments);
 
         bool writes_to_backbuffer = false;
@@ -505,7 +505,7 @@ namespace nova::renderer {
     void NovaRenderer::create_materials_for_pipeline(
         Pipeline& pipeline,
         std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher>& material_metadatas,
-        const std::vector<shaderpack::MaterialData>& materials,
+        const std::pmr::vector<shaderpack::MaterialData>& materials,
         const std::string& pipeline_name,
         const rhi::PipelineInterface* pipeline_interface,
         rhi::DescriptorPool* descriptor_pool,
@@ -550,7 +550,7 @@ namespace nova::renderer {
         const std::unordered_map<std::string, std::string>& bindings,
         const std::unordered_map<std::string, rhi::ResourceBindingDescription>& descriptor_descriptions) {
 
-        std::vector<rhi::DescriptorSetWrite> writes;
+        std::pmr::vector<rhi::DescriptorSetWrite> writes;
         writes.reserve(bindings.size());
 
         for(const auto& [descriptor_name, resource_name] : bindings) {
@@ -592,7 +592,7 @@ namespace nova::renderer {
 
     ntl::Result<rhi::PipelineInterface*> NovaRenderer::create_pipeline_interface(
         const shaderpack::PipelineCreateInfo& pipeline_create_info,
-        const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+        const std::pmr::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
         const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const {
         std::unordered_map<std::string, rhi::ResourceBindingDescription> bindings;
         bindings.reserve(32); // Probably a good estimate
@@ -640,10 +640,10 @@ namespace nova::renderer {
         return ntl::Result(PipelineReturn{pipeline, metadata});
     }
 
-    void NovaRenderer::get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
+    void NovaRenderer::get_shader_module_descriptors(const std::pmr::vector<uint32_t>& spirv,
                                                      const rhi::ShaderStageFlags shader_stage,
                                                      std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings) {
-        std::vector<uint32_t> spirv_std(spirv.begin(), spirv.end());
+        std::pmr::vector<uint32_t> spirv_std(spirv.begin(), spirv.end());
         const spirv_cross::CompilerGLSL shader_compiler(spirv_std);
         const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
 
@@ -876,7 +876,7 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_global_sync_objects() {
-        const std::vector<rhi::Fence*>& fences = rhi->create_fences(NUM_IN_FLIGHT_FRAMES, true);
+        const std::pmr::vector<rhi::Fence*>& fences = rhi->create_fences(NUM_IN_FLIGHT_FRAMES, true);
         for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
             frame_fences[i] = fences.at(i);
         }

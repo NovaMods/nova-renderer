@@ -9,7 +9,7 @@
 namespace nova::renderer {
     struct FileTreeNode {
         std::string name;
-        std::vector<std::unique_ptr<FileTreeNode>> children;
+        std::pmr::vector<std::unique_ptr<FileTreeNode>> children;
         FileTreeNode* parent = nullptr;
 
         [[nodiscard]] std::string get_full_path() const;
@@ -32,7 +32,7 @@ namespace nova::renderer {
 
         std::string read_text_file(const fs::path& resource_path) override final;
 
-        std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override final;
+        std::pmr::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override final;
 
     private:
         /*!

@@ -9,8 +9,8 @@
 
 namespace nova::renderer {
     // taken from https://www.fluentcpp.com/2017/04/21/how-to-split-a-string-in-c/
-    std::vector<std::string> split(const std::string& s, char delim) {
-        std::vector<std::string> tokens;
+    std::pmr::vector<std::string> split(const std::string& s, char delim) {
+        std::pmr::vector<std::string> tokens;
         std::string token;
         std::istringstream tokenStream(s.c_str());
         while(std::getline(tokenStream, token, delim)) {
@@ -19,7 +19,7 @@ namespace nova::renderer {
         return tokens;
     }
 
-    std::string join(const std::vector<std::string>& strings, const std::string& joiner = ", ") {
+    std::string join(const std::pmr::vector<std::string>& strings, const std::string& joiner = ", ") {
         std::stringstream ss;
         for(size_t i = 0; i < strings.size(); i++) {
             ss << strings[i].c_str();
@@ -68,7 +68,7 @@ namespace nova::renderer {
         os.close();
     }
 
-    void write_to_file(const std::vector<uint32_t>& data, const fs::path& filepath) {
+    void write_to_file(const std::pmr::vector<uint32_t>& data, const fs::path& filepath) {
         std::ofstream os(filepath, std::ios::binary);
         if(os.good()) {
             os.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size() * 4));

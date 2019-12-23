@@ -254,6 +254,6 @@ namespace nova::renderer {
         const NovaSettings* operator->() const;
 
     private:
-        std::vector<ConfigListener*> config_change_listeners;
+        std::pmr::vector<ConfigListener*> config_change_listeners;
     };
 } // namespace nova::renderer

@@ -18,12 +18,12 @@ namespace nova::renderer::rhi {
     VulkanSwapchain::VulkanSwapchain(const uint32_t num_swapchain_images,
                                      VulkanRenderEngine& render_engine,
                                      const glm::uvec2 window_dimensions,
-                                     const std::vector<VkPresentModeKHR>& present_modes)
+                                     const std::pmr::vector<VkPresentModeKHR>& present_modes)
         : Swapchain(num_swapchain_images, window_dimensions), render_engine(render_engine), num_swapchain_images(num_swapchain_images) {
 
         create_swapchain(num_swapchain_images, present_modes, window_dimensions);
 
-        std::vector<VkImage> vk_images = get_swapchain_images();
+        std::pmr::vector<VkImage> vk_images = get_swapchain_images();
 
         if(vk_images.empty()) {
             NOVA_LOG(FATAL) << "The swapchain returned zero images";
@@ -90,8 +90,8 @@ namespace nova::renderer::rhi {
         vkQueuePresentKHR(render_engine.graphics_queue, &present_info);
     }
 
-    void VulkanSwapchain::transition_swapchain_images_into_color_attachment_layout(const std::vector<VkImage>& images) const {
-        std::vector<VkImageMemoryBarrier> barriers;
+    void VulkanSwapchain::transition_swapchain_images_into_color_attachment_layout(const std::pmr::vector<VkImage>& images) const {
+        std::pmr::vector<VkImageMemoryBarrier> barriers;
         barriers.reserve(images.size());
 
         for(const VkImage& image : images) {
@@ -195,7 +195,7 @@ namespace nova::renderer::rhi {
 
     VkFormat VulkanSwapchain::get_swapchain_format() const { return swapchain_format; }
 
-    VkSurfaceFormatKHR VulkanSwapchain::choose_surface_format(const std::vector<VkSurfaceFormatKHR>& formats) {
+    VkSurfaceFormatKHR VulkanSwapchain::choose_surface_format(const std::pmr::vector<VkSurfaceFormatKHR>& formats) {
         VkSurfaceFormatKHR result;
 
         if(formats.size() == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
@@ -215,7 +215,7 @@ namespace nova::renderer::rhi {
         return formats[0];
     }
 
-    VkPresentModeKHR VulkanSwapchain::choose_present_mode(const std::vector<VkPresentModeKHR>& modes) {
+    VkPresentModeKHR VulkanSwapchain::choose_present_mode(const std::pmr::vector<VkPresentModeKHR>& modes) {
         const VkPresentModeKHR desired_mode = VK_PRESENT_MODE_MAILBOX_KHR;
 
         // Mailbox mode is best mode (also not sure why)
@@ -243,7 +243,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanSwapchain::create_swapchain(const uint32_t requested_num_swapchain_images,
-                                           const std::vector<VkPresentModeKHR>& present_modes,
+                                           const std::pmr::vector<VkPresentModeKHR>& present_modes,
                                            const glm::uvec2& window_dimensions) {
 
         const auto surface_format = choose_surface_format(render_engine.gpu.surface_formats);
@@ -335,8 +335,8 @@ namespace nova::renderer::rhi {
         fences.push_back(new VulkanFence{{}, fence});
     }
 
-    std::vector<VkImage> VulkanSwapchain::get_swapchain_images() {
-        std::vector<VkImage> vk_images;
+    std::pmr::vector<VkImage> VulkanSwapchain::get_swapchain_images() {
+        std::pmr::vector<VkImage> vk_images;
 
         vkGetSwapchainImagesKHR(render_engine.device, swapchain, &num_swapchain_images, nullptr);
         vk_images.resize(num_swapchain_images);

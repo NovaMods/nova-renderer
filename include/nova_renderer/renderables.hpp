@@ -27,8 +27,8 @@ namespace nova::renderer {
      * making them use special vertex formats
      */
     struct MeshData {
-        std::vector<FullVertex> vertex_data;
-        std::vector<uint32_t> indices;
+        std::pmr::vector<FullVertex> vertex_data;
+        std::pmr::vector<uint32_t> indices;
     };
 
     using MeshId = uint64_t;
@@ -52,7 +52,7 @@ namespace nova::renderer {
     struct RenderableMetadata {
         RenderableId id = 0;
 
-        std::vector<std::string> passes;
+        std::pmr::vector<std::string> passes;
     };
 
     struct RenderCommand {

@@ -35,7 +35,7 @@ namespace nova::renderer::rhi {
     };
 
     struct Gl3ExecuteCommandListsCommand {
-        std::vector<CommandList*> lists_to_execute;
+        std::pmr::vector<CommandList*> lists_to_execute;
     };
 
     struct Gl3BeginRenderpassCommand {
@@ -48,14 +48,14 @@ namespace nova::renderer::rhi {
 
     struct Gl3BindDescriptorSetsCommand {
         GLuint program;
-        std::vector<Gl3DescriptorSet*> sets;
+        std::pmr::vector<Gl3DescriptorSet*> sets;
         std::unordered_map<std::string, GLuint> uniform_cache;
         std::unordered_map<std::string, ResourceBindingDescription> pipeline_bindings;
         std::unordered_map<std::string, GLuint> uniform_block_indices;
     };
 
     struct Gl3BindVertexBuffersCommand {
-        std::vector<GLuint> buffers;
+        std::pmr::vector<GLuint> buffers;
     };
 
     struct Gl3BindIndexBufferCommand {
@@ -120,7 +120,7 @@ namespace nova::renderer::rhi {
 
         void resource_barriers(PipelineStageFlags stages_before_barrier,
                                PipelineStageFlags stages_after_barrier,
-                               const std::vector<ResourceBarrier>& barriers) override;
+                               const std::pmr::vector<ResourceBarrier>& barriers) override;
 
         void copy_buffer(Buffer * destination_buffer,
                          uint64_t destination_offset,
@@ -128,7 +128,7 @@ namespace nova::renderer::rhi {
                          uint64_t source_offset,
                          uint64_t num_bytes) override;
 
-        void execute_command_lists(const std::vector<CommandList*>& lists) override;
+        void execute_command_lists(const std::pmr::vector<CommandList*>& lists) override;
 
         void begin_renderpass(Renderpass * renderpass, Framebuffer * framebuffer) override;
 
@@ -136,9 +136,9 @@ namespace nova::renderer::rhi {
 
         void bind_pipeline(const Pipeline* pipeline) override;
 
-        void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets, const PipelineInterface* pipeline_interface) override;
+        void bind_descriptor_sets(const std::pmr::vector<DescriptorSet*>& descriptor_sets, const PipelineInterface* pipeline_interface) override;
 
-        void bind_vertex_buffers(const std::vector<Buffer*>& buffers) override;
+        void bind_vertex_buffers(const std::pmr::vector<Buffer*>& buffers) override;
 
         void bind_index_buffer(const Buffer* buffer) override;
 
@@ -147,10 +147,10 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Provides access to the actual command list, so that the GL3 render engine can process the commands
          */
-        [[nodiscard]] std::vector<Gl3Command> get_commands() const;
+        [[nodiscard]] std::pmr::vector<Gl3Command> get_commands() const;
 
     private:
-        std::vector<Gl3Command> commands;
+        std::pmr::vector<Gl3Command> commands;
     };
 } // namespace nova::renderer::rhi
 

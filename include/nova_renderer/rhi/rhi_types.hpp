@@ -199,7 +199,7 @@ namespace nova::renderer::rhi {
          * You may only bind multiple resources if the descriptor is an array descriptor. Knowing whether you're binding to an array
          * descriptor or not is your responsibility
          */
-        std::vector<DescriptorResourceInfo> resources;
+        std::pmr::vector<DescriptorResourceInfo> resources;
     };
 #pragma endregion
 

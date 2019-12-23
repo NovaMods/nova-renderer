@@ -27,7 +27,7 @@ namespace nova::renderer {
          */
         rhi::Buffer* per_renderable_data = nullptr;
 
-        std::vector<RenderCommandType> commands;
+        std::pmr::vector<RenderCommandType> commands;
     };
 
     template <typename RenderCommandType>
@@ -44,16 +44,16 @@ namespace nova::renderer {
          */
         rhi::Buffer* per_renderable_data = nullptr;
 
-        std::vector<RenderCommandType> commands;
+        std::pmr::vector<RenderCommandType> commands;
 
         ProceduralMeshBatch(std::unordered_map<MeshId, ProceduralMesh>* meshes, const MeshId key) : mesh(meshes, key) {}
     };
 
     struct MaterialPass {
-        std::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
-        std::vector<ProceduralMeshBatch<StaticMeshRenderCommand>> static_procedural_mesh_draws;
+        std::pmr::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
+        std::pmr::vector<ProceduralMeshBatch<StaticMeshRenderCommand>> static_procedural_mesh_draws;
 
-        std::vector<rhi::DescriptorSet*> descriptor_sets;
+        std::pmr::vector<rhi::DescriptorSet*> descriptor_sets;
         const rhi::PipelineInterface* pipeline_interface = nullptr;
 
         void record(rhi::CommandList* cmds, FrameContext& ctx) const;
@@ -68,7 +68,7 @@ namespace nova::renderer {
     struct Pipeline {
         rhi::Pipeline* pipeline = nullptr;
 
-        std::vector<MaterialPass> passes;
+        std::pmr::vector<MaterialPass> passes;
 
         void record(rhi::CommandList* cmds, FrameContext& ctx) const;
     };
@@ -135,12 +135,12 @@ namespace nova::renderer {
         rhi::Renderpass* renderpass = nullptr;
         rhi::Framebuffer* framebuffer = nullptr;
 
-        std::vector<Pipeline> pipelines;
+        std::pmr::vector<Pipeline> pipelines;
 
         bool writes_to_backbuffer = false;
 
-        std::vector<rhi::ResourceBarrier> read_texture_barriers;
-        std::vector<rhi::ResourceBarrier> write_texture_barriers;
+        std::pmr::vector<rhi::ResourceBarrier> read_texture_barriers;
+        std::pmr::vector<rhi::ResourceBarrier> write_texture_barriers;
 
         virtual void render(rhi::CommandList* cmds, FrameContext& ctx);
 

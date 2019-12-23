@@ -218,16 +218,16 @@ namespace nova::renderer {
          *
          * Basically this vector contains all the data you need to render a frame
          */
-        std::vector<std::shared_ptr<Renderpass>> renderpasses;
+        std::pmr::vector<std::shared_ptr<Renderpass>> renderpasses;
 
         std::unordered_map<std::string, rhi::Image*> dynamic_textures;
         std::unordered_map<std::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
 
-        void create_dynamic_textures(const std::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
+        void create_dynamic_textures(const std::pmr::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
 
-        void create_render_passes(const std::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
-                                  const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
-                                  const std::vector<shaderpack::MaterialData>& materials);
+        void create_render_passes(const std::pmr::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
+                                  const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipelines,
+                                  const std::pmr::vector<shaderpack::MaterialData>& materials);
 
         /*!
          * \brief Creates a single renderpass
@@ -245,15 +245,15 @@ namespace nova::renderer {
          * renderpass struct
          */
         void add_render_pass(const shaderpack::RenderPassCreateInfo& create_info,
-                             const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
-                             const std::vector<shaderpack::MaterialData>& materials,
+                             const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipelines,
+                             const std::pmr::vector<shaderpack::MaterialData>& materials,
                              rhi::DescriptorPool* descriptor_pool,
                              const std::shared_ptr<Renderpass>& renderpass);
 
         void create_materials_for_pipeline(
             Pipeline& pipeline,
             std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher>& material_metadatas,
-            const std::vector<shaderpack::MaterialData>& materials,
+            const std::pmr::vector<shaderpack::MaterialData>& materials,
             const std::string& pipeline_name,
             const rhi::PipelineInterface* pipeline_interface,
             rhi::DescriptorPool* descriptor_pool,
@@ -279,13 +279,13 @@ namespace nova::renderer {
 
         [[nodiscard]] ntl::Result<rhi::PipelineInterface*> create_pipeline_interface(
             const shaderpack::PipelineCreateInfo& pipeline_create_info,
-            const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const std::pmr::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const;
 
         [[nodiscard]] ntl::Result<PipelineReturn> create_graphics_pipeline(
             rhi::PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
 
-        static void get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
+        static void get_shader_module_descriptors(const std::pmr::vector<uint32_t>& spirv,
                                                   rhi::ShaderStageFlags shader_stage,
                                                   std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings);
 

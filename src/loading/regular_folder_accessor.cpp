@@ -43,9 +43,9 @@ namespace nova::renderer {
         return file_string;
     }
 
-    std::vector<fs::path> RegularFolderAccessor::get_all_items_in_folder(const fs::path& folder) {
+    std::pmr::vector<fs::path> RegularFolderAccessor::get_all_items_in_folder(const fs::path& folder) {
         const fs::path full_path = *root_folder / folder;
-        std::vector<fs::path> paths = {};
+        std::pmr::vector<fs::path> paths = {};
 
         fs::directory_iterator folder_itr(full_path);
         for(const fs::directory_entry& entry : folder_itr) {

@@ -61,20 +61,20 @@ namespace nova::renderer::rhi {
                                                    const glm::uvec2& framebuffer_size) override;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
-                                        const std::vector<Image*>& color_attachments,
+                                        const std::pmr::vector<Image*>& color_attachments,
                                         const std::optional<Image*> depth_attachment,
                                         const glm::uvec2& framebuffer_size) override;
 
         ntl::Result<PipelineInterface*> create_pipeline_interface(
             const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
-            const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const std::pmr::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override;
 
         DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images, uint32_t num_samplers, uint32_t num_uniform_buffers) override;
 
-        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface, DescriptorPool* pool) override;
+        std::pmr::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface, DescriptorPool* pool) override;
 
-        void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override;
+        void update_descriptor_sets(std::pmr::vector<DescriptorSetWrite>& writes) override;
 
         ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override;
 
@@ -84,15 +84,15 @@ namespace nova::renderer::rhi {
 
         Image* create_image(const shaderpack::TextureCreateInfo& info) override;
         Semaphore* create_semaphore() override;
-        std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override;
+        std::pmr::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override;
 
         Fence* create_fence(bool signaled = false) override;
 
-        std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override;
+        std::pmr::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override;
 
-        void wait_for_fences(std::vector<Fence*> fences) override;
+        void wait_for_fences(std::pmr::vector<Fence*> fences) override;
 
-        void reset_fences(const std::vector<Fence*>& fences) override;
+        void reset_fences(const std::pmr::vector<Fence*>& fences) override;
 
         void destroy_renderpass(Renderpass* pass) override;
 
@@ -104,17 +104,17 @@ namespace nova::renderer::rhi {
 
         void destroy_texture(Image* resource) override;
 
-        void destroy_semaphores(std::vector<Semaphore*>& semaphores) override;
+        void destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores) override;
 
-        void destroy_fences(std::vector<Fence*>& fences) override;
+        void destroy_fences(std::pmr::vector<Fence*>& fences) override;
 
         CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override;
 
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
                                  Fence* fence_to_signal = nullptr,
-                                 const std::vector<Semaphore*>& wait_semaphores = {},
-                                 const std::vector<Semaphore*>& signal_semaphores = {}) override;
+                                 const std::pmr::vector<Semaphore*>& wait_semaphores = {},
+                                 const std::pmr::vector<Semaphore*>& signal_semaphores = {}) override;
 #pragma endregion
 
         [[nodiscard]] uint32_t get_queue_family_index(QueueType type) const;
@@ -128,14 +128,14 @@ namespace nova::renderer::rhi {
         /*!
          * The index in the vector is the thread index, the key in the map is the queue family index
          */
-        std::vector<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
+        std::pmr::vector<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
 
         /*!
          * \brief Keeps track of how much has been allocated from each heap
          *
          * In the same order as VulkanGpuInfo::memory_properties::memoryHeaps
          */
-        std::vector<uint32_t> heap_usages;
+        std::pmr::vector<uint32_t> heap_usages;
 
         /*!
          * \brief Map from HOST_VISIBLE memory allocations to the memory address they're mapped to
@@ -146,7 +146,7 @@ namespace nova::renderer::rhi {
         std::unordered_map<VkDeviceMemory, void*> heap_mappings;
 
 #pragma region Initialization
-        std::vector<const char*> enabled_layer_names;
+        std::pmr::vector<const char*> enabled_layer_names;
 
         void create_instance();
 
@@ -161,7 +161,7 @@ namespace nova::renderer::rhi {
 
         void create_device_and_queues();
 
-        static bool does_device_support_extensions(VkPhysicalDevice device, const std::vector<char*>& required_device_extensions);
+        static bool does_device_support_extensions(VkPhysicalDevice device, const std::pmr::vector<char*>& required_device_extensions);
 
         void create_swapchain();
 
@@ -186,9 +186,9 @@ namespace nova::renderer::rhi {
         [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags,
                                                            MemorySearchMode search_mode = MemorySearchMode::Fuzzy) const;
 
-        [[nodiscard]] VkShaderModule create_shader_module(const std::vector<uint32_t>& spirv) const;
+        [[nodiscard]] VkShaderModule create_shader_module(const std::pmr::vector<uint32_t>& spirv) const;
 
-        [[nodiscard]] std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
+        [[nodiscard]] std::pmr::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
             const std::unordered_map<std::string, ResourceBindingDescription>& all_bindings) const;
 
         /*!

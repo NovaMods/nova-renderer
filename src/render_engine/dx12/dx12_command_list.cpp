@@ -11,11 +11,11 @@ namespace nova::renderer::rhi {
 
     void Dx12CommandList::resource_barriers(PipelineStageFlags /* stages_before_barrier */,
                                             PipelineStageFlags /* stages_after_barrier */,
-                                            const std::vector<ResourceBarrier>& barriers) {
+                                            const std::pmr::vector<ResourceBarrier>& barriers) {
         // D3D12 barriers don't use all the information in our `barriers` struct - specifically, they don't care much about image layouts,
         // nor about the pipeline stage flags. Thus, this method doesn't do anything with that data
 
-        std::vector<D3D12_RESOURCE_BARRIER> dx12_barriers;
+        std::pmr::vector<D3D12_RESOURCE_BARRIER> dx12_barriers;
         dx12_barriers.reserve(barriers.size());
 
         for(const ResourceBarrier& barrier : barriers) {
@@ -52,7 +52,7 @@ namespace nova::renderer::rhi {
         cmds->CopyBufferRegion(dst_buf->resource.Get(), destination_offset, src_buf->resource.Get(), source_offset, num_bytes);
     }
 
-    void Dx12CommandList::execute_command_lists(const std::vector<CommandList*>& lists) {
+    void Dx12CommandList::execute_command_lists(const std::pmr::vector<CommandList*>& lists) {
         // Apparently D3D12 can only execute bundles from another command list, meaning that the strategy I use to
         // record command buffers in Vulkan won't work here...
         //
@@ -88,7 +88,7 @@ namespace nova::renderer::rhi {
         cmds->SetPipelineState(dx_pipeline->pso.Get());
     }
 
-    void Dx12CommandList::bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
+    void Dx12CommandList::bind_descriptor_sets(const std::pmr::vector<DescriptorSet*>& descriptor_sets,
                                                const PipelineInterface* pipeline_interface) {
         const auto* dx_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
 
@@ -100,8 +100,8 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void Dx12CommandList::bind_vertex_buffers(const std::vector<Buffer*>& buffers) {
-        std::vector<D3D12_VERTEX_BUFFER_VIEW> views;
+    void Dx12CommandList::bind_vertex_buffers(const std::pmr::vector<Buffer*>& buffers) {
+        std::pmr::vector<D3D12_VERTEX_BUFFER_VIEW> views;
         views.reserve(buffers.size());
 
         for(const Buffer* buffer : buffers) {

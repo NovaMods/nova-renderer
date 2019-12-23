@@ -137,9 +137,9 @@ namespace nova::renderer::rhi {
         render_pass_create_info.dependencyCount = 1;
         render_pass_create_info.pDependencies = &image_available_dependency;
 
-        std::vector<VkAttachmentReference> attachment_references;
-        std::vector<VkAttachmentDescription> attachments;
-        std::vector<VkImageView> framebuffer_attachments;
+        std::pmr::vector<VkAttachmentReference> attachment_references;
+        std::pmr::vector<VkAttachmentDescription> attachments;
+        std::pmr::vector<VkImageView> framebuffer_attachments;
         uint32_t framebuffer_width = framebuffer_size.x;
         uint32_t framebuffer_height = framebuffer_size.y;
 
@@ -271,12 +271,12 @@ namespace nova::renderer::rhi {
     }
 
     Framebuffer* VulkanRenderEngine::create_framebuffer(const Renderpass* renderpass,
-                                                        const std::vector<Image*>& color_attachments,
+                                                        const std::pmr::vector<Image*>& color_attachments,
                                                         const std::optional<Image*> depth_attachment,
                                                         const glm::uvec2& framebuffer_size) {
         const auto* vk_renderpass = static_cast<const VulkanRenderpass*>(renderpass);
 
-        std::vector<VkImageView> attachment_views;
+        std::pmr::vector<VkImageView> attachment_views;
         attachment_views.reserve(color_attachments.size() + 1);
 
         for(const auto* attachment : color_attachments) {
@@ -310,7 +310,7 @@ namespace nova::renderer::rhi {
 
     ntl::Result<PipelineInterface*> VulkanRenderEngine::create_pipeline_interface(
         const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
-        const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+        const std::pmr::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
         const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
         auto* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain);
         auto* pipeline_interface = new_object<VulkanPipelineInterface>();
@@ -357,9 +357,9 @@ namespace nova::renderer::rhi {
         render_pass_create_info.dependencyCount = 1;
         render_pass_create_info.pDependencies = &image_available_dependency;
 
-        std::vector<VkAttachmentReference> attachment_references;
-        std::vector<VkAttachmentDescription> attachment_descriptions;
-        std::vector<VkImageView> framebuffer_attachments;
+        std::pmr::vector<VkAttachmentReference> attachment_references;
+        std::pmr::vector<VkAttachmentDescription> attachment_descriptions;
+        std::pmr::vector<VkImageView> framebuffer_attachments;
 
         // Collect framebuffer size information from color output attachments
         for(const shaderpack::TextureAttachmentInfo& attachment : color_attachments) {
@@ -448,7 +448,7 @@ namespace nova::renderer::rhi {
     DescriptorPool* VulkanRenderEngine::create_descriptor_pool(const uint32_t num_sampled_images,
                                                                const uint32_t num_samplers,
                                                                const uint32_t num_uniform_buffers) {
-        std::vector<VkDescriptorPoolSize> pool_sizes;
+        std::pmr::vector<VkDescriptorPoolSize> pool_sizes;
         pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, num_sampled_images});
         pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLER, num_samplers});
         pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, num_uniform_buffers});
@@ -464,7 +464,7 @@ namespace nova::renderer::rhi {
         return pool;
     }
 
-    std::vector<DescriptorSet*> VulkanRenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
+    std::pmr::vector<DescriptorSet*> VulkanRenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                                            DescriptorPool* pool) {
         const auto* vk_pipeline_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
         const auto* vk_pool = static_cast<const VulkanDescriptorPool*>(pool);
@@ -475,11 +475,11 @@ namespace nova::renderer::rhi {
         alloc_info.descriptorSetCount = static_cast<uint32_t>(vk_pipeline_interface->layouts_by_set.size());
         alloc_info.pSetLayouts = vk_pipeline_interface->layouts_by_set.data();
 
-        std::vector<VkDescriptorSet> sets;
+        std::pmr::vector<VkDescriptorSet> sets;
         sets.resize(vk_pipeline_interface->layouts_by_set.size());
         vkAllocateDescriptorSets(device, &alloc_info, sets.data());
 
-        std::vector<DescriptorSet*> final_sets;
+        std::pmr::vector<DescriptorSet*> final_sets;
         final_sets.reserve(sets.size());
         for(const VkDescriptorSet set : sets) {
             auto* vk_set = new_object<VulkanDescriptorSet>();
@@ -490,14 +490,14 @@ namespace nova::renderer::rhi {
         return final_sets;
     }
 
-    void VulkanRenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
-        std::vector<VkWriteDescriptorSet> vk_writes;
+    void VulkanRenderEngine::update_descriptor_sets(std::pmr::vector<DescriptorSetWrite>& writes) {
+        std::pmr::vector<VkWriteDescriptorSet> vk_writes;
         vk_writes.reserve(writes.size());
 
-        std::vector<VkDescriptorImageInfo> image_infos;
+        std::pmr::vector<VkDescriptorImageInfo> image_infos;
         image_infos.reserve(writes.size());
 
-        std::vector<VkDescriptorBufferInfo> buffer_infos;
+        std::pmr::vector<VkDescriptorBufferInfo> buffer_infos;
         buffer_infos.reserve(writes.size());
 
         for(const DescriptorSetWrite& write : writes) {
@@ -514,7 +514,7 @@ namespace nova::renderer::rhi {
 
                     std::transform(write.resources.begin(),
                                    write.resources.end(),
-                                   std::back_insert_iterator<std::vector<VkDescriptorImageInfo>>(image_infos),
+                                   std::back_insert_iterator<std::pmr::vector<VkDescriptorImageInfo>>(image_infos),
                                    [&](const DescriptorResourceInfo& info) {
                                        VkDescriptorImageInfo vk_image_info = {};
                                        vk_image_info.imageView = image_view_for_image(info.image_info.image);
@@ -534,7 +534,7 @@ namespace nova::renderer::rhi {
 
                     std::transform(write.resources.begin(),
                                    write.resources.end(),
-                                   std::back_insert_iterator<std::vector<VkDescriptorBufferInfo>>(buffer_infos),
+                                   std::back_insert_iterator<std::pmr::vector<VkDescriptorBufferInfo>>(buffer_infos),
                                    [&](const DescriptorResourceInfo& info) {
                                        const auto* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
 
@@ -569,7 +569,7 @@ namespace nova::renderer::rhi {
         const auto* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
         auto* vk_pipeline = new_object<VulkanPipeline>();
 
-        std::vector<VkPipelineShaderStageCreateInfo> shader_stages;
+        std::pmr::vector<VkPipelineShaderStageCreateInfo> shader_stages;
         std::unordered_map<VkShaderStageFlags, VkShaderModule> shader_modules;
 
         NOVA_LOG(TRACE) << "Compiling vertex module";
@@ -608,8 +608,8 @@ namespace nova::renderer::rhi {
             shader_stages.push_back(shader_stage_create_info);
         }
 
-        const std::vector<VkVertexInputBindingDescription>& vertex_binding_descriptions = get_vertex_input_binding_descriptions();
-        const std::vector<VkVertexInputAttributeDescription>& vertex_attribute_descriptions = get_vertex_input_attribute_descriptions();
+        const std::pmr::vector<VkVertexInputBindingDescription>& vertex_binding_descriptions = get_vertex_input_binding_descriptions();
+        const std::pmr::vector<VkVertexInputAttributeDescription>& vertex_attribute_descriptions = get_vertex_input_attribute_descriptions();
 
         VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info;
         vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -967,9 +967,9 @@ namespace nova::renderer::rhi {
         return nullptr;
     }
 
-    std::vector<Semaphore*> VulkanRenderEngine::create_semaphores(uint32_t num_semaphores) {
+    std::pmr::vector<Semaphore*> VulkanRenderEngine::create_semaphores(uint32_t num_semaphores) {
         // TODO
-        return std::vector<Semaphore*>();
+        return std::pmr::vector<Semaphore*>();
     }
 
     Fence* VulkanRenderEngine::create_fence(const bool signaled) {
@@ -986,8 +986,8 @@ namespace nova::renderer::rhi {
         return fence;
     }
 
-    std::vector<Fence*> VulkanRenderEngine::create_fences(const uint32_t num_fences, const bool signaled) {
-        std::vector<Fence*> fences;
+    std::pmr::vector<Fence*> VulkanRenderEngine::create_fences(const uint32_t num_fences, const bool signaled) {
+        std::pmr::vector<Fence*> fences;
         fences.reserve(num_fences);
 
         VkFenceCreateInfo fence_create_info = {};
@@ -1006,7 +1006,7 @@ namespace nova::renderer::rhi {
         return fences;
     }
 
-    void VulkanRenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
+    void VulkanRenderEngine::wait_for_fences(const std::pmr::vector<Fence*> fences) {
         vkWaitForFences(device,
                         static_cast<uint32_t>(fences.size()),
                         &(static_cast<VulkanFence*>(fences[0])->fence),
@@ -1014,8 +1014,8 @@ namespace nova::renderer::rhi {
                         std::numeric_limits<uint64_t>::max());
     }
 
-    void VulkanRenderEngine::reset_fences(const std::vector<Fence*>& fences) {
-        std::vector<VkFence> vk_fences;
+    void VulkanRenderEngine::reset_fences(const std::pmr::vector<Fence*>& fences) {
+        std::pmr::vector<VkFence> vk_fences;
         vk_fences.reserve(fences.size());
         for(const auto* fence : fences) {
             const auto* vk_fence = static_cast<const VulkanFence*>(fence);
@@ -1056,14 +1056,14 @@ namespace nova::renderer::rhi {
         delete vk_image;
     }
 
-    void VulkanRenderEngine::destroy_semaphores(std::vector<Semaphore*>& semaphores) {
+    void VulkanRenderEngine::destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores) {
         for(Semaphore* semaphore : semaphores) {
             auto* vk_semaphore = static_cast<VulkanSemaphore*>(semaphore);
             vkDestroySemaphore(device, vk_semaphore->semaphore, nullptr);
         }
     }
 
-    void VulkanRenderEngine::destroy_fences(std::vector<Fence*>& fences) {
+    void VulkanRenderEngine::destroy_fences(std::pmr::vector<Fence*>& fences) {
         for(Fence* fence : fences) {
             auto* vk_fence = static_cast<VulkanFence*>(fence);
             vkDestroyFence(device, vk_fence->fence, nullptr);
@@ -1093,8 +1093,8 @@ namespace nova::renderer::rhi {
     void VulkanRenderEngine::submit_command_list(CommandList* cmds,
                                                  const QueueType queue,
                                                  Fence* fence_to_signal,
-                                                 const std::vector<Semaphore*>& wait_semaphores,
-                                                 const std::vector<Semaphore*>& signal_semaphores) {
+                                                 const std::pmr::vector<Semaphore*>& wait_semaphores,
+                                                 const std::pmr::vector<Semaphore*>& signal_semaphores) {
         auto* vk_list = static_cast<VulkanCommandList*>(cmds);
         vkEndCommandBuffer(vk_list->cmds);
 
@@ -1117,14 +1117,14 @@ namespace nova::renderer::rhi {
                 queue_to_submit_to = graphics_queue;
         }
 
-        std::vector<VkSemaphore> vk_wait_semaphores;
+        std::pmr::vector<VkSemaphore> vk_wait_semaphores;
         vk_wait_semaphores.reserve(wait_semaphores.size());
         for(const Semaphore* semaphore : wait_semaphores) {
             const auto* vk_semaphore = static_cast<const VulkanSemaphore*>(semaphore);
             vk_wait_semaphores.push_back(vk_semaphore->semaphore);
         }
 
-        std::vector<VkSemaphore> vk_signal_semaphores;
+        std::pmr::vector<VkSemaphore> vk_signal_semaphores;
         vk_signal_semaphores.reserve(signal_semaphores.size());
         for(const Semaphore* semaphore : signal_semaphores) {
             const auto* vk_semaphore = static_cast<const VulkanSemaphore*>(semaphore);
@@ -1212,7 +1212,7 @@ namespace nova::renderer::rhi {
         create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layer_names.size());
         create_info.ppEnabledLayerNames = enabled_layer_names.data();
 
-        std::vector<const char*> enabled_extension_names;
+        std::pmr::vector<const char*> enabled_extension_names;
         enabled_extension_names.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 #ifdef NOVA_LINUX
         enabled_extension_names.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
@@ -1222,7 +1222,7 @@ namespace nova::renderer::rhi {
 #error Unsupported Operating system
 #endif
 
-        std::vector<VkValidationFeatureEnableEXT> enabled_validation_features = {VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT};
+        std::pmr::vector<VkValidationFeatureEnableEXT> enabled_validation_features = {VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT};
 
         if(settings.settings.debug.enabled) {
             enabled_extension_names.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
@@ -1292,7 +1292,7 @@ namespace nova::renderer::rhi {
 
         uint32_t extension_count;
         vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, nullptr);
-        std::vector<VkExtensionProperties> available_extensions(extension_count);
+        std::pmr::vector<VkExtensionProperties> available_extensions(extension_count);
         vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, available_extensions.data());
 
         const auto extension_name_matcher = [](const char* ext_name) {
@@ -1316,11 +1316,11 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderEngine::create_device_and_queues() {
-        static std::vector<char*> device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME};
+        static std::pmr::vector<char*> device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME};
 
         uint32_t device_count;
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
-        auto physical_devices = std::vector<VkPhysicalDevice>(device_count);
+        auto physical_devices = std::pmr::vector<VkPhysicalDevice>(device_count);
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, physical_devices.data()));
 
         uint32_t graphics_family_idx = 0xFFFFFFFF;
@@ -1401,7 +1401,7 @@ namespace nova::renderer::rhi {
         graphics_queue_create_info.queueFamilyIndex = graphics_family_idx;
         graphics_queue_create_info.pQueuePriorities = &priority;
 
-        std::vector<VkDeviceQueueCreateInfo> queue_create_infos = {graphics_queue_create_info};
+        std::pmr::vector<VkDeviceQueueCreateInfo> queue_create_infos = {graphics_queue_create_info};
 
         VkPhysicalDeviceFeatures physical_device_features{};
         physical_device_features.geometryShader = VK_TRUE;
@@ -1442,10 +1442,10 @@ namespace nova::renderer::rhi {
         vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
     }
 
-    bool VulkanRenderEngine::does_device_support_extensions(VkPhysicalDevice device, const std::vector<char*>& required_device_extensions) {
+    bool VulkanRenderEngine::does_device_support_extensions(VkPhysicalDevice device, const std::pmr::vector<char*>& required_device_extensions) {
         uint32_t extension_count;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
-        std::vector<VkExtensionProperties> available(extension_count);
+        std::pmr::vector<VkExtensionProperties> available(extension_count);
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available.data());
 
         std::unordered_set<std::string> required;
@@ -1481,7 +1481,7 @@ namespace nova::renderer::rhi {
 
         uint32_t num_surface_present_modes;
         vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, nullptr);
-        std::vector<VkPresentModeKHR> present_modes(num_surface_present_modes);
+        std::pmr::vector<VkPresentModeKHR> present_modes(num_surface_present_modes);
         vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, present_modes.data());
 
         swapchain = new VulkanSwapchain(NUM_IN_FLIGHT_FRAMES, *this, window->get_window_size(), present_modes);
@@ -1499,7 +1499,7 @@ namespace nova::renderer::rhi {
     }
 
     std::unordered_map<uint32_t, VkCommandPool> VulkanRenderEngine::make_new_command_pools() const {
-        std::vector<uint32_t> queue_indices;
+        std::pmr::vector<uint32_t> queue_indices;
         queue_indices.push_back(graphics_family_index);
         queue_indices.push_back(transfer_family_index);
         queue_indices.push_back(compute_family_index);
@@ -1543,7 +1543,7 @@ namespace nova::renderer::rhi {
         return VK_MAX_MEMORY_TYPES;
     }
 
-    std::vector<VkDescriptorSetLayout> VulkanRenderEngine::create_descriptor_set_layouts(
+    std::pmr::vector<VkDescriptorSetLayout> VulkanRenderEngine::create_descriptor_set_layouts(
         const std::unordered_map<std::string, ResourceBindingDescription>& all_bindings) const {
 
         /*
@@ -1553,10 +1553,10 @@ namespace nova::renderer::rhi {
          * -
          */
 
-        std::vector<std::vector<VkDescriptorSetLayoutBinding>> bindings_by_set;
+        std::pmr::vector<std::pmr::vector<VkDescriptorSetLayoutBinding>> bindings_by_set;
         bindings_by_set.resize(all_bindings.size());
 
-        std::vector<std::vector<VkDescriptorBindingFlagsEXT>> binding_flags_by_set;
+        std::pmr::vector<std::pmr::vector<VkDescriptorBindingFlagsEXT>> binding_flags_by_set;
         binding_flags_by_set.resize(all_bindings.size());
 
         for(const auto& [name, binding] : all_bindings) {
@@ -1581,10 +1581,10 @@ namespace nova::renderer::rhi {
             bindings_by_set[binding.set].push_back(descriptor_binding);
         }
 
-        std::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos = {};
+        std::pmr::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos = {};
         dsl_create_infos.reserve(bindings_by_set.size());
 
-        std::vector<VkDescriptorSetLayoutBindingFlagsCreateInfoEXT> flag_infos = {};
+        std::pmr::vector<VkDescriptorSetLayoutBindingFlagsCreateInfoEXT> flag_infos = {};
         flag_infos.reserve(bindings_by_set.size());
 
         for(const auto& bindings : bindings_by_set) {
@@ -1605,7 +1605,7 @@ namespace nova::renderer::rhi {
             dsl_create_infos.push_back(create_info);
         }
 
-        std::vector<VkDescriptorSetLayout> layouts;
+        std::pmr::vector<VkDescriptorSetLayout> layouts;
         layouts.resize(dsl_create_infos.size());
         for(size_t i = 0; i < dsl_create_infos.size(); i++) {
             vkCreateDescriptorSetLayout(device, &dsl_create_infos[i], nullptr, &layouts[i]);
@@ -1635,7 +1635,7 @@ namespace nova::renderer::rhi {
         return VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     }
 
-    VkShaderModule VulkanRenderEngine::create_shader_module(const std::vector<uint32_t>& spirv) const {
+    VkShaderModule VulkanRenderEngine::create_shader_module(const std::pmr::vector<uint32_t>& spirv) const {
         VkShaderModuleCreateInfo shader_module_create_info;
         shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         shader_module_create_info.pNext = nullptr;

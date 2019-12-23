@@ -43,7 +43,7 @@ namespace nova::renderer {
             NOVA_LOG(ERROR) << "Could not get information for file " << resource_string << ": " << err;
         }
 
-        std::vector<char> resource_buffer;
+        std::pmr::vector<char> resource_buffer;
         resource_buffer.reserve(static_cast<uint64_t>(file_stat.m_uncomp_size));
 
         const mz_bool file_extracted = mz_zip_reader_extract_to_mem(&zip_archive,
@@ -61,9 +61,9 @@ namespace nova::renderer {
         return std::string{resource_buffer.data()};
     }
 
-    std::vector<fs::path> ZipFolderAccessor::get_all_items_in_folder(const fs::path& folder) {
-        const std::string folder_stringname = folder.string();
-        std::vector<std::string> folder_path_parts = split(folder_stringname, '/');
+    std::pmr::vector<fs::path> ZipFolderAccessor::get_all_items_in_folder(const fs::path& folder) {
+        const std::string folder_stringname = folder.string().c_str();
+        std::pmr::vector<std::string> folder_path_parts = split(folder_stringname, '/');
 
         FileTreeNode* cur_node = files.get();
         // Get the node at this path
@@ -82,7 +82,7 @@ namespace nova::renderer {
             }
         }
 
-        std::vector<fs::path> children_paths;
+        std::pmr::vector<fs::path> children_paths;
         children_paths.reserve(cur_node->children.size());
         for(const std::unique_ptr<FileTreeNode>& child : cur_node->children) {
             std::string s = child->get_full_path();
@@ -95,7 +95,7 @@ namespace nova::renderer {
     void ZipFolderAccessor::build_file_tree() {
         const uint32_t num_files = mz_zip_reader_get_num_files(&zip_archive);
 
-        std::vector<std::string> all_filenames;
+        std::pmr::vector<std::string> all_filenames;
         all_filenames.resize(num_files);
         std::array<char, 1024> filename_buffer{0};
 
@@ -176,7 +176,7 @@ namespace nova::renderer {
     }
 
     std::string FileTreeNode::get_full_path() const {
-        std::vector<std::string> names;
+        std::pmr::vector<std::string> names;
         const FileTreeNode* cur_node = this;
         while(cur_node != nullptr) {
             names.push_back(cur_node->name);

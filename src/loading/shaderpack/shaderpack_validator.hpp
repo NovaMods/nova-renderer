@@ -17,8 +17,8 @@
 
 namespace nova::renderer::shaderpack {
     struct ValidationReport {
-        std::vector<std::string> warnings;
-        std::vector<std::string> errors;
+        std::pmr::vector<std::string> warnings;
+        std::pmr::vector<std::string> errors;
 
         void merge_in(const ValidationReport& other);
     };

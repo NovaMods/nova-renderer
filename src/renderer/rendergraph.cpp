@@ -126,7 +126,7 @@ namespace nova::renderer {
 
         if(start_index != ctx.cur_model_matrix_index) {
             // TODO: There's probably a better way to do this
-            const std::vector<rhi::Buffer*> vertex_buffers = std::vector<rhi::Buffer*>(7, batch.vertex_buffer);
+            const std::pmr::vector<rhi::Buffer*> vertex_buffers = std::pmr::vector<rhi::Buffer*>(7, batch.vertex_buffer);
             cmds->bind_vertex_buffers(vertex_buffers);
             cmds->bind_index_buffer(batch.index_buffer);
 
@@ -154,7 +154,7 @@ namespace nova::renderer {
         if(start_index != ctx.cur_model_matrix_index) {
             const auto& [vertex_buffer, index_buffer] = batch.mesh->get_buffers_for_frame(ctx.frame_count % NUM_IN_FLIGHT_FRAMES);
             // TODO: There's probably a better way to do this
-            const std::vector<rhi::Buffer*> vertex_buffers(7, vertex_buffer);
+            const std::pmr::vector<rhi::Buffer*> vertex_buffers(7, vertex_buffer);
             cmds->bind_vertex_buffers(vertex_buffers);
             cmds->bind_index_buffer(index_buffer);
         }

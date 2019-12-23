@@ -112,7 +112,7 @@ namespace nova::renderer {
         auto* cur_vertex_buffer = vertex_buffers.at(frame_idx);
         auto* cur_index_buffer = index_buffers.at(frame_idx);
 
-        std::vector<ResourceBarrier> barriers_before_upload;
+        std::pmr::vector<ResourceBarrier> barriers_before_upload;
 
         if(should_upload_vertex_buffer) {
             ResourceBarrier barrier_before_vertex_upload = {};
@@ -158,7 +158,7 @@ namespace nova::renderer {
             cmds->copy_buffer(cur_index_buffer, 0, cached_index_buffer, 0, num_index_bytes_to_upload);
         }
 
-        std::vector<ResourceBarrier> barriers_after_upload;
+        std::pmr::vector<ResourceBarrier> barriers_after_upload;
 
         if(should_upload_vertex_buffer) {
             ResourceBarrier barrier_after_vertex_upload = {};
