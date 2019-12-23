@@ -10,7 +10,7 @@ namespace nova::renderer {
     ZipFolderAccessor::ZipFolderAccessor(const fs::path& folder) : FolderAccessorBase(folder), files(new FileTreeNode) {
         const auto folder_string = folder.string();
 
-        if(mz_zip_reader_init_file(&zip_archive, folder_string, 0) == 0) {
+        if(mz_zip_reader_init_file(&zip_archive, folder_string.c_str(), 0) == 0) {
             NOVA_LOG(ERROR) << "Could not open zip archive " << folder_string;
         }
 
