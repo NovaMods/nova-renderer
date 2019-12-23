@@ -47,22 +47,31 @@ namespace nova::renderer::rhi {
         // Inherited via render_engine
         void set_num_renderpasses(uint32_t num_renderpasses) override;
 
-        ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage type, ObjectType allowed_objects) override;
+        ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size,
+                                                          MemoryUsage type,
+                                                          ObjectType allowed_objects,
+                                                          memory::AllocatorHandle<>& allocator) override;
 
         ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data,
-                                                   const glm::uvec2& framebuffer_size) override;
+                                                   const glm::uvec2& framebuffer_size,
+                                                   memory::AllocatorHandle<>& allocator) override;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
                                         const std::pmr::vector<Image*>& color_attachments,
                                         const std::optional<Image*> depth_attachment,
-                                        const glm::uvec2& framebuffer_size) override;
+                                        const glm::uvec2& framebuffer_size,
+                                        memory::AllocatorHandle<>& allocator) override;
 
         ntl::Result<PipelineInterface*> create_pipeline_interface(
             const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
             const std::pmr::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override;
+            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
+            memory::AllocatorHandle<>& allocator) override;
 
-        DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images, uint32_t num_samplers, uint32_t num_uniform_buffers) override;
+        DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
+                                               uint32_t num_samplers,
+                                               uint32_t num_uniform_buffers,
+                                               memory::AllocatorHandle<>& allocator) override;
 
         /*!
          * \brief Creates all the descriptor sets that are needed for this pipeline interface
@@ -72,43 +81,47 @@ namespace nova::renderer::rhi {
          * a single descriptor heap is noticeably better, but I've also heard that this only applies to XBox. Further
          * research and testing is needed to resolve this
          */
-        std::pmr::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface, DescriptorPool* pool) override;
+        std::pmr::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
+                                                                DescriptorPool* pool,
+                                                                memory::AllocatorHandle<>& allocator) override;
 
         void update_descriptor_sets(std::pmr::vector<DescriptorSetWrite>& writes) override;
 
-        ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override;
+        ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
+                                               const shaderpack::PipelineCreateInfo& data,
+                                               memory::AllocatorHandle<>& allocator) override;
 
-        Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory) override;
+        Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory, memory::AllocatorHandle<>& allocator) override;
 
         void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) override;
 
-        Image* create_image(const shaderpack::TextureCreateInfo& info) override;
+        Image* create_image(const shaderpack::TextureCreateInfo& info, memory::AllocatorHandle<>& allocator) override;
 
-        Semaphore* create_semaphore() override;
+        Semaphore* create_semaphore(memory::AllocatorHandle<>& allocator) override;
 
-        std::pmr::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override;
+        std::pmr::vector<Semaphore*> create_semaphores(uint32_t num_semaphores, memory::AllocatorHandle<>& allocator) override;
 
-        Fence* create_fence(bool signaled = false) override;
+        Fence* create_fence(memory::AllocatorHandle<>& allocator, bool signaled = false) override;
 
-        std::pmr::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override;
+        std::pmr::vector<Fence*> create_fences(memory::AllocatorHandle<>& allocator, uint32_t num_fences, bool signaled = false) override;
 
         void wait_for_fences(std::pmr::vector<Fence*> fences) override;
 
         void reset_fences(const std::pmr::vector<Fence*>& fences) override;
 
-        void destroy_renderpass(Renderpass* pass) override;
+        void destroy_renderpass(Renderpass* pass, memory::AllocatorHandle<>& allocator) override;
 
-        void destroy_framebuffer(Framebuffer* framebuffer) override;
+        void destroy_framebuffer(Framebuffer* framebuffer, memory::AllocatorHandle<>& allocator) override;
 
-        void destroy_pipeline_interface(PipelineInterface* pipeline_interface) override;
+        void destroy_pipeline_interface(PipelineInterface* pipeline_interface, memory::AllocatorHandle<>& allocator) override;
 
-        void destroy_pipeline(Pipeline* pipeline) override;
+        void destroy_pipeline(Pipeline* pipeline, memory::AllocatorHandle<>& allocator) override;
 
-        void destroy_texture(Image* resource) override;
+        void destroy_texture(Image* resource, memory::AllocatorHandle<>& allocator) override;
 
-        void destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores) override;
+        void destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores, memory::AllocatorHandle<>& allocator) override;
 
-        void destroy_fences(std::pmr::vector<Fence*>& fences) override;
+        void destroy_fences(std::pmr::vector<Fence*>& fences, memory::AllocatorHandle<>& allocator) override;
 
         CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override;
 

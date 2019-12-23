@@ -28,7 +28,7 @@ namespace nova::renderer::rhi {
     };
 
     struct DX12PipelineInterface : PipelineInterface {
-        std::unordered_map<uint32_t, std::pmr::vector<ResourceBindingDescription>> table_layouts;
+        std::pmr::unordered_map<uint32_t, std::pmr::vector<ResourceBindingDescription>> table_layouts;
 
         std::pmr::vector<shaderpack::TextureAttachmentInfo> color_attachments;
 

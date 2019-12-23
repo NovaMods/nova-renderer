@@ -69,8 +69,9 @@ namespace nova::renderer::rhi {
 
     ntl::Result<DeviceMemory*> D3D12RenderEngine::allocate_device_memory(const uint64_t size,
                                                                          const MemoryUsage type,
-                                                                         const ObjectType allowed_objects) {
-        auto* memory = new DX12DeviceMemory;
+                                                                         const ObjectType allowed_objects,
+                                                                         AllocatorHandle<>& allocator) {
+        auto* memory = allocator.new_other_object<DX12DeviceMemory>();
 
         D3D12_HEAP_DESC desc = {};
         desc.SizeInBytes = size;
@@ -136,8 +137,9 @@ namespace nova::renderer::rhi {
     }
 
     ntl::Result<Renderpass*> D3D12RenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& data,
-                                                                  const glm::uvec2& /* framebuffer_size */) {
-        auto* renderpass = new DX12Renderpass;
+                                                                  const glm::uvec2& /* framebuffer_size */,
+                                                                  AllocatorHandle<>& allocator) {
+        auto* renderpass = allocator.new_other_object<DX12Renderpass>();
 
         return ntl::Result<Renderpass*>(renderpass);
     }
@@ -145,12 +147,14 @@ namespace nova::renderer::rhi {
     Framebuffer* D3D12RenderEngine::create_framebuffer(const Renderpass* /* renderpass */,
                                                        const std::pmr::vector<Image*>& color_attachments,
                                                        const std::optional<Image*> depth_attachment,
-                                                       const glm::uvec2& framebuffer_size) {
+                                                       const glm::uvec2& framebuffer_size,
+                                                       AllocatorHandle<>& allocator) {
         const size_t attachment_count = color_attachments.size();
-        auto* framebuffer = new DX12Framebuffer;
+        auto* framebuffer = allocator.new_other_object<DX12Framebuffer>();
+        framebuffer->rtv_descriptors = std::pmr::vector<CD3DX12_CPU_DESCRIPTOR_HANDLE>(allocator);
         framebuffer->rtv_descriptors.reserve(attachment_count);
 
-        std::pmr::vector<ID3D12Resource*> rendertargets;
+        std::pmr::vector<ID3D12Resource*> rendertargets(allocator);
         rendertargets.reserve(attachment_count);
 
         CD3DX12_CPU_DESCRIPTOR_HANDLE base_rtv_descriptor(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
@@ -192,8 +196,10 @@ namespace nova::renderer::rhi {
     ntl::Result<PipelineInterface*> D3D12RenderEngine::create_pipeline_interface(
         const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
         const std::pmr::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-        const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) {
-        auto* pipeline_interface = new DX12PipelineInterface;
+        const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
+        AllocatorHandle<>& allocator) {
+        auto* pipeline_interface = allocator.new_other_object<DX12PipelineInterface>();
+        pipeline_interface->table_layouts = std::pmr::unordered_map<uint32_t, std::pmr::vector<ResourceBindingDescription>>(allocator);
         pipeline_interface->bindings = bindings;
 
         pipeline_interface->table_layouts.reserve(16);
@@ -268,13 +274,15 @@ namespace nova::renderer::rhi {
 
     DescriptorPool* D3D12RenderEngine::create_descriptor_pool(uint32_t /* num_sampled_images */,
                                                               uint32_t /* num_samplers */,
-                                                              uint32_t /* num_uniform_buffers */) {
+                                                              uint32_t /* num_uniform_buffers */,
+                                                              AllocatorHandle<>& allocator) {
         auto* pool = new DX12DescriptorPool; // This seems wrong
         return pool;
     }
 
     std::pmr::vector<DescriptorSet*> D3D12RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                                          DescriptorPool* /* pool */) {
+                                                                               DescriptorPool* /* pool */,
+                                                                               AllocatorHandle<>& allocator) {
         // Create a descriptor heap for each descriptor set
         // This is kinda gross and maybe I'll move to something else eventually but I gotta get past this code
 
@@ -358,7 +366,8 @@ namespace nova::renderer::rhi {
     }
 
     ntl::Result<Pipeline*> D3D12RenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
-                                                              const shaderpack::PipelineCreateInfo& data) {
+                                                              const shaderpack::PipelineCreateInfo& data,
+                                                              AllocatorHandle<>& allocator) {
         const auto* dx12_pipeline_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
 
         auto* pipeline = new_object<DX12Pipeline>();
@@ -548,7 +557,7 @@ namespace nova::renderer::rhi {
         return ntl::Result(static_cast<Pipeline*>(pipeline));
     }
 
-    Buffer* D3D12RenderEngine::create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory) {
+    Buffer* D3D12RenderEngine::create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory, AllocatorHandle<>& allocator) {
         auto* buffer = new_object<DX12Buffer>();
 
         D3D12_RESOURCE_STATES states = {};
@@ -602,7 +611,7 @@ namespace nova::renderer::rhi {
         dx_buffer->resource->Unmap(0, &mapped_range);
     }
 
-    Image* D3D12RenderEngine::create_image(const shaderpack::TextureCreateInfo& info) {
+    Image* D3D12RenderEngine::create_image(const shaderpack::TextureCreateInfo& info, AllocatorHandle<>& allocator) {
         const auto image = new_object<DX12Image>();
         image->type = ResourceType::Image;
 
@@ -661,7 +670,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    Semaphore* D3D12RenderEngine::create_semaphore() {
+    Semaphore* D3D12RenderEngine::create_semaphore(AllocatorHandle<>& allocator) {
         auto* semaphore = new DX12Semaphore;
 
         device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(semaphore->fence.GetAddressOf()));
@@ -669,7 +678,7 @@ namespace nova::renderer::rhi {
         return semaphore;
     }
 
-    std::pmr::vector<Semaphore*> D3D12RenderEngine::create_semaphores(const uint32_t num_semaphores) {
+    std::pmr::vector<Semaphore*> D3D12RenderEngine::create_semaphores(const uint32_t num_semaphores, AllocatorHandle<>& allocator) {
         std::pmr::vector<Semaphore*> semaphores;
         semaphores.reserve(num_semaphores);
 
@@ -680,7 +689,7 @@ namespace nova::renderer::rhi {
         return semaphores;
     }
 
-    Fence* D3D12RenderEngine::create_fence(const bool signaled) {
+    Fence* D3D12RenderEngine::create_fence(AllocatorHandle<>& allocator, const bool signaled) {
         auto* fence = new_object<DX12Fence>();
 
         const uint32_t initial_value = signaled ? CPU_FENCE_SIGNALED : 0;
@@ -692,7 +701,9 @@ namespace nova::renderer::rhi {
         return fence;
     }
 
-    std::pmr::vector<Fence*> D3D12RenderEngine::create_fences(const uint32_t num_fences, const bool signaled) {
+    std::pmr::vector<Fence*> D3D12RenderEngine::create_fences(AllocatorHandle<>& allocator,
+                                                              const uint32_t num_fences,
+                                                              const bool signaled) {
         std::pmr::vector<Fence*> fences;
         fences.reserve(num_fences);
 
@@ -728,41 +739,42 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void D3D12RenderEngine::destroy_renderpass(Renderpass* /* pass */) { // No work needed, DX12Renderpasses don't own any GPU objects
+    void D3D12RenderEngine::destroy_renderpass(Renderpass* /* pass */,
+                                               AllocatorHandle<>& allocator) { // No work needed, DX12Renderpasses don't own any GPU objects
     }
 
-    void D3D12RenderEngine::destroy_framebuffer(Framebuffer* framebuffer) {
+    void D3D12RenderEngine::destroy_framebuffer(Framebuffer* framebuffer, AllocatorHandle<>& allocator) {
         auto* d3d12_framebuffer = static_cast<DX12Framebuffer*>(framebuffer);
 
         // TODO: Some way to free the framebuffer's RTV descriptors? Probably we'll just destroy all the rendergraph framebuffers together,
         // completely clearing out the RTV descriptor heap
     }
 
-    void D3D12RenderEngine::destroy_pipeline_interface(PipelineInterface* pipeline_interface) {
+    void D3D12RenderEngine::destroy_pipeline_interface(PipelineInterface* pipeline_interface, AllocatorHandle<>& allocator) {
         auto* dx12_interface = static_cast<DX12PipelineInterface*>(pipeline_interface);
 
         dx12_interface->root_sig = nullptr;
     }
 
-    void D3D12RenderEngine::destroy_pipeline(Pipeline* pipeline) {
+    void D3D12RenderEngine::destroy_pipeline(Pipeline* pipeline, AllocatorHandle<>& allocator) {
         auto* dx_pipeline = static_cast<DX12Pipeline*>(pipeline);
         dx_pipeline->pso = nullptr;
         dx_pipeline->root_signature = nullptr;
     }
 
-    void D3D12RenderEngine::destroy_texture(Image* resource) {
+    void D3D12RenderEngine::destroy_texture(Image* resource, AllocatorHandle<>& allocator) {
         auto* d3d12_framebuffer = static_cast<DX12Image*>(resource);
         d3d12_framebuffer->resource = nullptr;
     }
 
-    void D3D12RenderEngine::destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores) {
+    void D3D12RenderEngine::destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores, AllocatorHandle<>& allocator) {
         for(Semaphore* semaphore : semaphores) {
             auto* dx_semaphore = static_cast<DX12Semaphore*>(semaphore);
             dx_semaphore->fence = nullptr;
         }
     }
 
-    void D3D12RenderEngine::destroy_fences(std::pmr::vector<Fence*>& fences) {
+    void D3D12RenderEngine::destroy_fences(std::pmr::vector<Fence*>& fences, AllocatorHandle<>& allocator) {
         for(Fence* fence : fences) {
             auto* dx_fence = static_cast<DX12Fence*>(fence);
             dx_fence->fence = nullptr;
