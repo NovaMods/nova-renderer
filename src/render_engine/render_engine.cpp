@@ -5,7 +5,7 @@
 namespace nova::renderer::rhi {
     Swapchain* RenderEngine::get_swapchain() const { return swapchain; }
 
-    RenderEngine::RenderEngine(memory::AllocatorHandle<>& allocator,
+    RenderEngine::RenderEngine(mem::AllocatorHandle<>& allocator,
                                NovaSettingsAccessManager& settings,
                                std::shared_ptr<NovaWindow> window)
         : internal_allocator(allocator),

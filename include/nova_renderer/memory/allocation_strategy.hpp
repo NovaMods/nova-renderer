@@ -2,7 +2,7 @@
 
 #include "nova_renderer/memory/bytes.hpp"
 
-namespace nova::memory {
+namespace nova::mem {
     struct AllocationInfo;
 
     /*!

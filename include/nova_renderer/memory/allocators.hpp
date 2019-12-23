@@ -2,7 +2,7 @@
 
 #include <memory_resource>
 
-namespace nova::memory {
+namespace nova::mem {
     template <typename AllocatedType = std::byte>
     class AllocatorHandle : public std::pmr::polymorphic_allocator<AllocatedType> {
     public:
@@ -67,4 +67,4 @@ namespace nova::memory {
     AllocatorHandle<ObjectType>* AllocatorHandle<AllocatedType>::create_suballocator() {
         return new_other_object<AllocatorHandle<ObjectType>>(this->resource());        
     }
-} // namespace nova::memory
+} // namespace nova::mem

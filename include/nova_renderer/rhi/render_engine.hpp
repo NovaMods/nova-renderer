@@ -33,7 +33,7 @@ namespace nova::renderer::rhi {
     struct DeviceInfo {
         DeviceArchitecture architecture = DeviceArchitecture::Unknown;
 
-        uint64_t max_texture_size = 0;
+        mem::Bytes max_texture_size = 0;
 
         bool is_uma = false;
 
@@ -65,10 +65,10 @@ namespace nova::renderer::rhi {
 
         virtual void set_num_renderpasses(uint32_t num_renderpasses) = 0;
 
-        [[nodiscard]] virtual ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size,
+        [[nodiscard]] virtual ntl::Result<DeviceMemory*> allocate_device_memory(mem::Bytes size,
                                                                                 MemoryUsage type,
                                                                                 ObjectType allowed_objects,
-                                                                                memory::AllocatorHandle<>& allocator) = 0;
+                                                                                mem::AllocatorHandle<>& allocator) = 0;
 
         /*!
          * \brief Creates a renderpass from the provided data
@@ -83,41 +83,41 @@ namespace nova::renderer::rhi {
          */
         [[nodiscard]] virtual ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data,
                                                                          const glm::uvec2& framebuffer_size,
-                                                                         memory::AllocatorHandle<>& allocator) = 0;
+                                                                         mem::AllocatorHandle<>& allocator) = 0;
 
         [[nodiscard]] virtual Framebuffer* create_framebuffer(const Renderpass* renderpass,
                                                               const std::pmr::vector<Image*>& color_attachments,
                                                               const std::optional<Image*> depth_attachment,
                                                               const glm::uvec2& framebuffer_size,
-                                                              memory::AllocatorHandle<>& allocator) = 0;
+                                                              mem::AllocatorHandle<>& allocator) = 0;
 
         [[nodiscard]] virtual ntl::Result<PipelineInterface*> create_pipeline_interface(
             const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
             const std::pmr::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
-            memory::AllocatorHandle<>& allocator) = 0;
+            mem::AllocatorHandle<>& allocator) = 0;
 
         [[nodiscard]] virtual DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
                                                                      uint32_t num_samplers,
                                                                      uint32_t num_uniform_buffers,
-                                                                     memory::AllocatorHandle<>& allocator) = 0;
+                                                                     mem::AllocatorHandle<>& allocator) = 0;
 
         [[nodiscard]] virtual std::pmr::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                                                  DescriptorPool* pool,
-                                                                                 memory::AllocatorHandle<>& allocator) = 0;
+                                                                                 mem::AllocatorHandle<>& allocator) = 0;
 
         virtual void update_descriptor_sets(std::pmr::vector<DescriptorSetWrite>& writes) = 0;
 
         [[nodiscard]] virtual ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
                                                                      const shaderpack::PipelineCreateInfo& data,
-                                                                     memory::AllocatorHandle<>& allocator) = 0;
+                                                                     mem::AllocatorHandle<>& allocator) = 0;
 
         /*!
          * \brief Creates a buffer with undefined contents
          */
         [[nodiscard]] virtual Buffer* create_buffer(const BufferCreateInfo& info,
                                                     DeviceMemoryResource& memory,
-                                                    memory::AllocatorHandle<>& allocator) = 0;
+                                                    mem::AllocatorHandle<>& allocator) = 0;
 
         /*!
          * \brief Writes data to a buffer
@@ -133,22 +133,22 @@ namespace nova::renderer::rhi {
          * \param offset The offset from the start of the buffer to write the data at
          * \param buffer The buffer to write to
          */
-        virtual void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) = 0;
+        virtual void write_data_to_buffer(const void* data, mem::Bytes num_bytes, mem::Bytes offset, const Buffer* buffer) = 0;
 
         /*!
          * \brief Creates an empty image
          *
          * Useful when you want a render target, or you want to initialize the image on your own
          */
-        [[nodiscard]] virtual Image* create_image(const shaderpack::TextureCreateInfo& info, memory::AllocatorHandle<>& allocator) = 0;
+        [[nodiscard]] virtual Image* create_image(const shaderpack::TextureCreateInfo& info, mem::AllocatorHandle<>& allocator) = 0;
 
-        [[nodiscard]] virtual Semaphore* create_semaphore(memory::AllocatorHandle<>& allocator) = 0;
+        [[nodiscard]] virtual Semaphore* create_semaphore(mem::AllocatorHandle<>& allocator) = 0;
 
-        [[nodiscard]] virtual std::pmr::vector<Semaphore*> create_semaphores(uint32_t num_semaphores, memory::AllocatorHandle<>& allocator) = 0;
+        [[nodiscard]] virtual std::pmr::vector<Semaphore*> create_semaphores(uint32_t num_semaphores, mem::AllocatorHandle<>& allocator) = 0;
 
-        [[nodiscard]] virtual Fence* create_fence(memory::AllocatorHandle<>& allocator, bool signaled = false) = 0;
+        [[nodiscard]] virtual Fence* create_fence(mem::AllocatorHandle<>& allocator, bool signaled = false) = 0;
 
-        [[nodiscard]] virtual std::pmr::vector<Fence*> create_fences(memory::AllocatorHandle<>& allocator,
+        [[nodiscard]] virtual std::pmr::vector<Fence*> create_fences(mem::AllocatorHandle<>& allocator,
                                                                 uint32_t num_fences,
                                                                 bool signaled = false) = 0;
 
@@ -169,7 +169,7 @@ namespace nova::renderer::rhi {
          * While Renderpasses are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
          * need to clean up their GPU objects
          */
-        virtual void destroy_renderpass(Renderpass* pass, memory::AllocatorHandle<>& allocator) = 0;
+        virtual void destroy_renderpass(Renderpass* pass, mem::AllocatorHandle<>& allocator) = 0;
 
         /*!
          * \brief Clean up any GPU objects a Framebuffer may own
@@ -177,7 +177,7 @@ namespace nova::renderer::rhi {
          * While Framebuffers are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
          * need to clean up their GPU objects
          */
-        virtual void destroy_framebuffer(Framebuffer* framebuffer, memory::AllocatorHandle<>& allocator) = 0;
+        virtual void destroy_framebuffer(Framebuffer* framebuffer, mem::AllocatorHandle<>& allocator) = 0;
 
         /*!
          * \brief Clean up any GPU objects a PipelineInterface may own
@@ -185,7 +185,7 @@ namespace nova::renderer::rhi {
          * While PipelineInterfaces are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we
          * still need to clean up their GPU objects
          */
-        virtual void destroy_pipeline_interface(PipelineInterface* pipeline_interface, memory::AllocatorHandle<>& allocator) = 0;
+        virtual void destroy_pipeline_interface(PipelineInterface* pipeline_interface, mem::AllocatorHandle<>& allocator) = 0;
 
         /*!
          * \brief Clean up any GPU objects a Pipeline may own
@@ -193,7 +193,7 @@ namespace nova::renderer::rhi {
          * While Pipelines are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
          * need to clean up their GPU objects
          */
-        virtual void destroy_pipeline(Pipeline* pipeline, memory::AllocatorHandle<>& allocator) = 0;
+        virtual void destroy_pipeline(Pipeline* pipeline, mem::AllocatorHandle<>& allocator) = 0;
 
         /*!
          * \brief Clean up any GPU objects an Image may own
@@ -201,7 +201,7 @@ namespace nova::renderer::rhi {
          * While Images are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still need
          * to clean up their GPU objects
          */
-        virtual void destroy_texture(Image* resource, memory::AllocatorHandle<>& allocator) = 0;
+        virtual void destroy_texture(Image* resource, mem::AllocatorHandle<>& allocator) = 0;
 
         /*!
          * \brief Clean up any GPU objects a Semaphores may own
@@ -209,7 +209,7 @@ namespace nova::renderer::rhi {
          * While Semaphores are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
          * need to clean up their GPU objects
          */
-        virtual void destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores, memory::AllocatorHandle<>& allocator) = 0;
+        virtual void destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores, mem::AllocatorHandle<>& allocator) = 0;
 
         /*!
          * \brief Clean up any GPU objects a Fence may own
@@ -217,7 +217,7 @@ namespace nova::renderer::rhi {
          * While Fence are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still need to
          * clean up their GPU objects
          */
-        virtual void destroy_fences(const std::pmr::vector<Fence*>& fences, memory::AllocatorHandle<>& allocator) = 0;
+        virtual void destroy_fences(const std::pmr::vector<Fence*>& fences, mem::AllocatorHandle<>& allocator) = 0;
 
         [[nodiscard]] Swapchain* get_swapchain() const;
 
@@ -235,7 +235,7 @@ namespace nova::renderer::rhi {
          * Command lists allocated by this method are returned ready to record commands into - the caller doesn't need
          * to begin the command list
          */
-        virtual CommandList* create_command_list(memory::AllocatorHandle<>& allocator, uint32_t thread_idx,
+        virtual CommandList* create_command_list(mem::AllocatorHandle<>& allocator, uint32_t thread_idx,
                                               QueueType needed_queue_type,
                                               CommandList::Level level = CommandList::Level::Primary) = 0;
 
@@ -246,7 +246,7 @@ namespace nova::renderer::rhi {
                                          const std::pmr::vector<Semaphore*>& signal_semaphores = {}) = 0;
 
     protected:
-        memory::AllocatorHandle<>& internal_allocator;
+        mem::AllocatorHandle<>& internal_allocator;
 
         std::shared_ptr<NovaWindow> window;
 
@@ -263,6 +263,6 @@ namespace nova::renderer::rhi {
          *
          * \attention Called by the various render engine implementations
          */
-        RenderEngine(memory::AllocatorHandle<>& allocator, NovaSettingsAccessManager& settings, std::shared_ptr<NovaWindow> window);
+        RenderEngine(mem::AllocatorHandle<>& allocator, NovaSettingsAccessManager& settings, std::shared_ptr<NovaWindow> window);
     };
 } // namespace nova::renderer::rhi

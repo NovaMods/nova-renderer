@@ -4,7 +4,7 @@
 #include "nova_renderer/memory/allocation_structs.hpp"
 #include "nova_renderer/memory/bytes.hpp"
 
-using namespace nova::memory::operators;
+using namespace nova::mem::operators;
 
 namespace nova::renderer {
     namespace rhi {
@@ -13,7 +13,7 @@ namespace nova::renderer {
 
     struct DeviceMemoryAllocation {
         rhi::DeviceMemory* memory = nullptr;
-        memory::AllocationInfo allocation_info;
+        mem::AllocationInfo allocation_info;
     };
 
     /*!
@@ -21,11 +21,11 @@ namespace nova::renderer {
      * buffers, textures, etc
      */
     struct DeviceMemoryResource {
-        DeviceMemoryResource(rhi::DeviceMemory* memory, memory::AllocationStrategy* allocation_strategy);
+        DeviceMemoryResource(rhi::DeviceMemory* memory, mem::AllocationStrategy* allocation_strategy);
 
-        [[nodiscard]] DeviceMemoryAllocation allocate(memory::Bytes size) const;
+        [[nodiscard]] DeviceMemoryAllocation allocate(mem::Bytes size) const;
 
-        memory::AllocationStrategy* allocation_strategy;
+        mem::AllocationStrategy* allocation_strategy;
 
         rhi::DeviceMemory* memory;
     };

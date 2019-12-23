@@ -6,7 +6,7 @@
 
 #include "../util/memory_utils.hpp"
 
-namespace nova::memory {
+namespace nova::mem {
     BumpPointAllocationStrategy::BumpPointAllocationStrategy(const Bytes size_in, const Bytes alignment_in)
         : memory_size(size_in), alignment(alignment_in) {}
 
@@ -27,4 +27,4 @@ namespace nova::memory {
     }
 
     void BumpPointAllocationStrategy::free(const AllocationInfo&) { assert(false && "Cannot free from a bump-point allocator!\n"); }
-} // namespace nova::memory
+} // namespace nova::mem

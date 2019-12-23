@@ -6,7 +6,7 @@
 #include "nova_renderer/memory/allocators.hpp"
 #include "nova_renderer/memory/bytes.hpp"
 
-namespace nova::memory {
+namespace nova::mem {
     struct AllocationInfo;
 
     /*!
@@ -71,4 +71,4 @@ namespace nova::memory {
 
         Block* make_new_block(Bytes offset, Bytes size);
     };
-} // namespace nova::memory
+} // namespace nova::mem

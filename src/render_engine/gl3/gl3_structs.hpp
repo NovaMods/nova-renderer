@@ -58,7 +58,7 @@ namespace nova::renderer::rhi {
     };
 
     struct Gl3DescriptorPool : DescriptorPool {
-        memory::AllocatorHandle<Gl3DescriptorSet>* descriptor_allocator;
+        mem::AllocatorHandle<Gl3DescriptorSet>* descriptor_allocator;
     };
 
     struct Gl3Pipeline : Pipeline {

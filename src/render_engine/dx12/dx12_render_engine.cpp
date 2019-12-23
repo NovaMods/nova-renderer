@@ -69,14 +69,14 @@ namespace nova::renderer::rhi {
         }
     }
 
-    ntl::Result<DeviceMemory*> D3D12RenderEngine::allocate_device_memory(const uint64_t size,
+    ntl::Result<DeviceMemory*> D3D12RenderEngine::allocate_device_memory(const Bytes size,
                                                                          const MemoryUsage type,
                                                                          const ObjectType allowed_objects,
                                                                          AllocatorHandle<>& allocator) {
         auto* memory = allocator.new_other_object<DX12DeviceMemory>();
 
         D3D12_HEAP_DESC desc = {};
-        desc.SizeInBytes = size;
+        desc.SizeInBytes = size.b_count();
         desc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
         desc.Properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
 
@@ -601,16 +601,19 @@ namespace nova::renderer::rhi {
         return buffer;
     }
 
-    void D3D12RenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const Buffer* buffer) {
+    void D3D12RenderEngine::write_data_to_buffer(const void* data,
+                                                 const Bytes num_bytes,
+                                                 const Bytes offset,
+                                                 const Buffer* buffer) {
         const auto dx_buffer = static_cast<const DX12Buffer*>(buffer);
 
         D3D12_RANGE mapped_range;
-        mapped_range.Begin = offset;
-        mapped_range.End = offset + num_bytes;
+        mapped_range.Begin = offset.b_count();
+        mapped_range.End = (offset + num_bytes).b_count();
 
         void* mapped_buffer;
         dx_buffer->resource->Map(0, &mapped_range, &mapped_buffer);
-        std::memcpy(mapped_buffer, data, num_bytes);
+        std::memcpy(mapped_buffer, data, num_bytes.b_count());
         dx_buffer->resource->Unmap(0, &mapped_range);
     }
 
@@ -795,7 +798,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    CommandList* D3D12RenderEngine::create_command_list(memory::AllocatorHandle<>& allocator,
+    CommandList* D3D12RenderEngine::create_command_list(AllocatorHandle<>& allocator,
                                                         const uint32_t thread_idx,
                                                         const QueueType needed_queue_type,
                                                         const CommandList::Level level) {

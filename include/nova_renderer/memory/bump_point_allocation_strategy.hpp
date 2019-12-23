@@ -3,7 +3,7 @@
 #include "nova_renderer/memory/allocation_strategy.hpp"
 #include "nova_renderer/memory/bytes.hpp"
 
-namespace nova::memory {
+namespace nova::mem {
     struct AllocationInfo;
 
     /*!
@@ -29,4 +29,4 @@ namespace nova::memory {
 
         Bytes allocated_bytes{0};
     };
-} // namespace nova::memory
+} // namespace nova::mem

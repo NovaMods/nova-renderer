@@ -69,8 +69,11 @@ namespace nova::renderer::rhi {
          * \pre destination_offset plus num_bytes is less than the size of destination_buffer
          * \pre destination_offset plus num_bytes is less than the size of source_buffer
          */
-        virtual void copy_buffer(
-            Buffer* destination_buffer, uint64_t destination_offset, Buffer* source_buffer, uint64_t source_offset, uint64_t num_bytes) = 0;
+        virtual void copy_buffer(Buffer* destination_buffer,
+                                 mem::Bytes destination_offset,
+                                 Buffer* source_buffer,
+                                 mem::Bytes source_offset,
+                                 mem::Bytes num_bytes) = 0;
 
         /*!
          * \brief Executed a number of command lists

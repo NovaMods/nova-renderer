@@ -5,7 +5,7 @@
 
 #include "nova_renderer/util/utils.hpp"
 
-namespace nova::memory {
+namespace nova::mem {
     /**
      * \addtogroup allocation
      * \{

@@ -39,8 +39,8 @@
 #include "render_engine/gl3/gl3_render_engine.hpp"
 #endif
 
-using namespace nova::memory;
-using namespace nova::memory::operators;
+using namespace nova::mem;
+using namespace nova::mem::operators;
 
 const Bytes global_memory_pool_size = 1_gb;
 
@@ -147,7 +147,7 @@ namespace nova::renderer {
         MTR_SCOPE("RenderLoop", "execute_frame");
         frame_count++;
 
-        AllocatorHandle<>& frame_allocator = frame_allocators.at(frame_count % NUM_IN_FLIGHT_FRAMES);
+        AllocatorHandle<>& frame_allocator = frame_allocators[frame_count % NUM_IN_FLIGHT_FRAMES];
 
         cur_frame_idx = rhi->get_swapchain()->acquire_next_swapchain_image(frame_allocator);
 
@@ -194,7 +194,7 @@ namespace nova::renderer {
         vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::VertexBuffer;
         vertex_buffer_create_info.size = mesh_data.vertex_data.size() * sizeof(FullVertex);
 
-        rhi::Buffer* vertex_buffer = rhi->create_buffer(vertex_buffer_create_info, *mesh_memory);
+        rhi::Buffer* vertex_buffer = rhi->create_buffer(vertex_buffer_create_info, *mesh_memory, global_allocator);
 
         // TODO: Try to get staging buffers from a pool
 
@@ -202,13 +202,15 @@ namespace nova::renderer {
             rhi::BufferCreateInfo staging_vertex_buffer_create_info = vertex_buffer_create_info;
             staging_vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
 
-            rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info, *staging_buffer_memory);
+            rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info,
+                                                                    *staging_buffer_memory,
+                                                                    global_allocator);
             rhi->write_data_to_buffer(mesh_data.vertex_data.data(),
                                       mesh_data.vertex_data.size() * sizeof(FullVertex),
                                       0,
                                       staging_vertex_buffer);
 
-            rhi::CommandList* vertex_upload_cmds = rhi->create_command_list(0, rhi::QueueType::Transfer);
+            rhi::CommandList* vertex_upload_cmds = rhi->create_command_list(global_allocator, 0, rhi::QueueType::Transfer);
             vertex_upload_cmds->copy_buffer(vertex_buffer, 0, staging_vertex_buffer, 0, vertex_buffer_create_info.size);
 
             rhi::ResourceBarrier vertex_barrier = {};

@@ -44,7 +44,7 @@ namespace nova::renderer::rhi {
 
         VulkanRenderEngine(NovaSettingsAccessManager& settings,
                            const std::shared_ptr<NovaWindow>& window,
-                           memory::AllocatorHandle<>& allocator);
+                           mem::AllocatorHandle<>& allocator);
 
         VulkanRenderEngine(VulkanRenderEngine&& old) noexcept = delete;
         VulkanRenderEngine& operator=(VulkanRenderEngine&& old) noexcept = delete;
@@ -60,72 +60,72 @@ namespace nova::renderer::rhi {
         ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size,
                                                           MemoryUsage usage,
                                                           ObjectType allowed_objects,
-                                                          memory::AllocatorHandle<>& allocator) override;
+                                                          mem::AllocatorHandle<>& allocator) override;
 
         ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data,
                                                    const glm::uvec2& framebuffer_size,
-                                                   memory::AllocatorHandle<>& allocator) override;
+                                                   mem::AllocatorHandle<>& allocator) override;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
                                         const std::pmr::vector<Image*>& color_attachments,
                                         const std::optional<Image*> depth_attachment,
                                         const glm::uvec2& framebuffer_size,
-                                        memory::AllocatorHandle<>& allocator) override;
+                                        mem::AllocatorHandle<>& allocator) override;
 
         ntl::Result<PipelineInterface*> create_pipeline_interface(
             const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
             const std::pmr::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
-            memory::AllocatorHandle<>& allocator) override;
+            mem::AllocatorHandle<>& allocator) override;
 
         DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
                                                uint32_t num_samplers,
                                                uint32_t num_uniform_buffers,
-                                               memory::AllocatorHandle<>& allocator) override;
+                                               mem::AllocatorHandle<>& allocator) override;
 
         std::pmr::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                                 DescriptorPool* pool,
-                                                                memory::AllocatorHandle<>& allocator) override;
+                                                                mem::AllocatorHandle<>& allocator) override;
 
         void update_descriptor_sets(std::pmr::vector<DescriptorSetWrite>& writes) override;
 
         ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
                                                const shaderpack::PipelineCreateInfo& data,
-                                               memory::AllocatorHandle<>& allocator) override;
+                                               mem::AllocatorHandle<>& allocator) override;
 
-        Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory, memory::AllocatorHandle<>& allocator) override;
+        Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory, mem::AllocatorHandle<>& allocator) override;
 
         void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) override;
 
-        Image* create_image(const shaderpack::TextureCreateInfo& info, memory::AllocatorHandle<>& allocator) override;
+        Image* create_image(const shaderpack::TextureCreateInfo& info, mem::AllocatorHandle<>& allocator) override;
 
-        Semaphore* create_semaphore(memory::AllocatorHandle<>& allocator) override;
+        Semaphore* create_semaphore(mem::AllocatorHandle<>& allocator) override;
 
-        std::pmr::vector<Semaphore*> create_semaphores(uint32_t num_semaphores, memory::AllocatorHandle<>& allocator) override;
+        std::pmr::vector<Semaphore*> create_semaphores(uint32_t num_semaphores, mem::AllocatorHandle<>& allocator) override;
 
-        Fence* create_fence(memory::AllocatorHandle<>& allocator, bool signaled = false) override;
+        Fence* create_fence(mem::AllocatorHandle<>& allocator, bool signaled = false) override;
 
-        std::pmr::vector<Fence*> create_fences(memory::AllocatorHandle<>& allocator, uint32_t num_fences, bool signaled = false) override;
+        std::pmr::vector<Fence*> create_fences(mem::AllocatorHandle<>& allocator, uint32_t num_fences, bool signaled = false) override;
 
         void wait_for_fences(std::pmr::vector<Fence*> fences) override;
 
         void reset_fences(const std::pmr::vector<Fence*>& fences) override;
 
-        void destroy_renderpass(Renderpass* pass, memory::AllocatorHandle<>& allocator) override;
+        void destroy_renderpass(Renderpass* pass, mem::AllocatorHandle<>& allocator) override;
 
-        void destroy_framebuffer(Framebuffer* framebuffer, memory::AllocatorHandle<>& allocator) override;
+        void destroy_framebuffer(Framebuffer* framebuffer, mem::AllocatorHandle<>& allocator) override;
 
-        void destroy_pipeline_interface(PipelineInterface* pipeline_interface, memory::AllocatorHandle<>& allocator) override;
+        void destroy_pipeline_interface(PipelineInterface* pipeline_interface, mem::AllocatorHandle<>& allocator) override;
 
-        void destroy_pipeline(Pipeline* pipeline, memory::AllocatorHandle<>& allocator) override;
+        void destroy_pipeline(Pipeline* pipeline, mem::AllocatorHandle<>& allocator) override;
 
-        void destroy_texture(Image* resource, memory::AllocatorHandle<>& allocator) override;
+        void destroy_texture(Image* resource, mem::AllocatorHandle<>& allocator) override;
 
-        void destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores, memory::AllocatorHandle<>& allocator) override;
+        void destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores, mem::AllocatorHandle<>& allocator) override;
 
-        void destroy_fences(const std::pmr::vector<Fence*>& fences, memory::AllocatorHandle<>& allocator) override;
+        void destroy_fences(const std::pmr::vector<Fence*>& fences, mem::AllocatorHandle<>& allocator) override;
 
-        CommandList* create_command_list(memory::AllocatorHandle<>& allocator,
+        CommandList* create_command_list(mem::AllocatorHandle<>& allocator,
                                          uint32_t thread_idx,
                                          QueueType needed_queue_type,
                                          CommandList::Level level) override;
@@ -209,7 +209,7 @@ namespace nova::renderer::rhi {
         [[nodiscard]] VkShaderModule create_shader_module(const std::pmr::vector<uint32_t>& spirv) const;
 
         [[nodiscard]] std::pmr::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
-            const std::unordered_map<std::string, ResourceBindingDescription>& all_bindings, memory::AllocatorHandle<>& allocator) const;
+            const std::unordered_map<std::string, ResourceBindingDescription>& all_bindings, mem::AllocatorHandle<>& allocator) const;
 
         /*!
          * \brief Gets the image view associated with the given image

@@ -4,6 +4,8 @@
 #include "d3dx12.h"
 #include "dx12_utils.hpp"
 
+using namespace nova::mem;
+
 namespace nova::renderer::rhi {
     using namespace Microsoft::WRL;
 
@@ -42,14 +44,18 @@ namespace nova::renderer::rhi {
     }
 
     void Dx12CommandList::copy_buffer(Buffer* destination_buffer,
-                                      const uint64_t destination_offset,
+                                      const Bytes destination_offset,
                                       Buffer* source_buffer,
-                                      const uint64_t source_offset,
-                                      const uint64_t num_bytes) {
+                                      const Bytes source_offset,
+                                      const Bytes num_bytes) {
         auto* dst_buf = reinterpret_cast<DX12Buffer*>(destination_buffer);
         auto* src_buf = reinterpret_cast<DX12Buffer*>(source_buffer);
 
-        cmds->CopyBufferRegion(dst_buf->resource.Get(), destination_offset, src_buf->resource.Get(), source_offset, num_bytes);
+        cmds->CopyBufferRegion(dst_buf->resource.Get(),
+                               destination_offset.b_count(),
+                               src_buf->resource.Get(),
+                               source_offset.b_count(),
+                               num_bytes.b_count());
     }
 
     void Dx12CommandList::execute_command_lists(const std::pmr::vector<CommandList*>& lists) {

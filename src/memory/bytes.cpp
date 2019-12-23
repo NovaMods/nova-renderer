@@ -2,7 +2,7 @@
 
 #include <ostream>
 
-namespace nova::memory {
+namespace nova::mem {
     std::ostream& operator<<(std::ostream& os, const Bytes b) {
         os << b.b_count() << "b";
         return os;
@@ -22,4 +22,4 @@ namespace nova::memory {
         os << b.g_count() << "gb";
         return os;
     }
-} // namespace nova::memory
+} // namespace nova::mem

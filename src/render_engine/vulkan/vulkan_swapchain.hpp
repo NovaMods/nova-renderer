@@ -36,7 +36,7 @@ namespace nova::renderer::rhi {
                         const std::pmr::vector<VkPresentModeKHR>& present_modes);
 
 #pragma region Swapchain implementation
-        uint8_t acquire_next_swapchain_image(memory::AllocatorHandle<>& allocator) override;
+        uint8_t acquire_next_swapchain_image(mem::AllocatorHandle<>& allocator) override;
 
         void present(uint32_t image_idx) override;
 #pragma endregion

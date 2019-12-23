@@ -6,7 +6,7 @@
 
 #include "../util/memory_utils.hpp"
 
-using namespace nova::memory;
+using namespace nova::mem;
 
 namespace nova::renderer {
     using namespace rhi;

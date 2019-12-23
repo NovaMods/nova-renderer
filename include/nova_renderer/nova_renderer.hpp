@@ -155,7 +155,7 @@ namespace nova::renderer {
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
-        std::array<memory::AllocatorHandle<>, NUM_IN_FLIGHT_FRAMES> frame_allocators;
+        std::array<mem::AllocatorHandle<>, NUM_IN_FLIGHT_FRAMES> frame_allocators;
         static std::unique_ptr<NovaRenderer> instance;
 
         rhi::Sampler* point_sampler;
@@ -168,7 +168,7 @@ namespace nova::renderer {
          * Right now I throw this allocator at the GPU memory allocators, because they need some way to allocate memory and I'm not about to
          * try and band-aid aid things together. Future work will have a better way to bootstrap Nova's allocators
          */
-        std::shared_ptr<memory::AllocatorHandle<>> global_allocator;
+        std::shared_ptr<mem::AllocatorHandle<>> global_allocator;
 
         std::unique_ptr<DeviceMemoryResource> mesh_memory;
 

@@ -2,7 +2,7 @@
 
 #include "nova_renderer/memory/bytes.hpp"
 
-namespace nova::memory {
+namespace nova::mem {
     /*!
      * Information about an allocation from an allocation strategy
      */
@@ -23,4 +23,4 @@ namespace nova::memory {
          */
         void* internal_data = nullptr;
     };
-} // namespace nova::memory
+} // namespace nova::mem

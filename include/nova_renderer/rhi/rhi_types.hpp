@@ -14,7 +14,7 @@ namespace nova::renderer::rhi {
 
 #pragma region Structs
     struct BufferCreateInfo {
-        memory::Bytes size = 0;
+        mem::Bytes size = 0;
 
         BufferUsage buffer_usage{};
     };
@@ -39,7 +39,7 @@ namespace nova::renderer::rhi {
     };
 
     struct Buffer : Resource {
-        memory::Bytes size = 0;
+        mem::Bytes size = 0;
     };
 
     struct Framebuffer {
@@ -149,8 +149,8 @@ namespace nova::renderer::rhi {
             } image_memory_barrier;
 
             struct {
-                memory::Bytes offset;
-                memory::Bytes size;
+                mem::Bytes offset;
+                mem::Bytes size;
             } buffer_memory_barrier;
         };
     };

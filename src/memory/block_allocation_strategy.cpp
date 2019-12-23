@@ -4,9 +4,9 @@
 
 #include "../util/memory_utils.hpp"
 
-using namespace nova::memory::operators;
+using namespace nova::mem::operators;
 
-namespace nova::memory {
+namespace nova::mem {
     BlockAllocationStrategy::BlockAllocationStrategy(AllocatorHandle<>* allocator_in, const Bytes size, const Bytes alignment_in)
         : memory_size(size), alignment(alignment_in) {
 
@@ -123,4 +123,4 @@ namespace nova::memory {
 
         return block;
     }
-} // namespace nova::memory
+} // namespace nova::mem
