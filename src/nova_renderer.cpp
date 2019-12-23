@@ -152,7 +152,7 @@ namespace nova::renderer {
 
         // TODO: Figure out wtf I'm supposed to do about UI
 
-        rhi::CommandList* cmds = rhi->get_command_list(0, rhi::QueueType::Graphics);
+        rhi::CommandList* cmds = rhi->create_command_list(0, rhi::QueueType::Graphics);
 
         // This may or may not work well lmao
         for(auto& [id, proc_mesh] : proc_meshes) {
@@ -203,7 +203,7 @@ namespace nova::renderer {
                                       0,
                                       staging_vertex_buffer);
 
-            rhi::CommandList* vertex_upload_cmds = rhi->get_command_list(0, rhi::QueueType::Transfer);
+            rhi::CommandList* vertex_upload_cmds = rhi->create_command_list(0, rhi::QueueType::Transfer);
             vertex_upload_cmds->copy_buffer(vertex_buffer, 0, staging_vertex_buffer, 0, vertex_buffer_create_info.size);
 
             rhi::ResourceBarrier vertex_barrier = {};
@@ -236,7 +236,7 @@ namespace nova::renderer {
             rhi::Buffer* staging_index_buffer = rhi->create_buffer(staging_index_buffer_create_info, *staging_buffer_memory);
             rhi->write_data_to_buffer(mesh_data.indices.data(), mesh_data.indices.size() * sizeof(uint32_t), 0, staging_index_buffer);
 
-            rhi::CommandList* indices_upload_cmds = rhi->get_command_list(0, rhi::QueueType::Transfer);
+            rhi::CommandList* indices_upload_cmds = rhi->create_command_list(0, rhi::QueueType::Transfer);
             indices_upload_cmds->copy_buffer(index_buffer, 0, staging_index_buffer, 0, index_buffer_create_info.size);
 
             rhi::ResourceBarrier index_barrier = {};

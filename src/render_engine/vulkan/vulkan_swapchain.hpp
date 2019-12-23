@@ -31,12 +31,12 @@ namespace nova::renderer::rhi {
     class VulkanSwapchain final : public Swapchain {
     public:
         VulkanSwapchain(uint32_t num_swapchain_images,
-                        VulkanRenderEngine& render_engine,
+                        VulkanRenderEngine* render_engine,
                         glm::uvec2 window_dimensions,
                         const std::pmr::vector<VkPresentModeKHR>& present_modes);
 
 #pragma region Swapchain implementation
-        uint8_t acquire_next_swapchain_image() override;
+        uint8_t acquire_next_swapchain_image(memory::AllocatorHandle<>& allocator) override;
 
         void present(uint32_t image_idx) override;
 #pragma endregion
@@ -51,7 +51,7 @@ namespace nova::renderer::rhi {
         [[nodiscard]] uint32_t get_num_images() const;
 
     private:
-        VulkanRenderEngine& render_engine;
+        VulkanRenderEngine* render_engine;
 
         VkSwapchainKHR swapchain{};
         VkExtent2D swapchain_extent;

@@ -16,7 +16,7 @@
 
 namespace nova::renderer::rhi {
     VulkanSwapchain::VulkanSwapchain(const uint32_t num_swapchain_images,
-                                     VulkanRenderEngine& render_engine,
+                                     VulkanRenderEngine* render_engine,
                                      const glm::uvec2 window_dimensions,
                                      const std::pmr::vector<VkPresentModeKHR>& present_modes)
         : Swapchain(num_swapchain_images, window_dimensions), render_engine(render_engine), num_swapchain_images(num_swapchain_images) {
@@ -43,18 +43,18 @@ namespace nova::renderer::rhi {
             create_resources_for_frame(vk_images.at(i), renderpass, swapchain_size);
         }
 
-        vkDestroyRenderPass(render_engine.device, renderpass, nullptr);
+        vkDestroyRenderPass(render_engine->device, renderpass, nullptr);
 
         // move the swapchain images into the correct layout cause I guess they aren't for some reason?
         transition_swapchain_images_into_color_attachment_layout(vk_images);
     }
 
-    uint8_t VulkanSwapchain::acquire_next_swapchain_image() {
-        auto* fence = render_engine.create_fence();
+    uint8_t VulkanSwapchain::acquire_next_swapchain_image(memory::AllocatorHandle<>& allocator) {
+        auto* fence = render_engine->create_fence(allocator);
         auto* vk_fence = static_cast<VulkanFence*>(fence);
 
         uint32_t acquired_image_idx;
-        const auto acquire_result = vkAcquireNextImageKHR(render_engine.device,
+        const auto acquire_result = vkAcquireNextImageKHR(render_engine->device,
                                                           swapchain,
                                                           std::numeric_limits<uint64_t>::max(),
                                                           VK_NULL_HANDLE,
@@ -70,7 +70,7 @@ namespace nova::renderer::rhi {
         }
 
         // Block until we have the swapchain image in order to mimic D3D12. TODO: Reevaluate this decision
-        render_engine.wait_for_fences({vk_fence});
+        render_engine->wait_for_fences({vk_fence});
 
         return static_cast<uint8_t>(acquired_image_idx);
     }
@@ -87,7 +87,7 @@ namespace nova::renderer::rhi {
         present_info.pImageIndices = &image_idx;
         present_info.pResults = &swapchain_result;
 
-        vkQueuePresentKHR(render_engine.graphics_queue, &present_info);
+        vkQueuePresentKHR(render_engine->graphics_queue, &present_info);
     }
 
     void VulkanSwapchain::transition_swapchain_images_into_color_attachment_layout(const std::pmr::vector<VkImage>& images) const {
@@ -97,8 +97,8 @@ namespace nova::renderer::rhi {
         for(const VkImage& image : images) {
             VkImageMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-            barrier.srcQueueFamilyIndex = render_engine.graphics_family_index;
-            barrier.dstQueueFamilyIndex = render_engine.graphics_family_index;
+            barrier.srcQueueFamilyIndex = render_engine->graphics_family_index;
+            barrier.dstQueueFamilyIndex = render_engine->graphics_family_index;
             barrier.image = image;
             barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
@@ -118,8 +118,8 @@ namespace nova::renderer::rhi {
 
         VkCommandPoolCreateInfo command_pool_create_info = {};
         command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        command_pool_create_info.queueFamilyIndex = render_engine.graphics_family_index;
-        vkCreateCommandPool(render_engine.device, &command_pool_create_info, nullptr, &command_pool);
+        command_pool_create_info.queueFamilyIndex = render_engine->graphics_family_index;
+        vkCreateCommandPool(render_engine->device, &command_pool_create_info, nullptr, &command_pool);
 
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -128,7 +128,7 @@ namespace nova::renderer::rhi {
         alloc_info.commandBufferCount = 1;
 
         VkCommandBuffer cmds;
-        vkAllocateCommandBuffers(render_engine.device, &alloc_info, &cmds);
+        vkAllocateCommandBuffers(render_engine->device, &alloc_info, &cmds);
 
         VkCommandBufferBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -153,35 +153,35 @@ namespace nova::renderer::rhi {
         VkFenceCreateInfo fence_create_info = {};
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
-        vkCreateFence(render_engine.device, &fence_create_info, nullptr, &transition_done_fence);
+        vkCreateFence(render_engine->device, &fence_create_info, nullptr, &transition_done_fence);
 
         VkSubmitInfo submit_info = {};
         submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &cmds;
 
-        vkQueueSubmit(render_engine.graphics_queue, 1, &submit_info, transition_done_fence);
-        vkWaitForFences(render_engine.device, 1, &transition_done_fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
+        vkQueueSubmit(render_engine->graphics_queue, 1, &submit_info, transition_done_fence);
+        vkWaitForFences(render_engine->device, 1, &transition_done_fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
 
-        vkFreeCommandBuffers(render_engine.device, command_pool, 1, &cmds);
+        vkFreeCommandBuffers(render_engine->device, command_pool, 1, &cmds);
     }
 
     void VulkanSwapchain::deinit() {
         for(const Image* i : swapchain_images) {
             const VulkanImage* vk_image = static_cast<const VulkanImage*>(i);
-            vkDestroyImage(render_engine.device, vk_image->image, nullptr);
+            vkDestroyImage(render_engine->device, vk_image->image, nullptr);
             delete i;
         }
         swapchain_images.clear();
 
         for(const VkImageView& iv : swapchain_image_views) {
-            vkDestroyImageView(render_engine.device, iv, nullptr);
+            vkDestroyImageView(render_engine->device, iv, nullptr);
         }
         swapchain_image_views.clear();
 
         for(const Fence* f : fences) {
             const VulkanFence* vk_fence = static_cast<const VulkanFence*>(f);
-            vkDestroyFence(render_engine.device, vk_fence->fence, nullptr);
+            vkDestroyFence(render_engine->device, vk_fence->fence, nullptr);
             delete f;
         }
         fences.clear();
@@ -246,13 +246,13 @@ namespace nova::renderer::rhi {
                                            const std::pmr::vector<VkPresentModeKHR>& present_modes,
                                            const glm::uvec2& window_dimensions) {
 
-        const auto surface_format = choose_surface_format(render_engine.gpu.surface_formats);
+        const auto surface_format = choose_surface_format(render_engine->gpu.surface_formats);
         const auto present_mode = choose_present_mode(present_modes);
-        const auto extent = choose_surface_extent(render_engine.gpu.surface_capabilities, window_dimensions);
+        const auto extent = choose_surface_extent(render_engine->gpu.surface_capabilities, window_dimensions);
 
         VkSwapchainCreateInfoKHR info = {};
         info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        info.surface = render_engine.surface;
+        info.surface = render_engine->surface;
 
         info.minImageCount = requested_num_swapchain_images;
 
@@ -265,7 +265,7 @@ namespace nova::renderer::rhi {
 
         info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         info.queueFamilyIndexCount = 1;
-        info.pQueueFamilyIndices = &render_engine.graphics_family_index;
+        info.pQueueFamilyIndices = &render_engine->graphics_family_index;
 
         info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
         info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
@@ -273,7 +273,7 @@ namespace nova::renderer::rhi {
 
         info.clipped = VK_TRUE;
 
-        auto res = vkCreateSwapchainKHR(render_engine.device, &info, nullptr, &swapchain);
+        auto res = vkCreateSwapchainKHR(render_engine->device, &info, nullptr, &swapchain);
 
         NOVA_LOG(ERROR) << res;
 
@@ -306,7 +306,7 @@ namespace nova::renderer::rhi {
         image_view_create_info.subresourceRange.baseArrayLayer = 0;
         image_view_create_info.subresourceRange.layerCount = 1;
 
-        vkCreateImageView(render_engine.device, &image_view_create_info, nullptr, &vk_image->image_view);
+        vkCreateImageView(render_engine->device, &image_view_create_info, nullptr, &vk_image->image_view);
         swapchain_image_views.push_back(vk_image->image_view);
 
         swapchain_images.push_back(vk_image);
@@ -323,7 +323,7 @@ namespace nova::renderer::rhi {
         auto* vk_framebuffer = new VulkanFramebuffer;
         vk_framebuffer->size = swapchain_size;
         vk_framebuffer->num_attachments = 1;
-        vkCreateFramebuffer(render_engine.device, &framebuffer_create_info, nullptr, &vk_framebuffer->framebuffer);
+        vkCreateFramebuffer(render_engine->device, &framebuffer_create_info, nullptr, &vk_framebuffer->framebuffer);
 
         framebuffers.push_back(vk_framebuffer);
 
@@ -331,18 +331,18 @@ namespace nova::renderer::rhi {
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
         VkFence fence;
-        vkCreateFence(render_engine.device, &fence_create_info, nullptr, &fence);
+        vkCreateFence(render_engine->device, &fence_create_info, nullptr, &fence);
         fences.push_back(new VulkanFence{{}, fence});
     }
 
     std::pmr::vector<VkImage> VulkanSwapchain::get_swapchain_images() {
         std::pmr::vector<VkImage> vk_images;
 
-        vkGetSwapchainImagesKHR(render_engine.device, swapchain, &num_swapchain_images, nullptr);
+        vkGetSwapchainImagesKHR(render_engine->device, swapchain, &num_swapchain_images, nullptr);
         vk_images.resize(num_swapchain_images);
-        vkGetSwapchainImagesKHR(render_engine.device, swapchain, &num_swapchain_images, vk_images.data());
+        vkGetSwapchainImagesKHR(render_engine->device, swapchain, &num_swapchain_images, vk_images.data());
 
-        if(render_engine.settings.settings.debug.enabled) {
+        if(render_engine->settings.settings.debug.enabled) {
             for(uint32_t i = 0; i < vk_images.size(); i++) {
                 const auto image_name = "Swapchain image " + std::to_string(i);
 
@@ -351,7 +351,7 @@ namespace nova::renderer::rhi {
                 object_name.objectType = VK_OBJECT_TYPE_IMAGE;
                 object_name.objectHandle = reinterpret_cast<uint64_t>(vk_images.at(i));
                 object_name.pObjectName = image_name.c_str();
-                NOVA_CHECK_RESULT(render_engine.vkSetDebugUtilsObjectNameEXT(render_engine.device, &object_name));
+                NOVA_CHECK_RESULT(render_engine->vkSetDebugUtilsObjectNameEXT(render_engine->device, &object_name));
             }
         }
 
@@ -385,7 +385,7 @@ namespace nova::renderer::rhi {
         render_pass_create_info.dependencyCount = 0;
 
         VkRenderPass renderpass;
-        vkCreateRenderPass(render_engine.device, &render_pass_create_info, nullptr, &renderpass);
+        vkCreateRenderPass(render_engine->device, &render_pass_create_info, nullptr, &renderpass);
 
         return renderpass;
     }

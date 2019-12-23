@@ -34,7 +34,9 @@ namespace nova::renderer::rhi {
      */
     class D3D12RenderEngine final : public RenderEngine {
     public:
-        D3D12RenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window);
+        D3D12RenderEngine(NovaSettingsAccessManager& settings,
+                          const std::shared_ptr<NovaWindow>& window,
+                          memory::AllocatorHandle<>& allocator);
 
         D3D12RenderEngine(D3D12RenderEngine&& old) noexcept = delete;
         D3D12RenderEngine& operator=(D3D12RenderEngine&& old) noexcept = delete;
@@ -123,7 +125,10 @@ namespace nova::renderer::rhi {
 
         void destroy_fences(std::pmr::vector<Fence*>& fences, memory::AllocatorHandle<>& allocator) override;
 
-        CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override;
+        CommandList* create_command_list(memory::AllocatorHandle<>& allocator,
+                                         uint32_t thread_idx,
+                                         QueueType needed_queue_type,
+                                         CommandList::Level level) override;
 
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
@@ -196,10 +201,10 @@ namespace nova::renderer::rhi {
     Microsoft::WRL::ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,
                                                     const std::string& target,
                                                     const spirv_cross::CompilerHLSL::Options& options,
-                                                    std::unordered_map<uint32_t, std::pmr::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
+                                                    std::pmr::unordered_map<uint32_t, std::pmr::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
 
     void add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type,
                                           const D3D12_SHADER_INPUT_BIND_DESC& bind_desc,
                                           uint32_t set,
-                                          std::unordered_map<uint32_t, std::pmr::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
+                                          std::pmr::unordered_map<uint32_t, std::pmr::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
 } // namespace nova::renderer::rhi

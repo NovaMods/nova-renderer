@@ -26,8 +26,8 @@ using Microsoft::WRL::ComPtr;
 using namespace nova::memory;
 
 namespace nova::renderer::rhi {
-    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window)
-        : RenderEngine(new AllocatorHandle<>(std::pmr::new_delete_resource()), settings, window) {
+    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window, AllocatorHandle<>& allocator)
+        : RenderEngine(allocator, settings, window), command_allocators(allocator) {
         create_device();
 
         create_queues();
@@ -199,14 +199,16 @@ namespace nova::renderer::rhi {
         const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
         AllocatorHandle<>& allocator) {
         auto* pipeline_interface = allocator.new_other_object<DX12PipelineInterface>();
-        pipeline_interface->table_layouts = std::pmr::unordered_map<uint32_t, std::pmr::vector<ResourceBindingDescription>>(allocator);
         pipeline_interface->bindings = bindings;
 
+        pipeline_interface->table_layouts = std::pmr::unordered_map<uint32_t, std::pmr::vector<ResourceBindingDescription>>(allocator);
         pipeline_interface->table_layouts.reserve(16);
 
         for(const auto& [binding_name, binding] : bindings) {
+            // emplace the allocator, which will hopefully convince the STL to make a new vector that uses that allocator
+            pipeline_interface->table_layouts.emplace(binding.set, allocator);
             pipeline_interface->table_layouts[binding.set].reserve(16);
-            pipeline_interface->table_layouts[binding.set].push_back(binding);
+            pipeline_interface->table_layouts[binding.set].emplace_back(binding);
         }
 
         for(const auto& [set, bindings] : pipeline_interface->table_layouts) {
@@ -276,8 +278,7 @@ namespace nova::renderer::rhi {
                                                               uint32_t /* num_samplers */,
                                                               uint32_t /* num_uniform_buffers */,
                                                               AllocatorHandle<>& allocator) {
-        auto* pool = new DX12DescriptorPool; // This seems wrong
-        return pool;
+        return allocator.new_other_object<DX12DescriptorPool>();
     }
 
     std::pmr::vector<DescriptorSet*> D3D12RenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
@@ -292,7 +293,7 @@ namespace nova::renderer::rhi {
 
         const auto num_sets = static_cast<const uint32_t>(dx12_pipeline_interface->table_layouts.size());
 
-        std::pmr::vector<DescriptorSet*> descriptor_sets;
+        std::pmr::vector<DescriptorSet*> descriptor_sets(allocator);
         descriptor_sets.reserve(num_sets);
 
         for(uint32_t i = 0; i < num_sets; i++) {
@@ -370,7 +371,7 @@ namespace nova::renderer::rhi {
                                                               AllocatorHandle<>& allocator) {
         const auto* dx12_pipeline_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
 
-        auto* pipeline = new_object<DX12Pipeline>();
+        auto* pipeline = allocator.new_other_object<DX12Pipeline>();
 
         const auto states_begin = data.states.begin();
         const auto states_end = data.states.end();
@@ -381,7 +382,7 @@ namespace nova::renderer::rhi {
          * Compile all shader stages
          */
 
-        std::unordered_map<uint32_t, std::pmr::vector<D3D12_DESCRIPTOR_RANGE1>> shader_inputs;
+        std::pmr::unordered_map<uint32_t, std::pmr::vector<D3D12_DESCRIPTOR_RANGE1>> shader_inputs(allocator);
         spirv_cross::CompilerHLSL::Options options = {};
         options.shader_model = 51;
 
@@ -558,7 +559,7 @@ namespace nova::renderer::rhi {
     }
 
     Buffer* D3D12RenderEngine::create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory, AllocatorHandle<>& allocator) {
-        auto* buffer = new_object<DX12Buffer>();
+        auto* buffer = allocator.new_other_object<DX12Buffer>();
 
         D3D12_RESOURCE_STATES states = {};
         switch(info.buffer_usage) {
@@ -612,7 +613,7 @@ namespace nova::renderer::rhi {
     }
 
     Image* D3D12RenderEngine::create_image(const shaderpack::TextureCreateInfo& info, AllocatorHandle<>& allocator) {
-        const auto image = new_object<DX12Image>();
+        const auto image = allocator.new_other_object<DX12Image>();
         image->type = ResourceType::Image;
 
         const shaderpack::TextureFormat& format = info.format;
@@ -671,7 +672,7 @@ namespace nova::renderer::rhi {
     }
 
     Semaphore* D3D12RenderEngine::create_semaphore(AllocatorHandle<>& allocator) {
-        auto* semaphore = new DX12Semaphore;
+        auto* semaphore = allocator.new_other_object<DX12Semaphore>();
 
         device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(semaphore->fence.GetAddressOf()));
 
@@ -679,18 +680,18 @@ namespace nova::renderer::rhi {
     }
 
     std::pmr::vector<Semaphore*> D3D12RenderEngine::create_semaphores(const uint32_t num_semaphores, AllocatorHandle<>& allocator) {
-        std::pmr::vector<Semaphore*> semaphores;
+        std::pmr::vector<Semaphore*> semaphores(allocator);
         semaphores.reserve(num_semaphores);
 
-        for(int i = 0; i < num_semaphores; i++) {
-            semaphores.push_back(create_semaphore());
+        for(size_t i = 0; i < num_semaphores; i++) {
+            semaphores.push_back(create_semaphore(allocator));
         }
 
         return semaphores;
     }
 
     Fence* D3D12RenderEngine::create_fence(AllocatorHandle<>& allocator, const bool signaled) {
-        auto* fence = new_object<DX12Fence>();
+        auto* fence = allocator.new_other_object<DX12Fence>();
 
         const uint32_t initial_value = signaled ? CPU_FENCE_SIGNALED : 0;
 
@@ -704,12 +705,12 @@ namespace nova::renderer::rhi {
     std::pmr::vector<Fence*> D3D12RenderEngine::create_fences(AllocatorHandle<>& allocator,
                                                               const uint32_t num_fences,
                                                               const bool signaled) {
-        std::pmr::vector<Fence*> fences;
+        std::pmr::vector<Fence*> fences(allocator);
         fences.reserve(num_fences);
 
         const uint32_t initial_value = signaled ? CPU_FENCE_SIGNALED : 0;
         for(uint32_t i = 0; i < num_fences; i++) {
-            auto* fence = new_object<DX12Fence>();
+            auto* fence = allocator.new_other_object<DX12Fence>();
 
             device->CreateFence(initial_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence->fence.GetAddressOf()));
             fence->event = CreateEvent(nullptr, false, signaled, nullptr);
@@ -739,8 +740,8 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void D3D12RenderEngine::destroy_renderpass(Renderpass* /* pass */,
-                                               AllocatorHandle<>& allocator) { // No work needed, DX12Renderpasses don't own any GPU objects
+    void D3D12RenderEngine::destroy_renderpass(Renderpass* pass, AllocatorHandle<>& allocator) {
+        allocator.deallocate(reinterpret_cast<std::byte*>(pass), sizeof(DX12Renderpass));
     }
 
     void D3D12RenderEngine::destroy_framebuffer(Framebuffer* framebuffer, AllocatorHandle<>& allocator) {
@@ -748,29 +749,37 @@ namespace nova::renderer::rhi {
 
         // TODO: Some way to free the framebuffer's RTV descriptors? Probably we'll just destroy all the rendergraph framebuffers together,
         // completely clearing out the RTV descriptor heap
+
+        allocator.deallocate(reinterpret_cast<std::byte*>(d3d12_framebuffer), sizeof(DX12Framebuffer));
     }
 
     void D3D12RenderEngine::destroy_pipeline_interface(PipelineInterface* pipeline_interface, AllocatorHandle<>& allocator) {
         auto* dx12_interface = static_cast<DX12PipelineInterface*>(pipeline_interface);
 
         dx12_interface->root_sig = nullptr;
+
+        allocator.deallocate(reinterpret_cast<std::byte*>(dx12_interface), sizeof(DX12PipelineInterface));
     }
 
     void D3D12RenderEngine::destroy_pipeline(Pipeline* pipeline, AllocatorHandle<>& allocator) {
         auto* dx_pipeline = static_cast<DX12Pipeline*>(pipeline);
         dx_pipeline->pso = nullptr;
         dx_pipeline->root_signature = nullptr;
+
+        allocator.deallocate(reinterpret_cast<std::byte*>(dx_pipeline), sizeof(DX12Pipeline));
     }
 
     void D3D12RenderEngine::destroy_texture(Image* resource, AllocatorHandle<>& allocator) {
         auto* d3d12_framebuffer = static_cast<DX12Image*>(resource);
-        d3d12_framebuffer->resource = nullptr;
+
+        allocator.deallocate(reinterpret_cast<std::byte*>(d3d12_framebuffer), sizeof(DX12Image));
     }
 
     void D3D12RenderEngine::destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores, AllocatorHandle<>& allocator) {
         for(Semaphore* semaphore : semaphores) {
             auto* dx_semaphore = static_cast<DX12Semaphore*>(semaphore);
             dx_semaphore->fence = nullptr;
+            allocator.deallocate(reinterpret_cast<std::byte*>(semaphore), sizeof(DX12Semaphore));
         }
     }
 
@@ -779,10 +788,13 @@ namespace nova::renderer::rhi {
             auto* dx_fence = static_cast<DX12Fence*>(fence);
             dx_fence->fence = nullptr;
             CloseHandle(dx_fence->event);
+
+            allocator.deallocate(reinterpret_cast<std::byte*>(fence), sizeof(DX12Fence));
         }
     }
 
-    CommandList* D3D12RenderEngine::get_command_list(const uint32_t thread_idx,
+    CommandList* D3D12RenderEngine::create_command_list(memory::AllocatorHandle<>& allocator,
+                                                        const uint32_t thread_idx,
                                                      const QueueType needed_queue_type,
                                                      const CommandList::Level level) {
         D3D12_COMMAND_LIST_TYPE command_list_type = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -813,7 +825,7 @@ namespace nova::renderer::rhi {
         ComPtr<ID3D12GraphicsCommandList> graphics_list;
         list->QueryInterface(IID_PPV_ARGS(&graphics_list));
 
-        return new_object<Dx12CommandList>(graphics_list);
+        return allocator.new_other_object<Dx12CommandList>(graphics_list);
     }
 
     void D3D12RenderEngine::submit_command_list(CommandList* cmds,
@@ -865,7 +877,7 @@ namespace nova::renderer::rhi {
         const auto window_handle = window->get_window_handle();
         const auto window_size = window->get_window_size();
 
-        swapchain = new DX12Swapchain(this,
+        swapchain = internal_allocator.new_other_object<DX12Swapchain>(this,
                                       dxgi_factory.Get(),
                                       device.Get(),
                                       window_handle,
@@ -1012,7 +1024,7 @@ namespace nova::renderer::rhi {
                 info.architecture = DeviceArchitecture::Unknown;
         }
 
-        auto hr = device->QueryInterface(IID_PPV_ARGS(device4.GetAddressOf()));
+        const auto hr = device->QueryInterface(IID_PPV_ARGS(device4.GetAddressOf()));
         info.supports_raytracing = SUCCEEDED(hr);
 
         D3D_FEATURE_LEVEL requested_feature_levels[4] = {D3D_FEATURE_LEVEL_11_0,
@@ -1037,9 +1049,9 @@ namespace nova::renderer::rhi {
     ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,
                                     const std::string& target,
                                     const spirv_cross::CompilerHLSL::Options& options,
-                                    std::unordered_map<uint32_t, std::pmr::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
+                                    std::pmr::unordered_map<uint32_t, std::pmr::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
 
-        auto* shader_compiler = new spirv_cross::CompilerHLSL(shader.source);
+        auto* shader_compiler = new spirv_cross::CompilerHLSL(shader.source.data(), shader.source.size());
         shader_compiler->set_hlsl_options(options);
 
         const spirv_cross::ShaderResources resources = shader_compiler->get_shader_resources();
@@ -1151,7 +1163,7 @@ namespace nova::renderer::rhi {
     void add_resource_to_descriptor_table(const D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type,
                                           const D3D12_SHADER_INPUT_BIND_DESC& bind_desc,
                                           const uint32_t set,
-                                          std::unordered_map<uint32_t, std::pmr::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
+                                          std::pmr::unordered_map<uint32_t, std::pmr::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
         D3D12_DESCRIPTOR_RANGE1 range = {};
         range.BaseShaderRegister = bind_desc.BindPoint;
         range.RegisterSpace = bind_desc.Space;
@@ -1159,6 +1171,6 @@ namespace nova::renderer::rhi {
         range.RangeType = descriptor_type;
         range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-        tables[set].push_back(range);
+        tables[set].emplace_back(range);
     }
 } // namespace nova::renderer::rhi

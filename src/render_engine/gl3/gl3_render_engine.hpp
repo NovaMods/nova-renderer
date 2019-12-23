@@ -97,7 +97,7 @@ namespace nova::renderer::rhi {
 
         void destroy_fences(std::pmr::vector<Fence*>& fences, memory::AllocatorHandle<>& allocator) override;
 
-        CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level command_list_type) override;
+        CommandList* create_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level command_list_type) override;
 
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,

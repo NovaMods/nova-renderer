@@ -217,7 +217,7 @@ namespace nova::renderer::rhi {
          * While Fence are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still need to
          * clean up their GPU objects
          */
-        virtual void destroy_fences(std::pmr::vector<Fence*>& fences, memory::AllocatorHandle<>& allocator) = 0;
+        virtual void destroy_fences(const std::pmr::vector<Fence*>& fences, memory::AllocatorHandle<>& allocator) = 0;
 
         [[nodiscard]] Swapchain* get_swapchain() const;
 
@@ -235,7 +235,7 @@ namespace nova::renderer::rhi {
          * Command lists allocated by this method are returned ready to record commands into - the caller doesn't need
          * to begin the command list
          */
-        virtual CommandList* get_command_list(uint32_t thread_idx,
+        virtual CommandList* create_command_list(memory::AllocatorHandle<>& allocator, uint32_t thread_idx,
                                               QueueType needed_queue_type,
                                               CommandList::Level level = CommandList::Level::Primary) = 0;
 
@@ -246,6 +246,8 @@ namespace nova::renderer::rhi {
                                          const std::pmr::vector<Semaphore*>& signal_semaphores = {}) = 0;
 
     protected:
+        memory::AllocatorHandle<>& internal_allocator;
+
         std::shared_ptr<NovaWindow> window;
 
         glm::uvec2 swapchain_size = {};
@@ -261,6 +263,6 @@ namespace nova::renderer::rhi {
          *
          * \attention Called by the various render engine implementations
          */
-        RenderEngine(NovaSettingsAccessManager& settings, std::shared_ptr<NovaWindow> window);
+        RenderEngine(memory::AllocatorHandle<>& allocator, NovaSettingsAccessManager& settings, std::shared_ptr<NovaWindow> window);
     };
 } // namespace nova::renderer::rhi
