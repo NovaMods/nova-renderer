@@ -1,5 +1,7 @@
 #pragma once
 
+// TODO: Don't always use mallocator
+#include "nova_renderer/memory/mallocator.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
 #include "nova_renderer/window.hpp"
 
@@ -99,6 +101,9 @@ namespace nova::renderer::rhi {
 
     private:
         NvGlDeviceInfo gl_info;
+
+        // TODO: Not always use mallocator
+        bvestl::polyalloc::Mallocator mallocator;
 
         bool supports_geometry_shaders = false;
 

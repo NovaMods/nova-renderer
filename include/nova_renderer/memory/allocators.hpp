@@ -6,31 +6,45 @@ namespace nova::memory {
     template <typename AllocatedType = std::byte>
     class AllocatorHandle : public std::pmr::polymorphic_allocator<AllocatedType> {
     public:
-        // ReSharper disable once CppNonExplicitConvertingConstructor
-        AllocatorHandle(std::pmr::memory_resource* memory) : std::pmr::polymorphic_allocator<AllocatedType>(memory) {}
+        explicit AllocatorHandle(std::pmr::memory_resource* memory) : std::pmr::polymorphic_allocator<std::byte>(memory) {}
 
+        /*!
+         * \brief Allocates and constructs an object of the specified type
+         *
+         * Would be nice if C++ came with this method, but nope
+         */
         template <typename... Args>
         AllocatedType* new_object(Args&&... args) {
             auto* mem = this->allocate(1);
-            return new(mem) AllocatedType(std::forward<Args>(args)...);
-        }
-
-        template <typename U, typename... Args, std::enable_if_t<std::is_same_v<AllocatedType, std::byte>, int> = 0>
-        U* new_object(Args&&... args) {
-            auto* mem = this->allocate(sizeof(U));
-            return new(mem) U(std::forward<Args>(args)...);
+            this->construct(mem, args...);
+            return mem;
         }
 
         /*!
-         * \brief Creates a new allocator which allocates from the same memory pool, but allocates a different type of object
+         * \brief Allocates an object of a different type than what this allocator normally created
+         *
+         * Intended use case is that you have a byte allocator that you allocate a few different object types from
          */
-        template <typename U, std::enable_if_t<std::is_same_v<AllocatedType, std::byte>, int> = 0>
-        AllocatorHandle<U> specialize() {
-            auto* new_allocator = new_object<AllocatorHandle<U>>(resource());
-            return new_allocator;
+        template <typename ObjectType, typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
+        ObjectType* allocate_object() {
+            auto* mem = this->allocate(sizeof(ObjectType));
+            return static_cast<ObjectType*>(mem);
+        }
+
+        /*!
+         * \brief Allocates and constructs an object of a different type
+         *
+         * Intended use case is that you have a byte allocator that you use to create objects of different types
+         */
+        template <typename ObjectType, typename... Args, typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
+        ObjectType* new_other_object(Args... args) {
+            auto* mem = this->allocate(sizeof(ObjectType));
+            return new(mem) ObjectType(std::forward<Args>(args)...);
+        }
+
+        template <typename ObjectType, typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
+        AllocatorHandle<ObjectType> create_suballocator() {
+            return new_other_object<AllocatorHandle<ObjectType>>(this->resource());
         }
     };
-
-    template <typename ValueType>
-    using Vector = std::vector<ValueType, AllocatorHandle<ValueType>>;
 } // namespace nova::memory
