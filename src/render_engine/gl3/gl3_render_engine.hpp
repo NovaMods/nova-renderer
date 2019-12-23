@@ -22,7 +22,7 @@ namespace nova::renderer::rhi {
         // - Compile shaders to ARB assembly in 1500 ms or less
         // - Only one VAO
     public:
-        Gl4NvRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window);
+        Gl4NvRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window, memory::AllocatorHandle<>& allocator);
 
         Gl4NvRenderEngine(Gl4NvRenderEngine&& other) = delete;
         Gl4NvRenderEngine& operator=(Gl4NvRenderEngine&& other) noexcept = delete;
@@ -95,9 +95,11 @@ namespace nova::renderer::rhi {
 
         void destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores, memory::AllocatorHandle<>& allocator) override;
 
-        void destroy_fences(std::pmr::vector<Fence*>& fences, memory::AllocatorHandle<>& allocator) override;
+        void destroy_fences(const std::pmr::vector<Fence*>& fences, memory::AllocatorHandle<>& allocator) override;
 
-        CommandList* create_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level command_list_type) override;
+        CommandList* create_command_list(memory::AllocatorHandle<>& allocator, uint32_t thread_idx,
+                                         QueueType needed_queue_type,
+                                         CommandList::Level command_list_type) override;
 
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,

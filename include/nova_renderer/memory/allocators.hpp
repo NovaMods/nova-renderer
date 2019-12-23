@@ -11,7 +11,7 @@ namespace nova::memory {
         /*!
          * \brief Allocates and constructs an object of the specified type
          *
-         * Would be nice if C++ came with this method, but nope
+         * Would be nice if C++ came with this method, but nope not yet
          */
         template <typename... Args>
         AllocatedType* new_object(Args&&... args) {
@@ -43,7 +43,7 @@ namespace nova::memory {
         }
 
         template <typename ObjectType, typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
-        AllocatorHandle<ObjectType> create_suballocator() {
+        AllocatorHandle<ObjectType>* create_suballocator() {
             return new_other_object<AllocatorHandle<ObjectType>>(this->resource());
         }
     };

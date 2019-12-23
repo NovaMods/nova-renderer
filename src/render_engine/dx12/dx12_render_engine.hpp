@@ -123,7 +123,7 @@ namespace nova::renderer::rhi {
 
         void destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores, memory::AllocatorHandle<>& allocator) override;
 
-        void destroy_fences(std::pmr::vector<Fence*>& fences, memory::AllocatorHandle<>& allocator) override;
+        void destroy_fences(const std::pmr::vector<Fence*>& fences, memory::AllocatorHandle<>& allocator) override;
 
         CommandList* create_command_list(memory::AllocatorHandle<>& allocator,
                                          uint32_t thread_idx,

@@ -26,7 +26,9 @@ using Microsoft::WRL::ComPtr;
 using namespace nova::memory;
 
 namespace nova::renderer::rhi {
-    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window, AllocatorHandle<>& allocator)
+    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings,
+                                         const std::shared_ptr<NovaWindow>& window,
+                                         AllocatorHandle<>& allocator)
         : RenderEngine(allocator, settings, window), command_allocators(allocator) {
         create_device();
 
@@ -783,7 +785,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void D3D12RenderEngine::destroy_fences(std::pmr::vector<Fence*>& fences, AllocatorHandle<>& allocator) {
+    void D3D12RenderEngine::destroy_fences(const std::pmr::vector<Fence*>& fences, AllocatorHandle<>& allocator) {
         for(Fence* fence : fences) {
             auto* dx_fence = static_cast<DX12Fence*>(fence);
             dx_fence->fence = nullptr;
@@ -795,8 +797,8 @@ namespace nova::renderer::rhi {
 
     CommandList* D3D12RenderEngine::create_command_list(memory::AllocatorHandle<>& allocator,
                                                         const uint32_t thread_idx,
-                                                     const QueueType needed_queue_type,
-                                                     const CommandList::Level level) {
+                                                        const QueueType needed_queue_type,
+                                                        const CommandList::Level level) {
         D3D12_COMMAND_LIST_TYPE command_list_type = D3D12_COMMAND_LIST_TYPE_DIRECT;
         if(level == CommandList::Level::Secondary) {
             command_list_type = D3D12_COMMAND_LIST_TYPE_BUNDLE;
@@ -878,12 +880,12 @@ namespace nova::renderer::rhi {
         const auto window_size = window->get_window_size();
 
         swapchain = internal_allocator.new_other_object<DX12Swapchain>(this,
-                                      dxgi_factory.Get(),
-                                      device.Get(),
-                                      window_handle,
-                                      glm::uvec2{window_size.x, window_size.y},
-                                      num_frames,
-                                      direct_command_queue.Get());
+                                                                       dxgi_factory.Get(),
+                                                                       device.Get(),
+                                                                       window_handle,
+                                                                       glm::uvec2{window_size.x, window_size.y},
+                                                                       num_frames,
+                                                                       direct_command_queue.Get());
     }
 
     void D3D12RenderEngine::create_device() {

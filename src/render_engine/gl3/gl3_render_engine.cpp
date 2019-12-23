@@ -13,17 +13,19 @@
 using namespace nova::memory;
 
 namespace nova::renderer::rhi {
-    Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window)
-        : RenderEngine(new AllocatorHandle<>(std::pmr::new_delete_resource()), settings, window) {
+    Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings,
+                                         const std::shared_ptr<NovaWindow>& window,
+                                         memory::AllocatorHandle<>& allocator)
+        : RenderEngine(allocator, settings, window) {
         gladLoadGLLoader(NovaWindow::get_gl_proc_address);
 
         save_device_info();
 
-        swapchain = new Gl3Swapchain(settings.settings.max_in_flight_frames, window->get_window_size());
+        swapchain = internal_allocator.new_other_object<Gl3Swapchain>(settings.settings.max_in_flight_frames, window->get_window_size());
 
         set_initial_state();
 
-        command_allocator = new AllocatorHandle<Gl3CommandList>(std::pmr::new_delete_resource());
+        command_allocator = internal_allocator.create_suballocator<Gl3CommandList>();
     }
 
     Gl4NvRenderEngine::~Gl4NvRenderEngine() {
@@ -420,15 +422,16 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void Gl4NvRenderEngine::destroy_fences(std::pmr::vector<Fence*>& fences, AllocatorHandle<>& allocator) {
+    void Gl4NvRenderEngine::destroy_fences(const std::pmr::vector<Fence*>& fences, AllocatorHandle<>& allocator) {
         for(auto* fence : fences) {
             allocator.deallocate(reinterpret_cast<std::byte*>(fence), sizeof(Gl3Fence));
         }
     }
 
-    CommandList* Gl4NvRenderEngine::create_command_list(uint32_t /* thread_idx */,
-                                                     QueueType /* needed_queue_type */,
-                                                     CommandList::Level /* command_list_type */) {
+    CommandList* Gl4NvRenderEngine::create_command_list(AllocatorHandle<>& /*allocator*/,
+                                                        uint32_t /* thread_idx */,
+                                                        QueueType /* needed_queue_type */,
+                                                        CommandList::Level /* command_list_type */) {
         return command_allocator->new_object();
     }
 
