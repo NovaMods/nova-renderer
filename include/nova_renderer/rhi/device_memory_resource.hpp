@@ -1,8 +1,8 @@
 #pragma once
 
-#include "nova_renderer/memory//allocation_strategy.hpp"
-#include "nova_renderer/memory//allocation_structs.hpp"
-#include "nova_renderer/memory//bytes.hpp"
+#include "nova_renderer/memory/allocation_strategy.hpp"
+#include "nova_renderer/memory/allocation_structs.hpp"
+#include "nova_renderer/memory/bytes.hpp"
 
 using namespace bvestl::polyalloc::operators;
 
