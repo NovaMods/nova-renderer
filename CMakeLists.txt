@@ -423,6 +423,7 @@ if(NOVA_ENABLE_VULKAN_RHI)
     endif()
 endif()
 
+# TODO: Figure out why we need to do this, and add a comment when we know
 if(TARGET glfw)
     set(GLFW_TARGET_NAME glfw)
 elseif(TARGET glfw3)
