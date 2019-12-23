@@ -155,6 +155,7 @@ namespace nova::renderer {
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
+        std::array<memory::AllocatorHandle<>, NUM_IN_FLIGHT_FRAMES> frame_allocators;
         static std::unique_ptr<NovaRenderer> instance;
 
         rhi::Sampler* point_sampler;
@@ -177,6 +178,8 @@ namespace nova::renderer {
 
 #pragma region Initialization
         void create_global_allocator();
+
+        void create_per_frame_allocators();
 
         /*!
          * \brief Creates global GPU memory pools

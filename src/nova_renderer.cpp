@@ -61,6 +61,8 @@ namespace nova::renderer {
     NovaRenderer::NovaRenderer(const NovaSettings& settings) : render_settings(settings) {
         create_global_allocator();
 
+        create_per_frame_allocators();
+
         mtr_init("trace.json");
 
         MTR_META_PROCESS_NAME("NovaRenderer");
@@ -101,21 +103,21 @@ namespace nova::renderer {
 #if defined(NOVA_WINDOWS) && defined(NOVA_D3D12_RHI)
             {
                 MTR_SCOPE("Init", "InitDirect3D12RenderEngine");
-                rhi = std::make_unique<rhi::D3D12RenderEngine>(render_settings, window);
+                rhi = std::make_unique<rhi::D3D12RenderEngine>(render_settings, window, *global_allocator);
             } break;
 #endif
 
 #if defined(NOVA_VULKAN_RHI)
             case GraphicsApi::Vulkan: {
                 MTR_SCOPE("Init", "InitVulkanRenderEngine");
-                rhi = std::make_unique<rhi::VulkanRenderEngine>(render_settings, window);
+                rhi = std::make_unique<rhi::VulkanRenderEngine>(render_settings, window, *global_allocator);
             } break;
 #endif
 
 #if defined(NOVA_OPENGL_RHI)
             case GraphicsApi::NvGl4: {
                 MTR_SCOPE("Init", "InitGL3RenderEngine");
-                rhi = std::make_unique<rhi::Gl4NvRenderEngine>(render_settings, window);
+                rhi = std::make_unique<rhi::Gl4NvRenderEngine>(render_settings, window, *global_allocator);
             } break;
 #endif
             default: {
@@ -144,7 +146,10 @@ namespace nova::renderer {
     void NovaRenderer::execute_frame() {
         MTR_SCOPE("RenderLoop", "execute_frame");
         frame_count++;
-        cur_frame_idx = rhi->get_swapchain()->acquire_next_swapchain_image();
+
+        AllocatorHandle<>& frame_allocator = frame_allocators.at(frame_count % NUM_IN_FLIGHT_FRAMES);
+
+        cur_frame_idx = rhi->get_swapchain()->acquire_next_swapchain_image(frame_allocator);
 
         NOVA_LOG(DEBUG) << "\n***********************\n        FRAME START        \n***********************";
 
@@ -152,7 +157,7 @@ namespace nova::renderer {
 
         // TODO: Figure out wtf I'm supposed to do about UI
 
-        rhi::CommandList* cmds = rhi->create_command_list(0, rhi::QueueType::Graphics);
+        rhi::CommandList* cmds = rhi->create_command_list(frame_allocator, 0, rhi::QueueType::Graphics);
 
         // This may or may not work well lmao
         for(auto& [id, proc_mesh] : proc_meshes) {
@@ -821,13 +826,24 @@ namespace nova::renderer {
 
     void NovaRenderer::deinitialize() { instance.reset(); }
 
-    void NovaRenderer::create_global_allocator() { global_allocator = std::make_shared<AllocatorHandle<>>(std::pmr::new_delete_resource()); }
+    void NovaRenderer::create_global_allocator() {
+        global_allocator = std::make_shared<AllocatorHandle<>>(std::pmr::new_delete_resource());
+    }
+
+    void NovaRenderer::create_per_frame_allocators() {
+        for(size_t i = 0; i < frame_allocators.size(); i++) {
+            void* ptr = global_allocator->allocate(PER_FRAME_MEMORY_SIZE.b_count());
+            auto* mem = global_allocator->new_other_object<std::pmr::monotonic_buffer_resource>(ptr, PER_FRAME_MEMORY_SIZE);
+            frame_allocators[i] = AllocatorHandle<>(mem);
+        }
+    }
 
     void NovaRenderer::create_global_gpu_pools() {
         const uint64_t mesh_memory_size = 512000000;
         ntl::Result<rhi::DeviceMemory*> memory_result = rhi->allocate_device_memory(mesh_memory_size,
                                                                                     rhi::MemoryUsage::DeviceOnly,
-                                                                                    rhi::ObjectType::Buffer);
+                                                                                    rhi::ObjectType::Buffer,
+                                                                                    *global_allocator);
         const ntl::Result<DeviceMemoryResource*> mesh_memory_result = memory_result.map([&](rhi::DeviceMemory* memory) {
             auto* allocator = new BlockAllocationStrategy(global_allocator.get(), Bytes(mesh_memory_size), 64_b);
             return new DeviceMemoryResource(memory, allocator);
@@ -843,7 +859,10 @@ namespace nova::renderer {
         // Assume 65k things, plus we need space for the builtin ubos
         const uint64_t ubo_memory_size = sizeof(PerFrameUniforms) + sizeof(glm::mat4) * 0xFFFF;
         const ntl::Result<DeviceMemoryResource*>
-            ubo_memory_result = rhi->allocate_device_memory(ubo_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
+            ubo_memory_result = rhi->allocate_device_memory(ubo_memory_size,
+                                                            rhi::MemoryUsage::DeviceOnly,
+                                                            rhi::ObjectType::Buffer,
+                                                            *global_allocator)
                                     .map([=](rhi::DeviceMemory* memory) {
                                         auto* allocator = new BumpPointAllocationStrategy(Bytes(ubo_memory_size), Bytes(sizeof(glm::mat4)));
                                         return new DeviceMemoryResource(memory, allocator);
@@ -861,7 +880,8 @@ namespace nova::renderer {
         const ntl::Result<DeviceMemoryResource*>
             staging_memory_result = rhi->allocate_device_memory(staging_memory_size.b_count(),
                                                                 rhi::MemoryUsage::StagingBuffer,
-                                                                rhi::ObjectType::Buffer)
+                                                                rhi::ObjectType::Buffer,
+                                                                *global_allocator)
                                         .map([=](rhi::DeviceMemory* memory) {
                                             auto* allocator = new BumpPointAllocationStrategy(staging_memory_size, 64_b);
                                             return new DeviceMemoryResource(memory, allocator);
@@ -876,7 +896,7 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_global_sync_objects() {
-        const std::pmr::vector<rhi::Fence*>& fences = rhi->create_fences(NUM_IN_FLIGHT_FRAMES, true);
+        const std::pmr::vector<rhi::Fence*>& fences = rhi->create_fences(*global_allocator, NUM_IN_FLIGHT_FRAMES, true);
         for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
             frame_fences[i] = fences.at(i);
         }
@@ -892,7 +912,7 @@ namespace nova::renderer {
             info.format.width = 1;
             info.format.height = 1;
 
-            rhi::Image* scene_output_render_target = rhi->create_image(info);
+            rhi::Image* scene_output_render_target = rhi->create_image(info, *global_allocator);
             builtin_images.emplace(SCENE_OUTPUT_RENDER_TARGET_NAME, scene_output_render_target);
         }
     }
@@ -903,7 +923,7 @@ namespace nova::renderer {
         per_frame_data_create_info.size = sizeof(PerFrameUniforms);
         per_frame_data_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
-        auto* per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory);
+        auto* per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory, *global_allocator);
         builtin_buffers.emplace(PER_FRAME_DATA_NAME, per_frame_data_buffer);
 
         // Buffer for each drawcall's model matrix
@@ -911,7 +931,7 @@ namespace nova::renderer {
         model_matrix_buffer_create_info.size = sizeof(glm::mat4) * 0xFFFF;
         model_matrix_buffer_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
-        auto* model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info, *ubo_memory);
+        auto* model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info, *ubo_memory, *global_allocator);
         builtin_buffers.emplace(MODEL_MATRIX_BUFFER_NAME, model_matrix_buffer);
     }
 
