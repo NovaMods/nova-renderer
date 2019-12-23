@@ -2,7 +2,6 @@
 
 #include <array>
 #include <cstdint>
-#include <optional>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/memory/block_allocation_strategy.hpp"
