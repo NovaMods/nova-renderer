@@ -11,7 +11,7 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "nova_renderer/memory/polyalloc.hpp"
+#include "nova_renderer/memory/allocators.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 #include "glad/glad.h"
@@ -73,11 +73,19 @@ namespace nova::renderer::rhi {
         std::mutex mutex;
         std::condition_variable cv;
         bool signaled = false;
+
+        Gl3Fence() = default;
+
+        explicit Gl3Fence(const bool signaled) : signaled(signaled) {}
     };
 
     struct Gl3Semaphore : Semaphore {
         std::mutex mutex;
         std::condition_variable cv;
         bool signaled = false;
+
+        Gl3Semaphore() = default;
+
+        explicit Gl3Semaphore(const bool signaled) : signaled(signaled) {}
     };
 } // namespace nova::renderer::rhi
