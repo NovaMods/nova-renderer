@@ -115,9 +115,16 @@ namespace nova::renderer::rhi {
 
     DescriptorPool* Gl4NvRenderEngine::create_descriptor_pool(const uint32_t num_sampled_images,
                                                               const uint32_t num_samplers,
+<<<<<<< HEAD
                                                               const uint32_t num_uniform_buffers) {
         const size_t total_num_descriptors = num_sampled_images + num_samplers + num_uniform_buffers;
         const size_t needed_descriptor_memory = total_num_descriptors * sizeof(Gl3Descriptor);
+=======
+                                                              const uint32_t num_uniform_buffers,
+                                                              AllocatorHandle<>& allocator) {
+        const size_t total_num_descriptors = num_sampled_images + num_uniform_buffers + num_samplers;
+        const size_t descriptor_memory_size = total_num_descriptors * sizeof(Gl3Descriptor);
+>>>>>>> [rhi::nvgl] More better DescriptorPool
 
         void* descriptor_allocator_memory = shaderpack_allocator->allocate(needed_descriptor_memory);
         auto* descriptor_memory_resource = shaderpack_allocator
@@ -125,12 +132,16 @@ namespace nova::renderer::rhi {
                                                                                                  needed_descriptor_memory);
         auto* descriptor_allocator = shaderpack_allocator->new_object<AllocatorHandle<Gl3Descriptor>>(descriptor_memory_resource);
 
+<<<<<<< HEAD
         auto* pool = shaderpack_allocator->new_object<Gl3DescriptorPool>(descriptor_allocator);
 
         pool->descriptors.resize(static_cast<std::size_t>(num_sampled_images) + num_uniform_buffers);
         pool->sampler_sets.resize(num_samplers);
 
         return pool;
+=======
+        return allocator.new_other_object<Gl3DescriptorPool>(descriptor_allocator);
+>>>>>>> [rhi::nvgl] More better DescriptorPool
     }
 
     std::vector<DescriptorSet*> Gl4NvRenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
