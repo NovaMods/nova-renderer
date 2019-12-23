@@ -854,8 +854,10 @@ namespace nova::renderer {
                                                                                     rhi::ObjectType::Buffer,
                                                                                     *global_allocator);
         const ntl::Result<DeviceMemoryResource*> mesh_memory_result = memory_result.map([&](rhi::DeviceMemory* memory) {
-            auto* allocator = new BlockAllocationStrategy(global_allocator.get(), Bytes(mesh_memory_size), 64_b);
-            return new DeviceMemoryResource(memory, allocator);
+            auto* allocator = global_allocator->new_other_object<BlockAllocationStrategy>(global_allocator.get(),
+                                                                                          Bytes(mesh_memory_size),
+                                                                                          64_b);
+            return global_allocator->new_other_object<DeviceMemoryResource>(memory, allocator);
         });
 
         if(mesh_memory_result) {
@@ -873,8 +875,10 @@ namespace nova::renderer {
                                                             rhi::ObjectType::Buffer,
                                                             *global_allocator)
                                     .map([=](rhi::DeviceMemory* memory) {
-                                        auto* allocator = new BumpPointAllocationStrategy(Bytes(ubo_memory_size), Bytes(sizeof(glm::mat4)));
-                                        return new DeviceMemoryResource(memory, allocator);
+                                        auto* allocator = global_allocator
+                                                              ->new_other_object<BumpPointAllocationStrategy>(Bytes(ubo_memory_size),
+                                                                                                              Bytes(sizeof(glm::mat4)));
+                                        return global_allocator->new_other_object<DeviceMemoryResource>(memory, allocator);
                                     });
 
         if(ubo_memory_result) {
@@ -892,15 +896,17 @@ namespace nova::renderer {
                                                                 rhi::ObjectType::Buffer,
                                                                 *global_allocator)
                                         .map([=](rhi::DeviceMemory* memory) {
-                                            auto* allocator = new BumpPointAllocationStrategy(staging_memory_size, 64_b);
-                                            return new DeviceMemoryResource(memory, allocator);
+                                            auto* allocator = global_allocator
+                                                                  ->new_other_object<BumpPointAllocationStrategy>(staging_memory_size,
+                                                                                                                  64_b);
+                                            return global_allocator->new_other_object<DeviceMemoryResource>(memory, allocator);
                                         });
 
         if(staging_memory_result) {
             staging_buffer_memory = std::make_unique<DeviceMemoryResource>(*staging_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create staging buffer memory pool: " << staging_memory_result.error.to_string().c_str();
+            NOVA_LOG(ERROR) << "Could not create staging buffer memory pool: " << staging_memory_result.error.to_string();
         }
     }
 
