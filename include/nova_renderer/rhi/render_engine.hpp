@@ -103,8 +103,8 @@ namespace nova::renderer::rhi {
                                                                      mem::AllocatorHandle<>& allocator) = 0;
 
         [[nodiscard]] virtual std::pmr::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                                                 DescriptorPool* pool,
-                                                                                 mem::AllocatorHandle<>& allocator) = 0;
+                                                                                      DescriptorPool* pool,
+                                                                                      mem::AllocatorHandle<>& allocator) = 0;
 
         virtual void update_descriptor_sets(std::pmr::vector<DescriptorSetWrite>& writes) = 0;
 
@@ -144,13 +144,14 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] virtual Semaphore* create_semaphore(mem::AllocatorHandle<>& allocator) = 0;
 
-        [[nodiscard]] virtual std::pmr::vector<Semaphore*> create_semaphores(uint32_t num_semaphores, mem::AllocatorHandle<>& allocator) = 0;
+        [[nodiscard]] virtual std::pmr::vector<Semaphore*> create_semaphores(uint32_t num_semaphores,
+                                                                             mem::AllocatorHandle<>& allocator) = 0;
 
         [[nodiscard]] virtual Fence* create_fence(mem::AllocatorHandle<>& allocator, bool signaled = false) = 0;
 
         [[nodiscard]] virtual std::pmr::vector<Fence*> create_fences(mem::AllocatorHandle<>& allocator,
-                                                                uint32_t num_fences,
-                                                                bool signaled = false) = 0;
+                                                                     uint32_t num_fences,
+                                                                     bool signaled = false) = 0;
 
         /*!
          * \blocks the fence until all fences are signaled
@@ -235,9 +236,10 @@ namespace nova::renderer::rhi {
          * Command lists allocated by this method are returned ready to record commands into - the caller doesn't need
          * to begin the command list
          */
-        virtual CommandList* create_command_list(mem::AllocatorHandle<>& allocator, uint32_t thread_idx,
-                                              QueueType needed_queue_type,
-                                              CommandList::Level level = CommandList::Level::Primary) = 0;
+        virtual CommandList* create_command_list(mem::AllocatorHandle<>& allocator,
+                                                 uint32_t thread_idx,
+                                                 QueueType needed_queue_type,
+                                                 CommandList::Level level = CommandList::Level::Primary) = 0;
 
         virtual void submit_command_list(CommandList* cmds,
                                          QueueType queue,

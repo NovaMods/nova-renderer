@@ -87,20 +87,23 @@ namespace nova::renderer::rhi {
 
     ntl::Result<DeviceMemory*> Gl4NvRenderEngine::allocate_device_memory(const Bytes /* size */,
                                                                          const MemoryUsage /* type */,
-                                                                         const ObjectType /* allowed_objects */) {
-        return ntl::Result(new DeviceMemory);
+                                                                         const ObjectType /* allowed_objects */,
+                                                                         AllocatorHandle<>& allocator) {
+        return ntl::Result(allocator.new_other_object<DeviceMemory>());
     }
 
     ntl::Result<Renderpass*> Gl4NvRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& /* data */,
-                                                                  const glm::uvec2& /* framebuffer_size */) {
-        return ntl::Result<Renderpass*>(shaderpack_allocator->new_object<Renderpass>());
+                                                                  const glm::uvec2& /* framebuffer_size */,
+                                                                  AllocatorHandle<>& allocator) {
+        return ntl::Result(allocator.new_other_object<Renderpass>());
     }
 
     Framebuffer* Gl4NvRenderEngine::create_framebuffer(const Renderpass* /* renderpass */,
                                                        const std::pmr::vector<Image*>& color_attachments,
                                                        const std::optional<Image*> depth_attachment,
-                                                       const glm::uvec2& /* framebuffer_size */) {
-        auto* framebuffer = shaderpack_allocator->new_object<Gl3Framebuffer>();
+                                                       const glm::uvec2& /* framebuffer_size */,
+                                                       AllocatorHandle<>& allocator) {
+        auto* framebuffer = allocator.new_other_object<Gl3Framebuffer>();
 
         glGenFramebuffers(1, &framebuffer->id);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->id);
@@ -411,7 +414,7 @@ namespace nova::renderer::rhi {
         allocator.deallocate(reinterpret_cast<std::byte*>(pipeline), sizeof(Gl3Pipeline));
     }
 
-    void Gl4NvRenderEngine::destroy_texture(Image* resource) {
+    void Gl4NvRenderEngine::destroy_texture(Image* resource, AllocatorHandle<>& allocator) {
         auto* gl_image = static_cast<Gl3Image*>(resource);
         glDeleteTextures(1, &gl_image->id);
 

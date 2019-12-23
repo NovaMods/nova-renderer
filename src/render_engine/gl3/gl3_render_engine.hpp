@@ -1,7 +1,5 @@
 #pragma once
 
-// TODO: Don't always use mallocator
-#include "nova_renderer/memory/mallocator.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
 #include "nova_renderer/window.hpp"
 
@@ -48,6 +46,7 @@ namespace nova::renderer::rhi {
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
                                         const std::pmr::vector<Image*>& color_attachments,
+                                        const std::optional<Image*> depth_attachment,
                                         const glm::uvec2& framebuffer_size,
                                         mem::AllocatorHandle<>& allocator) override;
 
@@ -121,9 +120,6 @@ namespace nova::renderer::rhi {
 
     private:
         NvGlDeviceInfo gl_info;
-
-        // TODO: Not always use mallocator
-        bvestl::polyalloc::Mallocator mallocator;
 
         bool supports_geometry_shaders = false;
 

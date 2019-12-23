@@ -1,10 +1,5 @@
-/*!
- * \author ddubois
- * \date 31-Mar-19.
- */
+#pragma once
 
-#ifndef NOVA_RENDERER_GL_2_COMMAND_LIST_HPP
-#define NOVA_RENDERER_GL_2_COMMAND_LIST_HPP
 #include "nova_renderer/rhi/command_list.hpp"
 
 #include "gl3_structs.hpp"
@@ -153,5 +148,3 @@ namespace nova::renderer::rhi {
         std::pmr::vector<Gl3Command> commands;
     };
 } // namespace nova::renderer::rhi
-
-#endif // NOVA_RENDERER_GL_2_COMMAND_LIST_HPP
