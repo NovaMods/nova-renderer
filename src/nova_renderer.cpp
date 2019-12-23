@@ -167,6 +167,7 @@ namespace nova::renderer {
         FrameContext ctx = {};
         ctx.frame_count = frame_count;
         ctx.nova = this;
+        ctx.allocator = &frame_allocator;
         ctx.swapchain_framebuffer = swapchain->get_framebuffer(cur_frame_idx);
         ctx.swapchain_image = swapchain->get_image(cur_frame_idx);
 
