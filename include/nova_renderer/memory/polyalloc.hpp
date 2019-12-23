@@ -12,6 +12,8 @@
 #define BVESTL_POLYALLOC_DEFAULT_CONSTRUCT_ASSERT
 #endif
 
+#include <cstddef>
+
 namespace bvestl::polyalloc {
     class Allocator {
     public:
