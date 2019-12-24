@@ -1,9 +1,9 @@
 #pragma once
 
+#include <cstdint>
+#include <memory_resource>
 #include <string>
 #include <vector>
-
-#include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
 
