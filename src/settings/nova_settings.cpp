@@ -1,8 +1,7 @@
 #include "nova_renderer/nova_settings.hpp"
 
+#include <memory_resource>
 #include <utility>
-
-#include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
     NovaSettingsAccessManager::NovaSettingsAccessManager(NovaSettings settings) : settings(std::move(settings)) {}
