@@ -1,12 +1,4 @@
-#include <utility>
-
-/*!
- * \author ddubois
- * \date 21-Aug-18.
- */
-
-#ifndef NOVA_RENDERER_LOGGER_HPP
-#define NOVA_RENDERER_LOGGER_HPP
+#pragma once
 
 #include <functional>
 #include <mutex>
@@ -67,5 +59,3 @@ namespace nova::renderer {
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define NOVA_LOG(LEVEL) ::nova::renderer::Logger::instance.log(::nova::renderer::LogLevel::LEVEL)
-
-#endif // NOVA_RENDERER_LOGGER_HPP

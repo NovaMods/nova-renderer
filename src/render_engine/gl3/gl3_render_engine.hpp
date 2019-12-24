@@ -19,6 +19,7 @@ namespace nova::renderer::rhi {
         // Some optimizations that still need to happen:
         // - Compile shaders to ARB assembly in 1500 ms or less
         // - Only one VAO
+        // - Don't bind framebuffers, instead bind individual drawbuffers
     public:
         Gl4NvRenderEngine(NovaSettingsAccessManager& settings,
                           const std::shared_ptr<NovaWindow>& window,

@@ -7,6 +7,7 @@
 #define NOVA_RENDERER_RESOURCEPACK_H
 
 #include <memory>
+#include <memory_resource>  // MSVC says this is unused, but GCC seems to disagree so don't remove it
 #include <mutex>
 #include <optional>
 #include <string>
@@ -14,7 +15,6 @@
 #include <vector>
 
 #include "nova_renderer/util/filesystem.hpp"
-#include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
     /*!
