@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <memory_resource>
 #include <string>
 #include <vector>
 
