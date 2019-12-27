@@ -72,6 +72,60 @@ include(minitrace)
 set(BUILD_EXAMPLES OFF CACHE BOOL "Disable Miniz examples" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/miniz)
 
+# Mono
+if (MONO_ROOT)
+	message("${MONO_ROOT}/lib")
+	message("${MONO_ROOT}/include/mono-2.0")
+	find_library(
+		MONO_LIB_LOCATION 
+		NAMES libmono-static-sgen
+		PATHS "${MONO_ROOT}"
+		PATH_SUFFIXES lib
+		NO_DEFAULT_PATH 
+		DOC "Location of mono library")
+	find_path(
+		MONO_INCLUDE_DIR 
+		NAMES mono/jit/jit.h
+		PATHS "${MONO_ROOT}"
+		PATH_SUFFIXES include include/mono-2.0 mono-2.0
+		NO_DEFAULT_PATH 
+		DOC "Location of mono include files")
+else()
+	find_library(
+		MONO_LIB_LOCATION 
+		NAMES libmono-static-sgen
+		HINTS "C:/Program Files/Mono"
+		PATHS ENV MONO_ROOT
+		PATH_SUFFIXES lib
+		DOC "Location of mono library")
+	find_path(
+		MONO_INCLUDE_DIR 
+		NAMES mono/jit/jit.h
+		HINTS "C:/Program Files/Mono"
+		PATHS ENV MONO_ROOT
+		PATH_SUFFIXES include include/mono-2.0 mono-2.0
+		DOC "Location of mono include files")
+endif()
+if(MONO_LIB_LOCATION)
+	message(STATUS "Mono library found: ${MONO_LIB_LOCATION}")
+endif()
+if(MONO_INCLUDE_DIR)
+	message(STATUS "Mono include dir found: ${MONO_INCLUDE_DIR}")
+endif()
+if(NOT MONO_LIB_LOCATION)
+	message(FATAL_ERROR "Mono library not found. Pass MONO_ROOT to root of mono install or set MONO_LIB_LOCATION to the path to libmono-static-sgen manually.")
+endif()
+if(NOT MONO_INCLUDE_DIR)
+	message(FATAL_ERROR "Mono include files not found. Pass MONO_ROOT to root of mono install or set MONO_INCLUDE_DIR to the include directory with mono/jit/jit.h manually.")
+endif()
+
+add_library(mono::mono INTERFACE IMPORTED)
+set_property(TARGET mono::mono
+	PROPERTY INTERFACE_LINK_LIBRARIES "${MONO_LIB_LOCATION}"
+	PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${MONO_INCLUDE_DIR}"
+	PROPERTY INTERFACE_COMPILE_DEFINITIONS "_REENTRANT"
+)
+
 # Hide unnecessary targets from all
 
 set_property(TARGET glslang PROPERTY EXCLUDE_FROM_ALL True)

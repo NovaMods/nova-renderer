@@ -407,6 +407,7 @@ set(COMMON_LINK_LIBS
         SPIRV
         minitrace
         miniz
+        mono::mono
         nlohmann::json
         vma::vma
         SPIRV-Tools
