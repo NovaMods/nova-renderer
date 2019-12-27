@@ -34,6 +34,11 @@ We are still in early development of the multi-backend rewrite and things may ch
 
 [Contributing](docs/contributing.md).
 
+### Dependencies
+
+One dependency needs to be installed system wide. The [LunarG Vulkan SDK version v1.1.126.0](https://vulkan.lunarg.com/sdk/home). Installation instructions can be found on the website.
+When installed in the default location, we can detect it and use it.
+
 Nova is built the same way most cmake projects are built. However, git submodules need to be cloned:
 
 ```
@@ -42,7 +47,7 @@ git submodule update --init --recursive
 
 From there, standard cmake build:
 
-### Windows
+#### Windows
 
 ```
 # Generate Visual Studio Project
@@ -51,7 +56,7 @@ cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -G "Visual Studio 16 2019" -Wno-dev
 cmake --build build
 ```
 
-### Unix
+#### Unix
 
 If you have the ninja build tool, it is the recommended way of building.
 

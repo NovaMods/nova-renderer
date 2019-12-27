@@ -7,6 +7,11 @@ We are always welcome to new contributers. Please read the following before cont
 If you want to contribute, we recommend that you drop us a line over on Discord so we can help onboard you properly. 
 However, we welcome pull requests from anyone, talking to us beforehand is not required.
 
+## Dependencies
+
+One dependency needs to be installed system wide. The [LunarG Vulkan SDK version v1.1.126.0](https://vulkan.lunarg.com/sdk/home). Installation instructions can be found on the website.
+When installed in the default location, we can detect it and use it.
+
 ## Compiling
 
 Nova is built the same way most cmake projects are built. However, git submodules need to be cloned:
