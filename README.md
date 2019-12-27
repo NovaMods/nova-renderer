@@ -36,8 +36,8 @@ We are still in early development of the multi-backend rewrite and things may ch
 
 ### Dependencies
 
-One dependency need to be installed system wide. The [LunarG Vulkan SDK version v1.1.126.0](https://vulkan.lunarg.com/sdk/home). Instructions for installation are on the websites.
-When installed in the default location, we can detect them and use them.
+One dependency needs to be installed system wide. The [LunarG Vulkan SDK version v1.1.126.0](https://vulkan.lunarg.com/sdk/home). Installation instructions can be found on the website.
+When installed in the default location, we can detect it and use it.
 
 Nova is built the same way most cmake projects are built. However, git submodules need to be cloned:
 

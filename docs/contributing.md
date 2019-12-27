@@ -9,8 +9,8 @@ However, we welcome pull requests from anyone, talking to us beforehand is not r
 
 ## Dependencies
 
-One dependency need to be installed system wide. The [LunarG Vulkan SDK version v1.1.126.0](https://vulkan.lunarg.com/sdk/home). Instructions for installation are on the websites.
-When installed in the default location, we can detect them and use them.
+One dependency needs to be installed system wide. The [LunarG Vulkan SDK version v1.1.126.0](https://vulkan.lunarg.com/sdk/home). Installation instructions can be found on the website.
+When installed in the default location, we can detect it and use it.
 
 ## Compiling
 
