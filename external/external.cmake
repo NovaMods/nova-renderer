@@ -79,8 +79,6 @@ else()
 	set(MONO_LIB_NAME monosgen-2.0)
 endif()
 if (MONO_ROOT)
-	message("${MONO_ROOT}/lib")
-	message("${MONO_ROOT}/include/mono-2.0")
 	find_library(
 		MONO_LIB_LOCATION 
 		NAMES ${MONO_LIB_NAME}
