@@ -73,12 +73,17 @@ set(BUILD_EXAMPLES OFF CACHE BOOL "Disable Miniz examples" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/miniz)
 
 # Mono
+if (WIN32)
+	set(MONO_LIB_NAME libmono-static-sgen)
+else() 
+	set(MONO_LIB_NAME monosgen-2.0)
+endif()
 if (MONO_ROOT)
 	message("${MONO_ROOT}/lib")
 	message("${MONO_ROOT}/include/mono-2.0")
 	find_library(
 		MONO_LIB_LOCATION 
-		NAMES libmono-static-sgen
+		NAMES ${MONO_LIB_NAME}
 		PATHS "${MONO_ROOT}"
 		PATH_SUFFIXES lib
 		NO_DEFAULT_PATH 
@@ -93,7 +98,7 @@ if (MONO_ROOT)
 else()
 	find_library(
 		MONO_LIB_LOCATION 
-		NAMES libmono-static-sgen
+		NAMES ${MONO_LIB_NAME}
 		HINTS "C:/Program Files/Mono"
 		PATHS ENV MONO_ROOT
 		PATH_SUFFIXES lib
@@ -120,10 +125,10 @@ if(NOT MONO_INCLUDE_DIR)
 endif()
 
 add_library(mono::mono INTERFACE IMPORTED)
-set_property(TARGET mono::mono
-	PROPERTY INTERFACE_LINK_LIBRARIES "${MONO_LIB_LOCATION}"
-	PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${MONO_INCLUDE_DIR}"
-	PROPERTY INTERFACE_COMPILE_DEFINITIONS "_REENTRANT"
+set_target_properties(mono::mono PROPERTIES
+	INTERFACE_LINK_LIBRARIES "${MONO_LIB_LOCATION}"
+	INTERFACE_INCLUDE_DIRECTORIES "${MONO_INCLUDE_DIR}"
+	INTERFACE_COMPILE_DEFINITIONS "_REENTRANT"
 )
 
 # Hide unnecessary targets from all
