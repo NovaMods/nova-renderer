@@ -1248,7 +1248,7 @@ namespace nova::renderer::rhi {
 #error Unsupported Operating system
 #endif
 
-        std::pmr::vector<VkValidationFeatureEnableEXT> enabled_validation_features = {VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT};
+        std::pmr::vector<VkValidationFeatureEnableEXT> enabled_validation_features;// = {VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT};
 
         if(settings.settings.debug.enabled) {
             enabled_extension_names.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);

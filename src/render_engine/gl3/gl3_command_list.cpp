@@ -242,6 +242,15 @@ namespace nova::renderer::rhi {
 
     Gl3CommandList::Gl3CommandList() { commands.reserve(128); }
 
+    void Gl3CommandList::upload_data_to_image(Image* image,
+        size_t width,
+        size_t height,
+        size_t bytes_per_pixel,
+        Buffer* staging_buffer,
+        void* data) {
+        // TODO
+    }
+
     void Gl3CommandList::resource_barriers(PipelineStageFlags /* stages_before_barrier */,
                                            PipelineStageFlags /* stages_after_barrier */,
                                            const std::pmr::vector<ResourceBarrier>& /* barriers */) {}

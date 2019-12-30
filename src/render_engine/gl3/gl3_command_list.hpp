@@ -117,9 +117,9 @@ namespace nova::renderer::rhi {
                                PipelineStageFlags stages_after_barrier,
                                const std::pmr::vector<ResourceBarrier>& barriers) override;
 
-        void copy_buffer(Buffer* destination_buffer,
+        void copy_buffer(Buffer * destination_buffer,
                          mem::Bytes destination_offset,
-                         Buffer* source_buffer,
+                         Buffer * source_buffer,
                          mem::Bytes source_offset,
                          mem::Bytes num_bytes) override;
 
@@ -131,7 +131,8 @@ namespace nova::renderer::rhi {
 
         void bind_pipeline(const Pipeline* pipeline) override;
 
-        void bind_descriptor_sets(const std::pmr::vector<DescriptorSet*>& descriptor_sets, const PipelineInterface* pipeline_interface) override;
+        void bind_descriptor_sets(const std::pmr::vector<DescriptorSet*>& descriptor_sets, const PipelineInterface* pipeline_interface)
+            override;
 
         void bind_vertex_buffers(const std::pmr::vector<Buffer*>& buffers) override;
 
@@ -143,6 +144,9 @@ namespace nova::renderer::rhi {
          * \brief Provides access to the actual command list, so that the GL3 render engine can process the commands
          */
         [[nodiscard]] std::pmr::vector<Gl3Command> get_commands() const;
+
+        void upload_data_to_image(Image * image, size_t width, size_t height, size_t bytes_per_pixel, Buffer * staging_buffer, void* data)
+            override;
 
     private:
         std::pmr::vector<Gl3Command> commands;

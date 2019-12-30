@@ -481,7 +481,7 @@ namespace nova::renderer {
         renderpass->pipelines.reserve(pipelines.size());
         for(const shaderpack::PipelineCreateInfo& pipeline_create_info : pipelines) {
             if(pipeline_create_info.pass == create_info.name) {
-                std::unordered_map<std::string, ResourceBinding> bindings;
+                std::unordered_map<std::string, rhi::ResourceBindingDescription> bindings;
 
                 ntl::Result<rhi::PipelineInterface*> pipeline_interface = create_pipeline_interface(pipeline_create_info,
                                                                                                     create_info.texture_outputs,

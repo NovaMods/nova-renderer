@@ -188,4 +188,9 @@ namespace nova::renderer::rhi {
     void VulkanCommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t num_instances) {
         vkCmdDrawIndexed(cmds, num_indices, num_instances, 0, 0, 0);
     }
+
+    void VulkanCommandList::upload_data_to_image(
+        Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, void* data) {
+        // TODO
+    }
 } // namespace nova::renderer::rhi

@@ -9,13 +9,6 @@
 #include "nova_renderer/rhi/forward_decls.hpp"
 
 namespace nova::renderer {
-    namespace rhi {
-        struct Buffer;
-
-        class CommandList;
-        class RenderEngine;
-    } // namespace rhi
-
     /*!
      * \brief ProceduralMesh is a mesh which the user will modify every frame
      *

@@ -69,10 +69,30 @@ namespace nova::renderer {
 
         [[nodiscard]] std::optional<rhi::DescriptorSetWrite> get_descriptor_info_for_resource(const std::string& resource_name);
 
-        [[nodiscard]] TextureResource create_render_target(const std::string& name,
-                                                           size_t width,
-                                                           size_t height,
-                                                           rhi::PixelFormat pixel_format);
+        /*!
+         * \brief Creates a new render target with the specified size and format
+         *
+         * Render targets reside completely on the GPU and are not accessible from the CPU. If you need a shader-writable, CPU-readable
+         * texture, create a readback texture instead
+         *
+         * By default a render target may not be sampled by a shader
+         *
+         * \param name The name of the render target
+         * \param width The width of the render target, in pixels
+         * \param height The height of the render target, in pixels
+         * \param pixel_format The format of the render target
+         * \param allocator The allocator to use for any host memory this methods needs to allocate
+         * \param can_be_sampled If true, the render target may be sampled by a shader. If false, this render target may only be presented
+         * to the screen
+         *
+         * \return The new render target if it could be created, or am empty optional if it could not
+         */
+        [[nodiscard]] std::optional<TextureResource> create_render_target(const std::string& name,
+                                                                          size_t width,
+                                                                          size_t height,
+                                                                          rhi::PixelFormat pixel_format,
+                                                                          mem::AllocatorHandle<>& allocator,
+                                                                          bool can_be_sampled = false);
 
         NovaRenderer& renderer;
 
