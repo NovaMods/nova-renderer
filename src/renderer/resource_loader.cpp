@@ -122,7 +122,7 @@ namespace nova::renderer {
                                                                          const size_t height,
                                                                          const PixelFormat pixel_format,
                                                                          AllocatorHandle<>& allocator,
-                                                                         const bool /* can_be_sampled // Not yet supported */ ) {
+                                                                         const bool /* can_be_sampled // Not yet supported */) {
         shaderpack::TextureCreateInfo create_info;
         create_info.name = name;
         create_info.usage = ImageUsage::RenderTarget;
@@ -151,7 +151,9 @@ namespace nova::renderer {
                 initial_texture_barrier.new_state = ResourceState::RenderTarget;
                 initial_texture_barrier.image_memory_barrier.aspect = ImageAspectFlags::Color;
 
-                cmds->resource_barriers(PipelineStageFlags::TopOfPipe, PipelineStageFlags::ColorAttachmentOutput, {initial_texture_barrier});
+                cmds->resource_barriers(PipelineStageFlags::TopOfPipe,
+                                        PipelineStageFlags::ColorAttachmentOutput,
+                                        {initial_texture_barrier});
 
                 Fence* upload_done_fence = device->create_fence(allocator);
                 device->submit_command_list(cmds, QueueType::Transfer, upload_done_fence);
@@ -166,6 +168,7 @@ namespace nova::renderer {
             return std::make_optional(resource);
 
         } else {
+            NOVA_LOG(ERROR) << "Could not create render target " << name;
             return std::nullopt;
         }
     }

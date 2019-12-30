@@ -143,9 +143,7 @@ namespace nova::renderer {
 
     NovaSettingsAccessManager& NovaRenderer::get_settings() { return render_settings; }
 
-    std::shared_ptr<mem::AllocatorHandle<>> NovaRenderer::get_global_allocator() {
-        return global_allocator;
-    }
+    std::shared_ptr<mem::AllocatorHandle<>> NovaRenderer::get_global_allocator() { return global_allocator; }
 
     void NovaRenderer::execute_frame() {
         MTR_SCOPE("RenderLoop", "execute_frame");
@@ -343,7 +341,12 @@ namespace nova::renderer {
         for(const shaderpack::TextureCreateInfo& create_info : texture_create_infos) {
             const auto size = create_info.format.get_size_in_pixels(rhi->get_swapchain()->get_size());
 
-            resource_storage->create_render_target(create_info.name, size.x, size.y, to_rhi_pixel_format(create_info.format.pixel_format));
+            const auto render_target = resource_storage->create_render_target(create_info.name,
+                                                                              size.x,
+                                                                              size.y,
+                                                                              to_rhi_pixel_format(create_info.format.pixel_format),
+                                                                              *renderpack_allocator);
+
             rhi::Image* new_texture = rhi->create_image(create_info, *renderpack_allocator);
 
             dynamic_textures.emplace(create_info.name, new_texture);
@@ -653,8 +656,7 @@ namespace nova::renderer {
             pipeline.pipeline = *rhi_pipeline;
 
         } else {
-            ntl::NovaError error = ntl::NovaError(format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name.c_str())
-                                                      .c_str(),
+            ntl::NovaError error = ntl::NovaError(format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name.c_str()).c_str(),
                                                   std::move(rhi_pipeline.error));
             return ntl::Result<PipelineReturn>(std::move(error));
         }
@@ -951,8 +953,6 @@ namespace nova::renderer {
 
         auto* per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory, *global_allocator);
         builtin_buffers.emplace(PER_FRAME_DATA_NAME, per_frame_data_buffer);
-
-
 
         // Buffer for each drawcall's model matrix
         rhi::BufferCreateInfo model_matrix_buffer_create_info = {};
