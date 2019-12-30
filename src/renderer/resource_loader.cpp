@@ -163,12 +163,21 @@ namespace nova::renderer {
                 device->destroy_fences({upload_done_fence}, allocator);
             }
 
-            textures.emplace(name, resource);
+            render_targets.emplace(name, resource);
 
             return std::make_optional(resource);
 
         } else {
             NOVA_LOG(ERROR) << "Could not create render target " << name;
+            return std::nullopt;
+        }
+    }
+
+    std::optional<TextureResource> ResourceStorage::get_render_target(const std::string& name) const {
+        if(const auto itr = render_targets.find(name); itr != render_targets.end()) {
+            return std::make_optional(itr->second);
+
+        } else {
             return std::nullopt;
         }
     }

@@ -234,7 +234,6 @@ namespace nova::renderer {
          */
         std::pmr::vector<std::shared_ptr<Renderpass>> renderpasses;
 
-        std::unordered_map<std::string, rhi::Image*> dynamic_textures;
         std::unordered_map<std::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
 
         void create_dynamic_textures(const std::pmr::vector<shaderpack::TextureCreateInfo>& texture_create_infos);

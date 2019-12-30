@@ -41,6 +41,7 @@
 
 using namespace nova::mem;
 using namespace nova::mem::operators;
+using namespace fmt;
 
 const Bytes global_memory_pool_size = 1_gb;
 
@@ -347,9 +348,6 @@ namespace nova::renderer {
                                                                               to_rhi_pixel_format(create_info.format.pixel_format),
                                                                               *renderpack_allocator);
 
-            rhi::Image* new_texture = rhi->create_image(create_info, *renderpack_allocator);
-
-            dynamic_textures.emplace(create_info.name, new_texture);
             dynamic_texture_infos.emplace(create_info.name, create_info);
         }
     }
@@ -414,7 +412,7 @@ namespace nova::renderer {
                 }
 
             } else {
-                rhi::Image* image = dynamic_textures.at(attachment_info.name);
+                rhi::Image* image = resource_storage->get_render_target(attachment_info.name);
                 color_attachments.push_back(image);
 
                 const shaderpack::TextureCreateInfo& info = dynamic_texture_infos.at(attachment_info.name);

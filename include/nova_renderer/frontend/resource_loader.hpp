@@ -94,6 +94,11 @@ namespace nova::renderer {
                                                                           mem::AllocatorHandle<>& allocator,
                                                                           bool can_be_sampled = false);
 
+        /*!
+         * \brief Retrieves the render target with the specified name
+         */
+        [[nodiscard]] std::optional<TextureResource> get_render_target(const std::string& name) const;
+
         NovaRenderer& renderer;
 
         rhi::RenderEngine* device;
