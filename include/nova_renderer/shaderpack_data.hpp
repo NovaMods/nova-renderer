@@ -597,6 +597,8 @@ namespace nova::renderer::shaderpack {
         std::pmr::vector<MaterialData> materials;
 
         ShaderpackResourcesData resources;
+
+        std::string name;
     };
 
     // TODO: Wrap these in to_json/from_json thingies

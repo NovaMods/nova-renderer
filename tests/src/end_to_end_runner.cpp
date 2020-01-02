@@ -76,7 +76,8 @@ namespace nova::renderer {
         data.mesh = mesh_id;
         data.initial_position = glm::vec3(0, 0, -5);
 
-        renderer->add_renderable_for_material(FullMaterialPassName{"gbuffers_terrain", "forward"}, data);
+        // ReSharper disable once CppDeclaratorNeverUsed
+        const auto _ = renderer->add_renderable_for_material(FullMaterialPassName{"gbuffers_terrain", "forward"}, data);
 
         while(!window->should_close()) {
             renderer->execute_frame();

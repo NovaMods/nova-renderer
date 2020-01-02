@@ -446,7 +446,7 @@ namespace nova::renderer {
             if(create_info.depth_texture) {
                 if(const auto depth_tex_itr = dynamic_textures.find(create_info.depth_texture->name);
                    depth_tex_itr != dynamic_textures.end()) {
-                    auto* image = depth_tex_itr->second;
+                    auto* image = depth_tex_itr->second->image;
                     return std::make_optional<rhi::Image*>(image);
                 }
             }
@@ -591,7 +591,7 @@ namespace nova::renderer {
             rhi::DescriptorResourceInfo& resource_info = write.resources[0];
 
             if(const auto dyn_tex_itr = dynamic_textures.find(resource_name); dyn_tex_itr != dynamic_textures.end()) {
-                rhi::Image* image = dyn_tex_itr->second;
+                rhi::Image* image = dyn_tex_itr->second->image;
 
                 resource_info.image_info.image = image;
                 resource_info.image_info.sampler = point_sampler;
@@ -733,13 +733,14 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::destroy_dynamic_resources() {
-        for(auto& [name, image] : dynamic_textures) {
-            rhi->destroy_texture(image, *renderpack_allocator);
+        if(loaded_renderpack) {
+            for(const auto& tex : loaded_renderpack->resources.textures) {
+                if(const auto& itr = dynamic_textures.find(tex.name); itr != dynamic_textures.end()) {
+                    resource_storage->destroy_texture(itr->second);
+                }
+            }
+            NOVA_LOG(DEBUG) << "Deleted all dynamic textures from renderpack " << loaded_renderpack->name;
         }
-
-        dynamic_textures.clear();
-
-        // TODO: Also destroy dynamic buffers, when we have support for those
     }
 
     void NovaRenderer::destroy_renderpasses() {
@@ -955,8 +956,6 @@ namespace nova::renderer {
 
         auto* per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory, *global_allocator);
         builtin_buffers.emplace(PER_FRAME_DATA_NAME, per_frame_data_buffer);
-
-
 
         // Buffer for each drawcall's model matrix
         rhi::BufferCreateInfo model_matrix_buffer_create_info = {};

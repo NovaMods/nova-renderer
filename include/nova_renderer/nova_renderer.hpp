@@ -160,6 +160,7 @@ namespace nova::renderer {
 
         RENDERDOC_API_1_3_0* render_doc;
         std::pmr::vector<mem::AllocatorHandle<>> frame_allocators;
+
         static std::unique_ptr<NovaRenderer> instance;
 
         rhi::Sampler* point_sampler;
@@ -180,8 +181,7 @@ namespace nova::renderer {
         std::shared_ptr<mem::AllocatorHandle<>> renderpack_allocator;
 
         std::shared_ptr<ResourceStorage> resource_storage;
-
-        std::shared_ptr<ResourceStorage> resource_storage;
+        std::unordered_map<std::string, std::shared_ptr<TextureResource>> dynamic_textures;
 
         std::unique_ptr<DeviceMemoryResource> mesh_memory;
 
@@ -219,6 +219,8 @@ namespace nova::renderer {
         bool shaderpack_loaded = false;
 
         std::mutex shaderpack_loading_mutex;
+
+        std::optional<shaderpack::ShaderpackData> loaded_renderpack;
 #pragma endregion
 
 #pragma region Rendergraph

@@ -35,6 +35,20 @@ namespace nova::mem {
         ObjectType* allocate_object();
 
         /*!
+         * \brief Allocates a shared pointer that uses this allocator to allocate its internal memory
+         *
+         * \param deleter A functor that you want to use to delete the object
+         * \param args Any arguments to forward to the new object's constructor
+         *
+         * \return A shared pointer to the new object
+         */
+        template <typename ObjectType,
+                  typename DeleterType,
+                  typename... Args,
+                  typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
+        std::shared_ptr<ObjectType> allocate_shared(DeleterType deleter, Args&&... args);
+
+        /*!
          * \brief Allocates and constructs an object of a different type
          *
          * Intended use case is that you have a byte allocator that you use to create objects of different types
@@ -63,6 +77,13 @@ namespace nova::mem {
     ObjectType* AllocatorHandle<AllocatedType>::allocate_object() {
         auto* mem = this->allocate(sizeof(ObjectType));
         return static_cast<ObjectType*>(mem);
+    }
+
+    template <typename AllocatedType>
+    template <typename ObjectType, typename DeleterType, typename... Args, typename>
+    std::shared_ptr<ObjectType> AllocatorHandle<AllocatedType>::allocate_shared(DeleterType deleter, Args&&... args) {
+        const auto ptr = allocate_object<ObjectType>(std::forward(args)...);
+        return std::shared_ptr<ObjectType>(ptr, deleter, std::pmr::polymorphic_allocator<std::byte>(this->resource()));
     }
 
     template <typename AllocatedType>

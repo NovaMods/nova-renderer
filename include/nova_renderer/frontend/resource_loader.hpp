@@ -53,19 +53,20 @@ namespace nova::renderer {
          * \param height The height of the texture
          * \param pixel_format The format of the pixels in this texture
          * \param data The initial data for this texture. Must be large enough to have all the pixels in the texture
+         * \param allocator The allocator to allocate with
          * \return The newly-created image, or nullptr if the image could not be created. Check the Nova logs to find out why
          */
-        [[nodiscard]] TextureResource create_texture(const std::string& name,
-                                                     std::size_t width,
-                                                     std::size_t height,
-                                                     rhi::PixelFormat pixel_format,
-                                                     void* data,
-                                                     mem::AllocatorHandle<>& allocator);
+        [[nodiscard]] std::shared_ptr<TextureResource> create_texture(const std::string& name,
+                                                                      std::size_t width,
+                                                                      std::size_t height,
+                                                                      rhi::PixelFormat pixel_format,
+                                                                      void* data,
+                                                                      mem::AllocatorHandle<>& allocator);
 
         /*!
          * \brief Retrieves the texture with the specified name
          */
-        [[nodiscard]] std::optional<TextureResource> get_texture(const std::string& name) const;
+        [[nodiscard]] std::shared_ptr<TextureResource> get_texture(const std::string& name) const;
 
         [[nodiscard]] std::optional<rhi::DescriptorSetWrite> get_descriptor_info_for_resource(const std::string& resource_name);
 
@@ -87,17 +88,19 @@ namespace nova::renderer {
          *
          * \return The new render target if it could be created, or am empty optional if it could not
          */
-        [[nodiscard]] std::optional<TextureResource> create_render_target(const std::string& name,
-                                                                          size_t width,
-                                                                          size_t height,
-                                                                          rhi::PixelFormat pixel_format,
-                                                                          mem::AllocatorHandle<>& allocator,
-                                                                          bool can_be_sampled = false);
+        [[nodiscard]] std::shared_ptr<TextureResource> create_render_target(const std::string& name,
+                                                                            size_t width,
+                                                                            size_t height,
+                                                                            rhi::PixelFormat pixel_format,
+                                                                            mem::AllocatorHandle<>& allocator,
+                                                                            bool can_be_sampled = false);
 
         /*!
          * \brief Retrieves the render target with the specified name
          */
-        [[nodiscard]] std::optional<TextureResource> get_render_target(const std::string& name) const;
+        [[nodiscard]] std::shared_ptr<TextureResource> get_render_target(const std::string& name) const;
+
+        void destroy_texture(const std::shared_ptr<TextureResource>& texture);
 
         NovaRenderer& renderer;
 
@@ -105,9 +108,9 @@ namespace nova::renderer {
 
         std::unique_ptr<mem::AllocatorHandle<>> staging_buffer_allocator;
 
-        std::unordered_map<std::string, TextureResource> textures;
+        std::unordered_map<std::string, std::shared_ptr<TextureResource>> textures;
 
-        std::unordered_map<std::string, TextureResource> render_targets;
+        std::unordered_map<std::string, std::shared_ptr<TextureResource>> render_targets;
 
         DeviceMemoryResource* staging_buffer_memory;
 

@@ -90,20 +90,6 @@ namespace nova::renderer::rhi {
             Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, void* data) = 0;
 
         /*!
-         * \brief Uploads data to an image in the most API-optimal way
-         *
-         * \param image The image to upload the data to. Must be in the CopyDestination state
-         * \param width The width of the image in pixels
-         * \param height The height of the image in pixels
-         * \param bytes_per_pixel The number of bytes that each pixel uses
-         * \param staging_buffer The buffer to use to upload the data to the image. This buffer must be host writable, and must be in the
-         * CopySource state
-         * \param data A pointer to the data to upload to the image
-         */
-        virtual void upload_data_to_image(
-            Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, void* data) = 0;
-
-        /*!
          * \brief Executed a number of command lists
          *
          * These command lists should be secondary command lists. Nova doesn't validate this because yolo but you need

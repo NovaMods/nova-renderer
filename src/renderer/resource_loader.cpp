@@ -1,5 +1,7 @@
 #include "nova_renderer/frontend/resource_loader.hpp"
 
+#include <utility>
+
 #include "nova_renderer/nova_renderer.hpp"
 #include "nova_renderer/util/logger.hpp"
 
@@ -18,17 +20,20 @@ namespace nova::renderer {
         allocate_staging_buffer_memory();
     }
 
-    TextureResource ResourceStorage::create_texture(const std::string& name,
-                                                    const std::size_t width,
-                                                    const std::size_t height,
-                                                    const PixelFormat pixel_format,
-                                                    void* data,
-                                                    AllocatorHandle<>& allocator) {
-        TextureResource resource;
-        resource.name = name;
-        resource.width = width;
-        resource.height = height;
-        resource.format = pixel_format;
+    std::shared_ptr<TextureResource> ResourceStorage::create_texture(const std::string& name,
+                                                                     const std::size_t width,
+                                                                     const std::size_t height,
+                                                                     const PixelFormat pixel_format,
+                                                                     void* data,
+                                                                     AllocatorHandle<>& allocator) {
+
+        const auto resource = allocator.allocate_shared<TextureResource>(
+            [&](const auto* tex) { device->destroy_texture(tex->image, allocator); });
+
+        resource->name = name;
+        resource->width = width;
+        resource->height = height;
+        resource->format = pixel_format;
 
         const size_t pixel_size = size_in_bytes(pixel_format);
 
@@ -42,14 +47,14 @@ namespace nova::renderer {
 
         const std::shared_ptr<Buffer> staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
 
-        resource.image = device->create_image(info, allocator);
-        resource.image->is_dynamic = false;
+        resource->image = device->create_image(info, allocator);
+        resource->image->is_dynamic = false;
 
         {
             CommandList* cmds = device->create_command_list(allocator, 0, QueueType::Transfer);
 
             ResourceBarrier initial_texture_barrier = {};
-            initial_texture_barrier.resource_to_barrier = resource.image;
+            initial_texture_barrier.resource_to_barrier = resource->image;
             initial_texture_barrier.access_before_barrier = AccessFlags::CopyRead;
             initial_texture_barrier.access_after_barrier = AccessFlags::CopyWrite;
             initial_texture_barrier.old_state = ResourceState::Undefined;
@@ -57,10 +62,10 @@ namespace nova::renderer {
             initial_texture_barrier.image_memory_barrier.aspect = ImageAspectFlags::Color;
 
             cmds->resource_barriers(PipelineStageFlags::TopOfPipe, PipelineStageFlags::Transfer, {initial_texture_barrier});
-            cmds->upload_data_to_image(resource.image, width, height, pixel_size, staging_buffer.get(), data);
+            cmds->upload_data_to_image(resource->image, width, height, pixel_size, staging_buffer.get(), data);
 
             ResourceBarrier final_texture_barrier = {};
-            final_texture_barrier.resource_to_barrier = resource.image;
+            final_texture_barrier.resource_to_barrier = resource->image;
             final_texture_barrier.access_before_barrier = AccessFlags::CopyWrite;
             final_texture_barrier.access_after_barrier = AccessFlags::ShaderRead;
             final_texture_barrier.old_state = ResourceState::CopyDestination;
@@ -82,14 +87,14 @@ namespace nova::renderer {
         return resource;
     }
 
-    std::optional<TextureResource> ResourceStorage::get_texture(const std::string& name) const {
+    std::shared_ptr<TextureResource> ResourceStorage::get_texture(const std::string& name) const {
 #if NOVA_DEBUG
         if(const auto& itr = textures.find(name); itr != textures.end()) {
-            return std::make_optional<TextureResource>(itr->second);
+            return itr->second;
 
         } else {
             NOVA_LOG(ERROR) << "Could not find image \"" << name << "\"";
-            return std::nullopt;
+            return {};
         }
 #else
         return textures.at(name);
@@ -102,12 +107,12 @@ namespace nova::renderer {
             write.type = DescriptorType::CombinedImageSampler;
             auto& resource_write = write.resources.emplace_back();
 
-            resource_write.image_info.image = itr->second.image;
+            resource_write.image_info.image = itr->second->image;
             resource_write.image_info.sampler = renderer.get_point_sampler();
-            resource_write.image_info.format.pixel_format = to_pixel_format_enum(itr->second.format);
+            resource_write.image_info.format.pixel_format = to_pixel_format_enum(itr->second->format);
             resource_write.image_info.format.dimension_type = TextureDimensionTypeEnum::Absolute;
-            resource_write.image_info.format.width = static_cast<float>(itr->second.width);
-            resource_write.image_info.format.height = static_cast<float>(itr->second.height);
+            resource_write.image_info.format.width = static_cast<float>(itr->second->width);
+            resource_write.image_info.format.height = static_cast<float>(itr->second->height);
 
             return write;
 
@@ -117,12 +122,12 @@ namespace nova::renderer {
         }
     }
 
-    std::optional<TextureResource> ResourceStorage::create_render_target(const std::string& name,
-                                                                         const size_t width,
-                                                                         const size_t height,
-                                                                         const PixelFormat pixel_format,
-                                                                         AllocatorHandle<>& allocator,
-                                                                         const bool /* can_be_sampled // Not yet supported */) {
+    std::shared_ptr<TextureResource> ResourceStorage::create_render_target(const std::string& name,
+                                                                           const size_t width,
+                                                                           const size_t height,
+                                                                           const PixelFormat pixel_format,
+                                                                           AllocatorHandle<>& allocator,
+                                                                           const bool /* can_be_sampled // Not yet supported */) {
         shaderpack::TextureCreateInfo create_info;
         create_info.name = name;
         create_info.usage = ImageUsage::RenderTarget;
@@ -137,16 +142,14 @@ namespace nova::renderer {
 
             image->is_dynamic = false;
 
-            TextureResource resource = {};
-            resource.image = image;
+            auto resource = allocator.allocate_shared<TextureResource>(
+                [&](const auto* tex) { device->destroy_texture(tex->image, allocator); });
 
             {
-                
-
                 CommandList* cmds = device->create_command_list(allocator, 0, QueueType::Transfer);
 
                 ResourceBarrier initial_texture_barrier = {};
-                initial_texture_barrier.resource_to_barrier = resource.image;
+                initial_texture_barrier.resource_to_barrier = resource->image;
                 initial_texture_barrier.access_before_barrier = AccessFlags::ColorAttachmentRead;
                 initial_texture_barrier.access_after_barrier = AccessFlags::ColorAttachmentWrite;
                 initial_texture_barrier.old_state = ResourceState::Undefined;
@@ -167,20 +170,20 @@ namespace nova::renderer {
 
             render_targets.emplace(name, resource);
 
-            return std::make_optional(resource);
+            return resource;
 
         } else {
             NOVA_LOG(ERROR) << "Could not create render target " << name;
-            return std::nullopt;
+            return {};
         }
     }
 
-    std::optional<TextureResource> ResourceStorage::get_render_target(const std::string& name) const {
+    std::shared_ptr<TextureResource> ResourceStorage::get_render_target(const std::string& name) const {
         if(const auto itr = render_targets.find(name); itr != render_targets.end()) {
-            return std::make_optional(itr->second);
+            return itr->second;
 
         } else {
-            return std::nullopt;
+            return {};
         }
     }
 
