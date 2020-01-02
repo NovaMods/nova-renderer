@@ -3,7 +3,7 @@
 #include "nova_renderer/nova_renderer.hpp"
 #include "nova_renderer/util/logger.hpp"
 
-using namespace bvestl::polyalloc;
+using namespace nova::mem;
 
 namespace nova::renderer {
     using namespace rhi;
@@ -18,9 +18,12 @@ namespace nova::renderer {
         allocate_staging_buffer_memory();
     }
 
-    TextureResource ResourceStorage::create_texture(
-        const std::string& name, const std::size_t width, const std::size_t height, const PixelFormat pixel_format, void* data) {
-
+    TextureResource ResourceStorage::create_texture(const std::string& name,
+                                                    const std::size_t width,
+                                                    const std::size_t height,
+                                                    const PixelFormat pixel_format,
+                                                    void* data,
+                                                    AllocatorHandle<>& allocator) {
         TextureResource resource;
         resource.name = name;
         resource.width = width;
@@ -39,37 +42,40 @@ namespace nova::renderer {
 
         const std::shared_ptr<Buffer> staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
 
-        resource.image = device->create_image(info);
+        resource.image = device->create_image(info, allocator);
         resource.image->is_dynamic = false;
 
-        CommandList* cmds = device->get_command_list(0, QueueType::Transfer);
+        {
+            CommandList* cmds = device->create_command_list(allocator, 0, QueueType::Transfer);
 
-        ResourceBarrier initial_texture_barrier = {};
-        initial_texture_barrier.resource_to_barrier = resource.image;
-        initial_texture_barrier.access_before_barrier = AccessFlags::CopyRead;
-        initial_texture_barrier.access_after_barrier = AccessFlags::CopyWrite;
-        initial_texture_barrier.old_state = ResourceState::Undefined;
-        initial_texture_barrier.new_state = ResourceState::CopyDestination;
-        initial_texture_barrier.image_memory_barrier.aspect = ImageAspectFlags::Color;
+            ResourceBarrier initial_texture_barrier = {};
+            initial_texture_barrier.resource_to_barrier = resource.image;
+            initial_texture_barrier.access_before_barrier = AccessFlags::CopyRead;
+            initial_texture_barrier.access_after_barrier = AccessFlags::CopyWrite;
+            initial_texture_barrier.old_state = ResourceState::Undefined;
+            initial_texture_barrier.new_state = ResourceState::CopyDestination;
+            initial_texture_barrier.image_memory_barrier.aspect = ImageAspectFlags::Color;
 
-        cmds->resource_barriers(PipelineStageFlags::TopOfPipe, PipelineStageFlags::Transfer, {initial_texture_barrier});
-        cmds->upload_data_to_image(resource.image, width, height, pixel_size, staging_buffer.get(), data);
+            cmds->resource_barriers(PipelineStageFlags::TopOfPipe, PipelineStageFlags::Transfer, {initial_texture_barrier});
+            cmds->upload_data_to_image(resource.image, width, height, pixel_size, staging_buffer.get(), data);
 
-        ResourceBarrier final_texture_barrier = {};
-        final_texture_barrier.resource_to_barrier = resource.image;
-        final_texture_barrier.access_before_barrier = AccessFlags::CopyWrite;
-        final_texture_barrier.access_after_barrier = AccessFlags::ShaderRead;
-        final_texture_barrier.old_state = ResourceState::CopyDestination;
-        final_texture_barrier.new_state = ResourceState::ShaderRead;
-        final_texture_barrier.image_memory_barrier.aspect = ImageAspectFlags::Color;
+            ResourceBarrier final_texture_barrier = {};
+            final_texture_barrier.resource_to_barrier = resource.image;
+            final_texture_barrier.access_before_barrier = AccessFlags::CopyWrite;
+            final_texture_barrier.access_after_barrier = AccessFlags::ShaderRead;
+            final_texture_barrier.old_state = ResourceState::CopyDestination;
+            final_texture_barrier.new_state = ResourceState::ShaderRead;
+            final_texture_barrier.image_memory_barrier.aspect = ImageAspectFlags::Color;
 
-        cmds->resource_barriers(PipelineStageFlags::Transfer, PipelineStageFlags::AllGraphics, {final_texture_barrier});
+            cmds->resource_barriers(PipelineStageFlags::Transfer, PipelineStageFlags::AllGraphics, {final_texture_barrier});
 
-        Fence* upload_done_fence = device->create_fence();
-        device->submit_command_list(cmds, QueueType::Transfer, upload_done_fence);
+            Fence* upload_done_fence = device->create_fence(allocator);
+            device->submit_command_list(cmds, QueueType::Transfer, upload_done_fence);
 
-        // Be sure that the data copy is complete, so that this method doesn't return before the GPU is done with the staging buffer
-        device->wait_for_fences({upload_done_fence});
+            // Be sure that the data copy is complete, so that this method doesn't return before the GPU is done with the staging buffer
+            device->wait_for_fences({upload_done_fence});
+            device->destroy_fences({upload_done_fence}, allocator);
+        }
 
         textures.emplace(name, resource);
 
@@ -79,7 +85,8 @@ namespace nova::renderer {
     std::optional<TextureResource> ResourceStorage::get_texture(const std::string& name) const {
 #if NOVA_DEBUG
         if(const auto& itr = textures.find(name); itr != textures.end()) {
-            return std::make_optional<TextureResource>(itr->second.image);
+            return std::make_optional<TextureResource>(itr->second);
+
         } else {
             NOVA_LOG(ERROR) << "Could not find image \"" << name << "\"";
             return std::nullopt;
@@ -110,14 +117,86 @@ namespace nova::renderer {
         }
     }
 
-    void ResourceStorage::allocate_staging_buffer_memory() {
-        DeviceMemory*
-            memory = device->allocate_device_memory(STAGING_BUFFER_TOTAL_MEMORY_SIZE, MemoryUsage::StagingBuffer, ObjectType::Buffer).value;
+    std::optional<TextureResource> ResourceStorage::create_render_target(const std::string& name,
+                                                                         const size_t width,
+                                                                         const size_t height,
+                                                                         const PixelFormat pixel_format,
+                                                                         AllocatorHandle<>& allocator,
+                                                                         const bool /* can_be_sampled // Not yet supported */) {
+        shaderpack::TextureCreateInfo create_info;
+        create_info.name = name;
+        create_info.usage = ImageUsage::RenderTarget;
+        create_info.format.pixel_format = to_pixel_format_enum(pixel_format);
+        create_info.format.dimension_type = TextureDimensionTypeEnum::Absolute;
+        create_info.format.width = static_cast<float>(width);
+        create_info.format.height = static_cast<float>(height);
 
-        staging_buffer_memory = new DeviceMemoryResource(memory,
-                                                         new BlockAllocationStrategy(*renderer.get_global_allocator(),
-                                                                                     Bytes(STAGING_BUFFER_TOTAL_MEMORY_SIZE),
-                                                                                     STAGING_BUFFER_ALIGNMENT));
+        auto* image = device->create_image(create_info, allocator);
+        if(image) {
+            // Barrier it into the correct format and return it
+
+            image->is_dynamic = false;
+
+            TextureResource resource = {};
+            resource.image = image;
+
+            {
+                
+
+                CommandList* cmds = device->create_command_list(allocator, 0, QueueType::Transfer);
+
+                ResourceBarrier initial_texture_barrier = {};
+                initial_texture_barrier.resource_to_barrier = resource.image;
+                initial_texture_barrier.access_before_barrier = AccessFlags::ColorAttachmentRead;
+                initial_texture_barrier.access_after_barrier = AccessFlags::ColorAttachmentWrite;
+                initial_texture_barrier.old_state = ResourceState::Undefined;
+                initial_texture_barrier.new_state = ResourceState::RenderTarget;
+                initial_texture_barrier.image_memory_barrier.aspect = ImageAspectFlags::Color;
+
+                cmds->resource_barriers(PipelineStageFlags::TopOfPipe,
+                                        PipelineStageFlags::ColorAttachmentOutput,
+                                        {initial_texture_barrier});
+
+                Fence* upload_done_fence = device->create_fence(allocator);
+                device->submit_command_list(cmds, QueueType::Transfer, upload_done_fence);
+
+                // Be sure that the barrier is complete, so that this method doesn't return before the render target is ready to use
+                device->wait_for_fences({upload_done_fence});
+                device->destroy_fences({upload_done_fence}, allocator);
+            }
+
+            render_targets.emplace(name, resource);
+
+            return std::make_optional(resource);
+
+        } else {
+            NOVA_LOG(ERROR) << "Could not create render target " << name;
+            return std::nullopt;
+        }
+    }
+
+    std::optional<TextureResource> ResourceStorage::get_render_target(const std::string& name) const {
+        if(const auto itr = render_targets.find(name); itr != render_targets.end()) {
+            return std::make_optional(itr->second);
+
+        } else {
+            return std::nullopt;
+        }
+    }
+
+    void ResourceStorage::allocate_staging_buffer_memory() {
+        DeviceMemory* memory = device
+                                   ->allocate_device_memory(STAGING_BUFFER_TOTAL_MEMORY_SIZE,
+                                                            MemoryUsage::StagingBuffer,
+                                                            ObjectType::Buffer,
+                                                            *staging_buffer_allocator)
+                                   .value;
+
+        auto* strat = staging_buffer_allocator->new_other_object<BlockAllocationStrategy>(renderer.get_global_allocator().get(),
+                                                                                          Bytes(STAGING_BUFFER_TOTAL_MEMORY_SIZE),
+                                                                                          STAGING_BUFFER_ALIGNMENT);
+
+        staging_buffer_memory = staging_buffer_allocator->new_other_object<DeviceMemoryResource>(memory, strat);
     }
 
     std::shared_ptr<Buffer> ResourceStorage::get_staging_buffer_with_size(const size_t size) {
@@ -142,7 +221,7 @@ namespace nova::renderer {
 
         const BufferCreateInfo info = {actual_size, BufferUsage::StagingBuffer};
 
-        Buffer* buffer = device->create_buffer(info, *staging_buffer_memory);
+        Buffer* buffer = device->create_buffer(info, *staging_buffer_memory, *staging_buffer_allocator);
         return std::shared_ptr<Buffer>(buffer, return_staging_buffer);
     }
 

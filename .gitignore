@@ -516,7 +516,7 @@ cmake-build-release
 **.generated
 
 build/
-build-vcpkg/
+build-*/
 
 **.generated.hlsl
 /3rdparty/enkiTS

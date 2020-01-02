@@ -133,7 +133,7 @@ namespace nova::renderer::shaderpack {
         tex.clear = get_json_value<bool>(j, "clear", false);
     }
 
-    void from_json(const nlohmann::json& j, std::vector<RenderPassCreateInfo>& passes) {
+    void from_json(const nlohmann::json& j, std::pmr::vector<RenderPassCreateInfo>& passes) {
         for(const auto& node : j) {
             passes.push_back(node.get<RenderPassCreateInfo>());
         }

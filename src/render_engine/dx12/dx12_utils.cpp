@@ -187,8 +187,8 @@ namespace nova::renderer::rhi {
         }
     }
 
-    std::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions() {
-        static std::vector<D3D12_INPUT_ELEMENT_DESC> input_element_descriptions =
+    std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions() {
+        static std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> input_element_descriptions =
             {// Position
              D3D12_INPUT_ELEMENT_DESC{
                  "POSITION",                                 // SemanticName

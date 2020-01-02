@@ -10,7 +10,7 @@ namespace nova::renderer {
         rp_info.texture_inputs = {SCENE_OUTPUT_RENDER_TARGET_NAME};
         rp_info.texture_outputs = {{BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false}};
 
-        device->create_renderpass(rp_info, framebuffer_size)
+        device->create_renderpass(rp_info, framebuffer_size, *device->get_allocator())
             .map([&](rhi::Renderpass* rp) {
                 renderpass = rp;
                 return true;

@@ -6,14 +6,15 @@
 #ifndef NOVA_RENDERER_RESOURCEPACK_H
 #define NOVA_RENDERER_RESOURCEPACK_H
 
+#include <memory>
+#include <memory_resource>  // MSVC says this is unused, but GCC seems to disagree so don't remove it
 #include <mutex>
-#include "nova_renderer/util/filesystem.hpp"
-#include "nova_renderer/util/utils.hpp"
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <memory>
+
+#include "nova_renderer/util/filesystem.hpp"
 
 namespace nova::renderer {
     /*!
@@ -64,14 +65,14 @@ namespace nova::renderer {
          * \param resource_path The path to the SPIR-V file to load, relative to this resourcepack's root
          * \return All the 32-bit numbers in the SPIR-V file
          */
-        std::vector<uint32_t> read_spirv_file(fs::path& resource_path);
+        std::pmr::vector<uint32_t> read_spirv_file(fs::path& resource_path);
 
         /*!
          * \brief Retrieves the paths of all the items in the specified folder
          * \param folder The folder to get all items from
          * \return A list of all the paths in the provided folder
          */
-        virtual std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) = 0;
+        virtual std::pmr::vector<fs::path> get_all_items_in_folder(const fs::path& folder) = 0;
 
         std::shared_ptr<fs::path> get_root() const;
 

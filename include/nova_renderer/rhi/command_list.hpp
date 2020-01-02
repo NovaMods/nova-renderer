@@ -49,7 +49,7 @@ namespace nova::renderer::rhi {
          */
         virtual void resource_barriers(PipelineStageFlags stages_before_barrier,
                                        PipelineStageFlags stages_after_barrier,
-                                       const std::vector<ResourceBarrier>& barriers) = 0;
+                                       const std::pmr::vector<ResourceBarrier>& barriers) = 0;
 
         /*!
          * \brief Records a command to copy one region of a buffer to another buffer
@@ -69,8 +69,25 @@ namespace nova::renderer::rhi {
          * \pre destination_offset plus num_bytes is less than the size of destination_buffer
          * \pre destination_offset plus num_bytes is less than the size of source_buffer
          */
-        virtual void copy_buffer(
-            Buffer* destination_buffer, uint64_t destination_offset, Buffer* source_buffer, uint64_t source_offset, uint64_t num_bytes) = 0;
+        virtual void copy_buffer(Buffer* destination_buffer,
+                                 mem::Bytes destination_offset,
+                                 Buffer* source_buffer,
+                                 mem::Bytes source_offset,
+                                 mem::Bytes num_bytes) = 0;
+
+        /*!
+         * \brief Uploads data to an image in the most API-optimal way
+         *
+         * \param image The image to upload the data to. Must be in the CopyDestination state
+         * \param width The width of the image in pixels
+         * \param height The height of the image in pixels
+         * \param bytes_per_pixel The number of bytes that each pixel uses
+         * \param staging_buffer The buffer to use to upload the data to the image. This buffer must be host writable, and must be in the
+         * CopySource state
+         * \param data A pointer to the data to upload to the image
+         */
+        virtual void upload_data_to_image(
+            Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, void* data) = 0;
 
         /*!
          * \brief Uploads data to an image in the most API-optimal way
@@ -92,7 +109,7 @@ namespace nova::renderer::rhi {
          * These command lists should be secondary command lists. Nova doesn't validate this because yolo but you need
          * to be nice - the API-specific validation layers _will_ yell at you
          */
-        virtual void execute_command_lists(const std::vector<CommandList*>& lists) = 0;
+        virtual void execute_command_lists(const std::pmr::vector<CommandList*>& lists) = 0;
 
         /*!
          * \brief Begins a renderpass
@@ -106,7 +123,7 @@ namespace nova::renderer::rhi {
 
         virtual void bind_pipeline(const Pipeline* pipeline) = 0;
 
-        virtual void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
+        virtual void bind_descriptor_sets(const std::pmr::vector<DescriptorSet*>& descriptor_sets,
                                           const PipelineInterface* pipeline_interface) = 0;
 
         /*!
@@ -117,7 +134,7 @@ namespace nova::renderer::rhi {
          *
          * \param buffers The buffers to bind
          */
-        virtual void bind_vertex_buffers(const std::vector<Buffer*>& buffers) = 0;
+        virtual void bind_vertex_buffers(const std::pmr::vector<Buffer*>& buffers) = 0;
 
         /*!
          * \brief Binds the provided index buffer to the command list

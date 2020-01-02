@@ -8,11 +8,11 @@ namespace nova::renderer::rhi {
 
         ~Gl3Swapchain() override = default;
 
-        uint8_t acquire_next_swapchain_image() override;
+        uint8_t acquire_next_swapchain_image(mem::AllocatorHandle<>& allocator) override;
 
         void present(uint32_t image_idxs) override;
 
     private:
         uint8_t cur_frame = 0;
     };
-}
+} // namespace nova::renderer::rhi

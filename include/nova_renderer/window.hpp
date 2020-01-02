@@ -88,11 +88,11 @@ namespace nova::renderer {
     private:
         GLFWwindow* window = nullptr;
 
-        std::vector<std::function<void(uint32_t, bool, bool, bool)>> key_callbacks;
+        std::pmr::vector<std::function<void(uint32_t, bool, bool, bool)>> key_callbacks;
 
-        std::vector<std::function<void(double, double)>> mouse_callbacks;
+        std::pmr::vector<std::function<void(double, double)>> mouse_callbacks;
 
-        std::vector<std::function<void(uint32_t, bool)>> mouse_button_callbacks;
+        std::pmr::vector<std::function<void(uint32_t, bool)>> mouse_button_callbacks;
 
         static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 

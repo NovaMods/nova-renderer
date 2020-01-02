@@ -1,12 +1,4 @@
-/*!
- * \brief Holds all the structs that correspond to the data in a shaderpack
- *
- * \author ddubois
- * \date 23-Aug-18.
- */
-
-#ifndef NOVA_RENDERER_SHADERPACK_DATA_HPP
-#define NOVA_RENDERER_SHADERPACK_DATA_HPP
+#pragma once
 
 #include <cstdint>
 #include <optional>
@@ -255,7 +247,7 @@ namespace nova::renderer::shaderpack {
 
     struct ShaderSource {
         fs::path filename;
-        std::vector<uint32_t> source;
+        std::pmr::vector<uint32_t> source;
     };
 
     struct VertexFieldData {
@@ -285,19 +277,19 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief All of the symbols in the shader that are defined by this state
          */
-        std::vector<std::string> defines{};
+        std::pmr::vector<std::string> defines{};
 
         /*!
          * \brief Defines the rasterizer state that's active for this pipeline
          */
-        std::vector<StateEnum> states{};
+        std::pmr::vector<StateEnum> states{};
 
         /*!
          * \brief Sets up the vertex fields that Nova will bind to this pipeline
          *
          * The index in the array is the attribute index that the vertex field is bound to
          */
-        std::vector<VertexFieldData> vertex_fields{};
+        std::pmr::vector<VertexFieldData> vertex_fields{};
 
         /*!
          * \brief The stencil buffer operations to perform on the front faces
@@ -467,8 +459,8 @@ namespace nova::renderer::shaderpack {
     };
 
     struct ShaderpackResourcesData {
-        std::vector<TextureCreateInfo> textures;
-        std::vector<SamplerCreateInfo> samplers;
+        std::pmr::vector<TextureCreateInfo> textures;
+        std::pmr::vector<SamplerCreateInfo> samplers;
     };
 
     /*!
@@ -522,16 +514,16 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief The materials that MUST execute before this one
          */
-        std::vector<std::string> dependencies{};
+        std::pmr::vector<std::string> dependencies{};
 
         /*!
          * \brief The textures that this pass will read from
          */
-        std::vector<std::string> texture_inputs{};
+        std::pmr::vector<std::string> texture_inputs{};
         /*!
          * \brief The textures that this pass will write to
          */
-        std::vector<TextureAttachmentInfo> texture_outputs{};
+        std::pmr::vector<TextureAttachmentInfo> texture_outputs{};
 
         /*!
          * \brief The depth texture this pass will write to
@@ -541,12 +533,12 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief All the buffers that this renderpass reads from
          */
-        std::vector<std::string> input_buffers{};
+        std::pmr::vector<std::string> input_buffers{};
 
         /*!
          * \brief All the buffers that this renderpass writes to
          */
-        std::vector<std::string> output_buffers{};
+        std::pmr::vector<std::string> output_buffers{};
 
         RenderPassCreateInfo() = default;
     };
@@ -558,12 +550,12 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief The shaderpack-supplied passes
          */
-        std::vector<RenderPassCreateInfo> passes;
+        std::pmr::vector<RenderPassCreateInfo> passes;
 
         /*!
          * \brief Names of all the builtin renderpasses that the renderpack wants to use
          */
-        std::vector<std::string> builtin_passes;
+        std::pmr::vector<std::string> builtin_passes;
     };
 
     struct MaterialPass {
@@ -580,14 +572,14 @@ namespace nova::renderer::shaderpack {
          * descriptor sets is allowed, although the result won't show up on screen for a couple frames because Nova
          * (will) copies its descriptor sets to each in-flight frame
          */
-        std::vector<VkDescriptorSet> descriptor_sets;
+        std::pmr::vector<VkDescriptorSet> descriptor_sets;
 
         VkPipelineLayout layout = VK_NULL_HANDLE;
     };
 
     struct MaterialData {
         std::string name;
-        std::vector<MaterialPass> passes;
+        std::pmr::vector<MaterialPass> passes;
         std::string geometry_filter;
     };
 
@@ -595,14 +587,14 @@ namespace nova::renderer::shaderpack {
      * \brief All the data that can be in a shaderpack
      */
     struct ShaderpackData {
-        std::vector<PipelineCreateInfo> pipelines;
+        std::pmr::vector<PipelineCreateInfo> pipelines;
 
         /*!
          * \brief All the renderpasses that this shaderpack needs, in submission order
          */
         RendergraphData graph_data;
 
-        std::vector<MaterialData> materials;
+        std::pmr::vector<MaterialData> materials;
 
         ShaderpackResourcesData resources;
     };
@@ -641,5 +633,3 @@ namespace nova::renderer::shaderpack {
 
     [[nodiscard]] rhi::PixelFormat to_rhi_pixel_format(PixelFormatEnum format);
 } // namespace nova::renderer::shaderpack
-
-#endif // NOVA_RENDERER_SHADERPACK_DATA_HPP

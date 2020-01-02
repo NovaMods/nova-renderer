@@ -10,19 +10,28 @@
 #include "gl3_structs.hpp"
 #include "gl3_swapchain.hpp"
 
+using namespace nova::mem;
+
 namespace nova::renderer::rhi {
-    Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window)
-        : RenderEngine(&mallocator, settings, window) {
+    Gl4NvRenderEngine::Gl4NvRenderEngine(NovaSettingsAccessManager& settings,
+                                         const std::shared_ptr<NovaWindow>& window,
+                                         AllocatorHandle<>& allocator)
+        : RenderEngine(allocator, settings, window) {
         gladLoadGLLoader(NovaWindow::get_gl_proc_address);
 
         save_device_info();
 
-        swapchain = new Gl3Swapchain(settings.settings.max_in_flight_frames, window->get_window_size());
+        swapchain = internal_allocator.new_other_object<Gl3Swapchain>(settings.settings.max_in_flight_frames, window->get_window_size());
 
         set_initial_state();
+
+        command_allocator = internal_allocator.create_suballocator<Gl3CommandList>();
     }
 
-    Gl4NvRenderEngine::~Gl4NvRenderEngine() { delete swapchain; }
+    Gl4NvRenderEngine::~Gl4NvRenderEngine() {
+        delete swapchain;
+        delete command_allocator;
+    }
 
     void Gl4NvRenderEngine::save_device_info() {
         const GLubyte* raw_vendor_string = glGetString(GL_VENDOR);
@@ -76,22 +85,25 @@ namespace nova::renderer::rhi {
         // Gl3 doesn't need to do anything either
     }
 
-    ntl::Result<DeviceMemory*> Gl4NvRenderEngine::allocate_device_memory(const uint64_t /* size */,
+    ntl::Result<DeviceMemory*> Gl4NvRenderEngine::allocate_device_memory(const Bytes /* size */,
                                                                          const MemoryUsage /* type */,
-                                                                         const ObjectType /* allowed_objects */) {
-        return ntl::Result(new DeviceMemory);
+                                                                         const ObjectType /* allowed_objects */,
+                                                                         AllocatorHandle<>& allocator) {
+        return ntl::Result(allocator.new_other_object<DeviceMemory>());
     }
 
     ntl::Result<Renderpass*> Gl4NvRenderEngine::create_renderpass(const shaderpack::RenderPassCreateInfo& /* data */,
-                                                                  const glm::uvec2& /* framebuffer_size */) {
-        return ntl::Result<Renderpass*>(new Renderpass);
+                                                                  const glm::uvec2& /* framebuffer_size */,
+                                                                  AllocatorHandle<>& allocator) {
+        return ntl::Result(allocator.new_other_object<Renderpass>());
     }
 
     Framebuffer* Gl4NvRenderEngine::create_framebuffer(const Renderpass* /* renderpass */,
-                                                       const std::vector<Image*>& color_attachments,
+                                                       const std::pmr::vector<Image*>& color_attachments,
                                                        const std::optional<Image*> depth_attachment,
-                                                       const glm::uvec2& /* framebuffer_size */) {
-        auto* framebuffer = new Gl3Framebuffer;
+                                                       const glm::uvec2& /* framebuffer_size */,
+                                                       AllocatorHandle<>& allocator) {
+        auto* framebuffer = allocator.new_other_object<Gl3Framebuffer>();
 
         glGenFramebuffers(1, &framebuffer->id);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->id);
@@ -113,31 +125,39 @@ namespace nova::renderer::rhi {
 
     DescriptorPool* Gl4NvRenderEngine::create_descriptor_pool(const uint32_t num_sampled_images,
                                                               const uint32_t num_samplers,
-                                                              const uint32_t num_uniform_buffers) {
-        auto* pool = new Gl3DescriptorPool(shaderpack_allocator);
-        pool->descriptors.resize(static_cast<std::size_t>(num_sampled_images) + num_uniform_buffers);
-        pool->sampler_sets.resize(num_samplers);
+                                                              const uint32_t num_uniform_buffers,
+                                                              AllocatorHandle<>& allocator) {
+        const size_t total_num_descriptors = num_sampled_images + num_uniform_buffers + num_samplers;
+        const size_t descriptor_memory_size = total_num_descriptors * sizeof(Gl3Descriptor);
 
-        return pool;
+        void* descriptor_memory = allocator.allocate(descriptor_memory_size);
+        auto* descriptor_memory_resource = allocator.new_other_object<std::pmr::monotonic_buffer_resource>(descriptor_memory,
+                                                                                                           descriptor_memory_size);
+        auto* descriptor_allocator = allocator.new_other_object<AllocatorHandle<Gl3DescriptorSet>>(descriptor_memory_resource);
+
+        auto* other_obj = allocator.new_other_object<Gl3DescriptorPool>();
+        other_obj->descriptor_allocator = descriptor_allocator;
+
+        return other_obj;
     }
 
-    std::vector<DescriptorSet*> Gl4NvRenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                                          DescriptorPool* pool) {
+    std::pmr::vector<DescriptorSet*> Gl4NvRenderEngine::create_descriptor_sets(const PipelineInterface* pipeline_interface,
+                                                                               DescriptorPool* pool,
+                                                                               AllocatorHandle<>& allocator) {
         auto* gl_descriptor_pool = static_cast<Gl3DescriptorPool*>(pool);
-        std::vector<DescriptorSet*> sets;
+        std::pmr::vector<DescriptorSet*> sets(allocator);
 
         for(const auto& [name, desc] : pipeline_interface->bindings) {
-            void* new_set_mem = gl_descriptor_pool->descriptor_allocator.allocate(sizeof(Gl3DescriptorSet));
-            auto* new_set = new(new_set_mem) Gl3DescriptorSet;
-            sets.push_back(new_set);
-
+            auto* new_set = gl_descriptor_pool->descriptor_allocator->new_object();
+            new_set->descriptors = std::pmr::vector<Gl3Descriptor>(*allocator.create_suballocator<Gl3Descriptor>());
             new_set->descriptors.resize(desc.count);
+            sets.push_back(new_set);
         }
 
         return sets;
     }
 
-    void Gl4NvRenderEngine::update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) {
+    void Gl4NvRenderEngine::update_descriptor_sets(std::pmr::vector<DescriptorSetWrite>& writes) {
         for(DescriptorSetWrite& write : writes) {
             auto* set = static_cast<Gl3DescriptorSet*>(write.set);
 
@@ -170,21 +190,23 @@ namespace nova::renderer::rhi {
 
     ntl::Result<PipelineInterface*> Gl4NvRenderEngine::create_pipeline_interface(
         const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
-        const std::vector<shaderpack::TextureAttachmentInfo>& /* color_attachments */,
-        const std::optional<shaderpack::TextureAttachmentInfo>& /* depth_texture */) {
-        auto* pipeline_interface = new Gl3PipelineInterface;
+        const std::pmr::vector<shaderpack::TextureAttachmentInfo>& /* color_attachments */,
+        const std::optional<shaderpack::TextureAttachmentInfo>& /* depth_texture */,
+        AllocatorHandle<>& allocator) {
+        auto* pipeline_interface = allocator.new_other_object<Gl3PipelineInterface>();
         pipeline_interface->bindings = bindings;
 
         return ntl::Result(static_cast<PipelineInterface*>(pipeline_interface));
     }
 
     ntl::Result<Pipeline*> Gl4NvRenderEngine::create_pipeline(PipelineInterface* pipeline_interface,
-                                                              const shaderpack::PipelineCreateInfo& data) {
-        auto* pipeline = new Gl3Pipeline;
+                                                              const shaderpack::PipelineCreateInfo& data,
+                                                              AllocatorHandle<>& allocator) {
+        auto* pipeline = allocator.new_other_object<Gl3Pipeline>();
 
         pipeline->id = glCreateProgram();
 
-        std::vector<std::string> pipeline_creation_errors;
+        std::pmr::vector<std::string> pipeline_creation_errors(*internal_allocator.create_suballocator<std::string>());
         pipeline_creation_errors.reserve(4);
 
         const ntl::Result<GLuint>& vertex_shader = compile_shader(data.vertex_shader.source, GL_VERTEX_SHADER);
@@ -240,8 +262,10 @@ namespace nova::renderer::rhi {
         return ntl::Result(static_cast<Pipeline*>(pipeline));
     }
 
-    Buffer* Gl4NvRenderEngine::create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& /* memory */) {
-        auto* buffer = new Gl3Buffer;
+    Buffer* Gl4NvRenderEngine::create_buffer(const BufferCreateInfo& info,
+                                             DeviceMemoryResource& /* memory */,
+                                             AllocatorHandle<>& allocator) {
+        auto* buffer = allocator.new_other_object<Gl3Buffer>();
 
         glGenBuffers(1, &buffer->id);
 
@@ -264,20 +288,20 @@ namespace nova::renderer::rhi {
         }
 
         glBindBuffer(buffer_bind_target, buffer->id);
-        glBufferData(buffer_bind_target, info.size, nullptr, GL_STATIC_DRAW);
+        glBufferData(buffer_bind_target, info.size.b_count(), nullptr, GL_STATIC_DRAW);
 
         return buffer;
     }
 
-    void Gl4NvRenderEngine::write_data_to_buffer(const void* data, const uint64_t num_bytes, const uint64_t offset, const Buffer* buffer) {
+    void Gl4NvRenderEngine::write_data_to_buffer(const void* data, const Bytes num_bytes, const Bytes offset, const Buffer* buffer) {
         const auto* gl_buffer = static_cast<const Gl3Buffer*>(buffer);
 
         glBindBuffer(GL_COPY_READ_BUFFER, gl_buffer->id);
-        glBufferSubData(GL_COPY_READ_BUFFER, offset, num_bytes, data);
+        glBufferSubData(GL_COPY_READ_BUFFER, offset.b_count(), num_bytes.b_count(), data);
     }
 
-    Image* Gl4NvRenderEngine::create_image(const shaderpack::TextureCreateInfo& info) {
-        auto* image = new Gl3Image;
+    Image* Gl4NvRenderEngine::create_image(const shaderpack::TextureCreateInfo& info, AllocatorHandle<>& allocator) {
+        auto* image = allocator.new_other_object<Gl3Image>();
 
         glGenTextures(1, &image->id);
         glBindTexture(GL_TEXTURE_2D, image->id);
@@ -326,40 +350,39 @@ namespace nova::renderer::rhi {
         return image;
     }
 
-    Semaphore* Gl4NvRenderEngine::create_semaphore() { return new Gl3Semaphore; }
+    Semaphore* Gl4NvRenderEngine::create_semaphore(AllocatorHandle<>& allocator) { return allocator.new_other_object<Gl3Semaphore>(); }
 
-    std::vector<Semaphore*> Gl4NvRenderEngine::create_semaphores(const uint32_t num_semaphores) {
-        std::vector<Semaphore*> semaphores(num_semaphores);
+    std::pmr::vector<Semaphore*> Gl4NvRenderEngine::create_semaphores(const uint32_t num_semaphores, AllocatorHandle<>& allocator) {
+        std::pmr::vector<Semaphore*> semaphores(num_semaphores, nullptr, *allocator.create_suballocator<Semaphore*>());
 
         for(uint32_t i = 0; i < num_semaphores; i++) {
-            semaphores[i] = new Gl3Semaphore;
+            semaphores[i] = allocator.new_other_object<Gl3Semaphore>();
         }
 
         return semaphores;
     }
 
-    Fence* Gl4NvRenderEngine::create_fence(const bool signaled) {
-        auto* fence = new Gl3Fence;
-        fence->signaled = signaled;
+    Fence* Gl4NvRenderEngine::create_fence(AllocatorHandle<>& allocator, const bool signaled) {
+        auto* fence = allocator.new_other_object<Gl3Fence>(signaled);
 
         return fence;
     }
 
-    std::vector<Fence*> Gl4NvRenderEngine::create_fences(const uint32_t num_fences, const bool signaled) {
-        std::vector<Fence*> fences;
+    std::pmr::vector<Fence*> Gl4NvRenderEngine::create_fences(AllocatorHandle<>& allocator,
+                                                              const uint32_t num_fences,
+                                                              const bool signaled) {
+        std::pmr::vector<Fence*> fences(*allocator.create_suballocator<Fence*>());
         fences.reserve(num_fences);
 
         for(uint32_t i = 0; i < num_fences; i++) {
-            auto* fence = new Gl3Fence;
-            fence->signaled = signaled;
-
+            auto* fence = allocator.new_other_object<Gl3Fence>(signaled);
             fences.emplace_back(fence);
         }
 
         return fences;
     }
 
-    void Gl4NvRenderEngine::wait_for_fences(const std::vector<Fence*> fences) {
+    void Gl4NvRenderEngine::wait_for_fences(const std::pmr::vector<Fence*> fences) {
         for(Fence* fence : fences) {
             auto* gl_fence = static_cast<Gl3Fence*>(fence);
             std::unique_lock lck(gl_fence->mutex);
@@ -367,7 +390,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void Gl4NvRenderEngine::reset_fences(const std::vector<Fence*>& fences) {
+    void Gl4NvRenderEngine::reset_fences(const std::pmr::vector<Fence*>& fences) {
         for(Fence* fence : fences) {
             auto* gl_fence = static_cast<Gl3Fence*>(fence);
             std::unique_lock guard(gl_fence->mutex);
@@ -375,43 +398,54 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void Gl4NvRenderEngine::destroy_renderpass(Renderpass* pass) { delete pass; }
-
-    void Gl4NvRenderEngine::destroy_framebuffer(Framebuffer* framebuffer) { delete framebuffer; }
-
-    void Gl4NvRenderEngine::destroy_pipeline_interface(PipelineInterface* /* pipeline_interface */) {
-        // No work needed, no GPU objects in Gl3PipelineInterface;
+    void Gl4NvRenderEngine::destroy_renderpass(Renderpass* pass, AllocatorHandle<>& allocator) {
+        allocator.deallocate(reinterpret_cast<std::byte*>(pass), sizeof(Gl3Renderpass));
     }
 
-    void Gl4NvRenderEngine::destroy_pipeline(Pipeline* pipeline) {}
+    void Gl4NvRenderEngine::destroy_framebuffer(Framebuffer* framebuffer, AllocatorHandle<>& allocator) {
+        allocator.deallocate(reinterpret_cast<std::byte*>(framebuffer), sizeof(Gl3Framebuffer));
+    }
 
-    void Gl4NvRenderEngine::destroy_texture(Image* resource) {
+    void Gl4NvRenderEngine::destroy_pipeline_interface(PipelineInterface* pipeline_interface, AllocatorHandle<>& allocator) {
+        allocator.deallocate(reinterpret_cast<std::byte*>(pipeline_interface), sizeof(Gl3PipelineInterface));
+    }
+
+    void Gl4NvRenderEngine::destroy_pipeline(Pipeline* pipeline, AllocatorHandle<>& allocator) {
+        allocator.deallocate(reinterpret_cast<std::byte*>(pipeline), sizeof(Gl3Pipeline));
+    }
+
+    void Gl4NvRenderEngine::destroy_texture(Image* resource, AllocatorHandle<>& allocator) {
         auto* gl_image = static_cast<Gl3Image*>(resource);
         glDeleteTextures(1, &gl_image->id);
 
-        delete gl_image;
+        allocator.deallocate(reinterpret_cast<std::byte*>(gl_image), sizeof(Gl3Image));
     }
 
-    void Gl4NvRenderEngine::destroy_semaphores(
-        std::vector<Semaphore*>& /* semaphores */) { // OpenGL semaphores have no GPU objects, so we don't need to do anything here
+    void Gl4NvRenderEngine::destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores, AllocatorHandle<>& allocator) {
+
+        for(auto* semaphore : semaphores) {
+            allocator.deallocate(reinterpret_cast<std::byte*>(semaphore), sizeof(Gl3Semaphore));
+        }
     }
 
-    void Gl4NvRenderEngine::destroy_fences(
-        std::vector<Fence*>& /* fences */) { // OpenGL fences have no GPU objects, so we don't need to do anything here
+    void Gl4NvRenderEngine::destroy_fences(const std::pmr::vector<Fence*>& fences, AllocatorHandle<>& allocator) {
+        for(auto* fence : fences) {
+            allocator.deallocate(reinterpret_cast<std::byte*>(fence), sizeof(Gl3Fence));
+        }
     }
 
-    CommandList* Gl4NvRenderEngine::get_command_list(uint32_t /* thread_idx */,
-                                                     QueueType /* needed_queue_type */,
-                                                     CommandList::Level /* command_list_type */) {
-        // TODO: Something useful for custom memory allocation
-        return new Gl3CommandList();
+    CommandList* Gl4NvRenderEngine::create_command_list(AllocatorHandle<>& /*allocator*/,
+                                                        uint32_t /* thread_idx */,
+                                                        QueueType /* needed_queue_type */,
+                                                        CommandList::Level /* command_list_type */) {
+        return command_allocator->new_object();
     }
 
     void Gl4NvRenderEngine::submit_command_list(CommandList* cmds,
                                                 QueueType /* queue */,
                                                 Fence* fence_to_signal,
-                                                const std::vector<Semaphore*>& wait_semaphores,
-                                                const std::vector<Semaphore*>& signal_semaphores) {
+                                                const std::pmr::vector<Semaphore*>& wait_semaphores,
+                                                const std::pmr::vector<Semaphore*>& signal_semaphores) {
         // GL is F U N
         // No equivalent for queues. Hope yalls like waiting for things
         // No equivalent for fences or semaphores. Mutexes, anyone?
@@ -422,7 +456,7 @@ namespace nova::renderer::rhi {
             gl_semaphore->cv.wait(lck, [&gl_semaphore] { return gl_semaphore->signaled; });
         }
         auto* gl_cmds = static_cast<Gl3CommandList*>(cmds);
-        const std::vector<Gl3Command>& commands = gl_cmds->get_commands();
+        const std::pmr::vector<Gl3Command>& commands = gl_cmds->get_commands();
         for(const Gl3Command& command : commands) {
             switch(command.type) {
                 case Gl3CommandType::BufferCopy:
@@ -488,9 +522,9 @@ namespace nova::renderer::rhi {
 
         glCopyBufferSubData(GL_COPY_READ_BUFFER,
                             GL_COPY_WRITE_BUFFER,
-                            buffer_copy.source_offset,
-                            buffer_copy.destination_offset,
-                            buffer_copy.num_bytes);
+                            buffer_copy.source_offset.b_count(),
+                            buffer_copy.destination_offset.b_count(),
+                            buffer_copy.num_bytes.b_count());
     }
 
     void Gl4NvRenderEngine::begin_renderpass_impl(const Gl3BeginRenderpassCommand& begin_renderpass) {
@@ -584,8 +618,8 @@ namespace nova::renderer::rhi {
 
     void Gl4NvRenderEngine::execute_command_lists_impl(const Gl3ExecuteCommandListsCommand& execute_command_lists) {}
 
-    ntl::Result<GLuint> compile_shader(const std::vector<uint32_t>& spirv, const GLenum shader_type) {
-        spirv_cross::CompilerGLSL compiler(spirv);
+    ntl::Result<GLuint> compile_shader(const std::pmr::vector<uint32_t>& spirv, const GLenum shader_type) {
+        spirv_cross::CompilerGLSL compiler({spirv.begin(), spirv.end()});
         const std::string glsl = compiler.compile();
         const char* glsl_c = glsl.c_str();
         const auto len = static_cast<GLint>(glsl.size());

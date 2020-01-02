@@ -2364,7 +2364,7 @@ TEST(MaterialValidator, PassesEmptyArray) {
     // clang-format off
     nlohmann::json material = {
             {"name", "TestMaterial"},
-            {"passes", std::vector<std::string>{}},
+            {"passes", std::pmr::vector<std::string>{}},
             {"filter", "geometry_type::block"}
     };
     // clang-format on

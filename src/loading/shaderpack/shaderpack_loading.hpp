@@ -3,7 +3,6 @@
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/filesystem.hpp"
 
-
 namespace nova::renderer::shaderpack {
     /*!
      * \brief Loads all the data for a single shaderpack
@@ -21,4 +20,4 @@ namespace nova::renderer::shaderpack {
      * \return The shaderpack, if it can be loaded, or an empty optional if it cannot
      */
     ShaderpackData load_shaderpack_data(const fs::path& shaderpack_name);
-} // namespace nova::renderer
+} // namespace nova::renderer::shaderpack

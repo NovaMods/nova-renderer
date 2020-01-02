@@ -4,6 +4,10 @@
 
 #include <string>
 
+#include "nova_renderer/memory/bytes.hpp"
+
+using namespace nova::mem::operators;
+
 namespace nova::renderer {
     const std::string MODEL_MATRIX_BUFFER_NAME = "NovaModelMatrixUBO";
     const std::string PER_FRAME_DATA_NAME = "NovaPerFrameUBO";
@@ -13,6 +17,8 @@ namespace nova::renderer {
     constexpr uint32_t NVIDIA_PCI_VENDOR_ID = 0x10DE;
 
     constexpr uint8_t NUM_IN_FLIGHT_FRAMES = 3;
+
+    constexpr mem::Bytes PER_FRAME_MEMORY_SIZE = 2_mb;
 
     /*!
      * \brief Name of the builtin pass Nova uses to render UI

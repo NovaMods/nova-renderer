@@ -27,9 +27,9 @@ namespace nova::renderer {
     std::string ZipFolderAccessor::read_text_file(const fs::path& resource_path) {
         const fs::path full_path = *root_folder / resource_path;
 
-        const std::string resource_string = full_path.string().c_str();
+        const std::string resource_string = full_path.string();
         if(!does_resource_exist_on_filesystem(full_path)) {
-            NOVA_LOG(ERROR) << "Resource at path " << resource_string.c_str() << " does not exist";
+            NOVA_LOG(ERROR) << "Resource at path " << resource_string << " does not exist";
         }
 
         const uint32_t file_idx = resource_indexes.at(resource_string);
@@ -40,10 +40,10 @@ namespace nova::renderer {
             const mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
             const std::string err = mz_zip_get_error_string(err_code);
 
-            NOVA_LOG(ERROR) << "Could not get information for file " << resource_string.c_str() << ": " << err.c_str();
+            NOVA_LOG(ERROR) << "Could not get information for file " << resource_string << ": " << err;
         }
 
-        std::vector<char> resource_buffer;
+        std::pmr::vector<char> resource_buffer;
         resource_buffer.reserve(static_cast<uint64_t>(file_stat.m_uncomp_size));
 
         const mz_bool file_extracted = mz_zip_reader_extract_to_mem(&zip_archive,
@@ -55,15 +55,15 @@ namespace nova::renderer {
             const mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
             const std::string err = mz_zip_get_error_string(err_code);
 
-            NOVA_LOG(ERROR) << "Could not extract file " << resource_string.c_str() << ": " << err.c_str();
+            NOVA_LOG(ERROR) << "Could not extract file " << resource_string << ": " << err;
         }
 
         return std::string{resource_buffer.data()};
     }
 
-    std::vector<fs::path> ZipFolderAccessor::get_all_items_in_folder(const fs::path& folder) {
-        const std::string folder_stringname = folder.string().c_str();
-        std::vector<std::string> folder_path_parts = split(folder_stringname, '/');
+    std::pmr::vector<fs::path> ZipFolderAccessor::get_all_items_in_folder(const fs::path& folder) {
+        const std::string folder_stringname = folder.string();
+        std::pmr::vector<std::string> folder_path_parts = split(folder_stringname, '/');
 
         FileTreeNode* cur_node = files.get();
         // Get the node at this path
@@ -82,11 +82,11 @@ namespace nova::renderer {
             }
         }
 
-        std::vector<fs::path> children_paths;
+        std::pmr::vector<fs::path> children_paths;
         children_paths.reserve(cur_node->children.size());
         for(const std::unique_ptr<FileTreeNode>& child : cur_node->children) {
             std::string s = child->get_full_path();
-            children_paths.emplace_back(s.c_str());
+            children_paths.emplace_back(s);
         }
 
         return children_paths;
@@ -95,7 +95,7 @@ namespace nova::renderer {
     void ZipFolderAccessor::build_file_tree() {
         const uint32_t num_files = mz_zip_reader_get_num_files(&zip_archive);
 
-        std::vector<std::string> all_filenames;
+        std::pmr::vector<std::string> all_filenames;
         all_filenames.resize(num_files);
         std::array<char, 1024> filename_buffer{0};
 
@@ -139,13 +139,13 @@ namespace nova::renderer {
     }
 
     bool ZipFolderAccessor::does_resource_exist_on_filesystem(const fs::path& resource_path) {
-        const auto resource_string = resource_path.string().c_str();
+        const auto resource_string = resource_path.string();
         const auto existence_maybe = does_resource_exist_in_map(resource_string);
         if(existence_maybe) {
             return existence_maybe.value();
         }
 
-        int32_t ret_val = mz_zip_reader_locate_file(&zip_archive, resource_string, "", 0);
+        int32_t ret_val = mz_zip_reader_locate_file(&zip_archive, resource_string.c_str(), "", 0);
         if(ret_val != -1) {
             // resource found!
             resource_indexes.emplace(resource_string, ret_val);
@@ -167,7 +167,7 @@ namespace nova::renderer {
             ss << "    ";
         }
 
-        ss << folder->name.c_str();
+        ss << folder->name;
         NOVA_LOG(INFO) << ss.str();
 
         for(const auto& child : folder->children) {
@@ -176,7 +176,7 @@ namespace nova::renderer {
     }
 
     std::string FileTreeNode::get_full_path() const {
-        std::vector<std::string> names;
+        std::pmr::vector<std::string> names;
         const FileTreeNode* cur_node = this;
         while(cur_node != nullptr) {
             names.push_back(cur_node->name);

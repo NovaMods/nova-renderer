@@ -136,16 +136,16 @@ namespace nova::renderer::shaderpack {
 
     ntl::Result<RendergraphData> load_rendergraph_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
 
-    std::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<FolderAccessorBase>& folder_access);
+    std::pmr::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<FolderAccessorBase>& folder_access);
     PipelineCreateInfo load_single_pipeline(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& pipeline_path);
 
-    std::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access);
+    std::pmr::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access);
     MaterialData load_single_material(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& material_path);
 
-    std::vector<uint32_t> load_shader_file(const fs::path& filename,
+    std::pmr::vector<uint32_t> load_shader_file(const fs::path& filename,
                                            const std::shared_ptr<FolderAccessorBase>& folder_access,
                                            EShLanguage stage,
-                                           const std::vector<std::string>& defines);
+                                           const std::pmr::vector<std::string>& defines);
 
     bool loading_failed = false;
 
@@ -284,7 +284,8 @@ namespace nova::renderer::shaderpack {
                 return ntl::Result<RendergraphData>(rendergraph_file);
 
             } else {
-                return ntl::Result<RendergraphData>(MAKE_ERROR("At least one pass must write to the render target named {:s}", BACKBUFFER_NAME));
+                return ntl::Result<RendergraphData>(
+                    MAKE_ERROR("At least one pass must write to the render target named {:s}", BACKBUFFER_NAME));
             }
         }
         catch(nlohmann::json::parse_error& err) {
@@ -292,12 +293,12 @@ namespace nova::renderer::shaderpack {
         }
     }
 
-    std::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {
+    std::pmr::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         NOVA_LOG(TRACE) << "load_pipeline_files called";
 
-        std::vector<fs::path> potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
+        std::pmr::vector<fs::path> potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
 
-        std::vector<PipelineCreateInfo> output;
+        std::pmr::vector<PipelineCreateInfo> output;
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
@@ -369,11 +370,11 @@ namespace nova::renderer::shaderpack {
         return new_pipeline;
     }
 
-    std::vector<uint32_t> load_shader_file(const fs::path& filename,
+    std::pmr::vector<uint32_t> load_shader_file(const fs::path& filename,
                                            const std::shared_ptr<FolderAccessorBase>& folder_access,
                                            const EShLanguage stage,
-                                           const std::vector<std::string>& defines) {
-        static std::unordered_map<EShLanguage, std::vector<fs::path>> extensions_by_shader_stage = {{EShLangVertex,
+                                           const std::pmr::vector<std::string>& defines) {
+        static std::unordered_map<EShLanguage, std::pmr::vector<fs::path>> extensions_by_shader_stage = {{EShLangVertex,
                                                                                                      {
                                                                                                          ".vert.spirv",
                                                                                                          ".vsh.spirv",
@@ -449,7 +450,7 @@ namespace nova::renderer::shaderpack {
                                                                                                          ".tess_control.hlsl",
                                                                                                      }}};
 
-        std::vector<fs::path> extensions_for_current_stage = extensions_by_shader_stage.at(stage);
+        std::pmr::vector<fs::path> extensions_for_current_stage = extensions_by_shader_stage.at(stage);
 
         for(const fs::path& extension : extensions_for_current_stage) {
             fs::path full_filename = filename;
@@ -519,7 +520,7 @@ namespace nova::renderer::shaderpack {
             std::vector<uint32_t> spirv_std;
             GlslangToSpv(*program.getIntermediate(stage), spirv_std);
 
-            std::vector<uint32_t> spirv(spirv_std.begin(), spirv_std.end());
+            std::pmr::vector<uint32_t> spirv(spirv_std.begin(), spirv_std.end());
 
             fs::path dump_filename = filename.filename();
             dump_filename.replace_extension(std::to_string(stage) + ".spirv.generated");
@@ -532,12 +533,12 @@ namespace nova::renderer::shaderpack {
         return {};
     }
 
-    std::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {
-        std::vector<fs::path> potential_material_files = folder_access->get_all_items_in_folder("materials");
+    std::pmr::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {
+        std::pmr::vector<fs::path> potential_material_files = folder_access->get_all_items_in_folder("materials");
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
-        std::vector<MaterialData> output;
+        std::pmr::vector<MaterialData> output;
         output.reserve(potential_material_files.size());
 
         for(const fs::path& potential_file : potential_material_files) {
@@ -564,7 +565,7 @@ namespace nova::renderer::shaderpack {
         }
 
         auto material = json_material.get<MaterialData>();
-        material.name = material_path.stem().string().c_str();
+        material.name = material_path.stem().string();
         NOVA_LOG(TRACE) << "Load of material " << material_path << " succeeded";
         return material;
     }

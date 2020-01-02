@@ -1,10 +1,5 @@
-/*!
- * \author ddubois
- * \date 31-Mar-19.
- */
+#pragma once
 
-#ifndef NOVA_RENDERER_GL_2_COMMAND_LIST_HPP
-#define NOVA_RENDERER_GL_2_COMMAND_LIST_HPP
 #include "nova_renderer/rhi/command_list.hpp"
 
 #include "gl3_structs.hpp"
@@ -26,16 +21,16 @@ namespace nova::renderer::rhi {
 
     struct Gl3BufferCopyCommand {
         GLuint destination_buffer;
-        uint64_t destination_offset;
+        mem::Bytes destination_offset;
 
         GLuint source_buffer;
-        uint64_t source_offset;
+        mem::Bytes source_offset;
 
-        uint64_t num_bytes;
+        mem::Bytes num_bytes;
     };
 
     struct Gl3ExecuteCommandListsCommand {
-        std::vector<CommandList*> lists_to_execute;
+        std::pmr::vector<CommandList*> lists_to_execute;
     };
 
     struct Gl3BeginRenderpassCommand {
@@ -48,14 +43,14 @@ namespace nova::renderer::rhi {
 
     struct Gl3BindDescriptorSetsCommand {
         GLuint program;
-        std::vector<Gl3DescriptorSet*> sets;
+        std::pmr::vector<Gl3DescriptorSet*> sets;
         std::unordered_map<std::string, GLuint> uniform_cache;
         std::unordered_map<std::string, ResourceBindingDescription> pipeline_bindings;
         std::unordered_map<std::string, GLuint> uniform_block_indices;
     };
 
     struct Gl3BindVertexBuffersCommand {
-        std::vector<GLuint> buffers;
+        std::pmr::vector<GLuint> buffers;
     };
 
     struct Gl3BindIndexBufferCommand {
@@ -110,7 +105,7 @@ namespace nova::renderer::rhi {
     public:
         Gl3CommandList();
 
-        Gl3CommandList(Gl3CommandList&& old) noexcept = default;
+        Gl3CommandList(Gl3CommandList && old) noexcept = default;
         Gl3CommandList& operator=(Gl3CommandList&& old) noexcept = default;
 
         Gl3CommandList(const Gl3CommandList& other) = delete;
@@ -120,25 +115,26 @@ namespace nova::renderer::rhi {
 
         void resource_barriers(PipelineStageFlags stages_before_barrier,
                                PipelineStageFlags stages_after_barrier,
-                               const std::vector<ResourceBarrier>& barriers) override;
+                               const std::pmr::vector<ResourceBarrier>& barriers) override;
 
-        void copy_buffer(Buffer* destination_buffer,
-                         uint64_t destination_offset,
-                         Buffer* source_buffer,
-                         uint64_t source_offset,
-                         uint64_t num_bytes) override;
+        void copy_buffer(Buffer * destination_buffer,
+                         mem::Bytes destination_offset,
+                         Buffer * source_buffer,
+                         mem::Bytes source_offset,
+                         mem::Bytes num_bytes) override;
 
-        void execute_command_lists(const std::vector<CommandList*>& lists) override;
+        void execute_command_lists(const std::pmr::vector<CommandList*>& lists) override;
 
-        void begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) override;
+        void begin_renderpass(Renderpass * renderpass, Framebuffer * framebuffer) override;
 
         void end_renderpass() override;
 
         void bind_pipeline(const Pipeline* pipeline) override;
 
-        void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets, const PipelineInterface* pipeline_interface) override;
+        void bind_descriptor_sets(const std::pmr::vector<DescriptorSet*>& descriptor_sets, const PipelineInterface* pipeline_interface)
+            override;
 
-        void bind_vertex_buffers(const std::vector<Buffer*>& buffers) override;
+        void bind_vertex_buffers(const std::pmr::vector<Buffer*>& buffers) override;
 
         void bind_index_buffer(const Buffer* buffer) override;
 
@@ -147,11 +143,12 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Provides access to the actual command list, so that the GL3 render engine can process the commands
          */
-        [[nodiscard]] std::vector<Gl3Command> get_commands() const;
+        [[nodiscard]] std::pmr::vector<Gl3Command> get_commands() const;
+
+        void upload_data_to_image(Image * image, size_t width, size_t height, size_t bytes_per_pixel, Buffer * staging_buffer, void* data)
+            override;
 
     private:
-        std::vector<Gl3Command> commands;
+        std::pmr::vector<Gl3Command> commands;
     };
 } // namespace nova::renderer::rhi
-
-#endif // NOVA_RENDERER_GL_2_COMMAND_LIST_HPP

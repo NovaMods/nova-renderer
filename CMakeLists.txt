@@ -112,19 +112,23 @@ set(NOVA_SOURCE
         include/nova_renderer/renderdoc_app.h
         include/nova_renderer/shaderpack_data.hpp
         include/nova_renderer/window.hpp
-        include/nova_renderer/bytes.hpp
-        include/nova_renderer/allocation_strategy.hpp
-        include/nova_renderer/allocation_structs.hpp
-        include/nova_renderer/bytes.hpp
-        include/nova_renderer/polyalloc.hpp
         include/nova_renderer/constants.hpp
         include/nova_renderer/frame_context.hpp
+
+        include/nova_renderer/memory/bytes.hpp
+        include/nova_renderer/memory/allocation_strategy.hpp
+        include/nova_renderer/memory/allocation_structs.hpp
+        include/nova_renderer/memory/allocators.hpp
+        include/nova_renderer/memory/block_allocation_strategy.hpp
+        include/nova_renderer/memory/bump_point_allocation_strategy.hpp
+
         include/nova_renderer/rhi/forward_decls.hpp
         include/nova_renderer/rhi/command_list.hpp
         include/nova_renderer/rhi/rhi_enums.hpp
         include/nova_renderer/rhi/rhi_types.hpp
         include/nova_renderer/rhi/render_engine.hpp
         include/nova_renderer/rhi/device_memory_resource.hpp
+
         include/nova_renderer/frontend/procedural_mesh.hpp
         include/nova_renderer/frontend/rendergraph.hpp
         include/nova_renderer/frontend/ui_renderer.hpp
@@ -182,15 +186,9 @@ set(NOVA_SOURCE
         src/windowing/window.cpp
 
         src/memory/device_memory_resource.cpp
-        src/memory/block_allocation_strategy.hpp
-        src/memory/bump_point_allocation_strategy.hpp
-        src/memory/mallocator.hpp
-        src/memory/system_memory_allocator.hpp
         src/memory/block_allocation_strategy.cpp
         src/memory/bump_point_allocation_strategy.cpp
         src/memory/bytes.cpp
-        src/memory/mallocator.cpp
-        src/memory/system_memory_allocator.cpp
         )
 
 #################################################################
@@ -423,6 +421,7 @@ if(NOVA_ENABLE_VULKAN_RHI)
     endif()
 endif()
 
+# TODO: Figure out why we need to do this, and add a comment when we know
 if(TARGET glfw)
     set(GLFW_TARGET_NAME glfw)
 elseif(TARGET glfw3)

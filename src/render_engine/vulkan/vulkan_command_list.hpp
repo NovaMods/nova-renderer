@@ -20,15 +20,15 @@ namespace nova::renderer::rhi {
 
         void resource_barriers(PipelineStageFlags stages_before_barrier,
                                PipelineStageFlags stages_after_barrier,
-                               const std::vector<ResourceBarrier>& barriers) override;
+                               const std::pmr::vector<ResourceBarrier>& barriers) override;
 
         void copy_buffer(Buffer* destination_buffer,
-                         uint64_t destination_offset,
+                         mem::Bytes destination_offset,
                          Buffer* source_buffer,
-                         uint64_t source_offset,
-                         uint64_t num_bytes) override;
+                         mem::Bytes source_offset,
+                         mem::Bytes num_bytes) override;
 
-        void execute_command_lists(const std::vector<CommandList*>& lists) override;
+        void execute_command_lists(const std::pmr::vector<CommandList*>& lists) override;
 
         void begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) override;
 
@@ -36,14 +36,20 @@ namespace nova::renderer::rhi {
 
         void bind_pipeline(const Pipeline* pipeline) override;
 
-        void bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets, const PipelineInterface* pipeline_interface) override;
+        void bind_descriptor_sets(const std::pmr::vector<DescriptorSet*>& descriptor_sets, const PipelineInterface* pipeline_interface) override;
 
-        void bind_vertex_buffers(const std::vector<Buffer*>& buffers) override;
+        void bind_vertex_buffers(const std::pmr::vector<Buffer*>& buffers) override;
 
         void bind_index_buffer(const Buffer* buffer) override;
 
         void draw_indexed_mesh(uint32_t num_indices, uint32_t num_instances) override;
 
+        void upload_data_to_image(Image* image,
+            size_t width,
+            size_t height,
+            size_t bytes_per_pixel,
+            Buffer* staging_buffer,
+            void* data) override;
     private:
         const VulkanRenderEngine& render_engine;
     };

@@ -447,8 +447,8 @@ namespace nova::renderer::rhi {
         }
     }
 
-    std::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions() {
-        static std::vector<VkVertexInputBindingDescription> input_descriptions = {
+    std::pmr::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions() {
+        static std::pmr::vector<VkVertexInputBindingDescription> input_descriptions = {
             VkVertexInputBindingDescription{
                 0,                          // binding
                 sizeof(FullVertex),         // stride
@@ -489,8 +489,8 @@ namespace nova::renderer::rhi {
         return input_descriptions;
     }
 
-    std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions() {
-        static std::vector<VkVertexInputAttributeDescription> attribute_descriptions = {
+    std::pmr::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions() {
+        static std::pmr::vector<VkVertexInputAttributeDescription> attribute_descriptions = {
             // Position
             VkVertexInputAttributeDescription{
                 0,                          // location

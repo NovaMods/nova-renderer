@@ -242,15 +242,24 @@ namespace nova::renderer::rhi {
 
     Gl3CommandList::Gl3CommandList() { commands.reserve(128); }
 
-    void Gl3CommandList::resource_barriers(PipelineStageFlags stages_before_barrier,
-                                           PipelineStageFlags stages_after_barrier,
-                                           const std::vector<ResourceBarrier>& barriers) {}
+    void Gl3CommandList::upload_data_to_image(Image* image,
+        size_t width,
+        size_t height,
+        size_t bytes_per_pixel,
+        Buffer* staging_buffer,
+        void* data) {
+        // TODO
+    }
+
+    void Gl3CommandList::resource_barriers(PipelineStageFlags /* stages_before_barrier */,
+                                           PipelineStageFlags /* stages_after_barrier */,
+                                           const std::pmr::vector<ResourceBarrier>& /* barriers */) {}
 
     void Gl3CommandList::copy_buffer(Buffer* destination_buffer,
-                                     const uint64_t destination_offset,
+                                     const mem::Bytes destination_offset,
                                      Buffer* source_buffer,
-                                     const uint64_t source_offset,
-                                     const uint64_t num_bytes) {
+                                     const mem::Bytes source_offset,
+                                     const mem::Bytes num_bytes) {
         auto* dst_buf = reinterpret_cast<Gl3Buffer*>(destination_buffer);
         auto* src_buf = reinterpret_cast<Gl3Buffer*>(source_buffer);
 
@@ -265,7 +274,7 @@ namespace nova::renderer::rhi {
         copy_command.buffer_copy.num_bytes = num_bytes;
     }
 
-    void Gl3CommandList::execute_command_lists(const std::vector<CommandList*>& lists) {
+    void Gl3CommandList::execute_command_lists(const std::pmr::vector<CommandList*>& lists) {
         commands.emplace_back();
 
         Gl3Command& execute_lists_command = commands.front();
@@ -294,7 +303,7 @@ namespace nova::renderer::rhi {
         command.bind_pipeline.program = gl_pipeline->id;
     }
 
-    void Gl3CommandList::bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
+    void Gl3CommandList::bind_descriptor_sets(const std::pmr::vector<DescriptorSet*>& descriptor_sets,
                                               const PipelineInterface* pipeline_interface) {
         // Alrighty here's where the fun happens
         // For each descriptor, get its uniform binding from the pipeline interface
@@ -316,7 +325,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void Gl3CommandList::bind_vertex_buffers(const std::vector<Buffer*>& buffers) {
+    void Gl3CommandList::bind_vertex_buffers(const std::pmr::vector<Buffer*>& buffers) {
         commands.emplace_back();
 
         Gl3Command& command = commands.front();
@@ -351,5 +360,5 @@ namespace nova::renderer::rhi {
         command.draw_indexed_mesh.num_instances = num_instances;
     }
 
-    std::vector<Gl3Command> Gl3CommandList::get_commands() const { return commands; }
+    std::pmr::vector<Gl3Command> Gl3CommandList::get_commands() const { return commands; }
 } // namespace nova::renderer::rhi

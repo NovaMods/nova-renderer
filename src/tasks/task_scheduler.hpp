@@ -221,8 +221,8 @@ namespace nova::ttl {
 
     private:
         uint32_t num_threads;
-        std::vector<std::thread> threads;
-        std::vector<per_thread_data> thread_local_data;
+        std::pmr::vector<std::thread> threads;
+        std::pmr::vector<per_thread_data> thread_local_data;
 
         std::unique_ptr<std::atomic<bool>> should_shutdown;
 

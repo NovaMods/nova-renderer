@@ -4,8 +4,8 @@
 #include <d3d12.h>
 #pragma warning(pop)
 
-#include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
+#include "nova_renderer/shaderpack_data.hpp"
 
 namespace nova::renderer::rhi {
     [[nodiscard]] D3D12_RESOURCE_STATES to_dx12_state(ResourceState state);
@@ -22,7 +22,7 @@ namespace nova::renderer::rhi {
 
     [[nodiscard]] D3D12_DESCRIPTOR_RANGE_TYPE to_dx12_range_type(DescriptorType type);
 
-    [[nodiscard]] std::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions();
+    [[nodiscard]] std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions();
 
     [[nodiscard]] std::string to_string(HRESULT hr);
 
@@ -37,4 +37,4 @@ namespace nova::renderer::rhi {
 #else
 #define CHECK_ERROR(expr, msg) expr;
 #endif
-} // namespace nova::renderer
+} // namespace nova::renderer::rhi

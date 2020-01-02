@@ -136,12 +136,12 @@ namespace nova::renderer {
      * \return An array of values, if the value can be found, or an empty vector if the values cannot be found
      */
     template <typename ValType>
-    std::vector<ValType> get_json_array(const nlohmann::json& json_obj, const std::string& key) {
+    std::pmr::vector<ValType> get_json_array(const nlohmann::json& json_obj, const std::string& key) {
         const std::string key_std = key.c_str();
         const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
             auto& json_node = json_obj.at(key_std);
-            std::vector<ValType> vec;
+            std::pmr::vector<ValType> vec;
             vec.reserve(json_node.size());
 
             for(auto& elem : json_node) {
@@ -151,7 +151,7 @@ namespace nova::renderer {
             return vec;
         }
 
-        return std::vector<ValType>{};
+        return std::pmr::vector<ValType>{};
     }
 
     /*!
@@ -163,14 +163,14 @@ namespace nova::renderer {
      * \return An array of values, if the value can be found, or an empty vector if the values cannot be found
      */
     template <typename ValType>
-    std::vector<ValType> get_json_array(const nlohmann::json& json_obj,
+    std::pmr::vector<ValType> get_json_array(const nlohmann::json& json_obj,
                                         const std::string& key,
                                         std::function<ValType(const nlohmann::json&)> deserializer) {
         const std::string key_std = key.c_str();
         const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
             auto& json_node = json_obj.at(key_std);
-            std::vector<ValType> vec;
+            std::pmr::vector<ValType> vec;
             vec.reserve(json_node.size());
 
             for(auto& elem : json_node) {
@@ -180,7 +180,7 @@ namespace nova::renderer {
             return vec;
         }
 
-        return std::vector<ValType>{};
+        return std::pmr::vector<ValType>{};
     }
 } // namespace nova::renderer
 

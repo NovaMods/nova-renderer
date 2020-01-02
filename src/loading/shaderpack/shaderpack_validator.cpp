@@ -1,6 +1,7 @@
 #include "shaderpack_validator.hpp"
 
 #include <array>
+
 #include <fmt/format.h>
 
 #include "nova_renderer/util/utils.hpp"
@@ -38,7 +39,7 @@ namespace nova::renderer::shaderpack {
                                                 {"tessellationEvaluationShader", ""},
                                                 {"geometryShader", ""}};
 
-    std::vector<std::string> required_graphics_pipeline_fields = {"name", "pass", "vertexFields", "vertexShader"};
+    std::pmr::vector<std::string> required_graphics_pipeline_fields = {"name", "pass", "vertexFields", "vertexShader"};
 
     nlohmann::json default_texture_format = {{"pixelFormat", "RGBA8"}, {"dimensionType", "Absolute"}};
 

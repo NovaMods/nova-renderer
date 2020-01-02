@@ -6,9 +6,11 @@
 #ifndef NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP
 #define NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP
 
-#include <nova_renderer/shaderpack_data.hpp>
 #include <string>
 #include <unordered_map>
+
+#include <nova_renderer/shaderpack_data.hpp>
+
 #include "nova_renderer/util/result.hpp"
 
 namespace nova::renderer::shaderpack {
@@ -39,7 +41,7 @@ namespace nova::renderer::shaderpack {
      * \param passes A map from pass name to pass of all the passes to order
      * \return The names of the passes in submission order
      */
-    ntl::Result<std::vector<RenderPassCreateInfo>> order_passes(const std::vector<RenderPassCreateInfo>& passes);
+    ntl::Result<std::pmr::vector<RenderPassCreateInfo>> order_passes(const std::pmr::vector<RenderPassCreateInfo>& passes);
 
     /*!
      * \brief Puts textures in usage order and determines which have overlapping usage ranges
@@ -50,9 +52,9 @@ namespace nova::renderer::shaderpack {
      * \param resource_used_range A map to hold the usage ranges of each texture
      * \param resources_in_order A vector to hold the textures in usage order
      */
-    void determine_usage_order_of_textures(const std::vector<RenderPassCreateInfo>& passes,
+    void determine_usage_order_of_textures(const std::pmr::vector<RenderPassCreateInfo>& passes,
                                            std::unordered_map<std::string, Range>& resource_used_range,
-                                           std::vector<std::string>& resources_in_order);
+                                           std::pmr::vector<std::string>& resources_in_order);
 
     /*!
      * \brief Determines which textures can be aliased to which other textures
@@ -66,7 +68,7 @@ namespace nova::renderer::shaderpack {
     std::unordered_map<std::string, std::string> determine_aliasing_of_textures(
         const std::unordered_map<std::string, TextureCreateInfo>& textures,
         const std::unordered_map<std::string, Range>& resource_used_range,
-        const std::vector<std::string>& resources_in_order);
+        const std::pmr::vector<std::string>& resources_in_order);
 } // namespace nova::renderer::shaderpack
 
 #endif // NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP

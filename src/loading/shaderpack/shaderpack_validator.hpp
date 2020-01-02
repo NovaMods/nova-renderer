@@ -9,15 +9,16 @@
 #ifndef NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
 #define NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
 
-#include <nlohmann/json.hpp>
 #include <string>
+
+#include <nlohmann/json.hpp>
 
 #include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer::shaderpack {
     struct ValidationReport {
-        std::vector<std::string> warnings;
-        std::vector<std::string> errors;
+        std::pmr::vector<std::string> warnings;
+        std::pmr::vector<std::string> errors;
 
         void merge_in(const ValidationReport& other);
     };
@@ -76,6 +77,6 @@ namespace nova::renderer::shaderpack {
      * \return A list of all errors encountered when validating this material
      */
     ValidationReport validate_material(nlohmann::json& material_json);
-} // namespace nova::renderer
+} // namespace nova::renderer::shaderpack
 
 #endif // NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
