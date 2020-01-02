@@ -148,4 +148,6 @@ namespace nova::renderer::rhi {
         Buffer,
         Image,
     };
+
+    bool is_depth_format(PixelFormat format);
 } // namespace nova::renderer::rhi

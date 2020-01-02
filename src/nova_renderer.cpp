@@ -412,27 +412,31 @@ namespace nova::renderer {
                 }
 
             } else {
-                rhi::Image* image = resource_storage->get_render_target(attachment_info.name);
-                color_attachments.push_back(image);
+                const auto render_target = resource_storage->get_render_target(attachment_info.name);
+                if(render_target) {
+                    color_attachments.push_back(render_target->image);
 
-                const shaderpack::TextureCreateInfo& info = dynamic_texture_infos.at(attachment_info.name);
-                const glm::uvec2 attachment_size = info.format.get_size_in_pixels(
-                    {render_settings.settings.window.width, render_settings.settings.window.height});
+                    const shaderpack::TextureCreateInfo& info = dynamic_texture_infos.at(attachment_info.name);
+                    const glm::uvec2 attachment_size = info.format.get_size_in_pixels(
+                        {render_settings.settings.window.width, render_settings.settings.window.height});
 
-                if(framebuffer_size.x > 0) {
-                    if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {
-                        attachment_errors.push_back(format(
-                            fmt("Attachment {:s} has a size of {:d}x{:d}, but the framebuffer for pass {:s} has a size of {:d}x{:d} - these must match! All attachments of a single renderpass must have the same size"),
-                            attachment_info.name,
-                            attachment_size.x,
-                            attachment_size.y,
-                            create_info.name,
-                            framebuffer_size.x,
-                            framebuffer_size.y));
+                    if(framebuffer_size.x > 0) {
+                        if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {
+                            attachment_errors.push_back(format(
+                                fmt("Attachment {:s} has a size of {:d}x{:d}, but the framebuffer for pass {:s} has a size of {:d}x{:d} - these must match! All attachments of a single renderpass must have the same size"),
+                                attachment_info.name,
+                                attachment_size.x,
+                                attachment_size.y,
+                                create_info.name,
+                                framebuffer_size.x,
+                                framebuffer_size.y));
+                        }
+
+                    } else {
+                        framebuffer_size = attachment_size;
                     }
-
                 } else {
-                    framebuffer_size = attachment_size;
+                    NOVA_LOG(ERROR) << "No render target named " << attachment_info.name;
                 }
             }
         }

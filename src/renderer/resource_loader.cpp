@@ -141,6 +141,8 @@ namespace nova::renderer {
             resource.image = image;
 
             {
+                
+
                 CommandList* cmds = device->create_command_list(allocator, 0, QueueType::Transfer);
 
                 ResourceBarrier initial_texture_barrier = {};
