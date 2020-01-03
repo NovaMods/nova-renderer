@@ -40,7 +40,7 @@
 #endif
 
 using namespace nova::mem;
-using namespace nova::mem::operators;
+using namespace operators;
 using namespace fmt;
 
 const Bytes global_memory_pool_size = 1_gb;
@@ -144,7 +144,7 @@ namespace nova::renderer {
 
     NovaSettingsAccessManager& NovaRenderer::get_settings() { return render_settings; }
 
-    std::shared_ptr<mem::AllocatorHandle<>> NovaRenderer::get_global_allocator() { return global_allocator; }
+    std::shared_ptr<AllocatorHandle<>> NovaRenderer::get_global_allocator() const { return global_allocator; }
 
     void NovaRenderer::execute_frame() {
         MTR_SCOPE("RenderLoop", "execute_frame");
@@ -284,13 +284,13 @@ namespace nova::renderer {
         return new_mesh_id;
     }
 
-    MapAccessor<ProceduralMesh> NovaRenderer::create_procedural_mesh(const uint64_t vertex_size, const uint64_t index_size) {
+    ProceduralMeshAccessor NovaRenderer::create_procedural_mesh(const uint64_t vertex_size, const uint64_t index_size) {
         MeshId our_id = next_mesh_id;
         next_mesh_id++;
 
         proc_meshes.emplace(our_id, ProceduralMesh(vertex_size, index_size, rhi.get()));
 
-        return MapAccessor<ProceduralMesh>(&proc_meshes, our_id);
+        return ProceduralMeshAccessor(&proc_meshes, our_id);
     }
 
     void NovaRenderer::load_shaderpack(const std::string& shaderpack_name) {
@@ -414,7 +414,7 @@ namespace nova::renderer {
             } else {
                 const auto render_target = resource_storage->get_render_target(attachment_info.name);
                 if(render_target) {
-                    color_attachments.push_back(render_target->image);
+                    color_attachments.push_back((*render_target)->image);
 
                     const shaderpack::TextureCreateInfo& info = dynamic_texture_infos.at(attachment_info.name);
                     const glm::uvec2 attachment_size = info.format.get_size_in_pixels(
@@ -444,9 +444,8 @@ namespace nova::renderer {
         // Can't combine these if statements and I don't want to `.find` twice
         const auto depth_attachment = [&]() -> std::optional<rhi::Image*> {
             if(create_info.depth_texture) {
-                if(const auto depth_tex_itr = dynamic_textures.find(create_info.depth_texture->name);
-                   depth_tex_itr != dynamic_textures.end()) {
-                    auto* image = depth_tex_itr->second->image;
+                if(const auto depth_tex = resource_storage->get_render_target(create_info.depth_texture->name); depth_tex) {
+                    auto* image = (*depth_tex)->image;
                     return std::make_optional<rhi::Image*>(image);
                 }
             }
@@ -590,8 +589,8 @@ namespace nova::renderer {
             write.resources.emplace_back();
             rhi::DescriptorResourceInfo& resource_info = write.resources[0];
 
-            if(const auto dyn_tex_itr = dynamic_textures.find(resource_name); dyn_tex_itr != dynamic_textures.end()) {
-                rhi::Image* image = dyn_tex_itr->second->image;
+            if(const auto dyn_tex = resource_storage->get_render_target(resource_name); dyn_tex) {
+                rhi::Image* image = (*dyn_tex)->image;
 
                 resource_info.image_info.image = image;
                 resource_info.image_info.sampler = point_sampler;
@@ -734,10 +733,8 @@ namespace nova::renderer {
 
     void NovaRenderer::destroy_dynamic_resources() {
         if(loaded_renderpack) {
-            for(const auto& tex : loaded_renderpack->resources.textures) {
-                if(const auto& itr = dynamic_textures.find(tex.name); itr != dynamic_textures.end()) {
-                    resource_storage->destroy_texture(itr->second);
-                }
+            for(const auto& tex_data : loaded_renderpack->resources.textures) {
+                resource_storage->destroy_texture(tex_data.name);
             }
             NOVA_LOG(DEBUG) << "Deleted all dynamic textures from renderpack " << loaded_renderpack->name;
         }

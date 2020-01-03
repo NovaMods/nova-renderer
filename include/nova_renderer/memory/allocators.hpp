@@ -2,6 +2,10 @@
 
 #include <memory_resource>
 
+#include "nova_renderer/memory/bytes.hpp"
+#include "nova_renderer/memory/host_memory_resource.hpp"
+#include "block_allocation_strategy.hpp"
+
 namespace nova::mem {
     template <typename AllocatedType = std::byte>
     class AllocatorHandle : public std::pmr::polymorphic_allocator<AllocatedType> {
@@ -56,8 +60,13 @@ namespace nova::mem {
         template <typename ObjectType, typename... Args, typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
         ObjectType* new_other_object(Args&&... args);
 
+        /*!
+         * \brief Creates a new allocator which will allocate a subsection of the total memory
+         *
+         * \param size The size of the memory which the suballocator will own
+         */
         template <typename ObjectType, typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
-        AllocatorHandle<ObjectType>* create_suballocator();
+        AllocatorHandle<ObjectType>* create_suballocator(Bytes size);
     };
 
     template <typename AllocatedType>
@@ -95,7 +104,10 @@ namespace nova::mem {
 
     template <typename AllocatedType>
     template <typename ObjectType, typename>
-    AllocatorHandle<ObjectType>* AllocatorHandle<AllocatedType>::create_suballocator() {
-        return new_other_object<AllocatorHandle<ObjectType>>(this->resource());
+    AllocatorHandle<ObjectType>* AllocatorHandle<AllocatedType>::create_suballocator(const Bytes size) {
+        auto* mem = this->allocate(size.b_count());
+        auto* mem_res = this->template new_other_object<HostMemoryResource<BlockAllocationStrategy>>(mem, size, nullptr);
+
+        return new_other_object<AllocatorHandle<ObjectType>>(mem_res);
     }
 } // namespace nova::mem

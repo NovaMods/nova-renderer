@@ -39,6 +39,8 @@ namespace nova::renderer {
     };
 #pragma endregion
 
+    using ProceduralMeshAccessor = MapAccessor<MeshId, ProceduralMesh>;
+
     /*!
      * \brief Main class for Nova. Owns all of Nova's resources and provides a way to access them
      * This class exists as a singleton so it's always available
@@ -97,7 +99,7 @@ namespace nova::renderer {
 
         NovaSettingsAccessManager& get_settings();
 
-        std::shared_ptr<mem::AllocatorHandle<>> get_global_allocator();
+        std::shared_ptr<mem::AllocatorHandle<>> get_global_allocator() const;
 
 #pragma region Meshes
         /*!
@@ -119,7 +121,7 @@ namespace nova::renderer {
         /*!
          * \brief Creates a procedural mesh, returning both its mesh id and
          */
-        [[nodiscard]] MapAccessor<ProceduralMesh> create_procedural_mesh(uint64_t vertex_size, uint64_t index_size);
+        [[nodiscard]] ProceduralMeshAccessor create_procedural_mesh(uint64_t vertex_size, uint64_t index_size);
 
         /*!
          * \brief Destroys the mesh with the provided ID, freeing up whatever VRAM it was using
@@ -181,7 +183,6 @@ namespace nova::renderer {
         std::shared_ptr<mem::AllocatorHandle<>> renderpack_allocator;
 
         std::shared_ptr<ResourceStorage> resource_storage;
-        std::unordered_map<std::string, std::shared_ptr<TextureResource>> dynamic_textures;
 
         std::unique_ptr<DeviceMemoryResource> mesh_memory;
 

@@ -11,7 +11,7 @@ namespace nova::mem {
         : memory_size(size), alignment(alignment_in) {
 
         auto* block_allocator_mem = allocator_in->allocate(sizeof(AllocatorHandle<Block>));
-        allocator = new(block_allocator_mem) AllocatorHandle<Block>(allocator_in->resource());
+        allocator = new(block_allocator_mem) AllocatorHandle<Block>(std::pmr::get_default_resource());  // TODO: Figure out how to allocate blocks more better
 
         head = make_new_block(0_b, size);
     }

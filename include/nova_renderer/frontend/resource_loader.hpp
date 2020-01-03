@@ -111,9 +111,9 @@ namespace nova::renderer {
 
         std::unique_ptr<mem::AllocatorHandle<>> staging_buffer_allocator;
 
-        std::pmr::unordered_map<std::string, TextureResource> textures;
+        std::unordered_map<std::string, TextureResource> textures;
 
-        std::pmr::unordered_map<std::string, TextureResource> render_targets;
+        std::unordered_map<std::string, TextureResource> render_targets;
 
         DeviceMemoryResource* staging_buffer_memory;
 

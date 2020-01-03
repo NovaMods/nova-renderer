@@ -9,7 +9,7 @@ namespace nova::renderer {
     template <typename KeyType, typename ValueType>
     class MapAccessor {
     public:
-        MapAccessor(std::unordered_map<KeyType, ValueType>* map, const KeyType& key) : map(map), key(key) {}
+        MapAccessor(const std::unordered_map<KeyType, ValueType>* map, const KeyType& key) : map(map), key(key) {}
 
         MapAccessor(const MapAccessor& other) = default;
         MapAccessor& operator=(const MapAccessor& other) = default;
