@@ -69,6 +69,11 @@ namespace nova::mem {
         AllocatorHandle<ObjectType>* create_suballocator(Bytes size);
     };
 
+    template<typename AllocatedType = std::byte>
+    AllocatorHandle<AllocatedType> get_malloc_allocator() {
+        return AllocatorHandle<AllocatedType>(std::pmr::new_delete_resource());
+    }
+
     template <typename AllocatedType>
     AllocatorHandle<AllocatedType>::AllocatorHandle(std::pmr::memory_resource* memory)
         : std::pmr::polymorphic_allocator<AllocatedType>(memory) {}
@@ -105,8 +110,10 @@ namespace nova::mem {
     template <typename AllocatedType>
     template <typename ObjectType, typename>
     AllocatorHandle<ObjectType>* AllocatorHandle<AllocatedType>::create_suballocator(const Bytes size) {
+        auto* allocation_strategy = new_other_object<BlockAllocationStrategy>(get_malloc_allocator(), size);
+
         auto* mem = this->allocate(size.b_count());
-        auto* mem_res = this->template new_other_object<HostMemoryResource<BlockAllocationStrategy>>(mem, size, nullptr);
+        auto* mem_res = this->template new_other_object<HostMemoryResource<BlockAllocationStrategy>>(mem, size, allocation_strategy);
 
         return new_other_object<AllocatorHandle<ObjectType>>(mem_res);
     }
