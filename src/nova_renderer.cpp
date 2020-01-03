@@ -284,13 +284,13 @@ namespace nova::renderer {
         return new_mesh_id;
     }
 
-    MapAccessor<MeshId, ProceduralMesh> NovaRenderer::create_procedural_mesh(const uint64_t vertex_size, const uint64_t index_size) {
+    MapAccessor<ProceduralMesh> NovaRenderer::create_procedural_mesh(const uint64_t vertex_size, const uint64_t index_size) {
         MeshId our_id = next_mesh_id;
         next_mesh_id++;
 
         proc_meshes.emplace(our_id, ProceduralMesh(vertex_size, index_size, rhi.get()));
 
-        return MapAccessor<MeshId, ProceduralMesh>(&proc_meshes, our_id);
+        return MapAccessor<ProceduralMesh>(&proc_meshes, our_id);
     }
 
     void NovaRenderer::load_shaderpack(const std::string& shaderpack_name) {

@@ -7,6 +7,7 @@
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
+#include "nova_renderer/util/container_accessor.hpp"
 
 namespace nova::mem {
     class Bytes;
@@ -56,17 +57,17 @@ namespace nova::renderer {
          * \param allocator The allocator to allocate with
          * \return The newly-created image, or nullptr if the image could not be created. Check the Nova logs to find out why
          */
-        [[nodiscard]] std::shared_ptr<TextureResource> create_texture(const std::string& name,
-                                                                      std::size_t width,
-                                                                      std::size_t height,
-                                                                      rhi::PixelFormat pixel_format,
-                                                                      void* data,
-                                                                      mem::AllocatorHandle<>& allocator);
+        [[nodiscard]] std::optional<MapAccessor<TextureResource>> create_texture(const std::string& name,
+                                                                                              std::size_t width,
+                                                                                              std::size_t height,
+                                                                                              rhi::PixelFormat pixel_format,
+                                                                                              void* data,
+                                                                                              mem::AllocatorHandle<>& allocator);
 
         /*!
          * \brief Retrieves the texture with the specified name
          */
-        [[nodiscard]] std::shared_ptr<TextureResource> get_texture(const std::string& name) const;
+        [[nodiscard]] std::optional<MapAccessor<TextureResource>> get_texture(const std::string& name) const;
 
         [[nodiscard]] std::optional<rhi::DescriptorSetWrite> get_descriptor_info_for_resource(const std::string& resource_name);
 
@@ -88,19 +89,19 @@ namespace nova::renderer {
          *
          * \return The new render target if it could be created, or am empty optional if it could not
          */
-        [[nodiscard]] std::shared_ptr<TextureResource> create_render_target(const std::string& name,
-                                                                            size_t width,
-                                                                            size_t height,
-                                                                            rhi::PixelFormat pixel_format,
-                                                                            mem::AllocatorHandle<>& allocator,
-                                                                            bool can_be_sampled = false);
+        [[nodiscard]] std::optional<MapAccessor<TextureResource>> create_render_target(const std::string& name,
+                                                                                                    size_t width,
+                                                                                                    size_t height,
+                                                                                                    rhi::PixelFormat pixel_format,
+                                                                                                    mem::AllocatorHandle<>& allocator,
+                                                                                                    bool can_be_sampled = false);
 
         /*!
          * \brief Retrieves the render target with the specified name
          */
-        [[nodiscard]] std::shared_ptr<TextureResource> get_render_target(const std::string& name) const;
+        [[nodiscard]] std::optional<MapAccessor<TextureResource>> get_render_target(const std::string& name) const;
 
-        void destroy_texture(const std::shared_ptr<TextureResource>& texture);
+        void destroy_texture(const std::string& texture_name);
 
         NovaRenderer& renderer;
 

@@ -6,10 +6,10 @@ namespace nova::renderer {
      *
      * How this isn't in the standard library, idk
      */
-    template <typename KeyType, typename ValueType>
+    template <typename ValueType>
     class MapAccessor {
     public:
-        MapAccessor(std::unordered_map<KeyType, ValueType>* map, const KeyType key) : map(map), key(key) {}
+        MapAccessor(std::unordered_map<std::string, ValueType>* map, const std::string& key) : map(map), key(key) {}
 
         MapAccessor(const MapAccessor& other) = default;
         MapAccessor& operator=(const MapAccessor& other) = default;
@@ -17,12 +17,14 @@ namespace nova::renderer {
         MapAccessor(MapAccessor&& old) noexcept = default;
         MapAccessor& operator=(MapAccessor&& old) noexcept = default;
 
+        ~MapAccessor() = default;
+
         [[nodiscard]] ValueType* operator->() const { return &map->at(key); }
 
-        [[nodiscard]] KeyType get_key() const { return key; }
+        [[nodiscard]] const std::string& get_key() const { return key; }
 
     private:
-        std::unordered_map<KeyType, ValueType>* map;
-        KeyType key;
+        std::unordered_map<std::string, ValueType>* map;
+        std::string key;
     };
 } // namespace nova::renderer

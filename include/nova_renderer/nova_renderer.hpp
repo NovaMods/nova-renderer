@@ -119,7 +119,7 @@ namespace nova::renderer {
         /*!
          * \brief Creates a procedural mesh, returning both its mesh id and
          */
-        [[nodiscard]] MapAccessor<MeshId, ProceduralMesh> create_procedural_mesh(uint64_t vertex_size, uint64_t index_size);
+        [[nodiscard]] MapAccessor<ProceduralMesh> create_procedural_mesh(uint64_t vertex_size, uint64_t index_size);
 
         /*!
          * \brief Destroys the mesh with the provided ID, freeing up whatever VRAM it was using
