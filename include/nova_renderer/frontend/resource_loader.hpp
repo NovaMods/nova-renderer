@@ -37,6 +37,8 @@ namespace nova::renderer {
         rhi::PixelFormat format;
     };
 
+    using TextureResourceAccessor = MapAccessor<std::string, TextureResource>;
+
     /*!
      * \brief Provides a means to access Nova's resources, and also helps in creating resources? IDK yet but that's fine
      *
@@ -57,17 +59,17 @@ namespace nova::renderer {
          * \param allocator The allocator to allocate with
          * \return The newly-created image, or nullptr if the image could not be created. Check the Nova logs to find out why
          */
-        [[nodiscard]] std::optional<MapAccessor<TextureResource>> create_texture(const std::string& name,
-                                                                                              std::size_t width,
-                                                                                              std::size_t height,
-                                                                                              rhi::PixelFormat pixel_format,
-                                                                                              void* data,
-                                                                                              mem::AllocatorHandle<>& allocator);
+        [[nodiscard]] std::optional<TextureResourceAccessor> create_texture(const std::string& name,
+                                                                            std::size_t width,
+                                                                            std::size_t height,
+                                                                            rhi::PixelFormat pixel_format,
+                                                                            void* data,
+                                                                            mem::AllocatorHandle<>& allocator);
 
         /*!
          * \brief Retrieves the texture with the specified name
          */
-        [[nodiscard]] std::optional<MapAccessor<TextureResource>> get_texture(const std::string& name) const;
+        [[nodiscard]] std::optional<TextureResourceAccessor> get_texture(const std::string& name) const;
 
         [[nodiscard]] std::optional<rhi::DescriptorSetWrite> get_descriptor_info_for_resource(const std::string& resource_name);
 
@@ -89,17 +91,17 @@ namespace nova::renderer {
          *
          * \return The new render target if it could be created, or am empty optional if it could not
          */
-        [[nodiscard]] std::optional<MapAccessor<TextureResource>> create_render_target(const std::string& name,
-                                                                                                    size_t width,
-                                                                                                    size_t height,
-                                                                                                    rhi::PixelFormat pixel_format,
-                                                                                                    mem::AllocatorHandle<>& allocator,
-                                                                                                    bool can_be_sampled = false);
+        [[nodiscard]] std::optional<TextureResourceAccessor> create_render_target(const std::string& name,
+                                                                                  size_t width,
+                                                                                  size_t height,
+                                                                                  rhi::PixelFormat pixel_format,
+                                                                                  mem::AllocatorHandle<>& allocator,
+                                                                                  bool can_be_sampled = false);
 
         /*!
          * \brief Retrieves the render target with the specified name
          */
-        [[nodiscard]] std::optional<MapAccessor<TextureResource>> get_render_target(const std::string& name) const;
+        [[nodiscard]] std::optional<TextureResourceAccessor> get_render_target(const std::string& name) const;
 
         void destroy_texture(const std::string& texture_name);
 
@@ -109,9 +111,9 @@ namespace nova::renderer {
 
         std::unique_ptr<mem::AllocatorHandle<>> staging_buffer_allocator;
 
-        std::unordered_map<std::string, std::shared_ptr<TextureResource>> textures;
+        std::pmr::unordered_map<std::string, TextureResource> textures;
 
-        std::unordered_map<std::string, std::shared_ptr<TextureResource>> render_targets;
+        std::pmr::unordered_map<std::string, TextureResource> render_targets;
 
         DeviceMemoryResource* staging_buffer_memory;
 
