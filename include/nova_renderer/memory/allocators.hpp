@@ -65,7 +65,7 @@ namespace nova::mem {
          *
          * \param size The size of the memory which the suballocator will own
          */
-        template <typename ObjectType, typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
+        template <typename ObjectType = AllocatedType, typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
         AllocatorHandle<ObjectType>* create_suballocator(Bytes size);
     };
 

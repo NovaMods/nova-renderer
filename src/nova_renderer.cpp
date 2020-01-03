@@ -931,18 +931,16 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_builtin_textures() {
-        {
-            shaderpack::TextureCreateInfo info = {};
-            info.name = SCENE_OUTPUT_RENDER_TARGET_NAME;
-            info.usage = shaderpack::ImageUsage::RenderTarget;
-            info.format.pixel_format = shaderpack::PixelFormatEnum::RGBA8;
-            info.format.dimension_type = shaderpack::TextureDimensionTypeEnum::ScreenRelative;
-            info.format.width = 1;
-            info.format.height = 1;
+        shaderpack::TextureCreateInfo info = {};
+        info.name = SCENE_OUTPUT_RENDER_TARGET_NAME;
+        info.usage = shaderpack::ImageUsage::RenderTarget;
+        info.format.pixel_format = shaderpack::PixelFormatEnum::RGBA8;
+        info.format.dimension_type = shaderpack::TextureDimensionTypeEnum::ScreenRelative;
+        info.format.width = 1;
+        info.format.height = 1;
 
-            rhi::Image* scene_output_render_target = rhi->create_image(info, *global_allocator);
-            builtin_images.emplace(SCENE_OUTPUT_RENDER_TARGET_NAME, scene_output_render_target);
-        }
+        rhi::Image* scene_output_render_target = rhi->create_image(info, *global_allocator);
+        builtin_images.emplace(SCENE_OUTPUT_RENDER_TARGET_NAME, scene_output_render_target);
     }
 
     void NovaRenderer::create_uniform_buffers() {

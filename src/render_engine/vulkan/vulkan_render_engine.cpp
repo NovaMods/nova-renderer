@@ -1,6 +1,7 @@
 #include "vulkan_render_engine.hpp"
 
 #include <csignal>
+#include <scoped_allocator>
 #include <unordered_set>
 
 #include "nova_renderer/constants.hpp"
@@ -28,7 +29,9 @@ namespace nova::renderer::rhi {
     VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings,
                                            const std::shared_ptr<NovaWindow>& window,
                                            AllocatorHandle<>& allocator)
-        : RenderEngine(allocator, settings, window), command_pools_by_thread_idx(internal_allocator) {
+        : RenderEngine(allocator, settings, window),
+          command_pools_by_thread_idx(
+              std::scoped_allocator_adaptor<AllocatorHandle<>>(std::move(*internal_allocator.create_suballocator(2_kb)))) {
         create_instance();
 
         if(settings.settings.debug.enabled) {
@@ -840,7 +843,8 @@ namespace nova::renderer::rhi {
         // TODO: heap_mappings doesn't have the buffer's memory in it
         // Alternately, the buffer's memory isn't in heap_mappings
         // Something something assuming constantly mapped?
-        uint8_t* mapped_bytes = static_cast<uint8_t*>(heap_mappings.at(memory->memory)) + allocation_info.offset.b_count() + offset.b_count();
+        uint8_t* mapped_bytes = static_cast<uint8_t*>(heap_mappings.at(memory->memory)) + allocation_info.offset.b_count() +
+                                offset.b_count();
         memcpy(mapped_bytes, data, num_bytes.b_count());
     }
 
@@ -1248,7 +1252,7 @@ namespace nova::renderer::rhi {
 #error Unsupported Operating system
 #endif
 
-        std::pmr::vector<VkValidationFeatureEnableEXT> enabled_validation_features;// = {VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT};
+        std::pmr::vector<VkValidationFeatureEnableEXT> enabled_validation_features; // = {VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT};
 
         if(settings.settings.debug.enabled) {
             enabled_extension_names.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);

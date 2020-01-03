@@ -4,6 +4,8 @@
 #include <spirv_hlsl.hpp>
 #pragma warning pop
 
+#include <scoped_allocator>
+
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/memory//bytes.hpp"
 #include "nova_renderer/rhi/device_memory_resource.hpp"
@@ -29,7 +31,8 @@ namespace nova::renderer::rhi {
     D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings,
                                          const std::shared_ptr<NovaWindow>& window,
                                          AllocatorHandle<>& allocator)
-        : RenderEngine(allocator, settings, window), command_allocators(allocator) {
+        : RenderEngine(allocator, settings, window),
+          command_allocators(std::scoped_allocator_adaptor<AllocatorHandle<>>(std::move(*internal_allocator.create_suballocator(2_kb)))) {
         create_device();
 
         create_queues();
@@ -679,9 +682,9 @@ namespace nova::renderer::rhi {
             return nullptr;
         }
     }
-    
-	Semaphore* D3D12RenderEngine::create_semaphore(AllocatorHandle<>& allocator) {
-		auto* semaphore = allocator.new_other_object<DX12Semaphore>();
+
+    Semaphore* D3D12RenderEngine::create_semaphore(AllocatorHandle<>& allocator) {
+        auto* semaphore = allocator.new_other_object<DX12Semaphore>();
 
         device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(semaphore->fence.GetAddressOf()));
 
