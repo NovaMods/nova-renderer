@@ -734,7 +734,7 @@ namespace nova::renderer {
     void NovaRenderer::destroy_dynamic_resources() {
         if(loaded_renderpack) {
             for(const auto& tex_data : loaded_renderpack->resources.render_targets) {
-                resource_storage->destroy_texture(tex_data.name, *renderpack_allocator);
+                resource_storage->destroy_render_target(tex_data.name, *renderpack_allocator);
             }
             NOVA_LOG(DEBUG) << "Deleted all dynamic textures from renderpack " << loaded_renderpack->name;
         }
@@ -838,6 +838,10 @@ namespace nova::renderer {
     rhi::RenderEngine* NovaRenderer::get_engine() const { return rhi.get(); }
 
     std::shared_ptr<NovaWindow> NovaRenderer::get_window() const { return window; }
+
+    std::shared_ptr<ResourceStorage> NovaRenderer::get_resource_manager() const {
+        return resource_storage;
+    }
 
     NovaRenderer* NovaRenderer::get_instance() { return instance.get(); }
 

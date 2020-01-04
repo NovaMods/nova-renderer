@@ -147,6 +147,8 @@ namespace nova::renderer {
 
         [[nodiscard]] std::shared_ptr<NovaWindow> get_window() const;
 
+        [[nodiscard]] std::shared_ptr<ResourceStorage> get_resource_manager() const;
+
         static NovaRenderer* initialize(const NovaSettings& settings);
 
         static NovaRenderer* get_instance();
