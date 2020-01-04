@@ -932,7 +932,7 @@ namespace nova::renderer {
         }
     }
 
-    void NovaRenderer::create_resource_storage() { resource_storage = std::allocate_shared<ResourceStorage>(global_allocator, *this); }
+    void NovaRenderer::create_resource_storage() { resource_storage = std::make_shared<ResourceStorage>(*this); }
 
     void NovaRenderer::create_builtin_textures() {
         shaderpack::TextureCreateInfo info = {};
