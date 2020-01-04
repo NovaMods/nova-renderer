@@ -131,6 +131,8 @@ namespace nova::renderer {
 
         create_global_sync_objects();
 
+        create_resource_storage();
+
         create_builtin_textures();
 
         create_uniform_buffers();
@@ -837,9 +839,7 @@ namespace nova::renderer {
 
     std::shared_ptr<NovaWindow> NovaRenderer::get_window() const { return window; }
 
-    std::shared_ptr<ResourceStorage> NovaRenderer::get_resource_manager() const {
-        return resource_storage;
-    }
+    std::shared_ptr<ResourceStorage> NovaRenderer::get_resource_manager() const { return resource_storage; }
 
     NovaRenderer* NovaRenderer::get_instance() { return instance.get(); }
 
@@ -931,6 +931,8 @@ namespace nova::renderer {
             frame_fences[i] = fences.at(i);
         }
     }
+
+    void NovaRenderer::create_resource_storage() { resource_storage = std::allocate_shared<ResourceStorage>(global_allocator, *this); }
 
     void NovaRenderer::create_builtin_textures() {
         shaderpack::TextureCreateInfo info = {};
