@@ -36,7 +36,8 @@ namespace nova::renderer::rhi {
 
         void bind_pipeline(const Pipeline* pipeline) override;
 
-        void bind_descriptor_sets(const std::pmr::vector<DescriptorSet*>& descriptor_sets, const PipelineInterface* pipeline_interface) override;
+        void bind_descriptor_sets(const std::pmr::vector<DescriptorSet*>& descriptor_sets,
+                                  const PipelineInterface* pipeline_interface) override;
 
         void bind_vertex_buffers(const std::pmr::vector<Buffer*>& buffers) override;
 
@@ -44,12 +45,9 @@ namespace nova::renderer::rhi {
 
         void draw_indexed_mesh(uint32_t num_indices, uint32_t num_instances) override;
 
-        void upload_data_to_image(Image* image,
-            size_t width,
-            size_t height,
-            size_t bytes_per_pixel,
-            Buffer* staging_buffer,
-            void* data) override;
+        void upload_data_to_image(
+            Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) override;
+
     private:
         const VulkanRenderEngine& render_engine;
     };

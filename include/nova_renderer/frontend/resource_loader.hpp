@@ -63,7 +63,7 @@ namespace nova::renderer {
                                                                             std::size_t width,
                                                                             std::size_t height,
                                                                             rhi::PixelFormat pixel_format,
-                                                                            void* data,
+                                                                            const void* data,
                                                                             mem::AllocatorHandle<>& allocator);
 
         /*!

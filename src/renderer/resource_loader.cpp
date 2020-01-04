@@ -24,7 +24,7 @@ namespace nova::renderer {
                                                                            const std::size_t width,
                                                                            const std::size_t height,
                                                                            const PixelFormat pixel_format,
-                                                                           void* data,
+                                                                           const void* data,
                                                                            AllocatorHandle<>& allocator) {
 
         TextureResource resource = {};

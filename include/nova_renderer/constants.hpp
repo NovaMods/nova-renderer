@@ -21,6 +21,27 @@ namespace nova::renderer {
     constexpr mem::Bytes PER_FRAME_MEMORY_SIZE = 2_mb;
 
     /*!
+     * \brief Name of Nova's white texture
+     *
+     * The white texture is a 4x4 texture where each texel has the RGBA value of (1, 1, 1, 1)
+     */
+    const std::string WHITE_TEXTURE_NAME = "NovaWhiteTexture";
+
+    /*!
+     * \brief Name of Nova's gray texture
+     *
+     * The gray texture is a 4x4 texture where each texel has the RGBA value of (0.5, 0.5, 0.5, 0.5)
+     */
+    const std::string GRAY_TEXTURE_NAME = "NovaGrayTexture";
+
+    /*!
+     * \brief Name of Nova's black texture
+     *
+     * The black texture is a 4x4 texture where each texel has the RGBA value of (0, 0, 0, 0)
+     */
+    const std::string BLACK_TEXTURE_NAME = "NovaBlackTexture";
+
+    /*!
      * \brief Name of the builtin pass Nova uses to render UI
      *
      * This pass reads from the writes to the backbuffer. UI renderpasses are expected to use something like blending or the stencil butter

@@ -9,8 +9,7 @@ using namespace nova::mem;
 namespace nova::renderer::rhi {
     using namespace Microsoft::WRL;
 
-    Dx12CommandList::Dx12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds)
-        : cmds(std::move(cmds)) {}
+    Dx12CommandList::Dx12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds) : cmds(std::move(cmds)) {}
 
     void Dx12CommandList::resource_barriers(PipelineStageFlags /* stages_before_barrier */,
                                             PipelineStageFlags /* stages_after_barrier */,
@@ -137,7 +136,7 @@ namespace nova::renderer::rhi {
     }
 
     void Dx12CommandList::upload_data_to_image(
-        Image* image, const size_t width, const size_t height, const size_t bytes_per_pixel, Buffer* staging_buffer, void* data) {
+        Image* image, const size_t width, const size_t height, const size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) {
         const auto* dx_image = static_cast<const DX12Image*>(image);
         const auto* dx_buffer = static_cast<const DX12Buffer*>(staging_buffer);
 

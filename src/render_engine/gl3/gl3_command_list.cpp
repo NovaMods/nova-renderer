@@ -242,12 +242,8 @@ namespace nova::renderer::rhi {
 
     Gl3CommandList::Gl3CommandList() { commands.reserve(128); }
 
-    void Gl3CommandList::upload_data_to_image(Image* image,
-        size_t width,
-        size_t height,
-        size_t bytes_per_pixel,
-        Buffer* staging_buffer,
-        void* data) {
+    void Gl3CommandList::upload_data_to_image(
+        Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) {
         // TODO
     }
 

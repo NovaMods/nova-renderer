@@ -87,7 +87,7 @@ namespace nova::renderer::rhi {
          * \param data A pointer to the data to upload to the image
          */
         virtual void upload_data_to_image(
-            Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, void* data) = 0;
+            Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) = 0;
 
         /*!
          * \brief Executed a number of command lists

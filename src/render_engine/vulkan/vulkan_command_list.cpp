@@ -190,7 +190,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanCommandList::upload_data_to_image(
-        Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, void* data) {
+        Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) {
         // TODO
     }
 } // namespace nova::renderer::rhi

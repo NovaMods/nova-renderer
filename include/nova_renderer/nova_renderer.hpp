@@ -5,18 +5,17 @@
 #include <mutex>
 #include <string>
 
+#include "nova_renderer/constants.hpp"
+#include "nova_renderer/frontend/procedural_mesh.hpp"
 #include "nova_renderer/frontend/rendergraph.hpp"
+#include "nova_renderer/frontend/resource_loader.hpp"
 #include "nova_renderer/nova_settings.hpp"
+#include "nova_renderer/renderables.hpp"
 #include "nova_renderer/renderdoc_app.h"
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
-
-#include "constants.hpp"
-#include "frontend/procedural_mesh.hpp"
-#include "renderables.hpp"
-#include "util/container_accessor.hpp"
-#include "frontend/resource_loader.hpp"
+#include "nova_renderer/util/container_accessor.hpp"
 
 namespace spirv_cross {
     class CompilerGLSL;

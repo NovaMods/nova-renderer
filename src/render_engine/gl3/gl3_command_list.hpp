@@ -145,8 +145,12 @@ namespace nova::renderer::rhi {
          */
         [[nodiscard]] std::pmr::vector<Gl3Command> get_commands() const;
 
-        void upload_data_to_image(Image * image, size_t width, size_t height, size_t bytes_per_pixel, Buffer * staging_buffer, void* data)
-            override;
+        void upload_data_to_image(Image * image,
+                                  size_t width,
+                                  size_t height,
+                                  size_t bytes_per_pixel,
+                                  Buffer * staging_buffer,
+                                  const void* data) override;
 
     private:
         std::pmr::vector<Gl3Command> commands;
