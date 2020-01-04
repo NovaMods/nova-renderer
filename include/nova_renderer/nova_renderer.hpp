@@ -192,9 +192,7 @@ namespace nova::renderer {
         void* staging_buffer_memory_ptr;
 
 #pragma region Initialization
-        void create_global_allocator();
-
-        void create_per_frame_allocators();
+        void create_global_allocators();
 
         /*!
          * \brief Creates global GPU memory pools

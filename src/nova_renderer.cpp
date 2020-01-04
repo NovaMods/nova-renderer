@@ -60,9 +60,7 @@ namespace nova::renderer {
     }
 
     NovaRenderer::NovaRenderer(const NovaSettings& settings) : render_settings(settings) {
-        create_global_allocator();
-
-        create_per_frame_allocators();
+        create_global_allocators();
 
         mtr_init("trace.json");
 
@@ -851,11 +849,11 @@ namespace nova::renderer {
 
     void NovaRenderer::deinitialize() { instance.reset(); }
 
-    void NovaRenderer::create_global_allocator() {
+    void NovaRenderer::create_global_allocators() {
         global_allocator = std::make_shared<AllocatorHandle<>>(std::pmr::new_delete_resource());
-    }
 
-    void NovaRenderer::create_per_frame_allocators() {
+        renderpack_allocator = std::shared_ptr<AllocatorHandle<>>(global_allocator->create_suballocator());
+
         frame_allocators.reserve(NUM_IN_FLIGHT_FRAMES);
         for(size_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
             void* ptr = global_allocator->allocate(PER_FRAME_MEMORY_SIZE.b_count());
