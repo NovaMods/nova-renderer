@@ -203,6 +203,8 @@ namespace nova::renderer {
     }
 
     void ResourceStorage::allocate_staging_buffer_memory() {
+        staging_buffer_allocator = std::unique_ptr<AllocatorHandle<>>(renderer.get_global_allocator()->create_suballocator());
+
         DeviceMemory* memory = device
                                    ->allocate_device_memory(STAGING_BUFFER_TOTAL_MEMORY_SIZE,
                                                             MemoryUsage::StagingBuffer,
