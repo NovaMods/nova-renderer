@@ -24,7 +24,7 @@ namespace nova::renderer::shaderpack {
     }
 
     void from_json(const nlohmann::json& j, ShaderpackResourcesData& res) {
-        res.textures = get_json_array<TextureCreateInfo>(j, "textures");
+        res.render_targets = get_json_array<TextureCreateInfo>(j, "textures");
         res.samplers = get_json_array<SamplerCreateInfo>(j, "samplers");
     }
 

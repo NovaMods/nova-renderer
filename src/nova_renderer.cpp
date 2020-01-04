@@ -308,7 +308,7 @@ namespace nova::renderer {
 
         data.graph_data.passes = order_passes(data.graph_data.passes).value; // TODO: Handle errors somehow
 
-        create_dynamic_textures(data.resources.textures);
+        create_dynamic_textures(data.resources.render_targets);
         NOVA_LOG(DEBUG) << "Dynamic textures created";
 
         create_render_passes(data.graph_data.passes, data.pipelines, data.materials);
@@ -733,8 +733,8 @@ namespace nova::renderer {
 
     void NovaRenderer::destroy_dynamic_resources() {
         if(loaded_renderpack) {
-            for(const auto& tex_data : loaded_renderpack->resources.textures) {
-                resource_storage->destroy_texture(tex_data.name);
+            for(const auto& tex_data : loaded_renderpack->resources.render_targets) {
+                resource_storage->destroy_texture(tex_data.name, *renderpack_allocator);
             }
             NOVA_LOG(DEBUG) << "Deleted all dynamic textures from renderpack " << loaded_renderpack->name;
         }

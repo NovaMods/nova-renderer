@@ -4,7 +4,6 @@
 
 #include "nova_renderer/memory/bytes.hpp"
 #include "nova_renderer/memory/host_memory_resource.hpp"
-#include "block_allocation_strategy.hpp"
 
 namespace nova::mem {
     template <typename AllocatedType = std::byte>
@@ -61,15 +60,13 @@ namespace nova::mem {
         ObjectType* new_other_object(Args&&... args);
 
         /*!
-         * \brief Creates a new allocator which will allocate a subsection of the total memory
-         *
-         * \param size The size of the memory which the suballocator will own
+         * \brief Creates a new allocator which will allocate from this allocator's memory resource
          */
         template <typename ObjectType = AllocatedType, typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
-        AllocatorHandle<ObjectType>* create_suballocator(Bytes size);
+        AllocatorHandle<ObjectType>* create_suballocator();
     };
 
-    template<typename AllocatedType = std::byte>
+    template <typename AllocatedType = std::byte>
     AllocatorHandle<AllocatedType> get_malloc_allocator() {
         return AllocatorHandle<AllocatedType>(std::pmr::new_delete_resource());
     }
@@ -90,7 +87,7 @@ namespace nova::mem {
     template <typename ObjectType, typename>
     ObjectType* AllocatorHandle<AllocatedType>::allocate_object() {
         auto* mem = this->allocate(sizeof(ObjectType));
-        return static_cast<ObjectType*>(mem);
+        return reinterpret_cast<ObjectType*>(mem);
     }
 
     template <typename AllocatedType>
@@ -109,12 +106,7 @@ namespace nova::mem {
 
     template <typename AllocatedType>
     template <typename ObjectType, typename>
-    AllocatorHandle<ObjectType>* AllocatorHandle<AllocatedType>::create_suballocator(const Bytes size) {
-        auto* allocation_strategy = new_other_object<BlockAllocationStrategy>(get_malloc_allocator(), size);
-
-        auto* mem = this->allocate(size.b_count());
-        auto* mem_res = this->template new_other_object<HostMemoryResource<BlockAllocationStrategy>>(mem, size, allocation_strategy);
-
-        return new_other_object<AllocatorHandle<ObjectType>>(mem_res);
+    AllocatorHandle<ObjectType>* AllocatorHandle<AllocatedType>::create_suballocator() {
+        return this->template new_other_object<AllocatorHandle<ObjectType>>(this->resource());
     }
 } // namespace nova::mem

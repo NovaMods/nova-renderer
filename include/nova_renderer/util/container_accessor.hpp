@@ -19,12 +19,12 @@ namespace nova::renderer {
 
         ~MapAccessor() = default;
 
-        [[nodiscard]] ValueType* operator->() const { return &map->at(key); }
+        [[nodiscard]] const ValueType* operator->() const { return &map->at(key); }
 
         [[nodiscard]] const KeyType& get_key() const { return key; }
 
     private:
-        std::unordered_map<KeyType, ValueType>* map;
+        const std::unordered_map<KeyType, ValueType>* map;
         KeyType key;
     };
 } // namespace nova::renderer

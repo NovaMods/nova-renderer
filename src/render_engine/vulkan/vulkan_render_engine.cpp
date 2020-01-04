@@ -31,7 +31,7 @@ namespace nova::renderer::rhi {
                                            AllocatorHandle<>& allocator)
         : RenderEngine(allocator, settings, window),
           command_pools_by_thread_idx(
-              std::scoped_allocator_adaptor<AllocatorHandle<>>(std::move(*internal_allocator.create_suballocator(2_kb)))) {
+              std::scoped_allocator_adaptor<AllocatorHandle<>>(std::move(*internal_allocator.create_suballocator()))) {
         create_instance();
 
         if(settings.settings.debug.enabled) {

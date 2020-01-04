@@ -27,13 +27,12 @@ namespace nova::renderer {
                                                                            void* data,
                                                                            AllocatorHandle<>& allocator) {
 
-        const auto resource = allocator.allocate_shared<TextureResource>(
-            [&](const auto* tex) { device->destroy_texture(tex->image, allocator); });
+        TextureResource resource = {};
 
-        resource->name = name;
-        resource->width = width;
-        resource->height = height;
-        resource->format = pixel_format;
+        resource.name = name;
+        resource.width = width;
+        resource.height = height;
+        resource.format = pixel_format;
 
         const size_t pixel_size = size_in_bytes(pixel_format);
 
@@ -47,14 +46,14 @@ namespace nova::renderer {
 
         const std::shared_ptr<Buffer> staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
 
-        resource->image = device->create_image(info, allocator);
-        resource->image->is_dynamic = false;
+        resource.image = device->create_image(info, allocator);
+        resource.image->is_dynamic = false;
 
         {
             CommandList* cmds = device->create_command_list(allocator, 0, QueueType::Transfer);
 
             ResourceBarrier initial_texture_barrier = {};
-            initial_texture_barrier.resource_to_barrier = resource->image;
+            initial_texture_barrier.resource_to_barrier = resource.image;
             initial_texture_barrier.access_before_barrier = AccessFlags::CopyRead;
             initial_texture_barrier.access_after_barrier = AccessFlags::CopyWrite;
             initial_texture_barrier.old_state = ResourceState::Undefined;
@@ -62,10 +61,10 @@ namespace nova::renderer {
             initial_texture_barrier.image_memory_barrier.aspect = ImageAspectFlags::Color;
 
             cmds->resource_barriers(PipelineStageFlags::TopOfPipe, PipelineStageFlags::Transfer, {initial_texture_barrier});
-            cmds->upload_data_to_image(resource->image, width, height, pixel_size, staging_buffer.get(), data);
+            cmds->upload_data_to_image(resource.image, width, height, pixel_size, staging_buffer.get(), data);
 
             ResourceBarrier final_texture_barrier = {};
-            final_texture_barrier.resource_to_barrier = resource->image;
+            final_texture_barrier.resource_to_barrier = resource.image;
             final_texture_barrier.access_before_barrier = AccessFlags::CopyWrite;
             final_texture_barrier.access_after_barrier = AccessFlags::ShaderRead;
             final_texture_barrier.old_state = ResourceState::CopyDestination;
@@ -142,14 +141,18 @@ namespace nova::renderer {
 
             image->is_dynamic = false;
 
-            auto resource = allocator.allocate_shared<TextureResource>(
-                [&](const auto* tex) { device->destroy_texture(tex->image, allocator); });
+            TextureResource resource = {};
+            resource.name = name;
+            resource.format = pixel_format;
+            resource.height = height;
+            resource.width = width;
+            resource.image = image;
 
             {
                 CommandList* cmds = device->create_command_list(allocator, 0, QueueType::Transfer);
 
                 ResourceBarrier initial_texture_barrier = {};
-                initial_texture_barrier.resource_to_barrier = resource->image;
+                initial_texture_barrier.resource_to_barrier = resource.image;
                 initial_texture_barrier.access_before_barrier = AccessFlags::ColorAttachmentRead;
                 initial_texture_barrier.access_after_barrier = AccessFlags::ColorAttachmentWrite;
                 initial_texture_barrier.old_state = ResourceState::Undefined;
@@ -185,6 +188,18 @@ namespace nova::renderer {
         } else {
             return {};
         }
+    }
+
+    void ResourceStorage::destroy_render_target(const std::string& texture_name, AllocatorHandle<>& allocator) {
+        if(const auto itr = render_targets.find(texture_name); itr != render_targets.end()) {
+            device->destroy_texture(itr->second.image, allocator);
+            render_targets.erase(itr);
+        }
+#if NOVA_DEBUG
+        else {
+            NOVA_LOG(ERROR) << "Could not delete texture  " << texture_name << ", are you sure you spelled it correctly?";
+        }
+#endif
     }
 
     void ResourceStorage::allocate_staging_buffer_memory() {

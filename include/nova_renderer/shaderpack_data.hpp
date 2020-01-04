@@ -459,8 +459,10 @@ namespace nova::renderer::shaderpack {
     };
 
     struct ShaderpackResourcesData {
-        std::pmr::vector<TextureCreateInfo> textures;
+        std::pmr::vector<TextureCreateInfo> render_targets;
         std::pmr::vector<SamplerCreateInfo> samplers;
+
+        // TODO: Figure out shader readable textures
     };
 
     /*!

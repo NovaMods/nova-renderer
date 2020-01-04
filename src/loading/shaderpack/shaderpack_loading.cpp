@@ -150,7 +150,7 @@ namespace nova::renderer::shaderpack {
     bool loading_failed = false;
 
     void fill_in_render_target_formats(ShaderpackData& data) {
-        const auto& textures = data.resources.textures;
+        const auto& textures = data.resources.render_targets;
 
         for(auto& pass : data.graph_data.passes) {
             for(auto& output : pass.texture_outputs) {

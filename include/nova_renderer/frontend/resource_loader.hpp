@@ -103,7 +103,7 @@ namespace nova::renderer {
          */
         [[nodiscard]] std::optional<TextureResourceAccessor> get_render_target(const std::string& name) const;
 
-        void destroy_texture(const std::string& texture_name);
+        void destroy_texture(const std::string& texture_name, mem::AllocatorHandle<>& allocator);
 
         NovaRenderer& renderer;
 

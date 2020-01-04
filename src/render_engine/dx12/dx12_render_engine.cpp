@@ -32,7 +32,7 @@ namespace nova::renderer::rhi {
                                          const std::shared_ptr<NovaWindow>& window,
                                          AllocatorHandle<>& allocator)
         : RenderEngine(allocator, settings, window),
-          command_allocators(std::scoped_allocator_adaptor<AllocatorHandle<>>(std::move(*internal_allocator.create_suballocator(2_kb)))) {
+          command_allocators(std::scoped_allocator_adaptor<AllocatorHandle<>>(std::move(*internal_allocator.create_suballocator()))) {
         create_device();
 
         create_queues();
