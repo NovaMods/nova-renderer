@@ -67,7 +67,20 @@ namespace nova::renderer {
 
         [[nodiscard]] bool should_close() const;
 
+        /*!
+         * \brief Gets the size of the framebuffer that this window displays
+         */
+        [[nodiscard]] glm::uvec2 get_framebuffer_size() const;
+
+        /*!
+         * \brief Gets the size of the window itself
+         */
         [[nodiscard]] glm::uvec2 get_window_size() const;
+
+        /*!
+         * \brief Get the ratio of the size of the framebuffer to the size of the window
+         */
+        [[nodiscard]] glm::vec2 get_framebuffer_to_window_ratio() const;
 
 #if NOVA_WINDOWS
         [[nodiscard]] HWND get_window_handle() const;

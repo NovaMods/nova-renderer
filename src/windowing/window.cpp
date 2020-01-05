@@ -125,12 +125,28 @@ namespace nova::renderer {
 
     bool NovaWindow::should_close() const { return glfwWindowShouldClose(window); }
 
-    glm::uvec2 NovaWindow::get_window_size() const {
+    glm::uvec2 NovaWindow::get_framebuffer_size() const {
         int width;
         int height;
         glfwGetFramebufferSize(window, &width, &height);
 
         return {width, height};
+    }
+
+    glm::uvec2 NovaWindow::get_window_size() const {
+        int width;
+        int height;
+        glfwGetWindowSize(window, &width, &height);
+
+        return {width, height};
+    }
+
+    glm::vec2 NovaWindow::get_framebuffer_to_window_ratio() const {
+        const auto window_size = get_window_size();
+        const auto framebuffer_size = get_framebuffer_size();
+
+        return {static_cast<float>(framebuffer_size.x) / static_cast<float>(window_size.x),
+                static_cast<float>(framebuffer_size.y) / static_cast<float>(window_size.y)};
     }
 
 #if NOVA_WINDOWS
