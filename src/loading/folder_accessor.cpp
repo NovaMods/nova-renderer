@@ -13,10 +13,9 @@ namespace nova::renderer {
         return does_resource_exist_on_filesystem(full_path);
     }
 
-    std::pmr::vector<uint32_t> FolderAccessorBase::read_spirv_file(fs::path& resource_path) {
+    std::pmr::vector<uint32_t> FolderAccessorBase::read_spirv_file(const fs::path& resource_path) {
         const std::string buf = read_text_file(resource_path);
-
-        const uint32_t* buf_data = reinterpret_cast<const uint32_t*>(buf.data());
+        const unsigned* buf_data = reinterpret_cast<const uint32_t*>(buf.data());
         std::pmr::vector<uint32_t> ret_val;
         ret_val.reserve(buf.size() / 4);
         ret_val.insert(ret_val.begin(), buf_data, buf_data + (buf.size() / 4));

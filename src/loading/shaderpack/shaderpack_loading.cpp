@@ -143,9 +143,9 @@ namespace nova::renderer::shaderpack {
     MaterialData load_single_material(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& material_path);
 
     std::pmr::vector<uint32_t> load_shader_file(const fs::path& filename,
-                                           const std::shared_ptr<FolderAccessorBase>& folder_access,
-                                           EShLanguage stage,
-                                           const std::pmr::vector<std::string>& defines);
+                                                const std::shared_ptr<FolderAccessorBase>& folder_access,
+                                                EShLanguage stage,
+                                                const std::pmr::vector<std::string>& defines);
 
     bool loading_failed = false;
 
@@ -371,166 +371,78 @@ namespace nova::renderer::shaderpack {
     }
 
     std::pmr::vector<uint32_t> load_shader_file(const fs::path& filename,
-                                           const std::shared_ptr<FolderAccessorBase>& folder_access,
-                                           const EShLanguage stage,
-                                           const std::pmr::vector<std::string>& defines) {
-        static std::unordered_map<EShLanguage, std::pmr::vector<fs::path>> extensions_by_shader_stage = {{EShLangVertex,
-                                                                                                     {
-                                                                                                         ".vert.spirv",
-                                                                                                         ".vsh.spirv",
-                                                                                                         ".vertex.spirv",
+                                                const std::shared_ptr<FolderAccessorBase>& folder_access,
+                                                const EShLanguage stage,
+                                                const std::pmr::vector<std::string>& defines) {
 
-                                                                                                         ".vert",
-                                                                                                         ".vsh",
+        glslang::TShader shader(stage);
 
-                                                                                                         ".vertex",
+        // Check the extension to know what kind of shader file the user has provided. SPIR-V files can be loaded
+        // as-is, but GLSL, GLSL ES, and HLSL files need to be transpiled to SPIR-V
+        if(filename.string().find(".spirv") != std::string::npos) {
+            // SPIR-V file!
+            // TODO: figure out how to handle defines with SPIRV
+            return folder_access->read_spirv_file(filename);
+        }
+        if(filename.string().find(".hlsl") != std::string::npos) {
+            shader.setEnvInput(glslang::EShSourceHlsl, stage, glslang::EShClientVulkan, 0);
 
-                                                                                                         ".vert.hlsl",
-                                                                                                         ".vsh.hlsl",
-                                                                                                         ".vertex.hlsl",
-                                                                                                     }},
-                                                                                                    {EShLangFragment,
-                                                                                                     {
-                                                                                                         ".frag.spirv",
-                                                                                                         ".fsh.spirv",
-                                                                                                         ".fragment.spirv",
-
-                                                                                                         ".frag",
-                                                                                                         ".fsh",
-
-                                                                                                         ".fragment",
-
-                                                                                                         ".frag.hlsl",
-                                                                                                         ".fsh.hlsl",
-                                                                                                         ".fragment.hlsl",
-                                                                                                     }},
-                                                                                                    {EShLangGeometry,
-                                                                                                     {
-                                                                                                         ".geom.spirv",
-                                                                                                         ".geo.spirv",
-                                                                                                         ".geometry.spirv",
-
-                                                                                                         ".geom",
-                                                                                                         ".geo",
-
-                                                                                                         ".geometry",
-
-                                                                                                         ".geom.hlsl",
-                                                                                                         ".geo.hlsl",
-                                                                                                         ".geometry.hlsl",
-                                                                                                     }},
-                                                                                                    {EShLangTessEvaluation,
-                                                                                                     {
-                                                                                                         ".tese.spirv",
-                                                                                                         ".tse.spirv",
-                                                                                                         ".tess_eval.spirv",
-
-                                                                                                         ".tese",
-                                                                                                         ".tse",
-
-                                                                                                         ".tess_eval",
-
-                                                                                                         ".tese.hlsl",
-                                                                                                         ".tse.hlsl",
-                                                                                                         ".tess_eval.hlsl",
-                                                                                                     }},
-                                                                                                    {EShLangTessControl,
-                                                                                                     {
-                                                                                                         ".tesc.spirv",
-                                                                                                         ".tsc.spirv",
-                                                                                                         ".tess_control.spirv",
-
-                                                                                                         ".tesc",
-                                                                                                         ".tsc",
-
-                                                                                                         ".tess_control",
-
-                                                                                                         ".tesc.hlsl",
-                                                                                                         ".tsc.hlsl",
-                                                                                                         ".tess_control.hlsl",
-                                                                                                     }}};
-
-        std::pmr::vector<fs::path> extensions_for_current_stage = extensions_by_shader_stage.at(stage);
-
-        for(const fs::path& extension : extensions_for_current_stage) {
-            fs::path full_filename = filename;
-            full_filename.replace_extension(extension);
-
-            if(!folder_access->does_resource_exist(full_filename)) {
-                continue;
-            }
-
-            glslang::TShader shader(stage);
-
-            // Check the extension to know what kind of shader file the user has provided. SPIR-V files can be loaded
-            // as-is, but GLSL, GLSL ES, and HLSL files need to be transpiled to SPIR-V
-            if(extension.string().find(".spirv") != std::string::npos) {
-                // SPIR-V file!
-                // TODO: figure out how to handle defines with SPIRV
-                return folder_access->read_spirv_file(full_filename);
-            }
-            if(extension.string().find(".hlsl") != std::string::npos) {
-                shader.setEnvInput(glslang::EShSourceHlsl, stage, glslang::EShClientVulkan, 0);
-            } else {
-                // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
-                shader.setEnvInput(glslang::EShSourceGlsl, stage, glslang::EShClientVulkan, 0);
-            }
-
-            std::string shader_source = folder_access->read_text_file(full_filename);
-            std::string::size_type version_pos = shader_source.find("#version");
-            std::string::size_type inject_pos = 0;
-            if(version_pos != std::string::npos) {
-                std::string::size_type break_after_version_pos = shader_source.find('\n', version_pos);
-                if(break_after_version_pos != std::string::npos) {
-                    inject_pos = break_after_version_pos + 1;
-                }
-            }
-            for(auto i = defines.crbegin(); i != defines.crend(); ++i) {
-                shader_source.insert(inject_pos, "#define " + *i + "\n");
-            }
-
-            auto* shader_source_data = shader_source.data();
-            shader.setStrings(&shader_source_data, 1);
-            const bool shader_compiled = shader.parse(&default_built_in_resource,
-                                                      450,
-                                                      ECoreProfile,
-                                                      false,
-                                                      false,
-                                                      EShMessages(EShMsgVulkanRules | EShMsgSpvRules));
-
-            const char* info_log = shader.getInfoLog();
-            if(std::strlen(info_log) > 0) {
-                const char* info_debug_log = shader.getInfoDebugLog();
-                NOVA_LOG(INFO) << full_filename.string() << " compilation messages:\n" << info_log << "\n" << info_debug_log;
-            }
-
-            if(!shader_compiled) {
-                NOVA_LOG(ERROR) << "Shader compilation failed";
-            }
-
-            glslang::TProgram program;
-            program.addShader(&shader);
-            const bool shader_linked = program.link(EShMsgDefault);
-            if(!shader_linked) {
-                const char* program_info_log = program.getInfoLog();
-                const char* program_debug_info_log = program.getInfoDebugLog();
-                NOVA_LOG(ERROR) << "Program failed to link: " << program_info_log << "\n" << program_debug_info_log;
-            }
-
-            std::vector<uint32_t> spirv_std;
-            GlslangToSpv(*program.getIntermediate(stage), spirv_std);
-
-            std::pmr::vector<uint32_t> spirv(spirv_std.begin(), spirv_std.end());
-
-            fs::path dump_filename = filename.filename();
-            dump_filename.replace_extension(std::to_string(stage) + ".spirv.generated");
-            write_to_file(spirv, dump_filename);
-
-            return spirv;
+        } else {
+            // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
+            shader.setEnvInput(glslang::EShSourceGlsl, stage, glslang::EShClientVulkan, 0);
         }
 
-        NOVA_LOG(ERROR) << "Could not find shader " << filename.c_str();
-        return {};
+        std::string shader_source = folder_access->read_text_file(filename);
+        std::string::size_type version_pos = shader_source.find("#version");
+        std::string::size_type inject_pos = 0;
+        if(version_pos != std::string::npos) {
+            std::string::size_type break_after_version_pos = shader_source.find('\n', version_pos);
+            if(break_after_version_pos != std::string::npos) {
+                inject_pos = break_after_version_pos + 1;
+            }
+        }
+        for(auto i = defines.crbegin(); i != defines.crend(); ++i) {
+            shader_source.insert(inject_pos, "#define " + *i + "\n");
+        }
+
+        auto* shader_source_data = shader_source.data();
+        shader.setStrings(&shader_source_data, 1);
+        const bool shader_compiled = shader.parse(&default_built_in_resource,
+                                                  450,
+                                                  ECoreProfile,
+                                                  false,
+                                                  false,
+                                                  EShMessages(EShMsgVulkanRules | EShMsgSpvRules));
+
+        const char* info_log = shader.getInfoLog();
+        if(std::strlen(info_log) > 0) {
+            const char* info_debug_log = shader.getInfoDebugLog();
+            NOVA_LOG(INFO) << filename.string() << " compilation messages:\n" << info_log << "\n" << info_debug_log;
+        }
+
+        if(!shader_compiled) {
+            NOVA_LOG(ERROR) << "Shader compilation failed";
+        }
+
+        glslang::TProgram program;
+        program.addShader(&shader);
+        const bool shader_linked = program.link(EShMsgDefault);
+        if(!shader_linked) {
+            const char* program_info_log = program.getInfoLog();
+            const char* program_debug_info_log = program.getInfoDebugLog();
+            NOVA_LOG(ERROR) << "Program failed to link: " << program_info_log << "\n" << program_debug_info_log;
+        }
+
+        std::vector<uint32_t> spirv_std;
+        GlslangToSpv(*program.getIntermediate(stage), spirv_std);
+
+        std::pmr::vector<uint32_t> spirv(spirv_std.begin(), spirv_std.end());
+
+        fs::path dump_filename = filename.filename();
+        dump_filename.replace_extension(std::to_string(stage) + ".spirv.generated");
+        write_to_file(spirv, dump_filename);
+
+        return spirv;
     }
 
     std::pmr::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {

@@ -65,7 +65,7 @@ namespace nova::renderer {
          * \param resource_path The path to the SPIR-V file to load, relative to this resourcepack's root
          * \return All the 32-bit numbers in the SPIR-V file
          */
-        std::pmr::vector<uint32_t> read_spirv_file(fs::path& resource_path);
+        std::pmr::vector<uint32_t> read_spirv_file(const fs::path& resource_path);
 
         /*!
          * \brief Retrieves the paths of all the items in the specified folder
