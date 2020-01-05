@@ -47,8 +47,8 @@ namespace nova::renderer::rhi {
          * \param stages_after_barrier The pipeline stages that must wait for the barrier
          * \param barriers All the resource barriers to use
          */
-        virtual void resource_barriers(PipelineStageFlags stages_before_barrier,
-                                       PipelineStageFlags stages_after_barrier,
+        virtual void resource_barriers(PipelineStage stages_before_barrier,
+                                       PipelineStage stages_after_barrier,
                                        const std::pmr::vector<ResourceBarrier>& barriers) = 0;
 
         /*!

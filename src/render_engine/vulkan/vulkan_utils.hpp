@@ -13,7 +13,7 @@
 namespace nova::renderer::rhi {
     VkImageLayout to_vk_image_layout(ResourceState layout);
 
-    VkAccessFlags to_vk_access_flags(AccessFlags access);
+    VkAccessFlags to_vk_access_flags(ResourceAccess access);
 
     VkPrimitiveTopology to_primitive_topology(shaderpack::PrimitiveTopologyEnum topology);
 
@@ -27,7 +27,7 @@ namespace nova::renderer::rhi {
 
     VkDescriptorType to_vk_descriptor_type(DescriptorType type);
 
-    VkShaderStageFlags to_vk_shader_stage_flags(ShaderStageFlags flags);
+    VkShaderStageFlags to_vk_shader_stage_flags(ShaderStage flags);
 
     std::string to_string(VkResult result);
 
@@ -37,7 +37,7 @@ namespace nova::renderer::rhi {
 
     std::pmr::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
 
-    bool operator&(const ShaderStageFlags& lhs, const ShaderStageFlags& rhs);
+    bool operator&(const ShaderStage& lhs, const ShaderStage& rhs);
 } // namespace nova::renderer::rhi
 
 // Only validate errors in debug mode

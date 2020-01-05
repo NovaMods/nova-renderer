@@ -40,69 +40,69 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkAccessFlags to_vk_access_flags(const AccessFlags access) {
+    VkAccessFlags to_vk_access_flags(const ResourceAccess access) {
         switch(access) {
-            case AccessFlags::IndirectCommandRead:
+            case ResourceAccess::IndirectCommandRead:
                 return VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
 
-            case AccessFlags::IndexRead:
+            case ResourceAccess::IndexRead:
                 return VK_ACCESS_INDEX_READ_BIT;
 
-            case AccessFlags::VertexAttributeRead:
+            case ResourceAccess::VertexAttributeRead:
                 return VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
 
-            case AccessFlags::UniformRead:
+            case ResourceAccess::UniformRead:
                 return VK_ACCESS_UNIFORM_READ_BIT;
 
-            case AccessFlags::InputAttachmentRead:
+            case ResourceAccess::InputAttachmentRead:
                 return VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
 
-            case AccessFlags::ShaderRead:
+            case ResourceAccess::ShaderRead:
                 return VK_ACCESS_SHADER_READ_BIT;
 
-            case AccessFlags::ShaderWrite:
+            case ResourceAccess::ShaderWrite:
                 return VK_ACCESS_SHADER_WRITE_BIT;
 
-            case AccessFlags::ColorAttachmentRead:
+            case ResourceAccess::ColorAttachmentRead:
                 return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
 
-            case AccessFlags::ColorAttachmentWrite:
+            case ResourceAccess::ColorAttachmentWrite:
                 return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-            case AccessFlags::DepthStencilAttachmentRead:
+            case ResourceAccess::DepthStencilAttachmentRead:
                 return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
 
-            case AccessFlags::DepthStencilAttachmentWrite:
+            case ResourceAccess::DepthStencilAttachmentWrite:
                 return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-            case AccessFlags::CopyRead:
+            case ResourceAccess::CopyRead:
                 return VK_ACCESS_TRANSFER_READ_BIT;
 
-            case AccessFlags::CopyWrite:
+            case ResourceAccess::CopyWrite:
                 return VK_ACCESS_TRANSFER_WRITE_BIT;
 
-            case AccessFlags::HostRead:
+            case ResourceAccess::HostRead:
                 return VK_ACCESS_HOST_READ_BIT;
 
-            case AccessFlags::HostWrite:
+            case ResourceAccess::HostWrite:
                 return VK_ACCESS_HOST_WRITE_BIT;
 
-            case AccessFlags::MemoryRead:
+            case ResourceAccess::MemoryRead:
                 return VK_ACCESS_MEMORY_READ_BIT;
 
-            case AccessFlags::MemoryWrite:
+            case ResourceAccess::MemoryWrite:
                 return VK_ACCESS_MEMORY_WRITE_BIT;
 
-            case AccessFlags::ShadingRateImageRead:
+            case ResourceAccess::ShadingRateImageRead:
                 return VK_ACCESS_SHADING_RATE_IMAGE_READ_BIT_NV;
 
-            case AccessFlags::AccelerationStructureRead:
+            case ResourceAccess::AccelerationStructureRead:
                 return VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_NV;
 
-            case AccessFlags::AccelerationStructureWrite:
+            case ResourceAccess::AccelerationStructureWrite:
                 return VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_NV;
 
-            case AccessFlags::FragmentDensityMapRead:
+            case ResourceAccess::FragmentDensityMapRead:
                 return VK_ACCESS_FRAGMENT_DENSITY_MAP_READ_BIT_EXT;
         }
 
@@ -247,46 +247,46 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkShaderStageFlags to_vk_shader_stage_flags(const ShaderStageFlags flags) {
+    VkShaderStageFlags to_vk_shader_stage_flags(const ShaderStage flags) {
         VkShaderStageFlags vk_flags = 0;
 
-        if(flags & ShaderStageFlags::Vertex) {
+        if(flags & ShaderStage::Vertex) {
             vk_flags |= VK_SHADER_STAGE_VERTEX_BIT;
         }
-        if(flags & ShaderStageFlags::TessellationControl) {
+        if(flags & ShaderStage::TessellationControl) {
             vk_flags |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
         }
-        if(flags & ShaderStageFlags::TessellationEvaluation) {
+        if(flags & ShaderStage::TessellationEvaluation) {
             vk_flags |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
         }
-        if(flags & ShaderStageFlags::Geometry) {
+        if(flags & ShaderStage::Geometry) {
             vk_flags |= VK_SHADER_STAGE_GEOMETRY_BIT;
         }
-        if(flags & ShaderStageFlags::Fragment) {
+        if(flags & ShaderStage::Fragment) {
             vk_flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
         }
-        if(flags & ShaderStageFlags::Compute) {
+        if(flags & ShaderStage::Compute) {
             vk_flags |= VK_SHADER_STAGE_COMPUTE_BIT;
         }
-        if(flags & ShaderStageFlags::Raygen) {
+        if(flags & ShaderStage::Raygen) {
             vk_flags |= VK_SHADER_STAGE_RAYGEN_BIT_NV;
         }
-        if(flags & ShaderStageFlags::AnyHit) {
+        if(flags & ShaderStage::AnyHit) {
             vk_flags |= VK_SHADER_STAGE_ANY_HIT_BIT_NV;
         }
-        if(flags & ShaderStageFlags::ClosestHit) {
+        if(flags & ShaderStage::ClosestHit) {
             vk_flags |= VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV;
         }
-        if(flags & ShaderStageFlags::Miss) {
+        if(flags & ShaderStage::Miss) {
             vk_flags |= VK_SHADER_STAGE_MISS_BIT_NV;
         }
-        if(flags & ShaderStageFlags::Intersection) {
+        if(flags & ShaderStage::Intersection) {
             vk_flags |= VK_SHADER_STAGE_INTERSECTION_BIT_NV;
         }
-        if(flags & ShaderStageFlags::Task) {
+        if(flags & ShaderStage::Task) {
             vk_flags |= VK_SHADER_STAGE_TASK_BIT_NV;
         }
-        if(flags & ShaderStageFlags::Mesh) {
+        if(flags & ShaderStage::Mesh) {
             vk_flags |= VK_SHADER_STAGE_MESH_BIT_NV;
         }
 
@@ -551,7 +551,7 @@ namespace nova::renderer::rhi {
         return attribute_descriptions;
     }
 
-    bool operator&(const ShaderStageFlags& lhs, const ShaderStageFlags& rhs) {
+    bool operator&(const ShaderStage& lhs, const ShaderStage& rhs) {
         return static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs);
     }
 } // namespace nova::renderer::rhi

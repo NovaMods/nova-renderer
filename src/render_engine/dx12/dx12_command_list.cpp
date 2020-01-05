@@ -11,8 +11,8 @@ namespace nova::renderer::rhi {
 
     Dx12CommandList::Dx12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds) : cmds(std::move(cmds)) {}
 
-    void Dx12CommandList::resource_barriers(PipelineStageFlags /* stages_before_barrier */,
-                                            PipelineStageFlags /* stages_after_barrier */,
+    void Dx12CommandList::resource_barriers(PipelineStage /* stages_before_barrier */,
+                                            PipelineStage /* stages_after_barrier */,
                                             const std::pmr::vector<ResourceBarrier>& barriers) {
         // D3D12 barriers don't use all the information in our `barriers` struct - specifically, they don't care much about image layouts,
         // nor about the pipeline stage flags. Thus, this method doesn't do anything with that data

@@ -18,8 +18,8 @@ namespace nova::renderer::rhi {
         vkBeginCommandBuffer(cmds, &begin_info);
     }
 
-    void VulkanCommandList::resource_barriers(const PipelineStageFlags stages_before_barrier,
-                                              const PipelineStageFlags stages_after_barrier,
+    void VulkanCommandList::resource_barriers(const PipelineStage stages_before_barrier,
+                                              const PipelineStage stages_after_barrier,
                                               const std::pmr::vector<ResourceBarrier>& barriers) {
         std::pmr::vector<VkBufferMemoryBarrier> buffer_barriers;
         buffer_barriers.reserve(barriers.size());

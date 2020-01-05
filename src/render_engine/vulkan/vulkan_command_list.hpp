@@ -18,8 +18,8 @@ namespace nova::renderer::rhi {
 
         VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine* render_engine);
 
-        void resource_barriers(PipelineStageFlags stages_before_barrier,
-                               PipelineStageFlags stages_after_barrier,
+        void resource_barriers(PipelineStage stages_before_barrier,
+                               PipelineStage stages_after_barrier,
                                const std::pmr::vector<ResourceBarrier>& barriers) override;
 
         void copy_buffer(Buffer* destination_buffer,

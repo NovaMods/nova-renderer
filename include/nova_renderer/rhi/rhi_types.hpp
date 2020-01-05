@@ -87,7 +87,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief The shader stages that need access to this binding
          */
-        ShaderStageFlags stages;
+        ShaderStage stages;
 
         bool operator==(const ResourceBindingDescription& other);
 
@@ -121,12 +121,12 @@ namespace nova::renderer::rhi {
         /*!
          * \brief The resource access that much finish before this barrier executed
          */
-        AccessFlags access_before_barrier;
+        ResourceAccess access_before_barrier;
 
         /*!
          * \brief The resource access that must wait for this battier to finish executing
          */
-        AccessFlags access_after_barrier;
+        ResourceAccess access_after_barrier;
 
         /*!
          * \brief How you're going to access this resource just before this barrier
@@ -149,7 +149,7 @@ namespace nova::renderer::rhi {
 
         union {
             struct {
-                ImageAspectFlags aspect;
+                ImageAspect aspect;
             } image_memory_barrier;
 
             struct {
@@ -207,5 +207,5 @@ namespace nova::renderer::rhi {
     };
 #pragma endregion
 
-    ShaderStageFlags operator|=(ShaderStageFlags lhs, ShaderStageFlags rhs);
+    ShaderStage operator|=(ShaderStage lhs, ShaderStage rhs);
 } // namespace nova::renderer::rhi
