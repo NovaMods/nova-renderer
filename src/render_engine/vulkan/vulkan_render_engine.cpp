@@ -153,7 +153,7 @@ namespace nova::renderer::rhi {
         bool writes_to_backbuffer = false;
         // Collect framebuffer size information from color output attachments
         for(const shaderpack::TextureAttachmentInfo& attachment : data.texture_outputs) {
-            if(attachment.name == "Backbuffer") {
+            if(attachment.name == BACKBUFFER_NAME) {
                 // Handle backbuffer
                 // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip
                 // everything
@@ -373,7 +373,7 @@ namespace nova::renderer::rhi {
 
         // Collect framebuffer size information from color output attachments
         for(const shaderpack::TextureAttachmentInfo& attachment : color_attachments) {
-            if(attachment.name == "Backbuffer") {
+            if(attachment.name == BACKBUFFER_NAME) {
                 // Handle backbuffer
                 // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip
                 // everything
