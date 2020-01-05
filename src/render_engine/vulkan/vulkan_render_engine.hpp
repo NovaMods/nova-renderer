@@ -206,7 +206,7 @@ namespace nova::renderer::rhi {
         [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags,
                                                            MemorySearchMode search_mode = MemorySearchMode::Fuzzy);
 
-        [[nodiscard]] VkShaderModule create_shader_module(const std::pmr::vector<uint32_t>& spirv) const;
+        [[nodiscard]] std::optional<VkShaderModule> create_shader_module(const std::pmr::vector<uint32_t>& spirv) const;
 
         [[nodiscard]] std::pmr::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
             const std::unordered_map<std::string, ResourceBindingDescription>& all_bindings, mem::AllocatorHandle<>& allocator) const;

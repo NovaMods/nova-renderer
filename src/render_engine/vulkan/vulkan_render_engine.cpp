@@ -586,27 +586,52 @@ namespace nova::renderer::rhi {
         std::pmr::unordered_map<VkShaderStageFlags, VkShaderModule> shader_modules(internal_allocator);
 
         NOVA_LOG(TRACE) << "Compiling vertex module";
-        shader_modules[VK_SHADER_STAGE_VERTEX_BIT] = create_shader_module(data.vertex_shader.source);
+        const auto vertex_module = create_shader_module(data.vertex_shader.source);
+        if(vertex_module) {
+            shader_modules[VK_SHADER_STAGE_VERTEX_BIT] = *vertex_module;
+        } else {
+            return ntl::Result<Pipeline*>(ntl::NovaError("Could not create vertex module"));
+        }
 
         if(data.geometry_shader) {
             NOVA_LOG(TRACE) << "Compiling geometry module";
-            shader_modules[VK_SHADER_STAGE_GEOMETRY_BIT] = create_shader_module(data.geometry_shader->source);
+            const auto geometry_module = create_shader_module(data.geometry_shader->source);
+            if(geometry_module) {
+                shader_modules[VK_SHADER_STAGE_GEOMETRY_BIT] = *geometry_module;
+            } else {
+                return ntl::Result<Pipeline*>(ntl::NovaError("Could not geometry vertex module"));
+            }
         }
 
         if(data.tessellation_control_shader) {
             NOVA_LOG(TRACE) << "Compiling tessellation_control module";
-            shader_modules[VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT] = create_shader_module(data.tessellation_control_shader->source);
+            const auto tessellation_control_module = create_shader_module(data.tessellation_control_shader->source);
+            if(tessellation_control_module) {
+                shader_modules[VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT] = *tessellation_control_module;
+            } else {
+                return ntl::Result<Pipeline*>(ntl::NovaError("Could not geometry vertex module"));
+            }
         }
 
         if(data.tessellation_evaluation_shader) {
             NOVA_LOG(TRACE) << "Compiling tessellation_evaluation module";
-            shader_modules[VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT] = create_shader_module(data.tessellation_evaluation_shader->source);
+            const auto tessellation_evaulation_module = create_shader_module(data.tessellation_evaluation_shader->source);
+            if(tessellation_evaulation_module) {
+                shader_modules[VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT] = *tessellation_evaulation_module;
+            } else {
+                return ntl::Result<Pipeline*>(ntl::NovaError("Could not geometry vertex module"));
+            }
         }
 
         if(data.fragment_shader) {
             NOVA_LOG(TRACE) << "Compiling fragment module";
-            shader_modules[VK_SHADER_STAGE_FRAGMENT_BIT] = create_shader_module(data.fragment_shader->source);
-        }
+            const auto fragment_module = create_shader_module(data.fragment_shader->source);
+            if(fragment_module) {
+                shader_modules[VK_SHADER_STAGE_FRAGMENT_BIT] = *fragment_module;
+            } else {
+                return ntl::Result<Pipeline*>(ntl::NovaError("Could not geometry vertex module"));
+            }
+        } // namespace nova::renderer::rhi
 
         for(const auto& [stage, shader_module] : shader_modules) {
             VkPipelineShaderStageCreateInfo shader_stage_create_info;
@@ -783,7 +808,7 @@ namespace nova::renderer::rhi {
         }
 
         return ntl::Result(static_cast<Pipeline*>(vk_pipeline));
-    }
+    } // namespace nova::renderer::rhi
 
     Buffer* VulkanRenderEngine::create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory, AllocatorHandle<>& allocator) {
         auto* buffer = allocator.new_other_object<VulkanBuffer>();
@@ -1669,7 +1694,7 @@ namespace nova::renderer::rhi {
         return VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     }
 
-    VkShaderModule VulkanRenderEngine::create_shader_module(const std::pmr::vector<uint32_t>& spirv) const {
+    std::optional<VkShaderModule> VulkanRenderEngine::create_shader_module(const std::pmr::vector<uint32_t>& spirv) const {
         VkShaderModuleCreateInfo shader_module_create_info;
         shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         shader_module_create_info.pNext = nullptr;
@@ -1678,9 +1703,14 @@ namespace nova::renderer::rhi {
         shader_module_create_info.codeSize = spirv.size() * 4;
 
         VkShaderModule module;
-        NOVA_CHECK_RESULT(vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module));
+        const auto result = vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module);
+        if(result == VK_SUCCESS) {
+            return std::make_optional(module);
 
-        return module;
+        } else {
+            NOVA_LOG(ERROR) << "Could not create shader module: " << to_string(result);
+            return std::nullopt;
+        }
     }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderEngine::debug_report_callback(const VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
