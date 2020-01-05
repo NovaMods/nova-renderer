@@ -839,7 +839,7 @@ namespace nova::renderer {
 
     std::shared_ptr<NovaWindow> NovaRenderer::get_window() const { return window; }
 
-    std::shared_ptr<ResourceStorage> NovaRenderer::get_resource_manager() const { return resource_storage; }
+    std::shared_ptr<ResourceFactory> NovaRenderer::get_resource_manager() const { return resource_storage; }
 
     NovaRenderer* NovaRenderer::get_instance() { return instance.get(); }
 
@@ -932,7 +932,7 @@ namespace nova::renderer {
         }
     }
 
-    void NovaRenderer::create_resource_storage() { resource_storage = std::make_shared<ResourceStorage>(*this); }
+    void NovaRenderer::create_resource_storage() { resource_storage = std::make_shared<ResourceFactory>(*this); }
 
     void NovaRenderer::create_builtin_textures() {
     }

@@ -16,11 +16,11 @@ namespace nova::renderer {
 
     size_t size_in_bytes(PixelFormat pixel_format);
 
-    ResourceStorage::ResourceStorage(NovaRenderer& renderer) : renderer(renderer), device(renderer.get_engine()) {
+    ResourceFactory::ResourceFactory(NovaRenderer& renderer) : renderer(renderer), device(renderer.get_engine()) {
         allocate_staging_buffer_memory();
     }
 
-    std::optional<TextureResourceAccessor> ResourceStorage::create_texture(const std::string& name,
+    std::optional<TextureResourceAccessor> ResourceFactory::create_texture(const std::string& name,
                                                                            const std::size_t width,
                                                                            const std::size_t height,
                                                                            const PixelFormat pixel_format,
@@ -86,7 +86,7 @@ namespace nova::renderer {
         return std::make_optional<TextureResourceAccessor>(&textures, name);
     }
 
-    std::optional<TextureResourceAccessor> ResourceStorage::get_texture(const std::string& name) const {
+    std::optional<TextureResourceAccessor> ResourceFactory::get_texture(const std::string& name) const {
         if(textures.find(name) != textures.end()) {
             return std::make_optional<TextureResourceAccessor>(&textures, name);
 
@@ -100,7 +100,7 @@ namespace nova::renderer {
 #endif
     }
 
-    std::optional<DescriptorSetWrite> ResourceStorage::get_descriptor_info_for_resource(const std::string& resource_name) {
+    std::optional<DescriptorSetWrite> ResourceFactory::get_descriptor_info_for_resource(const std::string& resource_name) {
         if(const auto& itr = textures.find(resource_name); itr != textures.end()) {
             DescriptorSetWrite write = {};
             write.type = DescriptorType::CombinedImageSampler;
@@ -121,7 +121,7 @@ namespace nova::renderer {
         }
     }
 
-    std::optional<TextureResourceAccessor> ResourceStorage::create_render_target(const std::string& name,
+    std::optional<TextureResourceAccessor> ResourceFactory::create_render_target(const std::string& name,
                                                                                  const size_t width,
                                                                                  const size_t height,
                                                                                  const PixelFormat pixel_format,
@@ -181,7 +181,7 @@ namespace nova::renderer {
         }
     }
 
-    std::optional<TextureResourceAccessor> ResourceStorage::get_render_target(const std::string& name) const {
+    std::optional<TextureResourceAccessor> ResourceFactory::get_render_target(const std::string& name) const {
         if(render_targets.find(name) != render_targets.end()) {
             return std::make_optional<TextureResourceAccessor>(&render_targets, name);
 
@@ -190,7 +190,7 @@ namespace nova::renderer {
         }
     }
 
-    void ResourceStorage::destroy_render_target(const std::string& texture_name, AllocatorHandle<>& allocator) {
+    void ResourceFactory::destroy_render_target(const std::string& texture_name, AllocatorHandle<>& allocator) {
         if(const auto itr = render_targets.find(texture_name); itr != render_targets.end()) {
             device->destroy_texture(itr->second.image, allocator);
             render_targets.erase(itr);
@@ -202,7 +202,7 @@ namespace nova::renderer {
 #endif
     }
 
-    void ResourceStorage::allocate_staging_buffer_memory() {
+    void ResourceFactory::allocate_staging_buffer_memory() {
         staging_buffer_allocator = std::unique_ptr<AllocatorHandle<>>(renderer.get_global_allocator()->create_suballocator());
 
         DeviceMemory* memory = device
@@ -219,7 +219,7 @@ namespace nova::renderer {
         staging_buffer_memory = staging_buffer_allocator->new_other_object<DeviceMemoryResource>(memory, strat);
     }
 
-    std::shared_ptr<Buffer> ResourceStorage::get_staging_buffer_with_size(const size_t size) {
+    std::shared_ptr<Buffer> ResourceFactory::get_staging_buffer_with_size(const size_t size) {
         const auto return_staging_buffer = [&](Buffer* buf) { staging_buffers[size].push_back(buf); };
 
         // Align the size so we can bin the staging buffers

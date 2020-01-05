@@ -146,7 +146,7 @@ namespace nova::renderer {
 
         [[nodiscard]] std::shared_ptr<NovaWindow> get_window() const;
 
-        [[nodiscard]] std::shared_ptr<ResourceStorage> get_resource_manager() const;
+        [[nodiscard]] std::shared_ptr<ResourceFactory> get_resource_manager() const;
 
         static NovaRenderer* initialize(const NovaSettings& settings);
 
@@ -183,7 +183,7 @@ namespace nova::renderer {
          */
         std::shared_ptr<mem::AllocatorHandle<>> renderpack_allocator;
 
-        std::shared_ptr<ResourceStorage> resource_storage;
+        std::shared_ptr<ResourceFactory> resource_storage;
 
         std::unique_ptr<DeviceMemoryResource> mesh_memory;
 
