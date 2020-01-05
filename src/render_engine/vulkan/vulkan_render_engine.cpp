@@ -772,6 +772,18 @@ namespace nova::renderer::rhi {
         color_blend_create_info.blendConstants[2] = 0.0F;
         color_blend_create_info.blendConstants[3] = 0.0F;
 
+        
+
+        std::vector<VkDynamicState> dynamic_states;
+
+        if(data.scissor_mode == shaderpack::ScissorTestMode::DynamicScissorRect) {
+            dynamic_states.emplace_back(VK_DYNAMIC_STATE_SCISSOR);
+        }
+
+        VkPipelineDynamicStateCreateInfo dynamic_state_create_info = {};
+        dynamic_state_create_info.dynamicStateCount = dynamic_states.size();
+        dynamic_state_create_info.pDynamicStates = dynamic_states.data();
+
         VkGraphicsPipelineCreateInfo pipeline_create_info = {};
         pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipeline_create_info.pNext = nullptr;
@@ -785,7 +797,7 @@ namespace nova::renderer::rhi {
         pipeline_create_info.pMultisampleState = &multisample_create_info;
         pipeline_create_info.pDepthStencilState = &depth_stencil_create_info;
         pipeline_create_info.pColorBlendState = &color_blend_create_info;
-        pipeline_create_info.pDynamicState = nullptr;
+        pipeline_create_info.pDynamicState = &dynamic_state_create_info;
         pipeline_create_info.layout = vk_interface->pipeline_layout;
 
         pipeline_create_info.renderPass = vk_interface->pass;
