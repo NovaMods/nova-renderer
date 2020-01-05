@@ -185,8 +185,13 @@ namespace nova::renderer::rhi {
         vkCmdBindIndexBuffer(cmds, vk_buffer->buffer, 0, VK_INDEX_TYPE_UINT32);
     }
 
-    void VulkanCommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t num_instances) {
-        vkCmdDrawIndexed(cmds, num_indices, num_instances, 0, 0, 0);
+    void VulkanCommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t offset, const uint32_t num_instances) {
+        vkCmdDrawIndexed(cmds, num_indices, num_instances, offset, 0, 0);
+    }
+
+    void VulkanCommandList::set_scissor_rect(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height) {
+        VkRect2D scissor_rect = {{x, y}, {width, height}};
+        vkCmdSetScissor(cmds, 0, 1, &scissor_rect);
     }
 
     void VulkanCommandList::upload_data_to_image(

@@ -131,11 +131,11 @@ namespace nova::renderer::rhi {
         cmds->IASetIndexBuffer(&view);
     }
 
-    void Dx12CommandList::draw_indexed_mesh(const uint32_t num_indices, uint32_t offset, const uint32_t num_instances) {
+    void Dx12CommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t offset, const uint32_t num_instances) {
         cmds->DrawInstanced(num_indices, num_instances, 0, offset);
     }
 
-    void Dx12CommandList::set_scissor_rect(float x, float y, float width, float height) {
+    void Dx12CommandList::set_scissor_rect(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height) {
         D3D12_RECT scissor_rect = {x, y, x + width, y + height};
         cmds->RSSetScissorRects(1, &scissor_rect);
     }

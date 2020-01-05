@@ -43,11 +43,12 @@ namespace nova::renderer::rhi {
 
         void bind_index_buffer(const Buffer* buffer) override;
 
-        void draw_indexed_mesh(uint32_t num_indices, uint32_t num_instances) override;
+        void draw_indexed_mesh(uint32_t num_indices, uint32_t offset, uint32_t num_instances) override;
+
+        void set_scissor_rect(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
         void upload_data_to_image(
             Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) override;
-
     private:
         const VulkanRenderEngine& render_engine;
     };
