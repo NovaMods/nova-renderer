@@ -1542,10 +1542,10 @@ namespace nova::renderer::rhi {
 
         swapchain = internal_allocator.new_other_object<VulkanSwapchain>(NUM_IN_FLIGHT_FRAMES,
                                                                          this,
-                                                                         window->get_window_size(),
+                                                                         window->get_framebuffer_size(),
                                                                          present_modes);
 
-        swapchain_size = window->get_window_size();
+        swapchain_size = window->get_framebuffer_size();
     }
 
     void VulkanRenderEngine::create_per_thread_command_pools() {
