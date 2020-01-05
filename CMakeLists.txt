@@ -115,6 +115,9 @@ set(NOVA_SOURCE
         include/nova_renderer/constants.hpp
         include/nova_renderer/frame_context.hpp
 
+        include/nova_renderer/filesystem/folder_accessor.hpp
+        include/nova_renderer/filesystem/virtual_filesystem.hpp
+
         include/nova_renderer/memory/bytes.hpp
         include/nova_renderer/memory/allocation_strategy.hpp
         include/nova_renderer/memory/allocation_structs.hpp
@@ -137,15 +140,15 @@ set(NOVA_SOURCE
 
         src/nova_renderer.cpp
 
-        src/loading/zip_folder_accessor.hpp
-        src/loading/regular_folder_accessor.hpp
-        src/loading/folder_accessor.hpp
-        src/loading/folder_accessor.cpp
-        src/loading/regular_folder_accessor.cpp
-        src/loading/zip_folder_accessor.cpp
-        src/loading/loading_utils.cpp
-        src/loading/loading_utils.hpp
-        src/loading/json_utils.hpp
+        src/filesystem/zip_folder_accessor.hpp
+        src/filesystem/regular_folder_accessor.hpp
+        src/filesystem/folder_accessor.cpp
+        src/filesystem/regular_folder_accessor.cpp
+        src/filesystem/zip_folder_accessor.cpp
+        src/filesystem/loading_utils.cpp
+        src/filesystem/loading_utils.hpp
+        src/filesystem/json_utils.hpp
+        src/filesystem/virtual_filesystem.cpp
 
         src/settings/nova_settings.cpp
 		
@@ -160,15 +163,15 @@ set(NOVA_SOURCE
         src/util/utils.cpp
         src/util/result.cpp
 
-        src/loading/shaderpack/shaderpack_loading.cpp
-        src/loading/shaderpack/shaderpack_loading.hpp
-        src/loading/shaderpack/shaderpack_data.cpp
-        src/loading/shaderpack/json_interop.cpp
-        src/loading/shaderpack/json_interop.hpp
-        src/loading/shaderpack/shaderpack_validator.cpp
-        src/loading/shaderpack/shaderpack_validator.hpp
-        src/loading/shaderpack/render_graph_builder.cpp
-        src/loading/shaderpack/render_graph_builder.hpp
+        src/filesystem/shaderpack/shaderpack_loading.cpp
+        src/filesystem/shaderpack/shaderpack_loading.hpp
+        src/filesystem/shaderpack/shaderpack_data.cpp
+        src/filesystem/shaderpack/json_interop.cpp
+        src/filesystem/shaderpack/json_interop.hpp
+        src/filesystem/shaderpack/shaderpack_validator.cpp
+        src/filesystem/shaderpack/shaderpack_validator.hpp
+        src/filesystem/shaderpack/render_graph_builder.cpp
+        src/filesystem/shaderpack/render_graph_builder.hpp
 
         src/render_engine/rhi_types.cpp
         src/render_engine/render_engine.cpp

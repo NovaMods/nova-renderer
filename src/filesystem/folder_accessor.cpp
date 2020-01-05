@@ -1,21 +1,43 @@
-#include "folder_accessor.hpp"
+#include "nova_renderer/filesystem/folder_accessor.hpp"
+
+#include <utility>
 
 #include "nova_renderer/util/logger.hpp"
+#include "loading_utils.hpp"
+#include "regular_folder_accessor.hpp"
+#include "zip_folder_accessor.hpp"
 
-namespace nova::renderer {
-    FolderAccessorBase::FolderAccessorBase(const fs::path& folder)
-        : root_folder(std::make_shared<fs::path>(folder)), resource_existence_mutex(new std::mutex) {}
+namespace nova::filesystem {
+    std::shared_ptr<FolderAccessorBase> FolderAccessorBase::create(const fs::path& path) {
+        fs::path mut_path = path;
+        // Where is the shaderpack, and what kind of folder is it in ?
+        if(renderer::is_zip_folder(mut_path)) {
+            // zip folder in shaderpacks folder
+            mut_path.replace_extension(".zip");
+            return std::make_shared<ZipFolderAccessor>(mut_path);
+        }
+        if(exists(mut_path)) {
+            // regular folder in shaderpacks folder
+            return std::make_shared<RegularFolderAccessor>(mut_path);
+        }
+
+        NOVA_LOG(FATAL) << "Could not create folder accessor for path " << mut_path;
+
+        return {};
+    }
+
+    FolderAccessorBase::FolderAccessorBase(fs::path folder) : root_folder(std::move(folder)), resource_existence_mutex(new std::mutex) {}
 
     bool FolderAccessorBase::does_resource_exist(const fs::path& resource_path) {
         std::lock_guard l(*resource_existence_mutex);
 
-        const auto full_path = *root_folder / resource_path;
+        const auto full_path = root_folder / resource_path;
         return does_resource_exist_on_filesystem(full_path);
     }
 
     std::pmr::vector<uint32_t> FolderAccessorBase::read_spirv_file(const fs::path& resource_path) {
         const std::string buf = read_text_file(resource_path);
-        const unsigned* buf_data = reinterpret_cast<const uint32_t*>(buf.data());
+        const auto* buf_data = reinterpret_cast<const uint32_t*>(buf.data());
         std::pmr::vector<uint32_t> ret_val;
         ret_val.reserve(buf.size() / 4);
         ret_val.insert(ret_val.begin(), buf_data, buf_data + (buf.size() / 4));
@@ -31,7 +53,7 @@ namespace nova::renderer {
         return {};
     }
 
-    std::shared_ptr<fs::path> FolderAccessorBase::get_root() const { return root_folder; }
+    const fs::path& FolderAccessorBase::get_root() const { return root_folder; }
 
     bool has_root(const fs::path& path, const fs::path& root) {
         if(std::distance(path.begin(), path.end()) < std::distance(root.begin(), root.end())) {
@@ -54,4 +76,4 @@ namespace nova::renderer {
 
         return true;
     }
-} // namespace nova::renderer
+} // namespace nova::filesystem

@@ -6,7 +6,7 @@
 #include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/utils.hpp"
 
-namespace nova::renderer {
+namespace nova::filesystem {
     ZipFolderAccessor::ZipFolderAccessor(const fs::path& folder) : FolderAccessorBase(folder), files(new FileTreeNode) {
         const auto folder_string = folder.string();
 
@@ -25,7 +25,7 @@ namespace nova::renderer {
     void ZipFolderAccessor::delete_file_tree(std::unique_ptr<FileTreeNode>& node) { node = nullptr; }
 
     std::string ZipFolderAccessor::read_text_file(const fs::path& resource_path) {
-        const fs::path full_path = *root_folder / resource_path;
+        const fs::path full_path = root_folder / resource_path;
 
         const std::string resource_string = full_path.string();
         if(!does_resource_exist_on_filesystem(full_path)) {
@@ -63,7 +63,7 @@ namespace nova::renderer {
 
     std::pmr::vector<fs::path> ZipFolderAccessor::get_all_items_in_folder(const fs::path& folder) {
         const std::string folder_stringname = folder.string();
-        std::pmr::vector<std::string> folder_path_parts = split(folder_stringname, '/');
+        std::pmr::vector<std::string> folder_path_parts = renderer::split(folder_stringname, '/');
 
         FileTreeNode* cur_node = files.get();
         // Get the node at this path
@@ -92,6 +92,15 @@ namespace nova::renderer {
         return children_paths;
     }
 
+    std::shared_ptr<FolderAccessorBase> ZipFolderAccessor::create_subfolder_accessor(const fs::path& path) const {
+        return std::make_shared<ZipFolderAccessor>(root_folder / path, zip_archive);
+    }
+
+    ZipFolderAccessor::ZipFolderAccessor(const fs::path& folder, const mz_zip_archive archive)
+        : FolderAccessorBase(folder), zip_archive(archive), files(new FileTreeNode) {
+        build_file_tree();
+    }
+
     void ZipFolderAccessor::build_file_tree() {
         const uint32_t num_files = mz_zip_reader_get_num_files(&zip_archive);
 
@@ -107,7 +116,7 @@ namespace nova::renderer {
 
         // Build a tree from all the files
         for(const std::string& filename : all_filenames) {
-            auto filename_parts = split(filename, '/');
+            auto filename_parts = renderer::split(filename, '/');
             auto cur_node = files.get();
             for(const auto& part : filename_parts) {
                 bool node_found = false;
@@ -157,7 +166,7 @@ namespace nova::renderer {
         return false;
     }
 
-    void print_file_tree(const std::unique_ptr<FileTreeNode>& folder, uint32_t depth) {
+    void print_file_tree(const std::unique_ptr<FileTreeNode>& folder, const uint32_t depth) {
         if(folder == nullptr) {
             return;
         }
@@ -184,6 +193,6 @@ namespace nova::renderer {
         }
 
         // Skip the last string in the vector, since it's the resourcepack root node
-        return join({++names.rbegin(), names.rend()}, "/");
+        return renderer::join({++names.rbegin(), names.rend()}, "/");
     }
-} // namespace nova::renderer
+} // namespace nova::filesystem

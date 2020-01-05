@@ -23,8 +23,8 @@
 #include "nova_renderer/util/platform.hpp"
 
 #include "debugging/renderdoc.hpp"
-#include "loading/shaderpack/render_graph_builder.hpp"
-#include "loading/shaderpack/shaderpack_loading.hpp"
+#include "filesystem/shaderpack/render_graph_builder.hpp"
+#include "filesystem/shaderpack/shaderpack_loading.hpp"
 #include "render_objects/uniform_structs.hpp"
 // D3D12 MUST be included first because the Vulkan include undefines FAR, yet the D3D12 headers need FAR
 // Windows considered harmful
@@ -839,7 +839,7 @@ namespace nova::renderer {
 
     std::shared_ptr<NovaWindow> NovaRenderer::get_window() const { return window; }
 
-    std::shared_ptr<ResourceFactory> NovaRenderer::get_resource_manager() const { return resource_storage; }
+    std::shared_ptr<DeviceResourceFactory> NovaRenderer::get_resource_manager() const { return resource_storage; }
 
     NovaRenderer* NovaRenderer::get_instance() { return instance.get(); }
 
@@ -932,7 +932,7 @@ namespace nova::renderer {
         }
     }
 
-    void NovaRenderer::create_resource_storage() { resource_storage = std::make_shared<ResourceFactory>(*this); }
+    void NovaRenderer::create_resource_storage() { resource_storage = std::make_shared<DeviceResourceFactory>(*this); }
 
     void NovaRenderer::create_builtin_textures() {
     }

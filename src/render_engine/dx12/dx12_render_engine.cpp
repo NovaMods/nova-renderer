@@ -12,7 +12,7 @@
 #include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/platform.hpp"
 
-#include "../../loading/shaderpack/shaderpack_loading.hpp"
+#include "../../filesystem/shaderpack/shaderpack_loading.hpp"
 #include "../../util/windows_utils.hpp"
 #include "d3dx12.h"
 #include "dx12_command_list.hpp"

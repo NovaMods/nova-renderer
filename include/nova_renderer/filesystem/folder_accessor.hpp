@@ -1,13 +1,7 @@
-/*!
- * \author ddubois
- * \date 14-Aug-18.
- */
-
-#ifndef NOVA_RENDERER_RESOURCEPACK_H
-#define NOVA_RENDERER_RESOURCEPACK_H
+#pragma once
 
 #include <memory>
-#include <memory_resource>  // MSVC says this is unused, but GCC seems to disagree so don't remove it
+#include <memory_resource> // MSVC says this is unused, but GCC seems to disagree so don't remove it
 #include <mutex>
 #include <optional>
 #include <string>
@@ -16,7 +10,7 @@
 
 #include "nova_renderer/util/filesystem.hpp"
 
-namespace nova::renderer {
+namespace nova::filesystem {
     /*!
      * \brief A collection of resources on the filsysstem
      *
@@ -26,11 +20,13 @@ namespace nova::renderer {
      */
     class FolderAccessorBase {
     public:
+        [[nodiscard]] static std::shared_ptr<FolderAccessorBase> create(const fs::path& path);
+
         /*!
          * \brief Initializes this resourcepack to load resources from the folder/zip file with the provided name
          * \param folder The name of the folder or zip file to load resources from, relative to Nova's working directory
          */
-        explicit FolderAccessorBase(const fs::path& folder);
+        explicit FolderAccessorBase(fs::path folder);
 
         FolderAccessorBase(FolderAccessorBase&& other) noexcept = default;
         FolderAccessorBase& operator=(FolderAccessorBase&& other) noexcept = default;
@@ -50,14 +46,14 @@ namespace nova::renderer {
          * resourcepack's root
          * \return True if the resource exists, false if it does not
          */
-        bool does_resource_exist(const fs::path& resource_path);
+        [[nodiscard]] bool does_resource_exist(const fs::path& resource_path);
 
         /*!
          * \brief Loads the resource with the given path
          * \param resource_path The path to the resource to load, relative to this resourcepack's root
          * \return All the bytes in the loaded resource
          */
-        virtual std::string read_text_file(const fs::path& resource_path) = 0;
+        [[nodiscard]] virtual std::string read_text_file(const fs::path& resource_path) = 0;
 
         /*!
          * \brief Loads the file at the provided path as a series of 32-bit numbers
@@ -65,19 +61,21 @@ namespace nova::renderer {
          * \param resource_path The path to the SPIR-V file to load, relative to this resourcepack's root
          * \return All the 32-bit numbers in the SPIR-V file
          */
-        std::pmr::vector<uint32_t> read_spirv_file(const fs::path& resource_path);
+        [[nodiscard]] std::pmr::vector<uint32_t> read_spirv_file(const fs::path& resource_path);
 
         /*!
          * \brief Retrieves the paths of all the items in the specified folder
          * \param folder The folder to get all items from
          * \return A list of all the paths in the provided folder
          */
-        virtual std::pmr::vector<fs::path> get_all_items_in_folder(const fs::path& folder) = 0;
+        [[nodiscard]] virtual std::pmr::vector<fs::path> get_all_items_in_folder(const fs::path& folder) = 0;
 
-        std::shared_ptr<fs::path> get_root() const;
+        [[nodiscard]] const fs::path& get_root() const;
+
+        [[nodiscard]] virtual std::shared_ptr<FolderAccessorBase> create_subfolder_accessor(const fs::path& path) const = 0;
 
     protected:
-        std::shared_ptr<fs::path> root_folder;
+        fs::path root_folder;
 
         /*!
          * \brief I expect certain resources, like textures, to be requested a lot as Nova streams them in and out of
@@ -89,14 +87,14 @@ namespace nova::renderer {
 
         std::unique_ptr<std::mutex> resource_existence_mutex;
 
-        std::optional<bool> does_resource_exist_in_map(const std::string& resource_string) const;
+        [[nodiscard]] std::optional<bool> does_resource_exist_in_map(const std::string& resource_string) const;
 
         /*!
          * \brief Like the non-internal one, but does not add the folder's root to resource_path
          *
          * \param resource_path The path to the resource, with `our_root` already appended
          */
-        virtual bool does_resource_exist_on_filesystem(const fs::path& resource_path) = 0;
+        [[nodiscard]] virtual bool does_resource_exist_on_filesystem(const fs::path& resource_path) = 0;
     };
 
     /*!
@@ -105,7 +103,5 @@ namespace nova::renderer {
      * \param root The potential root path of the file
      * \return True if `path` has `root` as its root, false otherwise
      */
-    bool has_root(const fs::path& path, const fs::path& root);
-} // namespace nova::renderer
-
-#endif // NOVA_RENDERER_RESOURCEPACK_H
+    [[nodiscard]] bool has_root(const fs::path& path, const fs::path& root);
+} // namespace nova::filesystem

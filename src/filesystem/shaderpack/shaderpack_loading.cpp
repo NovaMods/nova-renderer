@@ -9,9 +9,9 @@
 #include <glslang/Public/ShaderLang.h>
 
 #include "nova_renderer/constants.hpp"
+#include "nova_renderer/filesystem/folder_accessor.hpp"
 
 #include "../../tasks/task_scheduler.hpp"
-#include "../folder_accessor.hpp"
 #include "../json_utils.hpp"
 #include "../loading_utils.hpp"
 #include "../regular_folder_accessor.hpp"
@@ -22,6 +22,8 @@
 #include "shaderpack_validator.hpp"
 
 namespace nova::renderer::shaderpack {
+    using namespace filesystem;
+
     // Removed from the GLSLang version we're using
     // TODO: Copy and fill in with values from the RHI so we don't accidentally limit a shader
     const TBuiltInResource default_built_in_resource = {
@@ -130,8 +132,6 @@ namespace nova::renderer::shaderpack {
             /* .generalConstantMatrixVectorIndexing = */ true,
         }};
 
-    std::shared_ptr<FolderAccessorBase> get_shaderpack_accessor(const fs::path& shaderpack_name);
-
     ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
 
     ntl::Result<RendergraphData> load_rendergraph_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
@@ -192,7 +192,7 @@ namespace nova::renderer::shaderpack {
 
     ShaderpackData load_shaderpack_data(const fs::path& shaderpack_name) {
         loading_failed = false;
-        const std::shared_ptr<FolderAccessorBase> folder_access = get_shaderpack_accessor(shaderpack_name);
+        const std::shared_ptr<FolderAccessorBase> folder_access = FolderAccessorBase::create(shaderpack_name);
 
         // The shaderpack has a number of items: There's the shaders themselves, of course, but there's so, so much more
         // What else is there?
@@ -217,25 +217,6 @@ namespace nova::renderer::shaderpack {
         fill_in_render_target_formats(data);
 
         return data;
-    }
-
-    std::shared_ptr<FolderAccessorBase> get_shaderpack_accessor(const fs::path& shaderpack_name) {
-        fs::path path_to_shaderpack = shaderpack_name;
-
-        // Where is the shaderpack, and what kind of folder is it in?
-        if(is_zip_folder(path_to_shaderpack)) {
-            // zip folder in shaderpacks folder
-            path_to_shaderpack.replace_extension(".zip");
-            return std::make_shared<ZipFolderAccessor>(path_to_shaderpack);
-        }
-        if(fs::exists(path_to_shaderpack)) {
-            // regular folder in shaderpacks folder
-            return std::make_shared<RegularFolderAccessor>(path_to_shaderpack);
-        }
-
-        NOVA_LOG(FATAL) << "No shaderpack accessor implementation found for name " << shaderpack_name;
-
-        return {};
     }
 
     ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {

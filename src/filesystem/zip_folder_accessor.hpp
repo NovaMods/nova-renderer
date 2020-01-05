@@ -4,9 +4,9 @@
 
 #include <miniz.h>
 
-#include "folder_accessor.hpp"
+#include "nova_renderer/filesystem/folder_accessor.hpp"
 
-namespace nova::renderer {
+namespace nova::filesystem {
     struct FileTreeNode {
         std::string name;
         std::pmr::vector<std::unique_ptr<FileTreeNode>> children;
@@ -28,11 +28,13 @@ namespace nova::renderer {
         ZipFolderAccessor(const ZipFolderAccessor& other) = delete;
         ZipFolderAccessor& operator=(const ZipFolderAccessor& other) = delete;
 
-        ~ZipFolderAccessor() override final;
+        ~ZipFolderAccessor() override;
 
         std::string read_text_file(const fs::path& resource_path) override final;
 
         std::pmr::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override final;
+
+        std::shared_ptr<FolderAccessorBase> create_subfolder_accessor(const fs::path& path) const override;
 
     private:
         /*!
@@ -43,6 +45,8 @@ namespace nova::renderer {
         mz_zip_archive zip_archive = {};
 
         std::unique_ptr<FileTreeNode> files = nullptr;
+
+        ZipFolderAccessor(const fs::path& folder, mz_zip_archive archive);
 
         void delete_file_tree(std::unique_ptr<FileTreeNode>& node);
 
@@ -55,4 +59,4 @@ namespace nova::renderer {
      * \brief Prints out the nodes in a depth-first fashion
      */
     void print_file_tree(const std::unique_ptr<FileTreeNode>& folder, uint32_t depth);
-} // namespace nova::renderer
+} // namespace nova::filesystem
