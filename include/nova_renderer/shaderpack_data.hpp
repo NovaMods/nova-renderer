@@ -199,6 +199,12 @@ namespace nova::renderer::shaderpack {
 
     enum class RenderQueueEnum { Transparent, Opaque, Cutout };
 
+    enum class ScissorTestMode {
+        Off,
+        StaticScissorRect,
+        DynamicScissorRect,
+    };
+
     enum class PixelFormatEnum {
         RGBA8,
         RGBA16F,
@@ -372,6 +378,8 @@ namespace nova::renderer::shaderpack {
          * This may or may not be removed depending on what is actually needed by Nova
          */
         RenderQueueEnum render_queue{};
+
+        ScissorTestMode scissor_mode = ScissorTestMode::Off;
 
         ShaderSource vertex_shader{};
 
