@@ -412,14 +412,14 @@ namespace nova::renderer {
                 }
 
             } else {
-                const auto render_target = resource_storage->get_render_target(attachment_info.name);
-                if(render_target) {
-                    color_attachments.push_back((*render_target)->image);
+                const auto render_target_opt = resource_storage->get_render_target(attachment_info.name);
+                if(render_target_opt) {
+                    const auto& render_target = *render_target_opt;
+
+                    color_attachments.push_back(render_target->image);
 
                     const shaderpack::TextureCreateInfo& info = dynamic_texture_infos.at(attachment_info.name);
-                    const glm::uvec2 attachment_size = info.format.get_size_in_pixels(
-                        {render_settings.settings.window.width, render_settings.settings.window.height});
-
+                    const glm::uvec2 attachment_size = {render_target->width, render_target->height};
                     if(framebuffer_size.x > 0) {
                         if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {
                             attachment_errors.push_back(format(
@@ -935,16 +935,6 @@ namespace nova::renderer {
     void NovaRenderer::create_resource_storage() { resource_storage = std::make_shared<ResourceStorage>(*this); }
 
     void NovaRenderer::create_builtin_textures() {
-        shaderpack::TextureCreateInfo info = {};
-        info.name = SCENE_OUTPUT_RENDER_TARGET_NAME;
-        info.usage = shaderpack::ImageUsage::RenderTarget;
-        info.format.pixel_format = shaderpack::PixelFormatEnum::RGBA8;
-        info.format.dimension_type = shaderpack::TextureDimensionTypeEnum::ScreenRelative;
-        info.format.width = 1;
-        info.format.height = 1;
-
-        rhi::Image* scene_output_render_target = rhi->create_image(info, *global_allocator);
-        builtin_images.emplace(SCENE_OUTPUT_RENDER_TARGET_NAME, scene_output_render_target);
     }
 
     void NovaRenderer::create_uniform_buffers() {

@@ -49,8 +49,6 @@ namespace nova::renderer {
      */
     const std::string UI_RENDER_PASS_NAME = "NovaUI";
 
-    const std::string SCENE_OUTPUT_RENDER_TARGET_NAME = "NovaFinal";
-
     /*!
      * \brief Name of the backbuffer
      *

@@ -87,16 +87,16 @@ namespace nova::renderer {
     }
 
     std::optional<TextureResourceAccessor> ResourceStorage::get_texture(const std::string& name) const {
-#if NOVA_DEBUG
         if(textures.find(name) != textures.end()) {
             return std::make_optional<TextureResourceAccessor>(&textures, name);
 
-        } else {
+        }
+
+#if NOVA_DEBUG
+        else {
             NOVA_LOG(ERROR) << "Could not find image \"" << name << "\"";
             return {};
         }
-#else
-        return std::make_optional(TextureResourceAccessor(&textures, name));
 #endif
     }
 
