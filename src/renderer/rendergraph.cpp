@@ -29,34 +29,34 @@ namespace nova::renderer {
         if(!read_texture_barriers.empty()) {
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
-            cmds->resource_barriers(rhi::PipelineStageFlags::ColorAttachmentOutput,
-                                    rhi::PipelineStageFlags::FragmentShader,
+            cmds->resource_barriers(rhi::PipelineStage::ColorAttachmentOutput,
+                                    rhi::PipelineStage::FragmentShader,
                                     read_texture_barriers);
         }
 
         if(!write_texture_barriers.empty()) {
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
-            cmds->resource_barriers(rhi::PipelineStageFlags::ColorAttachmentOutput,
-                                    rhi::PipelineStageFlags::FragmentShader,
+            cmds->resource_barriers(rhi::PipelineStage::ColorAttachmentOutput,
+                                    rhi::PipelineStage::FragmentShader,
                                     write_texture_barriers);
         }
 
         if(writes_to_backbuffer) {
             rhi::ResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = ctx.swapchain_image;
-            backbuffer_barrier.access_before_barrier = rhi::AccessFlags::MemoryRead;
-            backbuffer_barrier.access_after_barrier = rhi::AccessFlags::ColorAttachmentWrite;
+            backbuffer_barrier.access_before_barrier = rhi::ResourceAccess::MemoryRead;
+            backbuffer_barrier.access_after_barrier = rhi::ResourceAccess::ColorAttachmentWrite;
             backbuffer_barrier.old_state = rhi::ResourceState::PresentSource;
             backbuffer_barrier.new_state = rhi::ResourceState::RenderTarget;
             backbuffer_barrier.source_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
-            backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspectFlags::Color;
+            backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspect::Color;
 
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
-            cmds->resource_barriers(rhi::PipelineStageFlags::TopOfPipe,
-                                    rhi::PipelineStageFlags::ColorAttachmentOutput,
+            cmds->resource_barriers(rhi::PipelineStage::TopOfPipe,
+                                    rhi::PipelineStage::ColorAttachmentOutput,
                                     {backbuffer_barrier});
         }
     }
@@ -72,18 +72,18 @@ namespace nova::renderer {
         if(writes_to_backbuffer) {
             rhi::ResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = ctx.swapchain_image;
-            backbuffer_barrier.access_before_barrier = rhi::AccessFlags::ColorAttachmentWrite;
-            backbuffer_barrier.access_after_barrier = rhi::AccessFlags::MemoryRead;
+            backbuffer_barrier.access_before_barrier = rhi::ResourceAccess::ColorAttachmentWrite;
+            backbuffer_barrier.access_after_barrier = rhi::ResourceAccess::MemoryRead;
             backbuffer_barrier.old_state = rhi::ResourceState::RenderTarget;
             backbuffer_barrier.new_state = rhi::ResourceState::PresentSource;
             backbuffer_barrier.source_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
-            backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspectFlags::Color;
+            backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspect::Color;
 
             // When this line executes, the D3D12 debug layer gets mad about "A single command list cannot write to multiple buffers within
             // a particular swapchain" and I don't know why it's mad about that, or even really what that message means
-            cmds->resource_barriers(rhi::PipelineStageFlags::ColorAttachmentOutput,
-                                    rhi::PipelineStageFlags::BottomOfPipe,
+            cmds->resource_barriers(rhi::PipelineStage::ColorAttachmentOutput,
+                                    rhi::PipelineStage::BottomOfPipe,
                                     {backbuffer_barrier});
         }
     }

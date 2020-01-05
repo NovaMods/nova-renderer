@@ -16,11 +16,11 @@ namespace nova::renderer {
 
     size_t size_in_bytes(PixelFormat pixel_format);
 
-    DeviceResourceFactory::DeviceResourceFactory(NovaRenderer& renderer) : renderer(renderer), device(renderer.get_engine()) {
+    DeviceResources::DeviceResources(NovaRenderer& renderer) : renderer(renderer), device(renderer.get_engine()) {
         allocate_staging_buffer_memory();
     }
 
-    std::optional<TextureResourceAccessor> DeviceResourceFactory::create_texture(const std::string& name,
+    std::optional<TextureResourceAccessor> DeviceResources::create_texture(const std::string& name,
                                                                            const std::size_t width,
                                                                            const std::size_t height,
                                                                            const PixelFormat pixel_format,
@@ -54,24 +54,24 @@ namespace nova::renderer {
 
             ResourceBarrier initial_texture_barrier = {};
             initial_texture_barrier.resource_to_barrier = resource.image;
-            initial_texture_barrier.access_before_barrier = AccessFlags::CopyRead;
-            initial_texture_barrier.access_after_barrier = AccessFlags::CopyWrite;
+            initial_texture_barrier.access_before_barrier = ResourceAccess::CopyRead;
+            initial_texture_barrier.access_after_barrier = ResourceAccess::CopyWrite;
             initial_texture_barrier.old_state = ResourceState::Undefined;
             initial_texture_barrier.new_state = ResourceState::CopyDestination;
-            initial_texture_barrier.image_memory_barrier.aspect = ImageAspectFlags::Color;
+            initial_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
 
-            cmds->resource_barriers(PipelineStageFlags::TopOfPipe, PipelineStageFlags::Transfer, {initial_texture_barrier});
+            cmds->resource_barriers(PipelineStage::TopOfPipe, PipelineStage::Transfer, {initial_texture_barrier});
             cmds->upload_data_to_image(resource.image, width, height, pixel_size, staging_buffer.get(), data);
 
             ResourceBarrier final_texture_barrier = {};
             final_texture_barrier.resource_to_barrier = resource.image;
-            final_texture_barrier.access_before_barrier = AccessFlags::CopyWrite;
-            final_texture_barrier.access_after_barrier = AccessFlags::ShaderRead;
+            final_texture_barrier.access_before_barrier = ResourceAccess::CopyWrite;
+            final_texture_barrier.access_after_barrier = ResourceAccess::ShaderRead;
             final_texture_barrier.old_state = ResourceState::CopyDestination;
             final_texture_barrier.new_state = ResourceState::ShaderRead;
-            final_texture_barrier.image_memory_barrier.aspect = ImageAspectFlags::Color;
+            final_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
 
-            cmds->resource_barriers(PipelineStageFlags::Transfer, PipelineStageFlags::AllGraphics, {final_texture_barrier});
+            cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::AllGraphics, {final_texture_barrier});
 
             Fence* upload_done_fence = device->create_fence(allocator);
             device->submit_command_list(cmds, QueueType::Transfer, upload_done_fence);
@@ -86,7 +86,7 @@ namespace nova::renderer {
         return std::make_optional<TextureResourceAccessor>(&textures, name);
     }
 
-    std::optional<TextureResourceAccessor> DeviceResourceFactory::get_texture(const std::string& name) const {
+    std::optional<TextureResourceAccessor> DeviceResources::get_texture(const std::string& name) const {
         if(textures.find(name) != textures.end()) {
             return std::make_optional<TextureResourceAccessor>(&textures, name);
 
@@ -100,7 +100,7 @@ namespace nova::renderer {
 #endif
     }
 
-    std::optional<DescriptorSetWrite> DeviceResourceFactory::get_descriptor_info_for_resource(const std::string& resource_name) {
+    std::optional<DescriptorSetWrite> DeviceResources::get_descriptor_info_for_resource(const std::string& resource_name) {
         if(const auto& itr = textures.find(resource_name); itr != textures.end()) {
             DescriptorSetWrite write = {};
             write.type = DescriptorType::CombinedImageSampler;
@@ -121,7 +121,7 @@ namespace nova::renderer {
         }
     }
 
-    std::optional<TextureResourceAccessor> DeviceResourceFactory::create_render_target(const std::string& name,
+    std::optional<TextureResourceAccessor> DeviceResources::create_render_target(const std::string& name,
                                                                                  const size_t width,
                                                                                  const size_t height,
                                                                                  const PixelFormat pixel_format,
@@ -153,14 +153,14 @@ namespace nova::renderer {
 
                 ResourceBarrier initial_texture_barrier = {};
                 initial_texture_barrier.resource_to_barrier = resource.image;
-                initial_texture_barrier.access_before_barrier = AccessFlags::ColorAttachmentRead;
-                initial_texture_barrier.access_after_barrier = AccessFlags::ColorAttachmentWrite;
+                initial_texture_barrier.access_before_barrier = ResourceAccess::ColorAttachmentRead;
+                initial_texture_barrier.access_after_barrier = ResourceAccess::ColorAttachmentWrite;
                 initial_texture_barrier.old_state = ResourceState::Undefined;
                 initial_texture_barrier.new_state = ResourceState::RenderTarget;
-                initial_texture_barrier.image_memory_barrier.aspect = ImageAspectFlags::Color;
+                initial_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
 
-                cmds->resource_barriers(PipelineStageFlags::TopOfPipe,
-                                        PipelineStageFlags::ColorAttachmentOutput,
+                cmds->resource_barriers(PipelineStage::TopOfPipe,
+                                        PipelineStage::ColorAttachmentOutput,
                                         {initial_texture_barrier});
 
                 Fence* upload_done_fence = device->create_fence(allocator);
@@ -181,7 +181,7 @@ namespace nova::renderer {
         }
     }
 
-    std::optional<TextureResourceAccessor> DeviceResourceFactory::get_render_target(const std::string& name) const {
+    std::optional<TextureResourceAccessor> DeviceResources::get_render_target(const std::string& name) const {
         if(render_targets.find(name) != render_targets.end()) {
             return std::make_optional<TextureResourceAccessor>(&render_targets, name);
 
@@ -190,7 +190,7 @@ namespace nova::renderer {
         }
     }
 
-    void DeviceResourceFactory::destroy_render_target(const std::string& texture_name, AllocatorHandle<>& allocator) {
+    void DeviceResources::destroy_render_target(const std::string& texture_name, AllocatorHandle<>& allocator) {
         if(const auto itr = render_targets.find(texture_name); itr != render_targets.end()) {
             device->destroy_texture(itr->second.image, allocator);
             render_targets.erase(itr);
@@ -202,7 +202,7 @@ namespace nova::renderer {
 #endif
     }
 
-    void DeviceResourceFactory::allocate_staging_buffer_memory() {
+    void DeviceResources::allocate_staging_buffer_memory() {
         staging_buffer_allocator = std::unique_ptr<AllocatorHandle<>>(renderer.get_global_allocator()->create_suballocator());
 
         DeviceMemory* memory = device
@@ -219,7 +219,7 @@ namespace nova::renderer {
         staging_buffer_memory = staging_buffer_allocator->new_other_object<DeviceMemoryResource>(memory, strat);
     }
 
-    std::shared_ptr<Buffer> DeviceResourceFactory::get_staging_buffer_with_size(const size_t size) {
+    std::shared_ptr<Buffer> DeviceResources::get_staging_buffer_with_size(const size_t size) {
         const auto return_staging_buffer = [&](Buffer* buf) { staging_buffers[size].push_back(buf); };
 
         // Align the size so we can bin the staging buffers

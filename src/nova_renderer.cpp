@@ -221,13 +221,13 @@ namespace nova::renderer {
             vertex_barrier.resource_to_barrier = vertex_buffer;
             vertex_barrier.old_state = rhi::ResourceState::CopyDestination;
             vertex_barrier.new_state = rhi::ResourceState::Common;
-            vertex_barrier.access_before_barrier = rhi::AccessFlags::CopyWrite;
-            vertex_barrier.access_after_barrier = rhi::AccessFlags::VertexAttributeRead;
+            vertex_barrier.access_before_barrier = rhi::ResourceAccess::CopyWrite;
+            vertex_barrier.access_after_barrier = rhi::ResourceAccess::VertexAttributeRead;
             vertex_barrier.buffer_memory_barrier.offset = 0;
             vertex_barrier.buffer_memory_barrier.size = vertex_buffer->size;
 
-            vertex_upload_cmds->resource_barriers(rhi::PipelineStageFlags::Transfer,
-                                                  rhi::PipelineStageFlags::VertexInput,
+            vertex_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer,
+                                                  rhi::PipelineStage::VertexInput,
                                                   {vertex_barrier});
 
             rhi->submit_command_list(vertex_upload_cmds, rhi::QueueType::Transfer);
@@ -256,13 +256,13 @@ namespace nova::renderer {
             index_barrier.resource_to_barrier = index_buffer;
             index_barrier.old_state = rhi::ResourceState::CopyDestination;
             index_barrier.new_state = rhi::ResourceState::Common;
-            index_barrier.access_before_barrier = rhi::AccessFlags::CopyWrite;
-            index_barrier.access_after_barrier = rhi::AccessFlags::IndexRead;
+            index_barrier.access_before_barrier = rhi::ResourceAccess::CopyWrite;
+            index_barrier.access_after_barrier = rhi::ResourceAccess::IndexRead;
             index_barrier.buffer_memory_barrier.offset = 0;
             index_barrier.buffer_memory_barrier.size = index_buffer->size;
 
-            indices_upload_cmds->resource_barriers(rhi::PipelineStageFlags::Transfer,
-                                                   rhi::PipelineStageFlags::VertexInput,
+            indices_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer,
+                                                   rhi::PipelineStage::VertexInput,
                                                    {index_barrier});
 
             rhi->submit_command_list(indices_upload_cmds, rhi::QueueType::Transfer);
@@ -623,23 +623,23 @@ namespace nova::renderer {
         std::unordered_map<std::string, rhi::ResourceBindingDescription> bindings;
         bindings.reserve(32); // Probably a good estimate
 
-        get_shader_module_descriptors(pipeline_create_info.vertex_shader.source, rhi::ShaderStageFlags::Vertex, bindings);
+        get_shader_module_descriptors(pipeline_create_info.vertex_shader.source, rhi::ShaderStage::Vertex, bindings);
 
         if(pipeline_create_info.tessellation_control_shader) {
             get_shader_module_descriptors(pipeline_create_info.tessellation_control_shader->source,
-                                          rhi::ShaderStageFlags::TessellationControl,
+                                          rhi::ShaderStage::TessellationControl,
                                           bindings);
         }
         if(pipeline_create_info.tessellation_evaluation_shader) {
             get_shader_module_descriptors(pipeline_create_info.tessellation_evaluation_shader->source,
-                                          rhi::ShaderStageFlags::TessellationEvaluation,
+                                          rhi::ShaderStage::TessellationEvaluation,
                                           bindings);
         }
         if(pipeline_create_info.geometry_shader) {
-            get_shader_module_descriptors(pipeline_create_info.geometry_shader->source, rhi::ShaderStageFlags::Geometry, bindings);
+            get_shader_module_descriptors(pipeline_create_info.geometry_shader->source, rhi::ShaderStage::Geometry, bindings);
         }
         if(pipeline_create_info.fragment_shader) {
-            get_shader_module_descriptors(pipeline_create_info.fragment_shader->source, rhi::ShaderStageFlags::Fragment, bindings);
+            get_shader_module_descriptors(pipeline_create_info.fragment_shader->source, rhi::ShaderStage::Fragment, bindings);
         }
 
         return rhi->create_pipeline_interface(bindings, color_attachments, depth_texture, *renderpack_allocator);
@@ -666,7 +666,7 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::get_shader_module_descriptors(const std::pmr::vector<uint32_t>& spirv,
-                                                     const rhi::ShaderStageFlags shader_stage,
+                                                     const rhi::ShaderStage shader_stage,
                                                      std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings) {
         std::pmr::vector<uint32_t> spirv_std(spirv.begin(), spirv.end());
         const spirv_cross::CompilerGLSL shader_compiler(spirv_std.data(), spirv_std.size());
@@ -689,7 +689,7 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::add_resource_to_bindings(std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings,
-                                                const rhi::ShaderStageFlags shader_stage,
+                                                const rhi::ShaderStage shader_stage,
                                                 const spirv_cross::CompilerGLSL& shader_compiler,
                                                 const spirv_cross::Resource& resource,
                                                 const rhi::DescriptorType type) {
@@ -839,7 +839,7 @@ namespace nova::renderer {
 
     std::shared_ptr<NovaWindow> NovaRenderer::get_window() const { return window; }
 
-    std::shared_ptr<DeviceResourceFactory> NovaRenderer::get_resource_manager() const { return resource_storage; }
+    std::shared_ptr<DeviceResources> NovaRenderer::get_resource_manager() const { return resource_storage; }
 
     NovaRenderer* NovaRenderer::get_instance() { return instance.get(); }
 
@@ -932,7 +932,7 @@ namespace nova::renderer {
         }
     }
 
-    void NovaRenderer::create_resource_storage() { resource_storage = std::make_shared<DeviceResourceFactory>(*this); }
+    void NovaRenderer::create_resource_storage() { resource_storage = std::make_shared<DeviceResources>(*this); }
 
     void NovaRenderer::create_builtin_textures() {
     }

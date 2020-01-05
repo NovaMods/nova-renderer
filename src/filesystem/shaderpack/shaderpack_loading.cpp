@@ -3,7 +3,7 @@
  * \date 21-Aug-18.
  */
 
-#include "shaderpack_loading.hpp"
+#include "nova_renderer/loading/shaderpack_loading.hpp"
 
 #include <glslang/Include/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
@@ -141,11 +141,6 @@ namespace nova::renderer::shaderpack {
 
     std::pmr::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access);
     MaterialData load_single_material(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& material_path);
-
-    std::pmr::vector<uint32_t> load_shader_file(const fs::path& filename,
-                                                const std::shared_ptr<FolderAccessorBase>& folder_access,
-                                                EShLanguage stage,
-                                                const std::pmr::vector<std::string>& defines);
 
     bool loading_failed = false;
 

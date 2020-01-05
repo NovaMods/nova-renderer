@@ -121,8 +121,8 @@ namespace nova::renderer {
         if(should_upload_vertex_buffer) {
             ResourceBarrier barrier_before_vertex_upload = {};
             barrier_before_vertex_upload.resource_to_barrier = cur_vertex_buffer;
-            barrier_before_vertex_upload.access_before_barrier = AccessFlags::VertexAttributeRead;
-            barrier_before_vertex_upload.access_after_barrier = AccessFlags::MemoryWrite;
+            barrier_before_vertex_upload.access_before_barrier = ResourceAccess::VertexAttributeRead;
+            barrier_before_vertex_upload.access_after_barrier = ResourceAccess::MemoryWrite;
             barrier_before_vertex_upload.old_state = ResourceState::VertexBuffer;
             barrier_before_vertex_upload.new_state = ResourceState::CopyDestination;
             barrier_before_vertex_upload.source_queue = QueueType::Graphics;
@@ -136,8 +136,8 @@ namespace nova::renderer {
         if(should_upload_index_buffer) {
             ResourceBarrier barrier_before_index_upload = {};
             barrier_before_index_upload.resource_to_barrier = cur_index_buffer;
-            barrier_before_index_upload.access_before_barrier = AccessFlags::IndexRead;
-            barrier_before_index_upload.access_after_barrier = AccessFlags::MemoryWrite;
+            barrier_before_index_upload.access_before_barrier = ResourceAccess::IndexRead;
+            barrier_before_index_upload.access_after_barrier = ResourceAccess::MemoryWrite;
             barrier_before_index_upload.old_state = ResourceState::IndexBuffer;
             barrier_before_index_upload.new_state = ResourceState::CopyDestination;
             barrier_before_index_upload.source_queue = QueueType::Graphics;
@@ -152,7 +152,7 @@ namespace nova::renderer {
             return;
         }
 
-        cmds->resource_barriers(PipelineStageFlags::BottomOfPipe, PipelineStageFlags::Transfer, barriers_before_upload);
+        cmds->resource_barriers(PipelineStage::BottomOfPipe, PipelineStage::Transfer, barriers_before_upload);
 
         if(should_upload_vertex_buffer) {
             cmds->copy_buffer(cur_vertex_buffer, 0, cached_vertex_buffer, 0, num_vertex_bytes_to_upload);
@@ -167,8 +167,8 @@ namespace nova::renderer {
         if(should_upload_vertex_buffer) {
             ResourceBarrier barrier_after_vertex_upload = {};
             barrier_after_vertex_upload.resource_to_barrier = cur_vertex_buffer;
-            barrier_after_vertex_upload.access_before_barrier = AccessFlags::MemoryWrite;
-            barrier_after_vertex_upload.access_after_barrier = AccessFlags::VertexAttributeRead;
+            barrier_after_vertex_upload.access_before_barrier = ResourceAccess::MemoryWrite;
+            barrier_after_vertex_upload.access_after_barrier = ResourceAccess::VertexAttributeRead;
             barrier_after_vertex_upload.old_state = ResourceState::CopyDestination;
             barrier_after_vertex_upload.new_state = ResourceState::VertexBuffer;
             barrier_after_vertex_upload.source_queue = QueueType::Graphics;
@@ -181,8 +181,8 @@ namespace nova::renderer {
         if(should_upload_index_buffer) {
             ResourceBarrier barrier_after_index_upload = {};
             barrier_after_index_upload.resource_to_barrier = cur_index_buffer;
-            barrier_after_index_upload.access_before_barrier = AccessFlags::MemoryWrite;
-            barrier_after_index_upload.access_after_barrier = AccessFlags::IndexRead;
+            barrier_after_index_upload.access_before_barrier = ResourceAccess::MemoryWrite;
+            barrier_after_index_upload.access_after_barrier = ResourceAccess::IndexRead;
             barrier_after_index_upload.old_state = ResourceState::CopyDestination;
             barrier_after_index_upload.new_state = ResourceState::IndexBuffer;
             barrier_after_index_upload.source_queue = QueueType::Graphics;
@@ -196,7 +196,7 @@ namespace nova::renderer {
             return;
         }
 
-        cmds->resource_barriers(PipelineStageFlags::Transfer, PipelineStageFlags::TopOfPipe, barriers_after_upload);
+        cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::TopOfPipe, barriers_after_upload);
     }
 
     std::tuple<Buffer*, Buffer*> ProceduralMesh::get_buffers_for_frame(const uint8_t frame_idx) const {

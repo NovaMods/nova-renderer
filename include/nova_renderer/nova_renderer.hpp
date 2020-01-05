@@ -16,6 +16,7 @@
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
+#include "filesystem/virtual_filesystem.hpp"
 
 namespace spirv_cross {
     class CompilerGLSL;
@@ -146,9 +147,10 @@ namespace nova::renderer {
 
         [[nodiscard]] std::shared_ptr<NovaWindow> get_window() const;
 
-        [[nodiscard]] std::shared_ptr<DeviceResourceFactory> get_resource_manager() const;
+        [[nodiscard]] std::shared_ptr<DeviceResources> get_resource_manager() const;
 
-        static NovaRenderer* initialize(const NovaSettings& settings);
+            static NovaRenderer*
+            initialize(const NovaSettings& settings);
 
         static NovaRenderer* get_instance();
 
@@ -183,7 +185,7 @@ namespace nova::renderer {
          */
         std::shared_ptr<mem::AllocatorHandle<>> renderpack_allocator;
 
-        std::shared_ptr<DeviceResourceFactory> resource_storage;
+        std::shared_ptr<DeviceResources> resource_storage;
 
         std::unique_ptr<DeviceMemoryResource> mesh_memory;
 
@@ -305,11 +307,11 @@ namespace nova::renderer {
             rhi::PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
 
         static void get_shader_module_descriptors(const std::pmr::vector<uint32_t>& spirv,
-                                                  rhi::ShaderStageFlags shader_stage,
+                                                  rhi::ShaderStage shader_stage,
                                                   std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings);
 
         static void add_resource_to_bindings(std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings,
-                                             rhi::ShaderStageFlags shader_stage,
+                                             rhi::ShaderStage shader_stage,
                                              const spirv_cross::CompilerGLSL& shader_compiler,
                                              const spirv_cross::Resource& resource,
                                              rhi::DescriptorType type);

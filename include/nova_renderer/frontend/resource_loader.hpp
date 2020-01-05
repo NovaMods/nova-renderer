@@ -44,9 +44,9 @@ namespace nova::renderer {
      *
      * Basically I need both a high-level API to make resources with, and I want to make those resource easy to access.
      */
-    class DeviceResourceFactory {
+    class DeviceResources {
     public:
-        explicit DeviceResourceFactory(NovaRenderer& renderer);
+        explicit DeviceResources(NovaRenderer& renderer);
 
         /*!
          * \brief Creates a new dynamic texture with the provided initial texture data
