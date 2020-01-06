@@ -16,7 +16,7 @@
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
-#include "filesystem/virtual_filesystem.hpp"
+#include "nova_renderer/filesystem/virtual_filesystem.hpp"
 
 namespace spirv_cross {
     class CompilerGLSL;
