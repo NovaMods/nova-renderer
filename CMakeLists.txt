@@ -350,6 +350,7 @@ set(COMMON_LINK_LIBS
         miniz
         nlohmann::json
         vma::vma
+        rex
         SPIRV-Tools
         spirv-cross-core
         spirv-cross-glsl

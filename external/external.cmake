@@ -73,6 +73,9 @@ include(minitrace)
 set(BUILD_EXAMPLES OFF CACHE BOOL "Disable Miniz examples" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/miniz)
 
+# Rex Core lib
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/rex)
+
 # Hide unnecessary targets from all
 
 set_property(TARGET glslang PROPERTY EXCLUDE_FROM_ALL True)
@@ -113,9 +116,6 @@ set_property(TARGET spirv-cross-glsl PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-cross-hlsl PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-cross-reflect PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-cross-util PROPERTY EXCLUDE_FROM_ALL True)
-
-# Rex Core lib
-include(rex)
 
 #####################
 # Test dependencies #
