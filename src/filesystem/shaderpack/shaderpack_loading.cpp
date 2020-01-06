@@ -5,6 +5,8 @@
 
 #include "nova_renderer/loading/shaderpack_loading.hpp"
 
+#define ENABLE_HLSL
+#include <SPIRV/GlslangToSpv.h>
 #include <glslang/Include/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
 
@@ -13,11 +15,6 @@
 
 #include "../../tasks/task_scheduler.hpp"
 #include "../json_utils.hpp"
-#include "../loading_utils.hpp"
-#include "../regular_folder_accessor.hpp"
-#include "../zip_folder_accessor.hpp"
-#include "OGLCompilersDLL/InitializeDll.h"
-#include "SPIRV/GlslangToSpv.h"
 #include "json_interop.hpp"
 #include "render_graph_builder.hpp"
 #include "shaderpack_validator.hpp"
@@ -359,21 +356,6 @@ namespace nova::renderer::shaderpack {
         const auto glslang_stage = to_glslang_shader_stage(stage);
         glslang::TShader shader(glslang_stage);
 
-        // Check the extension to know what kind of shader file the user has provided. SPIR-V files can be loaded
-        // as-is, but GLSL, GLSL ES, and HLSL files need to be transpiled to SPIR-V
-        if(filename.string().find(".spirv") != std::string::npos) {
-            // SPIR-V file!
-            // TODO: figure out how to handle defines with SPIRV
-            return folder_access->read_spirv_file(filename);
-        }
-        if(filename.string().find(".hlsl") != std::string::npos) {
-            shader.setEnvInput(glslang::EShSourceHlsl, glslang_stage, glslang::EShClientVulkan, 0);
-
-        } else {
-            // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
-            shader.setEnvInput(glslang::EShSourceGlsl, glslang_stage, glslang::EShClientVulkan, 0);
-        }
-
         std::string shader_source = folder_access->read_text_file(filename);
         std::string::size_type version_pos = shader_source.find("#version");
         std::string::size_type inject_pos = 0;
@@ -389,7 +371,28 @@ namespace nova::renderer::shaderpack {
 
         auto* shader_source_data = shader_source.data();
         shader.setStrings(&shader_source_data, 1);
+
+        // Check the extension to know what kind of shader file the user has provided. SPIR-V files can be loaded
+        // as-is, but GLSL, GLSL ES, and HLSL files need to be transpiled to SPIR-V
+        if(filename.string().find(".spirv") != std::string::npos) {
+            // SPIR-V file!
+            // TODO: figure out how to handle defines with SPIRV
+            return folder_access->read_spirv_file(filename);
+        }
+        if(filename.string().find(".hlsl") != std::string::npos) {
+            shader.setEnvInput(glslang::EShSourceHlsl, glslang_stage, glslang::EShClientVulkan, 100);
+            shader.setHlslIoMapping(true);
+
+        } else {
+            // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
+            shader.setEnvInput(glslang::EShSourceGlsl, glslang_stage, glslang::EShClientVulkan, 100);
+        }
+
+        shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_0);
+        shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_5);
+
         shader.setEntryPoint("main");
+
         const bool shader_compiled = shader.parse(&default_built_in_resource,
                                                   450,
                                                   ECoreProfile,

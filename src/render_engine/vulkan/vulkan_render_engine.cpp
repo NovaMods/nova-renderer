@@ -1716,10 +1716,8 @@ namespace nova::renderer::rhi {
     }
 
     std::optional<VkShaderModule> VulkanRenderEngine::create_shader_module(const std::pmr::vector<uint32_t>& spirv) const {
-        VkShaderModuleCreateInfo shader_module_create_info;
+        VkShaderModuleCreateInfo shader_module_create_info = {};
         shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        shader_module_create_info.pNext = nullptr;
-        shader_module_create_info.flags = 0;
         shader_module_create_info.pCode = spirv.data();
         shader_module_create_info.codeSize = spirv.size() * 4;
 

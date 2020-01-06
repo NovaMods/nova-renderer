@@ -5,11 +5,18 @@
 
 #include "spirv_glsl.hpp"
 
+using namespace spirv_cross;
+
 namespace nova::renderer {
-    PipelineStorage::PipelineStorage(NovaRenderer& renderer, mem::AllocatorHandle<>& allocator)
+    using namespace mem;
+    using namespace rhi;
+    using namespace ntl;
+    using namespace shaderpack;
+
+    PipelineStorage::PipelineStorage(NovaRenderer& renderer, AllocatorHandle<>& allocator)
         : renderer(renderer), device(renderer.get_engine()), allocator(allocator) {}
 
-    std::optional<Pipeline> PipelineStorage::get_pipeline(const std::string& pipeline_name) const {
+    std::optional<renderer::Pipeline> PipelineStorage::get_pipeline(const std::string& pipeline_name) const {
         if(const auto itr = pipelines.find(pipeline_name); itr != pipelines.end()) {
             return std::make_optional(itr->second);
 
@@ -18,128 +25,130 @@ namespace nova::renderer {
         }
     }
 
-    bool PipelineStorage::create_pipeline(const shaderpack::PipelineCreateInfo& pipeline_create_info) {
-        const auto rp_create = renderer.get_renderpass_metadata(pipeline_create_info.pass);
+    bool PipelineStorage::create_pipeline(const PipelineCreateInfo& create_info) {
+        const auto rp_create = renderer.get_renderpass_metadata(create_info.pass);
         if(!rp_create) {
-            NOVA_LOG(ERROR) << "Pipeline " << pipeline_create_info.name << " wants to be rendered by renderpass "
-                            << pipeline_create_info.pass << ", but that renderpass doesn't have any metadata";
-            return  false;
+            NOVA_LOG(ERROR) << "Pipeline " << create_info.name << " wants to be rendered by renderpass "
+                            << create_info.pass << ", but that renderpass doesn't have any metadata";
+            return false;
         }
 
-        std::unordered_map<std::string, rhi::ResourceBindingDescription> bindings;
-
-        ntl::Result<rhi::PipelineInterface*> pipeline_interface = create_pipeline_interface(pipeline_create_info,
-                                                                                            rp_create->texture_outputs,
-                                                                                            rp_create->depth_texture);
+        Result<PipelineInterface*> pipeline_interface = create_pipeline_interface(create_info,
+                                                                                  rp_create->texture_outputs,
+                                                                                  rp_create->depth_texture);
         if(!pipeline_interface) {
-            NOVA_LOG(ERROR) << "Pipeline " << pipeline_create_info.name
+            NOVA_LOG(ERROR) << "Pipeline " << create_info.name
                             << " has an invalid interface: " << pipeline_interface.error.to_string();
             return false;
         }
 
-        ntl::Result<PipelineReturn> pipeline_result = create_graphics_pipeline(*pipeline_interface, pipeline_create_info);
+        Result<PipelineReturn> pipeline_result = create_graphics_pipeline(*pipeline_interface, create_info);
         if(pipeline_result) {
             auto [pipeline, pipeline_metadata] = *pipeline_result;
 
-            pipelines.emplace(pipeline_create_info.name, pipeline);
-            pipeline_metadatas.emplace(pipeline_create_info.name, pipeline_metadata);
+            pipelines.emplace(create_info.name, pipeline);
+            pipeline_metadatas.emplace(create_info.name, pipeline_metadata);
 
             return true;
         } else {
-            NOVA_LOG(ERROR) << "Could not create pipeline " << pipeline_create_info.name << ": " << pipeline_result.error.to_string();
+            NOVA_LOG(ERROR) << "Could not create pipeline " << create_info.name << ": " << pipeline_result.error.to_string();
 
             return false;
         }
     }
 
-    ntl::Result<PipelineReturn> PipelineStorage::create_graphics_pipeline(
-        rhi::PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& pipeline_create_info) const {
-        Pipeline pipeline;
+    Result<PipelineReturn> PipelineStorage::create_graphics_pipeline(PipelineInterface* pipeline_interface,
+                                                                     const PipelineCreateInfo& pipeline_create_info) const {
+        renderer::Pipeline pipeline;
         PipelineMetadata metadata;
 
         metadata.data = pipeline_create_info;
 
-        ntl::Result<rhi::Pipeline*> rhi_pipeline = device->create_pipeline(pipeline_interface, pipeline_create_info, allocator);
+        Result<rhi::Pipeline*> rhi_pipeline = device->create_pipeline(pipeline_interface, pipeline_create_info, allocator);
         if(rhi_pipeline) {
             pipeline.pipeline = *rhi_pipeline;
             pipeline.pipeline_interface = pipeline_interface;
 
         } else {
-            ntl::NovaError error = ntl::NovaError(format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name.c_str()).c_str(),
-                                                  std::move(rhi_pipeline.error));
+            NovaError error = NovaError(format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name.c_str()).c_str(),
+                                        std::move(rhi_pipeline.error));
             return ntl::Result<PipelineReturn>(std::move(error));
         }
 
-        return ntl::Result(PipelineReturn{pipeline, metadata});
+        return Result(PipelineReturn{pipeline, metadata});
     }
 
-    ntl::Result<rhi::PipelineInterface*> PipelineStorage::create_pipeline_interface(
-        const shaderpack::PipelineCreateInfo& pipeline_create_info,
-        const std::pmr::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-        const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const {
-        std::unordered_map<std::string, rhi::ResourceBindingDescription> bindings;
+    Result<PipelineInterface*> PipelineStorage::create_pipeline_interface(const PipelineCreateInfo& pipeline_create_info,
+                                                                          const std::pmr::vector<TextureAttachmentInfo>& color_attachments,
+                                                                          const std::optional<TextureAttachmentInfo>& depth_texture) const {
+        std::unordered_map<std::string, ResourceBindingDescription> bindings;
         bindings.reserve(32); // Probably a good estimate
 
-        get_shader_module_descriptors(pipeline_create_info.vertex_shader.source, rhi::ShaderStage::Vertex, bindings);
+        get_shader_module_descriptors(pipeline_create_info.vertex_shader.source, ShaderStage::Vertex, bindings);
 
         if(pipeline_create_info.tessellation_control_shader) {
             get_shader_module_descriptors(pipeline_create_info.tessellation_control_shader->source,
-                                          rhi::ShaderStage::TessellationControl,
+                                          ShaderStage::TessellationControl,
                                           bindings);
         }
         if(pipeline_create_info.tessellation_evaluation_shader) {
             get_shader_module_descriptors(pipeline_create_info.tessellation_evaluation_shader->source,
-                                          rhi::ShaderStage::TessellationEvaluation,
+                                          ShaderStage::TessellationEvaluation,
                                           bindings);
         }
         if(pipeline_create_info.geometry_shader) {
-            get_shader_module_descriptors(pipeline_create_info.geometry_shader->source, rhi::ShaderStage::Geometry, bindings);
+            get_shader_module_descriptors(pipeline_create_info.geometry_shader->source, ShaderStage::Geometry, bindings);
         }
         if(pipeline_create_info.fragment_shader) {
-            get_shader_module_descriptors(pipeline_create_info.fragment_shader->source, rhi::ShaderStage::Fragment, bindings);
+            get_shader_module_descriptors(pipeline_create_info.fragment_shader->source, ShaderStage::Fragment, bindings);
         }
 
         return device->create_pipeline_interface(bindings, color_attachments, depth_texture, allocator);
     }
 
     void PipelineStorage::get_shader_module_descriptors(const std::pmr::vector<uint32_t>& spirv,
-                                                        const rhi::ShaderStage shader_stage,
-                                                        std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings) {
-        const spirv_cross::CompilerGLSL shader_compiler(spirv.data(), spirv.size());
-        const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
+                                                        const ShaderStage shader_stage,
+                                                        std::unordered_map<std::string, ResourceBindingDescription>& bindings) {
+        const CompilerGLSL shader_compiler(spirv.data(), spirv.size());
+        const ShaderResources resources = shader_compiler.get_shader_resources();
 
-        for(const spirv_cross::Resource& resource : resources.sampled_images) {
-            NOVA_LOG(TRACE) << "Found a texture resource named " << resource.name;
-            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::CombinedImageSampler);
+        for(const auto& resource : resources.separate_images) {
+            NOVA_LOG(TRACE) << "Found a image named " << resource.name;
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, DescriptorType::Image);
         }
 
-        for(const spirv_cross::Resource& resource : resources.uniform_buffers) {
+        for(const auto& resource : resources.sampled_images) {
+            NOVA_LOG(TRACE) << "Found a sampled image resource named " << resource.name;
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, DescriptorType::CombinedImageSampler);
+        }
+
+        for(const auto& resource : resources.uniform_buffers) {
             NOVA_LOG(TRACE) << "Found a UBO resource named " << resource.name;
-            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::UniformBuffer);
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, DescriptorType::UniformBuffer);
         }
 
-        for(const spirv_cross::Resource& resource : resources.storage_buffers) {
+        for(const auto& resource : resources.storage_buffers) {
             NOVA_LOG(TRACE) << "Found a SSBO resource named " << resource.name;
-            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::StorageBuffer);
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, DescriptorType::StorageBuffer);
         }
     }
 
-    void PipelineStorage::add_resource_to_bindings(std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings,
-                                                   const rhi::ShaderStage shader_stage,
-                                                   const spirv_cross::CompilerGLSL& shader_compiler,
+    void PipelineStorage::add_resource_to_bindings(std::unordered_map<std::string, ResourceBindingDescription>& bindings,
+                                                   const ShaderStage shader_stage,
+                                                   const CompilerGLSL& shader_compiler,
                                                    const spirv_cross::Resource& resource,
-                                                   const rhi::DescriptorType type) {
+                                                   const DescriptorType type) {
         const uint32_t set = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         const uint32_t binding = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
 
-        rhi::ResourceBindingDescription new_binding = {};
+        ResourceBindingDescription new_binding = {};
         new_binding.set = set;
         new_binding.binding = binding;
         new_binding.type = type;
         new_binding.count = 1;
         new_binding.stages = shader_stage;
 
-        const spirv_cross::SPIRType& type_information = shader_compiler.get_type(resource.type_id);
+        const SPIRType& type_information = shader_compiler.get_type(resource.type_id);
         if(!type_information.array.empty()) {
             new_binding.count = type_information.array[0];
             // All arrays are unbounded until I figure out how to use SPIRV-Cross to detect unbounded arrays
@@ -150,7 +159,7 @@ namespace nova::renderer {
 
         if(const auto itr = bindings.find(resource_name); itr != bindings.end()) {
             // Existing binding. Is it the same as our binding?
-            rhi::ResourceBindingDescription& existing_binding = itr->second;
+            ResourceBindingDescription& existing_binding = itr->second;
             if(existing_binding != new_binding) {
                 // They have two different bindings with the same name. Not allowed
                 NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name
