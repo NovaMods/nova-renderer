@@ -22,6 +22,8 @@ namespace nova::filesystem {
     public:
         explicit ZipFolderAccessor(const fs::path& folder);
 
+        ZipFolderAccessor(const fs::path& folder, mz_zip_archive archive);
+
         ZipFolderAccessor(ZipFolderAccessor&& other) noexcept = default;
         ZipFolderAccessor& operator=(ZipFolderAccessor&& other) noexcept = default;
 
@@ -45,8 +47,6 @@ namespace nova::filesystem {
         mz_zip_archive zip_archive = {};
 
         std::unique_ptr<FileTreeNode> files = nullptr;
-
-        ZipFolderAccessor(const fs::path& folder, mz_zip_archive archive);
 
         void delete_file_tree(std::unique_ptr<FileTreeNode>& node);
 

@@ -21,6 +21,8 @@ namespace nova::filesystem {
     public:
         [[nodiscard]] static std::shared_ptr<VirtualFilesystem> get_instance();
 
+        VirtualFilesystem();
+
         /*!
          * \brief Adds the provided path to the resource roots that the virtual filesystem will care about
          */
@@ -32,7 +34,7 @@ namespace nova::filesystem {
          * This method lets you add a custom folder accessor as a resource root. This allows for e.g. the Minecraft adapter to register a
          * shaderpack accessor which transpiles the shaders from GLSL 120 to SPIR-V
          */
-        void add_resource_root(std::shared_ptr<FolderAccessorBase> root_accessor);
+        void add_resource_root(const std::shared_ptr<FolderAccessorBase>& root_accessor);
 
         [[nodiscard]] std::shared_ptr<FolderAccessorBase> get_folder_accessor(const fs::path& path) const;
 
@@ -45,7 +47,5 @@ namespace nova::filesystem {
         std::shared_ptr<FolderAccessorBase> filesystem_root;
 
         std::vector<std::shared_ptr<FolderAccessorBase>> resource_roots;
-
-        VirtualFilesystem();
     };
 } // namespace nova::filesystem

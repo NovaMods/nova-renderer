@@ -15,6 +15,7 @@
 #include "nova_renderer/frontend/procedural_mesh.hpp"
 #include "nova_renderer/frontend/rendergraph.hpp"
 #include "nova_renderer/frontend/ui_renderer.hpp"
+#include "nova_renderer/loading/shaderpack_loading.hpp"
 #include "nova_renderer/memory/block_allocation_strategy.hpp"
 #include "nova_renderer/memory/bump_point_allocation_strategy.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
@@ -24,8 +25,8 @@
 
 #include "debugging/renderdoc.hpp"
 #include "filesystem/shaderpack/render_graph_builder.hpp"
-#include "filesystem/shaderpack/shaderpack_loading.hpp"
 #include "render_objects/uniform_structs.hpp"
+
 // D3D12 MUST be included first because the Vulkan include undefines FAR, yet the D3D12 headers need FAR
 // Windows considered harmful
 #if defined(NOVA_WINDOWS) && defined(NOVA_D3D12_RHI)
@@ -226,9 +227,7 @@ namespace nova::renderer {
             vertex_barrier.buffer_memory_barrier.offset = 0;
             vertex_barrier.buffer_memory_barrier.size = vertex_buffer->size;
 
-            vertex_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer,
-                                                  rhi::PipelineStage::VertexInput,
-                                                  {vertex_barrier});
+            vertex_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, {vertex_barrier});
 
             rhi->submit_command_list(vertex_upload_cmds, rhi::QueueType::Transfer);
 
@@ -261,9 +260,7 @@ namespace nova::renderer {
             index_barrier.buffer_memory_barrier.offset = 0;
             index_barrier.buffer_memory_barrier.size = index_buffer->size;
 
-            indices_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer,
-                                                   rhi::PipelineStage::VertexInput,
-                                                   {index_barrier});
+            indices_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, {index_barrier});
 
             rhi->submit_command_list(indices_upload_cmds, rhi::QueueType::Transfer);
 
@@ -934,8 +931,7 @@ namespace nova::renderer {
 
     void NovaRenderer::create_resource_storage() { resource_storage = std::make_shared<DeviceResources>(*this); }
 
-    void NovaRenderer::create_builtin_textures() {
-    }
+    void NovaRenderer::create_builtin_textures() {}
 
     void NovaRenderer::create_uniform_buffers() {
         // Buffer for per-frame uniform data

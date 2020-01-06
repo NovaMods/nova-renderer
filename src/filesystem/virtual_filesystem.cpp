@@ -5,6 +5,8 @@
 #include "regular_folder_accessor.hpp"
 
 namespace nova::filesystem {
+    std::shared_ptr<VirtualFilesystem> VirtualFilesystem::instance;
+
     std::shared_ptr<VirtualFilesystem> VirtualFilesystem::get_instance() {
         if(!instance) {
             instance = std::make_shared<VirtualFilesystem>();
@@ -17,7 +19,7 @@ namespace nova::filesystem {
         resource_roots.emplace_back(filesystem_root->create_subfolder_accessor(root));
     }
 
-    void VirtualFilesystem::add_resource_root(std::shared_ptr<FolderAccessorBase> root_accessor) {
+    void VirtualFilesystem::add_resource_root(const std::shared_ptr<FolderAccessorBase>& root_accessor) {
         resource_roots.emplace_back(root_accessor);
     }
 

@@ -310,34 +310,34 @@ namespace nova::renderer::shaderpack {
         NOVA_LOG(TRACE) << "Parsed JSON into pipeline_data for pipeline " << pipeline_path;
         new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename,
                                                              folder_access,
-                                                             EShLangVertex,
+                                                             rhi::ShaderStage::Vertex,
                                                              new_pipeline.defines);
 
         if(new_pipeline.geometry_shader) {
             (*new_pipeline.geometry_shader).source = load_shader_file((*new_pipeline.geometry_shader).filename,
                                                                       folder_access,
-                                                                      EShLangGeometry,
+                                                                      rhi::ShaderStage::Geometry,
                                                                       new_pipeline.defines);
         }
 
         if(new_pipeline.tessellation_control_shader) {
             (*new_pipeline.tessellation_control_shader).source = load_shader_file((*new_pipeline.tessellation_control_shader).filename,
                                                                                   folder_access,
-                                                                                  EShLangTessControl,
+                                                                                  rhi::ShaderStage::TessellationControl,
                                                                                   new_pipeline.defines);
         }
         if(new_pipeline.tessellation_evaluation_shader) {
             (*new_pipeline.tessellation_evaluation_shader)
                 .source = load_shader_file((*new_pipeline.tessellation_evaluation_shader).filename,
                                            folder_access,
-                                           EShLangTessEvaluation,
+                                           rhi::ShaderStage::TessellationEvaluation,
                                            new_pipeline.defines);
         }
 
         if(new_pipeline.fragment_shader) {
             (*new_pipeline.fragment_shader).source = load_shader_file((*new_pipeline.fragment_shader).filename,
                                                                       folder_access,
-                                                                      EShLangFragment,
+                                                                      rhi::ShaderStage::Fragment,
                                                                       new_pipeline.defines);
         }
 
@@ -346,12 +346,15 @@ namespace nova::renderer::shaderpack {
         return new_pipeline;
     }
 
+    EShLanguage to_glslang_shader_stage(rhi::ShaderStage stage);
+
     std::pmr::vector<uint32_t> load_shader_file(const fs::path& filename,
                                                 const std::shared_ptr<FolderAccessorBase>& folder_access,
-                                                const EShLanguage stage,
+                                                const rhi::ShaderStage stage,
                                                 const std::pmr::vector<std::string>& defines) {
 
-        glslang::TShader shader(stage);
+        const auto glslang_stage = to_glslang_shader_stage(stage);
+        glslang::TShader shader(glslang_stage);
 
         // Check the extension to know what kind of shader file the user has provided. SPIR-V files can be loaded
         // as-is, but GLSL, GLSL ES, and HLSL files need to be transpiled to SPIR-V
@@ -361,11 +364,11 @@ namespace nova::renderer::shaderpack {
             return folder_access->read_spirv_file(filename);
         }
         if(filename.string().find(".hlsl") != std::string::npos) {
-            shader.setEnvInput(glslang::EShSourceHlsl, stage, glslang::EShClientVulkan, 0);
+            shader.setEnvInput(glslang::EShSourceHlsl, glslang_stage, glslang::EShClientVulkan, 0);
 
         } else {
             // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
-            shader.setEnvInput(glslang::EShSourceGlsl, stage, glslang::EShClientVulkan, 0);
+            shader.setEnvInput(glslang::EShSourceGlsl, glslang_stage, glslang::EShClientVulkan, 0);
         }
 
         std::string shader_source = folder_access->read_text_file(filename);
@@ -410,12 +413,12 @@ namespace nova::renderer::shaderpack {
         }
 
         std::vector<uint32_t> spirv_std;
-        GlslangToSpv(*program.getIntermediate(stage), spirv_std);
+        GlslangToSpv(*program.getIntermediate(glslang_stage), spirv_std);
 
         std::pmr::vector<uint32_t> spirv(spirv_std.begin(), spirv_std.end());
 
         fs::path dump_filename = filename.filename();
-        dump_filename.replace_extension(std::to_string(stage) + ".spirv.generated");
+        dump_filename.replace_extension(std::to_string(glslang_stage) + ".spirv.generated");
         write_to_file(spirv, dump_filename);
 
         return spirv;
@@ -456,5 +459,50 @@ namespace nova::renderer::shaderpack {
         material.name = material_path.stem().string();
         NOVA_LOG(TRACE) << "Load of material " << material_path << " succeeded";
         return material;
+    }
+
+    EShLanguage to_glslang_shader_stage(const rhi::ShaderStage stage) {
+        switch(stage) {
+            case rhi::ShaderStage::Vertex:
+                return EShLangVertex;
+
+            case rhi::ShaderStage::TessellationControl:
+                return EShLangTessControl;
+             case rhi::ShaderStage::TessellationEvaluation:
+                return EShLangTessEvaluation;
+
+            case rhi::ShaderStage::Geometry:
+                return EShLangGeometry;
+
+            case rhi::ShaderStage::Fragment:
+                return EShLangFragment;
+
+            case rhi::ShaderStage::Compute:
+                return EShLangCompute;
+
+            case rhi::ShaderStage::Raygen:
+                return EShLangRayGenNV;
+
+            case rhi::ShaderStage::AnyHit:
+                return EShLangAnyHitNV;
+
+            case rhi::ShaderStage::ClosestHit:
+                return EShLangClosestHitNV;
+
+            case rhi::ShaderStage::Miss:
+                return EShLangMissNV;
+
+            case rhi::ShaderStage::Intersection:
+                return EShLangIntersectNV;
+
+            case rhi::ShaderStage::Task:
+                return EShLangTaskNV;
+
+            case rhi::ShaderStage::Mesh:
+                return EShLangMeshNV;
+
+            default:
+                return EShLangCount;
+        }
     }
 } // namespace nova::renderer::shaderpack

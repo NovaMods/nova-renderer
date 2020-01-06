@@ -136,7 +136,7 @@ namespace nova::renderer::rhi {
     }
 
     void Dx12CommandList::set_scissor_rect(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height) {
-        D3D12_RECT scissor_rect = {x, y, x + width, y + height};
+        D3D12_RECT scissor_rect = {static_cast<LONG>(x), static_cast<LONG>(y), static_cast<LONG>(x + width), static_cast<LONG>(y + height)};
         cmds->RSSetScissorRects(1, &scissor_rect);
     }
 
