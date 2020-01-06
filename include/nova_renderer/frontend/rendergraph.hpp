@@ -67,6 +67,7 @@ namespace nova::renderer {
 
     struct Pipeline {
         rhi::Pipeline* pipeline = nullptr;
+        rhi::PipelineInterface* pipeline_interface = nullptr;
 
         void record(rhi::CommandList* cmds, FrameContext& ctx) const;
     };
@@ -101,8 +102,6 @@ namespace nova::renderer {
 
     struct RenderpassMetadata {
         shaderpack::RenderPassCreateInfo data;
-
-        std::unordered_map<std::string, PipelineMetadata> pipeline_metadata{};
     };
 #pragma endregion
 
@@ -135,7 +134,7 @@ namespace nova::renderer {
         /*!
          * \brief Names of all the pipelines which are in this renderpass
          */
-        std::pmr::vector<std::string> pipelines;
+        std::pmr::vector<std::string> pipeline_names;
 
         bool writes_to_backbuffer = false;
 

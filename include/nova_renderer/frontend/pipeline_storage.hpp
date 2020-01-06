@@ -24,14 +24,14 @@ namespace nova::renderer {
         PipelineStorage(const PipelineStorage& other) = delete;
         PipelineStorage& operator=(const PipelineStorage& other) = delete;
 
-        PipelineStorage(PipelineStorage& old) noexcept = default;
-        PipelineStorage& operator=(PipelineStorage& old) noexcept = default;
+        PipelineStorage(PipelineStorage&& old) noexcept = default;
+        PipelineStorage& operator=(PipelineStorage&& old) noexcept = default;
 
         ~PipelineStorage() = default;
 
-        [[nodiscard]] std::optional<const Pipeline&> get_pipeline(const std::string& pipeline_name) const;
+        [[nodiscard]] std::optional<Pipeline> get_pipeline(const std::string& pipeline_name) const;
 
-        [[nodiscard]] bool add_pipeline_from_shaderpack(const shaderpack::PipelineCreateInfo& create_info);
+        [[nodiscard]] bool create_pipeline(const shaderpack::PipelineCreateInfo& create_info);
 
     private:
         NovaRenderer& renderer;
@@ -42,7 +42,7 @@ namespace nova::renderer {
 
         std::unordered_map<std::string, PipelineMetadata> pipeline_metadatas;
 
-        std::unordered_map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
+        std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
 
         std::unordered_map<std::string, Pipeline> pipelines;
 

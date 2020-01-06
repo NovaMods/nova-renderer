@@ -310,7 +310,7 @@ namespace nova::renderer {
 
         create_render_passes(data.graph_data.passes, data.pipelines, data.materials);
 
-        create_pipelines(data.pipelines);
+        create_pipelines_and_materials(data.pipelines, data.materials);
 
         NOVA_LOG(DEBUG) << "Created render passes";
 
@@ -335,6 +335,10 @@ namespace nova::renderer {
     void NovaRenderer::set_ui_renderpass(const std::shared_ptr<Renderpass>& ui_renderpass) {
         std::lock_guard l(ui_function_mutex);
         builtin_renderpasses["NovaUI"] = ui_renderpass;
+    }
+
+    const std::vector<MaterialPass>& NovaRenderer::get_material_passes_for_pipeline(rhi::Pipeline* const pipeline) {
+        return passes_by_pipeline.at(pipeline);
     }
 
     std::optional<shaderpack::RenderPassCreateInfo> NovaRenderer::get_renderpass_metadata(const std::string& renderpass_name) {
@@ -373,21 +377,16 @@ namespace nova::renderer {
             }
         }
 
-        rhi::DescriptorPool* descriptor_pool = rhi->create_descriptor_pool(total_num_descriptors,
-                                                                           5,
-                                                                           total_num_descriptors,
-                                                                           *renderpack_allocator);
+        global_descriptor_pool = rhi->create_descriptor_pool(total_num_descriptors, 5, total_num_descriptors, *renderpack_allocator);
 
         for(const shaderpack::RenderPassCreateInfo& create_info : pass_create_infos) {
             std::shared_ptr<Renderpass> renderpass = std::make_shared<Renderpass>();
-            add_render_pass(create_info, pipelines, materials, descriptor_pool, renderpass);
+            add_render_pass(create_info, pipelines, renderpass);
         }
     }
 
     void NovaRenderer::add_render_pass(const shaderpack::RenderPassCreateInfo& create_info,
                                        const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipelines,
-                                       const std::pmr::vector<shaderpack::MaterialData>& materials,
-                                       rhi::DescriptorPool* descriptor_pool,
                                        const std::shared_ptr<Renderpass>& renderpass) {
         RenderpassMetadata metadata;
         metadata.data = create_info;
@@ -502,35 +501,40 @@ namespace nova::renderer {
         renderpass_metadatas.emplace(create_info.name, metadata);
     }
 
-    void NovaRenderer::create_pipelines(const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipeline_create_infos) {
+    void NovaRenderer::create_pipelines_and_materials(const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipeline_create_infos,
+                                                      const std::pmr::vector<shaderpack::MaterialData>& materials) {
         for(const auto& pipeline_create_info : pipeline_create_infos) {
-            pipeline_storage->add_pipeline_from_shaderpack(pipeline_create_info);
+            if(pipeline_storage->create_pipeline(pipeline_create_info)) {
+                auto pipeline = pipeline_storage->get_pipeline(pipeline_create_info.name);
+                create_materials_for_pipeline(*pipeline, materials, pipeline_create_info.name);
+            }
         }
     }
 
-    void NovaRenderer::create_materials_for_pipeline(
-        Pipeline& pipeline,
-        std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher>& material_metadatas,
-        const std::pmr::vector<shaderpack::MaterialData>& materials,
-        const std::string& pipeline_name,
-        const rhi::PipelineInterface* pipeline_interface,
-        rhi::DescriptorPool* descriptor_pool,
-        const MaterialPassKey& template_key) {
+    void NovaRenderer::create_materials_for_pipeline(const Pipeline& pipeline,
+                                                     const std::pmr::vector<shaderpack::MaterialData>& materials,
+                                                     const std::string& pipeline_name) {
 
         // Determine the pipeline layout so the material can create descriptors for the pipeline
 
+        MaterialPassKey template_key = {};
+        template_key.pipeline_name = pipeline_name;
+
         // Large overestimate, but that's fine
-        pipeline.passes.reserve(materials.size());
+        std::vector<MaterialPass> passes;
+        passes.reserve(materials.size());
 
         for(const shaderpack::MaterialData& material_data : materials) {
             for(const shaderpack::MaterialPass& pass_data : material_data.passes) {
                 if(pass_data.pipeline == pipeline_name) {
                     MaterialPass pass = {};
-                    pass.pipeline_interface = pipeline_interface;
+                    pass.pipeline_interface = pipeline.pipeline_interface;
 
-                    pass.descriptor_sets = rhi->create_descriptor_sets(pipeline_interface, descriptor_pool, *renderpack_allocator);
+                    pass.descriptor_sets = rhi->create_descriptor_sets(pipeline.pipeline_interface,
+                                                                       global_descriptor_pool,
+                                                                       *renderpack_allocator);
 
-                    bind_data_to_material_descriptor_sets(pass, pass_data.bindings, pipeline_interface->bindings);
+                    bind_data_to_material_descriptor_sets(pass, pass_data.bindings, pipeline.pipeline_interface->bindings);
 
                     FullMaterialPassName full_pass_name = {pass_data.material_name, pass_data.name};
 
@@ -539,16 +543,18 @@ namespace nova::renderer {
                     material_metadatas.emplace(full_pass_name, pass_metadata);
 
                     MaterialPassKey key = template_key;
-                    key.material_pass_index = static_cast<uint32_t>(pipeline.passes.size());
+                    key.material_pass_index = static_cast<uint32_t>(passes.size());
 
                     material_pass_keys.emplace(full_pass_name, key);
 
-                    pipeline.passes.push_back(pass);
+                    passes.push_back(pass);
                 }
             }
         }
 
-        pipeline.passes.shrink_to_fit();
+        passes.shrink_to_fit();
+
+        passes_by_pipeline.emplace(pipeline.pipeline, passes);
     }
 
     void NovaRenderer::bind_data_to_material_descriptor_sets(
@@ -610,16 +616,6 @@ namespace nova::renderer {
             if(!renderpass->is_builtin) {
                 rhi->destroy_renderpass(renderpass->renderpass, *renderpack_allocator);
                 rhi->destroy_framebuffer(renderpass->framebuffer, *renderpack_allocator);
-
-                for(Pipeline& pipeline : renderpass->pipeline_names) {
-                    rhi->destroy_pipeline(pipeline.pipeline, *renderpack_allocator);
-
-                    for(MaterialPass& material_pass : pipeline.passes) {
-                        (void) material_pass;
-                        // TODO: Destroy descriptors for material
-                        // TODO: Have a way to save mesh data somewhere outside of the render graph, then process it cleanly here
-                    }
-                }
             }
         }
     }
@@ -694,8 +690,14 @@ namespace nova::renderer {
 
         // Figure out where to put the renderable
         const MaterialPassKey& pass_key = pos->second;
-        auto& passes = passes_by_pipeline[pass_key.pipeline_name];
-        passes.emplace_back(material);
+        const auto pipeline = pipeline_storage->get_pipeline(pass_key.pipeline_name);
+        if(pipeline) {
+            auto& passes = passes_by_pipeline[pipeline->pipeline];
+            passes.emplace_back(material);
+
+        } else {
+            NOVA_LOG(ERROR) << "Could not get place the new renderable in the appropriate draw command list";
+        }
 
         return id;
     }
@@ -719,7 +721,7 @@ namespace nova::renderer {
     void NovaRenderer::create_global_allocators() {
         global_allocator = std::make_unique<AllocatorHandle<>>(std::pmr::new_delete_resource());
 
-        renderpack_allocator = std::make_unique<AllocatorHandle<>>(*global_allocator->create_suballocator());
+        renderpack_allocator = std::unique_ptr<AllocatorHandle<>>(global_allocator->create_suballocator());
 
         frame_allocators.reserve(NUM_IN_FLIGHT_FRAMES);
         for(size_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
@@ -832,7 +834,7 @@ namespace nova::renderer {
             ui.texture_inputs = {BACKBUFFER_NAME};
             ui.texture_outputs = {{BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false}};
 
-            add_render_pass(ui, {}, {}, nullptr, ui_renderpass);
+            add_render_pass(ui, {}, ui_renderpass);
 
             ui_renderpass->is_builtin = true;
 

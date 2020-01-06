@@ -212,7 +212,7 @@ namespace nova::renderer {
                                                             *staging_buffer_allocator)
                                    .value;
 
-        auto* strat = staging_buffer_allocator->new_other_object<BlockAllocationStrategy>(renderer.get_global_allocator().get(),
+        auto* strat = staging_buffer_allocator->new_other_object<BlockAllocationStrategy>(renderer.get_global_allocator(),
                                                                                           Bytes(STAGING_BUFFER_TOTAL_MEMORY_SIZE),
                                                                                           STAGING_BUFFER_ALIGNMENT);
 

@@ -94,6 +94,8 @@ namespace nova::renderer {
          */
         void set_ui_renderpass(const std::shared_ptr<Renderpass>& ui_renderpass);
 
+        const std::vector<MaterialPass>& get_material_passes_for_pipeline(rhi::Pipeline* const pipeline);
+
         std::optional<shaderpack::RenderPassCreateInfo> get_renderpass_metadata(const std::string& renderpass_name);
 
         /*!
@@ -213,6 +215,9 @@ namespace nova::renderer {
         std::unique_ptr<DeviceMemoryResource> mesh_memory;
 
         std::unique_ptr<DeviceMemoryResource> ubo_memory;
+
+        rhi::DescriptorPool* global_descriptor_pool;
+
         std::unique_ptr<DeviceMemoryResource> staging_buffer_memory;
         void* staging_buffer_memory_ptr;
 
@@ -290,8 +295,6 @@ namespace nova::renderer {
          */
         void add_render_pass(const shaderpack::RenderPassCreateInfo& create_info,
                              const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipelines,
-                             const std::pmr::vector<shaderpack::MaterialData>& materials,
-                             rhi::DescriptorPool* descriptor_pool,
                              const std::shared_ptr<Renderpass>& renderpass);
 
         void destroy_dynamic_resources();
@@ -302,18 +305,21 @@ namespace nova::renderer {
 #pragma region Rendering pipelines
         std::unique_ptr<PipelineStorage> pipeline_storage;
 
-        std::unordered_map<std::string, std::vector<MaterialPass>> passes_by_pipeline;
+        std::unordered_map<rhi::Pipeline*, std::vector<MaterialPass>> passes_by_pipeline;
 
-        void create_pipelines(const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipeline_create_infos);
+        std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher> material_metadatas;
+
+        void create_pipelines_and_materials(const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipeline_create_infos,
+                                            const std::pmr::vector<shaderpack::MaterialData>& materials);
 
         void create_materials_for_pipeline(
-            Pipeline& pipeline,
-            std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher>& material_metadatas,
+            const Pipeline& pipeline,
             const std::pmr::vector<shaderpack::MaterialData>& materials,
-            const std::string& pipeline_name,
-            const rhi::PipelineInterface* pipeline_interface,
-            rhi::DescriptorPool* descriptor_pool,
-            const MaterialPassKey& template_key);
+            const std::string& pipeline_name);
+
+        void destroy_pipelines();
+
+        void destroy_materials();
 #pragma endregion
 
 #pragma region Meshes

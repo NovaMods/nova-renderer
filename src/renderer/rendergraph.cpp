@@ -160,6 +160,8 @@ namespace nova::renderer {
     void Pipeline::record(rhi::CommandList* cmds, FrameContext& ctx) const {
         cmds->bind_pipeline(pipeline);
 
+        const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline);
+
         for(const MaterialPass& pass : passes) {
             pass.record(cmds, ctx);
         }

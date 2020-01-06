@@ -9,7 +9,7 @@ namespace nova::renderer {
     PipelineStorage::PipelineStorage(NovaRenderer& renderer, mem::AllocatorHandle<>& allocator)
         : renderer(renderer), device(renderer.get_engine()), allocator(allocator) {}
 
-    std::optional<const Pipeline&> PipelineStorage::get_pipeline(const std::string& pipeline_name) const {
+    std::optional<Pipeline> PipelineStorage::get_pipeline(const std::string& pipeline_name) const {
         if(const auto itr = pipelines.find(pipeline_name); itr != pipelines.end()) {
             return std::make_optional(itr->second);
 
@@ -18,7 +18,7 @@ namespace nova::renderer {
         }
     }
 
-    bool PipelineStorage::add_pipeline_from_shaderpack(const shaderpack::PipelineCreateInfo& pipeline_create_info) {
+    bool PipelineStorage::create_pipeline(const shaderpack::PipelineCreateInfo& pipeline_create_info) {
         const auto rp_create = renderer.get_renderpass_metadata(pipeline_create_info.pass);
         if(!rp_create) {
             NOVA_LOG(ERROR) << "Pipeline " << pipeline_create_info.name << " wants to be rendered by renderpass "
@@ -62,6 +62,7 @@ namespace nova::renderer {
         ntl::Result<rhi::Pipeline*> rhi_pipeline = device->create_pipeline(pipeline_interface, pipeline_create_info, allocator);
         if(rhi_pipeline) {
             pipeline.pipeline = *rhi_pipeline;
+            pipeline.pipeline_interface = pipeline_interface;
 
         } else {
             ntl::NovaError error = ntl::NovaError(format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name.c_str()).c_str(),
