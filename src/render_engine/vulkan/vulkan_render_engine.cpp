@@ -99,7 +99,7 @@ namespace nova::renderer::rhi {
 
         vkAllocateMemory(device, &alloc_info, nullptr, &memory->memory);
 
-        if(usage == MemoryUsage::LowFrequencyUpload || usage == MemoryUsage::StagingBuffer) {
+        if(usage == MemoryUsage::StagingBuffer) {
             void* mapped_memory;
             vkMapMemory(device, memory->memory, 0, VK_WHOLE_SIZE, 0, &mapped_memory);
             heap_mappings.emplace(memory->memory, mapped_memory);
@@ -748,15 +748,17 @@ namespace nova::renderer::rhi {
             depth_stencil_create_info.back.writeMask = data.back_face->write_mask;
         }
 
+        const auto should_blend = std::find(data.states.begin(), data.states.end(), shaderpack::StateEnum::Blending) != data.states.end();
+
         VkPipelineColorBlendAttachmentState color_blend_attachment;
         color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
                                                 VK_COLOR_COMPONENT_A_BIT;
         color_blend_attachment.blendEnable = VK_TRUE;
-        color_blend_attachment.srcColorBlendFactor = to_blend_factor(data.source_blend_factor);
-        color_blend_attachment.dstColorBlendFactor = to_blend_factor(data.destination_blend_factor);
+        color_blend_attachment.srcColorBlendFactor = to_blend_factor(data.source_color_blend_factor);
+        color_blend_attachment.dstColorBlendFactor = to_blend_factor(data.destination_color_blend_factor);
         color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
-        color_blend_attachment.srcAlphaBlendFactor = to_blend_factor(data.alpha_src);
-        color_blend_attachment.dstAlphaBlendFactor = to_blend_factor(data.alpha_dst);
+        color_blend_attachment.srcAlphaBlendFactor = to_blend_factor(data.source_alpha_blend_factor);
+        color_blend_attachment.dstAlphaBlendFactor = to_blend_factor(data.destination_alpha_blend_factor);
         color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
         VkPipelineColorBlendStateCreateInfo color_blend_create_info;
@@ -771,8 +773,6 @@ namespace nova::renderer::rhi {
         color_blend_create_info.blendConstants[1] = 0.0F;
         color_blend_create_info.blendConstants[2] = 0.0F;
         color_blend_create_info.blendConstants[3] = 0.0F;
-
-        
 
         std::vector<VkDynamicState> dynamic_states;
 
@@ -796,7 +796,9 @@ namespace nova::renderer::rhi {
         pipeline_create_info.pRasterizationState = &rasterizer_create_info;
         pipeline_create_info.pMultisampleState = &multisample_create_info;
         pipeline_create_info.pDepthStencilState = &depth_stencil_create_info;
-        pipeline_create_info.pColorBlendState = &color_blend_create_info;
+        if(should_blend) {
+            pipeline_create_info.pColorBlendState = &color_blend_create_info;
+        }
         pipeline_create_info.pDynamicState = &dynamic_state_create_info;
         pipeline_create_info.layout = vk_interface->pipeline_layout;
 
@@ -889,6 +891,7 @@ namespace nova::renderer::rhi {
         auto* image = allocator.new_other_object<VulkanImage>();
 
         image->is_dynamic = true;
+        image->type = ResourceType::Image;
         const VkFormat format = to_vk_format(info.format.pixel_format);
 
         // In Nova, images all have a dedicated allocation

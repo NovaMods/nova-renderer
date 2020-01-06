@@ -348,24 +348,24 @@ namespace nova::renderer::shaderpack {
         PrimitiveTopologyEnum primitive_mode{};
 
         /*!
-         * \brief Where to get the blending factor for the soource
+         * \brief Where to get the blending factor for the source
          */
-        BlendFactorEnum source_blend_factor{};
+        BlendFactorEnum source_color_blend_factor{};
 
         /*!
          * \brief Where to get the blending factor for the destination
          */
-        BlendFactorEnum destination_blend_factor{};
+        BlendFactorEnum destination_color_blend_factor{};
 
         /*!
          * \brief How to get the source alpha in a blend
          */
-        BlendFactorEnum alpha_src{};
+        BlendFactorEnum source_alpha_blend_factor{};
 
         /*!
          * \brief How to get the destination alpha in a blend
          */
-        BlendFactorEnum alpha_dst{};
+        BlendFactorEnum destination_alpha_blend_factor{};
 
         /*!
          * \brief The function to use for the depth test

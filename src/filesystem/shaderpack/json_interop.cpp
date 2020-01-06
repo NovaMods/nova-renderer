@@ -72,16 +72,16 @@ namespace nova::renderer::shaderpack {
                                                                         "primitiveMode",
                                                                         PrimitiveTopologyEnum::Triangles,
                                                                         primitive_topology_enum_from_string);
-        pipeline.source_blend_factor = get_json_value<BlendFactorEnum>(j,
+        pipeline.source_color_blend_factor = get_json_value<BlendFactorEnum>(j,
                                                                        "sourceBlendFactor",
                                                                        BlendFactorEnum::One,
                                                                        blend_factor_enum_from_string);
-        pipeline.destination_blend_factor = get_json_value<BlendFactorEnum>(j,
+        pipeline.destination_color_blend_factor = get_json_value<BlendFactorEnum>(j,
                                                                             "destBlendFactor",
                                                                             BlendFactorEnum::Zero,
                                                                             blend_factor_enum_from_string);
-        pipeline.alpha_src = get_json_value<BlendFactorEnum>(j, "alphaSrc", BlendFactorEnum::One, blend_factor_enum_from_string);
-        pipeline.alpha_dst = get_json_value<BlendFactorEnum>(j, "alphaDest", BlendFactorEnum::Zero, blend_factor_enum_from_string);
+        pipeline.source_alpha_blend_factor = get_json_value<BlendFactorEnum>(j, "alphaSrc", BlendFactorEnum::One, blend_factor_enum_from_string);
+        pipeline.destination_alpha_blend_factor = get_json_value<BlendFactorEnum>(j, "alphaDest", BlendFactorEnum::Zero, blend_factor_enum_from_string);
         pipeline.depth_func = get_json_value<CompareOpEnum>(j, "depthFunc", CompareOpEnum::Less, compare_op_enum_from_string);
         pipeline.render_queue = get_json_value<RenderQueueEnum>(j, "renderQueue", RenderQueueEnum::Opaque, render_queue_enum_from_string);
 

@@ -437,11 +437,11 @@ namespace nova::renderer::rhi {
         pipeline_state_desc.BlendState.IndependentBlendEnable = false;
         D3D12_RENDER_TARGET_BLEND_DESC& blend_state = pipeline_state_desc.BlendState.RenderTarget[0];
         blend_state.BlendEnable = std::find(states_begin, states_end, shaderpack::StateEnum::Blending) != states_end;
-        blend_state.SrcBlend = to_dx12_blend(data.source_blend_factor);
-        blend_state.DestBlend = to_dx12_blend(data.destination_blend_factor);
+        blend_state.SrcBlend = to_dx12_blend(data.source_color_blend_factor);
+        blend_state.DestBlend = to_dx12_blend(data.destination_color_blend_factor);
         blend_state.BlendOp = D3D12_BLEND_OP_ADD;
-        blend_state.SrcBlendAlpha = to_dx12_blend(data.source_blend_factor);
-        blend_state.DestBlendAlpha = to_dx12_blend(data.destination_blend_factor);
+        blend_state.SrcBlendAlpha = to_dx12_blend(data.source_color_blend_factor);
+        blend_state.DestBlendAlpha = to_dx12_blend(data.destination_color_blend_factor);
         blend_state.BlendOpAlpha = D3D12_BLEND_OP_ADD;
         blend_state.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
         pipeline_state_desc.SampleMask = 0xFFFFFFFF;
