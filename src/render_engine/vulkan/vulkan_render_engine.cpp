@@ -781,6 +781,7 @@ namespace nova::renderer::rhi {
         }
 
         VkPipelineDynamicStateCreateInfo dynamic_state_create_info = {};
+        dynamic_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
         dynamic_state_create_info.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
         dynamic_state_create_info.pDynamicStates = dynamic_states.data();
 
@@ -909,6 +910,11 @@ namespace nova::renderer::rhi {
         image_create_info.arrayLayers = 1;
         image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
         image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+
+        if(info.usage == shaderpack::ImageUsage::SampledImage) {
+            image_create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        }
+
         if(format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT) {
             image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
             image->is_depth_tex = true;

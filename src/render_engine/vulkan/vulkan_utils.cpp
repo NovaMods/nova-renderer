@@ -34,6 +34,9 @@ namespace nova::renderer::rhi {
             case ResourceState::PresentSource:
                 return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
+            case ResourceState::Undefined:
+                return VK_IMAGE_LAYOUT_UNDEFINED;
+
             default:
                 NOVA_LOG(ERROR) << static_cast<uint32_t>(layout) << " is not a valid image state";
                 return VK_IMAGE_LAYOUT_GENERAL;
@@ -551,7 +554,5 @@ namespace nova::renderer::rhi {
         return attribute_descriptions;
     }
 
-    bool operator&(const ShaderStage& lhs, const ShaderStage& rhs) {
-        return static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs);
-    }
+    bool operator&(const ShaderStage& lhs, const ShaderStage& rhs) { return static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs); }
 } // namespace nova::renderer::rhi

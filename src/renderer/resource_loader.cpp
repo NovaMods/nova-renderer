@@ -60,7 +60,7 @@ namespace nova::renderer {
             initial_texture_barrier.new_state = ResourceState::CopyDestination;
             initial_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
 
-            cmds->resource_barriers(PipelineStage::TopOfPipe, PipelineStage::Transfer, {initial_texture_barrier});
+            cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::Transfer, {initial_texture_barrier});
             cmds->upload_data_to_image(resource.image, width, height, pixel_size, staging_buffer.get(), data);
 
             ResourceBarrier final_texture_barrier = {};

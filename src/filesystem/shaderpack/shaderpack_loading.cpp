@@ -389,6 +389,7 @@ namespace nova::renderer::shaderpack {
 
         auto* shader_source_data = shader_source.data();
         shader.setStrings(&shader_source_data, 1);
+        shader.setEntryPoint("main");
         const bool shader_compiled = shader.parse(&default_built_in_resource,
                                                   450,
                                                   ECoreProfile,
