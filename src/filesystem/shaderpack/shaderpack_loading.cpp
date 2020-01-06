@@ -389,7 +389,10 @@ namespace nova::renderer::shaderpack {
         }
 
         shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_0);
-        shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_5);
+
+        // TODO: Query the runtime for what version of SPIR-V we should target
+        // For now just target the one that Works On My Machine
+        shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3);
 
         shader.setEntryPoint("main");
 

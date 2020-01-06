@@ -114,7 +114,12 @@ namespace nova::renderer {
 
         for(const auto& resource : resources.separate_images) {
             NOVA_LOG(TRACE) << "Found a image named " << resource.name;
-            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, DescriptorType::Image);
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, DescriptorType::Texture);
+        }
+
+        for(const auto& resource : resources.separate_samplers) {
+            NOVA_LOG(TRACE) << "Found a sampler named " << resource.name;
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, DescriptorType::Sampler);
         }
 
         for(const auto& resource : resources.sampled_images) {

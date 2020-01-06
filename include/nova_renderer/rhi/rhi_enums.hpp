@@ -31,7 +31,7 @@ namespace nova::renderer::rhi {
         SampledTexture,
     };
 
-    enum class DescriptorType { CombinedImageSampler, UniformBuffer, StorageBuffer, Image };
+    enum class DescriptorType { CombinedImageSampler, UniformBuffer, StorageBuffer, Texture, Sampler };
 
     enum class ResourceAccess {
         IndirectCommandRead,
