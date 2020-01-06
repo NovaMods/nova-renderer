@@ -82,7 +82,7 @@ namespace nova::renderer::shaderpack {
     /*!
      * \brief The kind of data in a vertex attribute
      */
-    enum class VertexFieldEnum {
+    enum class VertexField {
         /*!
          * \brief The vertex position
          *
@@ -95,7 +95,12 @@ namespace nova::renderer::shaderpack {
          *
          * 4 bytes
          */
-        Color,
+        ColorFloat4,
+
+        /*!
+         * \brief Vertex color, packed as a single 32-bit integer
+         */
+        ColorUint,
 
         /*!
          * \brief The UV coordinate of this object
@@ -258,7 +263,7 @@ namespace nova::renderer::shaderpack {
 
     struct VertexFieldData {
         std::string semantic_name;
-        VertexFieldEnum field{};
+        VertexField field{};
     };
 
     /*!
@@ -624,7 +629,7 @@ namespace nova::renderer::shaderpack {
     [[nodiscard]] BlendFactorEnum blend_factor_enum_from_string(const std::string& str);
     [[nodiscard]] RenderQueueEnum render_queue_enum_from_string(const std::string& str);
     [[nodiscard]] StateEnum state_enum_from_string(const std::string& str);
-    [[nodiscard]] VertexFieldEnum vertex_field_enum_from_string(const std::string& str);
+    [[nodiscard]] VertexField vertex_field_enum_from_string(const std::string& str);
 
     [[nodiscard]] std::string to_string(PixelFormatEnum val);
     [[nodiscard]] std::string to_string(TextureDimensionTypeEnum val);
@@ -637,7 +642,7 @@ namespace nova::renderer::shaderpack {
     [[nodiscard]] std::string to_string(BlendFactorEnum val);
     [[nodiscard]] std::string to_string(RenderQueueEnum val);
     [[nodiscard]] std::string to_string(StateEnum val);
-    [[nodiscard]] std::string to_string(VertexFieldEnum val);
+    [[nodiscard]] std::string to_string(VertexField val);
 
     [[nodiscard]] uint32_t pixel_format_to_pixel_width(PixelFormatEnum format);
 

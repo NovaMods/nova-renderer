@@ -9,7 +9,6 @@ using namespace spirv_cross;
 
 namespace nova::renderer {
     using namespace mem;
-    using namespace rhi;
     using namespace ntl;
     using namespace shaderpack;
 
@@ -28,17 +27,16 @@ namespace nova::renderer {
     bool PipelineStorage::create_pipeline(const PipelineCreateInfo& create_info) {
         const auto rp_create = renderer.get_renderpass_metadata(create_info.pass);
         if(!rp_create) {
-            NOVA_LOG(ERROR) << "Pipeline " << create_info.name << " wants to be rendered by renderpass "
-                            << create_info.pass << ", but that renderpass doesn't have any metadata";
+            NOVA_LOG(ERROR) << "Pipeline " << create_info.name << " wants to be rendered by renderpass " << create_info.pass
+                            << ", but that renderpass doesn't have any metadata";
             return false;
         }
 
-        Result<PipelineInterface*> pipeline_interface = create_pipeline_interface(create_info,
-                                                                                  rp_create->texture_outputs,
-                                                                                  rp_create->depth_texture);
+        Result<rhi::PipelineInterface*> pipeline_interface = create_pipeline_interface(create_info,
+                                                                                       rp_create->texture_outputs,
+                                                                                       rp_create->depth_texture);
         if(!pipeline_interface) {
-            NOVA_LOG(ERROR) << "Pipeline " << create_info.name
-                            << " has an invalid interface: " << pipeline_interface.error.to_string();
+            NOVA_LOG(ERROR) << "Pipeline " << create_info.name << " has an invalid interface: " << pipeline_interface.error.to_string();
             return false;
         }
 
@@ -57,7 +55,7 @@ namespace nova::renderer {
         }
     }
 
-    Result<PipelineReturn> PipelineStorage::create_graphics_pipeline(PipelineInterface* pipeline_interface,
+    Result<PipelineReturn> PipelineStorage::create_graphics_pipeline(rhi::PipelineInterface* pipeline_interface,
                                                                      const PipelineCreateInfo& pipeline_create_info) const {
         renderer::Pipeline pipeline;
         PipelineMetadata metadata;
@@ -78,75 +76,86 @@ namespace nova::renderer {
         return Result(PipelineReturn{pipeline, metadata});
     }
 
-    Result<PipelineInterface*> PipelineStorage::create_pipeline_interface(const PipelineCreateInfo& pipeline_create_info,
-                                                                          const std::pmr::vector<TextureAttachmentInfo>& color_attachments,
-                                                                          const std::optional<TextureAttachmentInfo>& depth_texture) const {
-        std::unordered_map<std::string, ResourceBindingDescription> bindings;
+    Result<rhi::PipelineInterface*> PipelineStorage::create_pipeline_interface(
+        const PipelineCreateInfo& pipeline_create_info,
+        const std::pmr::vector<TextureAttachmentInfo>& color_attachments,
+        const std::optional<TextureAttachmentInfo>& depth_texture) const {
+        std::unordered_map<std::string, rhi::ResourceBindingDescription> bindings;
         bindings.reserve(32); // Probably a good estimate
 
-        get_shader_module_descriptors(pipeline_create_info.vertex_shader.source, ShaderStage::Vertex, bindings);
+        get_shader_module_descriptors(pipeline_create_info.vertex_shader.source, rhi::ShaderStage::Vertex, bindings);
 
         if(pipeline_create_info.tessellation_control_shader) {
             get_shader_module_descriptors(pipeline_create_info.tessellation_control_shader->source,
-                                          ShaderStage::TessellationControl,
+                                          rhi::ShaderStage::TessellationControl,
                                           bindings);
         }
         if(pipeline_create_info.tessellation_evaluation_shader) {
             get_shader_module_descriptors(pipeline_create_info.tessellation_evaluation_shader->source,
-                                          ShaderStage::TessellationEvaluation,
+                                          rhi::ShaderStage::TessellationEvaluation,
                                           bindings);
         }
         if(pipeline_create_info.geometry_shader) {
-            get_shader_module_descriptors(pipeline_create_info.geometry_shader->source, ShaderStage::Geometry, bindings);
+            get_shader_module_descriptors(pipeline_create_info.geometry_shader->source, rhi::ShaderStage::Geometry, bindings);
         }
         if(pipeline_create_info.fragment_shader) {
-            get_shader_module_descriptors(pipeline_create_info.fragment_shader->source, ShaderStage::Fragment, bindings);
+            get_shader_module_descriptors(pipeline_create_info.fragment_shader->source, rhi::ShaderStage::Fragment, bindings);
         }
+
+        // const auto vertex_attributes = get_vertex_attributes(pipeline_create_info.vertex_shader);
 
         return device->create_pipeline_interface(bindings, color_attachments, depth_texture, allocator);
     }
 
+    std::pmr::vector<PipelineStorage::VertexAttribute> PipelineStorage::get_vertex_attributes(const ShaderSource& vertex_shader) const {
+        const CompilerGLSL shader_compiler(vertex_shader.source.data(), vertex_shader.source.size());
+
+        // TODO: Figure out how to get the vertex attributes through reflection
+
+        return {};
+    }
+
     void PipelineStorage::get_shader_module_descriptors(const std::pmr::vector<uint32_t>& spirv,
-                                                        const ShaderStage shader_stage,
-                                                        std::unordered_map<std::string, ResourceBindingDescription>& bindings) {
+                                                        const rhi::ShaderStage shader_stage,
+                                                        std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings) {
         const CompilerGLSL shader_compiler(spirv.data(), spirv.size());
         const ShaderResources resources = shader_compiler.get_shader_resources();
 
         for(const auto& resource : resources.separate_images) {
             NOVA_LOG(TRACE) << "Found a image named " << resource.name;
-            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, DescriptorType::Texture);
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::Texture);
         }
 
         for(const auto& resource : resources.separate_samplers) {
             NOVA_LOG(TRACE) << "Found a sampler named " << resource.name;
-            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, DescriptorType::Sampler);
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::Sampler);
         }
 
         for(const auto& resource : resources.sampled_images) {
             NOVA_LOG(TRACE) << "Found a sampled image resource named " << resource.name;
-            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, DescriptorType::CombinedImageSampler);
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::CombinedImageSampler);
         }
 
         for(const auto& resource : resources.uniform_buffers) {
             NOVA_LOG(TRACE) << "Found a UBO resource named " << resource.name;
-            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, DescriptorType::UniformBuffer);
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::UniformBuffer);
         }
 
         for(const auto& resource : resources.storage_buffers) {
             NOVA_LOG(TRACE) << "Found a SSBO resource named " << resource.name;
-            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, DescriptorType::StorageBuffer);
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::StorageBuffer);
         }
     }
 
-    void PipelineStorage::add_resource_to_bindings(std::unordered_map<std::string, ResourceBindingDescription>& bindings,
-                                                   const ShaderStage shader_stage,
+    void PipelineStorage::add_resource_to_bindings(std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings,
+                                                   const rhi::ShaderStage shader_stage,
                                                    const CompilerGLSL& shader_compiler,
                                                    const spirv_cross::Resource& resource,
-                                                   const DescriptorType type) {
+                                                   const rhi::DescriptorType type) {
         const uint32_t set = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         const uint32_t binding = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
 
-        ResourceBindingDescription new_binding = {};
+        rhi::ResourceBindingDescription new_binding = {};
         new_binding.set = set;
         new_binding.binding = binding;
         new_binding.type = type;
@@ -164,7 +173,7 @@ namespace nova::renderer {
 
         if(const auto itr = bindings.find(resource_name); itr != bindings.end()) {
             // Existing binding. Is it the same as our binding?
-            ResourceBindingDescription& existing_binding = itr->second;
+            rhi::ResourceBindingDescription& existing_binding = itr->second;
             if(existing_binding != new_binding) {
                 // They have two different bindings with the same name. Not allowed
                 NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name

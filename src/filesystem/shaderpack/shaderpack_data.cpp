@@ -266,33 +266,33 @@ namespace nova::renderer::shaderpack {
         return {};
     }
 
-    VertexFieldEnum vertex_field_enum_from_string(const std::string& str) {
+    VertexField vertex_field_enum_from_string(const std::string& str) {
         if(str == "Position") {
-            return VertexFieldEnum::Position;
+            return VertexField::Position;
         }
         if(str == "Color") {
-            return VertexFieldEnum::Color;
+            return VertexField::ColorFloat4;
         }
         if(str == "UV0") {
-            return VertexFieldEnum::UV0;
+            return VertexField::UV0;
         }
         if(str == "UV1") {
-            return VertexFieldEnum::UV1;
+            return VertexField::UV1;
         }
         if(str == "Normal") {
-            return VertexFieldEnum::Normal;
+            return VertexField::Normal;
         }
         if(str == "Tangent") {
-            return VertexFieldEnum::Tangent;
+            return VertexField::Tangent;
         }
         if(str == "MidTexCoord") {
-            return VertexFieldEnum::MidTexCoord;
+            return VertexField::MidTexCoord;
         }
         if(str == "VirtualTextureId") {
-            return VertexFieldEnum::VirtualTextureId;
+            return VertexField::VirtualTextureId;
         }
         if(str == "McEntityId") {
-            return VertexFieldEnum::McEntityId;
+            return VertexField::McEntityId;
         }
 
         NOVA_LOG(ERROR) << "Unsupported vertex field " << str.c_str();
@@ -533,34 +533,40 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const VertexFieldEnum val) {
+    std::string to_string(const VertexField val) {
         switch(val) {
-            case VertexFieldEnum::Position:
+            case VertexField::Position:
                 return "Position";
 
-            case VertexFieldEnum::Color:
+            case VertexField::ColorFloat4:
                 return "Color";
 
-            case VertexFieldEnum::UV0:
+            case VertexField::UV0:
                 return "UV0";
 
-            case VertexFieldEnum::UV1:
+            case VertexField::UV1:
                 return "UV1";
 
-            case VertexFieldEnum::Normal:
+            case VertexField::Normal:
                 return "Normal";
 
-            case VertexFieldEnum::Tangent:
+            case VertexField::Tangent:
                 return "Tangent";
 
-            case VertexFieldEnum::MidTexCoord:
+            case VertexField::MidTexCoord:
                 return "MidTexCoord";
 
-            case VertexFieldEnum::VirtualTextureId:
+            case VertexField::VirtualTextureId:
                 return "VirtualTextureId";
 
-            case VertexFieldEnum::McEntityId:
+            case VertexField::McEntityId:
                 return "McEntityId";
+
+            case VertexField::ColorUint:
+                return "Uint Color";
+
+            default:
+                return "Unknown vertex field";
         }
 
         return "Unknown value";

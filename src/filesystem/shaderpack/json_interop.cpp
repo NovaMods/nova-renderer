@@ -49,7 +49,7 @@ namespace nova::renderer::shaderpack {
 
     void from_json(const nlohmann::json& j, VertexFieldData& vertex_data) {
         vertex_data.semantic_name = get_json_value<std::string>(j, "name").value();
-        vertex_data.field = get_json_value<VertexFieldEnum>(j, "field", vertex_field_enum_from_string).value();
+        vertex_data.field = get_json_value<VertexField>(j, "field", vertex_field_enum_from_string).value();
     }
 
     void from_json(const nlohmann::json& j, PipelineCreateInfo& pipeline) {
