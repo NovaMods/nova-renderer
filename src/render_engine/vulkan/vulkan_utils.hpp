@@ -33,9 +33,7 @@ namespace nova::renderer::rhi {
 
     std::string to_string(VkObjectType obj_type);
 
-    std::pmr::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions();
-
-    std::pmr::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
+    VkFormat to_vk_vertex_format(shaderpack::VertexField field);
 
     bool operator&(const ShaderStage& lhs, const ShaderStage& rhs);
 } // namespace nova::renderer::rhi

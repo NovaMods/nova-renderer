@@ -456,108 +456,41 @@ namespace nova::renderer::rhi {
         }
     }
 
-    std::pmr::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions() {
-        static std::pmr::vector<VkVertexInputBindingDescription> input_descriptions = {
-            VkVertexInputBindingDescription{
-                0,                          // binding
-                sizeof(FullVertex),         // stride
-                VK_VERTEX_INPUT_RATE_VERTEX // input rate
-            },
-            VkVertexInputBindingDescription{
-                1,                          // binding
-                sizeof(FullVertex),         // stride
-                VK_VERTEX_INPUT_RATE_VERTEX // input rate
-            },
-            VkVertexInputBindingDescription{
-                2,                          // binding
-                sizeof(FullVertex),         // stride
-                VK_VERTEX_INPUT_RATE_VERTEX // input rate
-            },
-            VkVertexInputBindingDescription{
-                3,                          // binding
-                sizeof(FullVertex),         // stride
-                VK_VERTEX_INPUT_RATE_VERTEX // input rate
-            },
-            VkVertexInputBindingDescription{
-                4,                          // binding
-                sizeof(FullVertex),         // stride
-                VK_VERTEX_INPUT_RATE_VERTEX // input rate
-            },
-            VkVertexInputBindingDescription{
-                5,                          // binding
-                sizeof(FullVertex),         // stride
-                VK_VERTEX_INPUT_RATE_VERTEX // input rate
-            },
-            VkVertexInputBindingDescription{
-                6,                          // binding
-                sizeof(FullVertex),         // stride
-                VK_VERTEX_INPUT_RATE_VERTEX // input rate
-            },
-        };
+    VkFormat to_vk_vertex_format(const shaderpack::VertexField field) {
+        switch(field) {
+            case shaderpack::VertexField::Position:
+                return VK_FORMAT_R32G32B32_SFLOAT;
 
-        return input_descriptions;
-    }
+            case shaderpack::VertexField::ColorFloat4:
+                return VK_FORMAT_R32G32B32A32_SFLOAT;
 
-    std::pmr::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions() {
-        static std::pmr::vector<VkVertexInputAttributeDescription> attribute_descriptions = {
-            // Position
-            VkVertexInputAttributeDescription{
-                0,                          // location
-                0,                          // binding
-                VK_FORMAT_R32G32B32_SFLOAT, // format
-                0,                          // offset
-            },
+            case shaderpack::VertexField::ColorUint:
+                return VK_FORMAT_R32_UINT;
 
-            // Normal
-            VkVertexInputAttributeDescription{
-                1,                          // location
-                0,                          // binding
-                VK_FORMAT_R32G32B32_SFLOAT, // format
-                0,                          // offset
-            },
+            case shaderpack::VertexField::UV0:
+                return VK_FORMAT_R32G32_SFLOAT;
 
-            // Tangent
-            VkVertexInputAttributeDescription{
-                2,                          // location
-                0,                          // binding
-                VK_FORMAT_R32G32B32_SFLOAT, // format
-                0,                          // offset
-            },
+            case shaderpack::VertexField::UV1:
+                return VK_FORMAT_R32G32_SFLOAT;
 
-            // Main UV
-            VkVertexInputAttributeDescription{
-                3,                      // location
-                0,                      // binding
-                VK_FORMAT_R16G16_UNORM, // format
-                0,                      // offset
-            },
+            case shaderpack::VertexField::Normal:
+                return VK_FORMAT_R32G32B32_SFLOAT;
 
-            // Secondary UV
-            VkVertexInputAttributeDescription{
-                4,                    // location
-                0,                    // binding
-                VK_FORMAT_R8G8_UNORM, // format
-                0,                    // offset
-            },
+            case shaderpack::VertexField::Tangent:
+                return VK_FORMAT_R32G32B32_SFLOAT;
 
-            // Virtual texture ID
-            VkVertexInputAttributeDescription{
-                5,                  // location
-                0,                  // binding
-                VK_FORMAT_R32_UINT, // format
-                0,                  // offset
-            },
+            case shaderpack::VertexField::MidTexCoord:
+                return VK_FORMAT_R32G32_SFLOAT;
 
-            // Other data
-            VkVertexInputAttributeDescription{
-                6,                             // location
-                0,                             // binding
-                VK_FORMAT_R32G32B32A32_SFLOAT, // format
-                0,                             // offset
-            },
-        };
+            case shaderpack::VertexField::VirtualTextureId:
+                return VK_FORMAT_R32_UINT;
 
-        return attribute_descriptions;
+            case shaderpack::VertexField::McEntityId:
+                return VK_FORMAT_R32G32B32A32_SFLOAT;
+
+            default:
+                return VK_FORMAT_R32G32B32_SFLOAT;
+        }
     }
 
     bool operator&(const ShaderStage& lhs, const ShaderStage& rhs) { return static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs); }

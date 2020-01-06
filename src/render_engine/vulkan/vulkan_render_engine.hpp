@@ -203,8 +203,7 @@ namespace nova::renderer::rhi {
          *
          * \return The index of the memory type with the desired flags, or VK_MAX_MEMORY_TYPES if no memory types match the given flags
          */
-        [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags,
-                                                           MemorySearchMode search_mode = MemorySearchMode::Fuzzy);
+        [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags, MemorySearchMode search_mode = MemorySearchMode::Fuzzy);
 
         [[nodiscard]] std::optional<VkShaderModule> create_shader_module(const std::pmr::vector<uint32_t>& spirv) const;
 
@@ -224,6 +223,11 @@ namespace nova::renderer::rhi {
         [[nodiscard]] static VkImageView image_view_for_image(const Image* image);
 
         [[nodiscard]] static VkCommandBufferLevel to_vk_command_buffer_level(CommandList::Level level);
+
+        [[nodiscard]] static std::tuple<std::pmr::vector<VkVertexInputAttributeDescription>,
+                                        std::pmr::vector<VkVertexInputBindingDescription>>
+        get_input_assembler_setup(
+            const std::vector<shaderpack::VertexFieldData, std::pmr::polymorphic_allocator<shaderpack::VertexFieldData>>& vertex_fields);
 #pragma endregion
 
 #pragma region Debugging
@@ -232,7 +236,7 @@ namespace nova::renderer::rhi {
         static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
                                                                     VkDebugUtilsMessageTypeFlagsEXT message_types,
                                                                     const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
-                                                                    void* user_data);
+                                                                    void* render_engine);
 #pragma endregion
     };
 } // namespace nova::renderer::rhi

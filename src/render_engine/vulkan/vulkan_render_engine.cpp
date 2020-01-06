@@ -13,6 +13,7 @@
 #include "vk_structs.hpp"
 #include "vulkan_command_list.hpp"
 #include "vulkan_utils.hpp"
+#include "nova_renderer/renderables.hpp"
 // TODO: Move window creation out of the RHI
 #ifdef NOVA_LINUX
 #define NOVA_VK_XLIB
@@ -646,9 +647,7 @@ namespace nova::renderer::rhi {
             shader_stages.push_back(shader_stage_create_info);
         }
 
-        const std::pmr::vector<VkVertexInputBindingDescription>& vertex_binding_descriptions = get_vertex_input_binding_descriptions();
-        const std::pmr::vector<VkVertexInputAttributeDescription>&
-            vertex_attribute_descriptions = get_vertex_input_attribute_descriptions();
+        const auto& [vertex_attribute_descriptions, vertex_binding_descriptions] = get_input_assembler_setup(data.vertex_fields);
 
         VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info;
         vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -1713,6 +1712,28 @@ namespace nova::renderer::rhi {
         }
 
         return VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    }
+
+    std::tuple<std::pmr::vector<VkVertexInputAttributeDescription>, std::pmr::vector<VkVertexInputBindingDescription>> VulkanRenderEngine::
+        get_input_assembler_setup(
+            const std::vector<shaderpack::VertexFieldData, std::pmr::polymorphic_allocator<shaderpack::VertexFieldData>>& vertex_fields) {
+        std::pmr::vector<VkVertexInputAttributeDescription> attributes;
+        std::pmr::vector<VkVertexInputBindingDescription> bindings;
+
+        attributes.reserve(vertex_fields.size());
+        bindings.reserve(vertex_fields.size());
+
+        uint32_t cur_binding = 0;
+        for(const auto& field : vertex_fields) {
+            const auto attr_format = to_vk_vertex_format(field.field);
+            attributes.emplace_back(VkVertexInputAttributeDescription{cur_binding, 0, attr_format, 0});
+
+            bindings.emplace_back(VkVertexInputBindingDescription{cur_binding, sizeof(FullVertex), VK_VERTEX_INPUT_RATE_VERTEX});
+
+            cur_binding++;
+        }
+
+        return {attributes, bindings};
     }
 
     std::optional<VkShaderModule> VulkanRenderEngine::create_shader_module(const std::pmr::vector<uint32_t>& spirv) const {
