@@ -118,6 +118,8 @@ set(NOVA_SOURCE
         include/nova_renderer/filesystem/folder_accessor.hpp
         include/nova_renderer/filesystem/virtual_filesystem.hpp
 
+        include/nova_renderer/loading/shaderpack_loading.hpp
+
         include/nova_renderer/memory/bytes.hpp
         include/nova_renderer/memory/allocation_strategy.hpp
         include/nova_renderer/memory/allocation_structs.hpp
@@ -166,7 +168,6 @@ set(NOVA_SOURCE
         src/util/result.cpp
 
         src/filesystem/shaderpack/shaderpack_loading.cpp
-        src/filesystem/shaderpack/shaderpack_loading.hpp
         src/filesystem/shaderpack/shaderpack_data.cpp
         src/filesystem/shaderpack/json_interop.cpp
         src/filesystem/shaderpack/json_interop.hpp
