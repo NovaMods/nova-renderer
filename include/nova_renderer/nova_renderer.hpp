@@ -6,6 +6,7 @@
 #include <string>
 
 #include "nova_renderer/constants.hpp"
+#include "nova_renderer/filesystem/virtual_filesystem.hpp"
 #include "nova_renderer/frontend/procedural_mesh.hpp"
 #include "nova_renderer/frontend/rendergraph.hpp"
 #include "nova_renderer/frontend/resource_loader.hpp"
@@ -16,7 +17,8 @@
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
-#include "nova_renderer/filesystem/virtual_filesystem.hpp"
+
+#include "frontend/pipeline_storage.hpp"
 
 namespace spirv_cross {
     class CompilerGLSL;
@@ -92,6 +94,8 @@ namespace nova::renderer {
          */
         void set_ui_renderpass(const std::shared_ptr<Renderpass>& ui_renderpass);
 
+        std::optional<shaderpack::RenderPassCreateInfo> get_renderpass_metadata(const std::string& renderpass_name);
+
         /*!
          * \brief Executes a single frame
          */
@@ -99,7 +103,7 @@ namespace nova::renderer {
 
         NovaSettingsAccessManager& get_settings();
 
-        std::shared_ptr<mem::AllocatorHandle<>> get_global_allocator() const;
+        mem::AllocatorHandle<>* get_global_allocator() const;
 
 #pragma region Meshes
         /*!
@@ -140,17 +144,36 @@ namespace nova::renderer {
         [[nodiscard]] rhi::Sampler* get_point_sampler() const;
 #pragma endregion
 
+        /*!
+         * \brief Binds the resources for one material to that material's descriptor sets
+         *
+         * This method does not perform any validation. It assumes that descriptor_descriptions has a description for
+         * every descriptor that the material wants to bind to, and it assumes that material has all the needed
+         * descriptors
+         *
+         * \param material The material to bind resources to
+         * \param bindings What resources should be bound to what descriptor. The key is the descriptor name and the
+         * value is the resource name
+         * \param descriptor_descriptions A map from descriptor name to all the information you need to update that
+         * descriptor
+         */
+        void bind_data_to_material_descriptor_sets(
+            const MaterialPass& material,
+            const std::unordered_map<std::string, std::string>& bindings,
+            const std::unordered_map<std::string, rhi::ResourceBindingDescription>& descriptor_descriptions);
+
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
                                                                const StaticMeshRenderableData& renderable);
 
         [[nodiscard]] rhi::RenderEngine* get_engine() const;
 
-        [[nodiscard]] std::shared_ptr<NovaWindow> get_window() const;
+        [[nodiscard]] NovaWindow* get_window() const;
 
-        [[nodiscard]] std::shared_ptr<DeviceResources> get_resource_manager() const;
+        [[nodiscard]] DeviceResources* get_resource_manager() const;
 
-            static NovaRenderer*
-            initialize(const NovaSettings& settings);
+        [[nodiscard]] PipelineStorage* get_pipeline_storage();
+
+        static NovaRenderer* initialize(const NovaSettings& settings);
 
         static NovaRenderer* get_instance();
 
@@ -178,14 +201,14 @@ namespace nova::renderer {
          * Right now I throw this allocator at the GPU memory allocators, because they need some way to allocate memory and I'm not about to
          * try and band-aid aid things together. Future work will have a better way to bootstrap Nova's allocators
          */
-        std::shared_ptr<mem::AllocatorHandle<>> global_allocator;
+        std::unique_ptr<mem::AllocatorHandle<>> global_allocator;
 
         /*!
          * \brief Holds all the object loaded by the current rendergraph
          */
-        std::shared_ptr<mem::AllocatorHandle<>> renderpack_allocator;
+        std::unique_ptr<mem::AllocatorHandle<>> renderpack_allocator;
 
-        std::shared_ptr<DeviceResources> resource_storage;
+        std::unique_ptr<DeviceResources> resource_storage;
 
         std::unique_ptr<DeviceMemoryResource> mesh_memory;
 
@@ -271,6 +294,18 @@ namespace nova::renderer {
                              rhi::DescriptorPool* descriptor_pool,
                              const std::shared_ptr<Renderpass>& renderpass);
 
+        void destroy_dynamic_resources();
+
+        void destroy_renderpasses();
+#pragma endregion
+
+#pragma region Rendering pipelines
+        std::unique_ptr<PipelineStorage> pipeline_storage;
+
+        std::unordered_map<std::string, std::vector<MaterialPass>> passes_by_pipeline;
+
+        void create_pipelines(const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipeline_create_infos);
+
         void create_materials_for_pipeline(
             Pipeline& pipeline,
             std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher>& material_metadatas,
@@ -279,46 +314,6 @@ namespace nova::renderer {
             const rhi::PipelineInterface* pipeline_interface,
             rhi::DescriptorPool* descriptor_pool,
             const MaterialPassKey& template_key);
-
-        /*!
-         * \brief Binds the resources for one material to that material's descriptor sets
-         *
-         * This method does not perform any validation. It assumes that descriptor_descriptions has a description for
-         * every descriptor that the material wants to bind to, and it assumes that material has all the needed
-         * descriptors
-         *
-         * \param material The material to bind resources to
-         * \param bindings What resources should be bound to what descriptor. The key is the descriptor name and the
-         * value is the resource name
-         * \param descriptor_descriptions A map from descriptor name to all the information you need to update that
-         * descriptor
-         */
-        void bind_data_to_material_descriptor_sets(
-            const MaterialPass& material,
-            const std::unordered_map<std::string, std::string>& bindings,
-            const std::unordered_map<std::string, rhi::ResourceBindingDescription>& descriptor_descriptions);
-
-        [[nodiscard]] ntl::Result<rhi::PipelineInterface*> create_pipeline_interface(
-            const shaderpack::PipelineCreateInfo& pipeline_create_info,
-            const std::pmr::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const;
-
-        [[nodiscard]] ntl::Result<PipelineReturn> create_graphics_pipeline(
-            rhi::PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
-
-        static void get_shader_module_descriptors(const std::pmr::vector<uint32_t>& spirv,
-                                                  rhi::ShaderStage shader_stage,
-                                                  std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings);
-
-        static void add_resource_to_bindings(std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings,
-                                             rhi::ShaderStage shader_stage,
-                                             const spirv_cross::CompilerGLSL& shader_compiler,
-                                             const spirv_cross::Resource& resource,
-                                             rhi::DescriptorType type);
-
-        void destroy_dynamic_resources();
-
-        void destroy_renderpasses();
 #pragma endregion
 
 #pragma region Meshes

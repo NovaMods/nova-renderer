@@ -29,17 +29,13 @@ namespace nova::renderer {
         if(!read_texture_barriers.empty()) {
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
-            cmds->resource_barriers(rhi::PipelineStage::ColorAttachmentOutput,
-                                    rhi::PipelineStage::FragmentShader,
-                                    read_texture_barriers);
+            cmds->resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::FragmentShader, read_texture_barriers);
         }
 
         if(!write_texture_barriers.empty()) {
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
-            cmds->resource_barriers(rhi::PipelineStage::ColorAttachmentOutput,
-                                    rhi::PipelineStage::FragmentShader,
-                                    write_texture_barriers);
+            cmds->resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::FragmentShader, write_texture_barriers);
         }
 
         if(writes_to_backbuffer) {
@@ -55,16 +51,19 @@ namespace nova::renderer {
 
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
-            cmds->resource_barriers(rhi::PipelineStage::TopOfPipe,
-                                    rhi::PipelineStage::ColorAttachmentOutput,
-                                    {backbuffer_barrier});
+            cmds->resource_barriers(rhi::PipelineStage::TopOfPipe, rhi::PipelineStage::ColorAttachmentOutput, {backbuffer_barrier});
         }
     }
 
     void Renderpass::render_renderpass_contents(rhi::CommandList* cmds, FrameContext& ctx) {
+        const auto pipeline_storage = ctx.nova->get_pipeline_storage();
+
         // TODO: I _actually_ want to get all the draw commands from NovaRenderer, instead of storing them in this struct
-        for(const Pipeline& pipeline : pipelines) {
-            pipeline.record(cmds, ctx);
+        for(const std::string& pipeline_name : pipeline_names) {
+            const auto pipeline = pipeline_storage->get_pipeline(pipeline_name);
+            if(pipeline) {
+                pipeline->record(cmds, ctx);
+            }
         }
     }
 
@@ -82,9 +81,7 @@ namespace nova::renderer {
 
             // When this line executes, the D3D12 debug layer gets mad about "A single command list cannot write to multiple buffers within
             // a particular swapchain" and I don't know why it's mad about that, or even really what that message means
-            cmds->resource_barriers(rhi::PipelineStage::ColorAttachmentOutput,
-                                    rhi::PipelineStage::BottomOfPipe,
-                                    {backbuffer_barrier});
+            cmds->resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::BottomOfPipe, {backbuffer_barrier});
         }
     }
 

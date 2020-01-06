@@ -68,8 +68,6 @@ namespace nova::renderer {
     struct Pipeline {
         rhi::Pipeline* pipeline = nullptr;
 
-        std::pmr::vector<MaterialPass> passes;
-
         void record(rhi::CommandList* cmds, FrameContext& ctx) const;
     };
 #pragma endregion
@@ -87,8 +85,7 @@ namespace nova::renderer {
     };
 
     struct MaterialPassKey {
-        uint32_t renderpass_index;
-        uint32_t pipeline_index;
+        std::string pipeline_name;
         uint32_t material_pass_index;
     };
 
@@ -135,7 +132,10 @@ namespace nova::renderer {
         rhi::Renderpass* renderpass = nullptr;
         rhi::Framebuffer* framebuffer = nullptr;
 
-        std::pmr::vector<Pipeline> pipelines;
+        /*!
+         * \brief Names of all the pipelines which are in this renderpass
+         */
+        std::pmr::vector<std::string> pipelines;
 
         bool writes_to_backbuffer = false;
 
