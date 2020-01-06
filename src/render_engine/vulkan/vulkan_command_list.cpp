@@ -190,7 +190,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanCommandList::set_scissor_rect(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height) {
-        VkRect2D scissor_rect = {{x, y}, {width, height}};
+        VkRect2D scissor_rect = {{static_cast<int32_t>(x), static_cast<int32_t>(y)}, {width, height}};
         vkCmdSetScissor(cmds, 0, 1, &scissor_rect);
     }
 

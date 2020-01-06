@@ -105,8 +105,7 @@ namespace nova::renderer {
     void PipelineStorage::get_shader_module_descriptors(const std::pmr::vector<uint32_t>& spirv,
                                                         const rhi::ShaderStage shader_stage,
                                                         std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings) {
-        std::pmr::vector<uint32_t> spirv_std(spirv.begin(), spirv.end());
-        const spirv_cross::CompilerGLSL shader_compiler(spirv_std.data(), spirv_std.size());
+        const spirv_cross::CompilerGLSL shader_compiler(spirv.data(), spirv.size());
         const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
 
         for(const spirv_cross::Resource& resource : resources.sampled_images) {

@@ -6,10 +6,11 @@
 #pragma warning(push, 0)
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
-#include <glslang/MachineIndependent/Initialize.h>
 #include <minitrace.h>
 #include <spirv_glsl.hpp>
 #pragma warning(pop)
+
+#include <glslang/MachineIndependent/Initialize.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/frontend/procedural_mesh.hpp"
@@ -26,7 +27,6 @@
 #include "debugging/renderdoc.hpp"
 #include "filesystem/shaderpack/render_graph_builder.hpp"
 #include "render_objects/uniform_structs.hpp"
-
 // D3D12 MUST be included first because the Vulkan include undefines FAR, yet the D3D12 headers need FAR
 // Windows considered harmful
 #if defined(NOVA_WINDOWS) && defined(NOVA_D3D12_RHI)
@@ -801,7 +801,11 @@ namespace nova::renderer {
         }
     }
 
-    void NovaRenderer::create_resource_storage() { resource_storage = std::make_unique<DeviceResources>(*this); }
+    void NovaRenderer::create_resource_storage() {
+        resource_storage = std::make_unique<DeviceResources>(*this);
+
+        pipeline_storage = std::make_unique<PipelineStorage>(*this, *global_allocator->create_suballocator());
+    }
 
     void NovaRenderer::create_builtin_textures() {}
 

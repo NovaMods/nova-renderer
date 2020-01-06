@@ -47,7 +47,7 @@ namespace nova::mem {
     void* HostMemoryResource<AllocationStrategy>::do_allocate(const size_t bytes, size_t /* align */) {
         AllocationInfo info;
         if(strategy->allocate(Bytes(bytes), info)) {
-            auto* ptr = mem + info.offset;
+            auto* ptr = mem + info.offset.b_count();
             allocations.emplace(ptr, info);
             return ptr;
 

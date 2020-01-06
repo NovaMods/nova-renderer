@@ -781,7 +781,7 @@ namespace nova::renderer::rhi {
         }
 
         VkPipelineDynamicStateCreateInfo dynamic_state_create_info = {};
-        dynamic_state_create_info.dynamicStateCount = dynamic_states.size();
+        dynamic_state_create_info.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
         dynamic_state_create_info.pDynamicStates = dynamic_states.data();
 
         VkGraphicsPipelineCreateInfo pipeline_create_info = {};

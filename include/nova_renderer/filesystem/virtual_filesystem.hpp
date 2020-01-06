@@ -21,8 +21,6 @@ namespace nova::filesystem {
     public:
         [[nodiscard]] static std::shared_ptr<VirtualFilesystem> get_instance();
 
-        VirtualFilesystem();
-
         /*!
          * \brief Adds the provided path to the resource roots that the virtual filesystem will care about
          */
@@ -41,11 +39,8 @@ namespace nova::filesystem {
     private:
         static std::shared_ptr<VirtualFilesystem> instance;
 
-        /*!
-         * \brief Accessor for Nova's working directory
-         */
-        std::shared_ptr<FolderAccessorBase> filesystem_root;
-
         std::vector<std::shared_ptr<FolderAccessorBase>> resource_roots;
+
+        VirtualFilesystem() = default;
     };
 } // namespace nova::filesystem

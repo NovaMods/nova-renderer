@@ -16,6 +16,7 @@
 #include "../loading_utils.hpp"
 #include "../regular_folder_accessor.hpp"
 #include "../zip_folder_accessor.hpp"
+#include "OGLCompilersDLL/InitializeDll.h"
 #include "SPIRV/GlslangToSpv.h"
 #include "json_interop.hpp"
 #include "render_graph_builder.hpp"
@@ -352,6 +353,8 @@ namespace nova::renderer::shaderpack {
                                                 const std::shared_ptr<FolderAccessorBase>& folder_access,
                                                 const rhi::ShaderStage stage,
                                                 const std::pmr::vector<std::string>& defines) {
+        // Be sure that we have glslang when we need to compile shaders
+        glslang::InitializeProcess();
 
         const auto glslang_stage = to_glslang_shader_stage(stage);
         glslang::TShader shader(glslang_stage);
@@ -400,7 +403,8 @@ namespace nova::renderer::shaderpack {
         }
 
         if(!shader_compiled) {
-            NOVA_LOG(ERROR) << "Shader compilation failed";
+            NOVA_LOG(ERROR) << "Could not load shader " << filename << ": Shader compilation failed";
+            return {};
         }
 
         glslang::TProgram program;
@@ -468,7 +472,7 @@ namespace nova::renderer::shaderpack {
 
             case rhi::ShaderStage::TessellationControl:
                 return EShLangTessControl;
-             case rhi::ShaderStage::TessellationEvaluation:
+            case rhi::ShaderStage::TessellationEvaluation:
                 return EShLangTessEvaluation;
 
             case rhi::ShaderStage::Geometry:
