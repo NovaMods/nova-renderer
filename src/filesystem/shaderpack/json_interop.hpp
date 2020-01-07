@@ -25,8 +25,6 @@ namespace nova::renderer::shaderpack {
 
     void from_json(const nlohmann::json& j, StencilOpState& stencil_op);
 
-    void from_json(const nlohmann::json& j, VertexFieldData& vertex_data);
-
     void from_json(const nlohmann::json& j, RenderPassCreateInfo& pass);
 
     void from_json(const nlohmann::json& j, std::pmr::vector<RenderPassCreateInfo>& passes);

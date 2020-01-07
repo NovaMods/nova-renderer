@@ -47,18 +47,12 @@ namespace nova::renderer::shaderpack {
         stencil_op.write_mask = get_json_value<uint32_t>(j, "writeMask", 0);
     }
 
-    void from_json(const nlohmann::json& j, VertexFieldData& vertex_data) {
-        vertex_data.semantic_name = get_json_value<std::string>(j, "name").value();
-        vertex_data.field = get_json_value<VertexField>(j, "field", vertex_field_enum_from_string).value();
-    }
-
     void from_json(const nlohmann::json& j, PipelineCreateInfo& pipeline) {
         pipeline.name = get_json_value<std::string>(j, "name").value();
         pipeline.parent_name = get_json_value<std::string>(j, "parent").value_or("");
         pipeline.pass = get_json_value<std::string>(j, "pass").value();
         pipeline.defines = get_json_array<std::string>(j, "defines");
         pipeline.states = get_json_array<StateEnum>(j, "states", state_enum_from_string);
-        pipeline.vertex_fields = get_json_array<VertexFieldData>(j, "vertexFields");
         pipeline.front_face = get_json_value<StencilOpState>(j, "frontFace");
         pipeline.back_face = get_json_value<StencilOpState>(j, "backFace");
         pipeline.fallback = get_json_value<std::string>(j, "fallback").value_or("");

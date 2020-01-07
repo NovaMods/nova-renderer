@@ -535,7 +535,6 @@ namespace nova::renderer::shaderpack {
     [[nodiscard]] BlendFactorEnum blend_factor_enum_from_string(const std::string& str);
     [[nodiscard]] RenderQueueEnum render_queue_enum_from_string(const std::string& str);
     [[nodiscard]] StateEnum state_enum_from_string(const std::string& str);
-    [[nodiscard]] VertexField vertex_field_enum_from_string(const std::string& str);
 
     [[nodiscard]] std::string to_string(PixelFormatEnum val);
     [[nodiscard]] std::string to_string(TextureDimensionTypeEnum val);
@@ -548,7 +547,6 @@ namespace nova::renderer::shaderpack {
     [[nodiscard]] std::string to_string(BlendFactorEnum val);
     [[nodiscard]] std::string to_string(RenderQueueEnum val);
     [[nodiscard]] std::string to_string(StateEnum val);
-    [[nodiscard]] std::string to_string(VertexField val);
 
     [[nodiscard]] uint32_t pixel_format_to_pixel_width(PixelFormatEnum format);
 

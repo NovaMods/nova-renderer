@@ -125,7 +125,6 @@ namespace nova::renderer {
 
                     default:
                         NOVA_LOG(ERROR) << "Nova does not support float fields with " << spirv_type.vecsize << " vector elements";
-                        [[fallthrough]];
                 }
             };
 
@@ -172,6 +171,8 @@ namespace nova::renderer {
             default:
                 NOVA_LOG(ERROR) << "Nova does not support vertex fields of type " << spirv_type.basetype;
         }
+
+        return {};
     }
 
     std::pmr::vector<rhi::VertexField> PipelineStorage::get_vertex_fields(const ShaderSource& vertex_shader) const {

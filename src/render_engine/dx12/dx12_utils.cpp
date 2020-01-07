@@ -201,7 +201,8 @@ namespace nova::renderer::rhi {
             case VertexFieldFormat::Float4:
                 return DXGI_FORMAT_R32G32B32A32_FLOAT;
 
-            default:;
+            default:
+                return DXGI_FORMAT_R32G32B32_FLOAT;
         }
     }
 
@@ -212,13 +213,13 @@ namespace nova::renderer::rhi {
         uint32_t cur_slot = 0;
         for(const auto& field : fields) {
             const auto format = to_dx_format(field.format);
-            input_element_descriptions.emplace_back(field.name.c_str(),
-                                                    0,
-                                                    format,
-                                                    cur_slot,
-                                                    D3D12_APPEND_ALIGNED_ELEMENT,
-                                                    D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
-                                                    0);
+            input_element_descriptions.emplace_back(D3D12_INPUT_ELEMENT_DESC{field.name.c_str(),
+                                                                             0,
+                                                                             format,
+                                                                             cur_slot,
+                                                                             D3D12_APPEND_ALIGNED_ELEMENT,
+                                                                             D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+                                                                             0});
 
             cur_slot++;
         }
