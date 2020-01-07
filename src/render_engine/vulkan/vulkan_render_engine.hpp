@@ -226,8 +226,7 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] static std::tuple<std::pmr::vector<VkVertexInputAttributeDescription>,
                                         std::pmr::vector<VkVertexInputBindingDescription>>
-        get_input_assembler_setup(
-            const std::vector<shaderpack::VertexFieldData, std::pmr::polymorphic_allocator<shaderpack::VertexFieldData>>& vertex_fields);
+        get_input_assembler_setup(const std::pmr::vector<VertexFieldFormat>& vertex_fields);
 #pragma endregion
 
 #pragma region Debugging

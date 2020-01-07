@@ -53,8 +53,6 @@ namespace nova::renderer::rhi {
          * The index in the vector is the index of the set
          */
         std::pmr::vector<VkDescriptorSetLayout> layouts_by_set;
-
-        std::pmr::vector<VkVertexInputAttributeDescription> vertex_attributes;
     };
 
     struct VulkanPipeline : Pipeline {

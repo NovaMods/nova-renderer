@@ -5,10 +5,10 @@
 
 #include <glm/glm.hpp>
 
+#include "nova_renderer/memory/bytes.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
-#include "nova_renderer/memory/bytes.hpp"
 
 namespace nova::renderer::rhi {
 
@@ -94,11 +94,19 @@ namespace nova::renderer::rhi {
         bool operator!=(const ResourceBindingDescription& other);
     };
 
+    struct VertexField {
+        std::string name;
+
+        VertexFieldFormat format;
+    };
+
     /*!
      * \brief The interface for a pipeline. Includes both inputs (descriptors) and outputs (framebuffers)
      */
     struct PipelineInterface {
         std::unordered_map<std::string, ResourceBindingDescription> bindings;
+
+        std::pmr::vector<VertexField> vertex_fields;
     };
 
     struct Pipeline {};
@@ -113,8 +121,7 @@ namespace nova::renderer::rhi {
 
     struct DescriptorSet {};
 
-    // TODO: This struct actually maps pretty directly to a Vulkan barrier, so it doesn't map well to a D3D12 barrier. Figure out how to
-    // make it D3D12-friendly
+    // TODO: Resource state tracking in the command list so we don't need all this bullshit
     struct ResourceBarrier {
         Resource* resource_to_barrier;
 

@@ -456,18 +456,18 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkFormat to_vk_vertex_format(const shaderpack::VertexFieldFormat field) {
+    VkFormat to_vk_vertex_format(const VertexFieldFormat field) {
         switch(field) {
-            case shaderpack::VertexFieldFormat::Uint:
+            case VertexFieldFormat::Uint:
                 return VK_FORMAT_R32_UINT;
 
-            case shaderpack::VertexFieldFormat::Float2:
+            case VertexFieldFormat::Float2:
                 return VK_FORMAT_R32G32_SFLOAT;
 
-            case shaderpack::VertexFieldFormat::Float3:
+            case VertexFieldFormat::Float3:
                 return VK_FORMAT_R32G32B32_SFLOAT;
 
-            case shaderpack::VertexFieldFormat::Float4:
+            case VertexFieldFormat::Float4:
                 return VK_FORMAT_R32G32_SFLOAT;
 
             default:

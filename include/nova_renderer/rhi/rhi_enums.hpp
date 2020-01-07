@@ -31,6 +31,13 @@ namespace nova::renderer::rhi {
         SampledTexture,
     };
 
+    enum class VertexFieldFormat {
+        Uint,
+        Float2,
+        Float3,
+        Float4,
+    };
+
     enum class DescriptorType { CombinedImageSampler, UniformBuffer, StorageBuffer, Texture, Sampler };
 
     enum class ResourceAccess {
@@ -150,4 +157,6 @@ namespace nova::renderer::rhi {
     };
 
     bool is_depth_format(PixelFormat format);
+
+    uint32_t get_byte_size(VertexFieldFormat format);
 } // namespace nova::renderer::rhi

@@ -506,7 +506,7 @@ namespace nova::renderer::rhi {
          * Input description
          */
 
-        const std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> input_descs = get_input_descriptions();
+        const std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> input_descs = get_input_descriptions(data.vertex_fields);
         pipeline_state_desc.InputLayout.NumElements = static_cast<UINT>(input_descs.size());
         pipeline_state_desc.InputLayout.pInputElementDescs = input_descs.data();
 

@@ -80,88 +80,6 @@ namespace nova::renderer::shaderpack {
     enum class WrapModeEnum { Repeat, Clamp };
 
     /*!
-     * \brief The kind of data in a vertex attribute
-     */
-    enum class VertexField {
-        /*!
-         * \brief The vertex position
-         *
-         * 12 bytes
-         */
-        Position,
-
-        /*!
-         * \brief The vertex color
-         *
-         * 4 bytes
-         */
-        ColorFloat4,
-
-        /*!
-         * \brief Vertex color, packed as a single 32-bit integer
-         */
-        ColorUint,
-
-        /*!
-         * \brief The UV coordinate of this object
-         *
-         * Except not really, because Nova's virtual textures means that the UVs for a block or entity or whatever
-         * could change on the fly, so this is kinda more of a preprocessor define that replaces the UV with a lookup
-         * in the UV table
-         *
-         * 8 bytes (might try 4)
-         */
-        UV0,
-
-        /*!
-         * \brief The UV coordinate in the lightmap texture
-         *
-         * This is a real UV and it doesn't change for no good reason
-         *
-         * 2 bytes
-         */
-        UV1,
-
-        /*!
-         * \brief Vertex normal
-         *
-         * 12 bytes
-         */
-        Normal,
-
-        /*!
-         * \brief Vertex tangents
-         *
-         * 12 bytes
-         */
-        Tangent,
-
-        /*!
-         * \brief The texture coordinate of the middle of the quad
-         *
-         * 8 bytes
-         */
-        MidTexCoord,
-
-        /*!
-         * \brief A uint32_t that's a unique identifier for the texture that this vertex uses
-         *
-         * This is generated at runtime by Nova, so it may change a lot depending on what resourcepacks are loaded and
-         * if they use CTM or random detail textures or whatever
-         *
-         * 4 bytes
-         */
-        VirtualTextureId,
-
-        /*!
-         * \brief Some information about the current block/entity/whatever
-         *
-         * 12 bytes
-         */
-        McEntityId,
-    };
-
-    /*!
      * \brief Where the texture comes from
      */
     enum class TextureLocationEnum {
@@ -261,18 +179,6 @@ namespace nova::renderer::shaderpack {
         std::pmr::vector<uint32_t> source;
     };
 
-    enum VertexFieldFormat {
-        Uint,
-        Float2,
-        Float3,
-        Float4,
-    };
-
-    struct VertexFieldData {
-        uint32_t offset = 0;
-        VertexFieldFormat format;
-    };
-
     /*!
      * \brief All the data that Nova uses to build a pipeline
      */
@@ -301,13 +207,6 @@ namespace nova::renderer::shaderpack {
          * \brief Defines the rasterizer state that's active for this pipeline
          */
         std::pmr::vector<StateEnum> states{};
-
-        /*!
-         * \brief Sets up the vertex fields that Nova will bind to this pipeline
-         *
-         * The index in the array is the attribute index that the vertex field is bound to
-         */
-        std::pmr::vector<VertexFieldData> vertex_fields{};
 
         /*!
          * \brief The stencil buffer operations to perform on the front faces

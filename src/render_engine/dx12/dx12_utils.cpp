@@ -187,84 +187,36 @@ namespace nova::renderer::rhi {
         }
     }
 
-    std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions() {
-        static std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> input_element_descriptions =
-            {// Position
-             D3D12_INPUT_ELEMENT_DESC{
-                 "POSITION",                                 // SemanticName
-                 0,                                          // SemanticIndex
-                 DXGI_FORMAT_R32G32B32_FLOAT,                // Format
-                 0,                                          // InputSlot
-                 sizeof(FullVertex),                         // AlignedByOffset
-                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
-                 0                                           // InstanceDataStepRate
-             },
+    enum DXGI_FORMAT to_dx_format(const shaderpack::VertexFieldFormat format) {
+        switch(format) {
+            case shaderpack::Uint:
+                return DXGI_FORMAT_R32_UINT;
 
-             // Normal
-             D3D12_INPUT_ELEMENT_DESC{
-                 "NORMAL",                                   // SemanticName
-                 0,                                          // SemanticIndex
-                 DXGI_FORMAT_R32G32B32_FLOAT,                // Format
-                 0,                                          // InputSlot
-                 sizeof(FullVertex),                         // AlignedByOffset
-                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
-                 0                                           // InstanceDataStepRate
-             },
+            case shaderpack::Float2:
+                return DXGI_FORMAT_R32G32_FLOAT;
 
-             // Tangent
-             D3D12_INPUT_ELEMENT_DESC{
-                 "TANGENT",                                  // SemanticName
-                 0,                                          // SemanticIndex
-                 DXGI_FORMAT_R32G32B32_FLOAT,                // Format
-                 0,                                          // InputSlot
-                 sizeof(FullVertex),                         // AlignedByOffset
-                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
-                 0                                           // InstanceDataStepRate
-             },
+            case shaderpack::Float3:
+                return DXGI_FORMAT_R32G32B32_FLOAT;
 
-             // Main UV
-             D3D12_INPUT_ELEMENT_DESC{
-                 "TEXCOORD",                                 // SemanticName
-                 0,                                          // SemanticIndex
-                 DXGI_FORMAT_R32G32_FLOAT,                   // Format
-                 0,                                          // InputSlot
-                 sizeof(FullVertex),                         // AlignedByOffset
-                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
-                 0                                           // InstanceDataStepRate
-             },
+            case shaderpack::Float4:
+                return DXGI_FORMAT_R32G32B32A32_FLOAT;
 
-             // Lightmap UV
-             D3D12_INPUT_ELEMENT_DESC{
-                 "LMUV",                                     // SemanticName
-                 0,                                          // SemanticIndex
-                 DXGI_FORMAT_R16G16_FLOAT,                   // Format
-                 0,                                          // InputSlot
-                 sizeof(FullVertex),                         // AlignedByOffset
-                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
-                 0                                           // InstanceDataStepRate
-             },
+            default:;
+        }
+    }
 
-             // Virtual texture ID
-             D3D12_INPUT_ELEMENT_DESC{
-                 "VTEX_ID",                                  // SemanticName
-                 0,                                          // SemanticIndex
-                 DXGI_FORMAT_R32_UINT,                       // Format
-                 0,                                          // InputSlot
-                 sizeof(FullVertex),                         // AlignedByOffset
-                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
-                 0                                           // InstanceDataStepRate
-             },
+    std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions(const std::pmr::vector<shaderpack::VertexFieldData>& fields) {
+        std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> input_element_descriptions;
+        input_element_descriptions.reserve(fields.size());
 
-             // Additional Data
-             D3D12_INPUT_ELEMENT_DESC{
-                 "TANGENT",                                  // SemanticName
-                 0,                                          // SemanticIndex
-                 DXGI_FORMAT_R32G32B32A32_FLOAT,             // Format
-                 0,                                          // InputSlot
-                 sizeof(FullVertex),                         // AlignedByOffset
-                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
-                 0                                           // InstanceDataStepRate
-             }};
+        uint32_t cur_slot = 0;
+        for(const auto& field : fields) {
+            const auto format = to_dx_format(field.format);
+            input_element_descriptions
+                .emplace_back("TODO", 0, format, cur_slot, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+
+            cur_slot++;
+        }
 
         return input_element_descriptions;
     }

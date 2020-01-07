@@ -102,17 +102,31 @@ namespace nova::renderer {
             get_shader_module_descriptors(pipeline_create_info.fragment_shader->source, rhi::ShaderStage::Fragment, bindings);
         }
 
-        // const auto vertex_attributes = get_vertex_attributes(pipeline_create_info.vertex_shader);
+        const auto vertex_attributes = get_vertex_fields(pipeline_create_info.vertex_shader);
 
         return device->create_pipeline_interface(bindings, color_attachments, depth_texture, allocator);
     }
 
-    std::pmr::vector<PipelineStorage::VertexAttribute> PipelineStorage::get_vertex_attributes(const ShaderSource& vertex_shader) const {
+    rhi::VertexFieldFormat to_rhi_vertex_format(const SPIRType& spirv_type) {}
+
+    std::pmr::vector<rhi::VertexField> PipelineStorage::get_vertex_fields(const ShaderSource& vertex_shader) const {
         const CompilerGLSL shader_compiler(vertex_shader.source.data(), vertex_shader.source.size());
 
-        // TODO: Figure out how to get the vertex attributes through reflection
+        const auto& shader_vertex_fields = shader_compiler.get_shader_resources().stage_inputs;
 
-        return {};
+        std::pmr::vector<rhi::VertexField> vertex_fields(shader_vertex_fields.size());
+
+        std::transform(shader_vertex_fields.begin(),
+                       shader_vertex_fields.end(),
+                       std::back_insert_iterator(vertex_fields),
+                       [&](const auto& spirv_field) {
+                           const auto spirv_type = shader_compiler.get_type(spirv_field.base_type_id);
+                           const auto format = to_rhi_vertex_format(spirv_type);
+
+                           return rhi::VertexField{spirv_field.name, format};
+                       });
+
+        return vertex_fields;
     }
 
     void PipelineStorage::get_shader_module_descriptors(const std::pmr::vector<uint32_t>& spirv,
