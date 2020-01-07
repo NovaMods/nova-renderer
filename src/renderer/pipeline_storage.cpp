@@ -182,7 +182,8 @@ namespace nova::renderer {
 
         const auto& shader_vertex_fields = shader_compiler.get_shader_resources().stage_inputs;
 
-        std::pmr::vector<rhi::VertexField> vertex_fields(shader_vertex_fields.size());
+        std::pmr::vector<rhi::VertexField> vertex_fields;
+        vertex_fields.reserve(shader_vertex_fields.size());
 
         std::transform(shader_vertex_fields.begin(),
                        shader_vertex_fields.end(),
