@@ -6,6 +6,7 @@
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/memory/allocation_structs.hpp"
+#include "nova_renderer/renderables.hpp"
 #include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/window.hpp"
 
@@ -13,7 +14,6 @@
 #include "vk_structs.hpp"
 #include "vulkan_command_list.hpp"
 #include "vulkan_utils.hpp"
-#include "nova_renderer/renderables.hpp"
 // TODO: Move window creation out of the RHI
 #ifdef NOVA_LINUX
 #define NOVA_VK_XLIB
@@ -1715,8 +1715,7 @@ namespace nova::renderer::rhi {
     }
 
     std::tuple<std::pmr::vector<VkVertexInputAttributeDescription>, std::pmr::vector<VkVertexInputBindingDescription>> VulkanRenderEngine::
-        get_input_assembler_setup(
-            const std::vector<shaderpack::VertexFieldData, std::pmr::polymorphic_allocator<shaderpack::VertexFieldData>>& vertex_fields) {
+        get_input_assembler_setup(const std::pmr::vector<shaderpack::VertexFieldData>& vertex_fields) {
         std::pmr::vector<VkVertexInputAttributeDescription> attributes;
         std::pmr::vector<VkVertexInputBindingDescription> bindings;
 
@@ -1725,8 +1724,8 @@ namespace nova::renderer::rhi {
 
         uint32_t cur_binding = 0;
         for(const auto& field : vertex_fields) {
-            const auto attr_format = to_vk_vertex_format(field.field);
-            attributes.emplace_back(VkVertexInputAttributeDescription{cur_binding, 0, attr_format, 0});
+            const auto attr_format = to_vk_vertex_format(field.format);
+            attributes.emplace_back(VkVertexInputAttributeDescription{cur_binding, 0, attr_format, field.offset});
 
             bindings.emplace_back(VkVertexInputBindingDescription{cur_binding, sizeof(FullVertex), VK_VERTEX_INPUT_RATE_VERTEX});
 

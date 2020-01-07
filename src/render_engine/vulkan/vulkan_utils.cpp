@@ -456,37 +456,19 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkFormat to_vk_vertex_format(const shaderpack::VertexField field) {
+    VkFormat to_vk_vertex_format(const shaderpack::VertexFieldFormat field) {
         switch(field) {
-            case shaderpack::VertexField::Position:
-                return VK_FORMAT_R32G32B32_SFLOAT;
-
-            case shaderpack::VertexField::ColorFloat4:
-                return VK_FORMAT_R32G32B32A32_SFLOAT;
-
-            case shaderpack::VertexField::ColorUint:
+            case shaderpack::VertexFieldFormat::Uint:
                 return VK_FORMAT_R32_UINT;
 
-            case shaderpack::VertexField::UV0:
+            case shaderpack::VertexFieldFormat::Float2:
                 return VK_FORMAT_R32G32_SFLOAT;
 
-            case shaderpack::VertexField::UV1:
-                return VK_FORMAT_R32G32_SFLOAT;
-
-            case shaderpack::VertexField::Normal:
+            case shaderpack::VertexFieldFormat::Float3:
                 return VK_FORMAT_R32G32B32_SFLOAT;
 
-            case shaderpack::VertexField::Tangent:
-                return VK_FORMAT_R32G32B32_SFLOAT;
-
-            case shaderpack::VertexField::MidTexCoord:
+            case shaderpack::VertexFieldFormat::Float4:
                 return VK_FORMAT_R32G32_SFLOAT;
-
-            case shaderpack::VertexField::VirtualTextureId:
-                return VK_FORMAT_R32_UINT;
-
-            case shaderpack::VertexField::McEntityId:
-                return VK_FORMAT_R32G32B32A32_SFLOAT;
 
             default:
                 return VK_FORMAT_R32G32B32_SFLOAT;

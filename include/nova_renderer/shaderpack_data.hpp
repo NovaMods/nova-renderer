@@ -261,9 +261,16 @@ namespace nova::renderer::shaderpack {
         std::pmr::vector<uint32_t> source;
     };
 
+    enum VertexFieldFormat {
+        Uint,
+        Float2,
+        Float3,
+        Float4,
+    };
+
     struct VertexFieldData {
-        std::string semantic_name;
-        VertexField field{};
+        uint32_t offset = 0;
+        VertexFieldFormat format;
     };
 
     /*!
