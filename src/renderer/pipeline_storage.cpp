@@ -107,7 +107,72 @@ namespace nova::renderer {
         return device->create_pipeline_interface(bindings, color_attachments, depth_texture, allocator);
     }
 
-    rhi::VertexFieldFormat to_rhi_vertex_format(const SPIRType& spirv_type) {}
+    rhi::VertexFieldFormat to_rhi_vertex_format(const SPIRType& spirv_type) {
+        switch(spirv_type.basetype) {
+            case SPIRType::UInt:
+                return rhi::VertexFieldFormat::Uint;
+
+            case SPIRType::Float: {
+                switch(spirv_type.vecsize) {
+                    case 2:
+                        return rhi::VertexFieldFormat::Float2;
+
+                    case 3:
+                        return rhi::VertexFieldFormat::Float3;
+
+                    case 4:
+                        return rhi::VertexFieldFormat::Float4;
+
+                    default:
+                        NOVA_LOG(ERROR) << "Nova does not support float fields with " << spirv_type.vecsize << " vector elements";
+                        [[fallthrough]];
+                }
+            };
+
+            case SPIRType::Unknown:
+                [[fallthrough]];
+            case SPIRType::Void:
+                [[fallthrough]];
+            case SPIRType::Boolean:
+                [[fallthrough]];
+            case SPIRType::SByte:
+                [[fallthrough]];
+            case SPIRType::UByte:
+                [[fallthrough]];
+            case SPIRType::Short:
+                [[fallthrough]];
+            case SPIRType::UShort:
+                [[fallthrough]];
+            case SPIRType::Int:
+                [[fallthrough]];
+            case SPIRType::Int64:
+                [[fallthrough]];
+            case SPIRType::UInt64:
+                [[fallthrough]];
+            case SPIRType::AtomicCounter:
+                [[fallthrough]];
+            case SPIRType::Half:
+                [[fallthrough]];
+            case SPIRType::Double:
+                [[fallthrough]];
+            case SPIRType::Struct:
+                [[fallthrough]];
+            case SPIRType::Image:
+                [[fallthrough]];
+            case SPIRType::SampledImage:
+                [[fallthrough]];
+            case SPIRType::Sampler:
+                [[fallthrough]];
+            case SPIRType::AccelerationStructureNV:
+                [[fallthrough]];
+            case SPIRType::ControlPointArray:
+                [[fallthrough]];
+            case SPIRType::Char:
+                [[fallthrough]];
+            default:
+                NOVA_LOG(ERROR) << "Nova does not support vertex fields of type " << spirv_type.basetype;
+        }
+    }
 
     std::pmr::vector<rhi::VertexField> PipelineStorage::get_vertex_fields(const ShaderSource& vertex_shader) const {
         const CompilerGLSL shader_compiler(vertex_shader.source.data(), vertex_shader.source.size());
@@ -120,7 +185,7 @@ namespace nova::renderer {
                        shader_vertex_fields.end(),
                        std::back_insert_iterator(vertex_fields),
                        [&](const auto& spirv_field) {
-                           const auto spirv_type = shader_compiler.get_type(spirv_field.base_type_id);
+                           const auto& spirv_type = shader_compiler.get_type(spirv_field.base_type_id);
                            const auto format = to_rhi_vertex_format(spirv_type);
 
                            return rhi::VertexField{spirv_field.name, format};

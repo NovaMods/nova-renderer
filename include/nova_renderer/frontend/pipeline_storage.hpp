@@ -54,7 +54,7 @@ namespace nova::renderer {
             const std::pmr::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
             const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const;
 
-        std::pmr::vector<rhi::VertexField> get_vertex_fields(const shaderpack::ShaderSource& vertex_shader) const;
+        [[nodisacrd]] std::pmr::vector<rhi::VertexField> get_vertex_fields(const shaderpack::ShaderSource& vertex_shader) const;
 
         static void get_shader_module_descriptors(const std::pmr::vector<uint32_t>& spirv,
                                                   rhi::ShaderStage shader_stage,
