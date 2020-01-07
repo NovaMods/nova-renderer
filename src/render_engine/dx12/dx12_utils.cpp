@@ -187,33 +187,38 @@ namespace nova::renderer::rhi {
         }
     }
 
-    enum DXGI_FORMAT to_dx_format(const shaderpack::VertexFieldFormat format) {
+    enum DXGI_FORMAT to_dx_format(const VertexFieldFormat format) {
         switch(format) {
-            case shaderpack::Uint:
+            case VertexFieldFormat::Uint:
                 return DXGI_FORMAT_R32_UINT;
 
-            case shaderpack::Float2:
+            case VertexFieldFormat::Float2:
                 return DXGI_FORMAT_R32G32_FLOAT;
 
-            case shaderpack::Float3:
+            case VertexFieldFormat::Float3:
                 return DXGI_FORMAT_R32G32B32_FLOAT;
 
-            case shaderpack::Float4:
+            case VertexFieldFormat::Float4:
                 return DXGI_FORMAT_R32G32B32A32_FLOAT;
 
             default:;
         }
     }
 
-    std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions(const std::pmr::vector<shaderpack::VertexFieldData>& fields) {
+    std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions(const std::pmr::vector<VertexField>& fields) {
         std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> input_element_descriptions;
         input_element_descriptions.reserve(fields.size());
 
         uint32_t cur_slot = 0;
         for(const auto& field : fields) {
             const auto format = to_dx_format(field.format);
-            input_element_descriptions
-                .emplace_back("TODO", 0, format, cur_slot, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+            input_element_descriptions.emplace_back(field.name.c_str(),
+                                                    0,
+                                                    format,
+                                                    cur_slot,
+                                                    D3D12_APPEND_ALIGNED_ELEMENT,
+                                                    D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+                                                    0);
 
             cur_slot++;
         }

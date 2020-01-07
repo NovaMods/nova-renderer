@@ -22,7 +22,7 @@ namespace nova::renderer::rhi {
 
     [[nodiscard]] D3D12_DESCRIPTOR_RANGE_TYPE to_dx12_range_type(DescriptorType type);
 
-    [[nodiscard]] std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions(const std::pmr::vector<shaderpack::VertexField>& fields);
+    [[nodiscard]] std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions(const std::pmr::vector<VertexField>& fields);
 
     [[nodiscard]] std::string to_string(HRESULT hr);
 

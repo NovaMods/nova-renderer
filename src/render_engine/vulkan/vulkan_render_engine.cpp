@@ -1715,7 +1715,7 @@ namespace nova::renderer::rhi {
     }
 
     std::tuple<std::pmr::vector<VkVertexInputAttributeDescription>, std::pmr::vector<VkVertexInputBindingDescription>> VulkanRenderEngine::
-        get_input_assembler_setup(const std::pmr::vector<VertexFieldFormat>& vertex_fields) {
+        get_input_assembler_setup(const std::pmr::vector<VertexField>& vertex_fields) {
         std::pmr::vector<VkVertexInputAttributeDescription> attributes;
         std::pmr::vector<VkVertexInputBindingDescription> bindings;
 
@@ -1725,13 +1725,13 @@ namespace nova::renderer::rhi {
         uint32_t cur_binding = 0;
         uint32_t byte_offset = 0;
         for(const auto& field : vertex_fields) {
-            const auto attr_format = to_vk_vertex_format(field);
+            const auto attr_format = to_vk_vertex_format(field.format);
             attributes.emplace_back(VkVertexInputAttributeDescription{cur_binding, 0, attr_format, byte_offset});
 
             bindings.emplace_back(VkVertexInputBindingDescription{cur_binding, sizeof(FullVertex), VK_VERTEX_INPUT_RATE_VERTEX});
 
             cur_binding++;
-            byte_offset += get_byte_size(field);
+            byte_offset += get_byte_size(field.format);
         }
 
         return {attributes, bindings};
