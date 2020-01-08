@@ -25,10 +25,6 @@ namespace nova::renderer {
     NullUiRenderpass::NullUiRenderpass(rhi::RenderEngine* device, const glm::vec2& framebuffer_size)
         : UiRenderpass(device, framebuffer_size) {}
 
-    void NullUiRenderpass::render(rhi::CommandList* /* cmds */, FrameContext& /* ctx */) {
-        // Intentionally empty
-    }
-
     void NullUiRenderpass::render_ui(rhi::CommandList* /* cmds */, FrameContext& /* ctx */) {
         // Intentionally empty
     }

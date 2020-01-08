@@ -141,17 +141,58 @@ namespace nova::renderer {
         std::pmr::vector<rhi::ResourceBarrier> read_texture_barriers;
         std::pmr::vector<rhi::ResourceBarrier> write_texture_barriers;
 
+        /*!
+         * \brief Performs the rendering work of this renderpass
+         *
+         * Custom renderpasses can override this method to perform custom rendering. However, I recommend that you override
+         * `render_renderpass_contents` instead. A typical renderpass will need to issue barriers for the resource it uses, and
+         * the default renderpass implementation calls `render_renderpass_contents` after issuing those barriers
+         *
+         * \param cmds The command list that this renderpass should record all its rendering commands into. You may record secondary command
+         * lists in multiple threads and execute them with this command list, if you want
+         *
+         * \param ctx The context for the current frame. Contains information about the available resources, the current frame, and
+         * everything you should need to render. If there's something you need that isn't in the frame context, submit an issue on the Nova
+         * GitHub
+         */
         virtual void render(rhi::CommandList* cmds, FrameContext& ctx);
-
-        void record_pre_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const;
-
-        virtual void render_renderpass_contents(rhi::CommandList* cmds, FrameContext& ctx);
-
-        void record_post_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const;
 
         /*!
          * \brief Returns the framebuffer that this renderpass should render to
          */
         [[nodiscard]] rhi::Framebuffer* get_framebuffer(const FrameContext& ctx) const;
+
+    protected:
+        /*!
+         * \brief Records all the resource barriers that need to take place before this renderpass renders anything
+         *
+         * By default `render` calls this method before calling `render_renderpass_contents`. If you override `render`, you'll need to call
+         * this method yourself before using any of this renderpass's resources
+         */
+        void record_pre_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const;
+
+        /*!
+         * \brief Renders the contents of this renderpass
+         *
+         * The default `render` method calls this method after `record_pre_renderpass_barriers` and before
+         * `record_post_renderpass_barriers`. Thus, I recommend that you override this method instead of `render` - you'll have fewer things
+         * to worry about
+         *
+         * \param cmds The command list that this renderpass should record all its rendering commands into. You may record secondary command
+         * lists in multiple threads and execute them with this command list, if you want
+         *
+         * \param ctx The context for the current frame. Contains information about the available resources, the current frame, and
+         * everything you should need to render. If there's something you need that isn't in the frame context, submit an issue on the Nova
+         * GitHub
+         */
+        virtual void render_renderpass_contents(rhi::CommandList* cmds, FrameContext& ctx);
+
+        /*!
+         * \brief Records all the resource barriers that need to take place after this renderpass renders anything
+         *
+         * By default `render` calls this method after calling `render_renderpass_contents`. If you override `render`, you'll need to call
+         * this method yourself near the end of your `render` method
+         */
+        void record_post_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const;
     };
 } // namespace nova::renderer

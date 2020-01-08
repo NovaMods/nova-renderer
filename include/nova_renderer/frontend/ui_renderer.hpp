@@ -11,9 +11,9 @@ namespace nova::renderer {
     public:
         UiRenderpass(rhi::RenderEngine* device, const glm::vec2& framebuffer_size);
 
-        void render_renderpass_contents(rhi::CommandList* cmds, FrameContext& ctx) override;
-
     protected:
+        void render_renderpass_contents(rhi::CommandList* cmds, FrameContext& ctx) override final;
+
         /*!
          * \brief Renders the host application's UI
          *
@@ -25,8 +25,6 @@ namespace nova::renderer {
     class NullUiRenderpass final : public UiRenderpass {
     public:
         NullUiRenderpass(rhi::RenderEngine* device, const glm::vec2& framebuffer_size);
-
-        void render(rhi::CommandList* cmds, FrameContext& ctx) override;
 
         ~NullUiRenderpass() override = default;
 

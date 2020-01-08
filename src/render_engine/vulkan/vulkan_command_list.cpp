@@ -124,18 +124,6 @@ namespace nova::renderer::rhi {
         begin_info.clearValueCount = vk_framebuffer->num_attachments;
         begin_info.pClearValues = CLEAR_VALUES.data();
 
-        /*
-         * ERROR: [Validation] [Validation]  Objects: Render Passforward (8483000000000025)  In vkCmdBeginRenderPass()
-         * the VkRenderPassBeginInfo struct has a clearValueCount of 0 but there must be at least 2 entries in
-         * pClearValues array to account for the highest index attachment in VkRenderPass 0x8483000000000025[forward]
-         * that uses VK_ATTACHMENT_LOAD_OP_CLEAR is 2. Note that the pClearValues array is indexed by attachment number
-         * so even if some pClearValues entries between 0 and 1 correspond to attachments that aren't cleared they will
-         * be ignored. The Vulkan spec states: clearValueCount must be greater than the largest attachment index in
-         * renderPass that specifies a loadOp (or stencilLoadOp, if the attachment has a depth/stencil format) of
-         * VK_ATTACHMENT_LOAD_OP_CLEAR
-         * (https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#VUID-VkRenderPassBeginInfo-clearValueCount-00902)
-         */
-
         // Nova _always_ records command lists in parallel for each renderpass
         vkCmdBeginRenderPass(cmds, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
     }

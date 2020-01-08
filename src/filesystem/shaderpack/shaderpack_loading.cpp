@@ -12,6 +12,7 @@
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/folder_accessor.hpp"
+#include "nova_renderer/filesystem/virtual_filesystem.hpp"
 
 #include "../../tasks/task_scheduler.hpp"
 #include "../json_utils.hpp"
@@ -185,7 +186,7 @@ namespace nova::renderer::shaderpack {
 
     ShaderpackData load_shaderpack_data(const fs::path& shaderpack_name) {
         loading_failed = false;
-        const std::shared_ptr<FolderAccessorBase> folder_access = FolderAccessorBase::create(shaderpack_name);
+        const std::shared_ptr<FolderAccessorBase> folder_access = VirtualFilesystem::get_instance()->get_folder_accessor(shaderpack_name);
 
         // The shaderpack has a number of items: There's the shaders themselves, of course, but there's so, so much more
         // What else is there?

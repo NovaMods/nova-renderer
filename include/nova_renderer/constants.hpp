@@ -20,6 +20,8 @@ namespace nova::renderer {
 
     constexpr mem::Bytes PER_FRAME_MEMORY_SIZE = 2_mb;
 
+    const fs::path RENDERPACK_DIRECTORY = "shaderpacks";
+
     /*!
      * \brief Name of Nova's white texture
      *
@@ -48,6 +50,11 @@ namespace nova::renderer {
      * to layer the UI on top of the 3D scene.
      */
     const std::string UI_RENDER_PASS_NAME = "NovaUI";
+
+    /*!
+     * \brief Name of the render target that renderpacks must render to
+     */
+    const std::string SCENE_OUTPUT_RT_NAME = "NovaSceneOutput";
 
     /*!
      * \brief Name of the backbuffer

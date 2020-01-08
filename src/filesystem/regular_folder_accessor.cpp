@@ -47,9 +47,11 @@ namespace nova::filesystem {
         const fs::path full_path = root_folder / folder;
         std::pmr::vector<fs::path> paths = {};
 
-        fs::directory_iterator folder_itr(full_path);
-        for(const fs::directory_entry& entry : folder_itr) {
-            paths.push_back(entry.path());
+        if(exists(full_path)) {
+            fs::directory_iterator folder_itr(full_path);
+            for(const fs::directory_entry& entry : folder_itr) {
+                paths.push_back(entry.path());
+            }
         }
 
         return paths;

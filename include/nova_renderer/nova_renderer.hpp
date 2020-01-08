@@ -224,6 +224,8 @@ namespace nova::renderer {
 #pragma region Initialization
         void create_global_allocators();
 
+        void initialize_virtual_filesystem();
+
         /*!
          * \brief Creates global GPU memory pools
          *
@@ -238,7 +240,7 @@ namespace nova::renderer {
 
         void create_resource_storage();
 
-        void create_builtin_textures();
+        void create_builtin_render_targets();
 
         void create_uniform_buffers();
 
@@ -275,8 +277,7 @@ namespace nova::renderer {
         void create_dynamic_textures(const std::pmr::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
 
         void create_render_passes(const std::pmr::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
-                                  const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipelines,
-                                  const std::pmr::vector<shaderpack::MaterialData>& materials);
+                                  const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipelines);
 
         /*!
          * \brief Creates a single renderpass

@@ -63,6 +63,8 @@ namespace nova::renderer {
     NovaRenderer::NovaRenderer(const NovaSettings& settings) : render_settings(settings) {
         create_global_allocators();
 
+        initialize_virtual_filesystem();
+
         mtr_init("trace.json");
 
         MTR_META_PROCESS_NAME("NovaRenderer");
@@ -134,7 +136,7 @@ namespace nova::renderer {
 
         create_resource_storage();
 
-        create_builtin_textures();
+        create_builtin_render_targets();
 
         create_uniform_buffers();
 
@@ -303,12 +305,17 @@ namespace nova::renderer {
             NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
         }
 
-        data.graph_data.passes = order_passes(data.graph_data.passes).value; // TODO: Handle errors somehow
+        const auto passes = order_passes(data.graph_data.passes);
+        if(!passes) {
+            NOVA_LOG(ERROR) << "Could not create order render passes";
+            return;
+        }
+        data.graph_data.passes = *passes;
 
         create_dynamic_textures(data.resources.render_targets);
         NOVA_LOG(DEBUG) << "Dynamic textures created";
 
-        create_render_passes(data.graph_data.passes, data.pipelines, data.materials);
+        create_render_passes(data.graph_data.passes, data.pipelines);
 
         create_pipelines_and_materials(data.pipelines, data.materials);
 
@@ -365,19 +372,9 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_render_passes(const std::pmr::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
-                                            const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipelines,
-                                            const std::pmr::vector<shaderpack::MaterialData>& materials) {
+                                            const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipelines) {
 
         rhi->set_num_renderpasses(static_cast<uint32_t>(pass_create_infos.size()));
-
-        uint32_t total_num_descriptors = 0;
-        for(const shaderpack::MaterialData& material_data : materials) {
-            for(const shaderpack::MaterialPass& material_pass : material_data.passes) {
-                total_num_descriptors += static_cast<uint32_t>(material_pass.bindings.size());
-            }
-        }
-
-        global_descriptor_pool = rhi->create_descriptor_pool(total_num_descriptors, 5, total_num_descriptors, *renderpack_allocator);
 
         for(const shaderpack::RenderPassCreateInfo& create_info : pass_create_infos) {
             std::shared_ptr<Renderpass> renderpass = std::make_shared<Renderpass>();
@@ -503,6 +500,17 @@ namespace nova::renderer {
 
     void NovaRenderer::create_pipelines_and_materials(const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipeline_create_infos,
                                                       const std::pmr::vector<shaderpack::MaterialData>& materials) {
+        uint32_t total_num_descriptors = 0;
+        for(const shaderpack::MaterialData& material_data : materials) {
+            for(const shaderpack::MaterialPass& material_pass : material_data.passes) {
+                total_num_descriptors += static_cast<uint32_t>(material_pass.bindings.size());
+            }
+        }
+
+        if(total_num_descriptors > 0) {
+            global_descriptor_pool = rhi->create_descriptor_pool(total_num_descriptors, 5, total_num_descriptors, *renderpack_allocator);
+        }
+
         for(const auto& pipeline_create_info : pipeline_create_infos) {
             if(pipeline_storage->create_pipeline(pipeline_create_info)) {
                 auto pipeline = pipeline_storage->get_pipeline(pipeline_create_info.name);
@@ -731,6 +739,16 @@ namespace nova::renderer {
         }
     }
 
+    void NovaRenderer::initialize_virtual_filesystem() {
+        // The host application MUST register its data directory before initializing Nova
+
+        const auto vfs = filesystem::VirtualFilesystem::get_instance();
+
+        const auto renderpacks_directory = vfs->get_folder_accessor(RENDERPACK_DIRECTORY);
+
+        vfs->add_resource_root(renderpacks_directory);
+    }
+
     void NovaRenderer::create_global_gpu_pools() {
         const uint64_t mesh_memory_size = 512000000;
         ntl::Result<rhi::DeviceMemory*> memory_result = rhi->allocate_device_memory(mesh_memory_size,
@@ -807,7 +825,19 @@ namespace nova::renderer {
         pipeline_storage = std::make_unique<PipelineStorage>(*this, *global_allocator->create_suballocator());
     }
 
-    void NovaRenderer::create_builtin_textures() {}
+    void NovaRenderer::create_builtin_render_targets() {
+        const auto& swapchain_size = rhi->get_swapchain()->get_size();
+        const auto scene_output = resource_storage->create_render_target(SCENE_OUTPUT_RT_NAME,
+                                                                         swapchain_size.x,
+                                                                         swapchain_size.y,
+                                                                         rhi::PixelFormat::Rgba8,
+                                                                         *global_allocator,
+                                                                         true);
+
+        if(!scene_output) {
+            NOVA_LOG(ERROR) << "Could not create scene output render target " << SCENE_OUTPUT_RT_NAME;
+        }
+    }
 
     void NovaRenderer::create_uniform_buffers() {
         // Buffer for per-frame uniform data

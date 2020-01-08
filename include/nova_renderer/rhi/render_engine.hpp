@@ -22,8 +22,26 @@ namespace nova::renderer::rhi {
     enum class DeviceArchitecture {
         Unknown,
 
+        /*!
+         * \brief The GPU was made by AMD
+         *
+         * The AMD backend uses D3D12 on Windows and Vulkan on Linux
+         */
         Amd,
+
+        /*!
+         * \brief The GPU was made by Nvidia
+         *
+         * The Nvidia backend uses OpenGL 4.3 on all platforms. It also makes heavy use of Nvidia extensions such as NV_command_list
+         */
         Nvidia,
+
+        /*!
+         * \brief The GPU was made by Intel
+         *
+         * The Intel backend will probably use D3D12 on Windows and Vulkan on Linux. It avoids using lots of fillrate and instead implements
+         * things without the rasterizer wherever possible
+         */
         Intel,
     };
 

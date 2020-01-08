@@ -159,7 +159,7 @@ namespace nova::renderer {
                 initial_texture_barrier.new_state = ResourceState::RenderTarget;
                 initial_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
 
-                cmds->resource_barriers(PipelineStage::TopOfPipe,
+                cmds->resource_barriers(PipelineStage::ColorAttachmentOutput,
                                         PipelineStage::ColorAttachmentOutput,
                                         {initial_texture_barrier});
 
