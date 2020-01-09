@@ -110,10 +110,10 @@ namespace nova::renderer {
             // Oh look some bullshit I have to do because C++ doesn't have an API as cool as Java Streams
             const auto create_infos = [&]() {
                 std::pmr::vector<RenderPassCreateInfo> create_info_temp(allocator);
-                std::transform(renderpasses.begin(),
-                               renderpasses.end(),
+                std::transform(renderpass_metadatas.begin(),
+                               renderpass_metadatas.end(),
                                std::back_insert_iterator<std::pmr::vector<RenderPassCreateInfo>>(create_info_temp),
-                               [&](const auto pair) {});
+                               [&](const auto pair) { return pair.second.data; });
                 return create_info_temp;
             }();
 
@@ -181,9 +181,9 @@ namespace nova::renderer {
             if(command.is_visible) {
                 auto* model_matrix_buffer = ctx.nova->get_builtin_buffer(MODEL_MATRIX_BUFFER_NAME);
                 ctx.nova->get_engine().write_data_to_buffer(&command.model_matrix,
-                                                             sizeof(glm::mat4),
-                                                             ctx.cur_model_matrix_index * sizeof(glm::mat4),
-                                                             model_matrix_buffer);
+                                                            sizeof(glm::mat4),
+                                                            ctx.cur_model_matrix_index * sizeof(glm::mat4),
+                                                            model_matrix_buffer);
                 ctx.cur_model_matrix_index++;
             }
         }
@@ -208,9 +208,9 @@ namespace nova::renderer {
             if(command.is_visible) {
                 auto* model_matrix_buffer = ctx.nova->get_builtin_buffer(MODEL_MATRIX_BUFFER_NAME);
                 ctx.nova->get_engine().write_data_to_buffer(&command.model_matrix,
-                                                             sizeof(glm::mat4),
-                                                             ctx.cur_model_matrix_index * sizeof(glm::mat4),
-                                                             model_matrix_buffer);
+                                                            sizeof(glm::mat4),
+                                                            ctx.cur_model_matrix_index * sizeof(glm::mat4),
+                                                            model_matrix_buffer);
                 ctx.cur_model_matrix_index++;
             }
         }

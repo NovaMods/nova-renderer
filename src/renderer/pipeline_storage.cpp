@@ -62,7 +62,7 @@ namespace nova::renderer {
 
         metadata.data = pipeline_create_info;
 
-        Result<rhi::Pipeline*> rhi_pipeline = device->create_pipeline(pipeline_interface, pipeline_create_info, allocator);
+        Result<rhi::Pipeline*> rhi_pipeline = device.create_pipeline(pipeline_interface, pipeline_create_info, allocator);
         if(rhi_pipeline) {
             pipeline.pipeline = *rhi_pipeline;
             pipeline.pipeline_interface = pipeline_interface;
@@ -102,7 +102,7 @@ namespace nova::renderer {
             get_shader_module_descriptors(pipeline_create_info.fragment_shader->source, rhi::ShaderStage::Fragment, bindings);
         }
 
-        return device->create_pipeline_interface(bindings, color_attachments, depth_texture, allocator)
+        return device.create_pipeline_interface(bindings, color_attachments, depth_texture, allocator)
             .map([&](rhi::PipelineInterface* pipeline_interface) {
                 pipeline_interface->vertex_fields = get_vertex_fields(pipeline_create_info.vertex_shader);
                 return pipeline_interface;

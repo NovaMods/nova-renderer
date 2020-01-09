@@ -356,11 +356,11 @@ namespace nova::renderer {
         renderpass->pipeline_names = create_info.pipeline_names;
         renderpass->id = static_cast<uint32_t>(renderpass_metadatas.size());
 
-        renderpasses.emplace(create_info.name, renderpass);
+        renderpasses.emplace(create_info.name, std::move(renderpass));
         renderpass_metadatas.emplace(create_info.name, metadata);
 
         is_dirty = true;
 
-        return renderpass.get();
+        return static_cast<RenderpassType*>(renderpasses.at(create_info.name).get());
     }
 } // namespace nova::renderer

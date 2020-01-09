@@ -46,11 +46,11 @@ namespace nova::renderer {
 
         const std::shared_ptr<Buffer> staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
 
-        resource.image = device->create_image(info, allocator);
+        resource.image = device.create_image(info, allocator);
         resource.image->is_dynamic = false;
 
         {
-            CommandList* cmds = device->create_command_list(allocator, 0, QueueType::Transfer);
+            CommandList* cmds = device.create_command_list(allocator, 0, QueueType::Transfer);
 
             ResourceBarrier initial_texture_barrier = {};
             initial_texture_barrier.resource_to_barrier = resource.image;
@@ -73,12 +73,12 @@ namespace nova::renderer {
 
             cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::AllGraphics, {final_texture_barrier});
 
-            Fence* upload_done_fence = device->create_fence(allocator);
-            device->submit_command_list(cmds, QueueType::Transfer, upload_done_fence);
+            Fence* upload_done_fence = device.create_fence(allocator);
+            device.submit_command_list(cmds, QueueType::Transfer, upload_done_fence);
 
             // Be sure that the data copy is complete, so that this method doesn't return before the GPU is done with the staging buffer
-            device->wait_for_fences({upload_done_fence});
-            device->destroy_fences({upload_done_fence}, allocator);
+            device.wait_for_fences({upload_done_fence});
+            device.destroy_fences({upload_done_fence}, allocator);
         }
 
         textures.emplace(name, resource);
@@ -135,7 +135,7 @@ namespace nova::renderer {
         create_info.format.width = static_cast<float>(width);
         create_info.format.height = static_cast<float>(height);
 
-        auto* image = device->create_image(create_info, allocator);
+        auto* image = device.create_image(create_info, allocator);
         if(image) {
             // Barrier it into the correct format and return it
 
@@ -149,7 +149,7 @@ namespace nova::renderer {
             resource.image = image;
 
             {
-                CommandList* cmds = device->create_command_list(allocator, 0, QueueType::Transfer);
+                CommandList* cmds = device.create_command_list(allocator, 0, QueueType::Transfer);
 
                 ResourceBarrier initial_texture_barrier = {};
                 initial_texture_barrier.resource_to_barrier = resource.image;
@@ -163,12 +163,12 @@ namespace nova::renderer {
                                         PipelineStage::ColorAttachmentOutput,
                                         {initial_texture_barrier});
 
-                Fence* upload_done_fence = device->create_fence(allocator);
-                device->submit_command_list(cmds, QueueType::Transfer, upload_done_fence);
+                Fence* upload_done_fence = device.create_fence(allocator);
+                device.submit_command_list(cmds, QueueType::Transfer, upload_done_fence);
 
                 // Be sure that the barrier is complete, so that this method doesn't return before the render target is ready to use
-                device->wait_for_fences({upload_done_fence});
-                device->destroy_fences({upload_done_fence}, allocator);
+                device.wait_for_fences({upload_done_fence});
+                device.destroy_fences({upload_done_fence}, allocator);
             }
 
             render_targets.emplace(name, resource);
@@ -192,7 +192,7 @@ namespace nova::renderer {
 
     void DeviceResources::destroy_render_target(const std::string& texture_name, AllocatorHandle<>& allocator) {
         if(const auto itr = render_targets.find(texture_name); itr != render_targets.end()) {
-            device->destroy_texture(itr->second.image, allocator);
+            device.destroy_texture(itr->second.image, allocator);
             render_targets.erase(itr);
         }
 #if NOVA_DEBUG
@@ -205,8 +205,7 @@ namespace nova::renderer {
     void DeviceResources::allocate_staging_buffer_memory() {
         staging_buffer_allocator = std::unique_ptr<AllocatorHandle<>>(renderer.get_global_allocator()->create_suballocator());
 
-        DeviceMemory* memory = device
-                                   ->allocate_device_memory(STAGING_BUFFER_TOTAL_MEMORY_SIZE,
+        DeviceMemory* memory = device.allocate_device_memory(STAGING_BUFFER_TOTAL_MEMORY_SIZE,
                                                             MemoryUsage::StagingBuffer,
                                                             ObjectType::Buffer,
                                                             *staging_buffer_allocator)
@@ -241,7 +240,7 @@ namespace nova::renderer {
 
         const BufferCreateInfo info = {actual_size, BufferUsage::StagingBuffer};
 
-        Buffer* buffer = device->create_buffer(info, *staging_buffer_memory, *staging_buffer_allocator);
+        Buffer* buffer = device.create_buffer(info, *staging_buffer_memory, *staging_buffer_allocator);
         return std::shared_ptr<Buffer>(buffer, return_staging_buffer);
     }
 

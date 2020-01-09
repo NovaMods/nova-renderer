@@ -327,6 +327,6 @@ namespace nova::renderer {
     RenderpassType* NovaRenderer::set_ui_renderpass(std::unique_ptr<RenderpassType> ui_renderpass,
                                                     const shaderpack::RenderPassCreateInfo& create_info) {
         builtin_renderpasses[UI_RENDER_PASS_NAME] = rendergraph->add_renderpass(std::move(ui_renderpass), create_info, *device_resources);
-        return builtin_renderpasses[UI_RENDER_PASS_NAME];
+        return static_cast<RenderpassType*>(builtin_renderpasses[UI_RENDER_PASS_NAME]);
     }
 } // namespace nova::renderer
