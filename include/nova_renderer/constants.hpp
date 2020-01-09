@@ -51,6 +51,10 @@ namespace nova::renderer {
      */
     const std::string UI_RENDER_PASS_NAME = "NovaUI";
 
+    const std::string UI_MATERIAL_NAME = "BestFriendGUI";
+
+    const std::string UI_MATERIAL_PASS_NAME = "BestFriendGUI";
+
     /*!
      * \brief Name of the render target that renderpacks must render to
      */

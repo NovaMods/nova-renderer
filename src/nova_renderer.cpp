@@ -388,6 +388,8 @@ namespace nova::renderer {
         RenderpassMetadata metadata;
         metadata.data = create_info;
 
+        renderpass->name = create_info.name;
+
         std::pmr::vector<rhi::Image*> color_attachments;
         color_attachments.reserve(create_info.texture_outputs.size());
 
@@ -401,7 +403,7 @@ namespace nova::renderer {
         bool writes_to_backbuffer = false;
 
         for(const shaderpack::TextureAttachmentInfo& attachment_info : create_info.texture_outputs) {
-            if(attachment_info.name == BACKBUFFER_NAME) {
+            if(attachment_info.name == BACKBUFFER_NAME || attachment_info.name == SCENE_OUTPUT_RT_NAME) {
                 writes_to_backbuffer = true;
 
                 if(create_info.texture_outputs.size() == 1) {
@@ -871,6 +873,9 @@ namespace nova::renderer {
             add_render_pass(ui, {}, ui_renderpass);
 
             ui_renderpass->is_builtin = true;
+
+            TODO: Make a renderpass soup of some sort that we can throw renderpasses into from any source
+            Similar to the pipeline soup or resource soup
 
             builtin_renderpasses[UI_RENDER_PASS_NAME] = ui_renderpass;
         }

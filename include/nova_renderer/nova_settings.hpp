@@ -26,6 +26,14 @@ namespace nova::renderer {
      */
     class ConfigListener {
     public:
+        ConfigListener(const ConfigListener& other) = default;
+        ConfigListener& operator=(const ConfigListener& other) = default;
+
+        ConfigListener(ConfigListener&& old) noexcept = default;
+        ConfigListener& operator=(ConfigListener&& old) noexcept = default;
+
+        virtual ~ConfigListener() = default;
+
         /*!
          * \brief Tells the listeners that there has been a change in the configuration
          *

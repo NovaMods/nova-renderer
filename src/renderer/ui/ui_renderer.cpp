@@ -7,7 +7,7 @@ namespace nova::renderer {
     UiRenderpass::UiRenderpass(rhi::RenderEngine* device, const glm::vec2& framebuffer_size) {
         shaderpack::RenderPassCreateInfo rp_info = {};
         rp_info.name = UI_RENDER_PASS_NAME;
-        rp_info.texture_inputs = {BACKBUFFER_NAME};
+        rp_info.texture_inputs = {SCENE_OUTPUT_RT_NAME};
         rp_info.texture_outputs = {{BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false}};
 
         device->create_renderpass(rp_info, framebuffer_size, *device->get_allocator())

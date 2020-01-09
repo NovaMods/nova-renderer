@@ -119,13 +119,13 @@ namespace nova::renderer::shaderpack {
 
         NOVA_LOG(TRACE) << "First pass at ordering passes...";
         // The passes, in simple dependency order
-        if(resource_to_write_pass.find(BACKBUFFER_NAME) == resource_to_write_pass.end()) {
+        if(resource_to_write_pass.find(SCENE_OUTPUT_RT_NAME) == resource_to_write_pass.end()) {
             NOVA_LOG(ERROR)
                 << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
             return ntl::Result<std::pmr::vector<RenderPassCreateInfo>>(ntl::NovaError("Failed to order passes because no backbuffer was found"));
         }
 
-        auto backbuffer_writes = resource_to_write_pass[BACKBUFFER_NAME];
+        auto backbuffer_writes = resource_to_write_pass[SCENE_OUTPUT_RT_NAME];
         ordered_passes.insert(ordered_passes.end(), backbuffer_writes.begin(), backbuffer_writes.end());
 
         for(const auto& pass_name : backbuffer_writes) {
@@ -264,7 +264,7 @@ namespace nova::renderer::shaderpack {
             const auto& to_alias_name = resources_in_order[i];
             NOVA_LOG(TRACE) << "Determining if we can alias `" << to_alias_name.c_str() << "`. Does it exist? "
                             << (textures.find(to_alias_name) != textures.end());
-            if(to_alias_name == BACKBUFFER_NAME) {
+            if(to_alias_name == BACKBUFFER_NAME || to_alias_name == SCENE_OUTPUT_RT_NAME) {
                 // Yay special cases!
                 continue;
             }

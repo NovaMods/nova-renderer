@@ -152,7 +152,7 @@ namespace nova::renderer::shaderpack {
                     // Backbuffer is a special snowflake
                     continue;
 
-                } else if(output.name == "NovaFinal") {
+                } else if(output.name == SCENE_OUTPUT_RT_NAME) {
                     // Another special snowflake
                     continue;
                     // TODO: Figure out how to tell the loader about all the builtin resources
@@ -249,7 +249,7 @@ namespace nova::renderer::shaderpack {
                                                     const auto output_itr = std::find_if(pass.texture_outputs.begin(),
                                                                                          pass.texture_outputs.end(),
                                                                                          [](const TextureAttachmentInfo& tex) {
-                                                                                             return tex.name == BACKBUFFER_NAME;
+                                                                                             return tex.name == SCENE_OUTPUT_RT_NAME;
                                                                                          });
 
                                                     return output_itr != pass.texture_outputs.end();
@@ -260,7 +260,7 @@ namespace nova::renderer::shaderpack {
 
             } else {
                 return ntl::Result<RendergraphData>(
-                    MAKE_ERROR("At least one pass must write to the render target named {:s}", BACKBUFFER_NAME));
+                    MAKE_ERROR("At least one pass must write to the render target named {:s}", SCENE_OUTPUT_RT_NAME));
             }
         }
         catch(nlohmann::json::parse_error& err) {

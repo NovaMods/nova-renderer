@@ -85,6 +85,10 @@ namespace nova::renderer {
         }
     }
 
+    bool Rendergraph::add_renderpack_renderpass(const shaderpack::RenderPassCreateInfo& create_info) {
+        
+    }
+
     rhi::Framebuffer* Renderpass::get_framebuffer(const FrameContext& ctx) const {
         if(!writes_to_backbuffer) {
             return framebuffer;

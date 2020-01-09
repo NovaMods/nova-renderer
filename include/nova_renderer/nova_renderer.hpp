@@ -185,7 +185,7 @@ namespace nova::renderer {
         NovaSettingsAccessManager render_settings;
 
         std::unique_ptr<rhi::RenderEngine> rhi;
-        std::shared_ptr<NovaWindow> window;
+        std::unique_ptr<NovaWindow> window;
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
@@ -255,6 +255,8 @@ namespace nova::renderer {
         std::mutex shaderpack_loading_mutex;
 
         std::optional<shaderpack::ShaderpackData> loaded_renderpack;
+
+        Rendergraph rendergraph;
 #pragma endregion
 
 #pragma region Rendergraph
@@ -283,8 +285,6 @@ namespace nova::renderer {
          * \brief Creates a single renderpass
          *
          * \param pipelines Create infos for all the pipelines that might use
-         * \param materials All the materials that are relevant to the renderer
-         * \param descriptor_pool Descriptor pool to use to allocate this renderpass's descriptors
          * \param create_info Information about how to make the renderpass
          * \param renderpass A pointer to a valid Renderpass object for this method to fill out
          *

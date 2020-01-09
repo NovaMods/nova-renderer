@@ -125,6 +125,7 @@ namespace nova::renderer {
         virtual ~Renderpass() = default;
 
         uint32_t id = 0;
+        std::string name;
 
         bool is_builtin = false;
 
@@ -194,5 +195,31 @@ namespace nova::renderer {
          * this method yourself near the end of your `render` method
          */
         void record_post_renderpass_barriers(rhi::CommandList* cmds, FrameContext& ctx) const;
+    };
+
+    /*!
+     * \brief Represents Nova's rendergraph
+     *
+     * The rendergraph can change a lot over the runtime of Nova. Loading or unloading a renderpack will change the available passes, and
+     * the order they're executed in
+     */
+    class Rendergraph {
+    public:
+        [[nodiscard]] bool add_renderpack_renderpass(const shaderpack::RenderPassCreateInfo& create_info);
+
+        [[nodiscard]] bool add_renderpass(const std::shared_ptr<Renderpass>& renderpass);
+
+        void destroy_renderpack_renderpasses();
+
+        [[nodiscard]] std::pmr::vector<std::string> calculate_renderpass_execution_order();
+
+        [[nodiscard]] std::shared_ptr<Renderpass> get_renderpass(const std::string& name) const;
+
+    private:
+        bool is_dirty = false;
+
+        std::pmr::unordered_map<std::string, std::shared_ptr<Renderpass>> renderpasses;
+
+        std::pmr::vector<std::string> cached_execution_order;
     };
 } // namespace nova::renderer

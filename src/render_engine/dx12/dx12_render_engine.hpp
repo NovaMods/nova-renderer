@@ -34,9 +34,7 @@ namespace nova::renderer::rhi {
      */
     class D3D12RenderEngine final : public RenderEngine {
     public:
-        D3D12RenderEngine(NovaSettingsAccessManager& settings,
-                          const std::shared_ptr<NovaWindow>& window,
-                          mem::AllocatorHandle<>& allocator);
+        D3D12RenderEngine(NovaSettingsAccessManager& settings, NovaWindow* window, mem::AllocatorHandle<>& allocator);
 
         D3D12RenderEngine(D3D12RenderEngine&& old) noexcept = delete;
         D3D12RenderEngine& operator=(D3D12RenderEngine&& old) noexcept = delete;
@@ -98,7 +96,7 @@ namespace nova::renderer::rhi {
 
         Image* create_image(const shaderpack::TextureCreateInfo& info, mem::AllocatorHandle<>& allocator) override;
 
-		Semaphore* create_semaphore(mem::AllocatorHandle<>& allocator) override;
+        Semaphore* create_semaphore(mem::AllocatorHandle<>& allocator) override;
 
         std::pmr::vector<Semaphore*> create_semaphores(uint32_t num_semaphores, mem::AllocatorHandle<>& allocator) override;
 

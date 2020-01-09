@@ -1,3 +1,5 @@
+#pragma once
+
 #pragma warning(push, 0)
 #include <D3DCompiler.h>
 #include <d3d12sdklayers.h>
@@ -28,9 +30,7 @@ using Microsoft::WRL::ComPtr;
 using namespace nova::mem;
 
 namespace nova::renderer::rhi {
-    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings,
-                                         const std::shared_ptr<NovaWindow>& window,
-                                         AllocatorHandle<>& allocator)
+    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings, NovaWindow* window, AllocatorHandle<>& allocator)
         : RenderEngine(allocator, settings, window),
           command_allocators(std::scoped_allocator_adaptor<AllocatorHandle<>>(std::move(*internal_allocator.create_suballocator()))) {
         create_device();
