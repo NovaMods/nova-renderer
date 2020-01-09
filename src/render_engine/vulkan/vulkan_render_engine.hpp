@@ -43,7 +43,7 @@ namespace nova::renderer::rhi {
         PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;
 
         VulkanRenderEngine(NovaSettingsAccessManager& settings,
-                           const std::shared_ptr<NovaWindow>& window,
+                           NovaWindow& window,
                            mem::AllocatorHandle<>& allocator);
 
         VulkanRenderEngine(VulkanRenderEngine&& old) noexcept = delete;

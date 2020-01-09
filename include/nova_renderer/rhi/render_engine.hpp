@@ -265,12 +265,12 @@ namespace nova::renderer::rhi {
                                          const std::pmr::vector<Semaphore*>& wait_semaphores = {},
                                          const std::pmr::vector<Semaphore*>& signal_semaphores = {}) = 0;
 
-        mem::AllocatorHandle<>* get_allocator();
+        [[nodiscard]] mem::AllocatorHandle<>* get_allocator();
 
     protected:
         mem::AllocatorHandle<>& internal_allocator;
 
-        std::shared_ptr<NovaWindow> window;
+        NovaWindow& window;
 
         glm::uvec2 swapchain_size = {};
         Swapchain* swapchain = nullptr;
@@ -285,6 +285,9 @@ namespace nova::renderer::rhi {
          *
          * \attention Called by the various render engine implementations
          */
-        RenderEngine(mem::AllocatorHandle<>& allocator, NovaSettingsAccessManager& settings, std::shared_ptr<NovaWindow> window);
+        RenderEngine(mem::AllocatorHandle<>& allocator, NovaSettingsAccessManager& settings, NovaWindow& window);
+
+
+
     };
 } // namespace nova::renderer::rhi

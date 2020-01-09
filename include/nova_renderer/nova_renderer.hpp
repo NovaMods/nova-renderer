@@ -91,21 +91,26 @@ namespace nova::renderer {
          * application to only care about rendering the UI, instead of worrying about any pass scheduling concerns
          *
          * \param ui_renderpass The renderpass to use for UI
+         * \param create_info The create info for the renderpass
+         *
+         * \return The renderpass you added, but you no longer have ownership
          */
-        void set_ui_renderpass(const std::shared_ptr<Renderpass>& ui_renderpass);
+        template <typename RenderpassType>
+        [[nodiscard]] RenderpassType* set_ui_renderpass(std::unique_ptr<RenderpassType> ui_renderpass,
+                                                        const shaderpack::RenderPassCreateInfo& create_info);
 
-        const std::vector<MaterialPass>& get_material_passes_for_pipeline(rhi::Pipeline* const pipeline);
+        [[nodiscard]] const std::vector<MaterialPass>& get_material_passes_for_pipeline(rhi::Pipeline* const pipeline);
 
-        std::optional<shaderpack::RenderPassCreateInfo> get_renderpass_metadata(const std::string& renderpass_name);
+        [[nodiscard]] std::optional<RenderpassMetadata> get_renderpass_metadata(const std::string& renderpass_name) const;
 
         /*!
          * \brief Executes a single frame
          */
         void execute_frame();
 
-        NovaSettingsAccessManager& get_settings();
+        [[nodiscard]] NovaSettingsAccessManager& get_settings();
 
-        mem::AllocatorHandle<>* get_global_allocator() const;
+        [[nodiscard]] mem::AllocatorHandle<>* get_global_allocator() const;
 
 #pragma region Meshes
         /*!
@@ -167,17 +172,17 @@ namespace nova::renderer {
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
                                                                const StaticMeshRenderableData& renderable);
 
-        [[nodiscard]] rhi::RenderEngine* get_engine() const;
+        [[nodiscard]] rhi::RenderEngine& get_engine() const;
 
-        [[nodiscard]] NovaWindow* get_window() const;
+        [[nodiscard]] NovaWindow& get_window() const;
 
-        [[nodiscard]] DeviceResources* get_resource_manager() const;
+        [[nodiscard]] DeviceResources& get_resource_manager() const;
 
-        [[nodiscard]] PipelineStorage* get_pipeline_storage();
+        [[nodiscard]] PipelineStorage& get_pipeline_storage() const;
 
-        static NovaRenderer* initialize(const NovaSettings& settings);
+        [[nodiscard]] static NovaRenderer* initialize(const NovaSettings& settings);
 
-        static NovaRenderer* get_instance();
+        [[nodiscard]] static NovaRenderer* get_instance();
 
         static void deinitialize();
 
@@ -210,7 +215,7 @@ namespace nova::renderer {
          */
         std::unique_ptr<mem::AllocatorHandle<>> renderpack_allocator;
 
-        std::unique_ptr<DeviceResources> resource_storage;
+        std::unique_ptr<DeviceResources> device_resources;
 
         std::unique_ptr<DeviceMemoryResource> mesh_memory;
 
@@ -224,7 +229,7 @@ namespace nova::renderer {
 #pragma region Initialization
         void create_global_allocators();
 
-        void initialize_virtual_filesystem();
+        static void initialize_virtual_filesystem();
 
         /*!
          * \brief Creates global GPU memory pools
@@ -240,11 +245,13 @@ namespace nova::renderer {
 
         void create_resource_storage();
 
-        void create_builtin_render_targets();
+        void create_builtin_render_targets() const;
 
         void create_uniform_buffers();
 
-        void create_builtin_renderpasses();
+        void create_renderpass_manager();
+
+        void create_builtin_renderpasses() const;
 #pragma endregion
 
 #pragma region Renderpack
@@ -254,49 +261,21 @@ namespace nova::renderer {
 
         std::mutex shaderpack_loading_mutex;
 
-        std::optional<shaderpack::ShaderpackData> loaded_renderpack;
+        std::optional<shaderpack::RenderpackData> loaded_renderpack;
 
-        Rendergraph rendergraph;
+        std::unique_ptr<Rendergraph> rendergraph;
 #pragma endregion
 
 #pragma region Rendergraph
         std::unordered_map<std::string, rhi::Image*> builtin_images;
-        std::unordered_map<std::string, std::shared_ptr<Renderpass>> builtin_renderpasses;
-
-        /*!
-         * \brief The renderpasses in the shaderpack, in submission order
-         *
-         * Each renderpass contains all the pipelines that use it. Each pipeline has all the material passes that use
-         * it, and each material pass has all the meshes that are drawn with it, and each mesh has all the renderables
-         * that use it
-         *
-         * Basically this vector contains all the data you need to render a frame
-         */
-        std::pmr::vector<std::shared_ptr<Renderpass>> renderpasses;
+        std::unordered_map<std::string, Renderpass*> builtin_renderpasses;
 
         std::unordered_map<std::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
 
         void create_dynamic_textures(const std::pmr::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
 
         void create_render_passes(const std::pmr::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
-                                  const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipelines);
-
-        /*!
-         * \brief Creates a single renderpass
-         *
-         * \param pipelines Create infos for all the pipelines that might use
-         * \param create_info Information about how to make the renderpass
-         * \param renderpass A pointer to a valid Renderpass object for this method to fill out
-         *
-         * \note The renderpass shared pointer comes from outside because the builtin passes need to use their own classes, but user passes
-         * need to use the default class. This isn't great but I like it a lot better than making this method templated
-         *
-         * TODO: Don't create pipelines or materials in this method. Split that out, so we can take pipelines and materials out of the
-         * renderpass struct
-         */
-        void add_render_pass(const shaderpack::RenderPassCreateInfo& create_info,
-                             const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipelines,
-                             const std::shared_ptr<Renderpass>& renderpass);
+                                  const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipelines) const;
 
         void destroy_dynamic_resources();
 
@@ -313,10 +292,9 @@ namespace nova::renderer {
         void create_pipelines_and_materials(const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipeline_create_infos,
                                             const std::pmr::vector<shaderpack::MaterialData>& materials);
 
-        void create_materials_for_pipeline(
-            const Pipeline& pipeline,
-            const std::pmr::vector<shaderpack::MaterialData>& materials,
-            const std::string& pipeline_name);
+        void create_materials_for_pipeline(const Pipeline& pipeline,
+                                           const std::pmr::vector<shaderpack::MaterialData>& materials,
+                                           const std::string& pipeline_name);
 
         void destroy_pipelines();
 
@@ -339,10 +317,16 @@ namespace nova::renderer {
 
         std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;
 
-        std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
         std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
 
         std::mutex ui_function_mutex;
 #pragma endregion
     };
+
+    template <typename RenderpassType>
+    RenderpassType* NovaRenderer::set_ui_renderpass(std::unique_ptr<RenderpassType> ui_renderpass,
+                                                    const shaderpack::RenderPassCreateInfo& create_info) {
+        builtin_renderpasses[UI_RENDER_PASS_NAME] = rendergraph->add_renderpass(std::move(ui_renderpass), create_info, *device_resources);
+        return builtin_renderpasses[UI_RENDER_PASS_NAME];
+    }
 } // namespace nova::renderer

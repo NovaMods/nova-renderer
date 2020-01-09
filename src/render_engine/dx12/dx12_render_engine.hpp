@@ -34,7 +34,7 @@ namespace nova::renderer::rhi {
      */
     class D3D12RenderEngine final : public RenderEngine {
     public:
-        D3D12RenderEngine(NovaSettingsAccessManager& settings, NovaWindow* window, mem::AllocatorHandle<>& allocator);
+        D3D12RenderEngine(NovaSettingsAccessManager& settings, NovaWindow& window, mem::AllocatorHandle<>& allocator);
 
         D3D12RenderEngine(D3D12RenderEngine&& old) noexcept = delete;
         D3D12RenderEngine& operator=(D3D12RenderEngine&& old) noexcept = delete;

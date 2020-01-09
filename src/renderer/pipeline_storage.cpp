@@ -33,8 +33,8 @@ namespace nova::renderer {
         }
 
         Result<rhi::PipelineInterface*> pipeline_interface = create_pipeline_interface(create_info,
-                                                                                       rp_create->texture_outputs,
-                                                                                       rp_create->depth_texture);
+                                                                                       rp_create->data.texture_outputs,
+                                                                                       rp_create->data.depth_texture);
         if(!pipeline_interface) {
             NOVA_LOG(ERROR) << "Pipeline " << create_info.name << " has an invalid interface: " << pipeline_interface.error.to_string();
             return false;

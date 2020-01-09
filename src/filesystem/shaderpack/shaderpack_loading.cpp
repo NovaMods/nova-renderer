@@ -143,7 +143,7 @@ namespace nova::renderer::shaderpack {
 
     bool loading_failed = false;
 
-    void fill_in_render_target_formats(ShaderpackData& data) {
+    void fill_in_render_target_formats(RenderpackData& data) {
         const auto& textures = data.resources.render_targets;
 
         for(auto& pass : data.graph_data.passes) {
@@ -184,7 +184,9 @@ namespace nova::renderer::shaderpack {
         }
     }
 
-    ShaderpackData load_shaderpack_data(const fs::path& shaderpack_name) {
+    void cache_pipelines_by_renderpass(RenderpackData& data);
+
+    RenderpackData load_shaderpack_data(const fs::path& shaderpack_name) {
         loading_failed = false;
         const std::shared_ptr<FolderAccessorBase> folder_access = VirtualFilesystem::get_instance()->get_folder_accessor(shaderpack_name);
 
@@ -197,7 +199,7 @@ namespace nova::renderer::shaderpack {
         //
         // All these things are loaded from the filesystem
 
-        ShaderpackData data{};
+        RenderpackData data{};
         data.resources = load_dynamic_resources_file(folder_access);
         const auto& graph_data = load_rendergraph_file(folder_access);
         if(graph_data) {
@@ -209,6 +211,8 @@ namespace nova::renderer::shaderpack {
         data.materials = load_material_files(folder_access);
 
         fill_in_render_target_formats(data);
+
+        cache_pipelines_by_renderpass(data);
 
         return data;
     }
@@ -471,6 +475,16 @@ namespace nova::renderer::shaderpack {
         material.name = material_path.stem().string();
         NOVA_LOG(TRACE) << "Load of material " << material_path << " succeeded";
         return material;
+    }
+
+    void cache_pipelines_by_renderpass(RenderpackData& data) {
+        for(const auto& pipeline_info : data.pipelines) {
+            for(auto& renderpass_info : data.graph_data.passes) {
+                if(pipeline_info.pass == renderpass_info.name) {
+                    renderpass_info.pipeline_names.emplace_back(pipeline_info.pass);
+                }
+            }
+        }
     }
 
     EShLanguage to_glslang_shader_stage(const rhi::ShaderStage stage) {

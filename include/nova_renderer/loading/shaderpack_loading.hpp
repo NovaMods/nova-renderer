@@ -21,7 +21,7 @@ namespace nova::renderer::shaderpack {
      * \param shaderpack_name The name of the shaderpack to loads
      * \return The shaderpack, if it can be loaded, or an empty optional if it cannot
      */
-    ShaderpackData load_shaderpack_data(const fs::path& shaderpack_name);
+    RenderpackData load_shaderpack_data(const fs::path& shaderpack_name);
 
     std::pmr::vector<uint32_t> load_shader_file(const fs::path& filename,
                                                 const std::shared_ptr<filesystem::FolderAccessorBase>& folder_access,

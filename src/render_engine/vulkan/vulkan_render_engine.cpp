@@ -28,7 +28,7 @@ using namespace nova::mem;
 
 namespace nova::renderer::rhi {
     VulkanRenderEngine::VulkanRenderEngine(NovaSettingsAccessManager& settings,
-                                           const std::shared_ptr<NovaWindow>& window,
+                                           NovaWindow& window,
                                            AllocatorHandle<>& allocator)
         : RenderEngine(allocator, settings, window),
           command_pools_by_thread_idx(
@@ -1255,7 +1255,7 @@ namespace nova::renderer::rhi {
 #elif defined(NOVA_WINDOWS)
         VkWin32SurfaceCreateInfoKHR win32_surface_create = {};
         win32_surface_create.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-        win32_surface_create.hwnd = window->get_window_handle();
+        win32_surface_create.hwnd = window.get_window_handle();
 
         NOVA_CHECK_RESULT(vkCreateWin32SurfaceKHR(instance, &win32_surface_create, nullptr, &surface));
 
@@ -1562,10 +1562,10 @@ namespace nova::renderer::rhi {
 
         swapchain = internal_allocator.new_other_object<VulkanSwapchain>(NUM_IN_FLIGHT_FRAMES,
                                                                          this,
-                                                                         window->get_framebuffer_size(),
+                                                                         window.get_framebuffer_size(),
                                                                          present_modes);
 
-        swapchain_size = window->get_framebuffer_size();
+        swapchain_size = window.get_framebuffer_size();
     }
 
     void VulkanRenderEngine::create_per_thread_command_pools() {

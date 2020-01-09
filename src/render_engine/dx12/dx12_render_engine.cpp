@@ -30,7 +30,7 @@ using Microsoft::WRL::ComPtr;
 using namespace nova::mem;
 
 namespace nova::renderer::rhi {
-    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings, NovaWindow* window, AllocatorHandle<>& allocator)
+    D3D12RenderEngine::D3D12RenderEngine(NovaSettingsAccessManager& settings, NovaWindow& window, AllocatorHandle<>& allocator)
         : RenderEngine(allocator, settings, window),
           command_allocators(std::scoped_allocator_adaptor<AllocatorHandle<>>(std::move(*internal_allocator.create_suballocator()))) {
         create_device();
@@ -886,8 +886,8 @@ namespace nova::renderer::rhi {
     }
 
     void D3D12RenderEngine::create_swapchain(const uint32_t num_frames) {
-        const auto window_handle = window->get_window_handle();
-        const auto window_size = window->get_framebuffer_size();
+        const auto window_handle = window.get_window_handle();
+        const auto window_size = window.get_framebuffer_size();
 
         swapchain = internal_allocator.new_other_object<DX12Swapchain>(this,
                                                                        dxgi_factory.Get(),

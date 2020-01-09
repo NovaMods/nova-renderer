@@ -461,6 +461,11 @@ namespace nova::renderer::shaderpack {
          */
         std::pmr::vector<std::string> output_buffers{};
 
+        /*!
+         * \brief Names of all the pipelines that use this renderpass
+         */
+        std::pmr::vector<std::string> pipeline_names;
+
         RenderPassCreateInfo() = default;
     };
 
@@ -507,7 +512,7 @@ namespace nova::renderer::shaderpack {
     /*!
      * \brief All the data that can be in a shaderpack
      */
-    struct ShaderpackData {
+    struct RenderpackData {
         std::pmr::vector<PipelineCreateInfo> pipelines;
 
         /*!
