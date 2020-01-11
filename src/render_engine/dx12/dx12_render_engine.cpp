@@ -655,9 +655,9 @@ namespace nova::renderer::rhi {
         D3D12_RESOURCE_STATES state = [&] {
             if(info.usage == shaderpack::ImageUsage::RenderTarget) {
                 return D3D12_RESOURCE_STATE_RENDER_TARGET;
-            } else {
-                // TODO: Figure out if the resource has to be both kinds of resources
-                return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+            } else if(info.usage == shaderpack::ImageUsage::SampledImage) {
+                // Sampled images need to start in common so we can copy to them
+                return D3D12_RESOURCE_STATE_COMMON;
             }
         }();
 

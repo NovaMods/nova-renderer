@@ -56,7 +56,7 @@ namespace nova::renderer {
             initial_texture_barrier.resource_to_barrier = resource.image;
             initial_texture_barrier.access_before_barrier = ResourceAccess::CopyRead;
             initial_texture_barrier.access_after_barrier = ResourceAccess::CopyWrite;
-            initial_texture_barrier.old_state = ResourceState::Undefined;
+            initial_texture_barrier.old_state = ResourceState::Common;
             initial_texture_barrier.new_state = ResourceState::CopyDestination;
             initial_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
 
