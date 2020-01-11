@@ -68,7 +68,7 @@ namespace nova::renderer {
             pipeline.pipeline_interface = pipeline_interface;
 
         } else {
-            NovaError error = NovaError(format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name.c_str()).c_str(),
+            NovaError error = NovaError(format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name),
                                         std::move(rhi_pipeline.error));
             return ntl::Result<PipelineReturn>(std::move(error));
         }

@@ -174,7 +174,12 @@ namespace nova::renderer::rhi {
     D3D12_DESCRIPTOR_RANGE_TYPE to_dx12_range_type(DescriptorType type) {
         switch(type) {
             case DescriptorType::CombinedImageSampler:
+                [[fallthrough]];
+            case DescriptorType::Texture:
                 return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+            case DescriptorType::Sampler:
+                return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
 
             case DescriptorType::UniformBuffer:
                 return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;

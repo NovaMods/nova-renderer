@@ -246,7 +246,12 @@ namespace nova::renderer::rhi {
                 descriptor_range.RangeType = to_dx12_range_type(desc.type);
                 descriptor_range.NumDescriptors = desc.count;
                 descriptor_range.BaseShaderRegister = desc.binding;
-                descriptor_range.RegisterSpace = 0;
+
+                if(desc.is_unbounded) {
+                    descriptor_range.RegisterSpace = desc.count;    // maybe?
+                } else {
+                    descriptor_range.RegisterSpace = 0;
+                }
                 descriptor_range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
             }
         }
