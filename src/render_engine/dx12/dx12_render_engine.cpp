@@ -248,7 +248,7 @@ namespace nova::renderer::rhi {
                 descriptor_range.BaseShaderRegister = desc.binding;
 
                 if(desc.is_unbounded) {
-                    descriptor_range.RegisterSpace = desc.count;    // maybe?
+                    descriptor_range.RegisterSpace = 65536;    
                 } else {
                     descriptor_range.RegisterSpace = 0;
                 }

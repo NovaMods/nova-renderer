@@ -19,7 +19,7 @@ namespace nova::renderer {
 
     namespace shaderpack {
         struct RenderPassCreateInfo;
-    };
+    }
 
 #pragma region Structs for rendering
     template <typename RenderCommandType>
