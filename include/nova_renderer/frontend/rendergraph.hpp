@@ -360,8 +360,11 @@ namespace nova::renderer {
         renderpass->id = static_cast<uint32_t>(renderpass_metadatas.size());
 
         auto* ptr = renderpass.get();
+        if(const auto itr = renderpasses.find(create_info.name); itr != renderpasses.end()) {
+            renderpasses.erase(itr);
+        }
 
-        renderpasses.emplace(create_info.name, renderpass.release());
+        renderpasses.emplace(create_info.name, std::move(renderpass));
         renderpass_metadatas.emplace(create_info.name, metadata);
 
         is_dirty = true;
