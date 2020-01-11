@@ -136,7 +136,8 @@ namespace nova::renderer::shaderpack {
     ntl::Result<RendergraphData> load_rendergraph_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
 
     std::pmr::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<FolderAccessorBase>& folder_access);
-    PipelineCreateInfo load_single_pipeline(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& pipeline_path);
+    std::optional<PipelineCreateInfo> load_single_pipeline(const std::shared_ptr<FolderAccessorBase>& folder_access,
+                                                           const fs::path& pipeline_path);
 
     std::pmr::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access);
     MaterialData load_single_material(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& material_path);
@@ -286,15 +287,18 @@ namespace nova::renderer::shaderpack {
         for(const fs::path& potential_file : potential_pipeline_files) {
             if(potential_file.extension() == ".pipeline") {
                 // Pipeline file!
-                const PipelineCreateInfo& pipeline = load_single_pipeline(folder_access, potential_file);
-                output.push_back(pipeline);
+                const auto& pipeline = load_single_pipeline(folder_access, potential_file);
+                if(pipeline) {
+                    output.push_back(*pipeline);
+                }
             }
         }
 
         return output;
     }
 
-    PipelineCreateInfo load_single_pipeline(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& pipeline_path) {
+    std::optional<PipelineCreateInfo> load_single_pipeline(const std::shared_ptr<FolderAccessorBase>& folder_access,
+                                                           const fs::path& pipeline_path) {
         NOVA_LOG(TRACE) << "Task to load pipeline " << pipeline_path << " started";
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
@@ -305,7 +309,10 @@ namespace nova::renderer::shaderpack {
         print(report);
         if(!report.errors.empty()) {
             loading_failed = true;
-            NOVA_LOG(TRACE) << "Loading pipeline file " << pipeline_path << " failed";
+            NOVA_LOG(ERROR) << "Loading pipeline file " << pipeline_path << " failed";
+            for(const auto& err : report.errors) {
+                NOVA_LOG(ERROR) << err;
+            }
             return {};
         }
 
