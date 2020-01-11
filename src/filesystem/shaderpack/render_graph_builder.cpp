@@ -119,13 +119,13 @@ namespace nova::renderer::shaderpack {
 
         NOVA_LOG(TRACE) << "First pass at ordering passes...";
         // The passes, in simple dependency order
-        if(resource_to_write_pass.find(SCENE_OUTPUT_RT_NAME) == resource_to_write_pass.end()) {
+        if(resource_to_write_pass.find(BACKBUFFER_NAME) == resource_to_write_pass.end()) {
             NOVA_LOG(ERROR)
                 << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
             return ntl::Result<std::pmr::vector<RenderPassCreateInfo>>(ntl::NovaError("Failed to order passes because no backbuffer was found"));
         }
 
-        auto backbuffer_writes = resource_to_write_pass[SCENE_OUTPUT_RT_NAME];
+        auto backbuffer_writes = resource_to_write_pass[BACKBUFFER_NAME];
         ordered_passes.insert(ordered_passes.end(), backbuffer_writes.begin(), backbuffer_writes.end());
 
         for(const auto& pass_name : backbuffer_writes) {
