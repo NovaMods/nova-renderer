@@ -73,9 +73,9 @@ namespace nova::renderer {
          * current shaderpack with the new one, then start rendering. Replacing the shaderpack might also require reloading all chunks, if
          * the new shaderpack has different geometry filters then the current one
          *
-         * \param shaderpack_name The name of the shaderpack to load
+         * \param renderpack_name The name of the shaderpack to load
          */
-        void load_shaderpack(const std::string& shaderpack_name);
+        void load_renderpack(const std::string& renderpack_name);
 
         /*!
          * \brief Gives Nova a function to use to render UI
@@ -326,6 +326,7 @@ namespace nova::renderer {
     template <typename RenderpassType>
     RenderpassType* NovaRenderer::set_ui_renderpass(std::unique_ptr<RenderpassType> ui_renderpass,
                                                     const shaderpack::RenderPassCreateInfo& create_info) {
-        return rendergraph->add_renderpass(std::move(ui_renderpass), create_info, *device_resources);
+        RenderpassType* renderpass = rendergraph->add_renderpass(std::move(ui_renderpass), create_info, *device_resources);
+        return renderpass;
     }
 } // namespace nova::renderer

@@ -293,11 +293,11 @@ namespace nova::renderer {
         return ProceduralMeshAccessor(&proc_meshes, our_id);
     }
 
-    void NovaRenderer::load_shaderpack(const std::string& shaderpack_name) {
+    void NovaRenderer::load_renderpack(const std::string& renderpack_name) {
         MTR_SCOPE("ShaderpackLoading", "load_shaderpack");
         glslang::InitializeProcess();
 
-        const shaderpack::RenderpackData data = shaderpack::load_shaderpack_data(fs::path(shaderpack_name));
+        const shaderpack::RenderpackData data = shaderpack::load_shaderpack_data(fs::path(renderpack_name));
 
         if(shaderpack_loaded) {
             destroy_dynamic_resources();
@@ -319,7 +319,7 @@ namespace nova::renderer {
 
         shaderpack_loaded = true;
 
-        NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name << " loaded successfully";
+        NOVA_LOG(INFO) << "Shaderpack " << renderpack_name << " loaded successfully";
     }
 
     const std::vector<MaterialPass>& NovaRenderer::get_material_passes_for_pipeline(rhi::Pipeline* const pipeline) {

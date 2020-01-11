@@ -23,6 +23,8 @@ namespace nova::renderer::rhi {
         for(const ResourceBarrier& barrier : barriers) {
             ID3D12Resource* resource_to_barrier = nullptr;
             switch(barrier.resource_to_barrier->type) {
+                default:
+                    [[fallthrough]]; // yolo
                 case ResourceType::Buffer: {
                     auto* d3d12_buffer = static_cast<DX12Buffer*>(barrier.resource_to_barrier);
                     resource_to_barrier = d3d12_buffer->resource.Get();
@@ -37,27 +39,31 @@ namespace nova::renderer::rhi {
             const D3D12_RESOURCE_STATES initial_state = to_dx12_state(barrier.old_state);
             const D3D12_RESOURCE_STATES final_state = to_dx12_state(barrier.new_state);
 
-            D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-
             // Do some guesswork. Frontend/backend refactor will add state tracking that makes this code obsolete
 
             if(barrier.new_state == ResourceState::CopySource || barrier.new_state == ResourceState::CopyDestination) {
                 // If the resource is about to be involved in a copy operation, we need to end the a previous barrier
-                flags |= D3D12_RESOURCE_BARRIER_FLAG_END_ONLY;
+                dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(resource_to_barrier,
+                                                                             initial_state,
+                                                                             final_state,
+                                                                             D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+                                                                             D3D12_RESOURCE_BARRIER_FLAG_END_ONLY));
 
             } else if(barrier.old_state == ResourceState::CopySource || barrier.old_state == ResourceState::CopyDestination) {
-                // If the resource was just involved in a copy operation, we need to begin a barrier for a graphics queue to end
-                flags |= D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY;
-            }
+                // If the resource was just involved in a copy operation, we don't need to actually issue a barrier. I guess only Vulkan
+                // does? The state tracking in the frontend/backend refactor will get rid of all this anyways so it's fine if we're wrong
 
-            dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(resource_to_barrier,
-                                                                         initial_state,
-                                                                         final_state,
-                                                                         D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
-                                                                         flags));
+                // This branch will almost certainly need to be amended as bugfixes continue
+
+            } else {
+                // If no copy operations were involved, issue the barrier with no flags
+                dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(resource_to_barrier, initial_state, final_state));
+            }
         }
 
-        cmds->ResourceBarrier(static_cast<UINT>(dx12_barriers.size()), dx12_barriers.data());
+        if(!dx12_barriers.empty()) {
+            cmds->ResourceBarrier(static_cast<UINT>(dx12_barriers.size()), dx12_barriers.data());
+        }
     }
 
     void Dx12CommandList::copy_buffer(Buffer* destination_buffer,

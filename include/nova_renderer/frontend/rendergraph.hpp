@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fmt/format.h>
+#include <nova_renderer/rhi/swapchain.hpp>
 
 #include "nova_renderer/frame_context.hpp"
 #include "nova_renderer/frontend/procedural_mesh.hpp"
@@ -266,7 +267,7 @@ namespace nova::renderer {
 
         bool missing_render_targets = false;
         for(const shaderpack::TextureAttachmentInfo& attachment_info : create_info.texture_outputs) {
-            if(attachment_info.name == BACKBUFFER_NAME || attachment_info.name == SCENE_OUTPUT_RT_NAME) {
+            if(attachment_info.name == BACKBUFFER_NAME) {
                 if(create_info.texture_outputs.size() == 1) {
                     renderpass->writes_to_backbuffer = true;
                     renderpass->framebuffer = nullptr; // Will be resolved when rendering
@@ -277,6 +278,8 @@ namespace nova::renderer {
                         create_info.name,
                         create_info.texture_outputs.size() - 1));
                 }
+
+                framebuffer_size = device.get_swapchain()->get_size();
 
             } else {
                 const auto render_target_opt = resource_storage.get_render_target(attachment_info.name);
@@ -360,7 +363,5 @@ namespace nova::renderer {
         renderpass_metadatas.emplace(create_info.name, metadata);
 
         is_dirty = true;
-
-        return static_cast<RenderpassType*>(renderpasses.at(create_info.name).get());
     }
 } // namespace nova::renderer

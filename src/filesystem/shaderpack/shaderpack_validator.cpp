@@ -103,12 +103,7 @@ namespace nova::renderer::shaderpack {
         }
 
         const nlohmann::json::iterator& samplers_itr = resources_json.find("samplers");
-        if(samplers_itr == resources_json.end()) {
-            if(!missing_textures) {
-                report.errors.emplace_back(resources_msg(
-                    "No samplers defined, but dynamic textures are defined. You need to define your own samplers to access a texture with"));
-            }
-        } else {
+        if(samplers_itr != resources_json.end()) {
             nlohmann::json& all_samplers = *samplers_itr;
             if(!all_samplers.is_array()) {
                 report.errors.emplace_back(resources_msg("Samplers array must be an array, but like it isn't"));
