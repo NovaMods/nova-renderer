@@ -36,9 +36,6 @@
 #if defined(NOVA_VULKAN_RHI)
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
 #endif
-#if defined(NOVA_OPENGL_RHI)
-#include "render_engine/gl3/gl3_render_engine.hpp"
-#endif
 
 using namespace nova::mem;
 using namespace operators;
@@ -116,12 +113,6 @@ namespace nova::renderer {
             } break;
 #endif
 
-#if defined(NOVA_OPENGL_RHI)
-            case GraphicsApi::NvGl4: {
-                MTR_SCOPE("Init", "InitGL3RenderEngine");
-                rhi = std::make_unique<rhi::Gl4NvRenderEngine>(render_settings, *window, *global_allocator);
-            } break;
-#endif
             default: {
                 // TODO: Deal with it in a better way, this will crash soon
                 NOVA_LOG(FATAL) << "Selected graphics API was not enabled!";

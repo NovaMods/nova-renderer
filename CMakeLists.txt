@@ -269,22 +269,6 @@ if(NOVA_ENABLE_D3D12_RHI)
             )
 endif()
 
-if(NOVA_ENABLE_OPENGL_RHI)
-    set(NOVA_SOURCE
-            ${NOVA_SOURCE}
-            src/render_engine/gl3/gl3_render_engine.cpp
-            src/render_engine/gl3/gl3_render_engine.hpp
-            src/render_engine/gl3/gl3_command_list.cpp
-            src/render_engine/gl3/gl3_command_list.hpp
-            src/render_engine/gl3/gl3_swapchain.cpp
-            src/render_engine/gl3/gl3_swapchain.hpp
-            src/render_engine/gl3/KHR/khrplatform.h
-            src/render_engine/gl3/glad/glad.h
-            src/render_engine/gl3/glad.c
-            src/render_engine/gl3/gl3_structs.hpp
-            )
-endif()
-
 if(WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${WINDOWS_NOVA_SOURCE})
     set(OTHER_NOVA_SOURCE ${UNIX_NOVA_SOURCE})
