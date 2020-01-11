@@ -359,9 +359,13 @@ namespace nova::renderer {
         renderpass->pipeline_names = create_info.pipeline_names;
         renderpass->id = static_cast<uint32_t>(renderpass_metadatas.size());
 
-        renderpasses.emplace(create_info.name, std::move(renderpass));
+        auto* ptr = renderpass.get();
+
+        renderpasses.emplace(create_info.name, renderpass.release());
         renderpass_metadatas.emplace(create_info.name, metadata);
 
         is_dirty = true;
+
+        return ptr;
     }
 } // namespace nova::renderer
