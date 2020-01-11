@@ -85,11 +85,11 @@ namespace nova::renderer::rhi {
 
         switch(type) {
             case MemoryUsage::DeviceOnly:
+                [[fallthrough]];
+            case MemoryUsage::LowFrequencyUpload:
                 desc.Properties.Type = D3D12_HEAP_TYPE_DEFAULT;
                 break;
 
-            case MemoryUsage::LowFrequencyUpload:
-                [[fallthrough]];
             case MemoryUsage::StagingBuffer:
                 desc.Properties.Type = D3D12_HEAP_TYPE_UPLOAD;
         }
@@ -589,8 +589,11 @@ namespace nova::renderer::rhi {
         D3D12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(info.size.b_count());
         const D3D12_RESOURCE_ALLOCATION_INFO allocation_desc = device->GetResourceAllocationInfo(0, 1, &resource_desc);
 
+        const auto type = static_cast<DX12DeviceMemory*>(memory.memory)->heap->GetDesc().Properties.Type;
+
         const auto allocation = memory.allocate(allocation_desc.SizeInBytes);
         const auto* dx12_memory = static_cast<DX12DeviceMemory*>(allocation.memory);
+        NOVA_LOG(INFO) << type;
 
         device->CreatePlacedResource(dx12_memory->heap.Get(),
                                      allocation.allocation_info.offset.b_count(),

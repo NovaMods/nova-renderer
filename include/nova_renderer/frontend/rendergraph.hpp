@@ -129,8 +129,8 @@ namespace nova::renderer {
         Renderpass(Renderpass&& old) noexcept = default;
         Renderpass& operator=(Renderpass&& old) noexcept = default;
 
-        Renderpass(const Renderpass& other) = default;
-        Renderpass& operator=(const Renderpass& other) = default;
+        Renderpass(const Renderpass& other) = delete;
+        Renderpass& operator=(const Renderpass& other) = delete;
 
         virtual ~Renderpass() = default;
 

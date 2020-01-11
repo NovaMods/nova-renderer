@@ -49,7 +49,7 @@ namespace nova::renderer {
         resource.image = device.create_image(info, allocator);
         resource.image->is_dynamic = false;
 
-        {
+        if(data != nullptr) {
             CommandList* cmds = device.create_command_list(allocator, 0, QueueType::Transfer);
 
             ResourceBarrier initial_texture_barrier = {};
@@ -147,29 +147,6 @@ namespace nova::renderer {
             resource.height = height;
             resource.width = width;
             resource.image = image;
-
-            {
-                CommandList* cmds = device.create_command_list(allocator, 0, QueueType::Transfer);
-
-                ResourceBarrier initial_texture_barrier = {};
-                initial_texture_barrier.resource_to_barrier = resource.image;
-                initial_texture_barrier.access_before_barrier = ResourceAccess::ColorAttachmentRead;
-                initial_texture_barrier.access_after_barrier = ResourceAccess::ColorAttachmentWrite;
-                initial_texture_barrier.old_state = ResourceState::Undefined;
-                initial_texture_barrier.new_state = ResourceState::RenderTarget;
-                initial_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
-
-                cmds->resource_barriers(PipelineStage::ColorAttachmentOutput,
-                                        PipelineStage::ColorAttachmentOutput,
-                                        {initial_texture_barrier});
-
-                Fence* upload_done_fence = device.create_fence(allocator);
-                device.submit_command_list(cmds, QueueType::Transfer, upload_done_fence);
-
-                // Be sure that the barrier is complete, so that this method doesn't return before the render target is ready to use
-                device.wait_for_fences({upload_done_fence});
-                device.destroy_fences({upload_done_fence}, allocator);
-            }
 
             render_targets.emplace(name, resource);
 

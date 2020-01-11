@@ -165,7 +165,7 @@ namespace nova::renderer {
          * descriptor
          */
         void bind_data_to_material_descriptor_sets(
-            const MaterialPass& material,
+            const renderer::MaterialPass& material,
             const std::unordered_map<std::string, std::string>& bindings,
             const std::unordered_map<std::string, rhi::ResourceBindingDescription>& descriptor_descriptions);
 
@@ -255,7 +255,7 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Renderpack
-        using PipelineReturn = std::tuple<Pipeline, PipelineMetadata>;
+        using PipelineReturn = std::tuple<renderer::Pipeline, PipelineMetadata>;
 
         bool shaderpack_loaded = false;
 
@@ -268,7 +268,7 @@ namespace nova::renderer {
 
 #pragma region Rendergraph
         std::unordered_map<std::string, rhi::Image*> builtin_images;
-        std::unordered_map<std::string, Renderpass*> builtin_renderpasses;
+        std::unordered_map<std::string, renderer::Renderpass*> builtin_renderpasses;
 
         std::unordered_map<std::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
 
@@ -285,14 +285,14 @@ namespace nova::renderer {
 #pragma region Rendering pipelines
         std::unique_ptr<PipelineStorage> pipeline_storage;
 
-        std::unordered_map<rhi::Pipeline*, std::vector<MaterialPass>> passes_by_pipeline;
+        std::unordered_map<rhi::Pipeline*, std::vector<renderer::MaterialPass>> passes_by_pipeline;
 
         std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher> material_metadatas;
 
         void create_pipelines_and_materials(const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipeline_create_infos,
                                             const std::pmr::vector<shaderpack::MaterialData>& materials);
 
-        void create_materials_for_pipeline(const Pipeline& pipeline,
+        void create_materials_for_pipeline(const renderer::Pipeline& pipeline,
                                            const std::pmr::vector<shaderpack::MaterialData>& materials,
                                            const std::string& pipeline_name);
 
@@ -326,7 +326,6 @@ namespace nova::renderer {
     template <typename RenderpassType>
     RenderpassType* NovaRenderer::set_ui_renderpass(std::unique_ptr<RenderpassType> ui_renderpass,
                                                     const shaderpack::RenderPassCreateInfo& create_info) {
-        builtin_renderpasses[UI_RENDER_PASS_NAME] = rendergraph->add_renderpass(std::move(ui_renderpass), create_info, *device_resources);
-        return static_cast<RenderpassType*>(builtin_renderpasses[UI_RENDER_PASS_NAME]);
+        return rendergraph->add_renderpass(std::move(ui_renderpass), create_info, *device_resources);
     }
 } // namespace nova::renderer

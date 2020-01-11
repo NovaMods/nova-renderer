@@ -9,7 +9,12 @@ namespace nova::renderer {
 
     class UiRenderpass : public Renderpass {
     public:
-        UiRenderpass(rhi::RenderEngine& device, const glm::vec2& framebuffer_size);
+        UiRenderpass();
+
+        UiRenderpass(UiRenderpass&& old) noexcept = default;
+        UiRenderpass& operator=(UiRenderpass&& old) noexcept = default;
+
+        static shaderpack::RenderPassCreateInfo get_create_info();
 
     protected:
         void render_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) override final;
@@ -24,8 +29,6 @@ namespace nova::renderer {
 
     class NullUiRenderpass final : public UiRenderpass {
     public:
-        NullUiRenderpass(rhi::RenderEngine& device, const glm::vec2& framebuffer_size);
-
         ~NullUiRenderpass() override = default;
 
     protected:

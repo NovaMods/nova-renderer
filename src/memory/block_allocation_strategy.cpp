@@ -59,11 +59,9 @@ namespace nova::mem {
         if(best_fit->size > size) {
             Block* block = make_new_block(best_fit->offset + size, best_fit->size - size);
 
-            best_fit->next = block;
-            block->previous = best_fit;
             block->next = best_fit->next;
-
-            best_fit = block;
+            block->previous = best_fit;
+            best_fit->next = block;
         }
 
         allocated += size;

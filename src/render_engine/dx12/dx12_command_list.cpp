@@ -37,7 +37,24 @@ namespace nova::renderer::rhi {
             const D3D12_RESOURCE_STATES initial_state = to_dx12_state(barrier.old_state);
             const D3D12_RESOURCE_STATES final_state = to_dx12_state(barrier.new_state);
 
-            dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(resource_to_barrier, initial_state, final_state));
+            D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+
+            // Do some guesswork. Frontend/backend refactor will add state tracking that makes this code obsolete
+
+            if(barrier.new_state == ResourceState::CopySource || barrier.new_state == ResourceState::CopyDestination) {
+                // If the resource is about to be involved in a copy operation, we need to end the a previous barrier
+                flags |= D3D12_RESOURCE_BARRIER_FLAG_END_ONLY;
+
+            } else if(barrier.old_state == ResourceState::CopySource || barrier.old_state == ResourceState::CopyDestination) {
+                // If the resource was just involved in a copy operation, we need to begin a barrier for a graphics queue to end
+                flags |= D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY;
+            }
+
+            dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(resource_to_barrier,
+                                                                         initial_state,
+                                                                         final_state,
+                                                                         D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+                                                                         flags));
         }
 
         cmds->ResourceBarrier(static_cast<UINT>(dx12_barriers.size()), dx12_barriers.data());

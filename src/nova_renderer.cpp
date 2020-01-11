@@ -720,15 +720,10 @@ namespace nova::renderer {
     void NovaRenderer::create_builtin_renderpasses() const {
         // UI render pass
         {
-            std::unique_ptr<Renderpass> ui_renderpass = std::make_unique<NullUiRenderpass>(*rhi, rhi->get_swapchain()->get_size());
+            std::unique_ptr<Renderpass> ui_renderpass = std::make_unique<NullUiRenderpass>();
             ui_renderpass->is_builtin = true;
 
-            shaderpack::RenderPassCreateInfo ui_create_info = {};
-            ui_create_info.name = UI_RENDER_PASS_NAME;
-            ui_create_info.texture_inputs = {BACKBUFFER_NAME};
-            ui_create_info.texture_outputs = {{BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false}};
-
-            if(!rendergraph->add_renderpass(std::move(ui_renderpass), ui_create_info, *device_resources)) {
+            if(!rendergraph->add_renderpass(std::move(ui_renderpass), NullUiRenderpass::get_create_info(), *device_resources)) {
                 NOVA_LOG(ERROR) << "Could not create null UI renderpass";
             }
         }
