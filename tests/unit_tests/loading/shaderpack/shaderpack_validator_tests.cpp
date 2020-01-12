@@ -209,69 +209,6 @@ TEST(GraphicsPipelineValidator, MissingPass) {
     EXPECT_EQ(report.errors[0], "Pipeline TestPipeline: Missing field pass");
 }
 
-TEST(GraphicsPipelineValidator, MissingVertexFields) {
-    // clang-format off
-    nlohmann::json pipeline = {
-        {"name", "TestPipeline"},
-        {"parentName", "ParentOfTestPipeline"},
-        {"pass", "TestPass"},
-        {"defines",
-            {"USE_NORMALMAP", "USE_SPECULAR"}
-        },
-        { "states",
-            {"DisableDepthTest"}
-        },
-        {"frontFace",
-            {
-             {"failOp", "Keep"},
-                              {"passOp", "Keep"},
-                                {"depthFailOp", "Replace"},
-                                          {"compareOp", "Less"},
-                     {"compareMask", 0xFF},
-                     {"writeMask", 0xFF}
-                 }
-        },
-        {"backFace",
-            {
-             {"failOp", "Keep"},
-                              {"passOp", "Keep"},
-                                {"depthFailOp", "Replace"},
-                                          {"compareOp", "Less"},
-                     {"compareMask", 0xFF},
-                     {"writeMask", 0xFF}
-                 }
-        },
-        {"depthBias", 0},
-        {"slopeScaledDepthBias", 0.01},
-        {"stencilRef", 0},
-        {"stencilReadMask", 0xFF},
-        {"stencilWriteMask", 0xFF},
-        {"msaaSupport", "None"},
-        {"primitiveMode", "Triangles"},
-        {"sourceBlendFactor", "One"},
-        { "destinationBlendFactor", "Zero" },
-        { "fallback", "" },
-        {"alphaSrc", "One"},
-        {"alphaDst", "Zero"},
-        {"depthFunc", "Less"},
-        {"renderQueue", "Opaque"},
-        {"vertexShader", "TestVertexShader"},
-        {"geometryShader", "TestGeometryShader"},
-        {"tessellationControlShader", "TestTessellationControlShader"},
-        {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
-        {"fragmentShader", "TestFragmentShader"},
-    };
-    // clang-format on
-
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
-
-    EXPECT_EQ(report.warnings.size(), 0);
-
-    ASSERT_EQ(report.errors.size(), 1);
-    EXPECT_EQ(report.errors[0], "Pipeline TestPipeline: Missing field vertexFields");
-}
-
 TEST(GraphicsPipelineValidator, MissingVertexShader) {
     // clang-format off
     nlohmann::json pipeline = {
@@ -1808,38 +1745,6 @@ TEST(ResourcesValidator, TextureMissing) {
     ASSERT_EQ(report.warnings.size(), 1);
     EXPECT_EQ(report.warnings[0],
               "Resources file: Missing dynamic resources. If you ONLY use the backbuffer in your shaderpack, you can ignore this message");
-}
-
-TEST(ResourcesValidator, SamplersMissing) {
-    // clang-format off
-    nlohmann::json resources = {
-        { "textures",
-            {
-                {
-                    { "name", "TestTexture" },
-                    { "format",
-                        {
-                            { "pixelFormat", "RGBA8" },
-                            { "dimensionType", "Absolute" },
-                            { "width", 1920 },
-                            { "height", 1080 }
-                        }
-                    }
-                }
-            }
-        }
-    };
-    // clang-format on
-
-    nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_shaderpack_resources_data(resources);
-    nova::renderer::shaderpack::print(report);
-
-    EXPECT_EQ(report.warnings.size(), 0);
-
-    ASSERT_EQ(report.errors.size(), 1);
-    EXPECT_EQ(
-        report.errors[0],
-        "Resources file: No samplers defined, but dynamic textures are defined. You need to define your own samplers to access a texture with");
 }
 
 TEST(ResourcesValidator, TextureWarningsPropagate) {
