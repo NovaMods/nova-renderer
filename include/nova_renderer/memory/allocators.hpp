@@ -34,8 +34,8 @@ namespace nova::mem {
          *
          * Intended use case is that you have a byte allocator that you allocate a few different object types from
          */
-        template <typename ObjectType>
-        auto allocate_object() -> std::enable_if_t<std::conjunction_v<std::is_same<AllocatedType, std::byte>, std::is_pointer<ObjectType>>>;
+        template <typename ObjectType, typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
+        ObjectType* allocate_object();
 
         /*!
          * \brief Allocates a shared pointer that uses this allocator to allocate its internal memory
@@ -84,9 +84,8 @@ namespace nova::mem {
     }
 
     template <typename AllocatedType>
-    template <typename ObjectType>
-    auto AllocatorHandle<AllocatedType>::allocate_object()
-        -> std::enable_if_t<std::conjunction_v<std::is_same<AllocatedType, std::byte>, std::is_pointer<ObjectType>>> {
+    template <typename ObjectType, typename>
+    ObjectType* AllocatorHandle<AllocatedType>::allocate_object() {
         auto* mem = this->allocate(sizeof(ObjectType));
         return reinterpret_cast<ObjectType*>(mem);
     }
