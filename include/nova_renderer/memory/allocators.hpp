@@ -34,7 +34,7 @@ namespace nova::mem {
          *
          * Intended use case is that you have a byte allocator that you allocate a few different object types from
          */
-        template <typename ObjectType, typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
+        template <typename ObjectType>
         ObjectType* allocate_object();
 
         /*!
@@ -47,8 +47,7 @@ namespace nova::mem {
          */
         template <typename ObjectType,
                   typename DeleterType,
-                  typename... Args,
-                  typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
+                  typename... Args>
         std::shared_ptr<ObjectType> allocate_shared(DeleterType deleter, Args&&... args);
 
         /*!
@@ -56,13 +55,13 @@ namespace nova::mem {
          *
          * Intended use case is that you have a byte allocator that you use to create objects of different types
          */
-        template <typename ObjectType, typename... Args, typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
+        template <typename ObjectType, typename... Args>
         ObjectType* new_other_object(Args&&... args);
 
         /*!
          * \brief Creates a new allocator which will allocate from this allocator's memory resource
          */
-        template <typename ObjectType = AllocatedType, typename = std::enable_if_t<std::is_same_v<AllocatedType, std::byte>>>
+        template <typename ObjectType = AllocatedType>
         AllocatorHandle<ObjectType>* create_suballocator();
     };
 
@@ -84,28 +83,28 @@ namespace nova::mem {
     }
 
     template <typename AllocatedType>
-    template <typename ObjectType, typename>
+    template <typename ObjectType>
     ObjectType* AllocatorHandle<AllocatedType>::allocate_object() {
         auto* mem = this->allocate(sizeof(ObjectType));
         return reinterpret_cast<ObjectType*>(mem);
     }
 
     template <typename AllocatedType>
-    template <typename ObjectType, typename DeleterType, typename... Args, typename>
+    template <typename ObjectType, typename DeleterType, typename... Args>
     std::shared_ptr<ObjectType> AllocatorHandle<AllocatedType>::allocate_shared(DeleterType deleter, Args&&... args) {
         const auto ptr = allocate_object<ObjectType>(std::forward(args)...);
         return std::shared_ptr<ObjectType>(ptr, deleter, std::pmr::polymorphic_allocator<std::byte>(this->resource()));
     }
 
     template <typename AllocatedType>
-    template <typename ObjectType, typename... Args, typename>
+    template <typename ObjectType, typename... Args>
     ObjectType* AllocatorHandle<AllocatedType>::new_other_object(Args&&... args) {
         auto* mem = this->allocate(sizeof(ObjectType));
         return new(mem) ObjectType(std::forward<Args>(args)...);
     }
 
     template <typename AllocatedType>
-    template <typename ObjectType, typename>
+    template <typename ObjectType>
     AllocatorHandle<ObjectType>* AllocatorHandle<AllocatedType>::create_suballocator() {
         return this->template new_other_object<AllocatorHandle<ObjectType>>(this->resource());
     }
