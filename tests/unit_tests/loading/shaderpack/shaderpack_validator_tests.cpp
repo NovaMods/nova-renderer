@@ -7,7 +7,7 @@
 
 #include "../../../src/general_test_setup.hpp"
 
-#include "../../../../src/loading/shaderpack/shaderpack_validator.hpp"
+#include "../../../../src/filesystem/shaderpack/shaderpack_validator.hpp"
 #undef TEST
 #include <gtest/gtest.h>
 
