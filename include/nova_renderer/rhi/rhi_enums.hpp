@@ -36,6 +36,9 @@ namespace nova::renderer::rhi {
         Float2,
         Float3,
         Float4,
+
+        // MUST always be last
+        Invalid,
     };
 
     enum class DescriptorType { CombinedImageSampler, UniformBuffer, StorageBuffer, Texture, Sampler };

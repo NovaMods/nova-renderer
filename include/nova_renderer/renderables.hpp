@@ -48,8 +48,6 @@ namespace nova::renderer {
 
     using RenderableId = uint64_t;
 
-    static std::atomic<RenderableId> next_renderable_id;
-
     struct RenderableMetadata {
         RenderableId id = 0;
 

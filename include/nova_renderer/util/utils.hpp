@@ -1,5 +1,8 @@
 #pragma once
 
+// MUST be before <algorithm> to keep gcc happy
+#include <memory_resource>
+
 #include <algorithm>
 #include <fstream>
 #include <string>
@@ -35,6 +38,6 @@ namespace nova::renderer {
     void write_to_file(const std::string& data, const fs::path& filepath);
 
     void write_to_file(const std::pmr::vector<uint32_t>& data, const fs::path& filepath);
-    
+
 #define FORMAT(s, ...) fmt::format(fmt(s), __VA_ARGS__)
 } // namespace nova::renderer

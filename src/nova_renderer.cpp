@@ -342,7 +342,13 @@ namespace nova::renderer {
 
         for(const shaderpack::RenderPassCreateInfo& create_info : pass_create_infos) {
             std::unique_ptr<Renderpass> renderpass = std::make_unique<Renderpass>(create_info.name);
-            if(rendergraph->add_renderpass(std::move(renderpass), create_info, *device_resources) == nullptr) {
+            if(auto* pass = rendergraph->add_renderpass(std::move(renderpass), create_info, *device_resources); pass != nullptr) {
+                for(const auto& pipeline : pipelines) {
+                    if(pipeline.pass == create_info.name) {
+                        pass->pipeline_names.emplace_back(pipeline.name);
+                    }
+                }
+            } else {
                 NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name;
             }
         }

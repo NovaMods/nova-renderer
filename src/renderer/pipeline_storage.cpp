@@ -127,6 +127,7 @@ namespace nova::renderer {
 
                     default:
                         NOVA_LOG(ERROR) << "Nova does not support float fields with " << spirv_type.vecsize << " vector elements";
+                    return rhi::VertexFieldFormat::Invalid;
                 }
             };
 
