@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "filesystem.hpp"
-#include <glm/vec2.hpp>
 
 namespace nova::renderer {
     template <int Num>
@@ -36,13 +35,6 @@ namespace nova::renderer {
     void write_to_file(const std::string& data, const fs::path& filepath);
 
     void write_to_file(const std::pmr::vector<uint32_t>& data, const fs::path& filepath);
-
-    struct Rect {
-        size_t x;
-        size_t y;
-        size_t width;
-        size_t height;
-    };
     
 #define FORMAT(s, ...) fmt::format(fmt(s), __VA_ARGS__)
 } // namespace nova::renderer
