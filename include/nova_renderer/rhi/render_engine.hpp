@@ -265,7 +265,7 @@ namespace nova::renderer::rhi {
                                          const std::pmr::vector<Semaphore*>& wait_semaphores = {},
                                          const std::pmr::vector<Semaphore*>& signal_semaphores = {}) = 0;
 
-        [[nodiscard]] mem::AllocatorHandle<>* get_allocator();
+        [[nodiscard]] mem::AllocatorHandle<>* get_allocator() const;
 
     protected:
         mem::AllocatorHandle<>& internal_allocator;

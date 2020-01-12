@@ -10,8 +10,7 @@ namespace nova::mem {
     BlockAllocationStrategy::BlockAllocationStrategy(AllocatorHandle<>* allocator_in, const Bytes size, const Bytes alignment_in)
         : memory_size(size), alignment(alignment_in) {
 
-        auto* block_allocator_mem = allocator_in->allocate(sizeof(AllocatorHandle<Block>));
-        allocator = new(block_allocator_mem) AllocatorHandle<Block>(std::pmr::get_default_resource());  // TODO: Figure out how to allocate blocks more better
+        allocator = allocator_in->new_other_object<AllocatorHandle<Block>>(std::pmr::get_default_resource());// TODO: Figure out how to allocate blocks more better
 
         head = make_new_block(0_b, size);
     }
