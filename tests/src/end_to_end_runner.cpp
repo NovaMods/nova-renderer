@@ -47,9 +47,9 @@ namespace nova::renderer {
 
         const auto renderer = NovaRenderer::initialize(settings);
 
-        renderer->load_shaderpack(CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack");
+        renderer->load_renderpack(CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack");
 
-        std::shared_ptr<NovaWindow> window = renderer->get_window();
+        NovaWindow* window = renderer->get_window();
 
         MeshData cube = {};
         cube.vertex_data = {

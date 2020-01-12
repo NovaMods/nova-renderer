@@ -248,7 +248,7 @@ namespace nova::renderer::rhi {
                 descriptor_range.BaseShaderRegister = desc.binding;
 
                 if(desc.is_unbounded) {
-                    descriptor_range.RegisterSpace = 65536;    
+                    descriptor_range.RegisterSpace = 65536;
                 } else {
                     descriptor_range.RegisterSpace = 0;
                 }
@@ -660,8 +660,12 @@ namespace nova::renderer::rhi {
         D3D12_RESOURCE_STATES state = [&] {
             if(info.usage == shaderpack::ImageUsage::RenderTarget) {
                 return D3D12_RESOURCE_STATE_RENDER_TARGET;
+
             } else if(info.usage == shaderpack::ImageUsage::SampledImage) {
                 // Sampled images need to start in common so we can copy to them
+                return D3D12_RESOURCE_STATE_COMMON;
+
+            } else {
                 return D3D12_RESOURCE_STATE_COMMON;
             }
         }();
