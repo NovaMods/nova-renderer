@@ -197,6 +197,13 @@ set(NOVA_SOURCE
         src/memory/block_allocation_strategy.cpp
         src/memory/bump_point_allocation_strategy.cpp
         src/memory/bytes.cpp
+
+        # Render frontend
+        include/nova_renderer/frontend/render_device.hpp
+        include/nova_renderer/frontend/command_list.hpp
+        include/nova_renderer/frontend/forward_decls.hpp
+
+        src/frontend/command_list.cpp
         )
 
 #################################################################
