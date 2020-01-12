@@ -4,6 +4,8 @@ project(Rex)
 file(GLOB_RECURSE RX_SOURCES CONFIGURE_DEPENDS "*.cpp" "*.h")
 
 add_library(rex STATIC ${RX_SOURCES})
+target_include_directories(rex PUBLIC ${CMAKR_CURRENT_LIST_DIR}/include)
 target_include_directories(rex SYSTEM PUBLIC ${CMAKR_CURRENT_LIST_DIR}/include)
+include_directories(${CMAKR_CURRENT_LIST_DIR}/include)
 
 source_group(TREE "${CMAKE_CURRENT_LIST_DIR}/include" FILES ${RX_SOURCES})
