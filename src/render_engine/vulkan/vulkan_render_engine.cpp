@@ -1247,8 +1247,8 @@ namespace nova::renderer::rhi {
         x_surface_create_info.pNext = nullptr;
         x_surface_create_info.flags = 0;
 
-        x_surface_create_info.dpy = window->get_display();
-        x_surface_create_info.window = window->get_window_handle();
+        x_surface_create_info.dpy = window.get_display();
+        x_surface_create_info.window = window.get_window_handle();
 
         NOVA_CHECK_RESULT(vkCreateXlibSurfaceKHR(instance, &x_surface_create_info, nullptr, &surface));
 
