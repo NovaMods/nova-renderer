@@ -9,13 +9,6 @@
 #include "nova_renderer/rhi/forward_decls.hpp"
 
 namespace nova::renderer {
-    namespace rhi {
-        struct Buffer;
-
-        class CommandList;
-        class RenderEngine;
-    } // namespace rhi
-
     /*!
      * \brief ProceduralMesh is a mesh which the user will modify every frame
      *
@@ -60,7 +53,7 @@ namespace nova::renderer {
          * \param cmds The command list to record commands into
          * \param frame_idx The index of the frame to write the data to
          */
-        void record_commands_to_upload_data(rhi::CommandList* cmds, uint8_t frame_idx);
+        void record_commands_to_upload_data(rhi::CommandList* cmds, uint8_t frame_idx) const;
 
         /*!
          * \brief Returns the vertex and index buffer for the provided frame
@@ -79,13 +72,16 @@ namespace nova::renderer {
         uint64_t num_vertex_bytes_to_upload = 0;
         uint64_t num_index_bytes_to_upload = 0;
 
+        std::unique_ptr<mem::AllocatorHandle<>> allocator;
+
+        std::unique_ptr<mem::BlockAllocationStrategy> device_memory_allocation_strategy;
+        std::unique_ptr<mem::BlockAllocationStrategy> host_memory_allocation_strategy;
+        std::unique_ptr<DeviceMemoryResource> device_buffers_memory;
+        std::unique_ptr<DeviceMemoryResource> cached_buffers_memory;
+
 #ifdef NOVA_DEBUG
         uint64_t vertex_buffer_size;
         uint64_t index_buffer_size;
-        std::unique_ptr<bvestl::polyalloc::BlockAllocationStrategy> device_memory_allocation_strategy;
-        std::unique_ptr<bvestl::polyalloc::BlockAllocationStrategy> host_memory_allocation_strategy;
-        std::unique_ptr<DeviceMemoryResource> device_buffers_memory;
-        std::unique_ptr<DeviceMemoryResource> cached_buffers_memory;
 #endif
     };
 } // namespace nova::renderer

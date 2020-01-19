@@ -2,8 +2,6 @@
 
 #include <memory>
 
-// TODO: Don't always use mallocator
-#include "nova_renderer/memory/mallocator.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
 
 #pragma warning(push, 0)
@@ -36,11 +34,10 @@ namespace nova::renderer::rhi {
      */
     class D3D12RenderEngine final : public RenderEngine {
     public:
-        D3D12RenderEngine(NovaSettingsAccessManager& settings, const std::shared_ptr<NovaWindow>& window);
+        D3D12RenderEngine(NovaSettingsAccessManager& settings, NovaWindow& window, mem::AllocatorHandle<>& allocator);
 
         D3D12RenderEngine(D3D12RenderEngine&& old) noexcept = delete;
         D3D12RenderEngine& operator=(D3D12RenderEngine&& old) noexcept = delete;
-
         D3D12RenderEngine(const D3D12RenderEngine& other) = delete;
         D3D12RenderEngine& operator=(const D3D12RenderEngine& other) = delete;
 
@@ -49,22 +46,31 @@ namespace nova::renderer::rhi {
         // Inherited via render_engine
         void set_num_renderpasses(uint32_t num_renderpasses) override;
 
-        ntl::Result<DeviceMemory*> allocate_device_memory(uint64_t size, MemoryUsage type, ObjectType allowed_objects) override;
+        ntl::Result<DeviceMemory*> allocate_device_memory(mem::Bytes size,
+                                                          MemoryUsage type,
+                                                          ObjectType allowed_objects,
+                                                          mem::AllocatorHandle<>& allocator) override;
 
         ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data,
-                                                   const glm::uvec2& framebuffer_size) override;
+                                                   const glm::uvec2& framebuffer_size,
+                                                   mem::AllocatorHandle<>& allocator) override;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
-                                        const std::vector<Image*>& color_attachments,
+                                        const std::pmr::vector<Image*>& color_attachments,
                                         const std::optional<Image*> depth_attachment,
-                                        const glm::uvec2& framebuffer_size) override;
+                                        const glm::uvec2& framebuffer_size,
+                                        mem::AllocatorHandle<>& allocator) override;
 
         ntl::Result<PipelineInterface*> create_pipeline_interface(
             const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
-            const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) override;
+            const std::pmr::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
+            mem::AllocatorHandle<>& allocator) override;
 
-        DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images, uint32_t num_samplers, uint32_t num_uniform_buffers) override;
+        DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
+                                               uint32_t num_samplers,
+                                               uint32_t num_uniform_buffers,
+                                               mem::AllocatorHandle<>& allocator) override;
 
         /*!
          * \brief Creates all the descriptor sets that are needed for this pipeline interface
@@ -74,59 +80,63 @@ namespace nova::renderer::rhi {
          * a single descriptor heap is noticeably better, but I've also heard that this only applies to XBox. Further
          * research and testing is needed to resolve this
          */
-        std::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface, DescriptorPool* pool) override;
+        std::pmr::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
+                                                                DescriptorPool* pool,
+                                                                mem::AllocatorHandle<>& allocator) override;
 
-        void update_descriptor_sets(std::vector<DescriptorSetWrite>& writes) override;
+        void update_descriptor_sets(std::pmr::vector<DescriptorSetWrite>& writes) override;
 
-        ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& data) override;
+        ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
+                                               const shaderpack::PipelineCreateInfo& data,
+                                               mem::AllocatorHandle<>& allocator) override;
 
-        Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory) override;
+        Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory, mem::AllocatorHandle<>& allocator) override;
 
-        void write_data_to_buffer(const void* data, uint64_t num_bytes, uint64_t offset, const Buffer* buffer) override;
+        void write_data_to_buffer(const void* data, mem::Bytes num_bytes, mem::Bytes offset, const Buffer* buffer) override;
 
-        Image* create_image(const shaderpack::TextureCreateInfo& info) override;
+        Image* create_image(const shaderpack::TextureCreateInfo& info, mem::AllocatorHandle<>& allocator) override;
 
-        Semaphore* create_semaphore() override;
+        Semaphore* create_semaphore(mem::AllocatorHandle<>& allocator) override;
 
-        std::vector<Semaphore*> create_semaphores(uint32_t num_semaphores) override;
+        std::pmr::vector<Semaphore*> create_semaphores(uint32_t num_semaphores, mem::AllocatorHandle<>& allocator) override;
 
-        Fence* create_fence(bool signaled = false) override;
+        Fence* create_fence(mem::AllocatorHandle<>& allocator, bool signaled = false) override;
 
-        std::vector<Fence*> create_fences(uint32_t num_fences, bool signaled = false) override;
+        std::pmr::vector<Fence*> create_fences(mem::AllocatorHandle<>& allocator, uint32_t num_fences, bool signaled = false) override;
 
-        void wait_for_fences(std::vector<Fence*> fences) override;
+        void wait_for_fences(std::pmr::vector<Fence*> fences) override;
 
-        void reset_fences(const std::vector<Fence*>& fences) override;
+        void reset_fences(const std::pmr::vector<Fence*>& fences) override;
 
-        void destroy_renderpass(Renderpass* pass) override;
+        void destroy_renderpass(Renderpass* pass, mem::AllocatorHandle<>& allocator) override;
 
-        void destroy_framebuffer(Framebuffer* framebuffer) override;
+        void destroy_framebuffer(Framebuffer* framebuffer, mem::AllocatorHandle<>& allocator) override;
 
-        void destroy_pipeline_interface(PipelineInterface* pipeline_interface) override;
+        void destroy_pipeline_interface(PipelineInterface* pipeline_interface, mem::AllocatorHandle<>& allocator) override;
 
-        void destroy_pipeline(Pipeline* pipeline) override;
+        void destroy_pipeline(Pipeline* pipeline, mem::AllocatorHandle<>& allocator) override;
 
-        void destroy_texture(Image* resource) override;
+        void destroy_texture(Image* resource, mem::AllocatorHandle<>& allocator) override;
 
-        void destroy_semaphores(std::vector<Semaphore*>& semaphores) override;
+        void destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores, mem::AllocatorHandle<>& allocator) override;
 
-        void destroy_fences(std::vector<Fence*>& fences) override;
+        void destroy_fences(const std::pmr::vector<Fence*>& fences, mem::AllocatorHandle<>& allocator) override;
 
-        CommandList* get_command_list(uint32_t thread_idx, QueueType needed_queue_type, CommandList::Level level) override;
+        CommandList* create_command_list(mem::AllocatorHandle<>& allocator,
+                                         uint32_t thread_idx,
+                                         QueueType needed_queue_type,
+                                         CommandList::Level level) override;
 
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
                                  Fence* fence_to_signal = nullptr,
-                                 const std::vector<Semaphore*>& wait_semaphores = {},
-                                 const std::vector<Semaphore*>& signal_semaphores = {}) override;
+                                 const std::pmr::vector<Semaphore*>& wait_semaphores = {},
+                                 const std::pmr::vector<Semaphore*>& signal_semaphores = {}) override;
 
         void create_swapchain(uint32_t num_frames);
 
     private:
         D3D12DeviceCapabilities d3d12_capabilities;
-
-        // TODO: don't always use mallocator
-        bvestl::polyalloc::Mallocator mallocator;
 
         Microsoft::WRL::ComPtr<IDXGIFactory4> dxgi_factory;
 
@@ -154,7 +164,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief The index in the vector is the thread index
          */
-        std::vector<std::unordered_map<D3D12_COMMAND_LIST_TYPE, Microsoft::WRL::ComPtr<ID3D12CommandAllocator>>> command_allocators;
+        std::pmr::vector<std::unordered_map<D3D12_COMMAND_LIST_TYPE, Microsoft::WRL::ComPtr<ID3D12CommandAllocator>>> command_allocators;
 
 #pragma region Initialization
         void create_device();
@@ -178,6 +188,7 @@ namespace nova::renderer::rhi {
          * \brief Queries the hardware for its capabilities and limits
          */
         void determine_device_capabilities();
+
 #pragma endregion
 
 #pragma region Helpers
@@ -188,10 +199,10 @@ namespace nova::renderer::rhi {
     Microsoft::WRL::ComPtr<ID3DBlob> compile_shader(const shaderpack::ShaderSource& shader,
                                                     const std::string& target,
                                                     const spirv_cross::CompilerHLSL::Options& options,
-                                                    std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
+                                                    std::pmr::unordered_map<uint32_t, std::pmr::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
 
     void add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type,
                                           const D3D12_SHADER_INPUT_BIND_DESC& bind_desc,
                                           uint32_t set,
-                                          std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
+                                          std::pmr::unordered_map<uint32_t, std::pmr::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
 } // namespace nova::renderer::rhi

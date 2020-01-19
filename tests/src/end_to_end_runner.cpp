@@ -47,9 +47,9 @@ namespace nova::renderer {
 
         const auto renderer = NovaRenderer::initialize(settings);
 
-        renderer->load_shaderpack(CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack");
+        renderer->load_renderpack(CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack");
 
-        std::shared_ptr<NovaWindow> window = renderer->get_window();
+        NovaWindow& window = renderer->get_window();
 
         MeshData cube = {};
         cube.vertex_data = {
@@ -69,19 +69,20 @@ namespace nova::renderer {
         // Render one frame to upload mesh data
         renderer->execute_frame();
         if(settings.api == GraphicsApi::NvGl4) {
-            window->swap_backbuffer();
+            window.swap_backbuffer();
         }
 
         StaticMeshRenderableData data = {};
         data.mesh = mesh_id;
         data.initial_position = glm::vec3(0, 0, -5);
 
-        renderer->add_renderable_for_material(FullMaterialPassName{"gbuffers_terrain", "forward"}, data);
+        // ReSharper disable once CppDeclaratorNeverUsed
+        const auto _ = renderer->add_renderable_for_material(FullMaterialPassName{"gbuffers_terrain", "forward"}, data);
 
-        while(!window->should_close()) {
+        while(!window.should_close()) {
             renderer->execute_frame();
             if(settings.api == GraphicsApi::NvGl4) {
-                window->swap_backbuffer();
+                window.swap_backbuffer();
             }
         }
 

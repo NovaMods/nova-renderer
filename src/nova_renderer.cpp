@@ -6,27 +6,26 @@
 #pragma warning(push, 0)
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
-#include <glslang/MachineIndependent/Initialize.h>
 #include <minitrace.h>
 #include <spirv_glsl.hpp>
 #pragma warning(pop)
+
+#include <glslang/MachineIndependent/Initialize.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/frontend/procedural_mesh.hpp"
 #include "nova_renderer/frontend/rendergraph.hpp"
 #include "nova_renderer/frontend/ui_renderer.hpp"
+#include "nova_renderer/loading/shaderpack_loading.hpp"
 #include "nova_renderer/memory/block_allocation_strategy.hpp"
 #include "nova_renderer/memory/bump_point_allocation_strategy.hpp"
-#include "nova_renderer/memory/mallocator.hpp"
-#include "nova_renderer/memory/system_memory_allocator.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/rhi/swapchain.hpp"
 #include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/platform.hpp"
 
 #include "debugging/renderdoc.hpp"
-#include "loading/shaderpack/render_graph_builder.hpp"
-#include "loading/shaderpack/shaderpack_loading.hpp"
+#include "filesystem/shaderpack/render_graph_builder.hpp"
 #include "render_objects/uniform_structs.hpp"
 // D3D12 MUST be included first because the Vulkan include undefines FAR, yet the D3D12 headers need FAR
 // Windows considered harmful
@@ -37,12 +36,10 @@
 #if defined(NOVA_VULKAN_RHI)
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
 #endif
-#if defined(NOVA_OPENGL_RHI)
-#include "render_engine/gl3/gl3_render_engine.hpp"
-#endif
 
-using namespace bvestl::polyalloc;
-using namespace bvestl::polyalloc::operators;
+using namespace nova::mem;
+using namespace operators;
+using namespace fmt;
 
 const Bytes global_memory_pool_size = 1_gb;
 
@@ -61,7 +58,9 @@ namespace nova::renderer {
     }
 
     NovaRenderer::NovaRenderer(const NovaSettings& settings) : render_settings(settings) {
-        create_global_allocator();
+        create_global_allocators();
+
+        initialize_virtual_filesystem();
 
         mtr_init("trace.json");
 
@@ -70,7 +69,7 @@ namespace nova::renderer {
 
         MTR_SCOPE("Init", "nova_renderer::nova_renderer");
 
-        window = std::make_shared<NovaWindow>(settings);
+        window = std::make_unique<NovaWindow>(settings);
 
         if(settings.debug.renderdoc.enabled) {
             MTR_SCOPE("Init", "LoadRenderdoc");
@@ -103,23 +102,17 @@ namespace nova::renderer {
 #if defined(NOVA_WINDOWS) && defined(NOVA_D3D12_RHI)
             {
                 MTR_SCOPE("Init", "InitDirect3D12RenderEngine");
-                rhi = std::make_unique<rhi::D3D12RenderEngine>(render_settings, window);
+                rhi = std::make_unique<rhi::D3D12RenderEngine>(render_settings, *window, *global_allocator);
             } break;
 #endif
 
 #if defined(NOVA_VULKAN_RHI)
             case GraphicsApi::Vulkan: {
                 MTR_SCOPE("Init", "InitVulkanRenderEngine");
-                rhi = std::make_unique<rhi::VulkanRenderEngine>(render_settings, window);
+                rhi = std::make_unique<rhi::VulkanRenderEngine>(render_settings, *window, *global_allocator);
             } break;
 #endif
 
-#if defined(NOVA_OPENGL_RHI)
-            case GraphicsApi::NvGl4: {
-                MTR_SCOPE("Init", "InitGL3RenderEngine");
-                rhi = std::make_unique<rhi::Gl4NvRenderEngine>(render_settings, window);
-            } break;
-#endif
             default: {
                 // TODO: Deal with it in a better way, this will crash soon
                 NOVA_LOG(FATAL) << "Selected graphics API was not enabled!";
@@ -132,9 +125,13 @@ namespace nova::renderer {
 
         create_global_sync_objects();
 
-        create_builtin_textures();
+        create_resource_storage();
+
+        create_builtin_render_targets();
 
         create_uniform_buffers();
+
+        create_renderpass_manager();
 
         create_builtin_renderpasses();
     }
@@ -143,18 +140,21 @@ namespace nova::renderer {
 
     NovaSettingsAccessManager& NovaRenderer::get_settings() { return render_settings; }
 
+    AllocatorHandle<>* NovaRenderer::get_global_allocator() const { return global_allocator.get(); }
+
     void NovaRenderer::execute_frame() {
         MTR_SCOPE("RenderLoop", "execute_frame");
         frame_count++;
-        cur_frame_idx = rhi->get_swapchain()->acquire_next_swapchain_image();
+
+        AllocatorHandle<>& frame_allocator = frame_allocators[frame_count % NUM_IN_FLIGHT_FRAMES];
+
+        cur_frame_idx = rhi->get_swapchain()->acquire_next_swapchain_image(frame_allocator);
 
         NOVA_LOG(DEBUG) << "\n***********************\n        FRAME START        \n***********************";
 
         rhi->reset_fences({frame_fences.at(cur_frame_idx)});
 
-        // TODO: Figure out wtf I'm supposed to do about UI
-
-        rhi::CommandList* cmds = rhi->get_command_list(0, rhi::QueueType::Graphics);
+        rhi::CommandList* cmds = rhi->create_command_list(frame_allocator, 0, rhi::QueueType::Graphics);
 
         // This may or may not work well lmao
         for(auto& [id, proc_mesh] : proc_meshes) {
@@ -164,14 +164,16 @@ namespace nova::renderer {
         FrameContext ctx = {};
         ctx.frame_count = frame_count;
         ctx.nova = this;
+        ctx.allocator = &frame_allocator;
         ctx.swapchain_framebuffer = swapchain->get_framebuffer(cur_frame_idx);
         ctx.swapchain_image = swapchain->get_image(cur_frame_idx);
 
-        for(const auto& renderpass : renderpasses) {
-            renderpass->render(cmds, ctx);
-        }
+        const auto& renderpass_order = rendergraph->calculate_renderpass_execution_order();
 
-        // Record the UI pass
+        for(const auto& renderpass_name : renderpass_order) {
+            auto* renderpass = rendergraph->get_renderpass(renderpass_name);
+            renderpass->render(*cmds, ctx);
+        }
 
         rhi->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences.at(cur_frame_idx));
 
@@ -191,7 +193,7 @@ namespace nova::renderer {
         vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::VertexBuffer;
         vertex_buffer_create_info.size = mesh_data.vertex_data.size() * sizeof(FullVertex);
 
-        rhi::Buffer* vertex_buffer = rhi->create_buffer(vertex_buffer_create_info, *mesh_memory);
+        rhi::Buffer* vertex_buffer = rhi->create_buffer(vertex_buffer_create_info, *mesh_memory, *global_allocator);
 
         // TODO: Try to get staging buffers from a pool
 
@@ -199,27 +201,27 @@ namespace nova::renderer {
             rhi::BufferCreateInfo staging_vertex_buffer_create_info = vertex_buffer_create_info;
             staging_vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
 
-            rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info, *staging_buffer_memory);
+            rhi::Buffer* staging_vertex_buffer = rhi->create_buffer(staging_vertex_buffer_create_info,
+                                                                    *staging_buffer_memory,
+                                                                    *global_allocator);
             rhi->write_data_to_buffer(mesh_data.vertex_data.data(),
                                       mesh_data.vertex_data.size() * sizeof(FullVertex),
                                       0,
                                       staging_vertex_buffer);
 
-            rhi::CommandList* vertex_upload_cmds = rhi->get_command_list(0, rhi::QueueType::Transfer);
+            rhi::CommandList* vertex_upload_cmds = rhi->create_command_list(*global_allocator, 0, rhi::QueueType::Transfer);
             vertex_upload_cmds->copy_buffer(vertex_buffer, 0, staging_vertex_buffer, 0, vertex_buffer_create_info.size);
 
             rhi::ResourceBarrier vertex_barrier = {};
             vertex_barrier.resource_to_barrier = vertex_buffer;
             vertex_barrier.old_state = rhi::ResourceState::CopyDestination;
             vertex_barrier.new_state = rhi::ResourceState::Common;
-            vertex_barrier.access_before_barrier = rhi::AccessFlags::CopyWrite;
-            vertex_barrier.access_after_barrier = rhi::AccessFlags::VertexAttributeRead;
+            vertex_barrier.access_before_barrier = rhi::ResourceAccess::CopyWrite;
+            vertex_barrier.access_after_barrier = rhi::ResourceAccess::VertexAttributeRead;
             vertex_barrier.buffer_memory_barrier.offset = 0;
             vertex_barrier.buffer_memory_barrier.size = vertex_buffer->size;
 
-            vertex_upload_cmds->resource_barriers(rhi::PipelineStageFlags::Transfer,
-                                                  rhi::PipelineStageFlags::VertexInput,
-                                                  {vertex_barrier});
+            vertex_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, {vertex_barrier});
 
             rhi->submit_command_list(vertex_upload_cmds, rhi::QueueType::Transfer);
 
@@ -230,29 +232,29 @@ namespace nova::renderer {
         index_buffer_create_info.buffer_usage = rhi::BufferUsage::IndexBuffer;
         index_buffer_create_info.size = mesh_data.indices.size() * sizeof(uint32_t);
 
-        rhi::Buffer* index_buffer = rhi->create_buffer(index_buffer_create_info, *mesh_memory);
+        rhi::Buffer* index_buffer = rhi->create_buffer(index_buffer_create_info, *mesh_memory, *global_allocator);
 
         {
             rhi::BufferCreateInfo staging_index_buffer_create_info = index_buffer_create_info;
             staging_index_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
-            rhi::Buffer* staging_index_buffer = rhi->create_buffer(staging_index_buffer_create_info, *staging_buffer_memory);
+            rhi::Buffer* staging_index_buffer = rhi->create_buffer(staging_index_buffer_create_info,
+                                                                   *staging_buffer_memory,
+                                                                   *global_allocator);
             rhi->write_data_to_buffer(mesh_data.indices.data(), mesh_data.indices.size() * sizeof(uint32_t), 0, staging_index_buffer);
 
-            rhi::CommandList* indices_upload_cmds = rhi->get_command_list(0, rhi::QueueType::Transfer);
+            rhi::CommandList* indices_upload_cmds = rhi->create_command_list(*global_allocator, 0, rhi::QueueType::Transfer);
             indices_upload_cmds->copy_buffer(index_buffer, 0, staging_index_buffer, 0, index_buffer_create_info.size);
 
             rhi::ResourceBarrier index_barrier = {};
             index_barrier.resource_to_barrier = index_buffer;
             index_barrier.old_state = rhi::ResourceState::CopyDestination;
             index_barrier.new_state = rhi::ResourceState::Common;
-            index_barrier.access_before_barrier = rhi::AccessFlags::CopyWrite;
-            index_barrier.access_after_barrier = rhi::AccessFlags::IndexRead;
+            index_barrier.access_before_barrier = rhi::ResourceAccess::CopyWrite;
+            index_barrier.access_after_barrier = rhi::ResourceAccess::IndexRead;
             index_barrier.buffer_memory_barrier.offset = 0;
             index_barrier.buffer_memory_barrier.size = index_buffer->size;
 
-            indices_upload_cmds->resource_barriers(rhi::PipelineStageFlags::Transfer,
-                                                   rhi::PipelineStageFlags::VertexInput,
-                                                   {index_barrier});
+            indices_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, {index_barrier});
 
             rhi->submit_command_list(indices_upload_cmds, rhi::QueueType::Transfer);
 
@@ -273,20 +275,20 @@ namespace nova::renderer {
         return new_mesh_id;
     }
 
-    MapAccessor<MeshId, ProceduralMesh> NovaRenderer::create_procedural_mesh(const uint64_t vertex_size, const uint64_t index_size) {
+    ProceduralMeshAccessor NovaRenderer::create_procedural_mesh(const uint64_t vertex_size, const uint64_t index_size) {
         MeshId our_id = next_mesh_id;
         next_mesh_id++;
 
         proc_meshes.emplace(our_id, ProceduralMesh(vertex_size, index_size, rhi.get()));
 
-        return MapAccessor<MeshId, ProceduralMesh>(&proc_meshes, our_id);
+        return ProceduralMeshAccessor(&proc_meshes, our_id);
     }
 
-    void NovaRenderer::load_shaderpack(const std::string& shaderpack_name) {
+    void NovaRenderer::load_renderpack(const std::string& renderpack_name) {
         MTR_SCOPE("ShaderpackLoading", "load_shaderpack");
         glslang::InitializeProcess();
 
-        shaderpack::ShaderpackData data = shaderpack::load_shaderpack_data(fs::path(shaderpack_name.c_str()));
+        const shaderpack::RenderpackData data = shaderpack::load_shaderpack_data(fs::path(renderpack_name));
 
         if(shaderpack_loaded) {
             destroy_dynamic_resources();
@@ -295,52 +297,65 @@ namespace nova::renderer {
             NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
         }
 
-        data.graph_data.passes = shaderpack::order_passes(data.graph_data.passes).value; // TODO: Handle errors somehow
-
-        create_dynamic_textures(data.resources.textures);
+        create_dynamic_textures(data.resources.render_targets);
         NOVA_LOG(DEBUG) << "Dynamic textures created";
 
-        create_render_passes(data.graph_data.passes, data.pipelines, data.materials);
+        create_render_passes(data.graph_data.passes, data.pipelines);
 
         NOVA_LOG(DEBUG) << "Created render passes";
 
-        // Add builtin passes at the end of the submission
-        // Currently the only builtin pass we have is the UI pass
-        // As we add more passes, we'll probably need to keep more of the create info at runtime to be better able to insert passes wherever
-        // we want
-        for(const std::string& builtin_pass_name : data.graph_data.builtin_passes) {
-            if(const auto& itr = builtin_renderpasses.find(builtin_pass_name); itr != builtin_renderpasses.end()) {
-                renderpasses.emplace_back(itr->second);
+        create_pipelines_and_materials(data.pipelines, data.materials);
 
-            } else {
-                NOVA_LOG(ERROR) << "Could not find builtin pass with name " << builtin_pass_name;
-            }
-        }
+        NOVA_LOG(DEBUG) << "Created pipelines and materials";
 
         shaderpack_loaded = true;
 
-        NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name.c_str() << " loaded successfully";
+        NOVA_LOG(INFO) << "Shaderpack " << renderpack_name << " loaded successfully";
     }
 
-    void NovaRenderer::set_ui_renderpass(const std::shared_ptr<Renderpass>& ui_renderpass) {
-        std::lock_guard l(ui_function_mutex);
-        builtin_renderpasses["NovaUI"] = ui_renderpass;
+    const std::vector<MaterialPass>& NovaRenderer::get_material_passes_for_pipeline(rhi::Pipeline* const pipeline) {
+        return passes_by_pipeline.at(pipeline);
     }
 
-    void NovaRenderer::create_dynamic_textures(const std::vector<shaderpack::TextureCreateInfo>& texture_create_infos) {
+    std::optional<RenderpassMetadata> NovaRenderer::get_renderpass_metadata(const std::string& renderpass_name) const {
+        return rendergraph->get_metadata_for_renderpass(renderpass_name);
+    }
+
+    void NovaRenderer::create_dynamic_textures(const std::pmr::vector<shaderpack::TextureCreateInfo>& texture_create_infos) {
         for(const shaderpack::TextureCreateInfo& create_info : texture_create_infos) {
-            rhi::Image* new_texture = rhi->create_image(create_info);
-            dynamic_textures.emplace(create_info.name, new_texture);
+            const auto size = create_info.format.get_size_in_pixels(rhi->get_swapchain()->get_size());
+
+            const auto render_target = device_resources->create_render_target(create_info.name,
+                                                                              size.x,
+                                                                              size.y,
+                                                                              to_rhi_pixel_format(create_info.format.pixel_format),
+                                                                              *renderpack_allocator);
+
             dynamic_texture_infos.emplace(create_info.name, create_info);
         }
     }
 
-    void NovaRenderer::create_render_passes(const std::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
-                                            const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
-                                            const std::vector<shaderpack::MaterialData>& materials) {
+    void NovaRenderer::create_render_passes(const std::pmr::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
+                                            const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipelines) const {
 
         rhi->set_num_renderpasses(static_cast<uint32_t>(pass_create_infos.size()));
 
+        for(const shaderpack::RenderPassCreateInfo& create_info : pass_create_infos) {
+            std::unique_ptr<Renderpass> renderpass = std::make_unique<Renderpass>(create_info.name);
+            if(auto* pass = rendergraph->add_renderpass(std::move(renderpass), create_info, *device_resources); pass != nullptr) {
+                for(const auto& pipeline : pipelines) {
+                    if(pipeline.pass == create_info.name) {
+                        pass->pipeline_names.emplace_back(pipeline.name);
+                    }
+                }
+            } else {
+                NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name;
+            }
+        }
+    }
+
+    void NovaRenderer::create_pipelines_and_materials(const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipeline_create_infos,
+                                                      const std::pmr::vector<shaderpack::MaterialData>& materials) {
         uint32_t total_num_descriptors = 0;
         for(const shaderpack::MaterialData& material_data : materials) {
             for(const shaderpack::MaterialPass& material_pass : material_data.passes) {
@@ -348,185 +363,42 @@ namespace nova::renderer {
             }
         }
 
-        rhi::DescriptorPool* descriptor_pool = rhi->create_descriptor_pool(total_num_descriptors, 5, total_num_descriptors);
+        if(total_num_descriptors > 0) {
+            global_descriptor_pool = rhi->create_descriptor_pool(total_num_descriptors, 5, total_num_descriptors, *renderpack_allocator);
+        }
 
-        for(const shaderpack::RenderPassCreateInfo& create_info : pass_create_infos) {
-            std::shared_ptr<Renderpass> renderpass = std::make_shared<Renderpass>();
-            add_render_pass(create_info, pipelines, materials, descriptor_pool, renderpass);
+        for(const auto& pipeline_create_info : pipeline_create_infos) {
+            if(pipeline_storage->create_pipeline(pipeline_create_info)) {
+                auto pipeline = pipeline_storage->get_pipeline(pipeline_create_info.name);
+                create_materials_for_pipeline(*pipeline, materials, pipeline_create_info.name);
+            }
         }
     }
 
-    void NovaRenderer::add_render_pass(const shaderpack::RenderPassCreateInfo& create_info,
-                                       const std::vector<shaderpack::PipelineCreateInfo>& pipelines,
-                                       const std::vector<shaderpack::MaterialData>& materials,
-                                       rhi::DescriptorPool* descriptor_pool,
-                                       const std::shared_ptr<Renderpass>& renderpass) {
-        RenderpassMetadata metadata;
-        metadata.data = create_info;
-
-        std::vector<rhi::Image*> color_attachments;
-        color_attachments.reserve(create_info.texture_outputs.size());
-
-        glm::uvec2 framebuffer_size(0);
-
-        const auto num_attachments = create_info.depth_texture ? create_info.texture_outputs.size() + 1 :
-                                                                 create_info.texture_outputs.size();
-        std::vector<std::string> attachment_errors;
-        attachment_errors.reserve(num_attachments);
-
-        bool writes_to_backbuffer = false;
-
-        for(const shaderpack::TextureAttachmentInfo& attachment_info : create_info.texture_outputs) {
-            if(attachment_info.name == BACKBUFFER_NAME) {
-                writes_to_backbuffer = true;
-
-                if(create_info.texture_outputs.size() == 1) {
-                    renderpass->writes_to_backbuffer = true;
-                    renderpass->framebuffer = nullptr; // Will be resolved when rendering
-
-                } else {
-                    attachment_errors.push_back(fmt::format(
-                        fmt("Pass {:s} writes to the backbuffer and {:d} other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures"),
-                        create_info.name,
-                        create_info.texture_outputs.size() - 1));
-                }
-
-            } else {
-                rhi::Image* image = dynamic_textures.at(attachment_info.name);
-                color_attachments.push_back(image);
-
-                const shaderpack::TextureCreateInfo& info = dynamic_texture_infos.at(attachment_info.name);
-                const glm::uvec2 attachment_size = info.format.get_size_in_pixels(
-                    {render_settings.settings.window.width, render_settings.settings.window.height});
-
-                if(framebuffer_size.x > 0) {
-                    if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {
-                        attachment_errors.push_back(fmt::format(
-                            fmt("Attachment {:s} has a size of {:d}x{:d}, but the framebuffer for pass {:s} has a size of {:d}x{:d} - these must match! All attachments of a single renderpass must have the same size"),
-                            attachment_info.name,
-                            attachment_size.x,
-                            attachment_size.y,
-                            create_info.name,
-                            framebuffer_size.x,
-                            framebuffer_size.y));
-                    }
-
-                } else {
-                    framebuffer_size = attachment_size;
-                }
-            }
-        }
-
-        // Can't combine these if statements and I don't want to `.find` twice
-        const auto depth_attachment = [&]() -> std::optional<rhi::Image*> {
-            if(create_info.depth_texture) {
-                if(const auto depth_tex_itr = dynamic_textures.find(create_info.depth_texture->name);
-                   depth_tex_itr != dynamic_textures.end()) {
-                    auto* image = depth_tex_itr->second;
-                    return std::make_optional<rhi::Image*>(image);
-                }
-            }
-
-            return {};
-        }();
-
-        if(!attachment_errors.empty()) {
-            for(const auto& err : attachment_errors) {
-                NOVA_LOG(ERROR) << err;
-            }
-
-            NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name
-                            << " because there were errors in the attachment specification. Look above this message for details";
-            return;
-        }
-
-        ntl::Result<rhi::Renderpass*> renderpass_result = rhi->create_renderpass(create_info, framebuffer_size);
-        if(renderpass_result) {
-            renderpass->renderpass = renderpass_result.value;
-
-        } else {
-            NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name << ": " << renderpass_result.error.to_string();
-            return;
-        }
-
-        // Backbuffer framebuffers are owned by the swapchain, not the renderpass that writes to them, so if the
-        // renderpass writes to the backbuffer then we don't need to create a framebuffer for it
-        if(!writes_to_backbuffer) {
-            renderpass->framebuffer = rhi->create_framebuffer(renderpass->renderpass,
-                                                              color_attachments,
-                                                              depth_attachment,
-                                                              framebuffer_size);
-        }
-
-        renderpass->pipelines.reserve(pipelines.size());
-        for(const shaderpack::PipelineCreateInfo& pipeline_create_info : pipelines) {
-            if(pipeline_create_info.pass == create_info.name) {
-                std::unordered_map<std::string, ResourceBinding> bindings;
-
-                ntl::Result<rhi::PipelineInterface*> pipeline_interface = create_pipeline_interface(pipeline_create_info,
-                                                                                                    create_info.texture_outputs,
-                                                                                                    create_info.depth_texture);
-                if(!pipeline_interface) {
-                    NOVA_LOG(ERROR) << "Pipeline " << create_info.name
-                                    << " has an invalid interface: " << pipeline_interface.error.to_string();
-                    continue;
-                }
-
-                ntl::Result<PipelineReturn> pipeline_result = create_graphics_pipeline(*pipeline_interface, pipeline_create_info);
-                if(pipeline_result) {
-                    auto [pipeline, pipeline_metadata] = *pipeline_result;
-
-                    MaterialPassKey template_key = {};
-                    template_key.renderpass_index = static_cast<uint32_t>(renderpasses.size());
-                    template_key.pipeline_index = static_cast<uint32_t>(renderpass->pipelines.size());
-
-                    create_materials_for_pipeline(pipeline,
-                                                  pipeline_metadata.material_metadatas,
-                                                  materials,
-                                                  pipeline_create_info.name,
-                                                  *pipeline_interface,
-                                                  descriptor_pool,
-                                                  template_key);
-
-                    renderpass->pipelines.push_back(pipeline);
-
-                    metadata.pipeline_metadata.emplace(pipeline_create_info.name, pipeline_metadata);
-
-                } else {
-                    NOVA_LOG(ERROR) << "Could not create pipeline " << pipeline_create_info.name << ": "
-                                    << pipeline_result.error.to_string();
-                }
-            }
-        }
-        renderpass->id = static_cast<uint32_t>(renderpass_metadatas.size());
-
-        renderpasses.push_back(renderpass);
-        renderpass_metadatas.emplace(create_info.name, metadata);
-    }
-
-    void NovaRenderer::create_materials_for_pipeline(
-        Pipeline& pipeline,
-        std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher>& material_metadatas,
-        const std::vector<shaderpack::MaterialData>& materials,
-        const std::string& pipeline_name,
-        const rhi::PipelineInterface* pipeline_interface,
-        rhi::DescriptorPool* descriptor_pool,
-        const MaterialPassKey& template_key) {
+    void NovaRenderer::create_materials_for_pipeline(const Pipeline& pipeline,
+                                                     const std::pmr::vector<shaderpack::MaterialData>& materials,
+                                                     const std::string& pipeline_name) {
 
         // Determine the pipeline layout so the material can create descriptors for the pipeline
 
+        MaterialPassKey template_key = {};
+        template_key.pipeline_name = pipeline_name;
+
         // Large overestimate, but that's fine
-        pipeline.passes.reserve(materials.size());
+        std::vector<MaterialPass> passes;
+        passes.reserve(materials.size());
 
         for(const shaderpack::MaterialData& material_data : materials) {
             for(const shaderpack::MaterialPass& pass_data : material_data.passes) {
                 if(pass_data.pipeline == pipeline_name) {
                     MaterialPass pass = {};
-                    pass.pipeline_interface = pipeline_interface;
+                    pass.pipeline_interface = pipeline.pipeline_interface;
 
-                    pass.descriptor_sets = rhi->create_descriptor_sets(pipeline_interface, descriptor_pool);
+                    pass.descriptor_sets = rhi->create_descriptor_sets(pipeline.pipeline_interface,
+                                                                       global_descriptor_pool,
+                                                                       *renderpack_allocator);
 
-                    bind_data_to_material_descriptor_sets(pass, pass_data.bindings, pipeline_interface->bindings);
+                    bind_data_to_material_descriptor_sets(pass, pass_data.bindings, pipeline.pipeline_interface->bindings);
 
                     FullMaterialPassName full_pass_name = {pass_data.material_name, pass_data.name};
 
@@ -535,16 +407,18 @@ namespace nova::renderer {
                     material_metadatas.emplace(full_pass_name, pass_metadata);
 
                     MaterialPassKey key = template_key;
-                    key.material_pass_index = static_cast<uint32_t>(pipeline.passes.size());
+                    key.material_pass_index = static_cast<uint32_t>(passes.size());
 
                     material_pass_keys.emplace(full_pass_name, key);
 
-                    pipeline.passes.push_back(pass);
+                    passes.push_back(pass);
                 }
             }
         }
 
-        pipeline.passes.shrink_to_fit();
+        passes.shrink_to_fit();
+
+        passes_by_pipeline.emplace(pipeline.pipeline, passes);
     }
 
     void NovaRenderer::bind_data_to_material_descriptor_sets(
@@ -552,7 +426,7 @@ namespace nova::renderer {
         const std::unordered_map<std::string, std::string>& bindings,
         const std::unordered_map<std::string, rhi::ResourceBindingDescription>& descriptor_descriptions) {
 
-        std::vector<rhi::DescriptorSetWrite> writes;
+        std::pmr::vector<rhi::DescriptorSetWrite> writes;
         writes.reserve(bindings.size());
 
         for(const auto& [descriptor_name, resource_name] : bindings) {
@@ -561,12 +435,12 @@ namespace nova::renderer {
 
             rhi::DescriptorSetWrite write = {};
             write.set = descriptor_set;
-            write.first_binding = binding_desc.binding;
+            write.binding = binding_desc.binding;
             write.resources.emplace_back();
             rhi::DescriptorResourceInfo& resource_info = write.resources[0];
 
-            if(const auto dyn_tex_itr = dynamic_textures.find(resource_name); dyn_tex_itr != dynamic_textures.end()) {
-                rhi::Image* image = dyn_tex_itr->second;
+            if(const auto dyn_tex = device_resources->get_render_target(resource_name); dyn_tex) {
+                rhi::Image* image = (*dyn_tex)->image;
 
                 resource_info.image_info.image = image;
                 resource_info.image_info.sampler = point_sampler;
@@ -592,152 +466,24 @@ namespace nova::renderer {
         rhi->update_descriptor_sets(writes);
     }
 
-    ntl::Result<rhi::PipelineInterface*> NovaRenderer::create_pipeline_interface(
-        const shaderpack::PipelineCreateInfo& pipeline_create_info,
-        const std::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-        const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const {
-        std::unordered_map<std::string, rhi::ResourceBindingDescription> bindings;
-        bindings.reserve(32); // Probably a good estimate
-
-        get_shader_module_descriptors(pipeline_create_info.vertex_shader.source, rhi::ShaderStageFlags::Vertex, bindings);
-
-        if(pipeline_create_info.tessellation_control_shader) {
-            get_shader_module_descriptors(pipeline_create_info.tessellation_control_shader->source,
-                                          rhi::ShaderStageFlags::TessellationControl,
-                                          bindings);
-        }
-        if(pipeline_create_info.tessellation_evaluation_shader) {
-            get_shader_module_descriptors(pipeline_create_info.tessellation_evaluation_shader->source,
-                                          rhi::ShaderStageFlags::TessellationEvaluation,
-                                          bindings);
-        }
-        if(pipeline_create_info.geometry_shader) {
-            get_shader_module_descriptors(pipeline_create_info.geometry_shader->source, rhi::ShaderStageFlags::Geometry, bindings);
-        }
-        if(pipeline_create_info.fragment_shader) {
-            get_shader_module_descriptors(pipeline_create_info.fragment_shader->source, rhi::ShaderStageFlags::Fragment, bindings);
-        }
-
-        return rhi->create_pipeline_interface(bindings, color_attachments, depth_texture);
-    }
-
-    ntl::Result<NovaRenderer::PipelineReturn> NovaRenderer::create_graphics_pipeline(
-        rhi::PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& pipeline_create_info) const {
-        Pipeline pipeline;
-        PipelineMetadata metadata;
-
-        metadata.data = pipeline_create_info;
-
-        ntl::Result<rhi::Pipeline*> rhi_pipeline = rhi->create_pipeline(pipeline_interface, pipeline_create_info);
-        if(rhi_pipeline) {
-            pipeline.pipeline = *rhi_pipeline;
-
-        } else {
-            ntl::NovaError error = ntl::NovaError(fmt::format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name.c_str())
-                                                      .c_str(),
-                                                  std::move(rhi_pipeline.error));
-            return ntl::Result<PipelineReturn>(std::move(error));
-        }
-
-        return ntl::Result(PipelineReturn{pipeline, metadata});
-    }
-
-    void NovaRenderer::get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
-                                                     const rhi::ShaderStageFlags shader_stage,
-                                                     std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings) {
-        std::vector<uint32_t> spirv_std(spirv.begin(), spirv.end());
-        const spirv_cross::CompilerGLSL shader_compiler(spirv_std);
-        const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
-
-        for(const spirv_cross::Resource& resource : resources.sampled_images) {
-            NOVA_LOG(TRACE) << "Found a texture resource named " << resource.name;
-            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::CombinedImageSampler);
-        }
-
-        for(const spirv_cross::Resource& resource : resources.uniform_buffers) {
-            NOVA_LOG(TRACE) << "Found a UBO resource named " << resource.name;
-            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::UniformBuffer);
-        }
-
-        for(const spirv_cross::Resource& resource : resources.storage_buffers) {
-            NOVA_LOG(TRACE) << "Found a SSBO resource named " << resource.name;
-            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::StorageBuffer);
-        }
-    }
-
-    void NovaRenderer::add_resource_to_bindings(std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings,
-                                                const rhi::ShaderStageFlags shader_stage,
-                                                const spirv_cross::CompilerGLSL& shader_compiler,
-                                                const spirv_cross::Resource& resource,
-                                                const rhi::DescriptorType type) {
-        const uint32_t set = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
-        const uint32_t binding = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
-
-        rhi::ResourceBindingDescription new_binding = {};
-        new_binding.set = set;
-        new_binding.binding = binding;
-        new_binding.type = type;
-        new_binding.count = 1;
-        new_binding.stages = shader_stage;
-
-        const spirv_cross::SPIRType& type_information = shader_compiler.get_type(resource.type_id);
-        if(!type_information.array.empty()) {
-            new_binding.count = type_information.array[0];
-            // All arrays are unbounded until I figure out how to use SPIRV-Cross to detect unbounded arrays
-            new_binding.is_unbounded = true;
-        }
-
-        const std::string& resource_name = resource.name;
-
-        if(const auto itr = bindings.find(resource_name); itr != bindings.end()) {
-            // Existing binding. Is it the same as our binding?
-            rhi::ResourceBindingDescription& existing_binding = itr->second;
-            if(existing_binding != new_binding) {
-                // They have two different bindings with the same name. Not allowed
-                NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name
-                                << " in different shader stages. This is not allowed. Use unique names";
-
-            } else {
-                // Same binding, probably at different stages - let's fix that
-                existing_binding.stages |= shader_stage;
-            }
-
-        } else {
-            // Totally new binding!
-            bindings[resource_name] = new_binding;
-        }
-    }
-
     void NovaRenderer::destroy_dynamic_resources() {
-        for(auto& [name, image] : dynamic_textures) {
-            rhi->destroy_texture(image);
+        if(loaded_renderpack) {
+            for(const auto& tex_data : loaded_renderpack->resources.render_targets) {
+                device_resources->destroy_render_target(tex_data.name, *renderpack_allocator);
+            }
+            NOVA_LOG(DEBUG) << "Deleted all dynamic textures from renderpack " << loaded_renderpack->name;
         }
-
-        dynamic_textures.clear();
-
-        // TODO: Also destroy dynamic buffers, when we have support for those
     }
 
     void NovaRenderer::destroy_renderpasses() {
-        for(const auto& renderpass : renderpasses) {
-            if(!renderpass->is_builtin) {
-                rhi->destroy_renderpass(renderpass->renderpass);
-                rhi->destroy_framebuffer(renderpass->framebuffer);
-
-                for(Pipeline& pipeline : renderpass->pipelines) {
-                    rhi->destroy_pipeline(pipeline.pipeline);
-
-                    for(MaterialPass& material_pass : pipeline.passes) {
-                        (void) material_pass;
-                        // TODO: Destroy descriptors for material
-                        // TODO: Have a way to save mesh data somewhere outside of the render graph, then process it cleanly here
-                    }
-                }
-            }
+        for(const auto& renderpass : loaded_renderpack->graph_data.passes) {
+            rendergraph->destroy_renderpass(renderpass.name);
         }
     }
 
     rhi::Buffer* NovaRenderer::get_builtin_buffer(const std::string& buffer_name) const { return builtin_buffers.at(buffer_name); }
+
+    rhi::Sampler* NovaRenderer::get_point_sampler() const { return point_sampler; }
 
     RenderableId NovaRenderer::add_renderable_for_material(const FullMaterialPassName& material_name,
                                                            const StaticMeshRenderableData& renderable) {
@@ -750,12 +496,7 @@ namespace nova::renderer {
             return std::numeric_limits<uint64_t>::max();
         }
 
-        // Figure out where to put the renderable
-        const MaterialPassKey& pass_key = pos->second;
-
-        std::shared_ptr<Renderpass> renderpass = renderpasses.at(pass_key.renderpass_index);
-        Pipeline& pipeline = renderpass->pipelines.at(pass_key.pipeline_index);
-        MaterialPass& material = pipeline.passes.at(pass_key.material_pass_index);
+        MaterialPass material = {};
 
         StaticMeshRenderCommand command = make_render_command(renderable, id);
 
@@ -808,12 +549,27 @@ namespace nova::renderer {
             NOVA_LOG(ERROR) << "Could not find a mesh with ID " << renderable.mesh;
         }
 
+        // Figure out where to put the renderable
+        const MaterialPassKey& pass_key = pos->second;
+        const auto pipeline = pipeline_storage->get_pipeline(pass_key.pipeline_name);
+        if(pipeline) {
+            auto& passes = passes_by_pipeline[pipeline->pipeline];
+            passes.emplace_back(material);
+
+        } else {
+            NOVA_LOG(ERROR) << "Could not get place the new renderable in the appropriate draw command list";
+        }
+
         return id;
     }
 
-    rhi::RenderEngine* NovaRenderer::get_engine() const { return rhi.get(); }
+    rhi::RenderEngine& NovaRenderer::get_engine() const { return *rhi; }
 
-    std::shared_ptr<NovaWindow> NovaRenderer::get_window() const { return window; }
+    NovaWindow& NovaRenderer::get_window() const { return *window; }
+
+    DeviceResources& NovaRenderer::get_resource_manager() const { return *device_resources; }
+
+    PipelineStorage& NovaRenderer::get_pipeline_storage() const { return *pipeline_storage; }
 
     NovaRenderer* NovaRenderer::get_instance() { return instance.get(); }
 
@@ -823,24 +579,40 @@ namespace nova::renderer {
 
     void NovaRenderer::deinitialize() { instance.reset(); }
 
-    void NovaRenderer::create_global_allocator() {
-        auto* heap = new uint8_t[global_memory_pool_size.b_count()];
-        allocator_handle handle(new Mallocator);
-        std::unique_ptr<AllocationStrategy> allocation_strategy = std::make_unique<BlockAllocationStrategy>(handle,
-                                                                                                            global_memory_pool_size);
+    void NovaRenderer::create_global_allocators() {
+        global_allocator = std::make_unique<AllocatorHandle<>>(std::pmr::new_delete_resource());
 
-        global_allocator = std::make_shared<allocator_handle>(
-            new SystemMemoryAllocator(heap, global_memory_pool_size, std::move(allocation_strategy)));
+        renderpack_allocator = std::unique_ptr<AllocatorHandle<>>(global_allocator->create_suballocator());
+
+        frame_allocators.reserve(NUM_IN_FLIGHT_FRAMES);
+        for(size_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
+            void* ptr = global_allocator->allocate(PER_FRAME_MEMORY_SIZE.b_count());
+            auto* mem = global_allocator->new_other_object<std::pmr::monotonic_buffer_resource>(ptr, PER_FRAME_MEMORY_SIZE.b_count());
+            frame_allocators.emplace_back(mem);
+        }
+    }
+
+    void NovaRenderer::initialize_virtual_filesystem() {
+        // The host application MUST register its data directory before initializing Nova
+
+        const auto vfs = filesystem::VirtualFilesystem::get_instance();
+
+        const auto renderpacks_directory = vfs->get_folder_accessor(RENDERPACK_DIRECTORY);
+
+        vfs->add_resource_root(renderpacks_directory);
     }
 
     void NovaRenderer::create_global_gpu_pools() {
         const uint64_t mesh_memory_size = 512000000;
         ntl::Result<rhi::DeviceMemory*> memory_result = rhi->allocate_device_memory(mesh_memory_size,
                                                                                     rhi::MemoryUsage::DeviceOnly,
-                                                                                    rhi::ObjectType::Buffer);
+                                                                                    rhi::ObjectType::Buffer,
+                                                                                    *global_allocator);
         const ntl::Result<DeviceMemoryResource*> mesh_memory_result = memory_result.map([&](rhi::DeviceMemory* memory) {
-            auto* allocator = new BlockAllocationStrategy(*global_allocator.get(), Bytes(mesh_memory_size), 64_b);
-            return new DeviceMemoryResource(memory, allocator);
+            auto* allocator = global_allocator->new_other_object<BlockAllocationStrategy>(global_allocator.get(),
+                                                                                          Bytes(mesh_memory_size),
+                                                                                          64_b);
+            return global_allocator->new_other_object<DeviceMemoryResource>(memory, allocator);
         });
 
         if(mesh_memory_result) {
@@ -853,10 +625,15 @@ namespace nova::renderer {
         // Assume 65k things, plus we need space for the builtin ubos
         const uint64_t ubo_memory_size = sizeof(PerFrameUniforms) + sizeof(glm::mat4) * 0xFFFF;
         const ntl::Result<DeviceMemoryResource*>
-            ubo_memory_result = rhi->allocate_device_memory(ubo_memory_size, rhi::MemoryUsage::DeviceOnly, rhi::ObjectType::Buffer)
+            ubo_memory_result = rhi->allocate_device_memory(ubo_memory_size,
+                                                            rhi::MemoryUsage::DeviceOnly,
+                                                            rhi::ObjectType::Buffer,
+                                                            *global_allocator)
                                     .map([=](rhi::DeviceMemory* memory) {
-                                        auto* allocator = new BumpPointAllocationStrategy(Bytes(ubo_memory_size), Bytes(sizeof(glm::mat4)));
-                                        return new DeviceMemoryResource(memory, allocator);
+                                        auto* allocator = global_allocator
+                                                              ->new_other_object<BumpPointAllocationStrategy>(Bytes(ubo_memory_size),
+                                                                                                              Bytes(sizeof(glm::mat4)));
+                                        return global_allocator->new_other_object<DeviceMemoryResource>(memory, allocator);
                                     });
 
         if(ubo_memory_result) {
@@ -871,76 +648,81 @@ namespace nova::renderer {
         const ntl::Result<DeviceMemoryResource*>
             staging_memory_result = rhi->allocate_device_memory(staging_memory_size.b_count(),
                                                                 rhi::MemoryUsage::StagingBuffer,
-                                                                rhi::ObjectType::Buffer)
+                                                                rhi::ObjectType::Buffer,
+                                                                *global_allocator)
                                         .map([=](rhi::DeviceMemory* memory) {
-                                            auto* allocator = new BumpPointAllocationStrategy(staging_memory_size, 64_b);
-                                            return new DeviceMemoryResource(memory, allocator);
+                                            auto* allocator = global_allocator
+                                                                  ->new_other_object<BumpPointAllocationStrategy>(staging_memory_size,
+                                                                                                                  64_b);
+                                            return global_allocator->new_other_object<DeviceMemoryResource>(memory, allocator);
                                         });
 
         if(staging_memory_result) {
             staging_buffer_memory = std::make_unique<DeviceMemoryResource>(*staging_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create staging buffer memory pool: " << staging_memory_result.error.to_string().c_str();
+            NOVA_LOG(ERROR) << "Could not create staging buffer memory pool: " << staging_memory_result.error.to_string();
         }
     }
 
     void NovaRenderer::create_global_sync_objects() {
-        const std::vector<rhi::Fence*>& fences = rhi->create_fences(NUM_IN_FLIGHT_FRAMES, true);
+        const std::pmr::vector<rhi::Fence*>& fences = rhi->create_fences(*global_allocator, NUM_IN_FLIGHT_FRAMES, true);
         for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
             frame_fences[i] = fences.at(i);
         }
     }
 
-    void NovaRenderer::create_builtin_textures() {
-        {
-            shaderpack::TextureCreateInfo info = {};
-            info.name = SCENE_OUTPUT_RENDER_TARGET_NAME;
-            info.usage = shaderpack::ImageUsage::RenderTarget;
-            info.format.pixel_format = shaderpack::PixelFormatEnum::RGBA8;
-            info.format.dimension_type = shaderpack::TextureDimensionTypeEnum::ScreenRelative;
-            info.format.width = 1;
-            info.format.height = 1;
+    void NovaRenderer::create_resource_storage() {
+        device_resources = std::make_unique<DeviceResources>(*this);
 
-            rhi::Image* scene_output_render_target = rhi->create_image(info);
-            builtin_images.emplace(SCENE_OUTPUT_RENDER_TARGET_NAME, scene_output_render_target);
+        pipeline_storage = std::make_unique<PipelineStorage>(*this, *global_allocator->create_suballocator());
+    }
+
+    void NovaRenderer::create_builtin_render_targets() const {
+        const auto& swapchain_size = rhi->get_swapchain()->get_size();
+        const auto scene_output = device_resources->create_render_target(SCENE_OUTPUT_RT_NAME,
+                                                                         swapchain_size.x,
+                                                                         swapchain_size.y,
+                                                                         rhi::PixelFormat::Rgba8,
+                                                                         *global_allocator,
+                                                                         true);
+
+        if(!scene_output) {
+            NOVA_LOG(ERROR) << "Could not create scene output render target " << SCENE_OUTPUT_RT_NAME;
         }
     }
 
     void NovaRenderer::create_uniform_buffers() {
         // Buffer for per-frame uniform data
-        rhi::BufferCreateInfo per_frame_data_create_info = {};
+        rhi::BufferCreateInfo per_frame_data_create_info;
         per_frame_data_create_info.size = sizeof(PerFrameUniforms);
         per_frame_data_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
-        auto* per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory);
+        auto* per_frame_data_buffer = rhi->create_buffer(per_frame_data_create_info, *ubo_memory, *global_allocator);
         builtin_buffers.emplace(PER_FRAME_DATA_NAME, per_frame_data_buffer);
 
         // Buffer for each drawcall's model matrix
-        rhi::BufferCreateInfo model_matrix_buffer_create_info = {};
+        rhi::BufferCreateInfo model_matrix_buffer_create_info;
         model_matrix_buffer_create_info.size = sizeof(glm::mat4) * 0xFFFF;
         model_matrix_buffer_create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
-        auto* model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info, *ubo_memory);
+        auto* model_matrix_buffer = rhi->create_buffer(model_matrix_buffer_create_info, *ubo_memory, *global_allocator);
         builtin_buffers.emplace(MODEL_MATRIX_BUFFER_NAME, model_matrix_buffer);
     }
 
-    void NovaRenderer::create_builtin_renderpasses() {
+    void NovaRenderer::create_renderpass_manager() {
+        rendergraph = std::make_unique<Rendergraph>(*global_allocator->create_suballocator(), *rhi);
+    }
+
+    void NovaRenderer::create_builtin_renderpasses() const {
         // UI render pass
         {
-            const std::shared_ptr<Renderpass> ui_renderpass = std::make_shared<NullUiRenderpass>(rhi.get(),
-                                                                                                 rhi->get_swapchain()->get_size());
-
-            shaderpack::RenderPassCreateInfo ui = {};
-            ui.name = UI_RENDER_PASS_NAME;
-            ui.texture_inputs = {BACKBUFFER_NAME};
-            ui.texture_outputs = {{BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false}};
-
-            add_render_pass(ui, {}, {}, nullptr, ui_renderpass);
-
+            std::unique_ptr<Renderpass> ui_renderpass = std::make_unique<NullUiRenderpass>();
             ui_renderpass->is_builtin = true;
 
-            builtin_renderpasses[UI_RENDER_PASS_NAME] = ui_renderpass;
+            if(!rendergraph->add_renderpass(std::move(ui_renderpass), NullUiRenderpass::get_create_info(), *device_resources)) {
+                NOVA_LOG(ERROR) << "Could not create null UI renderpass";
+            }
         }
     }
 } // namespace nova::renderer

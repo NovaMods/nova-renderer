@@ -4,23 +4,27 @@
 #include "d3dx12.h"
 #include "dx12_utils.hpp"
 
+using namespace nova::mem;
+
 namespace nova::renderer::rhi {
     using namespace Microsoft::WRL;
 
     Dx12CommandList::Dx12CommandList(ComPtr<ID3D12GraphicsCommandList> cmds) : cmds(std::move(cmds)) {}
 
-    void Dx12CommandList::resource_barriers(PipelineStageFlags /* stages_before_barrier */,
-                                            PipelineStageFlags /* stages_after_barrier */,
-                                            const std::vector<ResourceBarrier>& barriers) {
+    void Dx12CommandList::resource_barriers(PipelineStage /* stages_before_barrier */,
+                                            PipelineStage /* stages_after_barrier */,
+                                            const std::pmr::vector<ResourceBarrier>& barriers) {
         // D3D12 barriers don't use all the information in our `barriers` struct - specifically, they don't care much about image layouts,
         // nor about the pipeline stage flags. Thus, this method doesn't do anything with that data
 
-        std::vector<D3D12_RESOURCE_BARRIER> dx12_barriers;
+        std::pmr::vector<D3D12_RESOURCE_BARRIER> dx12_barriers;
         dx12_barriers.reserve(barriers.size());
 
         for(const ResourceBarrier& barrier : barriers) {
             ID3D12Resource* resource_to_barrier = nullptr;
             switch(barrier.resource_to_barrier->type) {
+                default:
+                    [[fallthrough]]; // yolo
                 case ResourceType::Buffer: {
                     auto* d3d12_buffer = static_cast<DX12Buffer*>(barrier.resource_to_barrier);
                     resource_to_barrier = d3d12_buffer->resource.Get();
@@ -35,24 +39,49 @@ namespace nova::renderer::rhi {
             const D3D12_RESOURCE_STATES initial_state = to_dx12_state(barrier.old_state);
             const D3D12_RESOURCE_STATES final_state = to_dx12_state(barrier.new_state);
 
-            dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(resource_to_barrier, initial_state, final_state));
+            // Do some guesswork. Frontend/backend refactor will add state tracking that makes this code obsolete
+
+            if(barrier.new_state == ResourceState::CopySource || barrier.new_state == ResourceState::CopyDestination) {
+                // If the resource is about to be involved in a copy operation, we need to end the a previous barrier
+                dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(resource_to_barrier,
+                                                                             initial_state,
+                                                                             final_state,
+                                                                             D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+                                                                             D3D12_RESOURCE_BARRIER_FLAG_END_ONLY));
+
+            } else if(barrier.old_state == ResourceState::CopySource || barrier.old_state == ResourceState::CopyDestination) {
+                // If the resource was just involved in a copy operation, we don't need to actually issue a barrier. I guess only Vulkan
+                // does? The state tracking in the frontend/backend refactor will get rid of all this anyways so it's fine if we're wrong
+
+                // This branch will almost certainly need to be amended as bugfixes continue
+
+            } else {
+                // If no copy operations were involved, issue the barrier with no flags
+                dx12_barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(resource_to_barrier, initial_state, final_state));
+            }
         }
 
-        cmds->ResourceBarrier(static_cast<UINT>(dx12_barriers.size()), dx12_barriers.data());
+        if(!dx12_barriers.empty()) {
+            cmds->ResourceBarrier(static_cast<UINT>(dx12_barriers.size()), dx12_barriers.data());
+        }
     }
 
     void Dx12CommandList::copy_buffer(Buffer* destination_buffer,
-                                      const uint64_t destination_offset,
+                                      const Bytes destination_offset,
                                       Buffer* source_buffer,
-                                      const uint64_t source_offset,
-                                      const uint64_t num_bytes) {
+                                      const Bytes source_offset,
+                                      const Bytes num_bytes) {
         auto* dst_buf = reinterpret_cast<DX12Buffer*>(destination_buffer);
         auto* src_buf = reinterpret_cast<DX12Buffer*>(source_buffer);
 
-        cmds->CopyBufferRegion(dst_buf->resource.Get(), destination_offset, src_buf->resource.Get(), source_offset, num_bytes);
+        cmds->CopyBufferRegion(dst_buf->resource.Get(),
+                               destination_offset.b_count(),
+                               src_buf->resource.Get(),
+                               source_offset.b_count(),
+                               num_bytes.b_count());
     }
 
-    void Dx12CommandList::execute_command_lists(const std::vector<CommandList*>& lists) {
+    void Dx12CommandList::execute_command_lists(const std::pmr::vector<CommandList*>& lists) {
         // Apparently D3D12 can only execute bundles from another command list, meaning that the strategy I use to
         // record command buffers in Vulkan won't work here...
         //
@@ -88,7 +117,7 @@ namespace nova::renderer::rhi {
         cmds->SetPipelineState(dx_pipeline->pso.Get());
     }
 
-    void Dx12CommandList::bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
+    void Dx12CommandList::bind_descriptor_sets(const std::pmr::vector<DescriptorSet*>& descriptor_sets,
                                                const PipelineInterface* pipeline_interface) {
         const auto* dx_interface = static_cast<const DX12PipelineInterface*>(pipeline_interface);
 
@@ -100,8 +129,8 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void Dx12CommandList::bind_vertex_buffers(const std::vector<Buffer*>& buffers) {
-        std::vector<D3D12_VERTEX_BUFFER_VIEW> views;
+    void Dx12CommandList::bind_vertex_buffers(const std::pmr::vector<Buffer*>& buffers) {
+        std::pmr::vector<D3D12_VERTEX_BUFFER_VIEW> views;
         views.reserve(buffers.size());
 
         for(const Buffer* buffer : buffers) {
@@ -125,7 +154,25 @@ namespace nova::renderer::rhi {
         cmds->IASetIndexBuffer(&view);
     }
 
-    void Dx12CommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t num_instances) {
-        cmds->DrawInstanced(num_indices, num_instances, 0, 0);
+    void Dx12CommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t offset, const uint32_t num_instances) {
+        cmds->DrawInstanced(num_indices, num_instances, 0, offset);
+    }
+
+    void Dx12CommandList::set_scissor_rect(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height) {
+        D3D12_RECT scissor_rect = {static_cast<LONG>(x), static_cast<LONG>(y), static_cast<LONG>(x + width), static_cast<LONG>(y + height)};
+        cmds->RSSetScissorRects(1, &scissor_rect);
+    }
+
+    void Dx12CommandList::upload_data_to_image(
+        Image* image, const size_t width, const size_t height, const size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) {
+        const auto* dx_image = static_cast<const DX12Image*>(image);
+        const auto* dx_buffer = static_cast<const DX12Buffer*>(staging_buffer);
+
+        D3D12_SUBRESOURCE_DATA subresource;
+        subresource.pData = data;
+        subresource.RowPitch = width * bytes_per_pixel;
+        subresource.SlicePitch = width * height * bytes_per_pixel;
+
+        UpdateSubresources(cmds.Get(), dx_image->resource.Get(), dx_buffer->resource.Get(), 0, 0, 1, &subresource);
     }
 } // namespace nova::renderer::rhi

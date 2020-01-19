@@ -115,14 +115,18 @@ set(NOVA_SOURCE
         include/nova_renderer/constants.hpp
         include/nova_renderer/frame_context.hpp
 
+        include/nova_renderer/filesystem/folder_accessor.hpp
+        include/nova_renderer/filesystem/virtual_filesystem.hpp
+
+        include/nova_renderer/loading/shaderpack_loading.hpp
+
         include/nova_renderer/memory/bytes.hpp
         include/nova_renderer/memory/allocation_strategy.hpp
         include/nova_renderer/memory/allocation_structs.hpp
-        include/nova_renderer/memory/polyalloc.hpp
+        include/nova_renderer/memory/allocators.hpp
         include/nova_renderer/memory/block_allocation_strategy.hpp
+        include/nova_renderer/memory/host_memory_resource.hpp
         include/nova_renderer/memory/bump_point_allocation_strategy.hpp
-        include/nova_renderer/memory/mallocator.hpp
-        include/nova_renderer/memory/system_memory_allocator.hpp
 
         include/nova_renderer/rhi/forward_decls.hpp
         include/nova_renderer/rhi/command_list.hpp
@@ -134,18 +138,20 @@ set(NOVA_SOURCE
         include/nova_renderer/frontend/procedural_mesh.hpp
         include/nova_renderer/frontend/rendergraph.hpp
         include/nova_renderer/frontend/ui_renderer.hpp
+        include/nova_renderer/frontend/pipeline_storage.hpp
+        include/nova_renderer/frontend/resource_loader.hpp
 
         src/nova_renderer.cpp
 
-        src/loading/zip_folder_accessor.hpp
-        src/loading/regular_folder_accessor.hpp
-        src/loading/folder_accessor.hpp
-        src/loading/folder_accessor.cpp
-        src/loading/regular_folder_accessor.cpp
-        src/loading/zip_folder_accessor.cpp
-        src/loading/loading_utils.cpp
-        src/loading/loading_utils.hpp
-        src/loading/json_utils.hpp
+        src/filesystem/zip_folder_accessor.hpp
+        src/filesystem/regular_folder_accessor.hpp
+        src/filesystem/folder_accessor.cpp
+        src/filesystem/regular_folder_accessor.cpp
+        src/filesystem/zip_folder_accessor.cpp
+        src/filesystem/loading_utils.cpp
+        src/filesystem/loading_utils.hpp
+        src/filesystem/json_utils.hpp
+        src/filesystem/virtual_filesystem.cpp
 
         src/settings/nova_settings.cpp
 		
@@ -154,20 +160,21 @@ set(NOVA_SOURCE
         src/render_objects/renderables.cpp
         src/renderer/rendergraph.cpp
         src/renderer/ui/ui_renderer.cpp
+        src/renderer/pipeline_storage.cpp
+        src/renderer/resource_loader.cpp
 
         src/util/logger.cpp
         src/util/utils.cpp
         src/util/result.cpp
 
-        src/loading/shaderpack/shaderpack_loading.cpp
-        src/loading/shaderpack/shaderpack_loading.hpp
-        src/loading/shaderpack/shaderpack_data.cpp
-        src/loading/shaderpack/json_interop.cpp
-        src/loading/shaderpack/json_interop.hpp
-        src/loading/shaderpack/shaderpack_validator.cpp
-        src/loading/shaderpack/shaderpack_validator.hpp
-        src/loading/shaderpack/render_graph_builder.cpp
-        src/loading/shaderpack/render_graph_builder.hpp
+        src/filesystem/shaderpack/shaderpack_loading.cpp
+        src/filesystem/shaderpack/shaderpack_data.cpp
+        src/filesystem/shaderpack/json_interop.cpp
+        src/filesystem/shaderpack/json_interop.hpp
+        src/filesystem/shaderpack/shaderpack_validator.cpp
+        src/filesystem/shaderpack/shaderpack_validator.hpp
+        src/filesystem/shaderpack/render_graph_builder.cpp
+        src/filesystem/shaderpack/render_graph_builder.hpp
 
         src/render_engine/rhi_types.cpp
         src/render_engine/render_engine.cpp
@@ -186,11 +193,10 @@ set(NOVA_SOURCE
         src/windowing/window.cpp
 
         src/memory/device_memory_resource.cpp
+        src/memory/host_memory_resource.cpp
         src/memory/block_allocation_strategy.cpp
         src/memory/bump_point_allocation_strategy.cpp
         src/memory/bytes.cpp
-        src/memory/mallocator.cpp
-        src/memory/system_memory_allocator.cpp
         )
 
 #################################################################
@@ -260,22 +266,6 @@ if(NOVA_ENABLE_D3D12_RHI)
             src/render_engine/dx12/dx12_swapchain.hpp
             src/render_engine/dx12/dx12_render_engine.cpp
             src/render_engine/dx12/dx12_render_engine.hpp
-            )
-endif()
-
-if(NOVA_ENABLE_OPENGL_RHI)
-    set(NOVA_SOURCE
-            ${NOVA_SOURCE}
-            src/render_engine/gl3/gl3_render_engine.cpp
-            src/render_engine/gl3/gl3_render_engine.hpp
-            src/render_engine/gl3/gl3_command_list.cpp
-            src/render_engine/gl3/gl3_command_list.hpp
-            src/render_engine/gl3/gl3_swapchain.cpp
-            src/render_engine/gl3/gl3_swapchain.hpp
-            src/render_engine/gl3/KHR/khrplatform.h
-            src/render_engine/gl3/glad/glad.h
-            src/render_engine/gl3/glad.c
-            src/render_engine/gl3/gl3_structs.hpp
             )
 endif()
 
@@ -389,7 +379,7 @@ include(GNUInstallDirs)
 # Add extra warnings if possible #
 ##################################
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wpedantic -Wconversion -Wdefaulted-function-deleted)
+    target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wpedantic -Wconversion -Wdefaulted-function-deleted -Wno-c++98-compat -Wno-c++98-compat-pendantic -Wno-c++98-c++11-c++14-compat -Wno-c++98-c++11-c++14-compat-pendantic)
 endif()
 
 add_coverage(nova-renderer)

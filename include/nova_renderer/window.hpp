@@ -67,7 +67,20 @@ namespace nova::renderer {
 
         [[nodiscard]] bool should_close() const;
 
+        /*!
+         * \brief Gets the size of the framebuffer that this window displays
+         */
+        [[nodiscard]] glm::uvec2 get_framebuffer_size() const;
+
+        /*!
+         * \brief Gets the size of the window itself
+         */
         [[nodiscard]] glm::uvec2 get_window_size() const;
+
+        /*!
+         * \brief Get the ratio of the size of the framebuffer to the size of the window
+         */
+        [[nodiscard]] glm::vec2 get_framebuffer_to_window_ratio() const;
 
 #if NOVA_WINDOWS
         [[nodiscard]] HWND get_window_handle() const;
@@ -88,11 +101,11 @@ namespace nova::renderer {
     private:
         GLFWwindow* window = nullptr;
 
-        std::vector<std::function<void(uint32_t, bool, bool, bool)>> key_callbacks;
+        std::pmr::vector<std::function<void(uint32_t, bool, bool, bool)>> key_callbacks;
 
-        std::vector<std::function<void(double, double)>> mouse_callbacks;
+        std::pmr::vector<std::function<void(double, double)>> mouse_callbacks;
 
-        std::vector<std::function<void(uint32_t, bool)>> mouse_button_callbacks;
+        std::pmr::vector<std::function<void(uint32_t, bool)>> mouse_button_callbacks;
 
         static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 

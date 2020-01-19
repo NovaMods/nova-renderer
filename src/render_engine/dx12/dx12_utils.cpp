@@ -174,7 +174,12 @@ namespace nova::renderer::rhi {
     D3D12_DESCRIPTOR_RANGE_TYPE to_dx12_range_type(DescriptorType type) {
         switch(type) {
             case DescriptorType::CombinedImageSampler:
+                [[fallthrough]];
+            case DescriptorType::Texture:
                 return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+            case DescriptorType::Sampler:
+                return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
 
             case DescriptorType::UniformBuffer:
                 return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
@@ -187,84 +192,42 @@ namespace nova::renderer::rhi {
         }
     }
 
-    std::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions() {
-        static std::vector<D3D12_INPUT_ELEMENT_DESC> input_element_descriptions =
-            {// Position
-             D3D12_INPUT_ELEMENT_DESC{
-                 "POSITION",                                 // SemanticName
-                 0,                                          // SemanticIndex
-                 DXGI_FORMAT_R32G32B32_FLOAT,                // Format
-                 0,                                          // InputSlot
-                 sizeof(FullVertex),                         // AlignedByOffset
-                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
-                 0                                           // InstanceDataStepRate
-             },
+    enum DXGI_FORMAT to_dx_format(const VertexFieldFormat format) {
+        switch(format) {
+            case VertexFieldFormat::Uint:
+                return DXGI_FORMAT_R32_UINT;
 
-             // Normal
-             D3D12_INPUT_ELEMENT_DESC{
-                 "NORMAL",                                   // SemanticName
-                 0,                                          // SemanticIndex
-                 DXGI_FORMAT_R32G32B32_FLOAT,                // Format
-                 0,                                          // InputSlot
-                 sizeof(FullVertex),                         // AlignedByOffset
-                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
-                 0                                           // InstanceDataStepRate
-             },
+            case VertexFieldFormat::Float2:
+                return DXGI_FORMAT_R32G32_FLOAT;
 
-             // Tangent
-             D3D12_INPUT_ELEMENT_DESC{
-                 "TANGENT",                                  // SemanticName
-                 0,                                          // SemanticIndex
-                 DXGI_FORMAT_R32G32B32_FLOAT,                // Format
-                 0,                                          // InputSlot
-                 sizeof(FullVertex),                         // AlignedByOffset
-                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
-                 0                                           // InstanceDataStepRate
-             },
+            case VertexFieldFormat::Float3:
+                return DXGI_FORMAT_R32G32B32_FLOAT;
 
-             // Main UV
-             D3D12_INPUT_ELEMENT_DESC{
-                 "TEXCOORD",                                 // SemanticName
-                 0,                                          // SemanticIndex
-                 DXGI_FORMAT_R32G32_FLOAT,                   // Format
-                 0,                                          // InputSlot
-                 sizeof(FullVertex),                         // AlignedByOffset
-                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
-                 0                                           // InstanceDataStepRate
-             },
+            case VertexFieldFormat::Float4:
+                return DXGI_FORMAT_R32G32B32A32_FLOAT;
 
-             // Lightmap UV
-             D3D12_INPUT_ELEMENT_DESC{
-                 "LMUV",                                     // SemanticName
-                 0,                                          // SemanticIndex
-                 DXGI_FORMAT_R16G16_FLOAT,                   // Format
-                 0,                                          // InputSlot
-                 sizeof(FullVertex),                         // AlignedByOffset
-                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
-                 0                                           // InstanceDataStepRate
-             },
+            default:
+                return DXGI_FORMAT_R32G32B32_FLOAT;
+        }
+    }
 
-             // Virtual texture ID
-             D3D12_INPUT_ELEMENT_DESC{
-                 "VTEX_ID",                                  // SemanticName
-                 0,                                          // SemanticIndex
-                 DXGI_FORMAT_R32_UINT,                       // Format
-                 0,                                          // InputSlot
-                 sizeof(FullVertex),                         // AlignedByOffset
-                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
-                 0                                           // InstanceDataStepRate
-             },
+    std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> get_input_descriptions(const std::pmr::vector<VertexField>& fields) {
+        std::pmr::vector<D3D12_INPUT_ELEMENT_DESC> input_element_descriptions;
+        input_element_descriptions.reserve(fields.size());
 
-             // Additional Data
-             D3D12_INPUT_ELEMENT_DESC{
-                 "TANGENT",                                  // SemanticName
-                 0,                                          // SemanticIndex
-                 DXGI_FORMAT_R32G32B32A32_FLOAT,             // Format
-                 0,                                          // InputSlot
-                 sizeof(FullVertex),                         // AlignedByOffset
-                 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, // InputSlotClass
-                 0                                           // InstanceDataStepRate
-             }};
+        uint32_t cur_slot = 0;
+        for(const auto& field : fields) {
+            const auto format = to_dx_format(field.format);
+            input_element_descriptions.emplace_back(D3D12_INPUT_ELEMENT_DESC{field.name.c_str(),
+                                                                             0,
+                                                                             format,
+                                                                             cur_slot,
+                                                                             D3D12_APPEND_ALIGNED_ELEMENT,
+                                                                             D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+                                                                             0});
+
+            cur_slot++;
+        }
 
         return input_element_descriptions;
     }

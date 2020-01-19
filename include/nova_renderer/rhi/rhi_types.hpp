@@ -5,6 +5,7 @@
 
 #include <glm/glm.hpp>
 
+#include "nova_renderer/memory/bytes.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
@@ -13,7 +14,7 @@ namespace nova::renderer::rhi {
 
 #pragma region Structs
     struct BufferCreateInfo {
-        uint64_t size = 0;
+        mem::Bytes size = 0;
 
         BufferUsage buffer_usage{};
     };
@@ -33,12 +34,16 @@ namespace nova::renderer::rhi {
 
     struct Sampler {};
 
+    struct TextureCreateInfo {
+        TextureUsage usage;
+    };
+
     struct Image : Resource {
         bool is_depth_tex = false;
     };
 
     struct Buffer : Resource {
-        uint32_t size = 0;
+        mem::Bytes size = 0;
     };
 
     struct Framebuffer {
@@ -82,11 +87,17 @@ namespace nova::renderer::rhi {
         /*!
          * \brief The shader stages that need access to this binding
          */
-        ShaderStageFlags stages;
+        ShaderStage stages;
 
         bool operator==(const ResourceBindingDescription& other);
 
         bool operator!=(const ResourceBindingDescription& other);
+    };
+
+    struct VertexField {
+        std::string name;
+
+        VertexFieldFormat format;
     };
 
     /*!
@@ -94,6 +105,8 @@ namespace nova::renderer::rhi {
      */
     struct PipelineInterface {
         std::unordered_map<std::string, ResourceBindingDescription> bindings;
+
+        std::pmr::vector<VertexField> vertex_fields;
     };
 
     struct Pipeline {};
@@ -108,20 +121,19 @@ namespace nova::renderer::rhi {
 
     struct DescriptorSet {};
 
-    // TODO: This struct actually maps pretty directly to a Vulkan barrier, so it doesn't map well to a D3D12 barrier. Figure out how to
-    // make it D3D12-friendly
+    // TODO: Resource state tracking in the command list so we don't need all this bullshit
     struct ResourceBarrier {
         Resource* resource_to_barrier;
 
         /*!
          * \brief The resource access that much finish before this barrier executed
          */
-        AccessFlags access_before_barrier;
+        ResourceAccess access_before_barrier;
 
         /*!
          * \brief The resource access that must wait for this battier to finish executing
          */
-        AccessFlags access_after_barrier;
+        ResourceAccess access_after_barrier;
 
         /*!
          * \brief How you're going to access this resource just before this barrier
@@ -144,12 +156,12 @@ namespace nova::renderer::rhi {
 
         union {
             struct {
-                ImageAspectFlags aspect;
+                ImageAspect aspect;
             } image_memory_barrier;
 
             struct {
-                uint64_t offset;
-                uint64_t size;
+                mem::Bytes offset;
+                mem::Bytes size;
             } buffer_memory_barrier;
         };
     };
@@ -185,7 +197,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief The specific binding in the set that you want to write to
          */
-        uint32_t first_binding;
+        uint32_t binding;
 
         /*!
          * \brief The type of descriptor you're writing to
@@ -202,5 +214,5 @@ namespace nova::renderer::rhi {
     };
 #pragma endregion
 
-    ShaderStageFlags operator|=(ShaderStageFlags lhs, ShaderStageFlags rhs);
+    ShaderStage operator|=(ShaderStage lhs, ShaderStage rhs);
 } // namespace nova::renderer::rhi

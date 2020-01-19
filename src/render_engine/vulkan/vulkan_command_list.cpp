@@ -18,13 +18,13 @@ namespace nova::renderer::rhi {
         vkBeginCommandBuffer(cmds, &begin_info);
     }
 
-    void VulkanCommandList::resource_barriers(const PipelineStageFlags stages_before_barrier,
-                                              const PipelineStageFlags stages_after_barrier,
-                                              const std::vector<ResourceBarrier>& barriers) {
-        std::vector<VkBufferMemoryBarrier> buffer_barriers;
+    void VulkanCommandList::resource_barriers(const PipelineStage stages_before_barrier,
+                                              const PipelineStage stages_after_barrier,
+                                              const std::pmr::vector<ResourceBarrier>& barriers) {
+        std::pmr::vector<VkBufferMemoryBarrier> buffer_barriers;
         buffer_barriers.reserve(barriers.size());
 
-        std::vector<VkImageMemoryBarrier> image_barriers;
+        std::pmr::vector<VkImageMemoryBarrier> image_barriers;
         image_barriers.reserve(barriers.size());
 
         for(const ResourceBarrier& barrier : barriers) {
@@ -60,8 +60,8 @@ namespace nova::renderer::rhi {
                     buffer_barrier.srcQueueFamilyIndex = render_engine.get_queue_family_index(barrier.source_queue);
                     buffer_barrier.dstQueueFamilyIndex = render_engine.get_queue_family_index(barrier.destination_queue);
                     buffer_barrier.buffer = buffer->buffer;
-                    buffer_barrier.offset = barrier.buffer_memory_barrier.offset;
-                    buffer_barrier.size = barrier.buffer_memory_barrier.size;
+                    buffer_barrier.offset = barrier.buffer_memory_barrier.offset.b_count();
+                    buffer_barrier.size = barrier.buffer_memory_barrier.size.b_count();
 
                     buffer_barriers.push_back(buffer_barrier);
                 } break;
@@ -81,14 +81,14 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanCommandList::copy_buffer(Buffer* destination_buffer,
-                                        const uint64_t destination_offset,
+                                        const mem::Bytes destination_offset,
                                         Buffer* source_buffer,
-                                        const uint64_t source_offset,
-                                        const uint64_t num_bytes) {
+                                        const mem::Bytes source_offset,
+                                        const mem::Bytes num_bytes) {
         VkBufferCopy copy;
-        copy.srcOffset = source_offset;
-        copy.dstOffset = destination_offset;
-        copy.size = num_bytes;
+        copy.srcOffset = source_offset.b_count();
+        copy.dstOffset = destination_offset.b_count();
+        copy.size = num_bytes.b_count();
         auto* vk_destination_buffer = static_cast<VulkanBuffer*>(destination_buffer);
         auto* vk_source_buffer = static_cast<VulkanBuffer*>(source_buffer);
 
@@ -96,8 +96,8 @@ namespace nova::renderer::rhi {
         vkCmdCopyBuffer(cmds, vk_source_buffer->buffer, vk_destination_buffer->buffer, 1, &copy);
     }
 
-    void VulkanCommandList::execute_command_lists(const std::vector<CommandList*>& lists) {
-        std::vector<VkCommandBuffer> buffers;
+    void VulkanCommandList::execute_command_lists(const std::pmr::vector<CommandList*>& lists) {
+        std::pmr::vector<VkCommandBuffer> buffers;
         buffers.reserve(lists.size());
 
         for(auto* list : lists) {
@@ -111,7 +111,7 @@ namespace nova::renderer::rhi {
     void VulkanCommandList::begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) {
         // TODO: Store this somewhere better
         // TODO: Get max framebuffer attachments from GPU
-        const static std::vector<VkClearValue> CLEAR_VALUES(9);
+        const static std::pmr::vector<VkClearValue> CLEAR_VALUES(9);
 
         auto* vk_renderpass = static_cast<VulkanRenderpass*>(renderpass);
         auto* vk_framebuffer = static_cast<VulkanFramebuffer*>(framebuffer);
@@ -124,18 +124,6 @@ namespace nova::renderer::rhi {
         begin_info.clearValueCount = vk_framebuffer->num_attachments;
         begin_info.pClearValues = CLEAR_VALUES.data();
 
-        /*
-         * ERROR: [Validation] [Validation]  Objects: Render Passforward (8483000000000025)  In vkCmdBeginRenderPass()
-         * the VkRenderPassBeginInfo struct has a clearValueCount of 0 but there must be at least 2 entries in
-         * pClearValues array to account for the highest index attachment in VkRenderPass 0x8483000000000025[forward]
-         * that uses VK_ATTACHMENT_LOAD_OP_CLEAR is 2. Note that the pClearValues array is indexed by attachment number
-         * so even if some pClearValues entries between 0 and 1 correspond to attachments that aren't cleared they will
-         * be ignored. The Vulkan spec states: clearValueCount must be greater than the largest attachment index in
-         * renderPass that specifies a loadOp (or stencilLoadOp, if the attachment has a depth/stencil format) of
-         * VK_ATTACHMENT_LOAD_OP_CLEAR
-         * (https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#VUID-VkRenderPassBeginInfo-clearValueCount-00902)
-         */
-
         // Nova _always_ records command lists in parallel for each renderpass
         vkCmdBeginRenderPass(cmds, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
     }
@@ -147,7 +135,7 @@ namespace nova::renderer::rhi {
         vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline->pipeline);
     }
 
-    void VulkanCommandList::bind_descriptor_sets(const std::vector<DescriptorSet*>& descriptor_sets,
+    void VulkanCommandList::bind_descriptor_sets(const std::pmr::vector<DescriptorSet*>& descriptor_sets,
                                                  const PipelineInterface* pipeline_interface) {
         const auto* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
 
@@ -164,11 +152,11 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void VulkanCommandList::bind_vertex_buffers(const std::vector<Buffer*>& buffers) {
-        std::vector<VkBuffer> vk_buffers;
+    void VulkanCommandList::bind_vertex_buffers(const std::pmr::vector<Buffer*>& buffers) {
+        std::pmr::vector<VkBuffer> vk_buffers;
         vk_buffers.reserve(buffers.size());
 
-        std::vector<VkDeviceSize> offsets;
+        std::pmr::vector<VkDeviceSize> offsets;
         offsets.reserve(buffers.size());
         for(uint32_t i = 0; i < buffers.size(); i++) {
             offsets.push_back(i);
@@ -185,7 +173,17 @@ namespace nova::renderer::rhi {
         vkCmdBindIndexBuffer(cmds, vk_buffer->buffer, 0, VK_INDEX_TYPE_UINT32);
     }
 
-    void VulkanCommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t num_instances) {
-        vkCmdDrawIndexed(cmds, num_indices, num_instances, 0, 0, 0);
+    void VulkanCommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t offset, const uint32_t num_instances) {
+        vkCmdDrawIndexed(cmds, num_indices, num_instances, offset, 0, 0);
+    }
+
+    void VulkanCommandList::set_scissor_rect(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height) {
+        VkRect2D scissor_rect = {{static_cast<int32_t>(x), static_cast<int32_t>(y)}, {width, height}};
+        vkCmdSetScissor(cmds, 0, 1, &scissor_rect);
+    }
+
+    void VulkanCommandList::upload_data_to_image(
+        Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) {
+        // TODO
     }
 } // namespace nova::renderer::rhi

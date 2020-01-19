@@ -66,7 +66,7 @@ namespace nova::ttl {
             }
 
         private:
-            std::vector<T> items;
+            std::pmr::vector<T> items;
             std::unique_ptr<circular_array> previous;
 
         public:

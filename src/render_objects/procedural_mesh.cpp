@@ -1,14 +1,12 @@
 #include "nova_renderer/frontend/procedural_mesh.hpp"
 
-#include "nova_renderer/memory/block_allocation_strategy.hpp"
-#include "nova_renderer/memory/mallocator.hpp"
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
 #include "nova_renderer/util/logger.hpp"
 
 #include "../util/memory_utils.hpp"
 
-using namespace bvestl::polyalloc;
+using namespace nova::mem;
 
 namespace nova::renderer {
     using namespace rhi;
@@ -26,22 +24,24 @@ namespace nova::renderer {
         const auto host_memory_size = aligned_vertex_buffer_size + aligned_index_buffer_size;
         const auto device_memory_size = host_memory_size * 3;
 
-        device_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(new Mallocator(), device_memory_size);
-        host_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(new Mallocator(), host_memory_size);
+        allocator = std::make_unique<AllocatorHandle<>>(std::pmr::new_delete_resource());
+
+        device_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(allocator.get(), device_memory_size);
+        host_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(allocator.get(), host_memory_size);
 
         // TODO: Don't allocate a separate DeviceMemory for each procedural mesh
-        device->allocate_device_memory(device_memory_size.b_count(), MemoryUsage::LowFrequencyUpload, ObjectType::Buffer)
+        device->allocate_device_memory(device_memory_size.b_count(), MemoryUsage::LowFrequencyUpload, ObjectType::Buffer, *allocator)
             .map([&](DeviceMemory* memory) {
                 device_buffers_memory = std::make_unique<DeviceMemoryResource>(memory, device_memory_allocation_strategy.get());
 
                 const auto vertex_create_info = BufferCreateInfo{vertex_buffer_size, BufferUsage::VertexBuffer};
                 for(auto& vertex_buffer : vertex_buffers) {
-                    vertex_buffer = device->create_buffer(vertex_create_info, *device_buffers_memory);
+                    vertex_buffer = device->create_buffer(vertex_create_info, *device_buffers_memory, *allocator);
                 }
 
                 const auto index_create_info = BufferCreateInfo{index_buffer_size, BufferUsage::IndexBuffer};
                 for(auto& index_buffer : index_buffers) {
-                    index_buffer = device->create_buffer(index_create_info, *device_buffers_memory);
+                    index_buffer = device->create_buffer(index_create_info, *device_buffers_memory, *allocator);
                 }
 
                 return true;
@@ -51,12 +51,16 @@ namespace nova::renderer {
                 // TODO: Propagate the error
             });
 
-        device->allocate_device_memory(host_memory_size.b_count(), MemoryUsage::StagingBuffer, ObjectType::Buffer)
+        device->allocate_device_memory(host_memory_size.b_count(), MemoryUsage::StagingBuffer, ObjectType::Buffer, *allocator)
             .map([&](DeviceMemory* memory) {
                 cached_buffers_memory = std::make_unique<DeviceMemoryResource>(memory, host_memory_allocation_strategy.get());
 
-                cached_vertex_buffer = device->create_buffer({vertex_buffer_size, BufferUsage::StagingBuffer}, *cached_buffers_memory);
-                cached_index_buffer = device->create_buffer({index_buffer_size, BufferUsage::StagingBuffer}, *cached_buffers_memory);
+                cached_vertex_buffer = device->create_buffer({vertex_buffer_size, BufferUsage::StagingBuffer},
+                                                             *cached_buffers_memory,
+                                                             *allocator);
+                cached_index_buffer = device->create_buffer({index_buffer_size, BufferUsage::StagingBuffer},
+                                                            *cached_buffers_memory,
+                                                            *allocator);
 
                 return true;
             })
@@ -105,20 +109,20 @@ namespace nova::renderer {
 #endif
     }
 
-    void ProceduralMesh::record_commands_to_upload_data(CommandList* cmds, const uint8_t frame_idx) {
+    void ProceduralMesh::record_commands_to_upload_data(CommandList* cmds, const uint8_t frame_idx) const {
         const bool should_upload_vertex_buffer = num_vertex_bytes_to_upload > 0;
         const bool should_upload_index_buffer = num_index_bytes_to_upload > 0;
 
         auto* cur_vertex_buffer = vertex_buffers.at(frame_idx);
         auto* cur_index_buffer = index_buffers.at(frame_idx);
 
-        std::vector<ResourceBarrier> barriers_before_upload;
+        std::pmr::vector<ResourceBarrier> barriers_before_upload;
 
         if(should_upload_vertex_buffer) {
             ResourceBarrier barrier_before_vertex_upload = {};
             barrier_before_vertex_upload.resource_to_barrier = cur_vertex_buffer;
-            barrier_before_vertex_upload.access_before_barrier = AccessFlags::VertexAttributeRead;
-            barrier_before_vertex_upload.access_after_barrier = AccessFlags::MemoryWrite;
+            barrier_before_vertex_upload.access_before_barrier = ResourceAccess::VertexAttributeRead;
+            barrier_before_vertex_upload.access_after_barrier = ResourceAccess::MemoryWrite;
             barrier_before_vertex_upload.old_state = ResourceState::VertexBuffer;
             barrier_before_vertex_upload.new_state = ResourceState::CopyDestination;
             barrier_before_vertex_upload.source_queue = QueueType::Graphics;
@@ -132,8 +136,8 @@ namespace nova::renderer {
         if(should_upload_index_buffer) {
             ResourceBarrier barrier_before_index_upload = {};
             barrier_before_index_upload.resource_to_barrier = cur_index_buffer;
-            barrier_before_index_upload.access_before_barrier = AccessFlags::IndexRead;
-            barrier_before_index_upload.access_after_barrier = AccessFlags::MemoryWrite;
+            barrier_before_index_upload.access_before_barrier = ResourceAccess::IndexRead;
+            barrier_before_index_upload.access_after_barrier = ResourceAccess::MemoryWrite;
             barrier_before_index_upload.old_state = ResourceState::IndexBuffer;
             barrier_before_index_upload.new_state = ResourceState::CopyDestination;
             barrier_before_index_upload.source_queue = QueueType::Graphics;
@@ -148,7 +152,7 @@ namespace nova::renderer {
             return;
         }
 
-        cmds->resource_barriers(PipelineStageFlags::BottomOfPipe, PipelineStageFlags::Transfer, barriers_before_upload);
+        cmds->resource_barriers(PipelineStage::BottomOfPipe, PipelineStage::Transfer, barriers_before_upload);
 
         if(should_upload_vertex_buffer) {
             cmds->copy_buffer(cur_vertex_buffer, 0, cached_vertex_buffer, 0, num_vertex_bytes_to_upload);
@@ -158,13 +162,13 @@ namespace nova::renderer {
             cmds->copy_buffer(cur_index_buffer, 0, cached_index_buffer, 0, num_index_bytes_to_upload);
         }
 
-        std::vector<ResourceBarrier> barriers_after_upload;
+        std::pmr::vector<ResourceBarrier> barriers_after_upload;
 
         if(should_upload_vertex_buffer) {
             ResourceBarrier barrier_after_vertex_upload = {};
             barrier_after_vertex_upload.resource_to_barrier = cur_vertex_buffer;
-            barrier_after_vertex_upload.access_before_barrier = AccessFlags::MemoryWrite;
-            barrier_after_vertex_upload.access_after_barrier = AccessFlags::VertexAttributeRead;
+            barrier_after_vertex_upload.access_before_barrier = ResourceAccess::MemoryWrite;
+            barrier_after_vertex_upload.access_after_barrier = ResourceAccess::VertexAttributeRead;
             barrier_after_vertex_upload.old_state = ResourceState::CopyDestination;
             barrier_after_vertex_upload.new_state = ResourceState::VertexBuffer;
             barrier_after_vertex_upload.source_queue = QueueType::Graphics;
@@ -177,8 +181,8 @@ namespace nova::renderer {
         if(should_upload_index_buffer) {
             ResourceBarrier barrier_after_index_upload = {};
             barrier_after_index_upload.resource_to_barrier = cur_index_buffer;
-            barrier_after_index_upload.access_before_barrier = AccessFlags::MemoryWrite;
-            barrier_after_index_upload.access_after_barrier = AccessFlags::IndexRead;
+            barrier_after_index_upload.access_before_barrier = ResourceAccess::MemoryWrite;
+            barrier_after_index_upload.access_after_barrier = ResourceAccess::IndexRead;
             barrier_after_index_upload.old_state = ResourceState::CopyDestination;
             barrier_after_index_upload.new_state = ResourceState::IndexBuffer;
             barrier_after_index_upload.source_queue = QueueType::Graphics;
@@ -192,7 +196,7 @@ namespace nova::renderer {
             return;
         }
 
-        cmds->resource_barriers(PipelineStageFlags::Transfer, PipelineStageFlags::TopOfPipe, barriers_after_upload);
+        cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::TopOfPipe, barriers_after_upload);
     }
 
     std::tuple<Buffer*, Buffer*> ProceduralMesh::get_buffers_for_frame(const uint8_t frame_idx) const {

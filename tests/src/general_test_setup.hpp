@@ -8,7 +8,7 @@
 #include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/platform.hpp"
 
-#include "../../src/loading/zip_folder_accessor.hpp"
+#include "../../src/filesystem/zip_folder_accessor.hpp"
 
 #ifdef _WIN32
 #include <Windows.h>

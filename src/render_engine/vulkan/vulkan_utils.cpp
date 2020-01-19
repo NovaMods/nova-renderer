@@ -34,75 +34,78 @@ namespace nova::renderer::rhi {
             case ResourceState::PresentSource:
                 return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
+            case ResourceState::Undefined:
+                return VK_IMAGE_LAYOUT_UNDEFINED;
+
             default:
                 NOVA_LOG(ERROR) << static_cast<uint32_t>(layout) << " is not a valid image state";
                 return VK_IMAGE_LAYOUT_GENERAL;
         }
     }
 
-    VkAccessFlags to_vk_access_flags(const AccessFlags access) {
+    VkAccessFlags to_vk_access_flags(const ResourceAccess access) {
         switch(access) {
-            case AccessFlags::IndirectCommandRead:
+            case ResourceAccess::IndirectCommandRead:
                 return VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
 
-            case AccessFlags::IndexRead:
+            case ResourceAccess::IndexRead:
                 return VK_ACCESS_INDEX_READ_BIT;
 
-            case AccessFlags::VertexAttributeRead:
+            case ResourceAccess::VertexAttributeRead:
                 return VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
 
-            case AccessFlags::UniformRead:
+            case ResourceAccess::UniformRead:
                 return VK_ACCESS_UNIFORM_READ_BIT;
 
-            case AccessFlags::InputAttachmentRead:
+            case ResourceAccess::InputAttachmentRead:
                 return VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
 
-            case AccessFlags::ShaderRead:
+            case ResourceAccess::ShaderRead:
                 return VK_ACCESS_SHADER_READ_BIT;
 
-            case AccessFlags::ShaderWrite:
+            case ResourceAccess::ShaderWrite:
                 return VK_ACCESS_SHADER_WRITE_BIT;
 
-            case AccessFlags::ColorAttachmentRead:
+            case ResourceAccess::ColorAttachmentRead:
                 return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
 
-            case AccessFlags::ColorAttachmentWrite:
+            case ResourceAccess::ColorAttachmentWrite:
                 return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-            case AccessFlags::DepthStencilAttachmentRead:
+            case ResourceAccess::DepthStencilAttachmentRead:
                 return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
 
-            case AccessFlags::DepthStencilAttachmentWrite:
+            case ResourceAccess::DepthStencilAttachmentWrite:
                 return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-            case AccessFlags::CopyRead:
+            case ResourceAccess::CopyRead:
                 return VK_ACCESS_TRANSFER_READ_BIT;
 
-            case AccessFlags::CopyWrite:
+            case ResourceAccess::CopyWrite:
                 return VK_ACCESS_TRANSFER_WRITE_BIT;
 
-            case AccessFlags::HostRead:
+            case ResourceAccess::HostRead:
                 return VK_ACCESS_HOST_READ_BIT;
 
-            case AccessFlags::HostWrite:
+            case ResourceAccess::HostWrite:
                 return VK_ACCESS_HOST_WRITE_BIT;
 
-            case AccessFlags::MemoryRead:
+            case ResourceAccess::MemoryRead:
                 return VK_ACCESS_MEMORY_READ_BIT;
 
-            case AccessFlags::MemoryWrite:
+            case ResourceAccess::MemoryWrite:
                 return VK_ACCESS_MEMORY_WRITE_BIT;
 
-            case AccessFlags::ShadingRateImageRead:
+            case ResourceAccess::ShadingRateImageRead:
                 return VK_ACCESS_SHADING_RATE_IMAGE_READ_BIT_NV;
 
-            case AccessFlags::AccelerationStructureRead:
+            case ResourceAccess::AccelerationStructureRead:
                 return VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_NV;
 
-            case AccessFlags::AccelerationStructureWrite:
+            case ResourceAccess::AccelerationStructureWrite:
                 return VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_NV;
 
-            case AccessFlags::FragmentDensityMapRead:
+            case ResourceAccess::FragmentDensityMapRead:
                 return VK_ACCESS_FRAGMENT_DENSITY_MAP_READ_BIT_EXT;
         }
 
@@ -242,51 +245,57 @@ namespace nova::renderer::rhi {
             case DescriptorType::StorageBuffer:
                 return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 
+            case DescriptorType::Texture:
+                return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+
+            case DescriptorType::Sampler:
+                return VK_DESCRIPTOR_TYPE_SAMPLER;
+
             default:
                 return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         }
     }
 
-    VkShaderStageFlags to_vk_shader_stage_flags(const ShaderStageFlags flags) {
+    VkShaderStageFlags to_vk_shader_stage_flags(const ShaderStage flags) {
         VkShaderStageFlags vk_flags = 0;
 
-        if(flags & ShaderStageFlags::Vertex) {
+        if(flags & ShaderStage::Vertex) {
             vk_flags |= VK_SHADER_STAGE_VERTEX_BIT;
         }
-        if(flags & ShaderStageFlags::TessellationControl) {
+        if(flags & ShaderStage::TessellationControl) {
             vk_flags |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
         }
-        if(flags & ShaderStageFlags::TessellationEvaluation) {
+        if(flags & ShaderStage::TessellationEvaluation) {
             vk_flags |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
         }
-        if(flags & ShaderStageFlags::Geometry) {
+        if(flags & ShaderStage::Geometry) {
             vk_flags |= VK_SHADER_STAGE_GEOMETRY_BIT;
         }
-        if(flags & ShaderStageFlags::Fragment) {
+        if(flags & ShaderStage::Fragment) {
             vk_flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
         }
-        if(flags & ShaderStageFlags::Compute) {
+        if(flags & ShaderStage::Compute) {
             vk_flags |= VK_SHADER_STAGE_COMPUTE_BIT;
         }
-        if(flags & ShaderStageFlags::Raygen) {
+        if(flags & ShaderStage::Raygen) {
             vk_flags |= VK_SHADER_STAGE_RAYGEN_BIT_NV;
         }
-        if(flags & ShaderStageFlags::AnyHit) {
+        if(flags & ShaderStage::AnyHit) {
             vk_flags |= VK_SHADER_STAGE_ANY_HIT_BIT_NV;
         }
-        if(flags & ShaderStageFlags::ClosestHit) {
+        if(flags & ShaderStage::ClosestHit) {
             vk_flags |= VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV;
         }
-        if(flags & ShaderStageFlags::Miss) {
+        if(flags & ShaderStage::Miss) {
             vk_flags |= VK_SHADER_STAGE_MISS_BIT_NV;
         }
-        if(flags & ShaderStageFlags::Intersection) {
+        if(flags & ShaderStage::Intersection) {
             vk_flags |= VK_SHADER_STAGE_INTERSECTION_BIT_NV;
         }
-        if(flags & ShaderStageFlags::Task) {
+        if(flags & ShaderStage::Task) {
             vk_flags |= VK_SHADER_STAGE_TASK_BIT_NV;
         }
-        if(flags & ShaderStageFlags::Mesh) {
+        if(flags & ShaderStage::Mesh) {
             vk_flags |= VK_SHADER_STAGE_MESH_BIT_NV;
         }
 
@@ -447,111 +456,24 @@ namespace nova::renderer::rhi {
         }
     }
 
-    std::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions() {
-        static std::vector<VkVertexInputBindingDescription> input_descriptions = {
-            VkVertexInputBindingDescription{
-                0,                          // binding
-                sizeof(FullVertex),         // stride
-                VK_VERTEX_INPUT_RATE_VERTEX // input rate
-            },
-            VkVertexInputBindingDescription{
-                1,                          // binding
-                sizeof(FullVertex),         // stride
-                VK_VERTEX_INPUT_RATE_VERTEX // input rate
-            },
-            VkVertexInputBindingDescription{
-                2,                          // binding
-                sizeof(FullVertex),         // stride
-                VK_VERTEX_INPUT_RATE_VERTEX // input rate
-            },
-            VkVertexInputBindingDescription{
-                3,                          // binding
-                sizeof(FullVertex),         // stride
-                VK_VERTEX_INPUT_RATE_VERTEX // input rate
-            },
-            VkVertexInputBindingDescription{
-                4,                          // binding
-                sizeof(FullVertex),         // stride
-                VK_VERTEX_INPUT_RATE_VERTEX // input rate
-            },
-            VkVertexInputBindingDescription{
-                5,                          // binding
-                sizeof(FullVertex),         // stride
-                VK_VERTEX_INPUT_RATE_VERTEX // input rate
-            },
-            VkVertexInputBindingDescription{
-                6,                          // binding
-                sizeof(FullVertex),         // stride
-                VK_VERTEX_INPUT_RATE_VERTEX // input rate
-            },
-        };
+    VkFormat to_vk_vertex_format(const VertexFieldFormat field) {
+        switch(field) {
+            case VertexFieldFormat::Uint:
+                return VK_FORMAT_R32_UINT;
 
-        return input_descriptions;
+            case VertexFieldFormat::Float2:
+                return VK_FORMAT_R32G32_SFLOAT;
+
+            case VertexFieldFormat::Float3:
+                return VK_FORMAT_R32G32B32_SFLOAT;
+
+            case VertexFieldFormat::Float4:
+                return VK_FORMAT_R32G32_SFLOAT;
+
+            default:
+                return VK_FORMAT_R32G32B32_SFLOAT;
+        }
     }
 
-    std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions() {
-        static std::vector<VkVertexInputAttributeDescription> attribute_descriptions = {
-            // Position
-            VkVertexInputAttributeDescription{
-                0,                          // location
-                0,                          // binding
-                VK_FORMAT_R32G32B32_SFLOAT, // format
-                0,                          // offset
-            },
-
-            // Normal
-            VkVertexInputAttributeDescription{
-                1,                          // location
-                0,                          // binding
-                VK_FORMAT_R32G32B32_SFLOAT, // format
-                0,                          // offset
-            },
-
-            // Tangent
-            VkVertexInputAttributeDescription{
-                2,                          // location
-                0,                          // binding
-                VK_FORMAT_R32G32B32_SFLOAT, // format
-                0,                          // offset
-            },
-
-            // Main UV
-            VkVertexInputAttributeDescription{
-                3,                      // location
-                0,                      // binding
-                VK_FORMAT_R16G16_UNORM, // format
-                0,                      // offset
-            },
-
-            // Secondary UV
-            VkVertexInputAttributeDescription{
-                4,                    // location
-                0,                    // binding
-                VK_FORMAT_R8G8_UNORM, // format
-                0,                    // offset
-            },
-
-            // Virtual texture ID
-            VkVertexInputAttributeDescription{
-                5,                  // location
-                0,                  // binding
-                VK_FORMAT_R32_UINT, // format
-                0,                  // offset
-            },
-
-            // Other data
-            VkVertexInputAttributeDescription{
-                6,                             // location
-                0,                             // binding
-                VK_FORMAT_R32G32B32A32_SFLOAT, // format
-                0,                             // offset
-            },
-        };
-
-        return attribute_descriptions;
-    }
-
-    bool operator&(const ShaderStageFlags& lhs, const ShaderStageFlags& rhs) {
-        return static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs);
-    }
+    bool operator&(const ShaderStage& lhs, const ShaderStage& rhs) { return static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs); }
 } // namespace nova::renderer::rhi

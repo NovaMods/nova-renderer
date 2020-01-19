@@ -1,9 +1,9 @@
 #pragma once
 
+#include <cstdint>
+#include <memory_resource>
 #include <string>
 #include <vector>
-
-#include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
 
@@ -26,6 +26,14 @@ namespace nova::renderer {
      */
     class ConfigListener {
     public:
+        ConfigListener(const ConfigListener& other) = default;
+        ConfigListener& operator=(const ConfigListener& other) = default;
+
+        ConfigListener(ConfigListener&& old) noexcept = default;
+        ConfigListener& operator=(ConfigListener&& old) noexcept = default;
+
+        virtual ~ConfigListener() = default;
+
         /*!
          * \brief Tells the listeners that there has been a change in the configuration
          *
@@ -254,6 +262,6 @@ namespace nova::renderer {
         const NovaSettings* operator->() const;
 
     private:
-        std::vector<ConfigListener*> config_change_listeners;
+        std::pmr::vector<ConfigListener*> config_change_listeners;
     };
 } // namespace nova::renderer

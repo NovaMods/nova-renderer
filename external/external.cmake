@@ -45,6 +45,7 @@ set(SPIRV_WERROR OFF CACHE BOOL "Enable error on warning SPIRV-Tools" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools)
 
 # GLSLang has a circular dependency and I don't even care what I did wrong, it has to be a static lib
+set(ENABLE_HLSL ON CACHE BOOL "Enable GLSLang's HLSL backend" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glslang)
 target_includes_system(glslang)
 

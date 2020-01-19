@@ -1,15 +1,7 @@
-/*!
- * \brief Holds all the structs that correspond to the data in a shaderpack
- *
- * \author ddubois
- * \date 23-Aug-18.
- */
+#pragma once
 
-#ifndef NOVA_RENDERER_SHADERPACK_DATA_HPP
-#define NOVA_RENDERER_SHADERPACK_DATA_HPP
-
+#include <memory_resource>
 #include <cstdint>
-#include <functional>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -18,12 +10,15 @@
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
 
-#include "frame_context.hpp"
 #include "util/filesystem.hpp"
 
 namespace nova::renderer {
+    namespace rhi {
+        enum class PixelFormat;
+    }
+
     class Renderpass;
-}
+} // namespace nova::renderer
 
 namespace nova::renderer::shaderpack {
     /*!
@@ -86,83 +81,6 @@ namespace nova::renderer::shaderpack {
     enum class WrapModeEnum { Repeat, Clamp };
 
     /*!
-     * \brief The kind of data in a vertex attribute
-     */
-    enum class VertexFieldEnum {
-        /*!
-         * \brief The vertex position
-         *
-         * 12 bytes
-         */
-        Position,
-
-        /*!
-         * \brief The vertex color
-         *
-         * 4 bytes
-         */
-        Color,
-
-        /*!
-         * \brief The UV coordinate of this object
-         *
-         * Except not really, because Nova's virtual textures means that the UVs for a block or entity or whatever
-         * could change on the fly, so this is kinda more of a preprocessor define that replaces the UV with a lookup
-         * in the UV table
-         *
-         * 8 bytes (might try 4)
-         */
-        UV0,
-
-        /*!
-         * \brief The UV coordinate in the lightmap texture
-         *
-         * This is a real UV and it doesn't change for no good reason
-         *
-         * 2 bytes
-         */
-        UV1,
-
-        /*!
-         * \brief Vertex normal
-         *
-         * 12 bytes
-         */
-        Normal,
-
-        /*!
-         * \brief Vertex tangents
-         *
-         * 12 bytes
-         */
-        Tangent,
-
-        /*!
-         * \brief The texture coordinate of the middle of the quad
-         *
-         * 8 bytes
-         */
-        MidTexCoord,
-
-        /*!
-         * \brief A uint32_t that's a unique identifier for the texture that this vertex uses
-         *
-         * This is generated at runtime by Nova, so it may change a lot depending on what resourcepacks are loaded and
-         * if they use CTM or random detail textures or whatever
-         *
-         * 4 bytes
-         */
-        VirtualTextureId,
-
-        /*!
-         * \brief Some information about the current block/entity/whatever
-         *
-         * 12 bytes
-         */
-        McEntityId,
-    };
-
-    /*!
      * \brief Where the texture comes from
      */
     enum class TextureLocationEnum {
@@ -204,6 +122,12 @@ namespace nova::renderer::shaderpack {
     };
 
     enum class RenderQueueEnum { Transparent, Opaque, Cutout };
+
+    enum class ScissorTestMode {
+        Off,
+        StaticScissorRect,
+        DynamicScissorRect,
+    };
 
     enum class PixelFormatEnum {
         RGBA8,
@@ -253,12 +177,7 @@ namespace nova::renderer::shaderpack {
 
     struct ShaderSource {
         fs::path filename;
-        std::vector<uint32_t> source;
-    };
-
-    struct VertexFieldData {
-        std::string semantic_name;
-        VertexFieldEnum field{};
+        std::pmr::vector<uint32_t> source;
     };
 
     /*!
@@ -283,19 +202,12 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief All of the symbols in the shader that are defined by this state
          */
-        std::vector<std::string> defines{};
+        std::pmr::vector<std::string> defines{};
 
         /*!
          * \brief Defines the rasterizer state that's active for this pipeline
          */
-        std::vector<StateEnum> states{};
-
-        /*!
-         * \brief Sets up the vertex fields that Nova will bind to this pipeline
-         *
-         * The index in the array is the attribute index that the vertex field is bound to
-         */
-        std::vector<VertexFieldData> vertex_fields{};
+        std::pmr::vector<StateEnum> states{};
 
         /*!
          * \brief The stencil buffer operations to perform on the front faces
@@ -348,24 +260,24 @@ namespace nova::renderer::shaderpack {
         PrimitiveTopologyEnum primitive_mode{};
 
         /*!
-         * \brief Where to get the blending factor for the soource
+         * \brief Where to get the blending factor for the source
          */
-        BlendFactorEnum source_blend_factor{};
+        BlendFactorEnum source_color_blend_factor{};
 
         /*!
          * \brief Where to get the blending factor for the destination
          */
-        BlendFactorEnum destination_blend_factor{};
+        BlendFactorEnum destination_color_blend_factor{};
 
         /*!
          * \brief How to get the source alpha in a blend
          */
-        BlendFactorEnum alpha_src{};
+        BlendFactorEnum source_alpha_blend_factor{};
 
         /*!
          * \brief How to get the destination alpha in a blend
          */
-        BlendFactorEnum alpha_dst{};
+        BlendFactorEnum destination_alpha_blend_factor{};
 
         /*!
          * \brief The function to use for the depth test
@@ -378,6 +290,8 @@ namespace nova::renderer::shaderpack {
          * This may or may not be removed depending on what is actually needed by Nova
          */
         RenderQueueEnum render_queue{};
+
+        ScissorTestMode scissor_mode = ScissorTestMode::Off;
 
         ShaderSource vertex_shader{};
 
@@ -465,8 +379,10 @@ namespace nova::renderer::shaderpack {
     };
 
     struct ShaderpackResourcesData {
-        std::vector<TextureCreateInfo> textures;
-        std::vector<SamplerCreateInfo> samplers;
+        std::pmr::vector<TextureCreateInfo> render_targets;
+        std::pmr::vector<SamplerCreateInfo> samplers;
+
+        // TODO: Figure out shader readable textures
     };
 
     /*!
@@ -520,16 +436,16 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief The materials that MUST execute before this one
          */
-        std::vector<std::string> dependencies{};
+        std::pmr::vector<std::string> dependencies{};
 
         /*!
          * \brief The textures that this pass will read from
          */
-        std::vector<std::string> texture_inputs{};
+        std::pmr::vector<std::string> texture_inputs{};
         /*!
          * \brief The textures that this pass will write to
          */
-        std::vector<TextureAttachmentInfo> texture_outputs{};
+        std::pmr::vector<TextureAttachmentInfo> texture_outputs{};
 
         /*!
          * \brief The depth texture this pass will write to
@@ -539,12 +455,17 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief All the buffers that this renderpass reads from
          */
-        std::vector<std::string> input_buffers{};
+        std::pmr::vector<std::string> input_buffers{};
 
         /*!
          * \brief All the buffers that this renderpass writes to
          */
-        std::vector<std::string> output_buffers{};
+        std::pmr::vector<std::string> output_buffers{};
+
+        /*!
+         * \brief Names of all the pipelines that use this renderpass
+         */
+        std::pmr::vector<std::string> pipeline_names;
 
         RenderPassCreateInfo() = default;
     };
@@ -556,12 +477,12 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief The shaderpack-supplied passes
          */
-        std::vector<RenderPassCreateInfo> passes;
+        std::pmr::vector<RenderPassCreateInfo> passes;
 
         /*!
          * \brief Names of all the builtin renderpasses that the renderpack wants to use
          */
-        std::vector<std::string> builtin_passes;
+        std::pmr::vector<std::string> builtin_passes;
     };
 
     struct MaterialPass {
@@ -578,31 +499,33 @@ namespace nova::renderer::shaderpack {
          * descriptor sets is allowed, although the result won't show up on screen for a couple frames because Nova
          * (will) copies its descriptor sets to each in-flight frame
          */
-        std::vector<VkDescriptorSet> descriptor_sets;
+        std::pmr::vector<VkDescriptorSet> descriptor_sets;
 
         VkPipelineLayout layout = VK_NULL_HANDLE;
     };
 
     struct MaterialData {
         std::string name;
-        std::vector<MaterialPass> passes;
+        std::pmr::vector<MaterialPass> passes;
         std::string geometry_filter;
     };
 
     /*!
      * \brief All the data that can be in a shaderpack
      */
-    struct ShaderpackData {
-        std::vector<PipelineCreateInfo> pipelines;
+    struct RenderpackData {
+        std::pmr::vector<PipelineCreateInfo> pipelines;
 
         /*!
          * \brief All the renderpasses that this shaderpack needs, in submission order
          */
         RendergraphData graph_data;
 
-        std::vector<MaterialData> materials;
+        std::pmr::vector<MaterialData> materials;
 
         ShaderpackResourcesData resources;
+
+        std::string name;
     };
 
     // TODO: Wrap these in to_json/from_json thingies
@@ -618,7 +541,6 @@ namespace nova::renderer::shaderpack {
     [[nodiscard]] BlendFactorEnum blend_factor_enum_from_string(const std::string& str);
     [[nodiscard]] RenderQueueEnum render_queue_enum_from_string(const std::string& str);
     [[nodiscard]] StateEnum state_enum_from_string(const std::string& str);
-    [[nodiscard]] VertexFieldEnum vertex_field_enum_from_string(const std::string& str);
 
     [[nodiscard]] std::string to_string(PixelFormatEnum val);
     [[nodiscard]] std::string to_string(TextureDimensionTypeEnum val);
@@ -631,9 +553,10 @@ namespace nova::renderer::shaderpack {
     [[nodiscard]] std::string to_string(BlendFactorEnum val);
     [[nodiscard]] std::string to_string(RenderQueueEnum val);
     [[nodiscard]] std::string to_string(StateEnum val);
-    [[nodiscard]] std::string to_string(VertexFieldEnum val);
 
     [[nodiscard]] uint32_t pixel_format_to_pixel_width(PixelFormatEnum format);
-} // namespace nova::renderer::shaderpack
 
-#endif // NOVA_RENDERER_SHADERPACK_DATA_HPP
+    [[nodiscard]] PixelFormatEnum to_pixel_format_enum(rhi::PixelFormat format);
+
+    [[nodiscard]] rhi::PixelFormat to_rhi_pixel_format(PixelFormatEnum format);
+} // namespace nova::renderer::shaderpack

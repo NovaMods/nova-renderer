@@ -15,7 +15,6 @@ namespace nova::renderer::rhi {
 
     struct DX12Buffer : Buffer {
         Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
-        bvestl::polyalloc::Bytes size{0};
     };
 
     struct DX12Image : Image {
@@ -23,15 +22,15 @@ namespace nova::renderer::rhi {
     };
 
     struct DX12Framebuffer : Framebuffer {
-        std::vector<CD3DX12_CPU_DESCRIPTOR_HANDLE> rtv_descriptors;
+        std::pmr::vector<CD3DX12_CPU_DESCRIPTOR_HANDLE> rtv_descriptors;
 
         std::optional<D3D12_CPU_DESCRIPTOR_HANDLE> dsv_descriptor = {};
     };
 
     struct DX12PipelineInterface : PipelineInterface {
-        std::unordered_map<uint32_t, std::vector<ResourceBindingDescription>> table_layouts;
+        std::pmr::unordered_map<uint32_t, std::pmr::vector<ResourceBindingDescription>> table_layouts;
 
-        std::vector<shaderpack::TextureAttachmentInfo> color_attachments;
+        std::pmr::vector<shaderpack::TextureAttachmentInfo> color_attachments;
 
         std::optional<shaderpack::TextureAttachmentInfo> depth_texture;
         Microsoft::WRL::ComPtr<ID3D12RootSignature> root_sig;
@@ -45,7 +44,7 @@ namespace nova::renderer::rhi {
     struct DX12DescriptorSet : DescriptorSet {
         Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
 
-        std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> descriptors;
+        std::pmr::vector<D3D12_CPU_DESCRIPTOR_HANDLE> descriptors;
     };
 
     struct DX12Pipeline : Pipeline {

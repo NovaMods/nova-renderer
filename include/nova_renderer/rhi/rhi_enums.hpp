@@ -17,9 +17,33 @@ namespace nova::renderer::rhi {
         Any,
     };
 
-    enum class DescriptorType { CombinedImageSampler, UniformBuffer, StorageBuffer };
+    enum class PixelFormat {
+        Rgba8,
+        Rgba16F,
+        Rgba32F,
+        Depth32,
+        Depth24Stencil8,
+    };
 
-    enum class AccessFlags {
+    enum class TextureUsage {
+        RenderTarget,
+        SampledRenderTarget,
+        SampledTexture,
+    };
+
+    enum class VertexFieldFormat {
+        Uint,
+        Float2,
+        Float3,
+        Float4,
+
+        // MUST always be last
+        Invalid,
+    };
+
+    enum class DescriptorType { CombinedImageSampler, UniformBuffer, StorageBuffer, Texture, Sampler };
+
+    enum class ResourceAccess {
         IndirectCommandRead,
 
         IndexRead,
@@ -49,6 +73,8 @@ namespace nova::renderer::rhi {
     };
 
     enum class ResourceState {
+        Undefined,
+
         Common,
 
         CopySource,
@@ -68,13 +94,13 @@ namespace nova::renderer::rhi {
         PresentSource,
     };
 
-    enum class ImageAspectFlags {
+    enum class ImageAspect {
         Color = 0x00000001,
         Depth = 0x00000002,
         Stencil = 0x00000004,
     };
 
-    enum class PipelineStageFlags {
+    enum class PipelineStage {
         TopOfPipe = 0x00000001,
         DrawIndirect = 0x00000002,
         VertexInput = 0x00000004,
@@ -100,7 +126,7 @@ namespace nova::renderer::rhi {
         FragmentDensityProcess = 0x00800000,
     };
 
-    enum class ShaderStageFlags {
+    enum class ShaderStage {
         Vertex = 0x0001,
         TessellationControl = 0x0002,
         TessellationEvaluation = 0x0004,
@@ -132,4 +158,8 @@ namespace nova::renderer::rhi {
         Buffer,
         Image,
     };
+
+    bool is_depth_format(PixelFormat format);
+
+    uint32_t get_byte_size(VertexFieldFormat format);
 } // namespace nova::renderer::rhi

@@ -1,35 +1,26 @@
 #include "nova_renderer/frontend/ui_renderer.hpp"
 
 #include "nova_renderer/rhi/render_engine.hpp"
-#include "nova_renderer/util/logger.hpp"
 
 namespace nova::renderer {
-    UiRenderpass::UiRenderpass(rhi::RenderEngine* device, const glm::vec2& framebuffer_size) {
-        shaderpack::RenderPassCreateInfo rp_info = {};
-        rp_info.name = UI_RENDER_PASS_NAME;
-        rp_info.texture_inputs = {SCENE_OUTPUT_RENDER_TARGET_NAME};
-        rp_info.texture_outputs = {{BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false}};
+    UiRenderpass::UiRenderpass() : Renderpass(UI_RENDER_PASS_NAME, true) {}
 
-        device->create_renderpass(rp_info, framebuffer_size)
-            .map([&](rhi::Renderpass* rp) {
-                renderpass = rp;
-                return true;
-            })
-            .on_error([](const ntl::NovaError& err) { NOVA_LOG(ERROR) << "Could not create UI renderpass: " << err.to_string(); });
+    void UiRenderpass::render_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) { render_ui(cmds, ctx); }
 
-        writes_to_backbuffer = true;
+    shaderpack::RenderPassCreateInfo UiRenderpass::get_create_info() {
+        static auto create_info = [&] {
+            shaderpack::RenderPassCreateInfo new_create_info = {};
+            new_create_info.name = UI_RENDER_PASS_NAME;
+            new_create_info.texture_inputs = {SCENE_OUTPUT_RT_NAME};
+            new_create_info.texture_outputs = {{BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false}};
+
+            return new_create_info;
+        }();
+
+        return create_info;
     }
 
-    void UiRenderpass::render_renderpass_contents(rhi::CommandList* cmds, FrameContext& ctx) { render_ui(cmds, ctx); }
-
-    NullUiRenderpass::NullUiRenderpass(rhi::RenderEngine* device, const glm::vec2& framebuffer_size)
-        : UiRenderpass(device, framebuffer_size) {}
-
-    void NullUiRenderpass::render(rhi::CommandList* /* cmds */, FrameContext& /* ctx */) {
-        // Intentionally empty
-    }
-
-    void NullUiRenderpass::render_ui(rhi::CommandList* /* cmds */, FrameContext& /* ctx */) {
+    void NullUiRenderpass::render_ui(rhi::CommandList& /* cmds */, FrameContext& /* ctx */) {
         // Intentionally empty
     }
 } // namespace nova::renderer

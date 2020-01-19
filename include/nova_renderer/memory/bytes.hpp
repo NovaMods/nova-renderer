@@ -5,7 +5,7 @@
 
 #include "nova_renderer/util/utils.hpp"
 
-namespace bvestl::polyalloc {
+namespace nova::mem {
     /**
      * \addtogroup allocation
      * \{
@@ -32,19 +32,19 @@ namespace bvestl::polyalloc {
         /**
          * \return Value in bytes.
          */
-        constexpr std::size_t b_count() const noexcept { return byte_count; }
+        [[nodiscard]] constexpr std::size_t b_count() const noexcept { return byte_count; }
         /**
          * \return Rounded value in kilobytes.
          */
-        constexpr std::size_t k_count() const noexcept { return (byte_count + 512) / 1024; }
+        [[nodiscard]] constexpr std::size_t k_count() const noexcept { return (byte_count + 512) / 1024; }
         /**
          * \return Rounded value in megabytes.
          */
-        constexpr std::size_t m_count() const noexcept { return (byte_count + 524288) / 1048576; }
+        [[nodiscard]] constexpr std::size_t m_count() const noexcept { return (byte_count + 524288) / 1048576; }
         /**
          * \return Rounded value in gigabytes.
          */
-        constexpr std::size_t g_count() const noexcept { return (byte_count + 536870912) / 1073741824; }
+        [[nodiscard]] constexpr std::size_t g_count() const noexcept { return (byte_count + 536870912) / 1073741824; }
 
 #pragma region Comparison operators
         constexpr bool operator==(Bytes const& rhs) const noexcept { return byte_count == rhs.byte_count; }

@@ -9,7 +9,7 @@
 #define NOMINMAX
 #endif
 #ifdef NOVA_WINDOWS
-#include <windows.h>
+#include <Windows.h>
 #undef ERROR
 #else
 #error "Trying to include windows on non-windows build."

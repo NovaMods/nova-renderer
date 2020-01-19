@@ -3,10 +3,10 @@
 #include <cstdint>
 
 #include "nova_renderer/memory/allocation_strategy.hpp"
+#include "nova_renderer/memory/allocators.hpp"
 #include "nova_renderer/memory/bytes.hpp"
-#include "nova_renderer/memory/polyalloc.hpp"
 
-namespace bvestl::polyalloc {
+namespace nova::mem {
     struct AllocationInfo;
 
     /*!
@@ -39,7 +39,7 @@ namespace bvestl::polyalloc {
          * \param size The size of the memory that this boi can allocate from
          * \param alignment_in The alignment of all allocations from this allocator
          */
-        BlockAllocationStrategy(const allocator_handle& allocator_in, Bytes size, Bytes alignment_in = Bytes(0));
+        BlockAllocationStrategy(AllocatorHandle<>* allocator_in, Bytes size, Bytes alignment_in = Bytes(0));
 
         ~BlockAllocationStrategy();
 
@@ -58,7 +58,7 @@ namespace bvestl::polyalloc {
         void free(const AllocationInfo& alloc) override;
 
     private:
-        allocator_handle allocator;
+        AllocatorHandle<Block>* allocator;
 
         Block* head;
 
@@ -71,4 +71,4 @@ namespace bvestl::polyalloc {
 
         Block* make_new_block(Bytes offset, Bytes size);
     };
-} // namespace bvestl::polyalloc
+} // namespace nova::mem
