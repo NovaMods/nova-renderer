@@ -1,4 +1,4 @@
-#include "nova_renderer/frontend/procedural_mesh.hpp"
+#include "nova_renderer/procedural_mesh.hpp"
 
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"

@@ -1,4 +1,4 @@
-#include "nova_renderer/frontend/rendergraph.hpp"
+#include "nova_renderer/rendergraph.hpp"
 
 #include "nova_renderer/nova_renderer.hpp"
 #include "nova_renderer/rhi/command_list.hpp"

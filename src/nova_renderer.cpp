@@ -13,9 +13,9 @@
 #include <glslang/MachineIndependent/Initialize.h>
 
 #include "nova_renderer/constants.hpp"
-#include "nova_renderer/frontend/procedural_mesh.hpp"
-#include "nova_renderer/frontend/rendergraph.hpp"
-#include "nova_renderer/frontend/ui_renderer.hpp"
+#include "nova_renderer/procedural_mesh.hpp"
+#include "nova_renderer/rendergraph.hpp"
+#include "nova_renderer/ui_renderer.hpp"
 #include "nova_renderer/loading/shaderpack_loading.hpp"
 #include "nova_renderer/memory/block_allocation_strategy.hpp"
 #include "nova_renderer/memory/bump_point_allocation_strategy.hpp"
