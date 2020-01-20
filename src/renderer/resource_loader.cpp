@@ -1,4 +1,4 @@
-#include "nova_renderer/frontend/resource_loader.hpp"
+#include "nova_renderer/resource_loader.hpp"
 
 #include <utility>
 

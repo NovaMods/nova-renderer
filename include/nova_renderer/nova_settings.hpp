@@ -13,12 +13,6 @@ namespace nova::renderer {
         uint32_t patch;
     };
 
-    enum class GraphicsApi {
-        Vulkan,
-        D3D12,
-        NvGl4,
-    };
-
     class NovaSettingsAccessManager;
 
     /*!
@@ -195,19 +189,6 @@ namespace nova::renderer {
              */
             Semver application_version = {0, 8, 4};
         } vulkan;
-
-        /*!
-         * \brief Options that are specific to Nova's DirectX 12 backend
-         */
-        struct Dx12Options {
-        } dx12;
-
-        /*!
-         * \brief The rendering API to use
-         *
-         * DirectX 12 is only supported on Windows 10. On other platforms Vulkan will be used, regardless of what you've chosen
-         */
-        GraphicsApi api{};
 
         /*!
          * \brief Information about the system we're running on

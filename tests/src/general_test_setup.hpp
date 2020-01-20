@@ -14,12 +14,9 @@
 #include <Windows.h>
 #include <direct.h>
 
-#include "../../src/render_engine/dx12/dx12_render_engine.hpp"
 #define getcwd _getcwd
 #else
 #include <unistd.h>
-
-#include "../../src/render_engine/vulkan/vulkan_render_engine.hpp"
 #endif
 
 #ifndef CMAKE_DEFINED_RESOURCES_PREFIX

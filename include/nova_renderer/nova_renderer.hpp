@@ -7,18 +7,17 @@
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
-#include "nova_renderer/frontend/procedural_mesh.hpp"
-#include "nova_renderer/frontend/rendergraph.hpp"
-#include "nova_renderer/frontend/resource_loader.hpp"
 #include "nova_renderer/nova_settings.hpp"
+#include "nova_renderer/pipeline_storage.hpp"
+#include "nova_renderer/procedural_mesh.hpp"
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/renderdoc_app.h"
+#include "nova_renderer/rendergraph.hpp"
+#include "nova_renderer/resource_loader.hpp"
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
-
-#include "frontend/pipeline_storage.hpp"
 
 namespace spirv_cross {
     class CompilerGLSL;

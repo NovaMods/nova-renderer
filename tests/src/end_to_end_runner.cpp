@@ -35,7 +35,6 @@ namespace nova::renderer {
         NOVA_LOG(DEBUG) << "Predefined resources at: " << CMAKE_DEFINED_RESOURCES_PREFIX;
 
         NovaSettings settings;
-        settings.api = GraphicsApi::Vulkan;
         settings.vulkan.application_name = "Nova Renderer test";
         settings.vulkan.application_version = {0, 9, 0};
         settings.debug.enabled = true;
@@ -68,9 +67,6 @@ namespace nova::renderer {
 
         // Render one frame to upload mesh data
         renderer->execute_frame();
-        if(settings.api == GraphicsApi::NvGl4) {
-            window.swap_backbuffer();
-        }
 
         StaticMeshRenderableData data = {};
         data.mesh = mesh_id;
@@ -81,9 +77,6 @@ namespace nova::renderer {
 
         while(!window.should_close()) {
             renderer->execute_frame();
-            if(settings.api == GraphicsApi::NvGl4) {
-                window.swap_backbuffer();
-            }
         }
 
         NovaRenderer::deinitialize();

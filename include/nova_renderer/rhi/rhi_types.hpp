@@ -154,15 +154,19 @@ namespace nova::renderer::rhi {
         QueueType source_queue;
         QueueType destination_queue;
 
-        union {
-            struct {
-                ImageAspect aspect;
-            } image_memory_barrier;
+        struct ImageMemoryBarrier {
+            ImageAspect aspect;
+        };
 
-            struct {
-                mem::Bytes offset;
-                mem::Bytes size;
-            } buffer_memory_barrier;
+        struct BufferMemoryBarrier {
+            mem::Bytes offset;
+            mem::Bytes size;
+        };
+
+        union {
+            ImageMemoryBarrier image_memory_barrier;
+
+            BufferMemoryBarrier buffer_memory_barrier;
         };
     };
 
@@ -210,7 +214,7 @@ namespace nova::renderer::rhi {
          * You may only bind multiple resources if the descriptor is an array descriptor. Knowing whether you're binding to an array
          * descriptor or not is your responsibility
          */
-        std::vector<DescriptorResourceInfo> resources;
+        std::pmr::vector<DescriptorResourceInfo> resources;
     };
 #pragma endregion
 

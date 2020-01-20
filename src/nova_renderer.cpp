@@ -13,29 +13,21 @@
 #include <glslang/MachineIndependent/Initialize.h>
 
 #include "nova_renderer/constants.hpp"
-#include "nova_renderer/frontend/procedural_mesh.hpp"
-#include "nova_renderer/frontend/rendergraph.hpp"
-#include "nova_renderer/frontend/ui_renderer.hpp"
 #include "nova_renderer/loading/shaderpack_loading.hpp"
 #include "nova_renderer/memory/block_allocation_strategy.hpp"
 #include "nova_renderer/memory/bump_point_allocation_strategy.hpp"
+#include "nova_renderer/procedural_mesh.hpp"
+#include "nova_renderer/rendergraph.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/rhi/swapchain.hpp"
+#include "nova_renderer/ui_renderer.hpp"
 #include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/platform.hpp"
 
 #include "debugging/renderdoc.hpp"
 #include "filesystem/shaderpack/render_graph_builder.hpp"
-#include "render_objects/uniform_structs.hpp"
-// D3D12 MUST be included first because the Vulkan include undefines FAR, yet the D3D12 headers need FAR
-// Windows considered harmful
-#if defined(NOVA_WINDOWS) && defined(NOVA_D3D12_RHI)
-#include "render_engine/dx12/dx12_render_engine.hpp"
-#endif
-
-#if defined(NOVA_VULKAN_RHI)
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
-#endif
+#include "render_objects/uniform_structs.hpp"
 
 using namespace nova::mem;
 using namespace operators;
@@ -97,26 +89,9 @@ namespace nova::renderer {
                 .on_error([](const ntl::NovaError& error) { NOVA_LOG(ERROR) << error.to_string().c_str(); });
         }
 
-        switch(settings.api) {
-            case GraphicsApi::D3D12:
-#if defined(NOVA_WINDOWS) && defined(NOVA_D3D12_RHI)
-            {
-                MTR_SCOPE("Init", "InitDirect3D12RenderEngine");
-                rhi = std::make_unique<rhi::D3D12RenderEngine>(render_settings, *window, *global_allocator);
-            } break;
-#endif
-
-#if defined(NOVA_VULKAN_RHI)
-            case GraphicsApi::Vulkan: {
-                MTR_SCOPE("Init", "InitVulkanRenderEngine");
-                rhi = std::make_unique<rhi::VulkanRenderEngine>(render_settings, *window, *global_allocator);
-            } break;
-#endif
-
-            default: {
-                // TODO: Deal with it in a better way, this will crash soon
-                NOVA_LOG(FATAL) << "Selected graphics API was not enabled!";
-            } break;
+        {
+            MTR_SCOPE("Init", "InitVulkanRenderEngine");
+            rhi = std::make_unique<rhi::VulkanRenderEngine>(render_settings, *window, *global_allocator);
         }
 
         swapchain = rhi->get_swapchain();
@@ -177,8 +152,8 @@ namespace nova::renderer {
 
         rhi->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences.at(cur_frame_idx));
 
-        // Wait for the GPU to finish before presenting. This destroys pipelining and throughput, however at this time I'm not sure how best
-        // to say "when GPU finishes this task, CPU should do something"
+        // Wait for the GPU to finish before presenting. This destroys pipelining and throughput, however at this time I'm not sure how
+        // best to say "when GPU finishes this task, CPU should do something"
         rhi->wait_for_fences({frame_fences.at(cur_frame_idx)});
 
         rhi->get_swapchain()->present(cur_frame_idx);

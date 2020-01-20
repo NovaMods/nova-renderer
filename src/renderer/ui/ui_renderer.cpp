@@ -1,4 +1,4 @@
-#include "nova_renderer/frontend/ui_renderer.hpp"
+#include "nova_renderer/ui_renderer.hpp"
 
 #include "nova_renderer/rhi/render_engine.hpp"
 

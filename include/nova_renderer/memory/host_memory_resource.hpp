@@ -70,7 +70,7 @@ namespace nova::mem {
     }
 
     template <typename AllocationStrategy>
-    bool HostMemoryResource<AllocationStrategy>::do_is_equal(const memory_resource& that) const noexcept {
+    bool HostMemoryResource<AllocationStrategy>::do_is_equal(const memory_resource& /* that */) const noexcept {
         return false; // TODO: Figure this method out
     }
 } // namespace nova::mem

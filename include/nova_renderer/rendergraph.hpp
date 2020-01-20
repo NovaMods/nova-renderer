@@ -4,7 +4,7 @@
 #include <nova_renderer/rhi/swapchain.hpp>
 
 #include "nova_renderer/frame_context.hpp"
-#include "nova_renderer/frontend/procedural_mesh.hpp"
+#include "nova_renderer/procedural_mesh.hpp"
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/rhi/render_engine.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"

@@ -2,7 +2,7 @@
 #include <optional>
 #include <string>
 
-#include "nova_renderer/frontend/rendergraph.hpp"
+#include "nova_renderer/rendergraph.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/util/result.hpp"
 
@@ -24,8 +24,8 @@ namespace nova::renderer {
         PipelineStorage(const PipelineStorage& other) = delete;
         PipelineStorage& operator=(const PipelineStorage& other) = delete;
 
-        PipelineStorage(PipelineStorage&& old) noexcept = default;
-        PipelineStorage& operator=(PipelineStorage&& old) noexcept = default;
+        PipelineStorage(PipelineStorage&& old) noexcept = delete;
+        PipelineStorage& operator=(PipelineStorage&& old) noexcept = delete;
 
         ~PipelineStorage() = default;
 
