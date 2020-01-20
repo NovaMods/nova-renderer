@@ -154,15 +154,19 @@ namespace nova::renderer::rhi {
         QueueType source_queue;
         QueueType destination_queue;
 
-        union {
-            struct {
-                ImageAspect aspect;
-            } image_memory_barrier;
+        struct ImageMemoryBarrier {
+            ImageAspect aspect;
+        };
 
-            struct {
-                mem::Bytes offset;
-                mem::Bytes size;
-            } buffer_memory_barrier;
+        struct BufferMemoryBarrier {
+            mem::Bytes offset;
+            mem::Bytes size;
+        };
+
+        union {
+            ImageMemoryBarrier image_memory_barrier;
+
+            BufferMemoryBarrier buffer_memory_barrier;
         };
     };
 

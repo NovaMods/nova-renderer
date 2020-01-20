@@ -356,12 +356,10 @@ set(COMMON_LINK_LIBS
         spirv-cross-reflect
         spirv-cross-util)
 
-if(NOVA_ENABLE_VULKAN_RHI)
-    if(WIN32)
-        set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan-1)
-    else()
-        set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan)
-    endif()
+if(WIN32)
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan-1)
+else()
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan)
 endif()
 
 # TODO: Figure out why we need to do this, and add a comment when we know
