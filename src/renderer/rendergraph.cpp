@@ -82,8 +82,6 @@ namespace nova::renderer {
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspect::Color;
 
-            // When this line executes, the D3D12 debug layer gets mad about "A single command list cannot write to multiple buffers within
-            // a particular swapchain" and I don't know why it's mad about that, or even really what that message means
             cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::BottomOfPipe, {backbuffer_barrier});
         }
     }

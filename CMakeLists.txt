@@ -32,20 +32,7 @@ option(NOVA_ENABLE_EXPERIMENTAL "Enable experimental features, may be in code as
 option(NOVA_TREAT_WARNINGS_AS_ERRORS "Add -Werror flag or /WX for MSVC" OFF)
 option(NOVA_PACKAGE "Build only the library, nothing else." OFF)
 
-option(NOVA_ENABLE_VULKAN_RHI "Compile the Vulkan RHI backend" ON)
-option(NOVA_ENABLE_D3D12_RHI "Compile the D3D12 RHI backend" ON)
-option(NOVA_ENABLE_OPENGL_RHI "Compile the OpenGL 3 backend" ON)
-
 option(NOVA_FORCE_DEBUGGING "Force compiling all the debugging and validation code" OFF)
-
-if(NOVA_ENABLE_D3D12_API AND NOT WIN32)
-    message(WARNING "Nova can only compile its D3D12 RHI backend on Windows 10. You're now on Windows 10, so I'm disabling the D3D12 RHI backend")
-    set(NOVA_ENABLE_D3D12_RHI_BACKEND OFF)
-endif()
-
-if(NOT NOVA_ENABLE_VULKAN_RHI AND NOT VULKAN_ENABLE_D3D12_RHI AND NOT NOVA_ENABLE_OPENGL_RHI)
-    message(ERROR "You must enable at least one RHI backend")
-endif()
 
 if(NOVA_ENABLE_EXPERIMENTAL)
     set(CMAKE_LINK_WHAT_YOU_USE TRUE) # Warn about unsued linked libraries
@@ -143,6 +130,16 @@ set(NOVA_SOURCE
 
         src/nova_renderer.cpp
 
+        src/render_engine/vulkan/vulkan_command_list.cpp
+        src/render_engine/vulkan/vulkan_command_list.hpp
+        src/render_engine/vulkan/vulkan_render_engine.cpp
+        src/render_engine/vulkan/vulkan_render_engine.hpp
+        src/render_engine/vulkan/vk_structs.hpp
+        src/render_engine/vulkan/vulkan_utils.hpp
+        src/render_engine/vulkan/vulkan_utils.cpp
+        src/render_engine/vulkan/vulkan_swapchain.cpp
+        src/render_engine/vulkan/vulkan_swapchain.hpp
+
         src/filesystem/zip_folder_accessor.hpp
         src/filesystem/regular_folder_accessor.hpp
         src/filesystem/folder_accessor.cpp
@@ -235,40 +232,6 @@ set(UNIX_NOVA_SOURCE
         src/util/linux_utils.hpp
         )
 
-#########################################
-# Which RHI backends should we compile? #
-#########################################
-if(NOVA_ENABLE_VULKAN_RHI)
-    set(NOVA_SOURCE
-            ${NOVA_SOURCE}
-            src/render_engine/vulkan/vulkan_command_list.cpp
-            src/render_engine/vulkan/vulkan_command_list.hpp
-            src/render_engine/vulkan/vulkan_render_engine.cpp
-            src/render_engine/vulkan/vulkan_render_engine.hpp
-            src/render_engine/vulkan/vk_structs.hpp
-            src/render_engine/vulkan/vulkan_utils.hpp
-            src/render_engine/vulkan/vulkan_utils.cpp
-            src/render_engine/vulkan/vulkan_swapchain.cpp
-            src/render_engine/vulkan/vulkan_swapchain.hpp
-            )
-endif()
-
-if(NOVA_ENABLE_D3D12_RHI)
-    set(WINDOWS_NOVA_SOURCE
-            ${WINDOWS_NOVA_SOURCE}
-            src/render_engine/dx12/dx12_utils.cpp
-            src/render_engine/dx12/dx12_utils.hpp
-            src/render_engine/dx12/d3dx12.h
-            src/render_engine/dx12/dx12_command_list.cpp
-            src/render_engine/dx12/dx12_command_list.hpp
-            src/render_engine/dx12/dx12_structs.hpp
-            src/render_engine/dx12/dx12_swapchain.cpp
-            src/render_engine/dx12/dx12_swapchain.hpp
-            src/render_engine/dx12/dx12_render_engine.cpp
-            src/render_engine/dx12/dx12_render_engine.hpp
-            )
-endif()
-
 if(WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${WINDOWS_NOVA_SOURCE})
     set(OTHER_NOVA_SOURCE ${UNIX_NOVA_SOURCE})
@@ -359,19 +322,7 @@ target_include_directories(nova-renderer PUBLIC
         )
 target_link_directories(nova-renderer PUBLIC $ENV{VULKAN_SDK}/Lib)
 
-# Compilation definitions indicating enabled backends
-if(NOVA_ENABLE_VULKAN_RHI)
-    target_compile_definitions(nova-renderer PUBLIC NOVA_VULKAN_RHI)
-    target_include_directories(nova-renderer PRIVATE Vulkan_INCLUDE_DIR)
-endif()
-
-if(NOVA_ENABLE_D3D12_RHI)
-    target_compile_definitions(nova-renderer PUBLIC NOVA_D3D12_RHI)
-endif()
-
-if(NOVA_ENABLE_OPENGL_RHI)
-    target_compile_definitions(nova-renderer PUBLIC NOVA_OPENGL_RHI)
-endif()
+target_include_directories(nova-renderer PRIVATE Vulkan_INCLUDE_DIR)
 
 include(GNUInstallDirs)
 
@@ -424,9 +375,6 @@ endif()
 set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} ${GLFW_TARGET_NAME})
 include_directories(SYSTEM ${CMAKE_CURRENT_LIST_DIR}/external/glfw/include)
 
-if(NOVA_ENABLE_D3D12_RHI)
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} spirv-cross-hlsl)
-endif()
 
 ##############################
 # Find C++ filesystem header #
@@ -454,7 +402,6 @@ if(WIN32)
     add_compile_options_if_supported(/Zc:twoPhase- /permissive /bigobj )
 
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler spirv-cross-hlsl)
     target_include_directories(nova-renderer PRIVATE ${WinSDK_DIRS})
     target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING NOMINMAX)
     target_compile_definitions(nova-renderer PRIVATE NOVA_EXPORT)

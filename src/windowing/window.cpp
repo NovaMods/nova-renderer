@@ -53,18 +53,7 @@ namespace nova::renderer {
 
         glfwSetErrorCallback(glfw_error_callback);
 
-        if(options.api == GraphicsApi::NvGl4) {
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-            if(options.debug.enabled) {
-                glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-            }
-
-        } else {
-            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        }
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
         window = glfwCreateWindow(static_cast<int>(options.window.width),
                                   static_cast<int>(options.window.height),
@@ -75,11 +64,6 @@ namespace nova::renderer {
             NOVA_LOG(FATAL) << "Failed to create window";
             return;
         }
-
-        if(options.api == GraphicsApi::NvGl4) {
-            glfwMakeContextCurrent(window);
-        }
-
         glfwSetWindowUserPointer(window, this);
         glfwSetKeyCallback(window, &NovaWindow::glfw_key_callback);
     }
