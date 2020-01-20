@@ -18,6 +18,8 @@ namespace nova::renderer::rhi {
 
         VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderDevice* render_device);
 
+        ~VulkanCommandList() override = default;
+
         void resource_barriers(PipelineStage stages_before_barrier,
                                PipelineStage stages_after_barrier,
                                const rx::vector<ResourceBarrier>& barriers) override;
