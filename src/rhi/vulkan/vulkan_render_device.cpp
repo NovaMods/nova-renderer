@@ -953,60 +953,6 @@ namespace nova::renderer::rhi {
             const auto* vk_image_memory = static_cast<const VulkanDeviceMemory*>(image_memory.value);
             vkBindImageMemory(device, image->image, vk_image_memory->memory, 0);
 
-            // Quick command list to transition the image to the correct layout
-            CommandList* list = create_command_list(0, QueueType::Graphics, CommandList::Level::Primary, internal_allocator);
-            auto* cmds = static_cast<VulkanCommandList*>(list);
-
-            VkImageMemoryBarrier barrier = {};
-            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-            barrier.image = image->image;
-            barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            barrier.subresourceRange.layerCount = 1;
-            barrier.subresourceRange.levelCount = 1;
-
-            if(image->is_depth_tex) {
-                barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-                barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
-                barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-
-                vkCmdPipelineBarrier(cmds->cmds,
-                                     VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-                                     VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-                                     0,
-                                     0,
-                                     nullptr,
-                                     0,
-                                     nullptr,
-                                     1,
-                                     &barrier);
-
-            } else {
-                barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-
-                vkCmdPipelineBarrier(cmds->cmds,
-                                     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                                     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                                     0,
-                                     0,
-                                     nullptr,
-                                     0,
-                                     nullptr,
-                                     1,
-                                     &barrier);
-            }
-
-            Fence* fence = create_fence(false, internal_allocator);
-            submit_command_list(list, QueueType::Graphics, fence, {}, {});
-
-            rx::vector<Fence*> submission_fences;
-            submission_fences.push_back(fence);
-            wait_for_fences(submission_fences);
-            destroy_fences(submission_fences, internal_allocator);
-
             VkImageViewCreateInfo image_view_create_info = {};
             image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             image_view_create_info.image = image->image;
