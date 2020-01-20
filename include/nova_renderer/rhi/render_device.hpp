@@ -148,7 +148,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Creates an empty image
          *
-         * Useful when you want a render target, or you want to initialize the image on your own
+         * The image will start out in the Undefined layout. You must transition it to whatever layout you want to use
          */
         [[nodiscard]] virtual Image* create_image(const shaderpack::TextureCreateInfo& info,
                                                   rx::memory::allocator* allocator = nullptr) = 0;

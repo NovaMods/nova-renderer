@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdint>
+#include <memory_resource>
+#include <optional>
 #include <string>
 
 #include <glm/glm.hpp>

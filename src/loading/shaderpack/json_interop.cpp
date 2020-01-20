@@ -122,6 +122,8 @@ namespace nova::renderer::shaderpack {
             pipeline.fragment_shader = rx::optional<ShaderSource>();
             pipeline.fragment_shader->filename = fragment_shader_name->c_str();
         }
+
+        pipeline.scissor_mode = get_json_value<ScissorTestMode>(j, "scissorMode", ScissorTestMode::Off, scissor_test_mode_from_string);
     }
 
     void from_json(const nlohmann::json& j, MaterialPass& pass) {
