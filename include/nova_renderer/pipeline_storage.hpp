@@ -24,8 +24,8 @@ namespace nova::renderer {
         PipelineStorage(const PipelineStorage& other) = delete;
         PipelineStorage& operator=(const PipelineStorage& other) = delete;
 
-        PipelineStorage(PipelineStorage&& old) noexcept = default;
-        PipelineStorage& operator=(PipelineStorage&& old) noexcept = default;
+        PipelineStorage(PipelineStorage&& old) noexcept = delete;
+        PipelineStorage& operator=(PipelineStorage&& old) noexcept = delete;
 
         ~PipelineStorage() = default;
 
