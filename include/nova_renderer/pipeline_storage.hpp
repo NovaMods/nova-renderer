@@ -36,7 +36,7 @@ namespace nova::renderer {
     private:
         NovaRenderer& renderer;
 
-        rhi::RenderEngine& device;
+        rhi::RenderDevice& device;
 
         mem::AllocatorHandle<>& allocator;
 

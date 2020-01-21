@@ -107,7 +107,7 @@ namespace nova::renderer {
 
         NovaRenderer& renderer;
 
-        rhi::RenderEngine& device;
+        rhi::RenderDevice& device;
 
         std::unique_ptr<mem::AllocatorHandle<>> staging_buffer_allocator;
 

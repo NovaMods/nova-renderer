@@ -1,7 +1,7 @@
 #include "nova_renderer/pipeline_storage.hpp"
 
 #include "nova_renderer/nova_renderer.hpp"
-#include "nova_renderer/rhi/render_engine.hpp"
+#include "nova_renderer/rhi/render_device.hpp"
 
 #include "spirv_glsl.hpp"
 

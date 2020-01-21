@@ -119,7 +119,7 @@ set(NOVA_SOURCE
         include/nova_renderer/rhi/command_list.hpp
         include/nova_renderer/rhi/rhi_enums.hpp
         include/nova_renderer/rhi/rhi_types.hpp
-        include/nova_renderer/rhi/render_engine.hpp
+        include/nova_renderer/rhi/render_device.hpp
         include/nova_renderer/rhi/device_memory_resource.hpp
 
         include/nova_renderer/procedural_mesh.hpp
@@ -130,15 +130,19 @@ set(NOVA_SOURCE
 
         src/nova_renderer.cpp
 
-        src/render_engine/vulkan/vulkan_command_list.cpp
-        src/render_engine/vulkan/vulkan_command_list.hpp
-        src/render_engine/vulkan/vulkan_render_engine.cpp
-        src/render_engine/vulkan/vulkan_render_engine.hpp
-        src/render_engine/vulkan/vk_structs.hpp
-        src/render_engine/vulkan/vulkan_utils.hpp
-        src/render_engine/vulkan/vulkan_utils.cpp
-        src/render_engine/vulkan/vulkan_swapchain.cpp
-        src/render_engine/vulkan/vulkan_swapchain.hpp
+        src/rhi/rhi_types.cpp
+        src/rhi/render_device.cpp
+        src/rhi/swapchain.cpp
+
+        src/rhi/vulkan/vulkan_command_list.cpp
+        src/rhi/vulkan/vulkan_command_list.hpp
+        src/rhi/vulkan/vulkan_render_device.cpp
+        src/rhi/vulkan/vulkan_render_device.hpp
+        src/rhi/vulkan/vk_structs.hpp
+        src/rhi/vulkan/vulkan_utils.hpp
+        src/rhi/vulkan/vulkan_utils.cpp
+        src/rhi/vulkan/vulkan_swapchain.cpp
+        src/rhi/vulkan/vulkan_swapchain.hpp
 
         src/filesystem/zip_folder_accessor.hpp
         src/filesystem/regular_folder_accessor.hpp
@@ -173,10 +177,6 @@ set(NOVA_SOURCE
         src/filesystem/shaderpack/render_graph_builder.cpp
         src/filesystem/shaderpack/render_graph_builder.hpp
 
-        src/render_engine/rhi_types.cpp
-        src/render_engine/render_engine.cpp
-        src/render_engine/swapchain.cpp
-
         src/tasks/task_scheduler.cpp
         src/tasks/task_scheduler.hpp
         src/tasks/task_graph.hpp
@@ -209,7 +209,7 @@ set(NOVA_HEADERS
         include/nova_renderer/nova_renderer.hpp
         include/nova_renderer/shaderpack_data.hpp
         include/nova_renderer/nova_settings.hpp
-        include/nova_renderer/rhi/render_engine.hpp
+        include/nova_renderer/rhi/render_device.hpp
         include/nova_renderer/window.hpp
         include/nova_renderer/util/utils.hpp
         include/nova_renderer/renderables.hpp

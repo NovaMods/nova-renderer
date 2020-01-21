@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nova_renderer/rhi/render_engine.hpp"
+#include "nova_renderer/rhi/render_device.hpp"
 
 #include "vk_structs.hpp"
 #include "vulkan_swapchain.hpp"
@@ -17,7 +17,7 @@ namespace nova::renderer::rhi {
     /*!
      * \brief Vulkan implementation of a render engine
      */
-    class VulkanRenderEngine final : public RenderEngine {
+    class VulkanRenderDevice final : public RenderDevice {
     public:
         // Global Vulkan objects
         VkInstance instance;
@@ -42,17 +42,17 @@ namespace nova::renderer::rhi {
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
         PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;
 
-        VulkanRenderEngine(NovaSettingsAccessManager& settings,
+        VulkanRenderDevice(NovaSettingsAccessManager& settings,
                            NovaWindow& window,
                            mem::AllocatorHandle<>& allocator);
 
-        VulkanRenderEngine(VulkanRenderEngine&& old) noexcept = delete;
-        VulkanRenderEngine& operator=(VulkanRenderEngine&& old) noexcept = delete;
+        VulkanRenderDevice(VulkanRenderDevice&& old) noexcept = delete;
+        VulkanRenderDevice& operator=(VulkanRenderDevice&& old) noexcept = delete;
 
-        VulkanRenderEngine(const VulkanRenderEngine& other) = delete;
-        VulkanRenderEngine& operator=(const VulkanRenderEngine& other) = delete;
+        VulkanRenderDevice(const VulkanRenderDevice& other) = delete;
+        VulkanRenderDevice& operator=(const VulkanRenderDevice& other) = delete;
 
-        ~VulkanRenderEngine() = default;
+        ~VulkanRenderDevice() = default;
 
 #pragma region Render engine interface
         void set_num_renderpasses(uint32_t num_renderpasses) override;
@@ -235,7 +235,7 @@ namespace nova::renderer::rhi {
         static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
                                                                     VkDebugUtilsMessageTypeFlagsEXT message_types,
                                                                     const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
-                                                                    void* render_engine);
+                                                                    void* render_device);
 #pragma endregion
     };
 } // namespace nova::renderer::rhi
