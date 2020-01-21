@@ -104,6 +104,12 @@ namespace nova::renderer::rhi {
         rx::map<rx::string, ResourceBindingDescription> bindings;
 
         rx::vector<VertexField> vertex_fields;
+
+        [[nodiscard]] uint32_t get_num_uniform_buffers() const;
+
+        [[nodiscard]] uint32_t get_num_sampled_images() const;
+
+        [[nodiscard]] uint32_t get_num_samplers() const;
     };
 
     struct Pipeline {};

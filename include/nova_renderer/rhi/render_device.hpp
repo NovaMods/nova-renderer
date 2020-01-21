@@ -118,6 +118,8 @@ namespace nova::renderer::rhi {
 
         virtual void update_descriptor_sets(rx::vector<DescriptorSetWrite>& writes) = 0;
 
+        virtual void reset_descriptor_pool(DescriptorPool* pool) = 0;
+
         [[nodiscard]] virtual ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
                                                                      const shaderpack::PipelineCreateInfo& data,
                                                                      rx::memory::allocator* allocator = nullptr) = 0;
