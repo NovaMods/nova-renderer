@@ -3,7 +3,7 @@
 #include "nova_renderer/memory/allocation_strategy.hpp"
 #include "nova_renderer/memory/allocation_structs.hpp"
 #include "nova_renderer/memory/bytes.hpp"
-
+#include "rhi_types.hpp"
 using namespace nova::mem::operators;
 
 namespace nova::renderer {

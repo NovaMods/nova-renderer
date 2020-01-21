@@ -27,9 +27,7 @@
 using namespace nova::mem;
 
 namespace nova::renderer::rhi {
-    VulkanRenderDevice::VulkanRenderDevice(NovaSettingsAccessManager& settings,
-                                           NovaWindow& window,
-                                           AllocatorHandle<>& allocator)
+    VulkanRenderDevice::VulkanRenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, AllocatorHandle<>& allocator)
         : RenderDevice(allocator, settings, window),
           command_pools_by_thread_idx(
               std::scoped_allocator_adaptor<AllocatorHandle<>>(std::move(*internal_allocator.create_suballocator()))) {
@@ -865,7 +863,7 @@ namespace nova::renderer::rhi {
         auto* vulkan_heap = static_cast<VulkanDeviceMemory*>(allocation.memory);
         buffer->memory = allocation;
 
-        vkBindBufferMemory(device, buffer->buffer, vulkan_heap->memory, 0);
+        vkBindBufferMemory(device, buffer->buffer, vulkan_heap->memory, allocation.allocation_info.offset.b_count());
 
         return buffer;
     }
