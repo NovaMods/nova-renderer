@@ -6,7 +6,7 @@
 #include "nova_renderer/frame_context.hpp"
 #include "nova_renderer/procedural_mesh.hpp"
 #include "nova_renderer/renderables.hpp"
-#include "nova_renderer/rhi/render_engine.hpp"
+#include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
@@ -220,7 +220,7 @@ namespace nova::renderer {
          * \brief Constructs a Rendergraph which will allocate its internal memory from the provided allocator, and which will execute on
          * the provided device
          */
-        Rendergraph(mem::AllocatorHandle<>& allocator, rhi::RenderEngine& device);
+        Rendergraph(mem::AllocatorHandle<>& allocator, rhi::RenderDevice& device);
 
         template <typename RenderpassType>
         [[nodiscard]] RenderpassType* add_renderpass(std::unique_ptr<RenderpassType> renderpass,
@@ -240,7 +240,7 @@ namespace nova::renderer {
 
         mem::AllocatorHandle<>& allocator;
 
-        rhi::RenderEngine& device;
+        rhi::RenderDevice& device;
 
         std::pmr::unordered_map<std::string, std::unique_ptr<Renderpass>> renderpasses;
 

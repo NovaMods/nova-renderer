@@ -19,7 +19,7 @@ namespace nova::renderer::rhi {
     struct Framebuffer;
     struct Image;
 
-    class VulkanRenderEngine;
+    class VulkanRenderDevice;
 
     /*!
      * \brief Deals with the swapchain, yo
@@ -31,7 +31,7 @@ namespace nova::renderer::rhi {
     class VulkanSwapchain final : public Swapchain {
     public:
         VulkanSwapchain(uint32_t num_swapchain_images,
-                        VulkanRenderEngine* render_engine,
+                        VulkanRenderDevice* render_device,
                         glm::uvec2 window_dimensions,
                         const std::pmr::vector<VkPresentModeKHR>& present_modes);
 
@@ -51,7 +51,7 @@ namespace nova::renderer::rhi {
         [[nodiscard]] uint32_t get_num_images() const;
 
     private:
-        VulkanRenderEngine* render_engine;
+        VulkanRenderDevice* render_device;
 
         VkSwapchainKHR swapchain{};
         VkExtent2D swapchain_extent;

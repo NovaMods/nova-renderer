@@ -20,5 +20,5 @@ namespace nova::renderer::rhi {
 
     class Swapchain;
     class CommandList;
-    class RenderEngine;
+    class RenderDevice;
 } // namespace nova::renderer::rhi

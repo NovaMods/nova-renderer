@@ -7,7 +7,7 @@
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
-    class VulkanRenderEngine;
+    class VulkanRenderDevice;
 
     /*!
      * \brief Vulkan implementation of `command_list`
@@ -16,7 +16,7 @@ namespace nova::renderer::rhi {
     public:
         VkCommandBuffer cmds;
 
-        VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine* render_engine);
+        VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderDevice* render_device);
 
         void resource_barriers(PipelineStage stages_before_barrier,
                                PipelineStage stages_after_barrier,
@@ -50,6 +50,6 @@ namespace nova::renderer::rhi {
         void upload_data_to_image(
             Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) override;
     private:
-        const VulkanRenderEngine& render_engine;
+        const VulkanRenderDevice& render_device;
     };
 } // namespace nova::renderer::rhi

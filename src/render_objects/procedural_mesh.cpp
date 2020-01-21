@@ -1,7 +1,7 @@
 #include "nova_renderer/procedural_mesh.hpp"
 
 #include "nova_renderer/rhi/device_memory_resource.hpp"
-#include "nova_renderer/rhi/render_engine.hpp"
+#include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/util/logger.hpp"
 
 #include "../util/memory_utils.hpp"
@@ -11,7 +11,7 @@ using namespace nova::mem;
 namespace nova::renderer {
     using namespace rhi;
 
-    ProceduralMesh::ProceduralMesh(const uint64_t vertex_buffer_size, const uint64_t index_buffer_size, RenderEngine* device)
+    ProceduralMesh::ProceduralMesh(const uint64_t vertex_buffer_size, const uint64_t index_buffer_size, RenderDevice* device)
         : device(device)
 #ifdef NOVA_DEBUG
           ,

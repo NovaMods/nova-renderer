@@ -86,7 +86,7 @@ namespace nova::renderer {
         }
     }
 
-    Rendergraph::Rendergraph(mem::AllocatorHandle<>& allocator, rhi::RenderEngine& device) : allocator(allocator), device(device) {}
+    Rendergraph::Rendergraph(mem::AllocatorHandle<>& allocator, rhi::RenderDevice& device) : allocator(allocator), device(device) {}
 
     void Rendergraph::destroy_renderpass(const std::string& name) {
         if(const auto itr = renderpasses.find(name); itr != renderpasses.end()) {

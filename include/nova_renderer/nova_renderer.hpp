@@ -16,7 +16,7 @@
 #include "nova_renderer/resource_loader.hpp"
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
-#include "nova_renderer/rhi/render_engine.hpp"
+#include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
 
 namespace spirv_cross {
@@ -171,7 +171,7 @@ namespace nova::renderer {
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
                                                                const StaticMeshRenderableData& renderable);
 
-        [[nodiscard]] rhi::RenderEngine& get_engine() const;
+        [[nodiscard]] rhi::RenderDevice& get_engine() const;
 
         [[nodiscard]] NovaWindow& get_window() const;
 
@@ -188,7 +188,7 @@ namespace nova::renderer {
     private:
         NovaSettingsAccessManager render_settings;
 
-        std::unique_ptr<rhi::RenderEngine> rhi;
+        std::unique_ptr<rhi::RenderDevice> device;
         std::unique_ptr<NovaWindow> window;
         rhi::Swapchain* swapchain;
 

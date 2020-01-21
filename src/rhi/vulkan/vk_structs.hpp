@@ -1,5 +1,5 @@
 /*!
- * \brief Vulkan definition of the structs forward-declared in render_engine.hpp
+ * \brief Vulkan definition of the structs forward-declared in render_device.hpp
  */
 
 #pragma once

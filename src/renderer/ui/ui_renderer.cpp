@@ -1,6 +1,6 @@
 #include "nova_renderer/ui_renderer.hpp"
 
-#include "nova_renderer/rhi/render_engine.hpp"
+#include "nova_renderer/rhi/render_device.hpp"
 
 namespace nova::renderer {
     UiRenderpass::UiRenderpass() : Renderpass(UI_RENDER_PASS_NAME, true) {}

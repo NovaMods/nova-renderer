@@ -3,12 +3,12 @@
 #include "nova_renderer/util/logger.hpp"
 
 #include "vk_structs.hpp"
-#include "vulkan_render_engine.hpp"
+#include "vulkan_render_device.hpp"
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer::rhi {
-    VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderEngine* render_engine)
-        : cmds(cmds), render_engine(*render_engine) {
+    VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderDevice* render_device)
+        : cmds(cmds), render_device(*render_device) {
 
         // TODO: Put this begin info in the constructor parameters
         VkCommandBufferBeginInfo begin_info = {};
@@ -38,8 +38,8 @@ namespace nova::renderer::rhi {
                     image_barrier.dstAccessMask = to_vk_access_flags(barrier.access_after_barrier);
                     image_barrier.oldLayout = to_vk_image_layout(barrier.old_state);
                     image_barrier.newLayout = to_vk_image_layout(barrier.new_state);
-                    image_barrier.srcQueueFamilyIndex = render_engine.get_queue_family_index(barrier.source_queue);
-                    image_barrier.dstQueueFamilyIndex = render_engine.get_queue_family_index(barrier.destination_queue);
+                    image_barrier.srcQueueFamilyIndex = render_device.get_queue_family_index(barrier.source_queue);
+                    image_barrier.dstQueueFamilyIndex = render_device.get_queue_family_index(barrier.destination_queue);
                     image_barrier.image = image->image;
                     image_barrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(barrier.image_memory_barrier.aspect);
                     image_barrier.subresourceRange.baseMipLevel = 0; // TODO: Something smarter with mips
@@ -57,8 +57,8 @@ namespace nova::renderer::rhi {
                     buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
                     buffer_barrier.srcAccessMask = to_vk_access_flags(barrier.access_before_barrier);
                     buffer_barrier.dstAccessMask = to_vk_access_flags(barrier.access_after_barrier);
-                    buffer_barrier.srcQueueFamilyIndex = render_engine.get_queue_family_index(barrier.source_queue);
-                    buffer_barrier.dstQueueFamilyIndex = render_engine.get_queue_family_index(barrier.destination_queue);
+                    buffer_barrier.srcQueueFamilyIndex = render_device.get_queue_family_index(barrier.source_queue);
+                    buffer_barrier.dstQueueFamilyIndex = render_device.get_queue_family_index(barrier.destination_queue);
                     buffer_barrier.buffer = buffer->buffer;
                     buffer_barrier.offset = barrier.buffer_memory_barrier.offset.b_count();
                     buffer_barrier.size = barrier.buffer_memory_barrier.size.b_count();

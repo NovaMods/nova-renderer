@@ -1,7 +1,7 @@
 #include "vulkan_utils.hpp"
 
 #include "nova_renderer/renderables.hpp"
-#include "nova_renderer/rhi/render_engine.hpp"
+#include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/util/logger.hpp"
 
 namespace nova::renderer::rhi {

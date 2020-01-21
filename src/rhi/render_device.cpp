@@ -1,15 +1,15 @@
-#include "nova_renderer/rhi/render_engine.hpp"
+#include "nova_renderer/rhi/render_device.hpp"
 
 #include <utility>
 
 namespace nova::renderer::rhi {
-    Swapchain* RenderEngine::get_swapchain() const { return swapchain; }
+    Swapchain* RenderDevice::get_swapchain() const { return swapchain; }
 
-    mem::AllocatorHandle<>* RenderEngine::get_allocator() const {
+    mem::AllocatorHandle<>* RenderDevice::get_allocator() const {
         return &internal_allocator;
     }
 
-    RenderEngine::RenderEngine(mem::AllocatorHandle<>& allocator,
+    RenderDevice::RenderDevice(mem::AllocatorHandle<>& allocator,
                                NovaSettingsAccessManager& settings,
                                NovaWindow& window)
         : settings(settings),
