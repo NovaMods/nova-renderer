@@ -28,7 +28,7 @@ namespace nova::renderer {
     struct TextureResource {
         std::string name;
 
-        rhi::Image* image;
+        rhi::Image* image = nullptr;
 
         size_t width;
 
@@ -37,7 +37,17 @@ namespace nova::renderer {
         rhi::PixelFormat format;
     };
 
+    struct BufferResource {
+        std::string name;
+
+        rhi::Buffer* buffer = nullptr;
+
+        mem::Bytes size = 0;
+    };
+
     using TextureResourceAccessor = MapAccessor<std::string, TextureResource>;
+
+    using BufferResourceAccessor = MapAccessor<std::string, BufferResource>;
 
     /*!
      * \brief Provides a means to access Nova's resources, and also helps in creating resources? IDK yet but that's fine
@@ -47,6 +57,8 @@ namespace nova::renderer {
     class DeviceResources {
     public:
         explicit DeviceResources(NovaRenderer& renderer);
+
+        [[nodiscard]] std::optional<BufferResourceAccessor> create_uniform_buffer(const std::string& name, mem::Bytes size);
 
         /*!
          * \brief Creates a new dynamic texture with the provided initial texture data
@@ -109,6 +121,8 @@ namespace nova::renderer {
 
         rhi::RenderDevice& device;
 
+        std::unique_ptr<mem::AllocatorHandle<>> allocator;
+
         std::unique_ptr<mem::AllocatorHandle<>> staging_buffer_allocator;
 
         std::unordered_map<std::string, TextureResource> textures;
@@ -119,7 +133,13 @@ namespace nova::renderer {
 
         std::unordered_map<size_t, std::vector<rhi::Buffer*>> staging_buffers;
 
+        DeviceMemoryResource* uniform_buffer_memory;
+
+        std::unordered_map<std::string, BufferResource> uniform_buffers;
+
         void allocate_staging_buffer_memory();
+
+        void allocate_uniform_buffer_memory();
 
         /*!
          * \brief Retrieves a staging buffer at least the specified size

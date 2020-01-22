@@ -14,10 +14,32 @@ namespace nova::renderer {
     constexpr size_t STAGING_BUFFER_ALIGNMENT = 2048;
     constexpr size_t STAGING_BUFFER_TOTAL_MEMORY_SIZE = 8388608;
 
+    constexpr size_t UNIFORM_BUFFER_ALIGNMENT = 64;           // TODO: Get a real value
+    constexpr size_t UNIFORM_BUFFER_TOTAL_MEMORY_SIZE = 8096; // TODO: Get a real value
+
     size_t size_in_bytes(PixelFormat pixel_format);
 
     DeviceResources::DeviceResources(NovaRenderer& renderer) : renderer(renderer), device(renderer.get_engine()) {
         allocate_staging_buffer_memory();
+
+        allocate_uniform_buffer_memory();
+    }
+
+    std::optional<BufferResourceAccessor> DeviceResources::create_uniform_buffer(const std::string& name, const Bytes size) {
+        BufferResource resource = {};
+        resource.name = name;
+        resource.size = size;
+
+        const BufferCreateInfo create_info = {size.b_count(), BufferUsage::UniformBuffer};
+        resource.buffer = device.create_buffer(create_info, *uniform_buffer_memory, *allocator);
+        if(resource.buffer == nullptr) {
+            NOVA_LOG(ERROR) << "Could not create uniform buffer " << name;
+            return std::nullopt;
+        }
+
+        uniform_buffers.emplace(name, resource);
+
+        return std::make_optional<BufferResourceAccessor>(&uniform_buffers, name);
     }
 
     std::optional<TextureResourceAccessor> DeviceResources::create_texture(const std::string& name,
@@ -182,10 +204,11 @@ namespace nova::renderer {
     void DeviceResources::allocate_staging_buffer_memory() {
         staging_buffer_allocator = std::unique_ptr<AllocatorHandle<>>(renderer.get_global_allocator()->create_suballocator());
 
-        DeviceMemory* memory = device.allocate_device_memory(STAGING_BUFFER_TOTAL_MEMORY_SIZE,
-                                                            MemoryUsage::StagingBuffer,
-                                                            ObjectType::Buffer,
-                                                            *staging_buffer_allocator)
+        DeviceMemory* memory = device
+                                   .allocate_device_memory(STAGING_BUFFER_TOTAL_MEMORY_SIZE,
+                                                           MemoryUsage::StagingBuffer,
+                                                           ObjectType::Buffer,
+                                                           *staging_buffer_allocator)
                                    .value;
 
         auto* strat = staging_buffer_allocator->new_other_object<BlockAllocationStrategy>(renderer.get_global_allocator(),
@@ -193,6 +216,23 @@ namespace nova::renderer {
                                                                                           STAGING_BUFFER_ALIGNMENT);
 
         staging_buffer_memory = staging_buffer_allocator->new_other_object<DeviceMemoryResource>(memory, strat);
+    }
+
+    void DeviceResources::allocate_uniform_buffer_memory() {
+        allocator = std::unique_ptr<AllocatorHandle<>>(renderer.get_global_allocator()->create_suballocator());
+
+        DeviceMemory* memory = device
+                                   .allocate_device_memory(STAGING_BUFFER_TOTAL_MEMORY_SIZE,
+                                                           MemoryUsage::LowFrequencyUpload,
+                                                           ObjectType::Buffer,
+                                                           *allocator)
+                                   .value;
+
+        auto* strat = allocator->new_other_object<BlockAllocationStrategy>(renderer.get_global_allocator(),
+                                                                           Bytes(UNIFORM_BUFFER_TOTAL_MEMORY_SIZE),
+                                                                           UNIFORM_BUFFER_ALIGNMENT);
+
+        uniform_buffer_memory = allocator->new_other_object<DeviceMemoryResource>(memory, strat);
     }
 
     std::shared_ptr<Buffer> DeviceResources::get_staging_buffer_with_size(const size_t size) {
