@@ -42,6 +42,20 @@ namespace nova::renderer {
         return std::make_optional<BufferResourceAccessor>(&uniform_buffers, name);
     }
 
+    std::optional<BufferResourceAccessor> DeviceResources::get_uniform_buffer(const std::string& name) {
+        if(const auto itr = uniform_buffers.find(name); itr != uniform_buffers.end()) {
+            return std::make_optional<BufferResourceAccessor>(&uniform_buffers, name);
+        }
+
+        return std::nullopt;
+    }
+
+    void DeviceResources::destroy_uniform_buffer(const std::string& name) {
+        if(const auto itr = uniform_buffers.find(name); itr != uniform_buffers.end()) {
+            uniform_buffers.erase(itr);
+        }
+    }
+
     std::optional<TextureResourceAccessor> DeviceResources::create_texture(const std::string& name,
                                                                            const std::size_t width,
                                                                            const std::size_t height,
@@ -117,30 +131,10 @@ namespace nova::renderer {
 #if NOVA_DEBUG
         else {
             NOVA_LOG(ERROR) << "Could not find image \"" << name << "\"";
-            return {};
         }
 #endif
-    }
 
-    std::optional<DescriptorSetWrite> DeviceResources::get_descriptor_info_for_resource(const std::string& resource_name) {
-        if(const auto& itr = textures.find(resource_name); itr != textures.end()) {
-            DescriptorSetWrite write = {};
-            write.type = DescriptorType::CombinedImageSampler;
-            auto& resource_write = write.resources.emplace_back();
-
-            resource_write.image_info.image = itr->second.image;
-            resource_write.image_info.sampler = renderer.get_point_sampler();
-            resource_write.image_info.format.pixel_format = to_pixel_format_enum(itr->second.format);
-            resource_write.image_info.format.dimension_type = TextureDimensionTypeEnum::Absolute;
-            resource_write.image_info.format.width = static_cast<float>(itr->second.width);
-            resource_write.image_info.format.height = static_cast<float>(itr->second.height);
-
-            return write;
-
-        } else {
-            NOVA_LOG(ERROR) << "Could not find resource named \"" << resource_name << "\"";
-            return {};
-        }
+        return std::nullopt;
     }
 
     std::optional<TextureResourceAccessor> DeviceResources::create_render_target(const std::string& name,
@@ -185,7 +179,7 @@ namespace nova::renderer {
             return std::make_optional<TextureResourceAccessor>(&render_targets, name);
 
         } else {
-            return {};
+            return std::nullopt;
         }
     }
 

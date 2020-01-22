@@ -60,6 +60,10 @@ namespace nova::renderer {
 
         [[nodiscard]] std::optional<BufferResourceAccessor> create_uniform_buffer(const std::string& name, mem::Bytes size);
 
+        [[nodiscard]] std::optional<BufferResourceAccessor> get_uniform_buffer(const std::string& name);
+
+        void destroy_uniform_buffer(const std::string& name);
+
         /*!
          * \brief Creates a new dynamic texture with the provided initial texture data
          *
@@ -82,8 +86,6 @@ namespace nova::renderer {
          * \brief Retrieves the texture with the specified name
          */
         [[nodiscard]] std::optional<TextureResourceAccessor> get_texture(const std::string& name) const;
-
-        [[nodiscard]] std::optional<rhi::DescriptorSetWrite> get_descriptor_info_for_resource(const std::string& resource_name);
 
         /*!
          * \brief Creates a new render target with the specified size and format
