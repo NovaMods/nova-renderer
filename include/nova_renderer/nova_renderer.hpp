@@ -143,10 +143,7 @@ namespace nova::renderer {
         void destroy_mesh(MeshId mesh_to_destroy);
 #pragma endregion
 
-// TODO: make a resource manager of some sort and name it something that doesn't make graphite mad
 #pragma region Resources
-        [[nodiscard]] rhi::Buffer* get_builtin_buffer(const std::string& buffer_name) const;
-
         [[nodiscard]] rhi::Sampler* get_point_sampler() const;
 #pragma endregion
 
