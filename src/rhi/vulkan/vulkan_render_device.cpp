@@ -575,6 +575,11 @@ namespace nova::renderer::rhi {
         vkUpdateDescriptorSets(device, static_cast<uint32_t>(vk_writes.size()), vk_writes.data(), 0, nullptr);
     }
 
+    void VulkanRenderDevice::reset_descriptor_pool(DescriptorPool* pool) {
+        auto* vk_pool = static_cast<VulkanDescriptorPool*>(pool);
+        vkResetDescriptorPool(device, vk_pool->descriptor_pool, 0);
+    }
+
     ntl::Result<Pipeline*> VulkanRenderDevice::create_pipeline(PipelineInterface* pipeline_interface,
                                                                const shaderpack::PipelineCreateInfo& data,
                                                                rx::memory::allocator* allocator) {

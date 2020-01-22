@@ -89,6 +89,8 @@ namespace nova::renderer::rhi {
 
         void update_descriptor_sets(rx::vector<DescriptorSetWrite>& writes) override;
 
+        void reset_descriptor_pool(DescriptorPool* pool) override;
+
         ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
                                                const shaderpack::PipelineCreateInfo& data,
                                                rx::memory::allocator* allocator) override;
