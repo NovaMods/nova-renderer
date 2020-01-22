@@ -10,6 +10,17 @@ namespace nova::renderer::rhi {
     ResourceBarrier::ResourceBarrier() {}
 
     DescriptorResourceInfo::DescriptorResourceInfo() {}
+    
+    uint32_t PipelineInterface::get_num_descriptors_of_type(const DescriptorType type) const {
+        uint32_t num_descriptors = 0;
+        for(const auto& [name, description] : bindings) {
+            if(description.type == type) {
+                num_descriptors++;
+            }
+        }
+
+        return num_descriptors;
+    }
 
     ShaderStage operator|=(const ShaderStage lhs, const ShaderStage rhs) {
         return static_cast<ShaderStage>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));

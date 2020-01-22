@@ -88,6 +88,7 @@ namespace nova::renderer::rhi {
          *
          * \param data The data to create a renderpass from
          * \param framebuffer_size The size in pixels of the framebuffer that the renderpass will write to
+         * \param allocator The allocator to allocate the renderpass from
          *
          * \return The newly created renderpass
          */
@@ -107,10 +108,8 @@ namespace nova::renderer::rhi {
             const rx::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
             rx::memory::allocator* allocator = nullptr) = 0;
 
-        [[nodiscard]] virtual DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
-                                                                     uint32_t num_samplers,
-                                                                     uint32_t num_uniform_buffers,
-                                                                     rx::memory::allocator* allocator = nullptr) = 0;
+        [[nodiscard]] virtual DescriptorPool* create_descriptor_pool(
+            const rx::map<DescriptorType, uint32_t>& descriptor_capacity, rx::memory::allocator* allocator) = 0;
 
         [[nodiscard]] virtual rx::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                                                 DescriptorPool* pool,
@@ -280,12 +279,16 @@ namespace nova::renderer::rhi {
          *
          * \attention Called by the various render engine implementations
          */
+<<<<<<< HEAD
         RenderDevice(NovaSettingsAccessManager& settings,
                      NovaWindow& window,
                      rx::memory::allocator* allocator = &rx::memory::g_system_allocator);
 
         template <typename ObjectType, typename... Args>
         ObjectType* allocate_object(rx::memory::allocator* local_allocator, Args... args);
+=======
+        RenderDevice(mem::AllocatorHandle<>& allocator, NovaSettingsAccessManager& settings, NovaWindow& window);
+>>>>>>> [rhi] Descriptor capacitors
     };
 
     template <typename ObjectType, typename... Args>

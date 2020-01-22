@@ -80,9 +80,7 @@ namespace nova::renderer::rhi {
                                                                   const rx::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
                                                                   rx::memory::allocator* allocator) override;
 
-        DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
-                                               uint32_t num_samplers,
-                                               uint32_t num_uniform_buffers,
+        DescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
                                                rx::memory::allocator* allocator) override;
 
         rx::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,

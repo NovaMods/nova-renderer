@@ -105,11 +105,7 @@ namespace nova::renderer::rhi {
 
         rx::vector<VertexField> vertex_fields;
 
-        [[nodiscard]] uint32_t get_num_uniform_buffers() const;
-
-        [[nodiscard]] uint32_t get_num_sampled_images() const;
-
-        [[nodiscard]] uint32_t get_num_samplers() const;
+        [[nodiscard]] uint32_t get_num_descriptors_of_type(DescriptorType type) const;
     };
 
     struct Pipeline {};
@@ -185,6 +181,10 @@ namespace nova::renderer::rhi {
         Buffer* buffer;
     };
 
+    struct DescriptorSamplerInfo {
+        Sampler* sampler;
+    };
+
     union DescriptorResourceInfo {
         DescriptorResourceInfo();
 
@@ -196,7 +196,13 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Information to update a buffer descriptor
          */
+<<<<<<< HEAD
         DescriptorBufferInfo buffer_info{};
+=======
+        DescriptorBufferInfo buffer_info;
+
+        DescriptorSamplerInfo sampler_info;
+>>>>>>> [rhi] Descriptor capacitors
     };
 
     struct DescriptorSetWrite {

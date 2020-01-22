@@ -459,18 +459,19 @@ namespace nova::renderer::rhi {
         return ntl::Result(static_cast<PipelineInterface*>(pipeline_interface));
     }
 
-    DescriptorPool* VulkanRenderDevice::create_descriptor_pool(const uint32_t num_sampled_images,
-                                                               const uint32_t num_samplers,
-                                                               const uint32_t num_uniform_buffers,
+    DescriptorPool* VulkanRenderDevice::create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity, 
                                                                rx::memory::allocator* allocator) {
-        rx::vector<VkDescriptorPoolSize> pool_sizes(internal_allocator);
-        pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, num_sampled_images});
-        pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLER, num_samplers});
-        pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, num_uniform_buffers});
+        std::pmr::vector<VkDescriptorPoolSize> pool_sizes(internal_allocator);
+
+        uint32_t max_sets = 0;
+        for(const auto& [type, count] : descriptor_capacity) {
+            pool_sizes.emplace_back(to_vk_descriptor_type(type), count);
+            max_sets += count;
+        }
 
         VkDescriptorPoolCreateInfo pool_create_info = {};
         pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        pool_create_info.maxSets = num_sampled_images + num_samplers + num_uniform_buffers;
+        pool_create_info.maxSets = max_sets;
         pool_create_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
         pool_create_info.pPoolSizes = pool_sizes.data();
         auto* pool = allocate_object<VulkanDescriptorPool>(allocator);
