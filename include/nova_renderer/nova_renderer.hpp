@@ -143,10 +143,7 @@ namespace nova::renderer {
         void destroy_mesh(MeshId mesh_to_destroy);
 #pragma endregion
 
-// TODO: make a resource manager of some sort and name it something that doesn't make graphite mad
 #pragma region Resources
-        [[nodiscard]] rhi::Buffer* get_builtin_buffer(const std::string& buffer_name) const;
-
         [[nodiscard]] rhi::Sampler* get_point_sampler() const;
 #pragma endregion
 
@@ -164,7 +161,7 @@ namespace nova::renderer {
          * descriptor
          */
         void bind_data_to_material_descriptor_sets(
-            const renderer::MaterialPass& material,
+            const MaterialPass& material,
             const std::unordered_map<std::string, std::string>& bindings,
             const std::unordered_map<std::string, rhi::ResourceBindingDescription>& descriptor_descriptions);
 
@@ -284,7 +281,7 @@ namespace nova::renderer {
 #pragma region Rendering pipelines
         std::unique_ptr<PipelineStorage> pipeline_storage;
 
-        std::unordered_map<rhi::Pipeline*, std::vector<renderer::MaterialPass>> passes_by_pipeline;
+        std::unordered_map<rhi::Pipeline*, std::vector<MaterialPass>> passes_by_pipeline;
 
         std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher> material_metadatas;
 
@@ -311,7 +308,7 @@ namespace nova::renderer {
         uint64_t frame_count = 0;
         uint8_t cur_frame_idx = 0;
 
-        std::unordered_map<std::string, rhi::Buffer*> builtin_buffers;
+        std::vector<std::string> builtin_buffer_names;
         uint32_t cur_model_matrix_index = 0;
 
         std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;

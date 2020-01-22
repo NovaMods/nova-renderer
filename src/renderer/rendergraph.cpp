@@ -177,11 +177,11 @@ namespace nova::renderer {
 
         for(const StaticMeshRenderCommand& command : batch.commands) {
             if(command.is_visible) {
-                auto* model_matrix_buffer = ctx.nova->get_builtin_buffer(MODEL_MATRIX_BUFFER_NAME);
+                auto model_matrix_buffer = ctx.nova->get_resource_manager().get_uniform_buffer(MODEL_MATRIX_BUFFER_NAME);
                 ctx.nova->get_engine().write_data_to_buffer(&command.model_matrix,
                                                             sizeof(glm::mat4),
                                                             ctx.cur_model_matrix_index * sizeof(glm::mat4),
-                                                            model_matrix_buffer);
+                                                            (*model_matrix_buffer)->buffer);
                 ctx.cur_model_matrix_index++;
             }
         }
@@ -204,11 +204,11 @@ namespace nova::renderer {
 
         for(const StaticMeshRenderCommand& command : batch.commands) {
             if(command.is_visible) {
-                auto* model_matrix_buffer = ctx.nova->get_builtin_buffer(MODEL_MATRIX_BUFFER_NAME);
+                auto model_matrix_buffer = ctx.nova->get_resource_manager().get_uniform_buffer(MODEL_MATRIX_BUFFER_NAME);
                 ctx.nova->get_engine().write_data_to_buffer(&command.model_matrix,
                                                             sizeof(glm::mat4),
                                                             ctx.cur_model_matrix_index * sizeof(glm::mat4),
-                                                            model_matrix_buffer);
+                                                            (*model_matrix_buffer)->buffer);
                 ctx.cur_model_matrix_index++;
             }
         }

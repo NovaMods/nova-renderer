@@ -23,7 +23,7 @@ namespace nova::filesystem {
 
     std::shared_ptr<FolderAccessorBase> VirtualFilesystem::get_folder_accessor(const fs::path& path) const {
         for(const auto& root : resource_roots) {
-            if(root->does_resource_exist(path)) {
+            if(root && root->does_resource_exist(path)) {
                 return root->create_subfolder_accessor(path);
             }
         }
