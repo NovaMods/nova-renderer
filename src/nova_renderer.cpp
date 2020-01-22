@@ -422,7 +422,10 @@ namespace nova::renderer {
         });
 
         if(total_num_descriptors > 0) {
-            global_descriptor_pool = device->create_descriptor_pool(total_num_descriptors, 5, total_num_descriptors, renderpack_allocator);
+            global_descriptor_pool = device->create_descriptor_pool({{rhi::DescriptorType::UniformBuffer, total_num_descriptors},
+                                                                     {rhi::DescriptorType::CombinedImageSampler, total_num_descriptors},
+                                                                     {rhi::DescriptorType::Sampler, 5}},
+                                                                    *renderpack_allocator);
         }
 
         pipeline_create_infos.each_fwd([&](const shaderpack::PipelineCreateInfo& pipeline_create_info) {
