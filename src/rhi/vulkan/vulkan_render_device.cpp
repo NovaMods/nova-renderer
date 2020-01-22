@@ -465,7 +465,7 @@ namespace nova::renderer::rhi {
 
         uint32_t max_sets = 0;
         for(const auto& [type, count] : descriptor_capacity) {
-            pool_sizes.emplace_back(to_vk_descriptor_type(type), count);
+            pool_sizes.emplace_back(VkDescriptorPoolSize{to_vk_descriptor_type(type), count});
             max_sets += count;
         }
 
