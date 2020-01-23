@@ -11,6 +11,7 @@
 #pragma warning(pop)
 
 #include <glslang/MachineIndependent/Initialize.h>
+#include <rx/core/global.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/loading/shaderpack_loading.hpp"
@@ -34,6 +35,28 @@ using namespace operators;
 using namespace fmt;
 
 const Bytes GLOBAL_MEMORY_POOL_SIZE = 1_gb;
+
+void init_rex() {
+    rx::globals::link();
+
+    rx::global_group* system_group{rx::globals::find("system")};
+
+    // Explicitly initialize globals that need to be initialized in a specific
+    // order for things to work.
+    system_group->find("allocator")->init();
+    system_group->find("logger")->init();
+
+    rx::globals::init();
+}
+
+void rex_fini() {
+    rx::global_group* system_group{rx::globals::find("system")};
+
+    rx::globals::fini();
+
+    system_group->find("logger")->fini();
+    system_group->find("allocator")->fini();
+}
 
 namespace nova::renderer {
     std::unique_ptr<NovaRenderer> NovaRenderer::instance;
@@ -547,10 +570,15 @@ namespace nova::renderer {
     NovaRenderer* NovaRenderer::get_instance() { return instance.get(); }
 
     NovaRenderer* NovaRenderer::initialize(const NovaSettings& settings) {
+        init_rex();
         return (instance = std::make_unique<NovaRenderer>(settings)).get();
     }
 
-    void NovaRenderer::deinitialize() { instance.reset(); }
+    void NovaRenderer::deinitialize() {
+        instance.reset();
+
+        rex_fini();
+    }
 
     void NovaRenderer::create_global_allocators() {
         global_allocator = std::make_unique<AllocatorHandle<>>(std::pmr::new_delete_resource());
