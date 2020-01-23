@@ -1,3 +1,4 @@
+#include <utility>
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 
 #include "nova_renderer/util/logger.hpp"
@@ -15,18 +16,18 @@ namespace nova::filesystem {
             // zip folder in shaderpacks folder
             return allocator->create<ZipFolderAccessor>(path);
 
-        } else if(exists(path)) {
+        } else if(rx::filesystem::directory directory(path); directory) {
             // regular folder in shaderpacks folder
-            return allocator->create<RegularFolderAccessor>(path);
+            return allocator->create<RegularFolderAccessor>(directory);
         }
 
         NOVA_LOG(FATAL) << "Could not create folder accessor for path " << path.data();
 
-        return {};
+        return nullptr;
     }
 
-    FolderAccessorBase::FolderAccessorBase(const rx::string& folder)
-        : root_folder(folder), resource_existence_mutex(new rx::concurrency::mutex) {}
+    FolderAccessorBase::FolderAccessorBase(rx::string folder)
+        : root_folder(std::move(folder)), resource_existence_mutex(new rx::concurrency::mutex) {}
 
     bool FolderAccessorBase::does_resource_exist(const rx::string& resource_path) {
         std::lock_guard l(*resource_existence_mutex);
@@ -48,7 +49,7 @@ namespace nova::filesystem {
         return rx::nullopt;
     }
 
-    const rx::filesystem::directory& FolderAccessorBase::get_root() const { return root_folder; }
+    const rx::string& FolderAccessorBase::get_root() const { return root_folder; }
 
     bool has_root(const rx::string& path, const rx::string& root) { return path.begins_with(root); }
 } // namespace nova::filesystem

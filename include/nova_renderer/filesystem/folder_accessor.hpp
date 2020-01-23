@@ -23,7 +23,7 @@ namespace nova::filesystem {
          * \brief Initializes this resourcepack to load resources from the folder/zip file with the provided name
          * \param folder The name of the folder or zip file to load resources from, relative to Nova's working directory
          */
-        explicit FolderAccessorBase(const rx::string& folder);
+        explicit FolderAccessorBase(rx::string folder);
 
         FolderAccessorBase(FolderAccessorBase&& other) noexcept = default;
         FolderAccessorBase& operator=(FolderAccessorBase&& other) noexcept = default;
@@ -61,12 +61,12 @@ namespace nova::filesystem {
          */
         [[nodiscard]] virtual rx::vector<rx::string> get_all_items_in_folder(const rx::string& folder) = 0;
 
-        [[nodiscard]] const rx::filesystem::directory& get_root() const;
+        [[nodiscard]] const rx::string& get_root() const;
 
         [[nodiscard]] virtual FolderAccessorBase* create_subfolder_accessor(const rx::string& path) const = 0;
 
     protected:
-        rx::filesystem::directory root_folder;
+        rx::string root_folder;
 
         /*!
          * \brief I expect certain resources, like textures, to be requested a lot as Nova streams them in and out of
@@ -94,5 +94,5 @@ namespace nova::filesystem {
      * \param root The potential root path of the file
      * \return True if `path` has `root` as its root, false otherwise
      */
-    [[nodiscard]] bool has_root(const rx::string& path, const rx::filesystem::directory& root);
+    [[nodiscard]] bool has_root(const rx::string& path, const rx::string& root);
 } // namespace nova::filesystem
