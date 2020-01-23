@@ -4,6 +4,7 @@
 #if defined(RX_PLATFORM_POSIX)
 #include <time.h> // CLOCK_MONOTONIC, struct timespec, clock_gettime
 #elif defined(RX_PLATFORM_WINDOWS)
+#define NOMINMAX
 #define _WIN32_LEAN_AND_MEAN
 #include <windows.h> // LARGE_INTEGER, QueryPerformance{Counter, Frequency}
 #else

@@ -3,6 +3,7 @@
 
 #if defined(RX_PLATFORM_WINDOWS)
 #define _WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <windows.h> // SwitchToThread
 #elif defined(RX_PLATFORM_POSIX)
 #include <sched.h> // sched_yield

@@ -6,7 +6,9 @@
 #if defined(RX_PLATFORM_POSIX)
 #include <pthread.h> // pthread_t
 #elif defined(RX_PLATFORM_WINDOWS)
-#define _WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#define VC_EXTRALEAN
 #include <windows.h> // HANDLE
 #undef interface
 #else

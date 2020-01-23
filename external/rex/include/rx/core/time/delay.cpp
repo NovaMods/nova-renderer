@@ -6,6 +6,7 @@
 #include <errno.h> // errno, EINTR
 #elif defined(RX_PLATFORM_WINDOWS)
 #define _WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <windows.h> // Sleep
 #else
 #error "missing delay implementation"
