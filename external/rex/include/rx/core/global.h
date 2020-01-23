@@ -170,7 +170,7 @@ private:
 };
 
 struct global_group {
-  constexpr global_group(const char* _name);
+  global_group(const char* _name);
 
   constexpr const char* name() const;
 
@@ -301,7 +301,7 @@ inline const T* global_node::cast() const {
 }
 
 // global_group
-inline constexpr global_group::global_group(const char* _name)
+inline global_group::global_group(const char* _name)
   : m_name{_name}
   , m_head{nullptr}
   , m_tail{nullptr}
