@@ -571,6 +571,7 @@ namespace nova::renderer {
 
     NovaRenderer* NovaRenderer::initialize(const NovaSettings& settings) {
         init_rex();
+
         return (instance = std::make_unique<NovaRenderer>(settings)).get();
     }
 
