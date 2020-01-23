@@ -8,11 +8,11 @@ namespace nova::filesystem {
      */
     class RegularFolderAccessor final : public FolderAccessorBase {
     public:
-        explicit RegularFolderAccessor(const rx::filesystem::directory& folder);
+        explicit RegularFolderAccessor(const rx::string& folder);
     
         ~RegularFolderAccessor() override = default;
 
-        rx::vector<uint8_t> read_file(const rx::string& path) override;
+        rx::string read_text_file(const rx::string& resource_path) override;
 
         rx::vector<rx::string> get_all_items_in_folder(const rx::string& folder) override;
 
