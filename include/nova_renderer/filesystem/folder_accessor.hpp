@@ -5,6 +5,7 @@
 #include <rx/core/map.h>
 #include <rx/core/optional.h>
 #include <rx/core/string.h>
+#include <stdint.h>
 
 namespace nova::filesystem {
     /*!
@@ -16,13 +17,13 @@ namespace nova::filesystem {
      */
     class FolderAccessorBase {
     public:
-        [[nodiscard]] static FolderAccessorBase* create(const rx::filesystem::directory& path);
+        [[nodiscard]] static FolderAccessorBase* create(const rx::string& path);
 
         /*!
          * \brief Initializes this resourcepack to load resources from the folder/zip file with the provided name
          * \param folder The name of the folder or zip file to load resources from, relative to Nova's working directory
          */
-        explicit FolderAccessorBase(const rx::filesystem::directory& folder);
+        explicit FolderAccessorBase(const rx::string& folder);
 
         FolderAccessorBase(FolderAccessorBase&& other) noexcept = default;
         FolderAccessorBase& operator=(FolderAccessorBase&& other) noexcept = default;
@@ -42,33 +43,27 @@ namespace nova::filesystem {
          * resourcepack's root
          * \return True if the resource exists, false if it does not
          */
-        [[nodiscard]] bool does_resource_exist(const rx::filesystem::directory& resource_path);
+        [[nodiscard]] bool does_resource_exist(const rx::string& resource_path);
+
+        [[nodiscard]] virtual rx::vector<uint8_t> read_file(const rx::string& path) = 0;
 
         /*!
          * \brief Loads the resource with the given path
          * \param resource_path The path to the resource to load, relative to this resourcepack's root
          * \return All the bytes in the loaded resource
          */
-        [[nodiscard]] virtual rx::string read_text_file(const rx::filesystem::directory& resource_path) = 0;
-
-        /*!
-         * \brief Loads the file at the provided path as a series of 32-bit numbers
-         *
-         * \param resource_path The path to the SPIR-V file to load, relative to this resourcepack's root
-         * \return All the 32-bit numbers in the SPIR-V file
-         */
-        [[nodiscard]] rx::vector<rx_u32> read_spirv_file(const rx::filesystem::directory& resource_path);
+        [[nodiscard]] rx::string read_text_file(const rx::string& resource_path);
 
         /*!
          * \brief Retrieves the paths of all the items in the specified folder
          * \param folder The folder to get all items from
          * \return A list of all the paths in the provided folder
          */
-        [[nodiscard]] virtual rx::vector<rx::filesystem::directory> get_all_items_in_folder(const rx::filesystem::directory& folder) = 0;
+        [[nodiscard]] virtual rx::vector<rx::string> get_all_items_in_folder(const rx::string& folder) = 0;
 
         [[nodiscard]] const rx::filesystem::directory& get_root() const;
 
-        [[nodiscard]] virtual FolderAccessorBase* create_subfolder_accessor(const rx::filesystem::directory& path) const = 0;
+        [[nodiscard]] virtual FolderAccessorBase* create_subfolder_accessor(const rx::string& path) const = 0;
 
     protected:
         rx::filesystem::directory root_folder;
@@ -90,7 +85,7 @@ namespace nova::filesystem {
          *
          * \param resource_path The path to the resource, with `our_root` already appended
          */
-        [[nodiscard]] virtual bool does_resource_exist_on_filesystem(const rx::filesystem::directory& resource_path) = 0;
+        [[nodiscard]] virtual bool does_resource_exist_on_filesystem(const rx::string& resource_path) = 0;
     };
 
     /*!
@@ -99,5 +94,5 @@ namespace nova::filesystem {
      * \param root The potential root path of the file
      * \return True if `path` has `root` as its root, false otherwise
      */
-    [[nodiscard]] bool has_root(const rx::filesystem::directory& path, const rx::filesystem::directory& root);
+    [[nodiscard]] bool has_root(const rx::string& path, const rx::filesystem::directory& root);
 } // namespace nova::filesystem
