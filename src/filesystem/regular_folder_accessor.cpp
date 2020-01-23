@@ -1,9 +1,11 @@
 #include "regular_folder_accessor.hpp"
 
+#include <rx/core/filesystem/directory.h>
+
 #include "nova_renderer/util/logger.hpp"
 
 namespace nova::filesystem {
-    RegularFolderAccessor::RegularFolderAccessor(const fs::path& folder) : FolderAccessorBase(folder) {}
+    RegularFolderAccessor::RegularFolderAccessor(const rx::filesystem::directory& folder) : FolderAccessorBase(folder.name()) {}
 
     std::string RegularFolderAccessor::read_text_file(const fs::path& resource_path) {
         std::lock_guard l(*resource_existence_mutex);
