@@ -3,11 +3,12 @@
 #include "rx/core/string.h" // string
 #include "rx/core/optional.h" // optional
 #include "rx/core/concepts/no_copy.h" // no_copy
+#include "rx/core/filesystem/stream.h"
 
 namespace rx::filesystem {
 
 struct file
-  : concepts::no_copy
+  : stream
 {
   constexpr file();
 
@@ -17,41 +18,46 @@ struct file
   file(file&& other_);
   ~file();
 
+  // Read |_size| bytes from file into |_data|.
+  virtual rx_u64 read(rx_byte* _data, rx_u64 _size);
+
+  // Write |_size| bytes from |_data| into file.
+  virtual rx_u64 write(const rx_byte* _data, rx_u64 _size);
+
+  // Seek to |where| in file.
+  virtual bool seek(rx_u64 _where);
+
+  // Flush to disk.
+  virtual bool flush();
+
+  // Query the size of the file. This works regardless of where in the file
+  // the current file pointer is. If the file does not support querying it's
+  // size, this returns a nullopt.
+  virtual optional<rx_u64> size();
+
   file& operator=(file&& file_);
 
-  // close file
-  void close();
+  bool read_line(string& line_);
+  bool close();
 
-  // read |_size| bytes from file into |_data|
-  rx_u64 read(rx_byte* _data, rx_u64 _size);
-
-  // write |_size| bytes from |_data| into file
-  rx_u64 write(const rx_byte* _data, rx_u64 _size);
-
-  // print |fmt| with |args| to file using |alloc| for formatting
+  // Print |_fmt| with |_args| to file using |_allocator| for formatting.
+  // NOTE: asserts if the file isn't a text file.
   template<typename... Ts>
   bool print(memory::allocator* _alloc, const char* _fmt, Ts&&... _args);
 
-  // print |fmt| with |args| to file
+  // Print |_fmt| with |_args| to file using system allocator for formatting.
+  // NOTE: asserts if the file isn't a text file.
   template<typename... Ts>
   bool print(const char* _fmt, Ts&&... _args);
 
-  // seek to |where| in file
-  bool seek(rx_u64 _where);
-
-  // get size of file, returns nullopt if operation not supported
-  optional<rx_u64> size();
-
-  // flush to disk
-  bool flush();
-
-  bool read_line(string& line_);
-
-  bool is_valid() const;
-
-  operator bool() const;
-
+  // Print a string into the file. This is only valid for text files.
+  // NOTE: asserts if the file isn't a text file.
   bool print(string&& contents_);
+
+  // Query if the file handle is valid, will be false if the file has been
+  // closed with |close| or if the file failed to open.
+  bool is_valid() const;
+  operator bool() const;
 
 private:
   friend struct process;

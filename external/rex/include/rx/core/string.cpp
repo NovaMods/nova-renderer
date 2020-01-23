@@ -162,10 +162,34 @@ string::string(memory::allocator* _allocator, const char* _first,
 
 string::string(memory::view _view)
   : m_allocator{_view.owner}
-  , m_data{reinterpret_cast<char*>(_view.data)}
-  , m_last{m_data + _view.size}
-  , m_capacity{m_last}
+  , m_data{nullptr}
+  , m_last{nullptr}
+  , m_capacity{nullptr}
 {
+  // Search for the null-terminator in the view to find the end of the string.
+  for (rx_size i{0}; i < _view.size; i++) {
+    if (_view.data[i] == 0) {
+      m_last = reinterpret_cast<char*>(_view.data + i);
+      break;
+    }
+  }
+
+  if (m_last) {
+    m_data = reinterpret_cast<char*>(_view.data);
+    m_capacity = reinterpret_cast<char*>(_view.data + _view.size);
+  } else {
+    // Could not find a terminator. Resize the memory given by the view, which
+    // can potentially be done in place, append the null-terminator and fill
+    // out the string.
+    rx_byte* data = m_allocator->reallocate(_view.data, _view.size + 1);
+    RX_ASSERT(data, "out of memory");
+
+    data[_view.size] = 0;
+
+    m_data = reinterpret_cast<char*>(data);
+    m_last = m_data + _view.size;
+    m_capacity = m_data + _view.size;
+  }
 }
 
 string::string(string&& contents_)

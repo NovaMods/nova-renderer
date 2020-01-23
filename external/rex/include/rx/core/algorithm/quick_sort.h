@@ -15,25 +15,25 @@ void quick_sort(T* start_, T* end_, F&& _compare) {
     T* item2{end_-2};
     T pivot;
 
-    if (compare(*start_, *middle)) {
+    if (_compare(*start_, *middle)) {
       // start < middle
-      if (compare(*(_end - 1), *start_)) {
+      if (_compare(*(end_ - 1), *start_)) {
         // end < start < middle
         pivot = utility::move(*start_);
         *start_ = utility::move(*(end_ - 1));
         *(end_ - 1) = utility::move(*middle);
-      } else if (compare(*(_end - 1), *middle)) {
+      } else if (_compare(*(end_ - 1), *middle)) {
         // start <= end < middle
         pivot = utility::move(*(end_ - 1));
         *(end_ - 1) = utility::move(*middle);
       } else {
         pivot = utility::move(*middle);
       }
-    } else if (compare(*start_, *(end_ - 1))) {
+    } else if (_compare(*start_, *(end_ - 1))) {
       // middle <= start <= end
       pivot = utility::move(*start_);
       *start_ = utility::move(*middle);
-    } else if (compare(*middle, *(end_ - 1))) {
+    } else if (_compare(*middle, *(end_ - 1))) {
       // middle < end <= start
       pivot = utility::move(*(end_ - 1));
       *(end_ - 1) = utility::move(*start_);
@@ -44,13 +44,13 @@ void quick_sort(T* start_, T* end_, F&& _compare) {
     }
 
     do {
-      while (compare(*item1, pivot)) {
+      while (_compare(*item1, pivot)) {
         if (++item1 >= item2) {
           goto partitioned;
         }
       }
 
-      while (compare(pivot, *--item2)) {
+      while (_compare(pivot, *--item2)) {
         if (item1 >= item2) {
           goto partitioned;
         }
@@ -64,15 +64,15 @@ partitioned:
     *item1 = utility::move(pivot);
 
     if (item1 - start_ < end_ - item1 + 1) {
-      quick_sort(start_, item1, utility::forward<F>(compare));
+      quick_sort(start_, item1, utility::forward<F>(_compare));
       start_ = item1 + 1;
     } else {
-      quick_sort(item1 + 1, end_, utility::forward<F>(compare));
+      quick_sort(item1 + 1, end_, utility::forward<F>(_compare));
       end_ = item1;
     }
   }
 
-  insertion_sort(start_, end_, utility::forward<F>(compare));
+  insertion_sort(start_, end_, utility::forward<F>(_compare));
 }
 
 } // namespace rx::algorithm

@@ -39,22 +39,6 @@ file::~file() {
   close();
 }
 
-void file::close() {
-  if (m_impl) {
-    fclose(static_cast<FILE*>(m_impl));
-    m_impl = nullptr;
-  }
-}
-
-file& file::operator=(file&& file_) {
-  RX_ASSERT(&file_ != this, "self assignment");
-
-  close();
-  m_impl = file_.m_impl;
-  file_.m_impl = nullptr;
-  return *this;
-}
-
 rx_u64 file::read(rx_byte* data, rx_u64 size) {
   RX_ASSERT(m_impl, "invalid");
   RX_ASSERT(strcmp(m_mode, "rb") == 0 || strcmp(m_mode, "r") == 0,
@@ -72,6 +56,13 @@ bool file::seek(rx_u64 where) {
   RX_ASSERT(m_impl, "invalid");
   RX_ASSERT(strcmp(m_mode, "rb") == 0, "cannot seek with mode '%s'", m_mode);
   return fseek(static_cast<FILE*>(m_impl), static_cast<long>(where), SEEK_SET) == 0;
+}
+
+bool file::flush() {
+  RX_ASSERT(m_impl, "invalid");
+  RX_ASSERT(strcmp(m_mode, "w") == 0 || strcmp(m_mode, "wb") == 0,
+    "cannot flush with mode '%s'", m_mode);
+  return fflush(static_cast<FILE*>(m_impl)) == 0;
 }
 
 optional<rx_u64> file::size() {
@@ -93,17 +84,28 @@ optional<rx_u64> file::size() {
   return result;
 }
 
+bool file::close() {
+  if (m_impl) {
+    fclose(static_cast<FILE*>(m_impl));
+    m_impl = nullptr;
+    return true;
+  }
+  return false;
+}
+
+file& file::operator=(file&& file_) {
+  RX_ASSERT(&file_ != this, "self assignment");
+
+  close();
+  m_impl = file_.m_impl;
+  file_.m_impl = nullptr;
+  return *this;
+}
+
 bool file::print(string&& contents_) {
   RX_ASSERT(m_impl, "invalid");
   RX_ASSERT(strcmp(m_mode, "w") == 0, "cannot print with mode '%s'", m_mode);
   return fprintf(static_cast<FILE*>(m_impl), "%s", contents_.data()) > 0;
-}
-
-bool file::flush() {
-  RX_ASSERT(m_impl, "invalid");
-  RX_ASSERT(strcmp(m_mode, "w") == 0 || strcmp(m_mode, "wb") == 0,
-    "cannot flush with mode '%s'", m_mode);
-  return fflush(static_cast<FILE*>(m_impl)) == 0;
 }
 
 bool file::read_line(string& line_) {
