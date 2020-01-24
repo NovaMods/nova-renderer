@@ -5,30 +5,29 @@
 #include "regular_folder_accessor.hpp"
 
 namespace nova::filesystem {
-    std::shared_ptr<VirtualFilesystem> VirtualFilesystem::instance;
+    VirtualFilesystem* VirtualFilesystem::instance = nullptr;
 
-    std::shared_ptr<VirtualFilesystem> VirtualFilesystem::get_instance() {
+    VirtualFilesystem* VirtualFilesystem::get_instance() {
         if(!instance) {
-            instance = std::shared_ptr<VirtualFilesystem>(new VirtualFilesystem);
+            rx::memory::allocator* allocator = &rx::memory::g_system_allocator;
+            instance = allocator->create<VirtualFilesystem>();
         }
 
         return instance;
     }
 
-    void VirtualFilesystem::add_resource_root(const fs::path& root) { resource_roots.emplace_back(FolderAccessorBase::create(root)); }
+    void VirtualFilesystem::add_resource_root(const rx::string& root) { resource_roots.emplace_back(FolderAccessorBase::create(root)); }
 
-    void VirtualFilesystem::add_resource_root(const std::shared_ptr<FolderAccessorBase>& root_accessor) {
-        resource_roots.emplace_back(root_accessor);
-    }
+    void VirtualFilesystem::add_resource_root(const FolderAccessorBase* root_accessor) { resource_roots.emplace_back(root_accessor); }
 
-    std::shared_ptr<FolderAccessorBase> VirtualFilesystem::get_folder_accessor(const fs::path& path) const {
+    FolderAccessorBase* VirtualFilesystem::get_folder_accessor(const rx::string& path) const {
         for(const auto& root : resource_roots) {
             if(root && root->does_resource_exist(path)) {
                 return root->create_subfolder_accessor(path);
             }
         }
 
-        NOVA_LOG(ERROR) << "Could not file folder " << path.string();
-        return {};
+        NOVA_LOG(ERROR) << "Could not file folder " << path.data();
+        return nullptr;
     }
 } // namespace nova::filesystem

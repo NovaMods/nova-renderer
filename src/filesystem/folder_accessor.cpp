@@ -8,8 +8,9 @@
 #include "zip_folder_accessor.hpp"
 
 namespace nova::filesystem {
-    std::shared_ptr<FolderAccessorBase> FolderAccessorBase::create(const fs::path& path) {
-        fs::path mut_path = path;
+    FolderAccessorBase* FolderAccessorBase::create(const rx::string& path) {
+        rx::memory::allocator* allocator = &rx::memory::g_system_allocator;
+
         // Where is the shaderpack, and what kind of folder is it in ?
         if(renderer::is_zip_folder(mut_path)) {
             // zip folder in shaderpacks folder

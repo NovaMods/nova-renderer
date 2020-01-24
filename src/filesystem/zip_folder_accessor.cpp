@@ -35,7 +35,7 @@ namespace nova::filesystem {
             const mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
             const rx::string err = mz_zip_get_error_string(err_code);
 
-            NOVA_LOG(ERROR) << "Could not get information for file " << full_path.data << ": " << err.data();
+            NOVA_LOG(ERROR) << "Could not get information for file " << full_path.data() << ": " << err.data();
         }
 
         rx::vector<uint8_t> resource_buffer;
@@ -63,11 +63,15 @@ namespace nova::filesystem {
         // Get the node at this path
         folder_path_parts.each_fwd([&](const rx::string& part) {
             bool found_node = false;
-            cur_node->children.each_fwd([&](FileTreeNode* child) {
-                if(!found_node && child->name == part) {
-                    cur_node = child;
+            cur_node->children.each_fwd([&](FileTreeNode& child) {
+                if(child.name == part) {
+                    cur_node = &child;
                     found_node = true;
+
+                    return false;
                 }
+
+                return true;
             });
 
             if(!found_node) {
@@ -77,8 +81,8 @@ namespace nova::filesystem {
 
         rx::vector<rx::string> children_paths;
         children_paths.reserve(cur_node->children.size());
-        cur_node->children.each_fwd([&](const FileTreeNode* child) {
-            rx::string s = child->get_full_path();
+        cur_node->children.each_fwd([&](const FileTreeNode& child) {
+            rx::string s = child.get_full_path();
             children_paths.emplace_back(s);
         });
 
@@ -111,17 +115,19 @@ namespace nova::filesystem {
         // Build a tree from all the files
         all_file_names.each_fwd([&](const rx::string& filename) {
             const rx::vector<rx::string> filename_parts = filename.split('/');
-            auto cur_node = &files;
+            FileTreeNode* cur_node = &files;
 
             filename_parts.each_fwd([&](const rx::string& part) {
                 bool node_found = false;
-                cur_node->children.each_fwd([&](const auto& child) {
-                    if(!node_found && child->name == part) {
+                cur_node->children.each_fwd([&](FileTreeNode& child) {
+                    if(child.name == part) {
                         // We already have a node for the current folder. Set this node as the current one and go to the
                         // next iteration of the loop
-                        cur_node = child;
+                        cur_node = &child;
 
                         node_found = true;
+
+                        return false;
                     }
                 });
 
@@ -158,20 +164,16 @@ namespace nova::filesystem {
         return false;
     }
 
-    void print_file_tree(const FileTreeNode* folder, const uint32_t depth) {
-        if(folder == nullptr) {
-            return;
-        }
-
+    void print_file_tree(const FileTreeNode& folder, const uint32_t depth) {
         std::stringstream ss;
         for(uint32_t i = 0; i < depth; i++) {
             ss << "    ";
         }
 
-        ss << folder->name.data();
+        ss << folder.name.data();
         NOVA_LOG(INFO) << ss.str();
 
-        folder->children.each_fwd([&](const auto* child) { print_file_tree(child, depth + 1); });
+        folder.children.each_fwd([&](const FileTreeNode& child) { print_file_tree(child, depth + 1); });
     }
 
     rx::string FileTreeNode::get_full_path() const {
@@ -184,10 +186,21 @@ namespace nova::filesystem {
 
         // Skip the last string in the vector, since it's the resourcepack root node
         bool is_first = false;
+        const uint32_t num_path_parts = names.size() - 1;
+        uint32_t cur_path_part = 0;
         rx::string joined;
-        names.each_rev([&](const auto& str) {
-            TODO
+        names.each_rev([&](rx::string& str) {
+            if(!is_first && cur_path_part > 0 && cur_path_part < num_path_parts - 1) {
+                joined = rx::string::format("%s/%s", joined, str);
+            }
+            if(!is_first) {
+                cur_path_part++;
+            }
+            is_first = false;
+
+            return true;
         });
-        return renderer::join({++names.rbegin(), names.rend()}, "/");
+
+        return joined;
     }
 } // namespace nova::filesystem
