@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 #include <miniz.h>
 
 #include "nova_renderer/filesystem/folder_accessor.hpp"
@@ -9,7 +7,7 @@
 namespace nova::filesystem {
     struct FileTreeNode {
         rx::string name;
-        rx::vector<std::unique_ptr<FileTreeNode>> children;
+        rx::vector<FileTreeNode> children;
         FileTreeNode* parent = nullptr;
 
         [[nodiscard]] rx::string get_full_path() const;
@@ -36,7 +34,7 @@ namespace nova::filesystem {
 
         rx::vector<rx::string> get_all_items_in_folder(const rx::string& folder) override final;
 
-        FolderAccessorBase* create_subfolder_accessor(const rx::string& path) const override;
+        [[nodiscard]] FolderAccessorBase* create_subfolder_accessor(const rx::string& path) const override;
 
     private:
         /*!
@@ -46,9 +44,7 @@ namespace nova::filesystem {
 
         mz_zip_archive zip_archive = {};
 
-        std::unique_ptr<FileTreeNode> files = nullptr;
-
-        void delete_file_tree(std::unique_ptr<FileTreeNode>& node);
+        FileTreeNode files;
 
         void build_file_tree();
 
@@ -58,5 +54,5 @@ namespace nova::filesystem {
     /*!
      * \brief Prints out the nodes in a depth-first fashion
      */
-    void print_file_tree(const std::unique_ptr<FileTreeNode>& folder, uint32_t depth);
+    void print_file_tree(const FileTreeNode& folder, uint32_t depth);
 } // namespace nova::filesystem
