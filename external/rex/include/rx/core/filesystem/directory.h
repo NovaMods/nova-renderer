@@ -11,8 +11,10 @@ struct directory
 {
   directory(memory::allocator* _allocator, const char* _path);
   directory(memory::allocator* _allocator, const string& _path);
+  directory(memory::allocator* _allocator, string&& path_);
   directory(const char* _path);
   directory(const string& _path);
+  directory(string&& path_);
   ~directory();
 
   operator bool() const;
@@ -41,15 +43,23 @@ struct directory
   // NOTE: does not consider hidden files, symbolic links, block devices, or ..
   void each(function<void(item&&)>&& _function);
 
+  const string& path() const &;
+
   memory::allocator* allocator() const;
 
 private:
   memory::allocator* m_allocator;
+  string m_path;
   void* m_impl;
 };
 
+inline directory::directory(memory::allocator* _allocator, const char* _path)
+  : directory{_allocator, string{_allocator, _path}}
+{
+}
+
 inline directory::directory(memory::allocator* _allocator, const string& _path)
-  : directory{_allocator, _path.data()}
+  : directory{_allocator, string{_allocator, _path}}
 {
 }
 
@@ -63,8 +73,17 @@ inline directory::directory(const string& _path)
 {
 }
 
+inline directory::directory(string&& path_)
+  : directory{&memory::g_system_allocator, utility::move(path_)}
+{
+}
+
 inline directory::operator bool() const {
   return m_impl;
+}
+
+inline const string& directory::path() const & {
+  return m_path;
 }
 
 inline memory::allocator* directory::allocator() const {

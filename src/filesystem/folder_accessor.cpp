@@ -13,12 +13,11 @@ namespace nova::filesystem {
         // Where is the shaderpack, and what kind of folder is it in ?
         if(renderer::is_zip_folder(mut_path)) {
             // zip folder in shaderpacks folder
-            mut_path.replace_extension(".zip");
-            return std::make_shared<ZipFolderAccessor>(mut_path);
-        }
-        if(exists(mut_path)) {
+            return allocator->create<ZipFolderAccessor>(path);
+
+        } else if(const rx::filesystem::directory directory(path); directory) {
             // regular folder in shaderpacks folder
-            return std::make_shared<RegularFolderAccessor>(mut_path);
+            return allocator->create<RegularFolderAccessor>(path);
         }
 
         NOVA_LOG(FATAL) << "Could not create folder accessor for path " << mut_path;

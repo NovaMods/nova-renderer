@@ -86,7 +86,6 @@ include(external)
 # Add Nova source code #
 ########################
 set(NOVA_SOURCE
-        include/nova_renderer/util/filesystem.hpp
         include/nova_renderer/util/platform.hpp
         include/nova_renderer/util/result.hpp
         include/nova_renderer/util/utils.hpp

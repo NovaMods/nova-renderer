@@ -49,6 +49,7 @@ struct string {
   void resize(rx_size _size);
 
   rx_size size() const;
+  rx_size capacity() const;
   bool is_empty() const;
   void clear();
 
@@ -209,6 +210,10 @@ inline string::string(const char* _first, const char* _last)
 
 inline rx_size string::size() const {
   return m_last - m_data;
+}
+
+inline rx_size string::capacity() const {
+  return m_capacity - m_data;
 }
 
 inline bool string::is_empty() const {

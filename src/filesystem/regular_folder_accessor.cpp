@@ -1,7 +1,9 @@
 #include "regular_folder_accessor.hpp"
 
+#include <rx/core/filesystem/directory.h>
+#include <rx/core/filesystem/file.h>
+
 #include "nova_renderer/util/logger.hpp"
-#include "rx/core/filesystem/file.h"
 
 namespace nova::filesystem {
     RegularFolderAccessor::RegularFolderAccessor(const rx::string& folder) : FolderAccessorBase(folder) {}
@@ -24,85 +26,50 @@ namespace nova::filesystem {
 
         rx::filesystem::file resource_file(full_path, "rb");
         if(resource_file.is_valid()) {
-            const auto file_size = resource_file.size();
-            if(file_size) {
-                
+            const auto size = resource_file.size();
+            if(size) {
+                auto* allocator = &rx::memory::g_system_allocator;
+                auto* buf = allocator->allocate(*size + 1);
+                resource_file.read(buf, *size);
+                buf[*size] = 0;
+
+                const auto view = rx::memory::view{allocator, buf, *size + 1};
+                return rx::vector<uint8_t>(view);
             }
         }
+
+        return {};
     }
 
-    std::string RegularFolderAccessor::read_text_file(const fs::path& resource_path) {
-        std::lock_guard l(*resource_existence_mutex);
-        fs::path full_resource_path;
-        if(has_root(resource_path, root_folder)) {
-            full_resource_path = resource_path;
-        } else {
-            full_resource_path = root_folder / resource_path;
-        }
+    rx::vector<rx::string> RegularFolderAccessor::get_all_items_in_folder(const rx::string& folder) {
+        const auto full_path = rx::string::format("%s/%s", root_folder, folder);
+        rx::vector<rx::string> paths = {};
 
-        if(!does_resource_exist_on_filesystem(full_resource_path)) {
-            NOVA_LOG(ERROR) << "Resource at path " << full_resource_path.string() << " does not exist";
-        }
-
-        FILE* resource_file = std::fopen(full_resource_path.string().c_str(), "r");
-        if(!resource_file) {
-            // Error reading this file - it can't be read again in the future
-            const auto& resource_string = full_resource_path.string();
-
-            resource_existence.emplace(resource_string, false);
-            NOVA_LOG(ERROR) << "Could not load resource at path " << resource_string;
-
-            return {};
-        }
-
-        std::fseek(resource_file, 0, SEEK_END);
-        const auto file_size = std::ftell(resource_file);
-
-        std::string file_string(file_size, 0);
-
-        std::fseek(resource_file, 0, SEEK_SET);
-
-        std::fread(file_string.data(), sizeof(char), file_size, resource_file);
-
-        std::fclose(resource_file);
-
-        return file_string;
-    }
-
-    std::pmr::vector<fs::path> RegularFolderAccessor::get_all_items_in_folder(const fs::path& folder) {
-        const fs::path full_path = root_folder / folder;
-        std::pmr::vector<fs::path> paths = {};
-
-        if(exists(full_path)) {
-            fs::directory_iterator folder_itr(full_path);
-            for(const fs::directory_entry& entry : folder_itr) {
-                paths.push_back(entry.path());
-            }
+        if(rx::filesystem::directory dir(full_path); dir) {
+            dir.each([&](const rx::filesystem::directory::item& item) { paths.push_back(item.name()); });
         }
 
         return paths;
     }
 
-    bool RegularFolderAccessor::does_resource_exist_on_filesystem(const fs::path& resource_path) {
-        // NOVA_LOG(TRACE) << "Checking resource existence for " << resource_path;
-        const std::string& resource_string = resource_path.string();
-        const auto existence_maybe = does_resource_exist_in_map(resource_string);
+    bool RegularFolderAccessor::does_resource_exist_on_filesystem(const rx::string& resource_path) {
+        const auto existence_maybe = does_resource_exist_in_map(resource_path);
         if(existence_maybe) {
             // NOVA_LOG(TRACE) << "Does " << resource_path << " exist? " << *existence_maybe;
             return *existence_maybe;
         }
 
-        if(exists(resource_path)) {
+        if(const rx::filesystem::file file(resource_path, "r"); file) {
             // NOVA_LOG(TRACE) << resource_path << " exists";
-            resource_existence.emplace(resource_string, true);
+            resource_existence.insert(resource_path, true);
             return true;
         }
         // NOVA_LOG(TRACE) << resource_path << " does not exist";
-        resource_existence.emplace(resource_string, false);
+        resource_existence.insert(resource_path, false);
         return false;
     }
 
-    std::shared_ptr<FolderAccessorBase> RegularFolderAccessor::create_subfolder_accessor(const fs::path& path) const {
-        return create(root_folder / path);
+    FolderAccessorBase* RegularFolderAccessor::create_subfolder_accessor(const rx::string& path) const {
+        return create(rx::string::format("%s/%s", root_folder, path));
     }
 } // namespace nova::filesystem
