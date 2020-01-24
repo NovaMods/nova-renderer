@@ -26,7 +26,7 @@
 #include "nova_renderer/util/platform.hpp"
 
 #include "debugging/renderdoc.hpp"
-#include "filesystem/shaderpack/render_graph_builder.hpp"
+#include "loading/shaderpack/render_graph_builder.hpp"
 #include "render_objects/uniform_structs.hpp"
 #include "rhi/vulkan/vulkan_render_device.hpp"
 

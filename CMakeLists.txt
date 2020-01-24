@@ -148,9 +148,6 @@ set(NOVA_SOURCE
         src/filesystem/folder_accessor.cpp
         src/filesystem/regular_folder_accessor.cpp
         src/filesystem/zip_folder_accessor.cpp
-        src/filesystem/loading_utils.cpp
-        src/filesystem/loading_utils.hpp
-        src/filesystem/json_utils.hpp
         src/filesystem/virtual_filesystem.cpp
 
         src/settings/nova_settings.cpp
@@ -167,14 +164,18 @@ set(NOVA_SOURCE
         src/util/utils.cpp
         src/util/result.cpp
 
-        src/filesystem/shaderpack/shaderpack_loading.cpp
-        src/filesystem/shaderpack/shaderpack_data.cpp
-        src/filesystem/shaderpack/json_interop.cpp
-        src/filesystem/shaderpack/json_interop.hpp
-        src/filesystem/shaderpack/shaderpack_validator.cpp
-        src/filesystem/shaderpack/shaderpack_validator.hpp
-        src/filesystem/shaderpack/render_graph_builder.cpp
-        src/filesystem/shaderpack/render_graph_builder.hpp
+
+        src/loading/loading_utils.cpp
+        src/loading/loading_utils.hpp
+        src/loading/json_utils.hpp
+        src/loading/shaderpack/shaderpack_loading.cpp
+        src/loading/shaderpack/shaderpack_data.cpp
+        src/loading/shaderpack/json_interop.cpp
+        src/loading/shaderpack/json_interop.hpp
+        src/loading/shaderpack/shaderpack_validator.cpp
+        src/loading/shaderpack/shaderpack_validator.hpp
+        src/loading/shaderpack/render_graph_builder.cpp
+        src/loading/shaderpack/render_graph_builder.hpp
 
         src/tasks/task_scheduler.cpp
         src/tasks/task_scheduler.hpp

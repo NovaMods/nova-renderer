@@ -129,6 +129,8 @@ namespace nova::filesystem {
 
                         return false;
                     }
+
+                    return true;
                 });
 
                 if(!node_found) {

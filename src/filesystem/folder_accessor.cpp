@@ -2,17 +2,17 @@
 
 #include <utility>
 
-#include "nova_renderer/util/logger.hpp"
-#include "loading_utils.hpp"
 #include "regular_folder_accessor.hpp"
 #include "zip_folder_accessor.hpp"
 
 namespace nova::filesystem {
+    bool is_zip_folder(const rx::string& path_to_folder) { return path_to_folder.ends_with(".zip"); }
+
     FolderAccessorBase* FolderAccessorBase::create(const rx::string& path) {
         rx::memory::allocator* allocator = &rx::memory::g_system_allocator;
 
         // Where is the shaderpack, and what kind of folder is it in ?
-        if(renderer::is_zip_folder(mut_path)) {
+        if(is_zip_folder(path)) {
             // zip folder in shaderpacks folder
             return allocator->create<ZipFolderAccessor>(path);
 
