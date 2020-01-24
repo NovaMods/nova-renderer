@@ -85,8 +85,9 @@ namespace nova::filesystem {
         return children_paths;
     }
 
-    std::shared_ptr<FolderAccessorBase> ZipFolderAccessor::create_subfolder_accessor(const rx::string& path) const {
-        return std::make_shared<ZipFolderAccessor>(rx::string::format("%s/%s", root_folder, path), zip_archive);
+    FolderAccessorBase* ZipFolderAccessor::create_subfolder_accessor(const rx::string& path) const {
+        rx::memory::allocator* allocator = &rx::memory::g_system_allocator;
+        return allocator->create<ZipFolderAccessor>(rx::string::format("%s/%s", root_folder, path), zip_archive);
     }
 
     ZipFolderAccessor::ZipFolderAccessor(const rx::string& folder, const mz_zip_archive archive)
@@ -182,6 +183,11 @@ namespace nova::filesystem {
         }
 
         // Skip the last string in the vector, since it's the resourcepack root node
+        bool is_first = false;
+        rx::string joined;
+        names.each_rev([&](const auto& str) {
+            TODO
+        });
         return renderer::join({++names.rbegin(), names.rend()}, "/");
     }
 } // namespace nova::filesystem
