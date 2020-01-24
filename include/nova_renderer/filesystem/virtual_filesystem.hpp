@@ -1,6 +1,4 @@
 #pragma once
-#include <memory>
-#include <vector>
 
 #include "folder_accessor.hpp"
 
@@ -14,8 +12,6 @@ namespace nova::filesystem {
      * Resource roots may be either the path to a zip file or the path to a filesystem directory
      */
     class VirtualFilesystem {
-        friend class std::shared_ptr<VirtualFilesystem>;
-
     public:
         [[nodiscard]] static VirtualFilesystem* get_instance();
 
@@ -30,15 +26,13 @@ namespace nova::filesystem {
          * This method lets you add a custom folder accessor as a resource root. This allows for e.g. the Minecraft adapter to register a
          * shaderpack accessor which transpiles the shaders from GLSL 120 to SPIR-V
          */
-        void add_resource_root(const FolderAccessorBase* root_accessor);
+        void add_resource_root(FolderAccessorBase* root_accessor);
 
         [[nodiscard]] FolderAccessorBase* get_folder_accessor(const rx::string& path) const;
 
     private:
         static VirtualFilesystem* instance;
 
-        std::vector<FolderAccessorBase*> resource_roots;
-
-        VirtualFilesystem() = default;
+        rx::vector<FolderAccessorBase*> resource_roots;
     };
 } // namespace nova::filesystem

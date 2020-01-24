@@ -18,16 +18,21 @@ namespace nova::filesystem {
 
     void VirtualFilesystem::add_resource_root(const rx::string& root) { resource_roots.emplace_back(FolderAccessorBase::create(root)); }
 
-    void VirtualFilesystem::add_resource_root(const FolderAccessorBase* root_accessor) { resource_roots.emplace_back(root_accessor); }
+    void VirtualFilesystem::add_resource_root(FolderAccessorBase* root_accessor) { resource_roots.push_back(root_accessor); }
 
     FolderAccessorBase* VirtualFilesystem::get_folder_accessor(const rx::string& path) const {
-        for(const auto& root : resource_roots) {
+        FolderAccessorBase* ret_val = nullptr;
+
+        resource_roots.each_fwd([&](FolderAccessorBase* root) {
             if(root && root->does_resource_exist(path)) {
-                return root->create_subfolder_accessor(path);
+                ret_val = root->create_subfolder_accessor(path);
             }
+        });
+
+        if(ret_val == nullptr) {
+            NOVA_LOG(ERROR) << "Could not file folder " << path.data();
         }
 
-        NOVA_LOG(ERROR) << "Could not file folder " << path.data();
-        return nullptr;
+        return ret_val;
     }
 } // namespace nova::filesystem
