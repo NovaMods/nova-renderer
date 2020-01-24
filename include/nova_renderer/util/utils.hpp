@@ -8,12 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "filesystem.hpp"
+namespace rx {
+    struct string;
+}
 
 namespace nova::renderer {
-    template <int Num>
-    struct placeholder;
-
     /*!
      * \brief Calls the function once for every element in the provided container
      *
@@ -35,9 +34,9 @@ namespace nova::renderer {
 
     bool ends_with(const std::string& string, const std::string& ending);
 
-    void write_to_file(const std::string& data, const fs::path& filepath);
+    void write_to_file(const std::string& data, const rx::string& filepath);
 
-    void write_to_file(const std::pmr::vector<uint32_t>& data, const fs::path& filepath);
+    void write_to_file(const std::pmr::vector<uint32_t>& data, const rx::string& filepath);
 
 #define FORMAT(s, ...) fmt::format(fmt(s), __VA_ARGS__)
 } // namespace nova::renderer

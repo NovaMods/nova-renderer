@@ -9,8 +9,7 @@
 
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
-
-#include "util/filesystem.hpp"
+#include <rx/core/string.h>
 
 namespace nova::renderer {
     namespace rhi {
@@ -176,7 +175,7 @@ namespace nova::renderer::shaderpack {
     };
 
     struct ShaderSource {
-        fs::path filename;
+        rx::string filename;
         std::pmr::vector<uint32_t> source;
     };
 

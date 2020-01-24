@@ -8,7 +8,7 @@ namespace nova::filesystem {
      */
     class RegularFolderAccessor final : public FolderAccessorBase {
     public:
-        explicit RegularFolderAccessor(const fs::path& folder);
+        explicit RegularFolderAccessor(const rx::string& folder);
     
         ~RegularFolderAccessor() override = default;
 

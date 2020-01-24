@@ -1,9 +1,29 @@
 #include "regular_folder_accessor.hpp"
 
 #include "nova_renderer/util/logger.hpp"
+#include "rx/core/filesystem/file.h"
 
 namespace nova::filesystem {
-    RegularFolderAccessor::RegularFolderAccessor(const fs::path& folder) : FolderAccessorBase(folder) {}
+    RegularFolderAccessor::RegularFolderAccessor(const rx::string& folder) : FolderAccessorBase(folder) {}
+
+    rx::vector<uint8_t> RegularFolderAccessor::read_file(const rx::string& path) {
+        std::lock_guard l(*resource_existence_mutex);
+
+        const auto full_path = [&] {
+            if(has_root(path, root_folder)) {
+                return path;
+            } else {
+                return rx::string::format("%s/%s", root_folder, path);
+            }
+        }();
+
+        if(!does_resource_exist_on_filesystem(full_path)) {
+            NOVA_LOG(ERROR) << "Resource at path " << full_path.data() << " doesn't exist";
+            return {};
+        }
+
+        rx::filesystem::file resource_file(full_path, "rb");
+    }
 
     std::string RegularFolderAccessor::read_text_file(const fs::path& resource_path) {
         std::lock_guard l(*resource_existence_mutex);

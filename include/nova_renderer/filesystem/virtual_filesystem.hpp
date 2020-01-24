@@ -2,8 +2,6 @@
 #include <memory>
 #include <vector>
 
-#include "nova_renderer/util/filesystem.hpp"
-
 #include "folder_accessor.hpp"
 
 namespace nova::filesystem {
@@ -24,7 +22,7 @@ namespace nova::filesystem {
         /*!
          * \brief Adds the provided path to the resource roots that the virtual filesystem will care about
          */
-        void add_resource_root(const fs::path& root);
+        void add_resource_root(const rx::string& root);
 
         /*!
          * \brief Adds the provided folder accessor as an accessor for one of our root directories
@@ -34,7 +32,7 @@ namespace nova::filesystem {
          */
         void add_resource_root(const std::shared_ptr<FolderAccessorBase>& root_accessor);
 
-        [[nodiscard]] std::shared_ptr<FolderAccessorBase> get_folder_accessor(const fs::path& path) const;
+        [[nodiscard]] std::shared_ptr<FolderAccessorBase> get_folder_accessor(const rx::string& path) const;
 
     private:
         static std::shared_ptr<VirtualFilesystem> instance;

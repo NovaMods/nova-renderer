@@ -8,11 +8,11 @@
 
 namespace nova::filesystem {
     struct FileTreeNode {
-        std::string name;
-        std::pmr::vector<std::unique_ptr<FileTreeNode>> children;
+        rx::string name;
+        rx::vector<std::unique_ptr<FileTreeNode>> children;
         FileTreeNode* parent = nullptr;
 
-        [[nodiscard]] std::string get_full_path() const;
+        [[nodiscard]] rx::string get_full_path() const;
     };
 
     /*!
@@ -20,9 +20,9 @@ namespace nova::filesystem {
      */
     class ZipFolderAccessor : public FolderAccessorBase {
     public:
-        explicit ZipFolderAccessor(const fs::path& folder);
+        explicit ZipFolderAccessor(const rx::string& folder);
 
-        ZipFolderAccessor(const fs::path& folder, mz_zip_archive archive);
+        ZipFolderAccessor(const rx::string& folder, mz_zip_archive archive);
 
         ZipFolderAccessor(ZipFolderAccessor&& other) noexcept = default;
         ZipFolderAccessor& operator=(ZipFolderAccessor&& other) noexcept = default;
@@ -32,17 +32,17 @@ namespace nova::filesystem {
 
         ~ZipFolderAccessor() override;
 
-        std::string read_text_file(const fs::path& resource_path) override final;
+        rx::vector<uint8_t> read_file(const rx::string& path) override final;
 
-        std::pmr::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override final;
+        rx::vector<rx::string> get_all_items_in_folder(const rx::string& folder) override final;
 
-        std::shared_ptr<FolderAccessorBase> create_subfolder_accessor(const fs::path& path) const override;
+        FolderAccessorBase* create_subfolder_accessor(const rx::string& path) const override;
 
     private:
         /*!
          * \brief Map from filename to its index in the zip folder. Miniz seems to like indexes
          */
-        std::unordered_map<std::string, uint32_t> resource_indexes;
+        rx::map<rx::string, uint32_t> resource_indexes;
 
         mz_zip_archive zip_archive = {};
 
@@ -52,7 +52,7 @@ namespace nova::filesystem {
 
         void build_file_tree();
 
-        bool does_resource_exist_on_filesystem(const fs::path& resource_path) override final;
+        bool does_resource_exist_on_filesystem(const rx::string& resource_path) override final;
     };
 
     /*!
