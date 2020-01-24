@@ -23,6 +23,12 @@ namespace nova::filesystem {
         }
 
         rx::filesystem::file resource_file(full_path, "rb");
+        if(resource_file.is_valid()) {
+            const auto file_size = resource_file.size();
+            if(file_size) {
+                
+            }
+        }
     }
 
     std::string RegularFolderAccessor::read_text_file(const fs::path& resource_path) {
