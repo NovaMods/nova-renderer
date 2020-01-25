@@ -441,11 +441,13 @@ namespace nova::renderer::shaderpack {
         std::vector<uint32_t> spirv_std;
         GlslangToSpv(*program.getIntermediate(glslang_stage), spirv_std);
 
-        rx::vector<uint32_t> spirv(spirv_std.begin(), spirv_std.end());
+        const auto num_spirv_bytes = spirv_std.size() * sizeof(uint32_t);
+        rx_byte* spirv_bytes = rx::memory::g_system_allocator->allocate(num_spirv_bytes);
+        memcpy(spirv_bytes, spirv_std.data(), num_spirv_bytes);
 
-        // TODO: Dump SPIR-V to file if the debug options say so
+        const rx::memory::view spirv_view{&rx::memory::g_system_allocator, spirv_bytes, spirv_std.size() * sizeof(uint32_t)};
 
-        return spirv;
+        return rx::vector<uint32_t>(spirv_view);
     }
 
     rx::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {
