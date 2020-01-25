@@ -464,21 +464,20 @@ namespace nova::renderer::shaderpack {
         return output;
     }
 
-    MaterialData load_single_material(const std::shared_ptr<FolderAccessorBase>& folder_access, const rx::string& material_path) {
+    MaterialData load_single_material(FolderAccessorBase* folder_access, const rx::string& material_path) {
         const rx::string material_text = folder_access->read_text_file(material_path);
 
-        auto json_material = nlohmann::json::parse(material_text);
+        auto json_material = nlohmann::json::parse(material_text.data(), material_text.data() + material_text.size());
         const auto report = validate_material(json_material);
         print(report);
         if(!report.errors.empty()) {
             // There were errors, this material can't be loaded
-            loading_failed = true;
-            NOVA_LOG(TRACE) << "Load of material " << material_path << " failed";
+            NOVA_LOG(TRACE) << "Load of material " << material_path .data()<< " failed";
             return {};
         }
 
         auto material = json_material.get<MaterialData>();
-        material.name = material_path.stem().string();
+        material.name = material_path.subn
         NOVA_LOG(TRACE) << "Load of material " << material_path << " succeeded";
         return material;
     }

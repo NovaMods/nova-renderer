@@ -1,5 +1,6 @@
 #include "regular_folder_accessor.hpp"
 
+#include <rx/core/concurrency/scope_lock.h>
 #include <rx/core/filesystem/directory.h>
 #include <rx/core/filesystem/file.h>
 
@@ -9,7 +10,7 @@ namespace nova::filesystem {
     RegularFolderAccessor::RegularFolderAccessor(const rx::string& folder) : FolderAccessorBase(folder) {}
 
     rx::vector<uint8_t> RegularFolderAccessor::read_file(const rx::string& path) {
-        std::lock_guard l(*resource_existence_mutex);
+        rx::concurrency::scope_lock l(*resource_existence_mutex);
 
         const auto full_path = [&] {
             if(has_root(path, root_folder)) {
@@ -24,18 +25,8 @@ namespace nova::filesystem {
             return {};
         }
 
-        rx::filesystem::file resource_file(full_path, "rb");
-        if(resource_file.is_valid()) {
-            const auto size = resource_file.size();
-            if(size) {
-                auto* allocator = &rx::memory::g_system_allocator;
-                auto* buf = allocator->allocate(*size + 1);
-                resource_file.read(buf, *size);
-                buf[*size] = 0;
-
-                const auto view = rx::memory::view{allocator, buf, *size + 1};
-                return rx::vector<uint8_t>(view);
-            }
+        if(const auto bytes = rx::filesystem::read_binary_file(full_path)) {
+            return *bytes;
         }
 
         return {};
@@ -45,7 +36,7 @@ namespace nova::filesystem {
         const auto full_path = rx::string::format("%s/%s", root_folder, folder);
         rx::vector<rx::string> paths = {};
 
-        if(rx::filesystem::directory dir(full_path); dir) {
+        if(rx::filesystem::directory dir{full_path}) {
             dir.each([&](const rx::filesystem::directory::item& item) { paths.push_back(item.name()); });
         }
 
@@ -59,7 +50,7 @@ namespace nova::filesystem {
             return *existence_maybe;
         }
 
-        if(const rx::filesystem::file file(resource_path, "r"); file) {
+        if(const rx::filesystem::file file{resource_path, "r"}) {
             // NOVA_LOG(TRACE) << resource_path << " exists";
             resource_existence.insert(resource_path, true);
             return true;
