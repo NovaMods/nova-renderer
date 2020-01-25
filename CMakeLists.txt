@@ -165,9 +165,6 @@ set(NOVA_SOURCE
         src/util/utils.cpp
         src/util/result.cpp
 
-
-        src/loading/loading_utils.cpp
-        src/loading/loading_utils.hpp
         src/loading/json_utils.hpp
         src/loading/shaderpack/shaderpack_loading.cpp
         src/loading/shaderpack/shaderpack_data.cpp
