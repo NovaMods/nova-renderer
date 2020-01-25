@@ -310,8 +310,7 @@ namespace nova::renderer::shaderpack {
         return output;
     }
 
-    rx::optional<PipelineCreateInfo> load_single_pipeline(FolderAccessorBase* folder_access,
-                                                          const rx::string& pipeline_path) {
+    rx::optional<PipelineCreateInfo> load_single_pipeline(FolderAccessorBase* folder_access, const rx::string& pipeline_path) {
         NOVA_LOG(TRACE) << "Task to load pipeline " << pipeline_path.data() << " started";
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
@@ -371,7 +370,7 @@ namespace nova::renderer::shaderpack {
     EShLanguage to_glslang_shader_stage(rhi::ShaderStage stage);
 
     rx::vector<uint32_t> load_shader_file(const rx::string& filename,
-                                          const std::shared_ptr<FolderAccessorBase>& folder_access,
+                                          FolderAccessorBase* folder_access,
                                           const rhi::ShaderStage stage,
                                           const rx::vector<rx::string>& defines) {
         // Be sure that we have glslang when we need to compile shaders
@@ -381,29 +380,20 @@ namespace nova::renderer::shaderpack {
         glslang::TShader shader(glslang_stage);
 
         rx::string shader_source = folder_access->read_text_file(filename);
-        rx::string::size_type version_pos = shader_source.find("#version");
-        rx::string::size_type inject_pos = 0;
-        if(version_pos != rx::string::npos) {
-            rx::string::size_type break_after_version_pos = shader_source.find('\n', version_pos);
-            if(break_after_version_pos != rx::string::npos) {
-                inject_pos = break_after_version_pos + 1;
-            }
-        }
-        for(auto i = defines.crbegin(); i != defines.crend(); ++i) {
-            shader_source.insert(inject_pos, "#define " + *i + "\n");
-        }
 
         auto* shader_source_data = shader_source.data();
         shader.setStrings(&shader_source_data, 1);
 
         // Check the extension to know what kind of shader file the user has provided. SPIR-V files can be loaded
         // as-is, but GLSL, GLSL ES, and HLSL files need to be transpiled to SPIR-V
-        if(filename.string().find(".spirv") != rx::string::npos) {
+        if(filename.ends_with(".spirv")) {
             // SPIR-V file!
-            // TODO: figure out how to handle defines with SPIRV
-            return folder_access->read_spirv_file(filename);
+
+            rx::vector<uint8_t> bytes = folder_access->read_file(filename);
+            auto view = bytes.disown();
+            return rx::vector<uint32_t>(view);
         }
-        if(filename.string().find(".hlsl") != rx::string::npos) {
+        if(filename.ends_with(".hlsl")) {
             shader.setEnvInput(glslang::EShSourceHlsl, glslang_stage, glslang::EShClientVulkan, 100);
             shader.setHlslIoMapping(true);
 
@@ -430,11 +420,11 @@ namespace nova::renderer::shaderpack {
         const char* info_log = shader.getInfoLog();
         if(std::strlen(info_log) > 0) {
             const char* info_debug_log = shader.getInfoDebugLog();
-            NOVA_LOG(INFO) << filename.string() << " compilation messages:\n" << info_log << "\n" << info_debug_log;
+            NOVA_LOG(INFO) << filename.data() << " compilation messages:\n" << info_log << "\n" << info_debug_log;
         }
 
         if(!shader_compiled) {
-            NOVA_LOG(ERROR) << "Could not load shader " << filename << ": Shader compilation failed";
+            NOVA_LOG(ERROR) << "Could not load shader " << filename.data() << ": Shader compilation failed";
             return {};
         }
 
@@ -447,14 +437,13 @@ namespace nova::renderer::shaderpack {
             NOVA_LOG(ERROR) << "Program failed to link: " << program_info_log << "\n" << program_debug_info_log;
         }
 
+        // Using std::vector is okay here because we have to interface with `glslang`
         std::vector<uint32_t> spirv_std;
         GlslangToSpv(*program.getIntermediate(glslang_stage), spirv_std);
 
         rx::vector<uint32_t> spirv(spirv_std.begin(), spirv_std.end());
 
-        rx::string dump_filename = filename.filename();
-        dump_filename.replace_extension(std::to_string(glslang_stage) + ".spirv.generated");
-        write_to_file(spirv, dump_filename);
+        // TODO: Dump SPIR-V to file if the debug options say so
 
         return spirv;
     }
