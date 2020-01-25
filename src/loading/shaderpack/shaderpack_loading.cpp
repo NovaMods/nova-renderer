@@ -450,7 +450,7 @@ namespace nova::renderer::shaderpack {
         return rx::vector<uint32_t>(spirv_view);
     }
 
-    rx::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {
+    rx::vector<MaterialData> load_material_files(FolderAccessorBase* folder_access) {
         rx::vector<rx::string> potential_material_files = folder_access->get_all_items_in_folder("materials");
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
@@ -458,12 +458,12 @@ namespace nova::renderer::shaderpack {
         rx::vector<MaterialData> output;
         output.reserve(potential_material_files.size());
 
-        for(const rx::string& potential_file : potential_material_files) {
-            if(potential_file.extension() == ".mat") {
+        potential_material_files.each_fwd([&](const rx::string& potential_file) {
+            if(potential_file.ends_with(".mat")) {
                 const MaterialData& material = load_single_material(folder_access, potential_file);
                 output.push_back(material);
             }
-        }
+        });
 
         return output;
     }
