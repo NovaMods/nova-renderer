@@ -472,24 +472,25 @@ namespace nova::renderer::shaderpack {
         print(report);
         if(!report.errors.empty()) {
             // There were errors, this material can't be loaded
-            NOVA_LOG(TRACE) << "Load of material " << material_path .data()<< " failed";
+            NOVA_LOG(TRACE) << "Load of material " << material_path.data() << " failed";
             return {};
         }
 
         auto material = json_material.get<MaterialData>();
-        material.name = material_path.subn
-        NOVA_LOG(TRACE) << "Load of material " << material_path << " succeeded";
+        material.name = material_path;
+
+        NOVA_LOG(TRACE) << "Load of material " << material_path.data() << " succeeded";
         return material;
     }
 
     void cache_pipelines_by_renderpass(RenderpackData& data) {
-        for(const auto& pipeline_info : data.pipelines) {
-            for(auto& renderpass_info : data.graph_data.passes) {
+        data.pipelines.each_fwd([&](const PipelineCreateInfo& pipeline_info) {
+            data.graph_data.passes.each_fwd([&](RenderPassCreateInfo& renderpass_info) {
                 if(pipeline_info.pass == renderpass_info.name) {
                     renderpass_info.pipeline_names.emplace_back(pipeline_info.pass);
                 }
-            }
-        }
+            });
+        });
     }
 
     EShLanguage to_glslang_shader_stage(const rhi::ShaderStage stage) {
