@@ -177,13 +177,18 @@ namespace nova::renderer::shaderpack {
             });
 
             if(pass.depth_texture) {
-                if(const auto& tex_itr = std::find_if(textures.begin(),
-                                                      textures.end(),
-                                                      [&](const TextureCreateInfo& texture_info) {
-                                                          return texture_info.name == pass.depth_texture->name;
-                                                      });
-                   tex_itr != textures.end()) {
-                    pass.depth_texture->pixel_format = tex_itr->format.pixel_format;
+                rx::optional<PixelFormatEnum> pixel_format;
+                textures.each_fwd([&](const TextureCreateInfo& texture_info) {
+                    if(texture_info.name == pass.depth_texture->name) {
+                        pixel_format = texture_info.format.pixel_format;
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                if(pixel_format) {
+                    pass.depth_texture->pixel_format = *pixel_format;
                 }
             }
         });
@@ -192,8 +197,7 @@ namespace nova::renderer::shaderpack {
     void cache_pipelines_by_renderpass(RenderpackData& data);
 
     RenderpackData load_shaderpack_data(const rx::string& shaderpack_name) {
-        loading_failed = false;
-        const std::shared_ptr<FolderAccessorBase> folder_access = VirtualFilesystem::get_instance()->get_folder_accessor(shaderpack_name);
+        const FolderAccessorBase* folder_access = VirtualFilesystem::get_instance()->get_folder_accessor(shaderpack_name);
 
         // The shaderpack has a number of items: There's the shaders themselves, of course, but there's so, so much more
         // What else is there?
