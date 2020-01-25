@@ -144,30 +144,37 @@ namespace nova::renderer::shaderpack {
     void fill_in_render_target_formats(RenderpackData& data) {
         const auto& textures = data.resources.render_targets;
 
-        for(auto& pass : data.graph_data.passes) {
-            for(auto& output : pass.texture_outputs) {
+        data.graph_data.passes.each_fwd([&](RenderPassCreateInfo& pass) {
+            pass.texture_outputs.each_fwd([&](TextureAttachmentInfo& output) {
                 if(output.name == BACKBUFFER_NAME) {
                     // Backbuffer is a special snowflake
-                    continue;
+                    return true;
 
                 } else if(output.name == SCENE_OUTPUT_RT_NAME) {
                     // Another special snowflake
-                    continue;
+                    return true;
                     // TODO: Figure out how to tell the loader about all the builtin resources
                 }
 
-                if(const auto& tex_itr = std::find_if(textures.begin(),
-                                                      textures.end(),
-                                                      [&](const TextureCreateInfo& texture_info) {
-                                                          return texture_info.name == output.name;
-                                                      });
-                   tex_itr != textures.end()) {
-                    output.pixel_format = tex_itr->format.pixel_format;
+                rx::optional<PixelFormatEnum> pixel_format;
+                textures.each_fwd([&](const TextureCreateInfo& texture_info) {
+                    if(texture_info.name == output.name) {
+                        pixel_format = texture_info.format.pixel_format;
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                if(pixel_format) {
+                    output.pixel_format = *pixel_format;
                 } else {
-                    NOVA_LOG(ERROR) << "Render pass " << pass.name << " is trying to use texture " << output.name
+                    NOVA_LOG(ERROR) << "Render pass " << pass.name.data() << " is trying to use texture " << output.name.data()
                                     << ", but it's not in the render graph's dynamic texture list";
                 }
-            }
+
+                return true;
+            });
 
             if(pass.depth_texture) {
                 if(const auto& tex_itr = std::find_if(textures.begin(),
@@ -179,7 +186,7 @@ namespace nova::renderer::shaderpack {
                     pass.depth_texture->pixel_format = tex_itr->format.pixel_format;
                 }
             }
-        }
+        });
     }
 
     void cache_pipelines_by_renderpass(RenderpackData& data);
