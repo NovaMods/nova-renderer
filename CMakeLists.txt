@@ -143,6 +143,7 @@ set(NOVA_SOURCE
         src/rhi/vulkan/vulkan_swapchain.cpp
         src/rhi/vulkan/vulkan_swapchain.hpp
 
+        src/filesystem/helpers.hpp
         src/filesystem/zip_folder_accessor.hpp
         src/filesystem/regular_folder_accessor.hpp
         src/filesystem/folder_accessor.cpp

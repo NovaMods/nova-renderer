@@ -19,6 +19,7 @@
 #include "json_interop.hpp"
 #include "render_graph_builder.hpp"
 #include "shaderpack_validator.hpp"
+#include "../../filesystem/helpers.hpp"
 
 namespace nova::renderer::shaderpack {
     using namespace filesystem;
@@ -476,10 +477,13 @@ namespace nova::renderer::shaderpack {
             return {};
         }
 
-        auto material = json_material.get<MaterialData>();
-        material.name = material_path;
+        const auto material_file_name = get_file_name(material_path);
+        const auto material_extension_begin_idx = material_file_name.size() - 4;    // ".mat"
 
-        NOVA_LOG(TRACE) << "Load of material " << material_path.data() << " succeeded";
+        auto material = json_material.get<MaterialData>();
+        material.name = material_file_name.substring(0, material_extension_begin_idx);
+
+        NOVA_LOG(TRACE) << "Load of material " << material_path.data() << " succeeded - name " << material.name.data();
         return material;
     }
 
