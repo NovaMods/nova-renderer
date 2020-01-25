@@ -4,6 +4,7 @@
 
 #include "rx/core/log.h"
 #include "rx/core/assert.h"
+#include "rx/core/config.h"
 #include "rx/core/hints/unlikely.h"
 #include "rx/core/filesystem/file.h"
 
@@ -172,6 +173,68 @@ optional<vector<rx_byte>> read_binary_file(memory::allocator* _allocator, const 
     return data;
   }
 
+  return nullopt;
+}
+
+static vector<rx_byte> convert_text_encoding(vector<rx_byte>&& data_) {
+  // Ensure the data contains a null-terminator.
+  if (data_.last() != 0) {
+    data_.push_back(0);
+  }
+
+  const bool utf16_le{data_.size() >= 2 && data_[0] == 0xFF && data_[1] == 0xFE};
+  const bool utf16_be{data_.size() >= 2 && data_[0] == 0xFE && data_[1] == 0xFF};
+  // UTF-16.
+  if (utf16_le || utf16_be) {
+    // Remove the BOM.
+    data_.erase(0, 2);
+
+    rx_u16* contents{reinterpret_cast<rx_u16*>(data_.data())};
+    const rx_size chars{data_.size() / 2};
+    if (utf16_be) {
+      // Swap the bytes around in the contents to convert BE to LE.
+      for (rx_size i{0}; i < chars; i++) {
+        contents[i] = (contents[i] >> 8) | (contents[i] << 8);
+      }
+    }
+
+    // Determine how many bytes are needed to convert the encoding.
+    const rx_size length{utf16_to_utf8(contents, chars, nullptr)};
+
+    // Convert UTF-16 to UTF-8.
+    vector<rx_byte> result{data_.allocator(), length};
+    utf16_to_utf8(contents, chars, reinterpret_cast<char*>(result.data()));
+    return result;
+  } else if (data_.size() >= 3 && data_[0] == 0xEF && data_[1] == 0xBB && data_[2] == 0xBF) {
+    // Remove the BOM.
+    data_.erase(0, 3);
+  }
+
+  return data_;
+}
+
+optional<vector<rx_byte>> read_text_file(memory::allocator* _allocator, const char* _file_name) {
+ if (auto result{read_binary_file(_allocator, _file_name)}) {
+    // Convert the given byte stream into a compatible UTF-8 encoding. This will
+    // introduce a null-terminator, strip Unicode BOMs and convert UTF-16
+    // encoding to UTF-8.
+    auto data{convert_text_encoding(utility::move(*result))};
+
+#if defined(RX_PLATFORM_WINDOWS)
+    // Only Windows has the odd choice of using CRLF for text files. Load the
+    // contents in as binary and do a removing all instances of CR.
+    auto next{reinterpret_cast<rx_byte*>(memchr(data.data(), '\r', data.size()))};
+
+    // Leverage the use of optimized memchr to skip through large swaths of
+    // binary data quickly, rather than the more obvious per-byte approach here.
+    while (next) {
+      const rx_ptrdiff index{next - data.data()};
+      data.erase(index, index + 1);
+      next = reinterpret_cast<rx_byte*>(memchr(next + 1, '\r', data.size() - index));
+    }
+#endif
+    return data;
+  }
   return nullopt;
 }
 

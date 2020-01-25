@@ -36,6 +36,12 @@ struct optional {
   T* operator->();
   const T* operator->() const;
 
+  template<typename OtherType, typename FuncType>
+  optional<OtherType> map(FuncType&& map_func);
+
+  template<typename OtherType, typename FuncType>
+  optional<OtherType> flat_map(FuncType&& map_func); 
+
 private:
   memory::uninitialized_storage<T> m_data;
   bool m_init;
@@ -188,6 +194,26 @@ template<typename T>
 inline const T* optional<T>::operator->() const {
   RX_ASSERT(m_init, "not valid");
   return m_data.data();
+}
+
+template<typename T>
+template<typename OtherType, typename FuncType>
+optional<OtherType> optional<T>::map(FuncType&& map_func) {
+  if(m_init) {
+    return map_func(*m_data.data());
+  } else {
+    return nullopt;
+  }
+}
+
+template<typename T>
+template<typename OtherType, typename FuncType>
+optional<OtherType> optional<T>::flat_map(FuncType&& map_func) {
+  if(m_init) {
+    return *map_func(*m_data.data());
+  } else {
+    return nullopt;
+  }
 }
 
 } // namespace rx
