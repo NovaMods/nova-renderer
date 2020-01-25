@@ -226,7 +226,7 @@ namespace nova::renderer::shaderpack {
         return data;
     }
 
-    rx::optional<ShaderpackResourcesData> load_dynamic_resources_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
+    rx::optional<ShaderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access) {
         NOVA_LOG(TRACE) << "load_dynamic_resource_file called";
         const rx::string resources_string = folder_access->read_text_file("resources.json");
         try {
@@ -245,7 +245,7 @@ namespace nova::renderer::shaderpack {
         }
     }
 
-    ntl::Result<RendergraphData> load_rendergraph_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
+    ntl::Result<RendergraphData> load_rendergraph_file(FolderAccessorBase* folder_access) {
         NOVA_LOG(TRACE) << "load_passes_file called";
         const auto passes_bytes = folder_access->read_text_file("rendergraph.json");
         try {
@@ -286,7 +286,7 @@ namespace nova::renderer::shaderpack {
         }
     }
 
-    rx::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {
+    rx::vector<PipelineCreateInfo> load_pipeline_files(FolderAccessorBase* folder_access) {
         NOVA_LOG(TRACE) << "load_pipeline_files called";
 
         rx::vector<rx::string> potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
@@ -297,32 +297,31 @@ namespace nova::renderer::shaderpack {
         // so I'm into it
         output.reserve(potential_pipeline_files.size());
 
-        for(const rx::string& potential_file : potential_pipeline_files) {
-            if(potential_file.extension() == ".pipeline") {
+        potential_pipeline_files.each_fwd([&](const rx::string& potential_file) {
+            if(potential_file.ends_with(".pipeline")) {
                 // Pipeline file!
                 const auto& pipeline = load_single_pipeline(folder_access, potential_file);
                 if(pipeline) {
                     output.push_back(*pipeline);
                 }
             }
-        }
+        });
 
         return output;
     }
 
-    rx::optional<PipelineCreateInfo> load_single_pipeline(const std::shared_ptr<FolderAccessorBase>& folder_access,
+    rx::optional<PipelineCreateInfo> load_single_pipeline(FolderAccessorBase* folder_access,
                                                           const rx::string& pipeline_path) {
-        NOVA_LOG(TRACE) << "Task to load pipeline " << pipeline_path << " started";
+        NOVA_LOG(TRACE) << "Task to load pipeline " << pipeline_path.data() << " started";
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
-        auto json_pipeline = nlohmann::json::parse(pipeline_bytes);
-        NOVA_LOG(TRACE) << "Parsed JSON from disk for pipeline " << pipeline_path;
+        auto json_pipeline = nlohmann::json::parse(pipeline_bytes.data(), pipeline_bytes.data() + pipeline_bytes.size());
+        NOVA_LOG(TRACE) << "Parsed JSON from disk for pipeline " << pipeline_path.data();
         const ValidationReport report = validate_graphics_pipeline(json_pipeline);
-        NOVA_LOG(TRACE) << "Finished validating JSON for pipeline " << pipeline_path;
+        NOVA_LOG(TRACE) << "Finished validating JSON for pipeline " << pipeline_path.data();
         print(report);
         if(!report.errors.empty()) {
-            loading_failed = true;
-            NOVA_LOG(ERROR) << "Loading pipeline file " << pipeline_path << " failed";
+            NOVA_LOG(ERROR) << "Loading pipeline file " << pipeline_path.data() << " failed";
             for(const auto& err : report.errors) {
                 NOVA_LOG(ERROR) << err;
             }
@@ -330,7 +329,7 @@ namespace nova::renderer::shaderpack {
         }
 
         auto new_pipeline = json_pipeline.get<PipelineCreateInfo>();
-        NOVA_LOG(TRACE) << "Parsed JSON into pipeline_data for pipeline " << pipeline_path;
+        NOVA_LOG(TRACE) << "Parsed JSON into pipeline_data for pipeline " << pipeline_path.data();
         new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename,
                                                              folder_access,
                                                              rhi::ShaderStage::Vertex,
@@ -364,7 +363,7 @@ namespace nova::renderer::shaderpack {
                                                                       new_pipeline.defines);
         }
 
-        NOVA_LOG(TRACE) << "Load of pipeline " << pipeline_path << " succeeded";
+        NOVA_LOG(TRACE) << "Load of pipeline " << pipeline_path.data() << " succeeded";
 
         return new_pipeline;
     }
