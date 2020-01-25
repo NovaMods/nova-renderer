@@ -226,49 +226,54 @@ namespace nova::renderer::shaderpack {
         return data;
     }
 
-    ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
+    rx::optional<ShaderpackResourcesData> load_dynamic_resources_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         NOVA_LOG(TRACE) << "load_dynamic_resource_file called";
         const rx::string resources_string = folder_access->read_text_file("resources.json");
         try {
-            auto json_resources = nlohmann::json::parse(resources_string.c_str());
+            auto json_resources = nlohmann::json::parse(resources_string.data());
             const ValidationReport report = validate_shaderpack_resources_data(json_resources);
             print(report);
             if(!report.errors.empty()) {
-                loading_failed = true;
-                return {};
+                return rx::nullopt;
             }
 
-            return json_resources.get<ShaderpackResourcesData>();
+            return rx::optional(json_resources.get<ShaderpackResourcesData>());
         }
         catch(nlohmann::json::parse_error& err) {
-            NOVA_LOG(ERROR) << "Could not parse your shaderpack's resources.json: " << err.what();
-            loading_failed = true;
+            NOVA_LOG(ERROR) << "Could not parse your renderpack's resources.json: " << err.what();
+            return rx::nullopt;
         }
-
-        return {};
     }
 
     ntl::Result<RendergraphData> load_rendergraph_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         NOVA_LOG(TRACE) << "load_passes_file called";
         const auto passes_bytes = folder_access->read_text_file("rendergraph.json");
         try {
-            const auto json_passes = nlohmann::json::parse(passes_bytes);
+            const auto json_passes = nlohmann::json::parse(passes_bytes.data(), passes_bytes.data() + passes_bytes.size());
 
             auto rendergraph_file = json_passes.get<RendergraphData>();
 
-            const auto final_itr = std::find_if(rendergraph_file.passes.begin(),
-                                                rendergraph_file.passes.end(),
-                                                [&](const RenderPassCreateInfo& pass) {
-                                                    const auto output_itr = std::find_if(pass.texture_outputs.begin(),
-                                                                                         pass.texture_outputs.end(),
-                                                                                         [](const TextureAttachmentInfo& tex) {
-                                                                                             return tex.name == SCENE_OUTPUT_RT_NAME;
-                                                                                         });
+            bool writes_to_scene_output_rt = false;
+            rendergraph_file.passes.each_fwd([&](const RenderPassCreateInfo& pass) {
+                // Check if this pass writes to the scene output RT
+                pass.texture_outputs.each_fwd([&](const TextureAttachmentInfo& tex) {
+                    if(tex.name == SCENE_OUTPUT_RT_NAME) {
+                        writes_to_scene_output_rt = true;
+                        return false;
+                    }
 
-                                                    return output_itr != pass.texture_outputs.end();
-                                                });
+                    return true;
+                });
 
-            if(final_itr != rendergraph_file.passes.end()) {
+                if(writes_to_scene_output_rt) {
+                    return false;
+
+                } else {
+                    return true;
+                }
+            });
+
+            if(writes_to_scene_output_rt) {
                 return ntl::Result<RendergraphData>(rendergraph_file);
 
             } else {
