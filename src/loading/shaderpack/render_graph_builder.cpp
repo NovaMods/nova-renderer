@@ -1,13 +1,9 @@
-/*!
- * \author ddubois
- * \date 17-Sep-18.
- */
-
 #include "render_graph_builder.hpp"
 
 #include <unordered_set>
 
 #include <minitrace.h>
+#include <rx/core/set.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/util/logger.hpp"
@@ -28,10 +24,10 @@ namespace nova::renderer::shaderpack {
      * \param depth The depth in the tree that we're at. If this number ever grows bigger than the total number of
      * passes, there's a circular dependency somewhere in the render graph. This is Bad and we hate it
      */
-    void add_dependent_passes(const std::string& pass_name,
-                              const std::unordered_map<std::string, RenderPassCreateInfo>& passes,
-                              std::pmr::vector<std::string>& ordered_passes,
-                              const std::unordered_map<std::string, std::pmr::vector<std::string>>& resource_to_write_pass,
+    void add_dependent_passes(const rx::string& pass_name,
+                              const rx::map<rx::string, RenderPassCreateInfo>& passes,
+                              rx::vector<rx::string>& ordered_passes,
+                              const rx::map<rx::string, rx::vector<rx::string>>& resource_to_write_pass,
                               uint32_t depth);
 
     bool Range::has_writer() const { return first_write_pass <= last_write_pass; }
@@ -80,18 +76,15 @@ namespace nova::renderer::shaderpack {
         return left || right;
     }
 
-    ntl::Result<std::pmr::vector<RenderPassCreateInfo>> order_passes(const std::pmr::vector<RenderPassCreateInfo>& passes) {
+    ntl::Result<rx::vector<RenderPassCreateInfo>> order_passes(const rx::vector<RenderPassCreateInfo>& passes) {
         MTR_SCOPE("Renderpass", "order_passes");
 
         NOVA_LOG(DEBUG) << "Executing Pass Scheduler";
 
-        std::unordered_map<std::string, RenderPassCreateInfo> render_passes_to_order;
-        render_passes_to_order.reserve(passes.size());
-        for(const RenderPassCreateInfo& create_info : passes) {
-            render_passes_to_order.emplace(create_info.name, create_info);
-        }
+        rx::map<rx::string, RenderPassCreateInfo> render_passes_to_order;
+        passes.each_fwd([&](const RenderPassCreateInfo& create_info) { render_passes_to_order.insert(create_info.name, create_info); });
 
-        std::pmr::vector<std::string> ordered_passes;
+        rx::vector<rx::string> ordered_passes;
         ordered_passes.reserve(passes.size());
 
         /*
@@ -101,17 +94,15 @@ namespace nova::renderer::shaderpack {
         NOVA_LOG(TRACE) << "Collecting passes that write to each resource...";
         // Maps from resource name to pass that writes to that resource, then from resource name to pass that reads from
         // that resource
-        auto resource_to_write_pass = std::unordered_map<std::string, std::pmr::vector<std::string>>{};
+        auto resource_to_write_pass = rx::map<rx::string, rx::vector<rx::string>>{};
 
-        for(const auto& pass : passes) {
-            for(const auto& output : pass.texture_outputs) {
-                resource_to_write_pass[output.name].push_back(pass.name);
-            }
+        passes.each_fwd([&](const RenderPassCreateInfo& pass) {
+            pass.texture_outputs.each_fwd(
+                [&](const TextureAttachmentInfo& output) { resource_to_write_pass.find(output.name)->push_back(pass.name); });
 
-            for(const auto& buffer_output : pass.output_buffers) {
-                resource_to_write_pass[buffer_output].push_back(pass.name);
-            }
-        }
+            pass.output_buffers.each_fwd(
+                [&](const rx::string& buffer_output) { resource_to_write_pass.find(buffer_output)->push_back(pass.name); });
+        });
 
         /*
          * Initial ordering of passes
@@ -119,18 +110,18 @@ namespace nova::renderer::shaderpack {
 
         NOVA_LOG(TRACE) << "First pass at ordering passes...";
         // The passes, in simple dependency order
-        if(resource_to_write_pass.find(BACKBUFFER_NAME) == resource_to_write_pass.end()) {
+        if(resource_to_write_pass.find(BACKBUFFER_NAME) == nullptr) {
             NOVA_LOG(ERROR)
                 << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
-            return ntl::Result<std::pmr::vector<RenderPassCreateInfo>>(ntl::NovaError("Failed to order passes because no backbuffer was found"));
+            return ntl::Result<rx::vector<RenderPassCreateInfo>>(ntl::NovaError("Failed to order passes because no backbuffer was found"));
         }
 
-        auto backbuffer_writes = resource_to_write_pass[BACKBUFFER_NAME];
-        ordered_passes.insert(ordered_passes.end(), backbuffer_writes.begin(), backbuffer_writes.end());
+        const auto& backbuffer_writes = *resource_to_write_pass.find(BACKBUFFER_NAME);
+        ordered_passes += backbuffer_writes;
 
-        for(const auto& pass_name : backbuffer_writes) {
+        backbuffer_writes.each_fwd([&](const auto& pass_name) {
             add_dependent_passes(pass_name, render_passes_to_order, ordered_passes, resource_to_write_pass, 1);
-        }
+        });
 
         reverse(ordered_passes.begin(), ordered_passes.end());
 
@@ -141,7 +132,11 @@ namespace nova::renderer::shaderpack {
         // It loops through the ordered passes. When it sees the name of a new pass, it writes the pass to
         // ordered_passes and increments the write position. After all the passes are written, we remove all the
         // passes after the last one we wrote to, shrinking the list of ordered passes to only include the exact passes we want
-        std::unordered_set<std::string> seen;
+        rx::set<rx::string> seen;
+
+        ordered_passes.each_fwd([&](const rx::string& pass_name) {
+            
+        });
 
         auto output_itr = ordered_passes.begin();
         for(const auto& pass : ordered_passes) {
@@ -156,20 +151,20 @@ namespace nova::renderer::shaderpack {
         // Granite does some reordering to try and find a submission order that has the fewest pipeline barriers. Not
         // gonna worry about that now
 
-        std::pmr::vector<RenderPassCreateInfo> passes_in_submission_order;
+        rx::vector<RenderPassCreateInfo> passes_in_submission_order;
         passes_in_submission_order.reserve(ordered_passes.size());
 
-        for(const std::string& pass_name : ordered_passes) {
+        for(const rx::string& pass_name : ordered_passes) {
             passes_in_submission_order.push_back(render_passes_to_order.at(pass_name));
         }
 
         return ntl::Result(passes_in_submission_order);
     }
 
-    void add_dependent_passes(const std::string& pass_name,
-                              const std::unordered_map<std::string, RenderPassCreateInfo>& passes,
-                              std::pmr::vector<std::string>& ordered_passes,
-                              const std::unordered_map<std::string, std::pmr::vector<std::string>>& resource_to_write_pass,
+    void add_dependent_passes(const rx::string& pass_name,
+                              const rx::map<rx::string, RenderPassCreateInfo>& passes,
+                              rx::vector<rx::string>& ordered_passes,
+                              const rx::map<rx::string, rx::vector<rx::string>>& resource_to_write_pass,
                               const uint32_t depth) {
         if(depth > passes.size()) {
             NOVA_LOG(ERROR) << "Circular render graph detected! Please fix your render graph to not have circular dependencies";
@@ -213,9 +208,9 @@ namespace nova::renderer::shaderpack {
         }
     }
 
-    void determine_usage_order_of_textures(const std::pmr::vector<RenderPassCreateInfo>& passes,
-                                           std::unordered_map<std::string, Range>& resource_used_range,
-                                           std::pmr::vector<std::string>& resources_in_order) {
+    void determine_usage_order_of_textures(const rx::vector<RenderPassCreateInfo>& passes,
+                                           rx::map<rx::string, Range>& resource_used_range,
+                                           rx::vector<rx::string>& resources_in_order) {
         uint32_t pass_idx = 0;
         for(const auto& pass : passes) {
             // color attachments
@@ -253,11 +248,10 @@ namespace nova::renderer::shaderpack {
         }
     }
 
-    std::unordered_map<std::string, std::string> determine_aliasing_of_textures(
-        const std::unordered_map<std::string, TextureCreateInfo>& textures,
-        const std::unordered_map<std::string, Range>& resource_used_range,
-        const std::pmr::vector<std::string>& resources_in_order) {
-        std::unordered_map<std::string, std::string> aliases;
+    rx::map<rx::string, rx::string> determine_aliasing_of_textures(const rx::map<rx::string, TextureCreateInfo>& textures,
+                                                                   const rx::map<rx::string, Range>& resource_used_range,
+                                                                   const rx::vector<rx::string>& resources_in_order) {
+        rx::map<rx::string, rx::string> aliases;
         aliases.reserve(resources_in_order.size());
 
         for(size_t i = 0; i < resources_in_order.size(); i++) {
@@ -274,7 +268,7 @@ namespace nova::renderer::shaderpack {
             // Only try to alias with lower-indexed resources
             for(size_t j = 0; j < i; j++) {
                 NOVA_LOG(TRACE) << "Trying to alias it with resource at index " << j << " out of " << resources_in_order.size();
-                const std::string& try_alias_name = resources_in_order[j];
+                const rx::string& try_alias_name = resources_in_order[j];
                 if(resource_used_range.at(to_alias_name).is_disjoint_with(resource_used_range.at(try_alias_name))) {
                     // They can be aliased if they have the same format
                     const auto& try_alias_format = textures.at(try_alias_name).format;
