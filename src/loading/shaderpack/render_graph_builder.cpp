@@ -1,9 +1,6 @@
 #include "render_graph_builder.hpp"
 
-#include <unordered_set>
-
 #include <minitrace.h>
-#include <rx/core/set.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/util/logger.hpp"
@@ -119,11 +116,9 @@ namespace nova::renderer::shaderpack {
         const auto& backbuffer_writes = *resource_to_write_pass.find(BACKBUFFER_NAME);
         ordered_passes += backbuffer_writes;
 
-        backbuffer_writes.each_fwd([&](const auto& pass_name) {
+        backbuffer_writes.each_fwd([&](const rx::string& pass_name) {
             add_dependent_passes(pass_name, render_passes_to_order, ordered_passes, resource_to_write_pass, 1);
         });
-
-        reverse(ordered_passes.begin(), ordered_passes.end());
 
         // We're going to loop through the original list of passes and remove them from the original list of passes
         // We want to keep the original passes around
@@ -132,21 +127,16 @@ namespace nova::renderer::shaderpack {
         // It loops through the ordered passes. When it sees the name of a new pass, it writes the pass to
         // ordered_passes and increments the write position. After all the passes are written, we remove all the
         // passes after the last one we wrote to, shrinking the list of ordered passes to only include the exact passes we want
-        rx::set<rx::string> seen;
 
-        ordered_passes.each_fwd([&](const rx::string& pass_name) {
-            
+        rx::vector<rx::string> unique_passes;
+
+        ordered_passes.each_rev([&](const rx::string& pass_name) {
+            if(unique_passes.find(pass_name) == rx::vector<rx::string>::k_npos) {
+                unique_passes.push_back(pass_name);
+            }
         });
 
-        auto output_itr = ordered_passes.begin();
-        for(const auto& pass : ordered_passes) {
-            if(seen.count(pass) == 0U) {
-                *output_itr = pass;
-                seen.insert(pass);
-                ++output_itr;
-            }
-        }
-        ordered_passes.erase(output_itr, ordered_passes.end());
+        ordered_passes = unique_passes;
 
         // Granite does some reordering to try and find a submission order that has the fewest pipeline barriers. Not
         // gonna worry about that now
@@ -154,9 +144,8 @@ namespace nova::renderer::shaderpack {
         rx::vector<RenderPassCreateInfo> passes_in_submission_order;
         passes_in_submission_order.reserve(ordered_passes.size());
 
-        for(const rx::string& pass_name : ordered_passes) {
-            passes_in_submission_order.push_back(render_passes_to_order.at(pass_name));
-        }
+        ordered_passes.each_fwd(
+            [&](const rx::string& pass_name) { passes_in_submission_order.push_back(*render_passes_to_order.find(pass_name)); });
 
         return ntl::Result(passes_in_submission_order);
     }
@@ -170,110 +159,102 @@ namespace nova::renderer::shaderpack {
             NOVA_LOG(ERROR) << "Circular render graph detected! Please fix your render graph to not have circular dependencies";
         }
 
-        const auto& pass = passes.at(pass_name);
+        const auto& pass = *passes.find(pass_name);
 
-        // Add all the passes that this pass is dependent on
-        for(const auto& dependency : pass.dependencies) {
-            ordered_passes.push_back(dependency);
-            add_dependent_passes(dependency, passes, ordered_passes, resource_to_write_pass, depth + 1);
-        }
-
-        for(const auto& texture_name : pass.texture_inputs) {
-            if(resource_to_write_pass.find(texture_name) == resource_to_write_pass.end()) {
+        pass.texture_inputs.each_fwd([&](const rx::string& texture_name) {
+            if(const auto write_passes = resource_to_write_pass.find(texture_name); write_passes == nullptr) {
                 // TODO: Ignore the implicitly defined resources
-                NOVA_LOG(ERROR) << "Pass " << pass_name.c_str() << " reads from resource " << texture_name.c_str()
+                NOVA_LOG(ERROR) << "Pass " << pass_name.data() << " reads from resource " << texture_name.data()
                                 << ", but nothing writes to it";
             } else {
-                const auto& write_passes = resource_to_write_pass.at(texture_name);
-                ordered_passes.insert(ordered_passes.end(), write_passes.begin(), write_passes.end());
+                ordered_passes += *write_passes;
 
-                for(const auto& write_pass : write_passes) {
+                write_passes->each_fwd([&](const rx::string& write_pass) {
                     add_dependent_passes(write_pass, passes, ordered_passes, resource_to_write_pass, depth + 1);
-                }
+                });
             }
-        }
+        });
 
-        for(const auto& buffer_name : pass.input_buffers) {
-            if(resource_to_write_pass.find(buffer_name) == resource_to_write_pass.end()) {
-                NOVA_LOG(ERROR) << "Pass " << pass_name.c_str() << " reads from buffer " << buffer_name.c_str()
+        pass.input_buffers.each_fwd([&](const rx::string& buffer_name) {
+            if(const auto& write_passes = resource_to_write_pass.find(buffer_name); write_passes == nullptr) {
+                NOVA_LOG(ERROR) << "Pass " << pass_name.data() << " reads from buffer " << buffer_name.data()
                                 << ", but no passes write to it";
             } else {
-                const auto& write_passes = resource_to_write_pass.at(buffer_name);
-                ordered_passes.insert(ordered_passes.end(), write_passes.begin(), write_passes.end());
+                ordered_passes += *write_passes;
 
-                for(const auto& write_pass : write_passes) {
+                write_passes->each_fwd([&](const rx::string& write_pass) {
                     add_dependent_passes(write_pass, passes, ordered_passes, resource_to_write_pass, depth + 1);
-                }
+                });
             }
-        }
+        });
     }
 
     void determine_usage_order_of_textures(const rx::vector<RenderPassCreateInfo>& passes,
                                            rx::map<rx::string, Range>& resource_used_range,
                                            rx::vector<rx::string>& resources_in_order) {
         uint32_t pass_idx = 0;
-        for(const auto& pass : passes) {
+        passes.each_fwd([&](const RenderPassCreateInfo& pass) {
             // color attachments
-            for(const auto& input : pass.texture_inputs) {
-                auto& tex_range = resource_used_range[input];
+            pass.texture_inputs.each_fwd([&](const rx::string& input) {
+                const auto tex_range = resource_used_range.find(input);
 
-                if(pass_idx < tex_range.first_write_pass) {
-                    tex_range.first_write_pass = pass_idx;
-                } else if(pass_idx > tex_range.last_write_pass) {
-                    tex_range.last_write_pass = pass_idx;
+                if(pass_idx < tex_range->first_write_pass) {
+                    tex_range->first_write_pass = pass_idx;
+                } else if(pass_idx > tex_range->last_write_pass) {
+                    tex_range->last_write_pass = pass_idx;
                 }
 
-                if(std::find(resources_in_order.begin(), resources_in_order.end(), input) == resources_in_order.end()) {
+                if(resources_in_order.find(input) == rx::vector<rx::string>::k_npos) {
                     resources_in_order.push_back(input);
                 }
-            }
+            });
 
-            if(!pass.texture_outputs.empty()) {
-                for(const auto& output : pass.texture_outputs) {
-                    auto& tex_range = resource_used_range[output.name];
+            if(!pass.texture_outputs.size() == 0) {
+                pass.texture_outputs.each_fwd([&](const TextureAttachmentInfo& output) {
+                    const auto tex_range = resource_used_range.find(output.name);
 
-                    if(pass_idx < tex_range.first_write_pass) {
-                        tex_range.first_write_pass = pass_idx;
-                    } else if(pass_idx > tex_range.last_write_pass) {
-                        tex_range.last_write_pass = pass_idx;
+                    if(pass_idx < tex_range->first_write_pass) {
+                        tex_range->first_write_pass = pass_idx;
+                    } else if(pass_idx > tex_range->last_write_pass) {
+                        tex_range->last_write_pass = pass_idx;
                     }
 
-                    if(std::find(resources_in_order.begin(), resources_in_order.end(), output.name) == resources_in_order.end()) {
+                    if(resources_in_order.find(output.name) == rx::vector<rx::string>::k_npos) {
                         resources_in_order.push_back(output.name);
                     }
-                }
+                });
             }
 
             pass_idx++;
-        }
+        });
     }
 
     rx::map<rx::string, rx::string> determine_aliasing_of_textures(const rx::map<rx::string, TextureCreateInfo>& textures,
                                                                    const rx::map<rx::string, Range>& resource_used_range,
                                                                    const rx::vector<rx::string>& resources_in_order) {
         rx::map<rx::string, rx::string> aliases;
-        aliases.reserve(resources_in_order.size());
 
         for(size_t i = 0; i < resources_in_order.size(); i++) {
             const auto& to_alias_name = resources_in_order[i];
-            NOVA_LOG(TRACE) << "Determining if we can alias `" << to_alias_name.c_str() << "`. Does it exist? "
-                            << (textures.find(to_alias_name) != textures.end());
+            NOVA_LOG(TRACE) << "Determining if we can alias `" << to_alias_name.data() << "`. Does it exist? "
+                            << (textures.find(to_alias_name) != nullptr);
+
             if(to_alias_name == BACKBUFFER_NAME || to_alias_name == SCENE_OUTPUT_RT_NAME) {
                 // Yay special cases!
                 continue;
             }
 
-            const auto& to_alias_format = textures.at(to_alias_name).format;
+            const auto& to_alias_format = textures.find(to_alias_name)->format;
 
             // Only try to alias with lower-indexed resources
             for(size_t j = 0; j < i; j++) {
                 NOVA_LOG(TRACE) << "Trying to alias it with resource at index " << j << " out of " << resources_in_order.size();
                 const rx::string& try_alias_name = resources_in_order[j];
-                if(resource_used_range.at(to_alias_name).is_disjoint_with(resource_used_range.at(try_alias_name))) {
+                if(resource_used_range.find(to_alias_name)->is_disjoint_with(*resource_used_range.find(try_alias_name))) {
                     // They can be aliased if they have the same format
-                    const auto& try_alias_format = textures.at(try_alias_name).format;
+                    const auto& try_alias_format = textures.find(try_alias_name)->format;
                     if(to_alias_format == try_alias_format) {
-                        aliases[to_alias_name] = try_alias_name;
+                        aliases.insert(to_alias_name, try_alias_name);
                     }
                 }
             }

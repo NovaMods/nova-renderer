@@ -424,14 +424,10 @@ namespace nova::renderer::shaderpack {
         rx::string name;
 
         /*!
-         * \brief The materials that MUST execute before this one
-         */
-        rx::vector<rx::string> dependencies{};
-
-        /*!
          * \brief The textures that this pass will read from
          */
         rx::vector<rx::string> texture_inputs{};
+
         /*!
          * \brief The textures that this pass will write to
          */
