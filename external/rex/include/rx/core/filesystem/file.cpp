@@ -217,12 +217,13 @@ optional<vector<rx_byte>> read_text_file(memory::allocator* _allocator, const ch
  if (auto result{read_binary_file(_allocator, _file_name)}) {
     // Convert the given byte stream into a compatible UTF-8 encoding. This will
     // introduce a null-terminator, strip Unicode BOMs and convert UTF-16
-    // encoding to UTF-8.
+    // encodings to UTF-8.
     auto data{convert_text_encoding(utility::move(*result))};
 
 #if defined(RX_PLATFORM_WINDOWS)
-    // Only Windows has the odd choice of using CRLF for text files. Load the
-    // contents in as binary and do a removing all instances of CR.
+    // Only Windows has the odd choice of using CRLF for text files.
+
+    // Remove all instances of CR from the byte stream.
     auto next{reinterpret_cast<rx_byte*>(memchr(data.data(), '\r', data.size()))};
 
     // Leverage the use of optimized memchr to skip through large swaths of
