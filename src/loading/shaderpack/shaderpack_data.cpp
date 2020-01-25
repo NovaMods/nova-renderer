@@ -103,16 +103,16 @@ namespace nova::renderer::shaderpack {
             return StencilOpEnum::Replace;
         }
         if(str == "Incr") {
-            return StencilOpEnum::Incr;
+            return StencilOpEnum::Increment;
         }
         if(str == "IncrWrap") {
-            return StencilOpEnum::IncrWrap;
+            return StencilOpEnum::IncrementAndWrap;
         }
         if(str == "Decr") {
-            return StencilOpEnum::Decr;
+            return StencilOpEnum::Decrement;
         }
         if(str == "DecrWrap") {
-            return StencilOpEnum::DecrWrap;
+            return StencilOpEnum::DecrementAndWrap;
         }
         if(str == "Invert") {
             return StencilOpEnum::Invert;
@@ -337,16 +337,16 @@ namespace nova::renderer::shaderpack {
             case StencilOpEnum::Replace:
                 return "Replace";
 
-            case StencilOpEnum::Incr:
+            case StencilOpEnum::Increment:
                 return "Incr";
 
-            case StencilOpEnum::IncrWrap:
+            case StencilOpEnum::IncrementAndWrap:
                 return "IncrWrap";
 
-            case StencilOpEnum::Decr:
+            case StencilOpEnum::Decrement:
                 return "Decr";
 
-            case StencilOpEnum::DecrWrap:
+            case StencilOpEnum::DecrementAndWrap:
                 return "DecrWrap";
 
             case StencilOpEnum::Invert:

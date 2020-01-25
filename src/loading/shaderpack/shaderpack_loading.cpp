@@ -25,7 +25,7 @@ namespace nova::renderer::shaderpack {
 
     // Removed from the GLSLang version we're using
     // TODO: Copy and fill in with values from the RHI so we don't accidentally limit a shader
-    const TBuiltInResource default_built_in_resource = {
+    const TBuiltInResource DEFAULT_BUILT_IN_RESOURCE = {
         /* .MaxLights = */ 32,
         /* .MaxClipPlanes = */ 6,
         /* .MaxTextureUnits = */ 32,
@@ -131,18 +131,15 @@ namespace nova::renderer::shaderpack {
             /* .generalConstantMatrixVectorIndexing = */ true,
         }};
 
-    ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
+    ShaderpackResourcesData load_dynamic_resources_file(const FolderAccessorBase* folder_access);
 
-    ntl::Result<RendergraphData> load_rendergraph_file(const std::shared_ptr<FolderAccessorBase>& folder_access);
+    ntl::Result<RendergraphData> load_rendergraph_file(const FolderAccessorBase* folder_access);
 
-    std::pmr::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<FolderAccessorBase>& folder_access);
-    std::optional<PipelineCreateInfo> load_single_pipeline(const std::shared_ptr<FolderAccessorBase>& folder_access,
-                                                           const fs::path& pipeline_path);
+    rx::vector<PipelineCreateInfo> load_pipeline_files(const FolderAccessorBase* folder_access);
+    rx::optional<PipelineCreateInfo> load_single_pipeline(const FolderAccessorBase* folder_access, const rx::string& pipeline_path);
 
-    std::pmr::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access);
-    MaterialData load_single_material(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& material_path);
-
-    bool loading_failed = false;
+    rx::vector<MaterialData> load_material_files(const FolderAccessorBase* folder_access);
+    MaterialData load_single_material(const FolderAccessorBase* folder_access, const rx::string& material_path);
 
     void fill_in_render_target_formats(RenderpackData& data) {
         const auto& textures = data.resources.render_targets;
@@ -187,7 +184,7 @@ namespace nova::renderer::shaderpack {
 
     void cache_pipelines_by_renderpass(RenderpackData& data);
 
-    RenderpackData load_shaderpack_data(const fs::path& shaderpack_name) {
+    RenderpackData load_shaderpack_data(const rx::string& shaderpack_name) {
         loading_failed = false;
         const std::shared_ptr<FolderAccessorBase> folder_access = VirtualFilesystem::get_instance()->get_folder_accessor(shaderpack_name);
 
@@ -220,7 +217,7 @@ namespace nova::renderer::shaderpack {
 
     ShaderpackResourcesData load_dynamic_resources_file(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         NOVA_LOG(TRACE) << "load_dynamic_resource_file called";
-        const std::string resources_string = folder_access->read_text_file("resources.json");
+        const rx::string resources_string = folder_access->read_text_file("resources.json");
         try {
             auto json_resources = nlohmann::json::parse(resources_string.c_str());
             const ValidationReport report = validate_shaderpack_resources_data(json_resources);
@@ -273,18 +270,18 @@ namespace nova::renderer::shaderpack {
         }
     }
 
-    std::pmr::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {
+    rx::vector<PipelineCreateInfo> load_pipeline_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {
         NOVA_LOG(TRACE) << "load_pipeline_files called";
 
-        std::pmr::vector<fs::path> potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
+        rx::vector<rx::string> potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
 
-        std::pmr::vector<PipelineCreateInfo> output;
+        rx::vector<PipelineCreateInfo> output;
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
         output.reserve(potential_pipeline_files.size());
 
-        for(const fs::path& potential_file : potential_pipeline_files) {
+        for(const rx::string& potential_file : potential_pipeline_files) {
             if(potential_file.extension() == ".pipeline") {
                 // Pipeline file!
                 const auto& pipeline = load_single_pipeline(folder_access, potential_file);
@@ -297,8 +294,8 @@ namespace nova::renderer::shaderpack {
         return output;
     }
 
-    std::optional<PipelineCreateInfo> load_single_pipeline(const std::shared_ptr<FolderAccessorBase>& folder_access,
-                                                           const fs::path& pipeline_path) {
+    rx::optional<PipelineCreateInfo> load_single_pipeline(const std::shared_ptr<FolderAccessorBase>& folder_access,
+                                                          const rx::string& pipeline_path) {
         NOVA_LOG(TRACE) << "Task to load pipeline " << pipeline_path << " started";
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
@@ -358,22 +355,22 @@ namespace nova::renderer::shaderpack {
 
     EShLanguage to_glslang_shader_stage(rhi::ShaderStage stage);
 
-    std::pmr::vector<uint32_t> load_shader_file(const fs::path& filename,
-                                                const std::shared_ptr<FolderAccessorBase>& folder_access,
-                                                const rhi::ShaderStage stage,
-                                                const std::pmr::vector<std::string>& defines) {
+    rx::vector<uint32_t> load_shader_file(const rx::string& filename,
+                                          const std::shared_ptr<FolderAccessorBase>& folder_access,
+                                          const rhi::ShaderStage stage,
+                                          const rx::vector<rx::string>& defines) {
         // Be sure that we have glslang when we need to compile shaders
         glslang::InitializeProcess();
 
         const auto glslang_stage = to_glslang_shader_stage(stage);
         glslang::TShader shader(glslang_stage);
 
-        std::string shader_source = folder_access->read_text_file(filename);
-        std::string::size_type version_pos = shader_source.find("#version");
-        std::string::size_type inject_pos = 0;
-        if(version_pos != std::string::npos) {
-            std::string::size_type break_after_version_pos = shader_source.find('\n', version_pos);
-            if(break_after_version_pos != std::string::npos) {
+        rx::string shader_source = folder_access->read_text_file(filename);
+        rx::string::size_type version_pos = shader_source.find("#version");
+        rx::string::size_type inject_pos = 0;
+        if(version_pos != rx::string::npos) {
+            rx::string::size_type break_after_version_pos = shader_source.find('\n', version_pos);
+            if(break_after_version_pos != rx::string::npos) {
                 inject_pos = break_after_version_pos + 1;
             }
         }
@@ -386,12 +383,12 @@ namespace nova::renderer::shaderpack {
 
         // Check the extension to know what kind of shader file the user has provided. SPIR-V files can be loaded
         // as-is, but GLSL, GLSL ES, and HLSL files need to be transpiled to SPIR-V
-        if(filename.string().find(".spirv") != std::string::npos) {
+        if(filename.string().find(".spirv") != rx::string::npos) {
             // SPIR-V file!
             // TODO: figure out how to handle defines with SPIRV
             return folder_access->read_spirv_file(filename);
         }
-        if(filename.string().find(".hlsl") != std::string::npos) {
+        if(filename.string().find(".hlsl") != rx::string::npos) {
             shader.setEnvInput(glslang::EShSourceHlsl, glslang_stage, glslang::EShClientVulkan, 100);
             shader.setHlslIoMapping(true);
 
@@ -408,7 +405,7 @@ namespace nova::renderer::shaderpack {
 
         shader.setEntryPoint("main");
 
-        const bool shader_compiled = shader.parse(&default_built_in_resource,
+        const bool shader_compiled = shader.parse(&DEFAULT_BUILT_IN_RESOURCE,
                                                   450,
                                                   ECoreProfile,
                                                   false,
@@ -438,24 +435,24 @@ namespace nova::renderer::shaderpack {
         std::vector<uint32_t> spirv_std;
         GlslangToSpv(*program.getIntermediate(glslang_stage), spirv_std);
 
-        std::pmr::vector<uint32_t> spirv(spirv_std.begin(), spirv_std.end());
+        rx::vector<uint32_t> spirv(spirv_std.begin(), spirv_std.end());
 
-        fs::path dump_filename = filename.filename();
+        rx::string dump_filename = filename.filename();
         dump_filename.replace_extension(std::to_string(glslang_stage) + ".spirv.generated");
         write_to_file(spirv, dump_filename);
 
         return spirv;
     }
 
-    std::pmr::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {
-        std::pmr::vector<fs::path> potential_material_files = folder_access->get_all_items_in_folder("materials");
+    rx::vector<MaterialData> load_material_files(const std::shared_ptr<FolderAccessorBase>& folder_access) {
+        rx::vector<rx::string> potential_material_files = folder_access->get_all_items_in_folder("materials");
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
-        std::pmr::vector<MaterialData> output;
+        rx::vector<MaterialData> output;
         output.reserve(potential_material_files.size());
 
-        for(const fs::path& potential_file : potential_material_files) {
+        for(const rx::string& potential_file : potential_material_files) {
             if(potential_file.extension() == ".mat") {
                 const MaterialData& material = load_single_material(folder_access, potential_file);
                 output.push_back(material);
@@ -465,8 +462,8 @@ namespace nova::renderer::shaderpack {
         return output;
     }
 
-    MaterialData load_single_material(const std::shared_ptr<FolderAccessorBase>& folder_access, const fs::path& material_path) {
-        const std::string material_text = folder_access->read_text_file(material_path);
+    MaterialData load_single_material(const std::shared_ptr<FolderAccessorBase>& folder_access, const rx::string& material_path) {
+        const rx::string material_text = folder_access->read_text_file(material_path);
 
         auto json_material = nlohmann::json::parse(material_text);
         const auto report = validate_material(json_material);
