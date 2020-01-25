@@ -1,24 +1,26 @@
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 
-#include <utility>
+#include <rx/core/concurrency/scope_lock.h>
 
 #include "nova_renderer/util/logger.hpp"
-#include "loading_utils.hpp"
+
 #include "regular_folder_accessor.hpp"
 #include "zip_folder_accessor.hpp"
 
 namespace nova::filesystem {
-    std::shared_ptr<FolderAccessorBase> FolderAccessorBase::create(const fs::path& path) {
-        fs::path mut_path = path;
+    bool is_zip_folder(const rx::string& path_to_folder) { return path_to_folder.ends_with(".zip"); }
+
+    FolderAccessorBase* FolderAccessorBase::create(const rx::string& path) {
+        rx::memory::allocator* allocator = &rx::memory::g_system_allocator;
+
         // Where is the shaderpack, and what kind of folder is it in ?
-        if(renderer::is_zip_folder(mut_path)) {
+        if(is_zip_folder(path)) {
             // zip folder in shaderpacks folder
-            mut_path.replace_extension(".zip");
-            return std::make_shared<ZipFolderAccessor>(mut_path);
-        }
-        if(exists(mut_path)) {
+            return allocator->create<ZipFolderAccessor>(path);
+
+        } else if(const rx::filesystem::directory directory(path); directory) {
             // regular folder in shaderpacks folder
-            return std::make_shared<RegularFolderAccessor>(mut_path);
+            return allocator->create<RegularFolderAccessor>(path);
         }
 
         NOVA_LOG(FATAL) << "Could not create folder accessor for path " << mut_path;
@@ -28,8 +30,8 @@ namespace nova::filesystem {
 
     FolderAccessorBase::FolderAccessorBase(fs::path folder) : root_folder(std::move(folder)), resource_existence_mutex(new std::mutex) {}
 
-    bool FolderAccessorBase::does_resource_exist(const fs::path& resource_path) {
-        std::lock_guard l(*resource_existence_mutex);
+    bool FolderAccessorBase::does_resource_exist(const rx::string& resource_path) {
+        rx::concurrency::scope_lock l(*resource_existence_mutex);
 
         const auto full_path = root_folder / resource_path;
         return does_resource_exist_on_filesystem(full_path);

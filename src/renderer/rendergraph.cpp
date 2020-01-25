@@ -3,7 +3,7 @@
 #include "nova_renderer/nova_renderer.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 
-#include "../filesystem/shaderpack/render_graph_builder.hpp"
+#include "../loading/shaderpack/render_graph_builder.hpp"
 
 namespace nova::renderer {
     using namespace shaderpack;

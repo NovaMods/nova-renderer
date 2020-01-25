@@ -555,11 +555,28 @@ rx_size string::hash() const {
 }
 
 memory::view string::disown() {
-  memory::view view{m_allocator, reinterpret_cast<rx_byte*>(data()), size()};
+  rx_byte* data{reinterpret_cast<rx_byte*>(m_data)};
+  rx_size n_bytes{0};
+
+  if (m_data == m_buffer) {
+    // Cannot disown the memory of small string optimization. Copy it out into
+    // an owning view.
+    n_bytes = size() + 1;
+    data = m_allocator->allocate(n_bytes);
+    RX_ASSERT(data, "out of memory");
+    memcpy(data, m_data, n_bytes);
+  } else {
+    // The memory allocated by the string is potentially larger than the whole
+    // string, allow the view to reflect the full capacity.
+    n_bytes = capacity();
+  }
+
+  // Reset the string back to small string optimization state.
   m_data = m_buffer;
   m_last = m_buffer;
   m_capacity = m_buffer + k_small_string;
-  return view;
+
+  return {m_allocator, data, n_bytes};
 }
 
 wide_string string::to_utf16() const {

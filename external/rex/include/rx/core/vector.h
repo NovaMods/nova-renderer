@@ -23,6 +23,7 @@ struct vector {
   constexpr vector(memory::allocator* _allocator);
   vector(memory::allocator* _allocator, rx_size _size, const T& _value = {});
   vector(memory::allocator* _allocator, const vector& _other);
+  vector(memory::view _view);
 
   constexpr vector();
   vector(rx_size _size, const T& value = {});
@@ -136,6 +137,16 @@ inline vector<T>::vector(memory::allocator* _allocator, const vector& _other)
   for (rx_size i{0}; i < m_size; i++) {
     utility::construct<T>(data() + i, _other[i]);
   }
+}
+
+template<typename T>
+inline vector<T>::vector(memory::view _view)
+  : m_allocator{_view.owner}
+  , m_size{_view.size}
+  , m_capacity{m_size}
+  , m_data{reinterpret_cast<T*>(_view.data)}
+{
+  RX_ASSERT(m_allocator, "null allocator");
 }
 
 template<typename T>

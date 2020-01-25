@@ -1,14 +1,12 @@
 #pragma once
 
-#include <memory>
-#include <memory_resource> // MSVC says this is unused, but GCC seems to disagree so don't remove it
-#include <mutex>
-#include <optional>
-#include <string>
-#include <unordered_map>
-#include <vector>
+#include <rx/core/concurrency/mutex.h>
+#include <rx/core/filesystem/directory.h>
+#include <rx/core/map.h>
+#include <rx/core/optional.h>
+#include <rx/core/string.h>
 
-#include "nova_renderer/util/filesystem.hpp"
+#include <stdint.h>
 
 namespace nova::filesystem {
     /*!

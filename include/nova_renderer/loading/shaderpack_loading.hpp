@@ -1,7 +1,6 @@
 #pragma once
 
 #include "nova_renderer/shaderpack_data.hpp"
-#include "nova_renderer/util/filesystem.hpp"
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"
 
@@ -21,9 +20,9 @@ namespace nova::renderer::shaderpack {
      * \param shaderpack_name The name of the shaderpack to loads
      * \return The shaderpack, if it can be loaded, or an empty optional if it cannot
      */
-    RenderpackData load_shaderpack_data(const fs::path& shaderpack_name);
+    RenderpackData load_shaderpack_data(const rx::string& shaderpack_name);
 
-    std::pmr::vector<uint32_t> load_shader_file(const fs::path& filename,
+    std::pmr::vector<uint32_t> load_shader_file(const rx::string& filename,
                                                 const std::shared_ptr<filesystem::FolderAccessorBase>& folder_access,
                                                 rhi::ShaderStage stage,
                                                 const std::pmr::vector<std::string>& defines = {});
