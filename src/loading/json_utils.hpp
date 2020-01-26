@@ -16,10 +16,6 @@
 namespace nova::renderer {
     inline void from_json(const nlohmann::json& json, rx::string& str) { str.append(json.get<std::string>().c_str()); }
 
-    // Keeps the compiler happy
-    std::string to_string(const std::string& str);
-    std::string to_string(const rx::string& str);
-
     /*!
      * \brief Retrieves an individual value from the provided JSON structure
      * \tparam ValType The type of the value to retrieve
@@ -123,9 +119,6 @@ namespace nova::renderer {
             return value;
         }
 
-        using std::to_string;
-        NOVA_LOG(TRACE) << key.data() << " not found - defaulting to " << to_string(default_value).c_str();
-
         return default_value;
     }
 
@@ -144,7 +137,7 @@ namespace nova::renderer {
             rx::vector<ValType> vec;
             vec.reserve(itr->size());
 
-            for(auto& elem : *itr) {
+            for(const nlohmann::basic_json<>& elem : *itr) {
                 vec.push_back(elem.get<ValType>());
             }
 

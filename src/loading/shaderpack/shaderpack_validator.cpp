@@ -3,6 +3,7 @@
 #include <array>
 
 #include <fmt/format.h>
+#include <rx/core/array.h>
 
 #include "nova_renderer/util/utils.hpp"
 
@@ -42,7 +43,7 @@ namespace nova::renderer::shaderpack {
                                                 {"tessellationEvaluationShader", ""},
                                                 {"geometryShader", ""}};
 
-    rx::vector<rx::string> required_graphics_pipeline_fields = {"name", "pass", "vertexShader"};
+    rx::array<rx::string, 3> required_graphics_pipeline_fields = {"name", "pass", "vertexShader"};
 
     nlohmann::json default_texture_format = {{"pixelFormat", "RGBA8"}, {"dimensionType", "Absolute"}};
 

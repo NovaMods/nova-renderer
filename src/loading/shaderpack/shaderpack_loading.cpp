@@ -279,7 +279,7 @@ namespace nova::renderer::shaderpack {
 
             } else {
                 return ntl::Result<RendergraphData>(
-                    MAKE_ERROR("At least one pass must write to the render target named {:s}", SCENE_OUTPUT_RT_NAME));
+                    MAKE_ERROR("At least one pass must write to the render target named {:s}", SCENE_OUTPUT_RT_NAME.data()));
             }
         }
         catch(nlohmann::json::parse_error& err) {
