@@ -9,9 +9,9 @@
 #include <optional>
 
 #include <nlohmann/json.hpp>
+#include <rx/core/optional.h>
 
 #include "nova_renderer/util/logger.hpp"
-#include <rx/core/optional.h>
 
 namespace nova::renderer {
     inline void from_json(const nlohmann::json& json, rx::string& str) { str.append(json.get<std::string>().c_str()); }
@@ -22,6 +22,8 @@ namespace nova::renderer {
      * \param json_obj The JSON object where your value might be found
      * \param key The name of the value
      * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
+     *
+     * \note Only enabled if we're not getting a string, because if the string is missing we can just return an empty string
      */
     template <typename ValType, std::enable_if_t<!std::is_same_v<ValType, rx::string>>** = nullptr>
     rx::optional<ValType> get_json_value(const nlohmann::json& json_obj, const rx::string& key) {
@@ -41,11 +43,13 @@ namespace nova::renderer {
      * \param key The name of the string
      * \param empty_means_not_present If set to true an empty string will be interpreted as not found
      * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
+     *
+     * \note Special case for strings 
      */
     template <typename ValType, std::enable_if_t<std::is_same_v<ValType, rx::string>>** = nullptr>
     rx::optional<ValType> get_json_value(const nlohmann::json& json_obj,
-                                          const rx::string& key,
-                                          const bool empty_means_not_present = false) {
+                                         const rx::string& key,
+                                         const bool empty_means_not_present = false) {
         const std::string key_std = key.data();
         const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
@@ -86,8 +90,8 @@ namespace nova::renderer {
      */
     template <typename ValType>
     rx::optional<ValType> get_json_value(const nlohmann::json& json_obj,
-                                          const rx::string& key,
-                                          std::function<ValType(const nlohmann::json&)> deserializer) {
+                                         const rx::string& key,
+                                         std::function<ValType(const nlohmann::json&)> deserializer) {
         const std::string key_std = key.data();
         const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
@@ -144,7 +148,7 @@ namespace nova::renderer {
             return vec;
         }
 
-        return rx::vector<ValType>{};
+        return {};
     }
 
     /*!

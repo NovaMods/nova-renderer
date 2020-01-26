@@ -9,7 +9,7 @@ namespace nova::renderer::shaderpack {
                                                                          "dimensionType",
                                                                          TextureDimensionTypeEnum::ScreenRelative,
                                                                          texture_dimension_type_enum_from_string);
-        
+
         format.width = get_json_value<float>(j, "width").value_or(0);
         format.height = get_json_value<float>(j, "height").value_or(0);
     }
@@ -30,11 +30,21 @@ namespace nova::renderer::shaderpack {
     }
 
     void from_json(const nlohmann::json& j, RenderPassCreateInfo& pass) {
-        pass.texture_inputs = get_json_array<rx::string>(j, "textureInputs");
+        // Something something string bad
+        const auto& std_vec = get_json_array<std::string>(j, "textureInputs").each_fwd([&](const std::string& str) {
+            pass.texture_inputs.emplace_back(str.c_str());
+        });
+
         pass.texture_outputs = get_json_array<TextureAttachmentInfo>(j, "textureOutputs");
         pass.depth_texture = get_json_value<TextureAttachmentInfo>(j, "depthTexture");
-        pass.input_buffers = get_json_array<rx::string>(j, "inputBuffers");
-        pass.output_buffers = get_json_array<rx::string>(j, "outputBuffers");
+
+        get_json_array<std::string>(j, "inputBuffers").each_fwd([&](const std::string& str) {
+            pass.input_buffers.emplace_back(str.c_str());
+        });
+        get_json_array<std::string>(j, "outputBuffers").each_fwd([&](const std::string& str) {
+            pass.output_buffers.emplace_back(str.c_str());
+        });
+
         pass.name = get_json_value<rx::string>(j, "name").value_or("<NAME_MISSING>");
     }
 
@@ -51,7 +61,9 @@ namespace nova::renderer::shaderpack {
         pipeline.name = *get_json_value<rx::string>(j, "name");
         pipeline.parent_name = get_json_value<rx::string>(j, "parent").value_or("");
         pipeline.pass = *get_json_value<rx::string>(j, "pass");
-        pipeline.defines = get_json_array<rx::string>(j, "defines");
+
+        get_json_array<std::string>(j, "defines").each_fwd([&](const std::string& str) { pipeline.defines.emplace_back(str.c_str()); });
+
         pipeline.states = get_json_array<StateEnum>(j, "states", state_enum_from_string);
         pipeline.front_face = get_json_value<StencilOpState>(j, "frontFace");
         pipeline.back_face = get_json_value<StencilOpState>(j, "backFace");
@@ -144,6 +156,8 @@ namespace nova::renderer::shaderpack {
 
     void from_json(const nlohmann::json& j, RendergraphData& data) {
         data.passes = get_json_array<RenderPassCreateInfo>(j, "passes");
-        data.builtin_passes = get_json_array<rx::string>(j, "builtin_passes");
+        get_json_array<std::string>(j, "builtin_passes").each_fwd([&](const std::string& str) {
+            data.builtin_passes.emplace_back(str.c_str());
+        });
     }
 } // namespace nova::renderer::shaderpack
