@@ -43,7 +43,7 @@ namespace nova::renderer::shaderpack {
                                                 {"tessellationEvaluationShader", ""},
                                                 {"geometryShader", ""}};
 
-    rx::array<rx::string, 3> required_graphics_pipeline_fields = {"name", "pass", "vertexShader"};
+    rx::array<rx::string[3]> required_graphics_pipeline_fields = {"name", "pass", "vertexShader"};
 
     nlohmann::json default_texture_format = {{"pixelFormat", "RGBA8"}, {"dimensionType", "Absolute"}};
 
@@ -70,12 +70,13 @@ namespace nova::renderer::shaderpack {
 
         // Check required items
         report.errors.reserve(required_graphics_pipeline_fields.size());
-        required_graphics_pipeline_fields.each_fwd([&](const rx::string& field_name) {
+        for(uint32_t i = 0; i < required_graphics_pipeline_fields.size(); i++) {
+            const auto& field_name = required_graphics_pipeline_fields[i];
             const auto& itr = pipeline_json.find(field_name.data());
             if(itr == pipeline_json.end()) {
                 report.errors.emplace_back(pipeline_msg(name.c_str(), field_name));
             }
-        });
+        }
 
         return report;
     }
