@@ -209,21 +209,19 @@ namespace nova::renderer::shaderpack {
                 }
             });
 
-            if(!pass.texture_outputs.size() == 0) {
-                pass.texture_outputs.each_fwd([&](const TextureAttachmentInfo& output) {
-                    const auto tex_range = resource_used_range.find(output.name);
+            pass.texture_outputs.each_fwd([&](const TextureAttachmentInfo& output) {
+                const auto tex_range = resource_used_range.find(output.name);
 
-                    if(pass_idx < tex_range->first_write_pass) {
-                        tex_range->first_write_pass = pass_idx;
-                    } else if(pass_idx > tex_range->last_write_pass) {
-                        tex_range->last_write_pass = pass_idx;
-                    }
+                if(pass_idx < tex_range->first_write_pass) {
+                    tex_range->first_write_pass = pass_idx;
+                } else if(pass_idx > tex_range->last_write_pass) {
+                    tex_range->last_write_pass = pass_idx;
+                }
 
-                    if(resources_in_order.find(output.name) == rx::vector<rx::string>::k_npos) {
-                        resources_in_order.push_back(output.name);
-                    }
-                });
-            }
+                if(resources_in_order.find(output.name) == rx::vector<rx::string>::k_npos) {
+                    resources_in_order.push_back(output.name);
+                }
+            });
 
             pass_idx++;
         });

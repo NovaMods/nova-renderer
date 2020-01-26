@@ -14,12 +14,12 @@
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
 
+#include "../../filesystem/helpers.hpp"
 #include "../../tasks/task_scheduler.hpp"
 #include "../json_utils.hpp"
 #include "json_interop.hpp"
 #include "render_graph_builder.hpp"
 #include "shaderpack_validator.hpp"
-#include "../../filesystem/helpers.hpp"
 
 namespace nova::renderer::shaderpack {
     using namespace filesystem;
@@ -234,7 +234,7 @@ namespace nova::renderer::shaderpack {
             auto json_resources = nlohmann::json::parse(resources_string.data());
             const ValidationReport report = validate_shaderpack_resources_data(json_resources);
             print(report);
-            if(!report.errors.empty()) {
+            if(report.errors.size() != 0) {
                 return rx::nullopt;
             }
 
@@ -320,12 +320,9 @@ namespace nova::renderer::shaderpack {
         const ValidationReport report = validate_graphics_pipeline(json_pipeline);
         NOVA_LOG(TRACE) << "Finished validating JSON for pipeline " << pipeline_path.data();
         print(report);
-        if(!report.errors.empty()) {
+        if(report.errors.size() != 0) {
             NOVA_LOG(ERROR) << "Loading pipeline file " << pipeline_path.data() << " failed";
-            for(const auto& err : report.errors) {
-                NOVA_LOG(ERROR) << err;
-            }
-            return {};
+            return rx::nullopt;
         }
 
         auto new_pipeline = json_pipeline.get<PipelineCreateInfo>();
@@ -471,14 +468,14 @@ namespace nova::renderer::shaderpack {
         auto json_material = nlohmann::json::parse(material_text.data(), material_text.data() + material_text.size());
         const auto report = validate_material(json_material);
         print(report);
-        if(!report.errors.empty()) {
+        if(report.errors.size() != 0) {
             // There were errors, this material can't be loaded
             NOVA_LOG(TRACE) << "Load of material " << material_path.data() << " failed";
             return {};
         }
 
         const auto material_file_name = get_file_name(material_path);
-        const auto material_extension_begin_idx = material_file_name.size() - 4;    // ".mat"
+        const auto material_extension_begin_idx = material_file_name.size() - 4; // ".mat"
 
         auto material = json_material.get<MaterialData>();
         material.name = material_file_name.substring(0, material_extension_begin_idx);

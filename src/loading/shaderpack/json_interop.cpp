@@ -9,13 +9,14 @@ namespace nova::renderer::shaderpack {
                                                                          "dimensionType",
                                                                          TextureDimensionTypeEnum::ScreenRelative,
                                                                          texture_dimension_type_enum_from_string);
+        
         format.width = get_json_value<float>(j, "width").value_or(0);
         format.height = get_json_value<float>(j, "height").value_or(0);
     }
 
     void from_json(const nlohmann::json& j, TextureCreateInfo& tex) {
-        tex.name = get_json_value<std::string>(j, "name").value();
-        tex.format = get_json_value<TextureFormat>(j, "format").value();
+        tex.name = *get_json_value<rx::string>(j, "name");
+        tex.format = *get_json_value<TextureFormat>(j, "format");
     }
 
     void from_json(const nlohmann::json& j, SamplerCreateInfo& sampler) {
@@ -29,13 +30,12 @@ namespace nova::renderer::shaderpack {
     }
 
     void from_json(const nlohmann::json& j, RenderPassCreateInfo& pass) {
-        pass.dependencies = get_json_array<std::string>(j, "dependencies");
-        pass.texture_inputs = get_json_array<std::string>(j, "textureInputs");
+        pass.texture_inputs = get_json_array<rx::string>(j, "textureInputs");
         pass.texture_outputs = get_json_array<TextureAttachmentInfo>(j, "textureOutputs");
         pass.depth_texture = get_json_value<TextureAttachmentInfo>(j, "depthTexture");
-        pass.input_buffers = get_json_array<std::string>(j, "inputBuffers");
-        pass.output_buffers = get_json_array<std::string>(j, "outputBuffers");
-        pass.name = get_json_value<std::string>(j, "name").value_or("<NAME_MISSING>");
+        pass.input_buffers = get_json_array<rx::string>(j, "inputBuffers");
+        pass.output_buffers = get_json_array<rx::string>(j, "outputBuffers");
+        pass.name = get_json_value<rx::string>(j, "name").value_or("<NAME_MISSING>");
     }
 
     void from_json(const nlohmann::json& j, StencilOpState& stencil_op) {
@@ -48,14 +48,14 @@ namespace nova::renderer::shaderpack {
     }
 
     void from_json(const nlohmann::json& j, PipelineCreateInfo& pipeline) {
-        pipeline.name = get_json_value<std::string>(j, "name").value();
-        pipeline.parent_name = get_json_value<std::string>(j, "parent").value_or("");
-        pipeline.pass = get_json_value<std::string>(j, "pass").value();
-        pipeline.defines = get_json_array<std::string>(j, "defines");
+        pipeline.name = *get_json_value<rx::string>(j, "name");
+        pipeline.parent_name = get_json_value<rx::string>(j, "parent").value_or("");
+        pipeline.pass = *get_json_value<rx::string>(j, "pass");
+        pipeline.defines = get_json_array<rx::string>(j, "defines");
         pipeline.states = get_json_array<StateEnum>(j, "states", state_enum_from_string);
         pipeline.front_face = get_json_value<StencilOpState>(j, "frontFace");
         pipeline.back_face = get_json_value<StencilOpState>(j, "backFace");
-        pipeline.fallback = get_json_value<std::string>(j, "fallback").value_or("");
+        pipeline.fallback = get_json_value<rx::string>(j, "fallback").value_or("");
         pipeline.depth_bias = get_json_value<float>(j, "depthBias", 0);
         pipeline.slope_scaled_depth_bias = get_json_value<float>(j, "slopeScaledDepthBias", 0);
         pipeline.stencil_ref = get_json_value<uint32_t>(j, "stencilRef", 0);
@@ -67,67 +67,76 @@ namespace nova::renderer::shaderpack {
                                                                         PrimitiveTopologyEnum::Triangles,
                                                                         primitive_topology_enum_from_string);
         pipeline.source_color_blend_factor = get_json_value<BlendFactorEnum>(j,
-                                                                       "sourceBlendFactor",
-                                                                       BlendFactorEnum::One,
-                                                                       blend_factor_enum_from_string);
+                                                                             "sourceBlendFactor",
+                                                                             BlendFactorEnum::One,
+                                                                             blend_factor_enum_from_string);
         pipeline.destination_color_blend_factor = get_json_value<BlendFactorEnum>(j,
-                                                                            "destBlendFactor",
-                                                                            BlendFactorEnum::Zero,
-                                                                            blend_factor_enum_from_string);
-        pipeline.source_alpha_blend_factor = get_json_value<BlendFactorEnum>(j, "alphaSrc", BlendFactorEnum::One, blend_factor_enum_from_string);
-        pipeline.destination_alpha_blend_factor = get_json_value<BlendFactorEnum>(j, "alphaDest", BlendFactorEnum::Zero, blend_factor_enum_from_string);
+                                                                                  "destBlendFactor",
+                                                                                  BlendFactorEnum::Zero,
+                                                                                  blend_factor_enum_from_string);
+        pipeline.source_alpha_blend_factor = get_json_value<BlendFactorEnum>(j,
+                                                                             "alphaSrc",
+                                                                             BlendFactorEnum::One,
+                                                                             blend_factor_enum_from_string);
+        pipeline.destination_alpha_blend_factor = get_json_value<BlendFactorEnum>(j,
+                                                                                  "alphaDest",
+                                                                                  BlendFactorEnum::Zero,
+                                                                                  blend_factor_enum_from_string);
         pipeline.depth_func = get_json_value<CompareOpEnum>(j, "depthFunc", CompareOpEnum::Less, compare_op_enum_from_string);
         pipeline.render_queue = get_json_value<RenderQueueEnum>(j, "renderQueue", RenderQueueEnum::Opaque, render_queue_enum_from_string);
 
-        pipeline.vertex_shader.filename = get_json_value<std::string>(j, "vertexShader").value_or("<NAME_MISSING>").c_str();
+        pipeline.vertex_shader.filename = get_json_value<rx::string>(j, "vertexShader").value_or("<NAME_MISSING>");
 
-        std::optional<std::string> geometry_shader_name = get_json_value<std::string>(j, "geometryShader", true);
+        rx::optional<rx::string> geometry_shader_name = get_json_value<rx::string>(j, "geometryShader", true);
         if(geometry_shader_name) {
-            pipeline.geometry_shader = std::make_optional<ShaderSource>();
-            (*pipeline.geometry_shader).filename = (*geometry_shader_name).c_str();
+            pipeline.geometry_shader = rx::optional<ShaderSource>();
+            pipeline.geometry_shader->filename = *geometry_shader_name;
         }
 
-        std::optional<std::string> tess_control_shader_name = get_json_value<std::string>(j, "tessellationControlShader", true);
+        rx::optional<rx::string> tess_control_shader_name = get_json_value<rx::string>(j, "tessellationControlShader", true);
         if(tess_control_shader_name) {
-            pipeline.tessellation_control_shader = std::make_optional<ShaderSource>();
-            (*pipeline.tessellation_control_shader).filename = (*tess_control_shader_name).c_str();
+            pipeline.tessellation_control_shader = rx::optional<ShaderSource>();
+            pipeline.tessellation_control_shader->filename = *tess_control_shader_name;
         }
 
-        std::optional<std::string> tess_eval_shader_name = get_json_value<std::string>(j, "tessellationEvalShader", true);
+        rx::optional<rx::string> tess_eval_shader_name = get_json_value<rx::string>(j, "tessellationEvalShader", true);
         if(tess_eval_shader_name) {
-            pipeline.tessellation_evaluation_shader = std::make_optional<ShaderSource>();
-            (*pipeline.tessellation_evaluation_shader).filename = (*tess_eval_shader_name).c_str();
+            pipeline.tessellation_evaluation_shader = rx::optional<ShaderSource>();
+            pipeline.tessellation_evaluation_shader->filename = *tess_eval_shader_name;
         }
 
-        std::optional<std::string> fragment_shader_name = get_json_value<std::string>(j, "fragmentShader", true);
+        rx::optional<rx::string> fragment_shader_name = get_json_value<rx::string>(j, "fragmentShader", true);
         if(fragment_shader_name) {
-            pipeline.fragment_shader = std::make_optional<ShaderSource>();
-            (*pipeline.fragment_shader).filename = (*fragment_shader_name).c_str();
+            pipeline.fragment_shader = rx::optional<ShaderSource>();
+            pipeline.fragment_shader->filename = *fragment_shader_name;
         }
     }
 
     void from_json(const nlohmann::json& j, MaterialPass& pass) {
-        pass.name = get_json_value<std::string>(j, "name").value();
-        pass.pipeline = get_json_value<std::string>(j, "pipeline").value();
-        pass.bindings = get_json_value<std::unordered_map<std::string, std::string>>(j, "bindings").value();
-    }
+        pass.name = *get_json_value<rx::string>(j, "name");
+        pass.pipeline = *get_json_value<rx::string>(j, "pipeline");
 
-    void from_json(const nlohmann::json& j, MaterialData& mat) {
-        mat.name = get_json_value<std::string>(j, "name").value();
-        mat.passes = get_json_array<MaterialPass>(j, "passes");
-        mat.geometry_filter = get_json_value<std::string>(j, "filter").value();
-
-        for(MaterialPass& pass : mat.passes) {
-            pass.material_name = mat.name;
+        // std allowed for JSON interop
+        const auto& bindings_map = *get_json_value<std::unordered_map<std::string, std::string>>(j, "bindings");
+        for(const auto& [binding_name, bound_resource] : bindings_map) {
+            pass.bindings.insert(binding_name.c_str(), bound_resource.c_str());
         }
     }
 
+    void from_json(const nlohmann::json& j, MaterialData& mat) {
+        mat.name = *get_json_value<rx::string>(j, "name");
+        mat.passes = get_json_array<MaterialPass>(j, "passes");
+        mat.geometry_filter = *get_json_value<rx::string>(j, "filter");
+
+        mat.passes.each_fwd([&](MaterialPass& pass) { pass.material_name = mat.name; });
+    }
+
     void from_json(const nlohmann::json& j, TextureAttachmentInfo& tex) {
-        tex.name = get_json_value<std::string>(j, "name").value();
+        tex.name = *get_json_value<rx::string>(j, "name");
         tex.clear = get_json_value<bool>(j, "clear", false);
     }
 
-    void from_json(const nlohmann::json& j, std::pmr::vector<RenderPassCreateInfo>& passes) {
+    void from_json(const nlohmann::json& j, rx::vector<RenderPassCreateInfo>& passes) {
         for(const auto& node : j) {
             passes.push_back(node.get<RenderPassCreateInfo>());
         }
@@ -135,6 +144,6 @@ namespace nova::renderer::shaderpack {
 
     void from_json(const nlohmann::json& j, RendergraphData& data) {
         data.passes = get_json_array<RenderPassCreateInfo>(j, "passes");
-        data.builtin_passes = get_json_array<std::string>(j, "builtin_passes");
+        data.builtin_passes = get_json_array<rx::string>(j, "builtin_passes");
     }
 } // namespace nova::renderer::shaderpack

@@ -6,6 +6,7 @@
 #include <rx/core/string.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
+#include <string>
 
 namespace nova::renderer {
     namespace rhi {
@@ -516,17 +517,20 @@ namespace nova::renderer::shaderpack {
 
     // TODO: Wrap these in to_json/from_json thingies
 
-    [[nodiscard]] PixelFormatEnum pixel_format_enum_from_string(const rx::string& str);
-    [[nodiscard]] TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const rx::string& str);
-    [[nodiscard]] TextureFilterEnum texture_filter_enum_from_string(const rx::string& str);
-    [[nodiscard]] WrapModeEnum wrap_mode_enum_from_string(const rx::string& str);
-    [[nodiscard]] StencilOpEnum stencil_op_enum_from_string(const rx::string& str);
-    [[nodiscard]] CompareOpEnum compare_op_enum_from_string(const rx::string& str);
-    [[nodiscard]] MsaaSupportEnum msaa_support_enum_from_string(const rx::string& str);
-    [[nodiscard]] PrimitiveTopologyEnum primitive_topology_enum_from_string(const rx::string& str);
-    [[nodiscard]] BlendFactorEnum blend_factor_enum_from_string(const rx::string& str);
-    [[nodiscard]] RenderQueueEnum render_queue_enum_from_string(const rx::string& str);
-    [[nodiscard]] StateEnum state_enum_from_string(const rx::string& str);
+    // std::string allowed here because Nova uses these functions to deserialize JSON
+    // This system will be reworked when Nova moves away from nlohmann::json
+
+    [[nodiscard]] PixelFormatEnum pixel_format_enum_from_string(const std::string& str);
+    [[nodiscard]] TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const std::string& str);
+    [[nodiscard]] TextureFilterEnum texture_filter_enum_from_string(const std::string& str);
+    [[nodiscard]] WrapModeEnum wrap_mode_enum_from_string(const std::string& str);
+    [[nodiscard]] StencilOpEnum stencil_op_enum_from_string(const std::string& str);
+    [[nodiscard]] CompareOpEnum compare_op_enum_from_string(const std::string& str);
+    [[nodiscard]] MsaaSupportEnum msaa_support_enum_from_string(const std::string& str);
+    [[nodiscard]] PrimitiveTopologyEnum primitive_topology_enum_from_string(const std::string& str);
+    [[nodiscard]] BlendFactorEnum blend_factor_enum_from_string(const std::string& str);
+    [[nodiscard]] RenderQueueEnum render_queue_enum_from_string(const std::string& str);
+    [[nodiscard]] StateEnum state_enum_from_string(const std::string& str);
 
     [[nodiscard]] rx::string to_string(PixelFormatEnum val);
     [[nodiscard]] rx::string to_string(TextureDimensionTypeEnum val);
