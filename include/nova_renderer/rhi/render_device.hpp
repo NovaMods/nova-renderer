@@ -1,6 +1,5 @@
 #pragma once
 
-#include "nova_renderer/memory/allocators.hpp"
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
@@ -257,10 +256,10 @@ namespace nova::renderer::rhi {
                                          const rx::vector<Semaphore*>& wait_semaphores = {},
                                          const rx::vector<Semaphore*>& signal_semaphores = {}) = 0;
 
-        [[nodiscard]] mem::AllocatorHandle<>* get_allocator() const;
+        [[nodiscard]] rx::memory::allocator* get_allocator() const;
 
     protected:
-        mem::AllocatorHandle<>& internal_allocator;
+        rx::memory::allocator* internal_allocator;
 
         NovaWindow& window;
 
@@ -277,6 +276,8 @@ namespace nova::renderer::rhi {
          *
          * \attention Called by the various render engine implementations
          */
-        RenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator* allocator = nullptr);
+        RenderDevice(NovaSettingsAccessManager& settings,
+                     NovaWindow& window,
+                     rx::memory::allocator* allocator = &rx::memory::g_system_allocator);
     };
 } // namespace nova::renderer::rhi
