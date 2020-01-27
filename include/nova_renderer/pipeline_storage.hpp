@@ -1,5 +1,4 @@
 #pragma once
-#include <optional>
 #include <string>
 
 #include "nova_renderer/rendergraph.hpp"
@@ -12,14 +11,17 @@ namespace spirv_cross {
 } // namespace spirv_cross
 
 namespace nova::renderer {
-    using PipelineReturn = std::tuple<Pipeline, PipelineMetadata>;
+    struct PipelineReturn {
+        Pipeline pipeline;
+        PipelineMetadata metadata;
+    };
 
     class PipelineStorage {
     public:
         /*!
          * \brief Creates a new pipeline cache which will create its pipeline on the provided render device
          */
-        PipelineStorage(NovaRenderer& renderer, mem::AllocatorHandle<>& allocator);
+        PipelineStorage(NovaRenderer& renderer, rx::memory::allocator* allocator);
 
         PipelineStorage(const PipelineStorage& other) = delete;
         PipelineStorage& operator=(const PipelineStorage& other) = delete;
@@ -29,7 +31,7 @@ namespace nova::renderer {
 
         ~PipelineStorage() = default;
 
-        [[nodiscard]] std::optional<Pipeline> get_pipeline(const std::string& pipeline_name) const;
+        [[nodiscard]] rx::optional<Pipeline> get_pipeline(const rx::string& pipeline_name) const;
 
         [[nodiscard]] bool create_pipeline(const shaderpack::PipelineCreateInfo& create_info);
 
@@ -38,29 +40,29 @@ namespace nova::renderer {
 
         rhi::RenderDevice& device;
 
-        mem::AllocatorHandle<>& allocator;
+        rx::memory::allocator* allocator;
 
-        std::unordered_map<std::string, PipelineMetadata> pipeline_metadatas;
+        rx::map<rx::string, PipelineMetadata> pipeline_metadatas;
 
-        std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
+        rx::map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
 
-        std::unordered_map<std::string, Pipeline> pipelines;
+        rx::map<rx::string, Pipeline> pipelines;
 
         [[nodiscard]] ntl::Result<PipelineReturn> create_graphics_pipeline(
             rhi::PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
 
         [[nodiscard]] ntl::Result<rhi::PipelineInterface*> create_pipeline_interface(
             const shaderpack::PipelineCreateInfo& pipeline_create_info,
-            const std::pmr::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const;
+            const rx::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+            const rx::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const;
 
-        [[nodiscard]] std::pmr::vector<rhi::VertexField> get_vertex_fields(const shaderpack::ShaderSource& vertex_shader) const;
+        [[nodiscard]] rx::vector<rhi::VertexField> get_vertex_fields(const shaderpack::ShaderSource& vertex_shader) const;
 
-        static void get_shader_module_descriptors(const std::pmr::vector<uint32_t>& spirv,
+        static void get_shader_module_descriptors(const rx::vector<uint32_t>& spirv,
                                                   rhi::ShaderStage shader_stage,
-                                                  std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings);
+                                                  rx::map<rx::string, rhi::ResourceBindingDescription>& bindings);
 
-        static void add_resource_to_bindings(std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings,
+        static void add_resource_to_bindings(rx::map<rx::string, rhi::ResourceBindingDescription>& bindings,
                                              rhi::ShaderStage shader_stage,
                                              const spirv_cross::CompilerGLSL& shader_compiler,
                                              const spirv_cross::Resource& resource,
