@@ -116,6 +116,7 @@ set(NOVA_SOURCE
 
         include/nova_renderer/rhi/forward_decls.hpp
         include/nova_renderer/rhi/command_list.hpp
+        include/nova_renderer/rhi/swapchain.hpp
         include/nova_renderer/rhi/rhi_enums.hpp
         include/nova_renderer/rhi/rhi_types.hpp
         include/nova_renderer/rhi/render_device.hpp
