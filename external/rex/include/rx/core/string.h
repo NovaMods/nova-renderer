@@ -48,6 +48,11 @@ struct string {
   void reserve(rx_size _size);
   void resize(rx_size _size);
 
+  rx_size find(int _ch) const;
+
+  template<typename F>
+  rx_size find_if(F&& _compare) const;
+
   rx_size size() const;
   rx_size capacity() const;
   bool is_empty() const;
@@ -208,6 +213,25 @@ inline string::string(const char* _first, const char* _last)
 {
 }
 
+inline rx_size string::find(int _ch) const {
+  for (rx_size i{0}; i < size(); i++) {
+    if (m_data[i] == _ch) {
+      return i;
+    }
+  }
+  return k_npos;
+}
+
+template<typename F>
+inline rx_size string::find_if(F&& _compare) const {
+  for (rx_size i{0}; i < size(); i++) {
+    if (_compare(m_data[i])) {
+      return i;
+    }
+  }
+  return k_npos;
+}
+
 inline rx_size string::size() const {
   return m_last - m_data;
 }
@@ -351,6 +375,12 @@ inline const rx_u16* wide_string::data() const {
 inline memory::allocator* wide_string::allocator() const {
   return m_allocator;
 }
+
+rx_size utf16_to_utf8(const rx_u16* _utf16_contents, rx_size _length,
+  char* utf8_contents_);
+
+rx_size utf8_to_utf16(const char* _utf8_contents, rx_size _length,
+  rx_u16* utf16_contents_);
 
 } // namespace rx
 

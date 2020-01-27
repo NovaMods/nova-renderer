@@ -28,6 +28,7 @@ struct pool
   void destroy(T* _data);
 
   memory::allocator* allocator() const;
+
   rx_size object_size() const;
   rx_size capacity() const;
   rx_size size() const;

@@ -191,16 +191,16 @@ namespace nova::renderer::rhi {
             case shaderpack::StencilOpEnum::Replace:
                 return VK_STENCIL_OP_REPLACE;
 
-            case shaderpack::StencilOpEnum::Incr:
+            case shaderpack::StencilOpEnum::Increment:
                 return VK_STENCIL_OP_INCREMENT_AND_CLAMP;
 
-            case shaderpack::StencilOpEnum::IncrWrap:
+            case shaderpack::StencilOpEnum::IncrementAndWrap:
                 return VK_STENCIL_OP_INCREMENT_AND_WRAP;
 
-            case shaderpack::StencilOpEnum::Decr:
+            case shaderpack::StencilOpEnum::Decrement:
                 return VK_STENCIL_OP_DECREMENT_AND_CLAMP;
 
-            case shaderpack::StencilOpEnum::DecrWrap:
+            case shaderpack::StencilOpEnum::DecrementAndWrap:
                 return VK_STENCIL_OP_DECREMENT_AND_WRAP;
 
             case shaderpack::StencilOpEnum::Invert:

@@ -23,59 +23,35 @@ namespace nova::filesystem {
             return allocator->create<RegularFolderAccessor>(path);
         }
 
-        NOVA_LOG(FATAL) << "Could not create folder accessor for path " << mut_path;
+        NOVA_LOG(FATAL) << "Could not create folder accessor for path " << path.data();
 
-        return {};
+        return nullptr;
     }
 
-    FolderAccessorBase::FolderAccessorBase(fs::path folder) : root_folder(std::move(folder)), resource_existence_mutex(new std::mutex) {}
+    FolderAccessorBase::FolderAccessorBase(rx::string folder)
+        : root_folder(std::move(folder)), resource_existence_mutex(new rx::concurrency::mutex) {}
 
     bool FolderAccessorBase::does_resource_exist(const rx::string& resource_path) {
         rx::concurrency::scope_lock l(*resource_existence_mutex);
 
-        const auto full_path = root_folder / resource_path;
+        const auto full_path = rx::string::format("%s/%s", root_folder, resource_path);
         return does_resource_exist_on_filesystem(full_path);
     }
 
-    std::pmr::vector<uint32_t> FolderAccessorBase::read_spirv_file(const fs::path& resource_path) {
-        const std::string buf = read_text_file(resource_path);
-        const auto* buf_data = reinterpret_cast<const uint32_t*>(buf.data());
-        std::pmr::vector<uint32_t> ret_val;
-        ret_val.reserve(buf.size() / 4);
-        ret_val.insert(ret_val.begin(), buf_data, buf_data + (buf.size() / 4));
-
-        return ret_val;
+    rx::string FolderAccessorBase::read_text_file(const rx::string& resource_path) {
+        auto buf = read_file(resource_path);
+        return buf.disown();
     }
 
-    std::optional<bool> FolderAccessorBase::does_resource_exist_in_map(const std::string& resource_string) const {
-        if(resource_existence.find(resource_string) != resource_existence.end()) {
-            return std::make_optional<bool>(resource_existence.at(resource_string));
+    rx::optional<bool> FolderAccessorBase::does_resource_exist_in_map(const rx::string& resource_string) const {
+        if(const auto* val = resource_existence.find(resource_string); val != nullptr) {
+            return rx::optional<bool>(*val);
         }
 
-        return {};
+        return rx::nullopt;
     }
 
-    const fs::path& FolderAccessorBase::get_root() const { return root_folder; }
+    const rx::string& FolderAccessorBase::get_root() const { return root_folder; }
 
-    bool has_root(const fs::path& path, const fs::path& root) {
-        if(std::distance(path.begin(), path.end()) < std::distance(root.begin(), root.end())) {
-            // The path is shorter than the root path - the root can't possible be contained in the path
-            return false;
-        }
-
-        auto path_itr = path.begin();
-        auto root_itr = root.begin();
-        while(root_itr != root.end()) {
-            // Don't need to check path_itr - The if statement at the beginning ensures that the path has more members
-            // than the root
-            if(*root_itr != *path_itr) {
-                return false;
-            }
-
-            ++root_itr;
-            ++path_itr;
-        }
-
-        return true;
-    }
+    bool has_root(const rx::string& path, const rx::string& root) { return path.begins_with(root); }
 } // namespace nova::filesystem

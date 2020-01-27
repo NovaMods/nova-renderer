@@ -49,7 +49,7 @@ namespace nova::renderer::shaderpack {
             return PixelFormatEnum::DepthStencil;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported pixel format " << str.c_str();
+        NOVA_LOG(ERROR) << "Unsupported pixel format " << str;
         return {};
     }
 
@@ -61,7 +61,7 @@ namespace nova::renderer::shaderpack {
             return TextureDimensionTypeEnum::Absolute;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported texture dimension type " << str.c_str();
+        NOVA_LOG(ERROR) << "Unsupported texture dimension type " << str;
         return {};
     }
 
@@ -76,7 +76,7 @@ namespace nova::renderer::shaderpack {
             return TextureFilterEnum::Point;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported texture filter " << str.c_str();
+        NOVA_LOG(ERROR) << "Unsupported texture filter " << str;
         return {};
     }
 
@@ -88,7 +88,7 @@ namespace nova::renderer::shaderpack {
             return WrapModeEnum::Clamp;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported wrap mode " << str.c_str();
+        NOVA_LOG(ERROR) << "Unsupported wrap mode " << str;
         return {};
     }
 
@@ -103,22 +103,22 @@ namespace nova::renderer::shaderpack {
             return StencilOpEnum::Replace;
         }
         if(str == "Incr") {
-            return StencilOpEnum::Incr;
+            return StencilOpEnum::Increment;
         }
         if(str == "IncrWrap") {
-            return StencilOpEnum::IncrWrap;
+            return StencilOpEnum::IncrementAndWrap;
         }
         if(str == "Decr") {
-            return StencilOpEnum::Decr;
+            return StencilOpEnum::Decrement;
         }
         if(str == "DecrWrap") {
-            return StencilOpEnum::DecrWrap;
+            return StencilOpEnum::DecrementAndWrap;
         }
         if(str == "Invert") {
             return StencilOpEnum::Invert;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported stencil op " << str.c_str();
+        NOVA_LOG(ERROR) << "Unsupported stencil op " << str;
         return {};
     }
 
@@ -148,7 +148,7 @@ namespace nova::renderer::shaderpack {
             return CompareOpEnum::Always;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported compare op " << str.c_str();
+        NOVA_LOG(ERROR) << "Unsupported compare op " << str;
         return {};
     }
 
@@ -163,7 +163,7 @@ namespace nova::renderer::shaderpack {
             return MsaaSupportEnum::None;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported antialiasing mode " << str.c_str();
+        NOVA_LOG(ERROR) << "Unsupported antialiasing mode " << str;
         return {};
     }
 
@@ -175,7 +175,7 @@ namespace nova::renderer::shaderpack {
             return PrimitiveTopologyEnum::Lines;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported primitive mode " << str.c_str();
+        NOVA_LOG(ERROR) << "Unsupported primitive mode " << str;
         return {};
     }
 
@@ -211,7 +211,7 @@ namespace nova::renderer::shaderpack {
             return BlendFactorEnum::OneMinusDstAlpha;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported blend factor " << str.c_str();
+        NOVA_LOG(ERROR) << "Unsupported blend factor " << str;
         return {};
     }
 
@@ -226,7 +226,7 @@ namespace nova::renderer::shaderpack {
             return RenderQueueEnum::Cutout;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported render queue " << str.c_str();
+        NOVA_LOG(ERROR) << "Unsupported render queue " << str;
         return {};
     }
 
@@ -262,11 +262,11 @@ namespace nova::renderer::shaderpack {
             return StateEnum::DisableAlphaWrite;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported state enum " << str.c_str();
+        NOVA_LOG(ERROR) << "Unsupported state enum " << str;
         return {};
     }
 
-    std::string to_string(const PixelFormatEnum val) {
+    rx::string to_string(const PixelFormatEnum val) {
         switch(val) {
             case PixelFormatEnum::RGBA8:
                 return "RGBA8";
@@ -287,7 +287,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const TextureDimensionTypeEnum val) {
+    rx::string to_string(const TextureDimensionTypeEnum val) {
         switch(val) {
             case TextureDimensionTypeEnum::ScreenRelative:
                 return "ScreenRelative";
@@ -299,7 +299,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const TextureFilterEnum val) {
+    rx::string to_string(const TextureFilterEnum val) {
         switch(val) {
             case TextureFilterEnum::TexelAA:
                 return "TexelAA";
@@ -314,7 +314,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const WrapModeEnum val) {
+    rx::string to_string(const WrapModeEnum val) {
         switch(val) {
             case WrapModeEnum::Repeat:
                 return "Repeat";
@@ -326,7 +326,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const StencilOpEnum val) {
+    rx::string to_string(const StencilOpEnum val) {
         switch(val) {
             case StencilOpEnum::Keep:
                 return "Keep";
@@ -337,16 +337,16 @@ namespace nova::renderer::shaderpack {
             case StencilOpEnum::Replace:
                 return "Replace";
 
-            case StencilOpEnum::Incr:
+            case StencilOpEnum::Increment:
                 return "Incr";
 
-            case StencilOpEnum::IncrWrap:
+            case StencilOpEnum::IncrementAndWrap:
                 return "IncrWrap";
 
-            case StencilOpEnum::Decr:
+            case StencilOpEnum::Decrement:
                 return "Decr";
 
-            case StencilOpEnum::DecrWrap:
+            case StencilOpEnum::DecrementAndWrap:
                 return "DecrWrap";
 
             case StencilOpEnum::Invert:
@@ -356,7 +356,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const CompareOpEnum val) {
+    rx::string to_string(const CompareOpEnum val) {
         switch(val) {
             case CompareOpEnum::Never:
                 return "Never";
@@ -386,7 +386,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const MsaaSupportEnum val) {
+    rx::string to_string(const MsaaSupportEnum val) {
         switch(val) {
             case MsaaSupportEnum::MSAA:
                 return "MSAA";
@@ -401,7 +401,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const PrimitiveTopologyEnum val) {
+    rx::string to_string(const PrimitiveTopologyEnum val) {
         switch(val) {
             case PrimitiveTopologyEnum::Triangles:
                 return "Triangles";
@@ -413,7 +413,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const BlendFactorEnum val) {
+    rx::string to_string(const BlendFactorEnum val) {
         switch(val) {
             case BlendFactorEnum::One:
                 return "One";
@@ -449,7 +449,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const RenderQueueEnum val) {
+    rx::string to_string(const RenderQueueEnum val) {
         switch(val) {
             case RenderQueueEnum::Transparent:
                 return "Transparent";
@@ -464,7 +464,7 @@ namespace nova::renderer::shaderpack {
         return "Unknown value";
     }
 
-    std::string to_string(const StateEnum val) {
+    rx::string to_string(const StateEnum val) {
         switch(val) {
             case StateEnum::Blending:
                 return "Blending";

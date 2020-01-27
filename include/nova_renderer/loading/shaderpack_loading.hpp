@@ -1,8 +1,8 @@
 #pragma once
 
-#include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"
+#include "nova_renderer/shaderpack_data.hpp"
 
 namespace nova::renderer::shaderpack {
     /*!
@@ -22,8 +22,8 @@ namespace nova::renderer::shaderpack {
      */
     RenderpackData load_shaderpack_data(const rx::string& shaderpack_name);
 
-    std::pmr::vector<uint32_t> load_shader_file(const rx::string& filename,
-                                                const std::shared_ptr<filesystem::FolderAccessorBase>& folder_access,
-                                                rhi::ShaderStage stage,
-                                                const std::pmr::vector<std::string>& defines = {});
+    rx::vector<uint32_t> load_shader_file(const rx::string& filename,
+                                          const filesystem::FolderAccessorBase* folder_access,
+                                          rhi::ShaderStage stage,
+                                          const rx::vector<rx::string>& defines = {});
 } // namespace nova::renderer::shaderpack

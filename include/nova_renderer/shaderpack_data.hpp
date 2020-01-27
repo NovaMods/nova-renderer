@@ -1,15 +1,12 @@
 #pragma once
 
-#include <memory_resource>
-#include <cstdint>
-#include <optional>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
 #include <glm/glm.hpp>
-#include <vulkan/vulkan.h>
+#include <rx/core/map.h>
+#include <rx/core/optional.h>
 #include <rx/core/string.h>
+#include <stdint.h>
+#include <vulkan/vulkan.h>
+#include <string>
 
 namespace nova::renderer {
     namespace rhi {
@@ -101,7 +98,7 @@ namespace nova::renderer::shaderpack {
 
     enum class MsaaSupportEnum { MSAA, Both, None };
 
-    enum class StencilOpEnum { Keep, Zero, Replace, Incr, IncrWrap, Decr, DecrWrap, Invert };
+    enum class StencilOpEnum { Keep, Zero, Replace, Increment, IncrementAndWrap, Decrement, DecrementAndWrap, Invert };
 
     enum class CompareOpEnum { Never, Less, LessEqual, Greater, GreaterEqual, Equal, NotEqual, Always };
 
@@ -146,10 +143,10 @@ namespace nova::renderer::shaderpack {
     /*!
      * \brief Defines a sampler to use for a texture
      *
-     * At the time of writing I'm not sure how this is corellated with a texture, but all well
+     * At the time of writing I'm not sure how this is correlated with a texture, but all well
      */
     struct SamplerCreateInfo {
-        std::string name;
+        rx::string name;
 
         /*!
          * \brief What kind of texture filter to use
@@ -176,7 +173,7 @@ namespace nova::renderer::shaderpack {
 
     struct ShaderSource {
         rx::string filename;
-        std::pmr::vector<uint32_t> source;
+        rx::vector<uint32_t> source;
     };
 
     /*!
@@ -186,42 +183,42 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief The name of this pipeline
          */
-        std::string name;
+        rx::string name;
 
         /*!
          * \brief The pipeline that this pipeline inherits from
          */
-        std::optional<std::string> parent_name;
+        rx::optional<rx::string> parent_name;
 
         /*!
          * \brief The name of the pass that this pipeline belongs to
          */
-        std::string pass;
+        rx::string pass;
 
         /*!
          * \brief All of the symbols in the shader that are defined by this state
          */
-        std::pmr::vector<std::string> defines{};
+        rx::vector<rx::string> defines{};
 
         /*!
          * \brief Defines the rasterizer state that's active for this pipeline
          */
-        std::pmr::vector<StateEnum> states{};
+        rx::vector<StateEnum> states{};
 
         /*!
          * \brief The stencil buffer operations to perform on the front faces
          */
-        std::optional<StencilOpState> front_face;
+        rx::optional<StencilOpState> front_face;
 
         /*!
          * \brief The stencil buffer operations to perform on the back faces
          */
-        std::optional<StencilOpState> back_face;
+        rx::optional<StencilOpState> back_face;
 
         /*!
          * \brief The material to use if this one's shaders can't be found
          */
-        std::optional<std::string> fallback;
+        rx::optional<rx::string> fallback;
 
         /*!
          * \brief A bias to apply to the depth
@@ -294,15 +291,10 @@ namespace nova::renderer::shaderpack {
 
         ShaderSource vertex_shader{};
 
-        std::optional<ShaderSource> geometry_shader;
-        std::optional<ShaderSource> tessellation_control_shader;
-        std::optional<ShaderSource> tessellation_evaluation_shader;
-        std::optional<ShaderSource> fragment_shader;
-
-        /*!
-         * \brief Merges this pipeline with the parent, returning the merged pipeline
-         */
-        [[nodiscard]] PipelineCreateInfo merge_with_parent(const PipelineCreateInfo& parent_pipeline) const;
+        rx::optional<ShaderSource> geometry_shader;
+        rx::optional<ShaderSource> tessellation_control_shader;
+        rx::optional<ShaderSource> tessellation_evaluation_shader;
+        rx::optional<ShaderSource> fragment_shader;
     };
 
     struct TextureFormat {
@@ -369,7 +361,7 @@ namespace nova::renderer::shaderpack {
          * If you use one of the virtual textures, then all fields except the binding are ignored
          * If you use `NovaFinal`, then all fields are ignored since the backbuffer is always bound to output location 0
          */
-        std::string name;
+        rx::string name;
 
         // TODO: Renderpack developers shouldn't have to worry about this
         ImageUsage usage;
@@ -378,8 +370,8 @@ namespace nova::renderer::shaderpack {
     };
 
     struct ShaderpackResourcesData {
-        std::pmr::vector<TextureCreateInfo> render_targets;
-        std::pmr::vector<SamplerCreateInfo> samplers;
+        rx::vector<TextureCreateInfo> render_targets;
+        rx::vector<SamplerCreateInfo> samplers;
 
         // TODO: Figure out shader readable textures
     };
@@ -391,7 +383,7 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief The name of the texture
          */
-        std::string name{};
+        rx::string name{};
 
         PixelFormatEnum pixel_format;
 
@@ -430,41 +422,37 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief The name of this render pass
          */
-        std::string name;
-
-        /*!
-         * \brief The materials that MUST execute before this one
-         */
-        std::pmr::vector<std::string> dependencies{};
+        rx::string name;
 
         /*!
          * \brief The textures that this pass will read from
          */
-        std::pmr::vector<std::string> texture_inputs{};
+        rx::vector<rx::string> texture_inputs{};
+
         /*!
          * \brief The textures that this pass will write to
          */
-        std::pmr::vector<TextureAttachmentInfo> texture_outputs{};
+        rx::vector<TextureAttachmentInfo> texture_outputs{};
 
         /*!
          * \brief The depth texture this pass will write to
          */
-        std::optional<TextureAttachmentInfo> depth_texture;
+        rx::optional<TextureAttachmentInfo> depth_texture;
 
         /*!
          * \brief All the buffers that this renderpass reads from
          */
-        std::pmr::vector<std::string> input_buffers{};
+        rx::vector<rx::string> input_buffers{};
 
         /*!
          * \brief All the buffers that this renderpass writes to
          */
-        std::pmr::vector<std::string> output_buffers{};
+        rx::vector<rx::string> output_buffers{};
 
         /*!
          * \brief Names of all the pipelines that use this renderpass
          */
-        std::pmr::vector<std::string> pipeline_names;
+        rx::vector<rx::string> pipeline_names;
 
         RenderPassCreateInfo() = default;
     };
@@ -476,20 +464,20 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief The shaderpack-supplied passes
          */
-        std::pmr::vector<RenderPassCreateInfo> passes;
+        rx::vector<RenderPassCreateInfo> passes;
 
         /*!
          * \brief Names of all the builtin renderpasses that the renderpack wants to use
          */
-        std::pmr::vector<std::string> builtin_passes;
+        rx::vector<rx::string> builtin_passes;
     };
 
     struct MaterialPass {
-        std::string name;
-        std::string material_name;
-        std::string pipeline;
-        // Ugh why is this constructor explicit
-        std::unordered_map<std::string, std::string> bindings = std::unordered_map<std::string, std::string>();
+        rx::string name;
+        rx::string material_name;
+        rx::string pipeline;
+
+        rx::map<rx::string, rx::string> bindings;
 
         /*!
          * \brief All the descriptor sets needed to bind everything used by this material to its pipeline
@@ -498,36 +486,39 @@ namespace nova::renderer::shaderpack {
          * descriptor sets is allowed, although the result won't show up on screen for a couple frames because Nova
          * (will) copies its descriptor sets to each in-flight frame
          */
-        std::pmr::vector<VkDescriptorSet> descriptor_sets;
+        rx::vector<VkDescriptorSet> descriptor_sets;
 
         VkPipelineLayout layout = VK_NULL_HANDLE;
     };
 
     struct MaterialData {
-        std::string name;
-        std::pmr::vector<MaterialPass> passes;
-        std::string geometry_filter;
+        rx::string name;
+        rx::vector<MaterialPass> passes;
+        rx::string geometry_filter;
     };
 
     /*!
      * \brief All the data that can be in a shaderpack
      */
     struct RenderpackData {
-        std::pmr::vector<PipelineCreateInfo> pipelines;
+        rx::vector<PipelineCreateInfo> pipelines;
 
         /*!
          * \brief All the renderpasses that this shaderpack needs, in submission order
          */
         RendergraphData graph_data;
 
-        std::pmr::vector<MaterialData> materials;
+        rx::vector<MaterialData> materials;
 
         ShaderpackResourcesData resources;
 
-        std::string name;
+        rx::string name;
     };
 
     // TODO: Wrap these in to_json/from_json thingies
+
+    // std::string allowed here because Nova uses these functions to deserialize JSON
+    // This system will be reworked when Nova moves away from nlohmann::json
 
     [[nodiscard]] PixelFormatEnum pixel_format_enum_from_string(const std::string& str);
     [[nodiscard]] TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const std::string& str);
@@ -541,17 +532,17 @@ namespace nova::renderer::shaderpack {
     [[nodiscard]] RenderQueueEnum render_queue_enum_from_string(const std::string& str);
     [[nodiscard]] StateEnum state_enum_from_string(const std::string& str);
 
-    [[nodiscard]] std::string to_string(PixelFormatEnum val);
-    [[nodiscard]] std::string to_string(TextureDimensionTypeEnum val);
-    [[nodiscard]] std::string to_string(TextureFilterEnum val);
-    [[nodiscard]] std::string to_string(WrapModeEnum val);
-    [[nodiscard]] std::string to_string(StencilOpEnum val);
-    [[nodiscard]] std::string to_string(CompareOpEnum val);
-    [[nodiscard]] std::string to_string(MsaaSupportEnum val);
-    [[nodiscard]] std::string to_string(PrimitiveTopologyEnum val);
-    [[nodiscard]] std::string to_string(BlendFactorEnum val);
-    [[nodiscard]] std::string to_string(RenderQueueEnum val);
-    [[nodiscard]] std::string to_string(StateEnum val);
+    [[nodiscard]] rx::string to_string(PixelFormatEnum val);
+    [[nodiscard]] rx::string to_string(TextureDimensionTypeEnum val);
+    [[nodiscard]] rx::string to_string(TextureFilterEnum val);
+    [[nodiscard]] rx::string to_string(WrapModeEnum val);
+    [[nodiscard]] rx::string to_string(StencilOpEnum val);
+    [[nodiscard]] rx::string to_string(CompareOpEnum val);
+    [[nodiscard]] rx::string to_string(MsaaSupportEnum val);
+    [[nodiscard]] rx::string to_string(PrimitiveTopologyEnum val);
+    [[nodiscard]] rx::string to_string(BlendFactorEnum val);
+    [[nodiscard]] rx::string to_string(RenderQueueEnum val);
+    [[nodiscard]] rx::string to_string(StateEnum val);
 
     [[nodiscard]] uint32_t pixel_format_to_pixel_width(PixelFormatEnum format);
 

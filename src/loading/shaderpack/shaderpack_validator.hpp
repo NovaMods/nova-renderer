@@ -1,24 +1,13 @@
-/*!
- * \brief Functions for determining if a JSON file from a shaderpack is reasonable, and telling the user if any fields
- * need to be filled in
- *
- * \author ddubois
- * \date 12-Sep-18.
- */
-
-#ifndef NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
-#define NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
-
-#include <string>
+#pragma once
 
 #include <nlohmann/json.hpp>
-
-#include "nova_renderer/util/utils.hpp"
+#include <rx/core/string.h>
+#include <rx/core/vector.h>
 
 namespace nova::renderer::shaderpack {
     struct ValidationReport {
-        std::pmr::vector<std::string> warnings;
-        std::pmr::vector<std::string> errors;
+        rx::vector<rx::string> warnings;
+        rx::vector<rx::string> errors;
 
         void merge_in(const ValidationReport& other);
     };
@@ -58,7 +47,7 @@ namespace nova::renderer::shaderpack {
      *
      * \param format_json The JSON to validate
      */
-    ValidationReport validate_texture_format(nlohmann::json& format_json, const std::string& texture_name);
+    ValidationReport validate_texture_format(nlohmann::json& format_json, const rx::string& texture_name);
 
     /*!
      * \brief Validates that the provided JSON has all the fields it needed. Warnings about optional fields are
@@ -78,5 +67,3 @@ namespace nova::renderer::shaderpack {
      */
     ValidationReport validate_material(nlohmann::json& material_json);
 } // namespace nova::renderer::shaderpack
-
-#endif // NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
