@@ -20,7 +20,7 @@ namespace nova::renderer::rhi {
 
         void resource_barriers(PipelineStage stages_before_barrier,
                                PipelineStage stages_after_barrier,
-                               const std::pmr::vector<ResourceBarrier>& barriers) override;
+                               const rx::vector<ResourceBarrier>& barriers) override;
 
         void copy_buffer(Buffer* destination_buffer,
                          mem::Bytes destination_offset,
@@ -28,7 +28,7 @@ namespace nova::renderer::rhi {
                          mem::Bytes source_offset,
                          mem::Bytes num_bytes) override;
 
-        void execute_command_lists(const std::pmr::vector<CommandList*>& lists) override;
+        void execute_command_lists(const rx::vector<CommandList*>& lists) override;
 
         void begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) override;
 
@@ -36,10 +36,9 @@ namespace nova::renderer::rhi {
 
         void bind_pipeline(const Pipeline* pipeline) override;
 
-        void bind_descriptor_sets(const std::pmr::vector<DescriptorSet*>& descriptor_sets,
-                                  const PipelineInterface* pipeline_interface) override;
+        void bind_descriptor_sets(const rx::vector<DescriptorSet*>& descriptor_sets, const PipelineInterface* pipeline_interface) override;
 
-        void bind_vertex_buffers(const std::pmr::vector<Buffer*>& buffers) override;
+        void bind_vertex_buffers(const rx::vector<Buffer*>& buffers) override;
 
         void bind_index_buffer(const Buffer* buffer) override;
 
@@ -49,6 +48,7 @@ namespace nova::renderer::rhi {
 
         void upload_data_to_image(
             Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) override;
+
     private:
         const VulkanRenderDevice& render_device;
     };

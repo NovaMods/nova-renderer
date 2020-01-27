@@ -882,7 +882,8 @@ namespace nova::renderer::rhi {
         // TODO: heap_mappings doesn't have the buffer's memory in it
         // Alternately, the buffer's memory isn't in heap_mappings
         // Something something assuming constantly mapped?
-        uint8_t* mapped_bytes = static_cast<uint8_t*>(*heap_mappings.find(memory->memory)) + allocation_info.offset.b_count() + offset.b_count();
+        uint8_t* mapped_bytes = static_cast<uint8_t*>(*heap_mappings.find(memory->memory)) + allocation_info.offset.b_count() +
+                                offset.b_count();
         memcpy(mapped_bytes, data, num_bytes.b_count());
     }
 
@@ -1378,9 +1379,6 @@ namespace nova::renderer::rhi {
         const auto extension_name_matcher = [](const char* ext_name) {
             return [=](const VkExtensionProperties& ext_props) -> bool { return std::strcmp(ext_name, ext_props.extensionName) == 0; };
         };
-
-        // TODO: use std::bind_front instead of std::bind when C++20 drops
-        using namespace std::placeholders;
 
         // TODO: Update as more GPUs support hardware raytracing
         info.supports_raytracing = available_extensions.find_if(extension_name_matcher(VK_NV_RAY_TRACING_EXTENSION_NAME)) !=
