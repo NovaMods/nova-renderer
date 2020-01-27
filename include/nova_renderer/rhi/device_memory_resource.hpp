@@ -3,14 +3,11 @@
 #include "nova_renderer/memory/allocation_strategy.hpp"
 #include "nova_renderer/memory/allocation_structs.hpp"
 #include "nova_renderer/memory/bytes.hpp"
-#include "rhi_types.hpp"
+#include "nova_renderer/rhi/forward_decls.hpp"
+
 using namespace nova::mem::operators;
 
 namespace nova::renderer {
-    namespace rhi {
-        struct DeviceMemory;
-    }
-
     struct DeviceMemoryAllocation {
         rhi::DeviceMemory* memory = nullptr;
         mem::AllocationInfo allocation_info;
