@@ -25,43 +25,44 @@ namespace nova::renderer {
         allocate_uniform_buffer_memory();
     }
 
-    std::optional<BufferResourceAccessor> DeviceResources::create_uniform_buffer(const std::string& name, const Bytes size) {
+    rx::optional<BufferResourceAccessor> DeviceResources::create_uniform_buffer(const rx::string& name, const Bytes size) {
         BufferResource resource = {};
         resource.name = name;
         resource.size = size;
 
         const BufferCreateInfo create_info = {size.b_count(), BufferUsage::UniformBuffer};
-        resource.buffer = device.create_buffer(create_info, *uniform_buffer_memory, *allocator);
+        resource.buffer = device.create_buffer(create_info, *uniform_buffer_memory, internal_allocator);
         if(resource.buffer == nullptr) {
-            NOVA_LOG(ERROR) << "Could not create uniform buffer " << name;
-            return std::nullopt;
+            NOVA_LOG(ERROR) << "Could not create uniform buffer " << name.data();
+            return rx::nullopt;
         }
 
-        uniform_buffers.emplace(name, resource);
+        uniform_buffers.insert(name, resource);
 
-        return std::make_optional<BufferResourceAccessor>(&uniform_buffers, name);
+        return rx::optional<BufferResourceAccessor>(BufferResourceAccessor{&uniform_buffers, name});
     }
 
-    std::optional<BufferResourceAccessor> DeviceResources::get_uniform_buffer(const std::string& name) {
-        if(const auto itr = uniform_buffers.find(name); itr != uniform_buffers.end()) {
-            return std::make_optional<BufferResourceAccessor>(&uniform_buffers, name);
+    rx::optional<BufferResourceAccessor> DeviceResources::get_uniform_buffer(const rx::string& name) {
+        if(uniform_buffers.find(name) != nullptr) {
+            return make_optional<BufferResourceAccessor>(&uniform_buffers, name);
         }
 
-        return std::nullopt;
+        return rx::nullopt;
     }
 
-    void DeviceResources::destroy_uniform_buffer(const std::string& name) {
-        if(const auto itr = uniform_buffers.find(name); itr != uniform_buffers.end()) {
-            uniform_buffers.erase(itr);
+    void DeviceResources::destroy_uniform_buffer(const rx::string& name) {
+        if(const BufferResource* res = uniform_buffers.find(name)) {
+            // TODO device.destroy_buffer(res->buffer);
         }
+        uniform_buffers.erase(name);
     }
 
-    std::optional<TextureResourceAccessor> DeviceResources::create_texture(const std::string& name,
-                                                                           const std::size_t width,
-                                                                           const std::size_t height,
-                                                                           const PixelFormat pixel_format,
-                                                                           const void* data,
-                                                                           AllocatorHandle<>& allocator) {
+    rx::optional<TextureResourceAccessor> DeviceResources::create_texture(const rx::string& name,
+                                                                          const std::size_t width,
+                                                                          const std::size_t height,
+                                                                          const PixelFormat pixel_format,
+                                                                          const void* data,
+                                                                          rx::memory::allocator* allocator) {
 
         TextureResource resource = {};
 
@@ -80,13 +81,13 @@ namespace nova::renderer {
         info.format.width = static_cast<float>(width);
         info.format.height = static_cast<float>(height);
 
-        const std::shared_ptr<Buffer> staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
-
         resource.image = device.create_image(info, allocator);
         resource.image->is_dynamic = false;
 
         if(data != nullptr) {
-            CommandList* cmds = device.create_command_list(allocator, 0, QueueType::Transfer);
+            Buffer* staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
+
+            CommandList* cmds = device.create_command_list(0, QueueType::Transfer, CommandList::Level::Primary, allocator);
 
             ResourceBarrier initial_texture_barrier = {};
             initial_texture_barrier.resource_to_barrier = resource.image;
@@ -96,8 +97,9 @@ namespace nova::renderer {
             initial_texture_barrier.new_state = ResourceState::CopyDestination;
             initial_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
 
-            cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::Transfer, {initial_texture_barrier});
-            cmds->upload_data_to_image(resource.image, width, height, pixel_size, staging_buffer.get(), data);
+            const rx::vector<ResourceBarrier> initial_barriers(allocator, 1, initial_texture_barrier);
+            cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::Transfer, initial_barriers);
+            cmds->upload_data_to_image(resource.image, width, height, pixel_size, staging_buffer, data);
 
             ResourceBarrier final_texture_barrier = {};
             final_texture_barrier.resource_to_barrier = resource.image;
@@ -107,42 +109,46 @@ namespace nova::renderer {
             final_texture_barrier.new_state = ResourceState::ShaderRead;
             final_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
 
-            cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::AllGraphics, {final_texture_barrier});
+            const rx::vector<ResourceBarrier> final_barriers(allocator, 1, final_texture_barrier);
+            cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::AllGraphics, final_barriers);
 
             Fence* upload_done_fence = device.create_fence(allocator);
             device.submit_command_list(cmds, QueueType::Transfer, upload_done_fence);
 
             // Be sure that the data copy is complete, so that this method doesn't return before the GPU is done with the staging buffer
-            device.wait_for_fences({upload_done_fence});
-            device.destroy_fences({upload_done_fence}, allocator);
+            const rx::vector<Fence*> upload_done_fences(allocator, 1, upload_done_fence);
+            device.wait_for_fences(upload_done_fences);
+            device.destroy_fences(upload_done_fences, allocator);
+
+            return_staging_buffer(staging_buffer);
         }
 
-        textures.emplace(name, resource);
+        textures.insert(name, resource);
 
-        return std::make_optional<TextureResourceAccessor>(&textures, name);
+        return make_optional<TextureResourceAccessor>(&textures, name);
     }
 
-    std::optional<TextureResourceAccessor> DeviceResources::get_texture(const std::string& name) const {
-        if(textures.find(name) != textures.end()) {
-            return std::make_optional<TextureResourceAccessor>(&textures, name);
+    rx::optional<TextureResourceAccessor> DeviceResources::get_texture(const rx::string& name) const {
+        if(textures.find(name) != nullptr) {
+            return make_optional<TextureResourceAccessor>(&textures, name);
 
         }
 
 #if NOVA_DEBUG
         else {
-            NOVA_LOG(ERROR) << "Could not find image \"" << name << "\"";
+            NOVA_LOG(ERROR) << "Could not find image \"" << name.data() << "\"";
         }
 #endif
 
-        return std::nullopt;
+        return rx::nullopt;
     }
 
-    std::optional<TextureResourceAccessor> DeviceResources::create_render_target(const std::string& name,
-                                                                                 const size_t width,
-                                                                                 const size_t height,
-                                                                                 const PixelFormat pixel_format,
-                                                                                 AllocatorHandle<>& allocator,
-                                                                                 const bool /* can_be_sampled // Not yet supported */) {
+    rx::optional<TextureResourceAccessor> DeviceResources::create_render_target(const rx::string& name,
+                                                                                const size_t width,
+                                                                                const size_t height,
+                                                                                const PixelFormat pixel_format,
+                                                                                rx::memory::allocator* allocator,
+                                                                                const bool /* can_be_sampled // Not yet supported */) {
         shaderpack::TextureCreateInfo create_info;
         create_info.name = name;
         create_info.usage = ImageUsage::RenderTarget;
@@ -164,95 +170,93 @@ namespace nova::renderer {
             resource.width = width;
             resource.image = image;
 
-            render_targets.emplace(name, resource);
+            render_targets.insert(name, resource);
 
-            return std::make_optional<TextureResourceAccessor>(&render_targets, name);
+            return make_optional<TextureResourceAccessor>(&render_targets, name);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create render target " << name;
-            return {};
+            NOVA_LOG(ERROR) << "Could not create render target " << name.data();
+            return rx::nullopt;
         }
     }
 
-    std::optional<TextureResourceAccessor> DeviceResources::get_render_target(const std::string& name) const {
-        if(render_targets.find(name) != render_targets.end()) {
-            return std::make_optional<TextureResourceAccessor>(&render_targets, name);
+    rx::optional<TextureResourceAccessor> DeviceResources::get_render_target(const rx::string& name) const {
+        if(render_targets.find(name) != nullptr) {
+            return make_optional<TextureResourceAccessor>(&render_targets, name);
 
         } else {
-            return std::nullopt;
+            return rx::nullopt;
         }
     }
 
-    void DeviceResources::destroy_render_target(const std::string& texture_name, AllocatorHandle<>& allocator) {
-        if(const auto itr = render_targets.find(texture_name); itr != render_targets.end()) {
-            device.destroy_texture(itr->second.image, allocator);
-            render_targets.erase(itr);
+    void DeviceResources::destroy_render_target(const rx::string& texture_name, rx::memory::allocator* allocator) {
+        if(const auto* texture = render_targets.find(texture_name); texture != nullptr) {
+            device.destroy_texture(texture->image, allocator);
+            render_targets.erase(texture_name);
         }
 #if NOVA_DEBUG
         else {
-            NOVA_LOG(ERROR) << "Could not delete texture  " << texture_name << ", are you sure you spelled it correctly?";
+            NOVA_LOG(ERROR) << "Could not delete texture  " << texture_name.data() << ", are you sure you spelled it correctly?";
         }
 #endif
     }
 
     void DeviceResources::allocate_staging_buffer_memory() {
-        staging_buffer_allocator = std::unique_ptr<AllocatorHandle<>>(renderer.get_global_allocator()->create_suballocator());
-
         DeviceMemory* memory = device
                                    .allocate_device_memory(STAGING_BUFFER_TOTAL_MEMORY_SIZE,
                                                            MemoryUsage::StagingBuffer,
                                                            ObjectType::Buffer,
-                                                           *staging_buffer_allocator)
+                                                           internal_allocator)
                                    .value;
 
-        auto* strat = staging_buffer_allocator->new_other_object<BlockAllocationStrategy>(renderer.get_global_allocator(),
-                                                                                          Bytes(STAGING_BUFFER_TOTAL_MEMORY_SIZE),
-                                                                                          STAGING_BUFFER_ALIGNMENT);
+        auto* strat = internal_allocator->create<BlockAllocationStrategy>(renderer.get_global_allocator(),
+                                                                          Bytes(STAGING_BUFFER_TOTAL_MEMORY_SIZE),
+                                                                          STAGING_BUFFER_ALIGNMENT);
 
-        staging_buffer_memory = staging_buffer_allocator->new_other_object<DeviceMemoryResource>(memory, strat);
+        staging_buffer_memory = internal_allocator->create<DeviceMemoryResource>(memory, strat);
     }
 
     void DeviceResources::allocate_uniform_buffer_memory() {
-        allocator = std::unique_ptr<AllocatorHandle<>>(renderer.get_global_allocator()->create_suballocator());
-
         DeviceMemory* memory = device
                                    .allocate_device_memory(STAGING_BUFFER_TOTAL_MEMORY_SIZE,
                                                            MemoryUsage::LowFrequencyUpload,
                                                            ObjectType::Buffer,
-                                                           *allocator)
+                                                           internal_allocator)
                                    .value;
 
-        auto* strat = allocator->new_other_object<BlockAllocationStrategy>(renderer.get_global_allocator(),
-                                                                           Bytes(UNIFORM_BUFFER_TOTAL_MEMORY_SIZE),
-                                                                           UNIFORM_BUFFER_ALIGNMENT);
+        auto* strat = internal_allocator->create<BlockAllocationStrategy>(renderer.get_global_allocator(),
+                                                                          Bytes(UNIFORM_BUFFER_TOTAL_MEMORY_SIZE),
+                                                                          UNIFORM_BUFFER_ALIGNMENT);
 
-        uniform_buffer_memory = allocator->new_other_object<DeviceMemoryResource>(memory, strat);
+        uniform_buffer_memory = internal_allocator->create<DeviceMemoryResource>(memory, strat);
     }
 
-    std::shared_ptr<Buffer> DeviceResources::get_staging_buffer_with_size(const size_t size) {
-        const auto return_staging_buffer = [&](Buffer* buf) { staging_buffers[size].push_back(buf); };
-
+    Buffer* DeviceResources::get_staging_buffer_with_size(const Bytes size) {
         // Align the size so we can bin the staging buffers
         // TODO: Experiment and find a good alignment
-        const auto a = size % STAGING_BUFFER_ALIGNMENT;
+        const auto a = size.b_count() % STAGING_BUFFER_ALIGNMENT;
         const auto needed_size = STAGING_BUFFER_ALIGNMENT + a;
-        const auto actual_size = size + needed_size;
+        const auto actual_size = size.b_count() + needed_size;
 
-        if(auto itr = staging_buffers.find(actual_size); itr != staging_buffers.end()) {
-            auto& buffer_list = itr->second;
-            if(!buffer_list.empty()) {
-                auto* buffer = buffer_list.back();
-                buffer_list.pop_back();
+        if(auto* staging_buffer = staging_buffers.find(actual_size); staging_buffer != nullptr) {
+            auto& buffer_list = *staging_buffer;
+            if(buffer_list.size() > 0) {
+                auto* buffer = buffer_list.last();
+                buffer_list.erase(buffer_list.size() - 1, buffer_list.size() - 1);
 
-                // Specify a custom deleter like a boss
-                return std::shared_ptr<Buffer>(buffer, return_staging_buffer);
+                return buffer;
             }
         }
 
         const BufferCreateInfo info = {actual_size, BufferUsage::StagingBuffer};
 
-        Buffer* buffer = device.create_buffer(info, *staging_buffer_memory, *staging_buffer_allocator);
-        return std::shared_ptr<Buffer>(buffer, return_staging_buffer);
+        Buffer* buffer = device.create_buffer(info, *staging_buffer_memory, internal_allocator);
+        return buffer;
+    }
+
+    void DeviceResources::return_staging_buffer(Buffer* buffer) {
+        const auto size = buffer->size.b_count();
+        staging_buffers.find(size)->push_back(buffer);
     }
 
     size_t size_in_bytes(const PixelFormat pixel_format) {

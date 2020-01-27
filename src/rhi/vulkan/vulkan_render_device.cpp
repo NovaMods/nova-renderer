@@ -226,19 +226,19 @@ namespace nova::renderer::rhi {
         if(framebuffer_width == 0) {
             return ntl::Result<Renderpass*>(MAKE_ERROR(
                 "Framebuffer width for pass {:s} is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero width",
-                data.name));
+                data.name.data()));
         }
 
         if(framebuffer_height == 0) {
             return ntl::Result<Renderpass*>(MAKE_ERROR(
                 "Framebuffer height for pass {:s} is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero height",
-                data.name));
+                data.name.data()));
         }
 
         if(framebuffer_attachments.size() > gpu.props.limits.maxColorAttachments) {
             return ntl::Result<Renderpass*>(MAKE_ERROR(
                 "Framebuffer for pass {:s} has {:d} color attachments, but your GPU only supports {:d}. Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures",
-                data.name,
+                data.name.data(),
                 data.texture_outputs.size(),
                 gpu.props.limits.maxColorAttachments));
         }

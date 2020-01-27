@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rx/core/map.h>
+
 namespace nova::renderer {
     /*!
      * \brief Allows one to access a thing at a location in a vector, even after the vector has been reallocated
@@ -9,7 +11,7 @@ namespace nova::renderer {
     template <typename KeyType, typename ValueType>
     class MapAccessor {
     public:
-        MapAccessor(const std::unordered_map<KeyType, ValueType>* map, const KeyType& key) : map(map), key(key) {}
+        MapAccessor(const rx::map<KeyType, ValueType>* map, const KeyType& key) : map(map), key(key) {}
 
         MapAccessor(const MapAccessor& other) = default;
         MapAccessor& operator=(const MapAccessor& other) = default;
@@ -19,12 +21,12 @@ namespace nova::renderer {
 
         ~MapAccessor() = default;
 
-        [[nodiscard]] const ValueType* operator->() const { return &map->at(key); }
+        [[nodiscard]] const ValueType* operator->() const { return &(*map)[key]; }
 
         [[nodiscard]] const KeyType& get_key() const { return key; }
 
     private:
-        const std::unordered_map<KeyType, ValueType>* map;
+        const rx::map<KeyType, ValueType>* map;
         KeyType key;
     };
 } // namespace nova::renderer

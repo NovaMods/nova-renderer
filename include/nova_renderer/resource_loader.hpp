@@ -1,8 +1,5 @@
 #pragma once
 
-#include <cstddef>
-#include <unordered_map>
-
 #include "nova_renderer/memory/allocators.hpp"
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
@@ -26,28 +23,28 @@ namespace nova::renderer {
     } // namespace shaderpack
 
     struct TextureResource {
-        std::string name;
+        rx::string name;
 
         rhi::Image* image = nullptr;
 
-        size_t width;
+        rx_size width;
 
-        size_t height;
+        rx_size height;
 
         rhi::PixelFormat format;
     };
 
     struct BufferResource {
-        std::string name;
+        rx::string name;
 
         rhi::Buffer* buffer = nullptr;
 
         mem::Bytes size = 0;
     };
 
-    using TextureResourceAccessor = MapAccessor<std::string, TextureResource>;
+    using TextureResourceAccessor = MapAccessor<rx::string, TextureResource>;
 
-    using BufferResourceAccessor = MapAccessor<std::string, BufferResource>;
+    using BufferResourceAccessor = MapAccessor<rx::string, BufferResource>;
 
     /*!
      * \brief Provides a means to access Nova's resources, and also helps in creating resources? IDK yet but that's fine
@@ -58,11 +55,11 @@ namespace nova::renderer {
     public:
         explicit DeviceResources(NovaRenderer& renderer);
 
-        [[nodiscard]] std::optional<BufferResourceAccessor> create_uniform_buffer(const std::string& name, mem::Bytes size);
+        [[nodiscard]] rx::optional<BufferResourceAccessor> create_uniform_buffer(const rx::string& name, mem::Bytes size);
 
-        [[nodiscard]] std::optional<BufferResourceAccessor> get_uniform_buffer(const std::string& name);
+        [[nodiscard]] rx::optional<BufferResourceAccessor> get_uniform_buffer(const rx::string& name);
 
-        void destroy_uniform_buffer(const std::string& name);
+        void destroy_uniform_buffer(const rx::string& name);
 
         /*!
          * \brief Creates a new dynamic texture with the provided initial texture data
@@ -75,17 +72,17 @@ namespace nova::renderer {
          * \param allocator The allocator to allocate with
          * \return The newly-created image, or nullptr if the image could not be created. Check the Nova logs to find out why
          */
-        [[nodiscard]] std::optional<TextureResourceAccessor> create_texture(const std::string& name,
-                                                                            std::size_t width,
-                                                                            std::size_t height,
+        [[nodiscard]] rx::optional<TextureResourceAccessor> create_texture(const rx::string& name,
+                                                                            rx_size width,
+                                                                            rx_size height,
                                                                             rhi::PixelFormat pixel_format,
                                                                             const void* data,
-                                                                            mem::AllocatorHandle<>& allocator);
+                                                                            rx::memory::allocator* allocator);
 
         /*!
          * \brief Retrieves the texture with the specified name
          */
-        [[nodiscard]] std::optional<TextureResourceAccessor> get_texture(const std::string& name) const;
+        [[nodiscard]] rx::optional<TextureResourceAccessor> get_texture(const rx::string& name) const;
 
         /*!
          * \brief Creates a new render target with the specified size and format
@@ -105,39 +102,37 @@ namespace nova::renderer {
          *
          * \return The new render target if it could be created, or am empty optional if it could not
          */
-        [[nodiscard]] std::optional<TextureResourceAccessor> create_render_target(const std::string& name,
-                                                                                  size_t width,
-                                                                                  size_t height,
+        [[nodiscard]] rx::optional<TextureResourceAccessor> create_render_target(const rx::string& name,
+                                                                                  rx_size width,
+                                                                                  rx_size height,
                                                                                   rhi::PixelFormat pixel_format,
-                                                                                  mem::AllocatorHandle<>& allocator,
+                                                                                  rx::memory::allocator* allocator,
                                                                                   bool can_be_sampled = false);
 
         /*!
          * \brief Retrieves the render target with the specified name
          */
-        [[nodiscard]] std::optional<TextureResourceAccessor> get_render_target(const std::string& name) const;
+        [[nodiscard]] rx::optional<TextureResourceAccessor> get_render_target(const rx::string& name) const;
 
-        void destroy_render_target(const std::string& texture_name, mem::AllocatorHandle<>& allocator);
+        void destroy_render_target(const rx::string& texture_name, rx::memory::allocator* allocator);
 
         NovaRenderer& renderer;
 
         rhi::RenderDevice& device;
 
-        std::unique_ptr<mem::AllocatorHandle<>> allocator;
+        rx::memory::allocator* internal_allocator;
 
-        std::unique_ptr<mem::AllocatorHandle<>> staging_buffer_allocator;
+        rx::map<rx::string, TextureResource> textures;
 
-        std::unordered_map<std::string, TextureResource> textures;
-
-        std::unordered_map<std::string, TextureResource> render_targets;
+        rx::map<rx::string, TextureResource> render_targets;
 
         DeviceMemoryResource* staging_buffer_memory;
 
-        std::unordered_map<size_t, std::vector<rhi::Buffer*>> staging_buffers;
+        rx::map<rx_size, rx::vector<rhi::Buffer*>> staging_buffers;
 
         DeviceMemoryResource* uniform_buffer_memory;
 
-        std::unordered_map<std::string, BufferResource> uniform_buffers;
+        rx::map<rx::string, BufferResource> uniform_buffers;
 
         void allocate_staging_buffer_memory();
 
@@ -147,7 +142,11 @@ namespace nova::renderer {
          * \brief Retrieves a staging buffer at least the specified size
          *
          * The actual buffer returned may be larger than what you need
+         *
+         * When you're done with the staging buffer, return it to the pool with `return_staging_buffer`
          */
-        std::shared_ptr<rhi::Buffer> get_staging_buffer_with_size(size_t size);
+        rhi::Buffer* get_staging_buffer_with_size(mem::Bytes size);
+
+        void return_staging_buffer(rhi::Buffer* buffer);
     };
 } // namespace nova::renderer
