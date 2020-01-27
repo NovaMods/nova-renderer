@@ -1,7 +1,6 @@
 #pragma once
 
-#include <cstdint> // needed for uint****
-#include <vector>
+#include <stdint.h> // needed for uint****
 
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"
@@ -49,7 +48,7 @@ namespace nova::renderer::rhi {
          */
         virtual void resource_barriers(PipelineStage stages_before_barrier,
                                        PipelineStage stages_after_barrier,
-                                       const std::pmr::vector<ResourceBarrier>& barriers) = 0;
+                                       const rx::vector<ResourceBarrier>& barriers) = 0;
 
         /*!
          * \brief Records a command to copy one region of a buffer to another buffer
@@ -95,7 +94,7 @@ namespace nova::renderer::rhi {
          * These command lists should be secondary command lists. Nova doesn't validate this because yolo but you need
          * to be nice - the API-specific validation layers _will_ yell at you
          */
-        virtual void execute_command_lists(const std::pmr::vector<CommandList*>& lists) = 0;
+        virtual void execute_command_lists(const rx::vector<CommandList*>& lists) = 0;
 
         /*!
          * \brief Begins a renderpass
@@ -109,7 +108,7 @@ namespace nova::renderer::rhi {
 
         virtual void bind_pipeline(const Pipeline* pipeline) = 0;
 
-        virtual void bind_descriptor_sets(const std::pmr::vector<DescriptorSet*>& descriptor_sets,
+        virtual void bind_descriptor_sets(const rx::vector<DescriptorSet*>& descriptor_sets,
                                           const PipelineInterface* pipeline_interface) = 0;
 
         /*!
@@ -120,7 +119,7 @@ namespace nova::renderer::rhi {
          *
          * \param buffers The buffers to bind
          */
-        virtual void bind_vertex_buffers(const std::pmr::vector<Buffer*>& buffers) = 0;
+        virtual void bind_vertex_buffers(const rx::vector<Buffer*>& buffers) = 0;
 
         /*!
          * \brief Binds the provided index buffer to the command list

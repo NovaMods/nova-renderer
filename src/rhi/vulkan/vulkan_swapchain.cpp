@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 28-Apr-18.
- */
-
 #include "vulkan_swapchain.hpp"
 
 #include "nova_renderer/util/logger.hpp"
@@ -18,21 +13,20 @@ namespace nova::renderer::rhi {
     VulkanSwapchain::VulkanSwapchain(const uint32_t num_swapchain_images,
                                      VulkanRenderDevice* render_device,
                                      const glm::uvec2 window_dimensions,
-                                     const std::pmr::vector<VkPresentModeKHR>& present_modes)
+                                     const rx::vector<VkPresentModeKHR>& present_modes)
         : Swapchain(num_swapchain_images, window_dimensions), render_device(render_device), num_swapchain_images(num_swapchain_images) {
 
         create_swapchain(num_swapchain_images, present_modes, window_dimensions);
 
-        std::pmr::vector<VkImage> vk_images = get_swapchain_images();
+        rx::vector<VkImage> vk_images = get_swapchain_images();
 
-        if(vk_images.empty()) {
+        if(vk_images.size() == 0) {
             NOVA_LOG(FATAL) << "The swapchain returned zero images";
         }
 
         swapchain_image_layouts.resize(num_swapchain_images);
-        for(auto& swapchain_image_layout : swapchain_image_layouts) {
-            swapchain_image_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        }
+        swapchain_image_layouts.each_fwd(
+            [&](VkImageLayout& swapchain_image_layout) { swapchain_image_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; });
 
         // Create a dummy renderpass that writes to a single color attachment - the swapchain
         const VkRenderPass renderpass = create_dummy_renderpass();
@@ -40,7 +34,7 @@ namespace nova::renderer::rhi {
         const glm::uvec2 swapchain_size = {swapchain_extent.width, swapchain_extent.height};
 
         for(uint32_t i = 0; i < num_swapchain_images; i++) {
-            create_resources_for_frame(vk_images.at(i), renderpass, swapchain_size);
+            create_resources_for_frame(vk_images[i], renderpass, swapchain_size);
         }
 
         vkDestroyRenderPass(render_device->device, renderpass, nullptr);
@@ -49,8 +43,8 @@ namespace nova::renderer::rhi {
         transition_swapchain_images_into_color_attachment_layout(vk_images);
     }
 
-    uint8_t VulkanSwapchain::acquire_next_swapchain_image(mem::AllocatorHandle<>& allocator) {
-        auto* fence = render_device->create_fence(allocator);
+    uint8_t VulkanSwapchain::acquire_next_swapchain_image(rx::memory::allocator* allocator) {
+        auto* fence = render_device->create_fence(false, allocator);
         auto* vk_fence = static_cast<VulkanFence*>(fence);
 
         uint32_t acquired_image_idx;
@@ -70,7 +64,9 @@ namespace nova::renderer::rhi {
         }
 
         // Block until we have the swapchain image in order to mimic D3D12. TODO: Reevaluate this decision
-        render_device->wait_for_fences({vk_fence});
+        rx::vector<Fence*> fences;
+        fences.push_back(vk_fence);
+        render_device->wait_for_fences(fences);
 
         return static_cast<uint8_t>(acquired_image_idx);
     }
@@ -90,11 +86,11 @@ namespace nova::renderer::rhi {
         vkQueuePresentKHR(render_device->graphics_queue, &present_info);
     }
 
-    void VulkanSwapchain::transition_swapchain_images_into_color_attachment_layout(const std::pmr::vector<VkImage>& images) const {
-        std::pmr::vector<VkImageMemoryBarrier> barriers;
+    void VulkanSwapchain::transition_swapchain_images_into_color_attachment_layout(const rx::vector<VkImage>& images) const {
+        rx::vector<VkImageMemoryBarrier> barriers;
         barriers.reserve(images.size());
 
-        for(const VkImage& image : images) {
+        images.each_fwd([&](const VkImage& image) {
             VkImageMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.srcQueueFamilyIndex = render_device->graphics_family_index;
@@ -112,7 +108,7 @@ namespace nova::renderer::rhi {
             barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
             barriers.push_back(barrier);
-        }
+        });
 
         VkCommandPool command_pool;
 
@@ -167,23 +163,21 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanSwapchain::deinit() {
-        for(const Image* i : swapchain_images) {
+        swapchain_images.each_fwd([&](const Image* i) {
             const VulkanImage* vk_image = static_cast<const VulkanImage*>(i);
             vkDestroyImage(render_device->device, vk_image->image, nullptr);
             delete i;
-        }
+        });
         swapchain_images.clear();
 
-        for(const VkImageView& iv : swapchain_image_views) {
-            vkDestroyImageView(render_device->device, iv, nullptr);
-        }
+        swapchain_image_views.each_fwd([&](const VkImageView& iv) { vkDestroyImageView(render_device->device, iv, nullptr); });
         swapchain_image_views.clear();
 
-        for(const Fence* f : fences) {
+        fences.each_fwd([&](const Fence* f) {
             const VulkanFence* vk_fence = static_cast<const VulkanFence*>(f);
             vkDestroyFence(render_device->device, vk_fence->fence, nullptr);
             delete f;
-        }
+        });
         fences.clear();
     }
 
@@ -195,7 +189,7 @@ namespace nova::renderer::rhi {
 
     VkFormat VulkanSwapchain::get_swapchain_format() const { return swapchain_format; }
 
-    VkSurfaceFormatKHR VulkanSwapchain::choose_surface_format(const std::pmr::vector<VkSurfaceFormatKHR>& formats) {
+    VkSurfaceFormatKHR VulkanSwapchain::choose_surface_format(const rx::vector<VkSurfaceFormatKHR>& formats) {
         VkSurfaceFormatKHR result;
 
         if(formats.size() == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
@@ -205,25 +199,25 @@ namespace nova::renderer::rhi {
         }
 
         // We want 32 bit rgba and srgb nonlinear... I think? Will have to read up on it more and figure out what's up
-        for(auto& fmt : formats) {
+        formats.each_fwd([&](VkSurfaceFormatKHR& fmt) {
             if(fmt.format == VK_FORMAT_B8G8R8A8_UNORM && fmt.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
                 return fmt;
             }
-        }
+        });
 
         // We can't have what we want, so I guess we'll just use what we got
         return formats[0];
     }
 
-    VkPresentModeKHR VulkanSwapchain::choose_present_mode(const std::pmr::vector<VkPresentModeKHR>& modes) {
+    VkPresentModeKHR VulkanSwapchain::choose_present_mode(const rx::vector<VkPresentModeKHR>& modes) {
         const VkPresentModeKHR desired_mode = VK_PRESENT_MODE_MAILBOX_KHR;
 
         // Mailbox mode is best mode (also not sure why)
-        for(auto& mode : modes) {
+        modes.each_fwd([&](VkPresentModeKHR& mode) {
             if(mode == desired_mode) {
                 return desired_mode;
             }
-        }
+        });
 
         // FIFO, like FIFA, is forever
         return VK_PRESENT_MODE_FIFO_KHR;
@@ -243,7 +237,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanSwapchain::create_swapchain(const uint32_t requested_num_swapchain_images,
-                                           const std::pmr::vector<VkPresentModeKHR>& present_modes,
+                                           const rx::vector<VkPresentModeKHR>& present_modes,
                                            const glm::uvec2& window_dimensions) {
 
         const auto surface_format = choose_surface_format(render_device->gpu.surface_formats);
@@ -335,8 +329,8 @@ namespace nova::renderer::rhi {
         fences.push_back(new VulkanFence{{}, fence});
     }
 
-    std::pmr::vector<VkImage> VulkanSwapchain::get_swapchain_images() {
-        std::pmr::vector<VkImage> vk_images;
+    rx::vector<VkImage> VulkanSwapchain::get_swapchain_images() {
+        rx::vector<VkImage> vk_images;
 
         vkGetSwapchainImagesKHR(render_device->device, swapchain, &num_swapchain_images, nullptr);
         vk_images.resize(num_swapchain_images);
@@ -349,7 +343,7 @@ namespace nova::renderer::rhi {
                 VkDebugUtilsObjectNameInfoEXT object_name = {};
                 object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
                 object_name.objectType = VK_OBJECT_TYPE_IMAGE;
-                object_name.objectHandle = reinterpret_cast<uint64_t>(vk_images.at(i));
+                object_name.objectHandle = reinterpret_cast<uint64_t>(vk_images[i]);
                 object_name.pObjectName = image_name.c_str();
                 NOVA_CHECK_RESULT(render_device->vkSetDebugUtilsObjectNameEXT(render_device->device, &object_name));
             }

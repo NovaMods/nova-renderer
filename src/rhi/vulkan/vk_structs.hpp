@@ -52,7 +52,7 @@ namespace nova::renderer::rhi {
          *
          * The index in the vector is the index of the set
          */
-        std::pmr::vector<VkDescriptorSetLayout> layouts_by_set;
+        rx::vector<VkDescriptorSetLayout> layouts_by_set;
     };
 
     struct VulkanPipeline : Pipeline {
@@ -77,10 +77,10 @@ namespace nova::renderer::rhi {
 
     struct VulkanGpuInfo {
         VkPhysicalDevice phys_device{};
-        std::pmr::vector<VkQueueFamilyProperties> queue_family_props;
-        std::pmr::vector<VkExtensionProperties> available_extensions;
+        rx::vector<VkQueueFamilyProperties> queue_family_props;
+        rx::vector<VkExtensionProperties> available_extensions;
         VkSurfaceCapabilitiesKHR surface_capabilities{};
-        std::pmr::vector<VkSurfaceFormatKHR> surface_formats;
+        rx::vector<VkSurfaceFormatKHR> surface_formats;
         VkPhysicalDeviceProperties props{};
         VkPhysicalDeviceFeatures supported_features{};
         VkPhysicalDeviceMemoryProperties memory_properties{};

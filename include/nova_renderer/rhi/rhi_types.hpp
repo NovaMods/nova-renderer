@@ -1,8 +1,5 @@
 #pragma once
 
-#include <string>
-#include <unordered_map>
-
 #include <glm/glm.hpp>
 
 #include "nova_renderer/memory/allocators.hpp"
@@ -96,7 +93,7 @@ namespace nova::renderer::rhi {
     };
 
     struct VertexField {
-        std::string name;
+        rx::string name;
 
         VertexFieldFormat format;
     };
@@ -105,9 +102,9 @@ namespace nova::renderer::rhi {
      * \brief The interface for a pipeline. Includes both inputs (descriptors) and outputs (framebuffers)
      */
     struct PipelineInterface {
-        std::unordered_map<std::string, ResourceBindingDescription> bindings;
+        rx::map<rx::string, ResourceBindingDescription> bindings;
 
-        std::pmr::vector<VertexField> vertex_fields;
+        rx::vector<VertexField> vertex_fields;
     };
 
     struct Pipeline {};
@@ -215,7 +212,7 @@ namespace nova::renderer::rhi {
          * You may only bind multiple resources if the descriptor is an array descriptor. Knowing whether you're binding to an array
          * descriptor or not is your responsibility
          */
-        std::pmr::vector<DescriptorResourceInfo> resources;
+        rx::vector<DescriptorResourceInfo> resources;
     };
 #pragma endregion
 

@@ -1,9 +1,8 @@
 #pragma once
-#include <vector>
-
 #include <glm/glm.hpp>
 
-#include "nova_renderer/memory/allocators.hpp"
+#include <rx/core/vector.h>
+#include <rx/core/memory/allocator.h>
 
 namespace nova::renderer::rhi {
     struct Fence;
@@ -22,7 +21,7 @@ namespace nova::renderer::rhi {
          *
          * \return The index of the swapchain image we just acquired
          */
-        virtual uint8_t acquire_next_swapchain_image(mem::AllocatorHandle<>& allocator) = 0;
+        virtual uint8_t acquire_next_swapchain_image(rx::memory::allocator* allocator = nullptr) = 0;
 
         /*!
          * \brief Presents the specified swapchain image
@@ -44,8 +43,8 @@ namespace nova::renderer::rhi {
         // Arrays of the per-frame swapchain resources. Each swapchain implementation is responsible for filling these arrays with
         // API-specific objects
 
-        std::vector<Framebuffer*> framebuffers;
-        std::vector<Image*> swapchain_images;
-        std::vector<Fence*> fences;
+        rx::vector<Framebuffer*> framebuffers;
+        rx::vector<Image*> swapchain_images;
+        rx::vector<Fence*> fences;
     };
 } // namespace nova::renderer::rhi
