@@ -14,6 +14,11 @@ namespace nova::renderer::rhi {
         uint64_t max_uniform_buffer_size = 0;
     };
 
+    struct VulkanInputAssemblerLayout {
+        rx::vector<VkVertexInputAttributeDescription> attributes;
+        rx::vector<VkVertexInputBindingDescription> bindings;
+    };
+
     /*!
      * \brief Vulkan implementation of a render engine
      */
@@ -42,9 +47,7 @@ namespace nova::renderer::rhi {
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
         PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;
 
-        VulkanRenderDevice(NovaSettingsAccessManager& settings,
-                           NovaWindow& window,
-                           mem::AllocatorHandle<>& allocator);
+        VulkanRenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator* allocator);
 
         VulkanRenderDevice(VulkanRenderDevice&& old) noexcept = delete;
         VulkanRenderDevice& operator=(VulkanRenderDevice&& old) noexcept = delete;
@@ -60,81 +63,80 @@ namespace nova::renderer::rhi {
         ntl::Result<DeviceMemory*> allocate_device_memory(mem::Bytes size,
                                                           MemoryUsage usage,
                                                           ObjectType allowed_objects,
-                                                          mem::AllocatorHandle<>& allocator) override;
+                                                          rx::memory::allocator* allocator) override;
 
         ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data,
                                                    const glm::uvec2& framebuffer_size,
-                                                   mem::AllocatorHandle<>& allocator) override;
+                                                   rx::memory::allocator* allocator) override;
 
         Framebuffer* create_framebuffer(const Renderpass* renderpass,
-                                        const std::pmr::vector<Image*>& color_attachments,
-                                        const std::optional<Image*> depth_attachment,
+                                        const rx::vector<Image*>& color_attachments,
+                                        const rx::optional<Image*> depth_attachment,
                                         const glm::uvec2& framebuffer_size,
-                                        mem::AllocatorHandle<>& allocator) override;
+                                        rx::memory::allocator* allocator) override;
 
-        ntl::Result<PipelineInterface*> create_pipeline_interface(
-            const std::unordered_map<std::string, ResourceBindingDescription>& bindings,
-            const std::pmr::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-            const std::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
-            mem::AllocatorHandle<>& allocator) override;
+        ntl::Result<PipelineInterface*> create_pipeline_interface(const rx::map<rx::string, ResourceBindingDescription>& bindings,
+                                                                  const rx::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
+                                                                  const rx::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
+                                                                  rx::memory::allocator* allocator) override;
 
         DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
                                                uint32_t num_samplers,
                                                uint32_t num_uniform_buffers,
-                                               mem::AllocatorHandle<>& allocator) override;
+                                               rx::memory::allocator* allocator) override;
 
-        std::pmr::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                                DescriptorPool* pool,
-                                                                mem::AllocatorHandle<>& allocator) override;
+        rx::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
+                                                          DescriptorPool* pool,
+                                                          rx::memory::allocator* allocator) override;
 
-        void update_descriptor_sets(std::pmr::vector<DescriptorSetWrite>& writes) override;
+        void update_descriptor_sets(rx::vector<DescriptorSetWrite>& writes) override;
 
         ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
                                                const shaderpack::PipelineCreateInfo& data,
-                                               mem::AllocatorHandle<>& allocator) override;
+                                               rx::memory::allocator* allocator) override;
 
-        Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory, mem::AllocatorHandle<>& allocator) override;
+        Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory, rx::memory::allocator* allocator) override;
 
         void write_data_to_buffer(const void* data, mem::Bytes num_bytes, mem::Bytes offset, const Buffer* buffer) override;
 
-        Image* create_image(const shaderpack::TextureCreateInfo& info, mem::AllocatorHandle<>& allocator) override;
+        Image* create_image(const shaderpack::TextureCreateInfo& info, rx::memory::allocator* allocator) override;
 
-        Semaphore* create_semaphore(mem::AllocatorHandle<>& allocator) override;
+        Semaphore* create_semaphore(rx::memory::allocator* allocator) override;
 
-        std::pmr::vector<Semaphore*> create_semaphores(uint32_t num_semaphores, mem::AllocatorHandle<>& allocator) override;
+        rx::vector<Semaphore*> create_semaphores(uint32_t num_semaphores, rx::memory::allocator* allocator) override;
 
-        Fence* create_fence(mem::AllocatorHandle<>& allocator, bool signaled = false) override;
+        Fence* create_fence(bool signaled, rx::memory::allocator* allocator) override;
 
-        std::pmr::vector<Fence*> create_fences(mem::AllocatorHandle<>& allocator, uint32_t num_fences, bool signaled = false) override;
+        rx::vector<Fence*> create_fences(uint32_t num_fences, bool signaled, rx::memory::allocator* allocator) override;
 
-        void wait_for_fences(std::pmr::vector<Fence*> fences) override;
+        void wait_for_fences(rx::vector<Fence*> fences) override;
 
-        void reset_fences(const std::pmr::vector<Fence*>& fences) override;
+        void reset_fences(const rx::vector<Fence*>& fences) override;
 
-        void destroy_renderpass(Renderpass* pass, mem::AllocatorHandle<>& allocator) override;
+        void destroy_renderpass(Renderpass* pass, rx::memory::allocator* allocator) override;
 
-        void destroy_framebuffer(Framebuffer* framebuffer, mem::AllocatorHandle<>& allocator) override;
+        void destroy_framebuffer(Framebuffer* framebuffer, rx::memory::allocator* allocator) override;
 
-        void destroy_pipeline_interface(PipelineInterface* pipeline_interface, mem::AllocatorHandle<>& allocator) override;
+        void destroy_pipeline_interface(PipelineInterface* pipeline_interface, rx::memory::allocator* allocator) override;
 
-        void destroy_pipeline(Pipeline* pipeline, mem::AllocatorHandle<>& allocator) override;
+        void destroy_pipeline(Pipeline* pipeline, rx::memory::allocator* allocator) override;
 
-        void destroy_texture(Image* resource, mem::AllocatorHandle<>& allocator) override;
+        void destroy_texture(Image* resource, rx::memory::allocator* allocator) override;
 
-        void destroy_semaphores(std::pmr::vector<Semaphore*>& semaphores, mem::AllocatorHandle<>& allocator) override;
+        void destroy_semaphores(rx::vector<Semaphore*>& semaphores, rx::memory::allocator* allocator) override;
 
-        void destroy_fences(const std::pmr::vector<Fence*>& fences, mem::AllocatorHandle<>& allocator) override;
+        void destroy_fences(const rx::vector<Fence*>& fences, rx::memory::allocator* allocator) override;
 
-        CommandList* create_command_list(mem::AllocatorHandle<>& allocator,
-                                         uint32_t thread_idx,
+        CommandList* create_command_list(uint32_t thread_idx,
                                          QueueType needed_queue_type,
-                                         CommandList::Level level) override;
+                                         CommandList::Level level,
+                                         rx::memory::allocator* allocator) override;
 
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
                                  Fence* fence_to_signal = nullptr,
-                                 const std::pmr::vector<Semaphore*>& wait_semaphores = {},
-                                 const std::pmr::vector<Semaphore*>& signal_semaphores = {}) override;
+                                 const rx::vector<Semaphore*>& wait_semaphores = {},
+                                 const rx::vector<Semaphore*>& signal_semaphores = {}) override;
 #pragma endregion
 
         [[nodiscard]] uint32_t get_queue_family_index(QueueType type) const;
@@ -148,14 +150,14 @@ namespace nova::renderer::rhi {
         /*!
          * The index in the vector is the thread index, the key in the map is the queue family index
          */
-        std::pmr::vector<std::pmr::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
+        rx::vector<rx::map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
 
         /*!
          * \brief Keeps track of how much has been allocated from each heap
          *
          * In the same order as VulkanGpuInfo::memory_properties::memoryHeaps
          */
-        std::pmr::vector<uint32_t> heap_usages;
+        rx::vector<uint32_t> heap_usages;
 
         /*!
          * \brief Map from HOST_VISIBLE memory allocations to the memory address they're mapped to
@@ -163,10 +165,10 @@ namespace nova::renderer::rhi {
          * The Vulkan render engine maps memory when it's allocated, if the memory is for a uniform or a staging
          * buffer.
          */
-        std::unordered_map<VkDeviceMemory, void*> heap_mappings;
+        rx::map<VkDeviceMemory, void*> heap_mappings;
 
 #pragma region Initialization
-        std::pmr::vector<const char*> enabled_layer_names;
+        rx::vector<const char*> enabled_layer_names;
 
         void create_instance();
 
@@ -181,13 +183,13 @@ namespace nova::renderer::rhi {
 
         void create_device_and_queues();
 
-        bool does_device_support_extensions(VkPhysicalDevice device, const std::pmr::vector<char*>& required_device_extensions);
+        bool does_device_support_extensions(VkPhysicalDevice device, const rx::vector<char*>& required_device_extensions);
 
         void create_swapchain();
 
         void create_per_thread_command_pools();
 
-        [[nodiscard]] std::pmr::unordered_map<uint32_t, VkCommandPool> make_new_command_pools() const;
+        [[nodiscard]] rx::map<uint32_t, VkCommandPool> make_new_command_pools() const;
 #pragma endregion
 
 #pragma region Helpers
@@ -205,10 +207,10 @@ namespace nova::renderer::rhi {
          */
         [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags, MemorySearchMode search_mode = MemorySearchMode::Fuzzy);
 
-        [[nodiscard]] std::optional<VkShaderModule> create_shader_module(const std::pmr::vector<uint32_t>& spirv) const;
+        [[nodiscard]] rx::optional<VkShaderModule> create_shader_module(const rx::vector<uint32_t>& spirv) const;
 
-        [[nodiscard]] std::pmr::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
-            const std::unordered_map<std::string, ResourceBindingDescription>& all_bindings, mem::AllocatorHandle<>& allocator) const;
+        [[nodiscard]] rx::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
+            const rx::map<rx::string, ResourceBindingDescription>& all_bindings, rx::memory::allocator* allocator) const;
 
         /*!
          * \brief Gets the image view associated with the given image
@@ -224,9 +226,7 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] static VkCommandBufferLevel to_vk_command_buffer_level(CommandList::Level level);
 
-        [[nodiscard]] static std::tuple<std::pmr::vector<VkVertexInputAttributeDescription>,
-                                        std::pmr::vector<VkVertexInputBindingDescription>>
-        get_input_assembler_setup(const std::pmr::vector<VertexField>& vertex_fields);
+        [[nodiscard]] static VulkanInputAssemblerLayout get_input_assembler_setup(const rx::vector<VertexField>& vertex_fields);
 #pragma endregion
 
 #pragma region Debugging

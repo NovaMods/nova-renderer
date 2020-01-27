@@ -20,14 +20,14 @@ namespace nova::renderer::rhi {
 
     void VulkanCommandList::resource_barriers(const PipelineStage stages_before_barrier,
                                               const PipelineStage stages_after_barrier,
-                                              const std::pmr::vector<ResourceBarrier>& barriers) {
-        std::pmr::vector<VkBufferMemoryBarrier> buffer_barriers;
+                                              const rx::vector<ResourceBarrier>& barriers) {
+        rx::vector<VkBufferMemoryBarrier> buffer_barriers;
         buffer_barriers.reserve(barriers.size());
 
-        std::pmr::vector<VkImageMemoryBarrier> image_barriers;
+        rx::vector<VkImageMemoryBarrier> image_barriers;
         image_barriers.reserve(barriers.size());
 
-        for(const ResourceBarrier& barrier : barriers) {
+        barriers.each_fwd([&](const ResourceBarrier& barrier) {
             switch(barrier.resource_to_barrier->type) {
                 case ResourceType::Image: {
                     const auto* image = static_cast<VulkanImage*>(barrier.resource_to_barrier);
@@ -66,7 +66,7 @@ namespace nova::renderer::rhi {
                     buffer_barriers.push_back(buffer_barrier);
                 } break;
             }
-        }
+        });
 
         vkCmdPipelineBarrier(cmds,
                              static_cast<VkPipelineStageFlags>(stages_before_barrier),
@@ -96,14 +96,14 @@ namespace nova::renderer::rhi {
         vkCmdCopyBuffer(cmds, vk_source_buffer->buffer, vk_destination_buffer->buffer, 1, &copy);
     }
 
-    void VulkanCommandList::execute_command_lists(const std::pmr::vector<CommandList*>& lists) {
-        std::pmr::vector<VkCommandBuffer> buffers;
+    void VulkanCommandList::execute_command_lists(const rx::vector<CommandList*>& lists) {
+        rx::vector<VkCommandBuffer> buffers;
         buffers.reserve(lists.size());
 
-        for(auto* list : lists) {
+        lists.each_fwd([&](CommandList* list) {
             auto* vk_list = dynamic_cast<VulkanCommandList*>(list);
             buffers.push_back(vk_list->cmds);
-        }
+        });
 
         vkCmdExecuteCommands(cmds, static_cast<uint32_t>(buffers.size()), buffers.data());
     }
@@ -111,7 +111,7 @@ namespace nova::renderer::rhi {
     void VulkanCommandList::begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) {
         // TODO: Store this somewhere better
         // TODO: Get max framebuffer attachments from GPU
-        const static std::pmr::vector<VkClearValue> CLEAR_VALUES(9);
+        const static rx::vector<VkClearValue> CLEAR_VALUES(9);
 
         auto* vk_renderpass = static_cast<VulkanRenderpass*>(renderpass);
         auto* vk_framebuffer = static_cast<VulkanFramebuffer*>(framebuffer);
@@ -135,12 +135,12 @@ namespace nova::renderer::rhi {
         vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline->pipeline);
     }
 
-    void VulkanCommandList::bind_descriptor_sets(const std::pmr::vector<DescriptorSet*>& descriptor_sets,
+    void VulkanCommandList::bind_descriptor_sets(const rx::vector<DescriptorSet*>& descriptor_sets,
                                                  const PipelineInterface* pipeline_interface) {
         const auto* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
 
         for(uint32_t i = 0; i < descriptor_sets.size(); i++) {
-            const auto* vk_set = static_cast<const VulkanDescriptorSet*>(descriptor_sets.at(i));
+            const auto* vk_set = static_cast<const VulkanDescriptorSet*>(descriptor_sets[i]);
             vkCmdBindDescriptorSets(cmds,
                                     VK_PIPELINE_BIND_POINT_GRAPHICS,
                                     vk_interface->pipeline_layout,
@@ -152,15 +152,15 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void VulkanCommandList::bind_vertex_buffers(const std::pmr::vector<Buffer*>& buffers) {
-        std::pmr::vector<VkBuffer> vk_buffers;
+    void VulkanCommandList::bind_vertex_buffers(const rx::vector<Buffer*>& buffers) {
+        rx::vector<VkBuffer> vk_buffers;
         vk_buffers.reserve(buffers.size());
 
-        std::pmr::vector<VkDeviceSize> offsets;
+        rx::vector<VkDeviceSize> offsets;
         offsets.reserve(buffers.size());
         for(uint32_t i = 0; i < buffers.size(); i++) {
             offsets.push_back(i);
-            const auto* vk_buffer = static_cast<const VulkanBuffer*>(buffers.at(i));
+            const auto* vk_buffer = static_cast<const VulkanBuffer*>(buffers[i]);
             vk_buffers.push_back(vk_buffer->buffer);
         }
 

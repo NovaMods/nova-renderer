@@ -1,15 +1,7 @@
-/*!
- * \author ddubois
- * \date 28-Apr-18.
- */
-
-#ifndef NOVA_RENDERER_FRAMEBUFFER_MANAGER_H
-#define NOVA_RENDERER_FRAMEBUFFER_MANAGER_H
-
-#include <cstdint>
-#include <vector>
+#pragma once
 
 #include <glm/glm.hpp>
+#include <stdint.h>
 #include <vulkan/vulkan.h>
 
 #include "nova_renderer/rhi/swapchain.hpp"
@@ -33,10 +25,10 @@ namespace nova::renderer::rhi {
         VulkanSwapchain(uint32_t num_swapchain_images,
                         VulkanRenderDevice* render_device,
                         glm::uvec2 window_dimensions,
-                        const std::pmr::vector<VkPresentModeKHR>& present_modes);
+                        const rx::vector<VkPresentModeKHR>& present_modes);
 
 #pragma region Swapchain implementation
-        uint8_t acquire_next_swapchain_image(mem::AllocatorHandle<>& allocator) override;
+        uint8_t acquire_next_swapchain_image(rx::memory::allocator* allocator) override;
 
         void present(uint32_t image_idx) override;
 #pragma endregion
@@ -58,15 +50,15 @@ namespace nova::renderer::rhi {
         VkPresentModeKHR present_mode;
         VkFormat swapchain_format;
 
-        std::pmr::vector<VkImageView> swapchain_image_views;
-        std::pmr::vector<VkImageLayout> swapchain_image_layouts;
+        rx::vector<VkImageView> swapchain_image_views;
+        rx::vector<VkImageLayout> swapchain_image_layouts;
 
         uint32_t num_swapchain_images;
 
 #pragma region Initialization
-        static VkSurfaceFormatKHR choose_surface_format(const std::pmr::vector<VkSurfaceFormatKHR>& formats);
+        static VkSurfaceFormatKHR choose_surface_format(const rx::vector<VkSurfaceFormatKHR>& formats);
 
-        static VkPresentModeKHR choose_present_mode(const std::pmr::vector<VkPresentModeKHR>& modes);
+        static VkPresentModeKHR choose_present_mode(const rx::vector<VkPresentModeKHR>& modes);
 
         static VkExtent2D choose_surface_extent(const VkSurfaceCapabilitiesKHR& caps, const glm::ivec2& window_dimensions);
 
@@ -84,7 +76,7 @@ namespace nova::renderer::rhi {
          * \post swapchain_extent is set to the swapchain's actual extent
          */
         void create_swapchain(uint32_t requested_num_swapchain_images,
-                              const std::pmr::vector<VkPresentModeKHR>& present_modes,
+                              const rx::vector<VkPresentModeKHR>& present_modes,
                               const glm::uvec2& window_dimensions);
 
         /*!
@@ -92,7 +84,7 @@ namespace nova::renderer::rhi {
          *
          * \pre The swapchain exists
          */
-        std::pmr::vector<VkImage> get_swapchain_images();
+        rx::vector<VkImage> get_swapchain_images();
 
         /*!
          * \brief Creates an image view, framebuffer, and fence for a specific swapchain image
@@ -109,7 +101,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Transitions all the provided images into COLOR_ATTACHMENT layout
          */
-        void transition_swapchain_images_into_color_attachment_layout(const std::pmr::vector<VkImage>& images) const;
+        void transition_swapchain_images_into_color_attachment_layout(const rx::vector<VkImage>& images) const;
 
         /*!
          * \brief Creates a dummy renderpass that only writes to one image - the swapchain. I need it so I can create framebuffers for the
@@ -119,5 +111,3 @@ namespace nova::renderer::rhi {
 #pragma endregion
     };
 } // namespace nova::renderer::rhi
-
-#endif // NOVA_RENDERER_FRAMEBUFFER_MANAGER_H
