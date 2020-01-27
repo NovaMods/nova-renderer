@@ -213,7 +213,7 @@ namespace nova::renderer::rhi {
         const VkPresentModeKHR desired_mode = VK_PRESENT_MODE_MAILBOX_KHR;
 
         // Mailbox mode is best mode (also not sure why)
-        modes.each_fwd([&](auto& mode) {
+        modes.each_fwd([&](VkPresentModeKHR& mode) {
             if(mode == desired_mode) {
                 return desired_mode;
             }

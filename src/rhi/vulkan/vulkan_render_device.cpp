@@ -1576,7 +1576,7 @@ namespace nova::renderer::rhi {
 
         rx::map<uint32_t, VkCommandPool> pools_by_queue(internal_allocator);
 
-        for(const uint32_t queue_index : queue_indices) {
+        queue_indices.each_fwd([&](const uint32_t queue_index) {
             VkCommandPoolCreateInfo command_pool_create_info;
             command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
             command_pool_create_info.pNext = nullptr;
@@ -1586,7 +1586,7 @@ namespace nova::renderer::rhi {
             VkCommandPool command_pool;
             NOVA_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool));
             pools_by_queue.insert(queue_index, command_pool);
-        }
+        });
 
         return pools_by_queue;
     }

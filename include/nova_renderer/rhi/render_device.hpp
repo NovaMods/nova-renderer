@@ -290,9 +290,9 @@ namespace nova::renderer::rhi {
     ObjectType* RenderDevice::allocate_object(rx::memory::allocator* local_allocator, Args... args) {
         return [&] {
             if(local_allocator != nullptr) {
-                return local_allocator->create<ObjectType>(rx::utility::forward(args));
+                return local_allocator->create<ObjectType>(rx::utility::forward<Args>(args)...);
             } else {
-                return internal_allocator->create<ObjectType>(rx::utility::forward(args));
+                return internal_allocator->create<ObjectType>(rx::utility::forward<Args>(args)...);
             }
         }();
     }

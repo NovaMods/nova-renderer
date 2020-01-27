@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
