@@ -102,7 +102,7 @@ namespace nova::renderer::rhi {
      * \brief The interface for a pipeline. Includes both inputs (descriptors) and outputs (framebuffers)
      */
     struct PipelineInterface {
-        rx::map<std::string, ResourceBindingDescription> bindings;
+        rx::map<rx::string, ResourceBindingDescription> bindings;
 
         rx::vector<VertexField> vertex_fields;
     };
