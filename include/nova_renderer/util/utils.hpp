@@ -1,12 +1,12 @@
 #pragma once
 
 // MUST be before <algorithm> to keep gcc happy
-#include <memory_resource>
-
 #include <algorithm>
-#include <fstream>
+#include <memory_resource>
 #include <string>
 #include <vector>
+
+#include <rx/core/optional.h>
 
 namespace rx {
     struct string;
@@ -34,9 +34,14 @@ namespace nova::renderer {
 
     bool ends_with(const std::string& string, const std::string& ending);
 
-    void write_to_file(const std::string& data, const rx::string& filepath);
+    template <typename ValueType, typename... Args>
+    inline rx::optional<ValueType> make_optional(Args... args);
 
-    void write_to_file(const std::pmr::vector<uint32_t>& data, const rx::string& filepath);
+    template <typename ValueType, typename... Args>
+    inline rx::optional<ValueType> make_optional(Args... args) {
+        return rx::optional<ValueType>(ValueType{rx::utility::forward<Args>(args)...});
+    }
 
 #define FORMAT(s, ...) fmt::format(fmt(s), __VA_ARGS__)
+
 } // namespace nova::renderer
