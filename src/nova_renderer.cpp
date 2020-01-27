@@ -65,9 +65,9 @@ namespace nova::renderer {
         return material_name == other.material_name && pass_name == other.pass_name;
     }
 
-    std::size_t FullMaterialPassNameHasher::operator()(const FullMaterialPassName& name) const {
-        const std::size_t material_name_hash = std::hash<std::string>()(name.material_name);
-        const std::size_t pass_name_hash = std::hash<std::string>()(name.pass_name);
+    rx_size FullMaterialPassName::hash() const {
+        const rx_size material_name_hash = rx::hash<rx::string>{}(material_name);
+        const rx_size pass_name_hash = rx::hash<rx::string>{}(pass_name);
 
         return material_name_hash ^ pass_name_hash;
     }

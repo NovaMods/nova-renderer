@@ -90,10 +90,8 @@ namespace nova::renderer {
         std::string pass_name;
 
         bool operator==(const FullMaterialPassName& other) const;
-    };
 
-    struct FullMaterialPassNameHasher {
-        std::size_t operator()(const FullMaterialPassName& name) const;
+        rx_size hash() const;
     };
 
     struct MaterialPassKey {
@@ -108,7 +106,7 @@ namespace nova::renderer {
     struct PipelineMetadata {
         shaderpack::PipelineCreateInfo data;
 
-        std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher> material_metadatas{};
+        std::unordered_map<FullMaterialPassName, MaterialPassMetadata> material_metadatas{};
     };
 
     struct RenderpassMetadata {

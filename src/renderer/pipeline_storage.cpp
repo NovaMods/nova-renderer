@@ -12,22 +12,22 @@ namespace nova::renderer {
     using namespace ntl;
     using namespace shaderpack;
 
-    PipelineStorage::PipelineStorage(NovaRenderer& renderer, AllocatorHandle<>& allocator)
+    PipelineStorage::PipelineStorage(NovaRenderer& renderer, rx::memory::allocator* allocator)
         : renderer(renderer), device(renderer.get_engine()), allocator(allocator) {}
 
-    std::optional<renderer::Pipeline> PipelineStorage::get_pipeline(const std::string& pipeline_name) const {
-        if(const auto itr = pipelines.find(pipeline_name); itr != pipelines.end()) {
-            return std::make_optional(itr->second);
+    rx::optional<renderer::Pipeline> PipelineStorage::get_pipeline(const rx::string& pipeline_name) const {
+        if(const auto* pipeline = pipelines.find(pipeline_name)) {
+            return rx::optional(*pipeline);
 
         } else {
-            return {};
+            return rx::nullopt;
         }
     }
 
     bool PipelineStorage::create_pipeline(const PipelineCreateInfo& create_info) {
         const auto rp_create = renderer.get_renderpass_metadata(create_info.pass);
         if(!rp_create) {
-            NOVA_LOG(ERROR) << "Pipeline " << create_info.name << " wants to be rendered by renderpass " << create_info.pass
+            NOVA_LOG(ERROR) << "Pipeline " << create_info.name.data() << " wants to be rendered by renderpass " << create_info.pass.data()
                             << ", but that renderpass doesn't have any metadata";
             return false;
         }
@@ -36,7 +36,8 @@ namespace nova::renderer {
                                                                                        rp_create->data.texture_outputs,
                                                                                        rp_create->data.depth_texture);
         if(!pipeline_interface) {
-            NOVA_LOG(ERROR) << "Pipeline " << create_info.name << " has an invalid interface: " << pipeline_interface.error.to_string();
+            NOVA_LOG(ERROR) << "Pipeline " << create_info.name.data()
+                            << " has an invalid interface: " << pipeline_interface.error.to_string();
             return false;
         }
 
@@ -44,12 +45,12 @@ namespace nova::renderer {
         if(pipeline_result) {
             auto [pipeline, pipeline_metadata] = *pipeline_result;
 
-            pipelines.emplace(create_info.name, pipeline);
-            pipeline_metadatas.emplace(create_info.name, pipeline_metadata);
+            pipelines.insert(create_info.name, pipeline);
+            pipeline_metadatas.insert(create_info.name, pipeline_metadata);
 
             return true;
         } else {
-            NOVA_LOG(ERROR) << "Could not create pipeline " << create_info.name << ": " << pipeline_result.error.to_string();
+            NOVA_LOG(ERROR) << "Could not create pipeline " << create_info.name.data() << ": " << pipeline_result.error.to_string();
 
             return false;
         }
@@ -69,8 +70,8 @@ namespace nova::renderer {
 
         } else {
             NovaError error = NovaError(format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name),
-                                        std::move(rhi_pipeline.error));
-            return ntl::Result<PipelineReturn>(std::move(error));
+                                        rx::utility::move(rhi_pipeline.error));
+            return ntl::Result<PipelineReturn>(rx::utility::move(error));
         }
 
         return Result(PipelineReturn{pipeline, metadata});
@@ -78,10 +79,10 @@ namespace nova::renderer {
 
     Result<rhi::PipelineInterface*> PipelineStorage::create_pipeline_interface(
         const PipelineCreateInfo& pipeline_create_info,
-        const std::pmr::vector<TextureAttachmentInfo>& color_attachments,
-        const std::optional<TextureAttachmentInfo>& depth_texture) const {
-        std::unordered_map<std::string, rhi::ResourceBindingDescription> bindings;
-        bindings.reserve(32); // Probably a good estimate
+        const rx::vector<TextureAttachmentInfo>& color_attachments,
+        const rx::optional<TextureAttachmentInfo>& depth_texture) const {
+
+        rx::map<rx::string, rhi::ResourceBindingDescription> bindings;
 
         get_shader_module_descriptors(pipeline_create_info.vertex_shader.source, rhi::ShaderStage::Vertex, bindings);
 
@@ -127,7 +128,7 @@ namespace nova::renderer {
 
                     default:
                         NOVA_LOG(ERROR) << "Nova does not support float fields with " << spirv_type.vecsize << " vector elements";
-                    return rhi::VertexFieldFormat::Invalid;
+                        return rhi::VertexFieldFormat::Invalid;
                 }
             };
 
@@ -178,30 +179,27 @@ namespace nova::renderer {
         return {};
     }
 
-    std::pmr::vector<rhi::VertexField> PipelineStorage::get_vertex_fields(const ShaderSource& vertex_shader) const {
+    rx::vector<rhi::VertexField> PipelineStorage::get_vertex_fields(const ShaderSource& vertex_shader) const {
         const CompilerGLSL shader_compiler(vertex_shader.source.data(), vertex_shader.source.size());
 
         const auto& shader_vertex_fields = shader_compiler.get_shader_resources().stage_inputs;
 
-        std::pmr::vector<rhi::VertexField> vertex_fields;
+        rx::vector<rhi::VertexField> vertex_fields;
         vertex_fields.reserve(shader_vertex_fields.size());
 
-        std::transform(shader_vertex_fields.begin(),
-                       shader_vertex_fields.end(),
-                       std::back_insert_iterator(vertex_fields),
-                       [&](const auto& spirv_field) {
-                           const auto& spirv_type = shader_compiler.get_type(spirv_field.base_type_id);
-                           const auto format = to_rhi_vertex_format(spirv_type);
+        for(const auto& spirv_field : shader_vertex_fields) {
+            const auto& spirv_type = shader_compiler.get_type(spirv_field.base_type_id);
+            const auto format = to_rhi_vertex_format(spirv_type);
 
-                           return rhi::VertexField{spirv_field.name, format};
-                       });
+            vertex_fields.emplace_back(spirv_field.name.c_str(), format);
+        }
 
         return vertex_fields;
     }
 
-    void PipelineStorage::get_shader_module_descriptors(const std::pmr::vector<uint32_t>& spirv,
+    void PipelineStorage::get_shader_module_descriptors(const rx::vector<uint32_t>& spirv,
                                                         const rhi::ShaderStage shader_stage,
-                                                        std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings) {
+                                                        rx::map<rx::string, rhi::ResourceBindingDescription>& bindings) {
         const CompilerGLSL shader_compiler(spirv.data(), spirv.size());
         const ShaderResources resources = shader_compiler.get_shader_resources();
 
@@ -229,9 +227,9 @@ namespace nova::renderer {
             NOVA_LOG(TRACE) << "Found a SSBO resource named " << resource.name;
             add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::StorageBuffer);
         }
-    }
+    } 
 
-    void PipelineStorage::add_resource_to_bindings(std::unordered_map<std::string, rhi::ResourceBindingDescription>& bindings,
+    void PipelineStorage::add_resource_to_bindings(rx::map<rx::string, rhi::ResourceBindingDescription>& bindings,
                                                    const rhi::ShaderStage shader_stage,
                                                    const CompilerGLSL& shader_compiler,
                                                    const spirv_cross::Resource& resource,
@@ -253,11 +251,11 @@ namespace nova::renderer {
             new_binding.is_unbounded = true;
         }
 
-        const std::string& resource_name = resource.name;
+        const rx::string& resource_name = resource.name.c_str();
 
-        if(const auto itr = bindings.find(resource_name); itr != bindings.end()) {
+        if(auto* binding = bindings.find(resource_name)) {
             // Existing binding. Is it the same as our binding?
-            rhi::ResourceBindingDescription& existing_binding = itr->second;
+            rhi::ResourceBindingDescription& existing_binding = *binding;
             if(existing_binding != new_binding) {
                 // They have two different bindings with the same name. Not allowed
                 NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name
@@ -270,7 +268,7 @@ namespace nova::renderer {
 
         } else {
             // Totally new binding!
-            bindings[resource_name] = new_binding;
+            bindings.insert(resource_name, new_binding);
         }
     }
 } // namespace nova::renderer
