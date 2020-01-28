@@ -55,7 +55,7 @@ namespace nova::renderer::rhi {
         // Pretty sure Vulkan doesn't need to do anything here
     }
 
-    ntl::Result<DeviceMemory*> VulkanRenderDevice::allocate_device_memory(const mem::Bytes size,
+    ntl::Result<DeviceMemory*> VulkanRenderDevice::allocate_device_memory(const Bytes size,
                                                                           const MemoryUsage usage,
                                                                           const ObjectType /* allowed_objects */,
                                                                           rx::memory::allocator* allocator) {

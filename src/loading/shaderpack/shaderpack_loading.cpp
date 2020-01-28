@@ -132,15 +132,15 @@ namespace nova::renderer::shaderpack {
             /* .generalConstantMatrixVectorIndexing = */ true,
         }};
 
-    ShaderpackResourcesData load_dynamic_resources_file(const FolderAccessorBase* folder_access);
+    rx::optional<ShaderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access);
 
-    ntl::Result<RendergraphData> load_rendergraph_file(const FolderAccessorBase* folder_access);
+    ntl::Result<RendergraphData> load_rendergraph_file(FolderAccessorBase* folder_access);
 
-    rx::vector<PipelineCreateInfo> load_pipeline_files(const FolderAccessorBase* folder_access);
-    rx::optional<PipelineCreateInfo> load_single_pipeline(const FolderAccessorBase* folder_access, const rx::string& pipeline_path);
+    rx::vector<PipelineCreateInfo> load_pipeline_files(FolderAccessorBase* folder_access);
+    rx::optional<PipelineCreateInfo> load_single_pipeline(FolderAccessorBase* folder_access, const rx::string& pipeline_path);
 
-    rx::vector<MaterialData> load_material_files(const FolderAccessorBase* folder_access);
-    MaterialData load_single_material(const FolderAccessorBase* folder_access, const rx::string& material_path);
+    rx::vector<MaterialData> load_material_files(FolderAccessorBase* folder_access);
+    MaterialData load_single_material(FolderAccessorBase* folder_access, const rx::string& material_path);
 
     void fill_in_render_target_formats(RenderpackData& data) {
         const auto& textures = data.resources.render_targets;

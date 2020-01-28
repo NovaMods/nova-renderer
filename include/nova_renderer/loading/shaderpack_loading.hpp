@@ -23,7 +23,7 @@ namespace nova::renderer::shaderpack {
     RenderpackData load_shaderpack_data(const rx::string& shaderpack_name);
 
     rx::vector<uint32_t> load_shader_file(const rx::string& filename,
-                                          const filesystem::FolderAccessorBase* folder_access,
+                                          filesystem::FolderAccessorBase* folder_access,
                                           rhi::ShaderStage stage,
                                           const rx::vector<rx::string>& defines = {});
 } // namespace nova::renderer::shaderpack
