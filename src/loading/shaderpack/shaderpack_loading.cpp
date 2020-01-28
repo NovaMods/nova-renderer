@@ -198,7 +198,7 @@ namespace nova::renderer::shaderpack {
     void cache_pipelines_by_renderpass(RenderpackData& data);
 
     RenderpackData load_shaderpack_data(const rx::string& shaderpack_name) {
-        const FolderAccessorBase* folder_access = VirtualFilesystem::get_instance()->get_folder_accessor(shaderpack_name);
+        FolderAccessorBase* folder_access = VirtualFilesystem::get_instance()->get_folder_accessor(shaderpack_name);
 
         // The shaderpack has a number of items: There's the shaders themselves, of course, but there's so, so much more
         // What else is there?
@@ -210,7 +210,7 @@ namespace nova::renderer::shaderpack {
         // All these things are loaded from the filesystem
 
         RenderpackData data{};
-        data.resources = load_dynamic_resources_file(folder_access);
+        data.resources = *load_dynamic_resources_file(folder_access);
         const auto& graph_data = load_rendergraph_file(folder_access);
         if(graph_data) {
             data.graph_data = *graph_data;
