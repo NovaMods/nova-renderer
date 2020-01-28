@@ -11,8 +11,8 @@ namespace nova::renderer {
         static auto create_info = [&] {
             shaderpack::RenderPassCreateInfo new_create_info = {};
             new_create_info.name = UI_RENDER_PASS_NAME;
-            new_create_info.texture_inputs = {SCENE_OUTPUT_RT_NAME};
-            new_create_info.texture_outputs = {{BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false}};
+            new_create_info.texture_inputs.emplace_back(SCENE_OUTPUT_RT_NAME);
+            new_create_info.texture_outputs.emplace_back(BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false);
 
             return new_create_info;
         }();
