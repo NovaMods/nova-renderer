@@ -1,10 +1,5 @@
 #pragma once
 
-#include <array>
-#include <memory>
-#include <mutex>
-#include <string>
-
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
 #include "nova_renderer/nova_settings.hpp"
@@ -74,7 +69,7 @@ namespace nova::renderer {
          *
          * \param renderpack_name The name of the shaderpack to load
          */
-        void load_renderpack(const std::string& renderpack_name);
+        void load_renderpack(const rx::string& renderpack_name);
 
         /*!
          * \brief Gives Nova a function to use to render UI
@@ -95,12 +90,12 @@ namespace nova::renderer {
          * \return The renderpass you added, but you no longer have ownership
          */
         template <typename RenderpassType>
-        [[nodiscard]] RenderpassType* set_ui_renderpass(std::unique_ptr<RenderpassType> ui_renderpass,
+        [[nodiscard]] RenderpassType* set_ui_renderpass(RenderpassType* ui_renderpass,
                                                         const shaderpack::RenderPassCreateInfo& create_info);
 
-        [[nodiscard]] const std::vector<MaterialPass>& get_material_passes_for_pipeline(rhi::Pipeline* const pipeline);
+        [[nodiscard]] const rx::vector<MaterialPass>& get_material_passes_for_pipeline(rhi::Pipeline* const pipeline);
 
-        [[nodiscard]] std::optional<RenderpassMetadata> get_renderpass_metadata(const std::string& renderpass_name) const;
+        [[nodiscard]] rx::optional<RenderpassMetadata> get_renderpass_metadata(const rx::string& renderpass_name) const;
 
         /*!
          * \brief Executes a single frame
@@ -109,7 +104,7 @@ namespace nova::renderer {
 
         [[nodiscard]] NovaSettingsAccessManager& get_settings();
 
-        [[nodiscard]] mem::AllocatorHandle<>* get_global_allocator() const;
+        [[nodiscard]] rx::memory::allocator* get_global_allocator() const;
 
 #pragma region Meshes
         /*!
@@ -160,10 +155,9 @@ namespace nova::renderer {
          * \param descriptor_descriptions A map from descriptor name to all the information you need to update that
          * descriptor
          */
-        void bind_data_to_material_descriptor_sets(
-            const MaterialPass& material,
-            const std::unordered_map<std::string, std::string>& bindings,
-            const std::unordered_map<std::string, rhi::ResourceBindingDescription>& descriptor_descriptions);
+        void bind_data_to_material_descriptor_sets(const MaterialPass& material,
+                                                   const rx::map<rx::string, rx::string>& bindings,
+                                                   const rx::map<rx::string, rhi::ResourceBindingDescription>& descriptor_descriptions);
 
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
                                                                const StaticMeshRenderableData& renderable);
@@ -190,7 +184,7 @@ namespace nova::renderer {
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
-        std::pmr::vector<mem::AllocatorHandle<>> frame_allocators;
+        rx::vector<rx::memory::allocator*> frame_allocators;
 
         static std::unique_ptr<NovaRenderer> instance;
 
@@ -204,22 +198,22 @@ namespace nova::renderer {
          * Right now I throw this allocator at the GPU memory allocators, because they need some way to allocate memory and I'm not about to
          * try and band-aid aid things together. Future work will have a better way to bootstrap Nova's allocators
          */
-        std::unique_ptr<mem::AllocatorHandle<>> global_allocator;
+        rx::memory::allocator* global_allocator;
 
         /*!
          * \brief Holds all the object loaded by the current rendergraph
          */
-        std::unique_ptr<mem::AllocatorHandle<>> renderpack_allocator;
+        rx::memory::allocator* renderpack_allocator;
 
-        std::unique_ptr<DeviceResources> device_resources;
+        DeviceResources* device_resources;
 
-        std::unique_ptr<DeviceMemoryResource> mesh_memory;
+        DeviceMemoryResource* mesh_memory;
 
-        std::unique_ptr<DeviceMemoryResource> ubo_memory;
+        DeviceMemoryResource* ubo_memory;
 
         rhi::DescriptorPool* global_descriptor_pool;
 
-        std::unique_ptr<DeviceMemoryResource> staging_buffer_memory;
+        DeviceMemoryResource* staging_buffer_memory;
         void* staging_buffer_memory_ptr;
 
 #pragma region Initialization
@@ -251,27 +245,30 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Renderpack
-        using PipelineReturn = std::tuple<renderer::Pipeline, PipelineMetadata>;
+        struct PipelineReturn {
+            Pipeline pipeline;
+            PipelineMetadata metadata;
+        };
 
         bool shaderpack_loaded = false;
 
-        std::mutex shaderpack_loading_mutex;
+        rx::concurrency::mutex shaderpack_loading_mutex;
 
-        std::optional<shaderpack::RenderpackData> loaded_renderpack;
+        rx::optional<shaderpack::RenderpackData> loaded_renderpack;
 
-        std::unique_ptr<Rendergraph> rendergraph;
+        Rendergraph* rendergraph;
 #pragma endregion
 
 #pragma region Rendergraph
-        std::unordered_map<std::string, rhi::Image*> builtin_images;
-        std::unordered_map<std::string, renderer::Renderpass*> builtin_renderpasses;
+        rx::map<rx::string, rhi::Image*> builtin_images;
+        rx::map<rx::string, renderer::Renderpass*> builtin_renderpasses;
 
-        std::unordered_map<std::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
+        rx::map<rx::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
 
-        void create_dynamic_textures(const std::pmr::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
+        void create_dynamic_textures(const rx::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
 
-        void create_render_passes(const std::pmr::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
-                                  const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipelines) const;
+        void create_render_passes(const rx::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
+                                  const rx::vector<shaderpack::PipelineCreateInfo>& pipelines) const;
 
         void destroy_dynamic_resources();
 
@@ -279,18 +276,18 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Rendering pipelines
-        std::unique_ptr<PipelineStorage> pipeline_storage;
+        PipelineStorage* pipeline_storage;
 
-        std::unordered_map<rhi::Pipeline*, std::vector<MaterialPass>> passes_by_pipeline;
+        rx::map<rhi::Pipeline*, rx::vector<MaterialPass>> passes_by_pipeline;
 
-        std::unordered_map<FullMaterialPassName, MaterialPassMetadata, FullMaterialPassNameHasher> material_metadatas;
+        rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas;
 
-        void create_pipelines_and_materials(const std::pmr::vector<shaderpack::PipelineCreateInfo>& pipeline_create_infos,
-                                            const std::pmr::vector<shaderpack::MaterialData>& materials);
+        void create_pipelines_and_materials(const rx::vector<shaderpack::PipelineCreateInfo>& pipeline_create_infos,
+                                            const rx::vector<shaderpack::MaterialData>& materials);
 
         void create_materials_for_pipeline(const renderer::Pipeline& pipeline,
-                                           const std::pmr::vector<shaderpack::MaterialData>& materials,
-                                           const std::string& pipeline_name);
+                                           const rx::vector<shaderpack::MaterialData>& materials,
+                                           const rx::string& pipeline_name);
 
         void destroy_pipelines();
 
@@ -300,29 +297,28 @@ namespace nova::renderer {
 #pragma region Meshes
         MeshId next_mesh_id = 0;
 
-        std::unordered_map<MeshId, Mesh> meshes;
-        std::unordered_map<MeshId, ProceduralMesh> proc_meshes;
+        rx::map<MeshId, Mesh> meshes;
+        rx::map<MeshId, ProceduralMesh> proc_meshes;
 #pragma endregion
 
 #pragma region Rendering
         uint64_t frame_count = 0;
         uint8_t cur_frame_idx = 0;
 
-        std::vector<std::string> builtin_buffer_names;
+        rx::vector<rx::string> builtin_buffer_names;
         uint32_t cur_model_matrix_index = 0;
 
-        std::array<rhi::Fence*, NUM_IN_FLIGHT_FRAMES> frame_fences;
+        rx::array<rhi::Fence* [NUM_IN_FLIGHT_FRAMES]> frame_fences;
 
-        std::unordered_map<FullMaterialPassName, MaterialPassKey, FullMaterialPassNameHasher> material_pass_keys;
+        rx::map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
 
-        std::mutex ui_function_mutex;
+        rx::concurrency::mutex ui_function_mutex;
 #pragma endregion
     };
 
     template <typename RenderpassType>
-    RenderpassType* NovaRenderer::set_ui_renderpass(std::unique_ptr<RenderpassType> ui_renderpass,
-                                                    const shaderpack::RenderPassCreateInfo& create_info) {
-        RenderpassType* renderpass = rendergraph->add_renderpass(std::move(ui_renderpass), create_info, *device_resources);
+    RenderpassType* NovaRenderer::set_ui_renderpass(RenderpassType* ui_renderpass, const shaderpack::RenderPassCreateInfo& create_info) {
+        RenderpassType* renderpass = rendergraph->add_renderpass(rx::utility::move(ui_renderpass), create_info, *device_resources);
         return renderpass;
     }
 } // namespace nova::renderer
