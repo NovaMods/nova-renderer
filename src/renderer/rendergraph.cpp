@@ -223,8 +223,6 @@ namespace nova::renderer {
 
         const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline);
 
-        for(const auto& pass : passes) {
-            pass.record(cmds, ctx);
-        }
+        passes.each_fwd([&](const renderer::MaterialPass& pass) { pass.record(cmds, ctx); });
     }
 } // namespace nova::renderer

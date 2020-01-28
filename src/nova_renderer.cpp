@@ -170,7 +170,7 @@ namespace nova::renderer {
 
         const auto& renderpass_order = rendergraph->calculate_renderpass_execution_order();
 
-        renderpass_order.each_fwd([&](const auto& renderpass_name) {
+        renderpass_order.each_fwd([&](const rx::string& renderpass_name) {
             auto* renderpass = rendergraph->get_renderpass(renderpass_name);
             renderpass->render(*cmds, ctx);
         });
@@ -377,7 +377,7 @@ namespace nova::renderer {
             global_descriptor_pool = device->create_descriptor_pool(total_num_descriptors, 5, total_num_descriptors, renderpack_allocator);
         }
 
-        pipeline_create_infos.each_fwd([&](const auto& pipeline_create_info) {
+        pipeline_create_infos.each_fwd([&](const shaderpack::PipelineCreateInfo& pipeline_create_info) {
             if(pipeline_storage->create_pipeline(pipeline_create_info)) {
                 auto pipeline = pipeline_storage->get_pipeline(pipeline_create_info.name);
                 create_materials_for_pipeline(*pipeline, materials, pipeline_create_info.name);
@@ -598,7 +598,7 @@ namespace nova::renderer {
 
         frame_allocators.reserve(NUM_IN_FLIGHT_FRAMES);
         for(size_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
-            void* ptr = global_allocator->allocate(PER_FRAME_MEMORY_SIZE.b_count());
+            rx_byte* ptr = global_allocator->allocate(PER_FRAME_MEMORY_SIZE.b_count());
             auto* mem = global_allocator->create<rx::memory::bump_point_allocator>(ptr, PER_FRAME_MEMORY_SIZE.b_count());
             frame_allocators.emplace_back(mem);
         }
