@@ -1,7 +1,7 @@
 #pragma once
 
-#include <array>
-#include <cstdint>
+#include <rx/core/array.h>
+#include <stdint.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/memory/block_allocation_strategy.hpp"
@@ -27,6 +27,8 @@ namespace nova::renderer {
          * \param device The device to create the buffers on
          */
         ProceduralMesh(uint64_t vertex_buffer_size, uint64_t index_buffer_size, rhi::RenderDevice* device);
+
+        ~ProceduralMesh();
 
         /*!
          * \brief Sets the data to upload to the vertex buffer
@@ -63,8 +65,8 @@ namespace nova::renderer {
     private:
         rhi::RenderDevice* device;
 
-        std::array<rhi::Buffer*, NUM_IN_FLIGHT_FRAMES> vertex_buffers;
-        std::array<rhi::Buffer*, NUM_IN_FLIGHT_FRAMES> index_buffers;
+        rx::array<rhi::Buffer* [NUM_IN_FLIGHT_FRAMES]> vertex_buffers;
+        rx::array<rhi::Buffer* [NUM_IN_FLIGHT_FRAMES]> index_buffers;
 
         rhi::Buffer* cached_vertex_buffer;
         rhi::Buffer* cached_index_buffer;
@@ -72,12 +74,12 @@ namespace nova::renderer {
         uint64_t num_vertex_bytes_to_upload = 0;
         uint64_t num_index_bytes_to_upload = 0;
 
-        std::unique_ptr<mem::AllocatorHandle<>> allocator;
+        rx::memory::allocator* allocator;
 
-        std::unique_ptr<mem::BlockAllocationStrategy> device_memory_allocation_strategy;
-        std::unique_ptr<mem::BlockAllocationStrategy> host_memory_allocation_strategy;
-        std::unique_ptr<DeviceMemoryResource> device_buffers_memory;
-        std::unique_ptr<DeviceMemoryResource> cached_buffers_memory;
+        mem::BlockAllocationStrategy* device_memory_allocation_strategy;
+        mem::BlockAllocationStrategy* host_memory_allocation_strategy;
+        DeviceMemoryResource* device_buffers_memory;
+        DeviceMemoryResource* cached_buffers_memory;
 
 #ifdef NOVA_DEBUG
         uint64_t vertex_buffer_size;

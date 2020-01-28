@@ -1,5 +1,4 @@
 #pragma once
-#include <string>
 
 #include "nova_renderer/rendergraph.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
