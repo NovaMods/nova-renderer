@@ -20,7 +20,7 @@ namespace nova::renderer::rhi {
 
         rx::vector<VkImage> vk_images = get_swapchain_images();
 
-        if(vk_images.size() == 0) {
+        if(vk_images.is_empty()) {
             NOVA_LOG(FATAL) << "The swapchain returned zero images";
         }
 

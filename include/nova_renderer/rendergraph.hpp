@@ -324,7 +324,7 @@ namespace nova::renderer {
             return rx::nullopt;
         }();
 
-        if(attachment_errors.size() != 0) {
+        if(!attachment_errors.is_empty()) {
             attachment_errors.each_fwd([&](const rx::string& err) { NOVA_LOG(ERROR) << err.data(); });
 
             NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name

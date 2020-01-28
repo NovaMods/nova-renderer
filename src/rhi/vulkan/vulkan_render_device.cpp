@@ -1494,7 +1494,7 @@ namespace nova::renderer::rhi {
         device_create_info.enabledExtensionCount = static_cast<uint32_t>(device_extensions.size());
         device_create_info.ppEnabledExtensionNames = device_extensions.data();
         device_create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layer_names.size());
-        if(enabled_layer_names.size() != 0) {
+        if(!enabled_layer_names.is_empty()) {
             device_create_info.ppEnabledLayerNames = enabled_layer_names.data();
         }
 
@@ -1529,14 +1529,14 @@ namespace nova::renderer::rhi {
         available.each_fwd(
             [&](const VkExtensionProperties& extension) { required.erase(static_cast<const char*>(extension.extensionName)); });
 
-        if(required.size() != 0) {
+        if(!required.is_empty()) {
             std::stringstream ss;
             required.each([&](const rx::string& extension) { ss << extension.data() << ", "; });
 
             NOVA_LOG(WARN) << "Device does not support these required extensions: " << ss.str();
         }
 
-        return required.size() > 0;
+        return !required.is_empty();
     }
 
     void VulkanRenderDevice::create_swapchain() {

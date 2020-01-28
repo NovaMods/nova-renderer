@@ -234,11 +234,11 @@ namespace nova::renderer::shaderpack {
             auto json_resources = nlohmann::json::parse(resources_string.data());
             const ValidationReport report = validate_shaderpack_resources_data(json_resources);
             print(report);
-            if(report.errors.size() != 0) {
+            if(!report.errors.is_empty()) {
                 return rx::nullopt;
             }
 
-            return rx::optional(json_resources.get<ShaderpackResourcesData>());
+            return json_resources.get<ShaderpackResourcesData>();
         }
         catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse your renderpack's resources.json: " << err.what();
@@ -320,7 +320,7 @@ namespace nova::renderer::shaderpack {
         const ValidationReport report = validate_graphics_pipeline(json_pipeline);
         NOVA_LOG(TRACE) << "Finished validating JSON for pipeline " << pipeline_path.data();
         print(report);
-        if(report.errors.size() != 0) {
+        if(!report.errors.is_empty()) {
             NOVA_LOG(ERROR) << "Loading pipeline file " << pipeline_path.data() << " failed";
             return rx::nullopt;
         }
@@ -468,7 +468,7 @@ namespace nova::renderer::shaderpack {
         auto json_material = nlohmann::json::parse(material_text.data(), material_text.data() + material_text.size());
         const auto report = validate_material(json_material);
         print(report);
-        if(report.errors.size() != 0) {
+        if(!report.errors.is_empty()) {
             // There were errors, this material can't be loaded
             NOVA_LOG(TRACE) << "Load of material " << material_path.data() << " failed";
             return {};
