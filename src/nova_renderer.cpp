@@ -150,8 +150,8 @@ namespace nova::renderer {
 
         NOVA_LOG(DEBUG) << "\n***********************\n        FRAME START        \n***********************";
 
-        const rx::vector frame_fences(global_allocator, 1, frame_fences[cur_frame_idx]);
-        device->reset_fences(frame_fences);
+        const rx::vector last_frame_fences(global_allocator, 1, frame_fences[cur_frame_idx]);
+        device->reset_fences(last_frame_fences);
 
         rhi::CommandList* cmds = device->create_command_list(0,
                                                              rhi::QueueType::Graphics,
