@@ -3,8 +3,13 @@
 #include <cstdint>
 
 #include "nova_renderer/memory/allocation_strategy.hpp"
-#include "nova_renderer/memory/allocators.hpp"
 #include "nova_renderer/memory/bytes.hpp"
+
+namespace rx {
+    namespace memory {
+        struct allocator;
+    }
+}
 
 namespace nova::mem {
     struct AllocationInfo;
@@ -39,7 +44,7 @@ namespace nova::mem {
          * \param size The size of the memory that this boi can allocate from
          * \param alignment_in The alignment of all allocations from this allocator
          */
-        BlockAllocationStrategy(AllocatorHandle<>* allocator_in, Bytes size, Bytes alignment_in = Bytes(0));
+        BlockAllocationStrategy(rx::memory::allocator* allocator_in, Bytes size, Bytes alignment_in = Bytes(0));
 
         ~BlockAllocationStrategy();
 
@@ -58,7 +63,7 @@ namespace nova::mem {
         void free(const AllocationInfo& alloc) override;
 
     private:
-        AllocatorHandle<Block>* allocator;
+        rx::memory::allocator* allocator;
 
         Block* head;
 

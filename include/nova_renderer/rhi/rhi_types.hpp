@@ -2,7 +2,6 @@
 
 #include <glm/glm.hpp>
 
-#include "nova_renderer/memory/allocators.hpp"
 #include "nova_renderer/memory/bytes.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"

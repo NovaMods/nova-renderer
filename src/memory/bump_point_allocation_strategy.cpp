@@ -1,6 +1,6 @@
 #include "nova_renderer/memory/bump_point_allocation_strategy.hpp"
 
-#include <cassert>
+#include <rx/core/assert.h>
 
 #include "nova_renderer/memory/allocation_structs.hpp"
 
@@ -26,5 +26,5 @@ namespace nova::mem {
         return true;
     }
 
-    void BumpPointAllocationStrategy::free(const AllocationInfo&) { assert(false && "Cannot free from a bump-point allocator!\n"); }
+    void BumpPointAllocationStrategy::free(const AllocationInfo&) { RX_ASSERT(false && "Cannot free from a bump-point allocator!\n"); }
 } // namespace nova::mem

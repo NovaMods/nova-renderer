@@ -1,6 +1,5 @@
 #pragma once
 
-#include "nova_renderer/memory/allocators.hpp"
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"

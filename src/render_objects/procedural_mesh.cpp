@@ -26,8 +26,8 @@ namespace nova::renderer {
 
         allocator = &rx::memory::g_system_allocator;
 
-        device_memory_allocation_strategy = allocator->create<BlockAllocationStrategy>(allocator, device_memory_size);
-        host_memory_allocation_strategy = allocator->create<BlockAllocationStrategy>(allocator, host_memory_size);
+        device_memory_allocation_strategy = allocator->create<BlockAllocationStrategy>(allocator, device_memory_size, 0_b);
+        host_memory_allocation_strategy = allocator->create<BlockAllocationStrategy>(allocator, host_memory_size, 0_b);
 
         // TODO: Don't allocate a separate DeviceMemory for each procedural mesh
         device->allocate_device_memory(device_memory_size.b_count(), MemoryUsage::LowFrequencyUpload, ObjectType::Buffer, allocator)
@@ -210,7 +210,7 @@ namespace nova::renderer {
         cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::TopOfPipe, barriers_after_upload);
     }
 
-    std::tuple<Buffer*, Buffer*> ProceduralMesh::get_buffers_for_frame(const uint8_t frame_idx) const {
+    ProceduralMesh::Buffers ProceduralMesh::get_buffers_for_frame(const uint8_t frame_idx) const {
         auto* vertex_buffer = vertex_buffers[frame_idx];
         auto* index_buffer = index_buffers[frame_idx];
 

@@ -17,6 +17,11 @@ namespace nova::renderer {
      */
     class ProceduralMesh {
     public:
+        struct Buffers {
+            rhi::Buffer* vertex_buffer;
+            rhi::Buffer* index_buffer;
+        };
+
         ProceduralMesh() = default;
 
         /*!
@@ -60,7 +65,7 @@ namespace nova::renderer {
         /*!
          * \brief Returns the vertex and index buffer for the provided frame
          */
-        [[nodiscard]] std::tuple<rhi::Buffer*, rhi::Buffer*> get_buffers_for_frame(uint8_t frame_idx) const;
+        [[nodiscard]] Buffers get_buffers_for_frame(uint8_t frame_idx) const;
 
     private:
         rhi::RenderDevice* device;

@@ -109,9 +109,7 @@ set(NOVA_SOURCE
         include/nova_renderer/memory/bytes.hpp
         include/nova_renderer/memory/allocation_strategy.hpp
         include/nova_renderer/memory/allocation_structs.hpp
-        include/nova_renderer/memory/allocators.hpp
         include/nova_renderer/memory/block_allocation_strategy.hpp
-        include/nova_renderer/memory/host_memory_resource.hpp
         include/nova_renderer/memory/bump_point_allocation_strategy.hpp
 
         include/nova_renderer/rhi/forward_decls.hpp
@@ -189,7 +187,6 @@ set(NOVA_SOURCE
         src/windowing/window.cpp
 
         src/memory/device_memory_resource.cpp
-        src/memory/host_memory_resource.cpp
         src/memory/block_allocation_strategy.cpp
         src/memory/bump_point_allocation_strategy.cpp
         src/memory/bytes.cpp
