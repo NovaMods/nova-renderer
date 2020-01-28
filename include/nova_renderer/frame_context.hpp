@@ -2,8 +2,9 @@
 
 #include <cstddef>
 
+#include <rx/core/memory/allocator.h>
+
 #include "nova_renderer/rhi/forward_decls.hpp"
-#include "nova_renderer/memory/allocators.hpp"
 
 namespace nova::renderer {
     class NovaRenderer;
@@ -34,6 +35,6 @@ namespace nova::renderer {
 
         size_t cur_model_matrix_index = 0;
 
-        mem::AllocatorHandle<>* allocator = nullptr;
+        rx::memory::allocator* allocator = nullptr;
     };
 } // namespace nova::renderer

@@ -1,9 +1,8 @@
 #pragma once
 
-#include <cstdlib>
-#include <iosfwd>
+#include <ostream>
 
-#include "nova_renderer/util/utils.hpp"
+#include <rx/core/types.h>
 
 namespace nova::mem {
     /**
@@ -24,7 +23,7 @@ namespace nova::mem {
     class Bytes {
     public:
         // ReSharper disable once CppNonExplicitConvertingConstructor
-        constexpr Bytes(std::size_t const count) noexcept : byte_count(count){};
+        constexpr Bytes(rx_size const count) noexcept : byte_count(count){};
 
         constexpr Bytes(Bytes const& other) noexcept = default;
         constexpr Bytes& operator=(Bytes const& other) noexcept = default;
@@ -32,19 +31,19 @@ namespace nova::mem {
         /**
          * \return Value in bytes.
          */
-        [[nodiscard]] constexpr std::size_t b_count() const noexcept { return byte_count; }
+        [[nodiscard]] constexpr rx_size b_count() const noexcept { return byte_count; }
         /**
          * \return Rounded value in kilobytes.
          */
-        [[nodiscard]] constexpr std::size_t k_count() const noexcept { return (byte_count + 512) / 1024; }
+        [[nodiscard]] constexpr rx_size k_count() const noexcept { return (byte_count + 512) / 1024; }
         /**
          * \return Rounded value in megabytes.
          */
-        [[nodiscard]] constexpr std::size_t m_count() const noexcept { return (byte_count + 524288) / 1048576; }
+        [[nodiscard]] constexpr rx_size m_count() const noexcept { return (byte_count + 524288) / 1048576; }
         /**
          * \return Rounded value in gigabytes.
          */
-        [[nodiscard]] constexpr std::size_t g_count() const noexcept { return (byte_count + 536870912) / 1073741824; }
+        [[nodiscard]] constexpr rx_size g_count() const noexcept { return (byte_count + 536870912) / 1073741824; }
 
 #pragma region Comparison operators
         constexpr bool operator==(Bytes const& rhs) const noexcept { return byte_count == rhs.byte_count; }
@@ -65,11 +64,11 @@ namespace nova::mem {
 
         constexpr Bytes operator-(Bytes const subtrahend) const noexcept { return Bytes(byte_count - subtrahend.byte_count); }
 
-        constexpr Bytes operator*(std::size_t const multiplicand) const noexcept { return Bytes(byte_count * multiplicand); }
+        constexpr Bytes operator*(rx_size const multiplicand) const noexcept { return Bytes(byte_count * multiplicand); }
 
-        constexpr Bytes operator/(std::size_t const divisor) const noexcept { return Bytes(byte_count / divisor); }
+        constexpr Bytes operator/(rx_size const divisor) const noexcept { return Bytes(byte_count / divisor); }
 
-        constexpr Bytes operator%(std::size_t const divisor) const noexcept { return Bytes(byte_count % divisor); }
+        constexpr Bytes operator%(rx_size const divisor) const noexcept { return Bytes(byte_count % divisor); }
 
         constexpr Bytes& operator+=(Bytes const addend) noexcept {
             byte_count += addend.byte_count;
@@ -85,22 +84,22 @@ namespace nova::mem {
 
 #pragma endregion
 
-#pragma region std::size_t arithmatic operators
-        constexpr Bytes operator+(std::size_t const addend) const noexcept { return Bytes(byte_count + addend); }
+#pragma region rx_size arithmatic operators
+        constexpr Bytes operator+(rx_size const addend) const noexcept { return Bytes(byte_count + addend); }
 
-        constexpr Bytes operator-(std::size_t const subtrahend) const noexcept { return Bytes(byte_count - subtrahend); }
+        constexpr Bytes operator-(rx_size const subtrahend) const noexcept { return Bytes(byte_count - subtrahend); }
 
-        constexpr Bytes& operator*=(std::size_t const multiplicand) noexcept {
+        constexpr Bytes& operator*=(rx_size const multiplicand) noexcept {
             byte_count *= multiplicand;
             return *this;
         }
 
-        constexpr Bytes& operator/=(std::size_t const divisor) noexcept {
+        constexpr Bytes& operator/=(rx_size const divisor) noexcept {
             byte_count /= divisor;
             return *this;
         }
 
-        constexpr Bytes& operator%=(std::size_t const divisor) noexcept {
+        constexpr Bytes& operator%=(rx_size const divisor) noexcept {
             byte_count %= divisor;
             return *this;
         }
@@ -114,7 +113,7 @@ namespace nova::mem {
         constexpr Bytes operator|(Bytes const& rhs) const noexcept { return Bytes(byte_count | rhs.byte_count); }
 #pragma endregion
     private:
-        std::size_t byte_count;
+        rx_size byte_count;
     };
 
     /**
@@ -128,7 +127,7 @@ namespace nova::mem {
          *
          * \param count Amount of kilobytes to represent.
          */
-        constexpr explicit KBytes(std::size_t const count) noexcept : Bytes(count * 1024){};
+        constexpr explicit KBytes(rx_size const count) noexcept : Bytes(count * 1024){};
         /**
          * Losslessly copies from another \ref Bytes instance.
          *
@@ -148,7 +147,7 @@ namespace nova::mem {
          *
          * \param count Amount of megabytes to represent.
          */
-        constexpr explicit MBytes(std::size_t const count) noexcept : Bytes(count * 1048576){};
+        constexpr explicit MBytes(rx_size const count) noexcept : Bytes(count * 1048576){};
         /**
          * Losslessly copies from another \ref Bytes instance.
          *
@@ -168,7 +167,7 @@ namespace nova::mem {
          *
          * \param count Amount of gigabytes to represent.
          */
-        constexpr explicit GBytes(std::size_t const count) noexcept : Bytes(count * 1073741824){};
+        constexpr explicit GBytes(rx_size const count) noexcept : Bytes(count * 1073741824){};
         /**
          * Losslessly copies from another \ref Bytes instance.
          *
@@ -177,9 +176,9 @@ namespace nova::mem {
         constexpr explicit GBytes(Bytes const b) noexcept : Bytes(b){};
     };
 
-    constexpr Bytes operator*(std::size_t const multiplicand, Bytes const lhs) noexcept { return lhs * multiplicand; }
+    constexpr Bytes operator*(rx_size const multiplicand, Bytes const lhs) noexcept { return lhs * multiplicand; }
 
-    constexpr Bytes operator/(std::size_t const dividend, Bytes const divisor) noexcept { return Bytes(dividend / divisor.b_count()); }
+    constexpr Bytes operator/(rx_size const dividend, Bytes const divisor) noexcept { return Bytes(dividend / divisor.b_count()); }
 
     /**
      * Print the amount of bytes within a \ref Bytes class. Prints as "XXb".
@@ -220,4 +219,4 @@ namespace nova::mem {
         constexpr Bytes operator""_mb(unsigned long long const value) { return MBytes(value); }
         constexpr Bytes operator""_gb(unsigned long long const value) { return GBytes(value); }
     } // namespace operators
-} // namespace bvestl::polyalloc
+} // namespace nova::mem

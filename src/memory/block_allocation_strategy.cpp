@@ -1,5 +1,7 @@
 #include "nova_renderer/memory/block_allocation_strategy.hpp"
 
+#include <rx/core/memory/allocator.h>
+
 #include "nova_renderer/memory/allocation_structs.hpp"
 
 #include "../util/memory_utils.hpp"
@@ -7,10 +9,10 @@
 using namespace nova::mem::operators;
 
 namespace nova::mem {
-    BlockAllocationStrategy::BlockAllocationStrategy(AllocatorHandle<>* allocator_in, const Bytes size, const Bytes alignment_in)
+    BlockAllocationStrategy::BlockAllocationStrategy(rx::memory::allocator* allocator_in, const Bytes size, const Bytes alignment_in)
         : memory_size(size), alignment(alignment_in) {
 
-        allocator = allocator_in->new_other_object<AllocatorHandle<Block>>(std::pmr::get_default_resource());// TODO: Figure out how to allocate blocks more better
+        allocator = allocator_in;
 
         head = make_new_block(0_b, size);
     }
@@ -24,7 +26,7 @@ namespace nova::mem {
                 next = current->next;
             }
 
-            allocator->deallocate(current, 1);
+            allocator->deallocate(reinterpret_cast<rx_byte*>(current));
 
             current = next;
         }
@@ -87,7 +89,7 @@ namespace nova::mem {
 
             prev->size += block->size;
 
-            allocator->deallocate(block, 1);
+            allocator->deallocate(reinterpret_cast<rx_byte*>(block));
 
             block = prev;
         }
@@ -103,15 +105,14 @@ namespace nova::mem {
             block->next = next->next;
             block->size += next->size;
 
-            allocator->deallocate(next, 1);
+            allocator->deallocate(reinterpret_cast<rx_byte*>(next));
         }
 
         allocated -= alloc.size;
     }
 
     BlockAllocationStrategy::Block* BlockAllocationStrategy::make_new_block(const Bytes offset, const Bytes size) {
-        void* mem = allocator->allocate(1);
-        auto* block = new(mem) Block;
+        auto* block = allocator->create<Block>();
         block->id = next_block_id;
         block->size = size;
         block->offset = offset;
