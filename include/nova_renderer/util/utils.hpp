@@ -34,14 +34,6 @@ namespace nova::renderer {
 
     bool ends_with(const std::string& string, const std::string& ending);
 
-    template <typename ValueType, typename... Args>
-    inline rx::optional<ValueType> make_optional(Args... args);
-
-    template <typename ValueType, typename... Args>
-    inline rx::optional<ValueType> make_optional(Args... args) {
-        return rx::optional<ValueType>(ValueType{rx::utility::forward<Args>(args)...});
-    }
-
 #define FORMAT(s, ...) fmt::format(fmt(s), __VA_ARGS__)
 
 } // namespace nova::renderer

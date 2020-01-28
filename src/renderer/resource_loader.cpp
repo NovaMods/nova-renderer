@@ -39,12 +39,12 @@ namespace nova::renderer {
 
         uniform_buffers.insert(name, resource);
 
-        return rx::optional<BufferResourceAccessor>(BufferResourceAccessor{&uniform_buffers, name});
+        return BufferResourceAccessor{&uniform_buffers, name};
     }
 
     rx::optional<BufferResourceAccessor> DeviceResources::get_uniform_buffer(const rx::string& name) {
         if(uniform_buffers.find(name) != nullptr) {
-            return make_optional<BufferResourceAccessor>(&uniform_buffers, name);
+            return BufferResourceAccessor{&uniform_buffers, name};
         }
 
         return rx::nullopt;
@@ -125,12 +125,12 @@ namespace nova::renderer {
 
         textures.insert(name, resource);
 
-        return make_optional<TextureResourceAccessor>(&textures, name);
+        return TextureResourceAccessor{&textures, name};
     }
 
     rx::optional<TextureResourceAccessor> DeviceResources::get_texture(const rx::string& name) const {
         if(textures.find(name) != nullptr) {
-            return make_optional<TextureResourceAccessor>(&textures, name);
+            return TextureResourceAccessor{&textures, name};
 
         }
 
@@ -172,7 +172,7 @@ namespace nova::renderer {
 
             render_targets.insert(name, resource);
 
-            return make_optional<TextureResourceAccessor>(&render_targets, name);
+            return TextureResourceAccessor{&render_targets, name};
 
         } else {
             NOVA_LOG(ERROR) << "Could not create render target " << name.data();
@@ -182,7 +182,7 @@ namespace nova::renderer {
 
     rx::optional<TextureResourceAccessor> DeviceResources::get_render_target(const rx::string& name) const {
         if(render_targets.find(name) != nullptr) {
-            return make_optional<TextureResourceAccessor>(&render_targets, name);
+            return TextureResourceAccessor{&render_targets, name};
 
         } else {
             return rx::nullopt;
