@@ -37,7 +37,7 @@ namespace nova::renderer {
          */
         rhi::Buffer* per_renderable_data = nullptr;
 
-        std::pmr::vector<RenderCommandType> commands;
+        rx::vector<RenderCommandType> commands;
     };
 
     template <typename RenderCommandType>
@@ -54,16 +54,16 @@ namespace nova::renderer {
          */
         rhi::Buffer* per_renderable_data = nullptr;
 
-        std::pmr::vector<RenderCommandType> commands;
+        rx::vector<RenderCommandType> commands;
 
-        ProceduralMeshBatch(std::unordered_map<MeshId, ProceduralMesh>* meshes, const MeshId key) : mesh(meshes, key) {}
+        ProceduralMeshBatch(rx::map<MeshId, ProceduralMesh>* meshes, const MeshId key) : mesh(meshes, key) {}
     };
 
     struct MaterialPass {
-        std::pmr::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
-        std::pmr::vector<ProceduralMeshBatch<StaticMeshRenderCommand>> static_procedural_mesh_draws;
+        rx::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
+        rx::vector<ProceduralMeshBatch<StaticMeshRenderCommand>> static_procedural_mesh_draws;
 
-        std::pmr::vector<rhi::DescriptorSet*> descriptor_sets;
+        rx::vector<rhi::DescriptorSet*> descriptor_sets;
         const rhi::PipelineInterface* pipeline_interface = nullptr;
 
         void record(rhi::CommandList& cmds, FrameContext& ctx) const;
@@ -86,8 +86,8 @@ namespace nova::renderer {
 
 #pragma region Metadata structs
     struct FullMaterialPassName {
-        std::string material_name;
-        std::string pass_name;
+        rx::string material_name;
+        rx::string pass_name;
 
         bool operator==(const FullMaterialPassName& other) const;
 
@@ -95,7 +95,7 @@ namespace nova::renderer {
     };
 
     struct MaterialPassKey {
-        std::string pipeline_name;
+        rx::string pipeline_name;
         uint32_t material_pass_index;
     };
 
@@ -106,7 +106,7 @@ namespace nova::renderer {
     struct PipelineMetadata {
         shaderpack::PipelineCreateInfo data;
 
-        std::unordered_map<FullMaterialPassName, MaterialPassMetadata> material_metadatas{};
+        rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas{};
     };
 
     struct RenderpassMetadata {
@@ -123,7 +123,7 @@ namespace nova::renderer {
      */
     class Renderpass {
     public:
-        explicit Renderpass(std::string name, bool is_builtin = false);
+        explicit Renderpass(rx::string name, bool is_builtin = false);
 
         Renderpass(Renderpass&& old) noexcept = default;
         Renderpass& operator=(Renderpass&& old) noexcept = default;
@@ -134,7 +134,7 @@ namespace nova::renderer {
         virtual ~Renderpass() = default;
 
         uint32_t id = 0;
-        std::string name;
+        rx::string name;
 
         bool is_builtin = false;
 
@@ -144,12 +144,12 @@ namespace nova::renderer {
         /*!
          * \brief Names of all the pipelines which are in this renderpass
          */
-        std::pmr::vector<std::string> pipeline_names;
+        rx::vector<rx::string> pipeline_names;
 
         bool writes_to_backbuffer = false;
 
-        std::pmr::vector<rhi::ResourceBarrier> read_texture_barriers;
-        std::pmr::vector<rhi::ResourceBarrier> write_texture_barriers;
+        rx::vector<rhi::ResourceBarrier> read_texture_barriers;
+        rx::vector<rhi::ResourceBarrier> write_texture_barriers;
 
         /*!
          * \brief Performs the rendering work of this renderpass
@@ -218,53 +218,53 @@ namespace nova::renderer {
          * \brief Constructs a Rendergraph which will allocate its internal memory from the provided allocator, and which will execute on
          * the provided device
          */
-        Rendergraph(mem::AllocatorHandle<>& allocator, rhi::RenderDevice& device);
+        Rendergraph(rx::memory::allocator* allocator, rhi::RenderDevice& device);
 
         template <typename RenderpassType>
-        [[nodiscard]] RenderpassType* add_renderpass(std::unique_ptr<RenderpassType> renderpass,
+        [[nodiscard]] RenderpassType* add_renderpass(RenderpassType* renderpass,
                                                      const shaderpack::RenderPassCreateInfo& create_info,
                                                      const DeviceResources& resource_storage);
 
-        void destroy_renderpass(const std::string& name);
+        void destroy_renderpass(const rx::string& name);
 
-        [[nodiscard]] std::pmr::vector<std::string> calculate_renderpass_execution_order();
+        [[nodiscard]] rx::vector<rx::string> calculate_renderpass_execution_order();
 
-        [[nodiscard]] Renderpass* get_renderpass(const std::string& name) const;
+        [[nodiscard]] Renderpass* get_renderpass(const rx::string& name) const;
 
-        [[nodiscard]] std::optional<RenderpassMetadata> get_metadata_for_renderpass(const std::string& name) const;
+        [[nodiscard]] rx::optional<RenderpassMetadata> get_metadata_for_renderpass(const rx::string& name) const;
 
     private:
         bool is_dirty = false;
 
-        mem::AllocatorHandle<>& allocator;
+        rx::memory::allocator* allocator;
 
         rhi::RenderDevice& device;
 
-        std::pmr::unordered_map<std::string, std::unique_ptr<Renderpass>> renderpasses;
+        rx::map<rx::string, Renderpass*> renderpasses;
 
-        std::pmr::vector<std::string> cached_execution_order;
-        std::pmr::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
+        rx::vector<rx::string> cached_execution_order;
+        rx::map<rx::string, RenderpassMetadata> renderpass_metadatas;
     };
 
     template <typename RenderpassType>
-    RenderpassType* Rendergraph::add_renderpass(std::unique_ptr<RenderpassType> renderpass,
+    RenderpassType* Rendergraph::add_renderpass(RenderpassType* renderpass,
                                                 const shaderpack::RenderPassCreateInfo& create_info,
                                                 const DeviceResources& resource_storage) {
         RenderpassMetadata metadata;
         metadata.data = create_info;
 
-        std::pmr::vector<rhi::Image*> color_attachments;
+        rx::vector<rhi::Image*> color_attachments;
         color_attachments.reserve(create_info.texture_outputs.size());
 
         glm::uvec2 framebuffer_size(0);
 
         const auto num_attachments = create_info.depth_texture ? create_info.texture_outputs.size() + 1 :
                                                                  create_info.texture_outputs.size();
-        std::pmr::vector<std::string> attachment_errors;
+        rx::vector<rx::string> attachment_errors;
         attachment_errors.reserve(num_attachments);
 
         bool missing_render_targets = false;
-        for(const shaderpack::TextureAttachmentInfo& attachment_info : create_info.texture_outputs) {
+        create_info.texture_outputs.each_fwd([&](const shaderpack::TextureAttachmentInfo& attachment_info) {
             if(attachment_info.name == BACKBUFFER_NAME) {
                 if(create_info.texture_outputs.size() == 1) {
                     renderpass->writes_to_backbuffer = true;
@@ -273,7 +273,7 @@ namespace nova::renderer {
                 } else {
                     attachment_errors.push_back(format(
                         fmt("Pass {:s} writes to the backbuffer and {:d} other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures"),
-                        create_info.name,
+                        create_info.name.data(),
                         create_info.texture_outputs.size() - 1));
                 }
 
@@ -291,10 +291,10 @@ namespace nova::renderer {
                         if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {
                             attachment_errors.push_back(format(
                                 fmt("Attachment {:s} has a size of {:d}x{:d}, but the framebuffer for pass {:s} has a size of {:d}x{:d} - these must match! All attachments of a single renderpass must have the same size"),
-                                attachment_info.name,
+                                attachment_info.name.data(),
                                 attachment_size.x,
                                 attachment_size.y,
-                                create_info.name,
+                                create_info.name.data(),
                                 framebuffer_size.x,
                                 framebuffer_size.y));
                         }
@@ -303,32 +303,29 @@ namespace nova::renderer {
                         framebuffer_size = attachment_size;
                     }
                 } else {
-                    NOVA_LOG(ERROR) << "No render target named " << attachment_info.name;
+                    NOVA_LOG(ERROR) << "No render target named " << attachment_info.name.data();
                     missing_render_targets = true;
                 }
             }
-        }
+        });
 
         if(missing_render_targets) {
             return nullptr;
         }
 
         // Can't combine these if statements and I don't want to `.find` twice
-        const auto depth_attachment = [&]() -> std::optional<rhi::Image*> {
+        const auto depth_attachment = [&]() -> rx::optional<rhi::Image*> {
             if(create_info.depth_texture) {
                 if(const auto depth_tex = resource_storage.get_render_target(create_info.depth_texture->name); depth_tex) {
-                    auto* image = (*depth_tex)->image;
-                    return std::make_optional<rhi::Image*>(image);
+                    return (*depth_tex)->image;
                 }
             }
 
-            return {};
+            return rx::nullopt;
         }();
 
-        if(!attachment_errors.empty()) {
-            for(const auto& err : attachment_errors) {
-                NOVA_LOG(ERROR) << err;
-            }
+        if(attachment_errors.size() != 0) {
+            attachment_errors.each_fwd([&](const rx::string& err) { NOVA_LOG(ERROR) << err.data(); });
 
             NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name
                             << " because there were errors in the attachment specification. Look above this message for details";
@@ -357,16 +354,13 @@ namespace nova::renderer {
         renderpass->pipeline_names = create_info.pipeline_names;
         renderpass->id = static_cast<uint32_t>(renderpass_metadatas.size());
 
-        auto* ptr = renderpass.get();
-        if(const auto itr = renderpasses.find(create_info.name); itr != renderpasses.end()) {
-            renderpasses.erase(itr);
-        }
+        renderpasses.erase(create_info.name);
 
-        renderpasses.emplace(create_info.name, std::move(renderpass));
-        renderpass_metadatas.emplace(create_info.name, metadata);
+        renderpasses.insert(create_info.name, rx::utility::move(renderpass));
+        renderpass_metadatas.insert(create_info.name, metadata);
 
         is_dirty = true;
 
-        return ptr;
+        return renderpass;
     }
 } // namespace nova::renderer
