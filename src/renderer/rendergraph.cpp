@@ -8,7 +8,7 @@
 namespace nova::renderer {
     using namespace shaderpack;
 
-    Renderpass::Renderpass(std::string name, const bool is_builtin) : name(std::move(name)), is_builtin(is_builtin) {}
+    Renderpass::Renderpass(rx::string name, const bool is_builtin) : name(std::move(name)), is_builtin(is_builtin) {}
 
     void Renderpass::render(rhi::CommandList& cmds, FrameContext& ctx) {
         // TODO: Figure if any of these barriers are implicit
@@ -29,13 +29,13 @@ namespace nova::renderer {
     }
 
     void Renderpass::record_pre_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const {
-        if(!read_texture_barriers.empty()) {
+        if(read_texture_barriers.size() > 0) {
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
             cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::FragmentShader, read_texture_barriers);
         }
 
-        if(!write_texture_barriers.empty()) {
+        if(write_texture_barriers.size() > 0) {
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
             cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::FragmentShader, write_texture_barriers);
@@ -54,7 +54,8 @@ namespace nova::renderer {
 
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
-            cmds.resource_barriers(rhi::PipelineStage::TopOfPipe, rhi::PipelineStage::ColorAttachmentOutput, {backbuffer_barrier});
+            const rx::vector<rhi::ResourceBarrier> barriers(&rx::memory::g_system_allocator, 1, backbuffer_barrier);
+            cmds.resource_barriers(rhi::PipelineStage::TopOfPipe, rhi::PipelineStage::ColorAttachmentOutput, barriers);
         }
     }
 
@@ -62,12 +63,12 @@ namespace nova::renderer {
         auto& pipeline_storage = ctx.nova->get_pipeline_storage();
 
         // TODO: I _actually_ want to get all the draw commands from NovaRenderer, instead of storing them in this struct
-        for(const std::string& pipeline_name : pipeline_names) {
+        pipeline_names.each_fwd([&](const rx::string& pipeline_name) {
             const auto pipeline = pipeline_storage.get_pipeline(pipeline_name);
             if(pipeline) {
                 pipeline->record(cmds, ctx);
             }
-        }
+        });
     }
 
     void Renderpass::record_post_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const {
@@ -82,19 +83,18 @@ namespace nova::renderer {
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspect::Color;
 
-            cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::BottomOfPipe, {backbuffer_barrier});
+            const rx::vector<rhi::ResourceBarrier> barriers(&rx::memory::g_system_allocator, 1, backbuffer_barrier);
+            cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::BottomOfPipe, barriers);
         }
     }
 
-    Rendergraph::Rendergraph(mem::AllocatorHandle<>& allocator, rhi::RenderDevice& device) : allocator(allocator), device(device) {}
+    Rendergraph::Rendergraph(rx::memory::allocator* allocator, rhi::RenderDevice& device) : allocator(allocator), device(device) {}
 
-    void Rendergraph::destroy_renderpass(const std::string& name) {
-        if(const auto itr = renderpasses.find(name); itr != renderpasses.end()) {
-            auto* framebuffer = itr->second->framebuffer;
-            device.destroy_framebuffer(framebuffer, allocator);
+    void Rendergraph::destroy_renderpass(const rx::string& name) {
+        if(Renderpass** renderpass = renderpasses.find(name)) {
+            device.destroy_framebuffer((*renderpass)->framebuffer, allocator);
 
-            auto* renderpass = itr->second->renderpass;
-            device.destroy_renderpass(renderpass, allocator);
+            device.destroy_renderpass((*renderpass)->renderpass, allocator);
 
             renderpasses.erase(name);
             renderpass_metadatas.erase(name);
@@ -103,25 +103,23 @@ namespace nova::renderer {
         }
     }
 
-    std::pmr::vector<std::string> Rendergraph::calculate_renderpass_execution_order() {
+    rx::vector<rx::string> Rendergraph::calculate_renderpass_execution_order() {
         if(is_dirty) {
             // Oh look some bullshit I have to do because C++ doesn't have an API as cool as Java Streams
             const auto create_infos = [&]() {
-                std::pmr::vector<RenderPassCreateInfo> create_info_temp(allocator);
-                std::transform(renderpass_metadatas.begin(),
-                               renderpass_metadatas.end(),
-                               std::back_insert_iterator<std::pmr::vector<RenderPassCreateInfo>>(create_info_temp),
-                               [&](const auto pair) { return pair.second.data; });
+                rx::vector<RenderPassCreateInfo> create_info_temp(allocator);
+                create_info_temp.reserve(renderpass_metadatas.size());
+
+                renderpass_metadatas.each_value([&](const RenderpassMetadata& metadata) { create_info_temp.emplace_back(metadata.data); });
+
                 return create_info_temp;
             }();
 
             order_passes(create_infos)
-                .map([&](const auto& order) {
+                .map([&](const rx::vector<RenderPassCreateInfo>& order) {
                     cached_execution_order.clear();
-                    std::transform(order.begin(),
-                                   order.end(),
-                                   std::back_insert_iterator<std::pmr::vector<std::string>>(cached_execution_order),
-                                   [&](const RenderPassCreateInfo& create_info) { return create_info.name; });
+                    cached_execution_order.reserve(order.size());
+                    order.each_fwd([&](const RenderPassCreateInfo& create_info) { cached_execution_order.emplace_back(create_info.name); });
 
                     return true;
                 })
@@ -134,20 +132,20 @@ namespace nova::renderer {
         return cached_execution_order;
     }
 
-    Renderpass* Rendergraph::get_renderpass(const std::string& name) const {
-        if(const auto itr = renderpasses.find(name); itr != renderpasses.end()) {
-            return itr->second.get();
+    Renderpass* Rendergraph::get_renderpass(const rx::string& name) const {
+        if(Renderpass* const* renderpass = renderpasses.find(name)) {
+            return *renderpass;
         }
 
         return nullptr;
     }
 
-    std::optional<RenderpassMetadata> Rendergraph::get_metadata_for_renderpass(const std::string& name) const {
-        if(const auto itr = renderpass_metadatas.find(name); itr != renderpass_metadatas.end()) {
-            return std::make_optional(itr->second);
+    rx::optional<RenderpassMetadata> Rendergraph::get_metadata_for_renderpass(const rx::string& name) const {
+        if(const auto* metadata = renderpass_metadatas.find(name)) {
+            return *metadata;
         }
 
-        return std::nullopt;
+        return rx::nullopt;
     }
 
     rhi::Framebuffer* Renderpass::get_framebuffer(const FrameContext& ctx) const {
@@ -161,13 +159,11 @@ namespace nova::renderer {
     void renderer::MaterialPass::record(rhi::CommandList& cmds, FrameContext& ctx) const {
         cmds.bind_descriptor_sets(descriptor_sets, pipeline_interface);
 
-        for(const MeshBatch<StaticMeshRenderCommand>& batch : static_mesh_draws) {
-            record_rendering_static_mesh_batch(batch, cmds, ctx);
-        }
+        static_mesh_draws.each_fwd(
+            [&](const MeshBatch<StaticMeshRenderCommand>& batch) { record_rendering_static_mesh_batch(batch, cmds, ctx); });
 
-        for(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch : static_procedural_mesh_draws) {
-            record_rendering_static_mesh_batch(batch, cmds, ctx);
-        }
+        static_procedural_mesh_draws.each_fwd(
+            [&](const ProceduralMeshBatch<StaticMeshRenderCommand>& batch) { record_rendering_static_mesh_batch(batch, cmds, ctx); });
     }
 
     void renderer::MaterialPass::record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch,
@@ -175,7 +171,7 @@ namespace nova::renderer {
                                                                     FrameContext& ctx) {
         const uint64_t start_index = ctx.cur_model_matrix_index;
 
-        for(const StaticMeshRenderCommand& command : batch.commands) {
+        batch.commands.each_fwd([&](const StaticMeshRenderCommand& command) {
             if(command.is_visible) {
                 auto model_matrix_buffer = ctx.nova->get_resource_manager().get_uniform_buffer(MODEL_MATRIX_BUFFER_NAME);
                 ctx.nova->get_engine().write_data_to_buffer(&command.model_matrix,
@@ -184,11 +180,11 @@ namespace nova::renderer {
                                                             (*model_matrix_buffer)->buffer);
                 ctx.cur_model_matrix_index++;
             }
-        }
+        });
 
         if(start_index != ctx.cur_model_matrix_index) {
             // TODO: There's probably a better way to do this
-            const std::pmr::vector<rhi::Buffer*> vertex_buffers = std::pmr::vector<rhi::Buffer*>(7, batch.vertex_buffer);
+            const rx::vector<rhi::Buffer*> vertex_buffers = rx::vector<rhi::Buffer*>(7, batch.vertex_buffer);
             cmds.bind_vertex_buffers(vertex_buffers);
             cmds.bind_index_buffer(batch.index_buffer);
 
@@ -202,7 +198,7 @@ namespace nova::renderer {
                                                                     FrameContext& ctx) {
         const uint64_t start_index = ctx.cur_model_matrix_index;
 
-        for(const StaticMeshRenderCommand& command : batch.commands) {
+        batch.commands.each_fwd([&](const StaticMeshRenderCommand& command) {
             if(command.is_visible) {
                 auto model_matrix_buffer = ctx.nova->get_resource_manager().get_uniform_buffer(MODEL_MATRIX_BUFFER_NAME);
                 ctx.nova->get_engine().write_data_to_buffer(&command.model_matrix,
@@ -211,12 +207,12 @@ namespace nova::renderer {
                                                             (*model_matrix_buffer)->buffer);
                 ctx.cur_model_matrix_index++;
             }
-        }
+        });
 
         if(start_index != ctx.cur_model_matrix_index) {
             const auto& [vertex_buffer, index_buffer] = batch.mesh->get_buffers_for_frame(ctx.frame_count % NUM_IN_FLIGHT_FRAMES);
             // TODO: There's probably a better way to do this
-            const std::pmr::vector<rhi::Buffer*> vertex_buffers(7, vertex_buffer);
+            const rx::vector<rhi::Buffer*> vertex_buffers(7, vertex_buffer);
             cmds.bind_vertex_buffers(vertex_buffers);
             cmds.bind_index_buffer(index_buffer);
         }
