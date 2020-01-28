@@ -698,7 +698,7 @@ namespace nova::renderer {
                                                                          true);
 
         if(!scene_output) {
-            NOVA_LOG(ERROR) << "Could not create scene output render target " << SCENE_OUTPUT_RT_NAME.data();
+            NOVA_LOG(ERROR) << "Could not create scene output render target " << SCENE_OUTPUT_RT_NAME;
         }
     }
 
@@ -707,14 +707,14 @@ namespace nova::renderer {
             builtin_buffer_names.emplace_back(PER_FRAME_DATA_NAME);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create builtin buffer " << PER_FRAME_DATA_NAME.data();
+            NOVA_LOG(ERROR) << "Could not create builtin buffer " << PER_FRAME_DATA_NAME;
         }
 
         if(device_resources->create_uniform_buffer(MODEL_MATRIX_BUFFER_NAME, sizeof(glm::mat4) * 0xFFFF)) {
             builtin_buffer_names.emplace_back(MODEL_MATRIX_BUFFER_NAME);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create builtin buffer " << MODEL_MATRIX_BUFFER_NAME.data();
+            NOVA_LOG(ERROR) << "Could not create builtin buffer " << MODEL_MATRIX_BUFFER_NAME;
         }
     }
 

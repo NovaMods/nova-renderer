@@ -14,6 +14,9 @@
 #include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
 
+void init_rex();
+void rex_fini();
+
 namespace spirv_cross {
     class CompilerGLSL;
     struct Resource;
