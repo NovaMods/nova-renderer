@@ -15,6 +15,7 @@ jobs:
     # Use a build matrix so GCC and Clang don't have to have different
     # jobs in this yaml file
     strategy:
+      fail-fast: false
       matrix:
         cc: [gcc, clang]
         include:
