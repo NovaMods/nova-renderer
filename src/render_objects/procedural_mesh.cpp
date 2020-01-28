@@ -24,24 +24,24 @@ namespace nova::renderer {
         const auto host_memory_size = aligned_vertex_buffer_size + aligned_index_buffer_size;
         const auto device_memory_size = host_memory_size * 3;
 
-        allocator = std::make_unique<AllocatorHandle<>>(std::pmr::new_delete_resource());
+        allocator = &rx::memory::g_system_allocator;
 
-        device_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(allocator.get(), device_memory_size);
-        host_memory_allocation_strategy = std::make_unique<BlockAllocationStrategy>(allocator.get(), host_memory_size);
+        device_memory_allocation_strategy = allocator->create<BlockAllocationStrategy>(allocator, device_memory_size);
+        host_memory_allocation_strategy = allocator->create<BlockAllocationStrategy>(allocator, host_memory_size);
 
         // TODO: Don't allocate a separate DeviceMemory for each procedural mesh
-        device->allocate_device_memory(device_memory_size.b_count(), MemoryUsage::LowFrequencyUpload, ObjectType::Buffer, *allocator)
+        device->allocate_device_memory(device_memory_size.b_count(), MemoryUsage::LowFrequencyUpload, ObjectType::Buffer, allocator)
             .map([&](DeviceMemory* memory) {
-                device_buffers_memory = std::make_unique<DeviceMemoryResource>(memory, device_memory_allocation_strategy.get());
+                device_buffers_memory = allocator->create<DeviceMemoryResource>(memory, device_memory_allocation_strategy);
 
                 const auto vertex_create_info = BufferCreateInfo{vertex_buffer_size, BufferUsage::VertexBuffer};
-                for(auto& vertex_buffer : vertex_buffers) {
-                    vertex_buffer = device->create_buffer(vertex_create_info, *device_buffers_memory, *allocator);
+                for(uint32_t i = 0; i < vertex_buffers.size(); i++) {
+                    vertex_buffers[i] = device->create_buffer(vertex_create_info, *device_buffers_memory, allocator);
                 }
 
                 const auto index_create_info = BufferCreateInfo{index_buffer_size, BufferUsage::IndexBuffer};
-                for(auto& index_buffer : index_buffers) {
-                    index_buffer = device->create_buffer(index_create_info, *device_buffers_memory, *allocator);
+                for(uint32_t i = 0; i < index_buffers.size(); i++) {
+                    index_buffers[i] = device->create_buffer(index_create_info, *device_buffers_memory, allocator);
                 }
 
                 return true;
@@ -51,16 +51,16 @@ namespace nova::renderer {
                 // TODO: Propagate the error
             });
 
-        device->allocate_device_memory(host_memory_size.b_count(), MemoryUsage::StagingBuffer, ObjectType::Buffer, *allocator)
+        device->allocate_device_memory(host_memory_size.b_count(), MemoryUsage::StagingBuffer, ObjectType::Buffer, allocator)
             .map([&](DeviceMemory* memory) {
-                cached_buffers_memory = std::make_unique<DeviceMemoryResource>(memory, host_memory_allocation_strategy.get());
+                cached_buffers_memory = allocator->create<DeviceMemoryResource>(memory, host_memory_allocation_strategy);
 
                 cached_vertex_buffer = device->create_buffer({vertex_buffer_size, BufferUsage::StagingBuffer},
                                                              *cached_buffers_memory,
-                                                             *allocator);
+                                                             allocator);
                 cached_index_buffer = device->create_buffer({index_buffer_size, BufferUsage::StagingBuffer},
                                                             *cached_buffers_memory,
-                                                            *allocator);
+                                                            allocator);
 
                 return true;
             })
@@ -68,6 +68,17 @@ namespace nova::renderer {
                 NOVA_LOG(ERROR) << "Could not allocate host memory for procedural mesh. Error: " << error.to_string();
                 // TODO: Propagate the error
             });
+    }
+
+    ProceduralMesh::~ProceduralMesh() {
+        // TODO: Free the device memory with the RenderDevice
+        // Requires support from the RHI
+
+        allocator->destroy<DeviceMemoryResource>(device_buffers_memory);
+        allocator->destroy<DeviceMemoryResource>(cached_buffers_memory);
+
+        allocator->destroy<mem::BlockAllocationStrategy>(device_memory_allocation_strategy);
+        allocator->destroy<mem::BlockAllocationStrategy>(host_memory_allocation_strategy);
     }
 
     void ProceduralMesh::set_vertex_data(const void* data, const uint64_t size) {
@@ -113,10 +124,10 @@ namespace nova::renderer {
         const bool should_upload_vertex_buffer = num_vertex_bytes_to_upload > 0;
         const bool should_upload_index_buffer = num_index_bytes_to_upload > 0;
 
-        auto* cur_vertex_buffer = vertex_buffers.at(frame_idx);
-        auto* cur_index_buffer = index_buffers.at(frame_idx);
+        auto* cur_vertex_buffer = vertex_buffers[frame_idx];
+        auto* cur_index_buffer = index_buffers[frame_idx];
 
-        std::pmr::vector<ResourceBarrier> barriers_before_upload;
+        rx::vector<ResourceBarrier> barriers_before_upload;
 
         if(should_upload_vertex_buffer) {
             ResourceBarrier barrier_before_vertex_upload = {};
@@ -148,7 +159,7 @@ namespace nova::renderer {
             barriers_before_upload.push_back(barrier_before_index_upload);
         }
 
-        if(barriers_before_upload.empty()) {
+        if(barriers_before_upload.size() == 0) {
             return;
         }
 
@@ -162,7 +173,7 @@ namespace nova::renderer {
             cmds->copy_buffer(cur_index_buffer, 0, cached_index_buffer, 0, num_index_bytes_to_upload);
         }
 
-        std::pmr::vector<ResourceBarrier> barriers_after_upload;
+        rx::vector<ResourceBarrier> barriers_after_upload;
 
         if(should_upload_vertex_buffer) {
             ResourceBarrier barrier_after_vertex_upload = {};
@@ -192,7 +203,7 @@ namespace nova::renderer {
             barriers_after_upload.push_back(barrier_after_index_upload);
         }
 
-        if(barriers_after_upload.empty()) {
+        if(barriers_after_upload.size() == 0) {
             return;
         }
 
@@ -200,8 +211,8 @@ namespace nova::renderer {
     }
 
     std::tuple<Buffer*, Buffer*> ProceduralMesh::get_buffers_for_frame(const uint8_t frame_idx) const {
-        auto* vertex_buffer = vertex_buffers.at(frame_idx);
-        auto* index_buffer = index_buffers.at(frame_idx);
+        auto* vertex_buffer = vertex_buffers[frame_idx];
+        auto* index_buffer = index_buffers[frame_idx];
 
         return {vertex_buffer, index_buffer};
     }
