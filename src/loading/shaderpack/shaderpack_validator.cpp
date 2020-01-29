@@ -9,7 +9,7 @@
 #include "../json_utils.hpp"
 
 namespace nova::renderer::shaderpack {
-    // Uses std data types because nlohmann::json uses them. It's not what I want but it's a thing. Maybe one day I'll switch to the Rex
+    // Uses std data types because rx::json uses them. It's not what I want but it's a thing. Maybe one day I'll switch to the Rex
     // JSON thingie
 
     /*!
@@ -18,62 +18,60 @@ namespace nova::renderer::shaderpack {
      * If a field is in `pipeline_data` but not in this structure, it is a required field and cannot be given a
      * default value. It will thus cause an exception
      */
-    nlohmann::json default_graphics_pipeline = {{"parentName", ""},
-                                                {"defines", std::array<std::string, 0>{}},
-                                                {"states", std::array<std::string, 0>{}},
-                                                {"frontFace", nlohmann::json::object_t()},
-                                                {"backFace", nlohmann::json::object_t()},
-                                                {"fallback", ""},
-                                                {"depthBias", 0},
-                                                {"slopeScaledDepthBias", 0},
-                                                {"stencilRef", 0},
-                                                {"stencilReadMask", 0},
-                                                {"stencilWriteMask", 0},
-                                                {"msaaSupport", "None"},
-                                                {"primitiveMode", "Triangles"},
-                                                {"sourceBlendFactor", "One"},
-                                                {"destinationBlendFactor", "Zero"},
-                                                {"alphaSrc", "One"},
-                                                {"alphaDst", "Zero"},
-                                                {"depthFunc", "Less"},
-                                                {"renderQueue", "Opaque"},
-                                                {"fragmentShader", ""},
-                                                {"tessellationControlShader", ""},
-                                                {"tessellationEvaluationShader", ""},
-                                                {"geometryShader", ""}};
+    rx::json default_graphics_pipeline = {{"parentName", ""},
+                                          {"defines", std::array<std::string, 0>{}},
+                                          {"states", std::array<std::string, 0>{}},
+                                          {"frontFace", rx::json::object_t()},
+                                          {"backFace", rx::json::object_t()},
+                                          {"fallback", ""},
+                                          {"depthBias", 0},
+                                          {"slopeScaledDepthBias", 0},
+                                          {"stencilRef", 0},
+                                          {"stencilReadMask", 0},
+                                          {"stencilWriteMask", 0},
+                                          {"msaaSupport", "None"},
+                                          {"primitiveMode", "Triangles"},
+                                          {"sourceBlendFactor", "One"},
+                                          {"destinationBlendFactor", "Zero"},
+                                          {"alphaSrc", "One"},
+                                          {"alphaDst", "Zero"},
+                                          {"depthFunc", "Less"},
+                                          {"renderQueue", "Opaque"},
+                                          {"fragmentShader", ""},
+                                          {"tessellationControlShader", ""},
+                                          {"tessellationEvaluationShader", ""},
+                                          {"geometryShader", ""}};
 
     rx::array<rx::string[3]> required_graphics_pipeline_fields = {"name", "pass", "vertexShader"};
 
-    nlohmann::json default_texture_format = {{"pixelFormat", "RGBA8"}, {"dimensionType", "Absolute"}};
+    rx::json default_texture_format = {{"pixelFormat", "RGBA8"}, {"dimensionType", "Absolute"}};
 
-    void ensure_field_exists(nlohmann::json& j,
-                             const rx::string& field_name,
-                             const rx::string& context,
-                             const nlohmann::json& default_value,
-                             ValidationReport& report);
+    void ensure_field_exists(
+        rx::json& j, const rx::string& field_name, const rx::string& context, const rx::json& default_value, ValidationReport& report);
 
     static rx::string pipeline_msg(const rx::string& name, const rx::string& field_name) {
         return rx::string::format("Pipeline %s: Missing field %s", name, field_name);
     }
 
-    ValidationReport validate_graphics_pipeline(nlohmann::json& pipeline_json) {
+    ValidationReport validate_graphics_pipeline(rx::json& pipeline_json) {
         ValidationReport report;
-        const std::string name = get_json_value<std::string>(pipeline_json, "name", std::string{"<NAME_MISSING>"});
+        const auto name_json = pipeline_json["name"];
+        const auto name = name_json ? name_json.as_string() : "<NAME_MISSING>";
         // Don't need to check for the name's existence here, it'll be checked with the rest of the required fields
 
-        const rx::string pipeline_context = rx::string::format("Pipeline %s", name.c_str());
+        const rx::string pipeline_context = rx::string::format("Pipeline %s", name);
         // Check non-required fields first
-        for(const auto& str : default_graphics_pipeline.items()) {
+        default_graphics_pipeline.each([&](const auto& str) {
             ensure_field_exists(pipeline_json, str.key().c_str(), pipeline_context, default_graphics_pipeline, report);
-        }
+        });
 
         // Check required items
         report.errors.reserve(required_graphics_pipeline_fields.size());
         for(uint32_t i = 0; i < required_graphics_pipeline_fields.size(); i++) {
             const auto& field_name = required_graphics_pipeline_fields[i];
-            const auto& itr = pipeline_json.find(field_name.data());
-            if(itr == pipeline_json.end()) {
-                report.errors.emplace_back(pipeline_msg(name.c_str(), field_name));
+            const auto field = pipeline_json[field_name.data()];
+            if(!field) {
+                report.errors.emplace_back(pipeline_msg(name, field_name));
             }
         }
 
@@ -82,22 +80,21 @@ namespace nova::renderer::shaderpack {
 
     static rx::string resources_msg(const rx::string& msg) { return rx::string::format("Resources file: %s", msg); }
 
-    ValidationReport validate_shaderpack_resources_data(nlohmann::json& resources_json) {
+    ValidationReport validate_shaderpack_resources_data(rx::json& resources_json) {
         ValidationReport report;
         bool missing_textures = false;
 
-        const auto& textures_itr = resources_json.find("textures");
-        if(textures_itr == resources_json.end()) {
+        const auto textures_itr = resources_json["textures"];
+        if(!textures_itr) {
             missing_textures = true;
         } else {
-            auto& textures_array = *textures_itr;
-            if(textures_array.empty()) {
+            if(!textures_itr.is_array() || textures_itr.is_empty()) {
                 missing_textures = true;
             } else {
-                for(auto& tex : textures_array) {
+                textures_itr.each([&](rx::json& tex) {
                     const ValidationReport texture_report = validate_texture_data(tex);
                     report.merge_in(texture_report);
-                }
+                });
             }
         }
 
@@ -106,16 +103,15 @@ namespace nova::renderer::shaderpack {
                 resources_msg("Missing dynamic resources. If you ONLY use the backbuffer in your shaderpack, you can ignore this message"));
         }
 
-        const nlohmann::json::iterator& samplers_itr = resources_json.find("samplers");
-        if(samplers_itr != resources_json.end()) {
-            nlohmann::json& all_samplers = *samplers_itr;
-            if(!all_samplers.is_array()) {
+        const rx::json samplers_itr = resources_json["samplers"];
+        if(samplers_itr) {
+            if(!samplers_itr.is_array()) {
                 report.errors.emplace_back(resources_msg("Samplers array must be an array, but like it isn't"));
             } else {
-                for(nlohmann::json& sampler : all_samplers) {
+                samplers_itr.each([&](rx::json& sampler) {
                     const ValidationReport sampler_report = validate_sampler_data(sampler);
                     report.merge_in(sampler_report);
-                }
+                });
             }
         }
 
@@ -124,7 +120,7 @@ namespace nova::renderer::shaderpack {
 
     static rx::string texture_msg(const rx::string& name, const rx::string& msg) { return rx::string::format("Texture %s: %s", name, msg); }
 
-    ValidationReport validate_texture_data(nlohmann::json& texture_json) {
+    ValidationReport validate_texture_data(rx::json& texture_json) {
         ValidationReport report;
         const auto name_maybe = get_json_value<std::string>(texture_json, "name");
         rx::string name;
@@ -151,7 +147,7 @@ namespace nova::renderer::shaderpack {
         return rx::string::format("Format of texture %s: %s", tex_name, msg);
     }
 
-    ValidationReport validate_texture_format(nlohmann::json& format_json, const rx::string& texture_name) {
+    ValidationReport validate_texture_format(rx::json& format_json, const rx::string& texture_name) {
         ValidationReport report;
 
         const rx::string context = rx::string::format("Format of texture %s", texture_name);
@@ -173,7 +169,7 @@ namespace nova::renderer::shaderpack {
 
     static rx::string sampler_msg(const rx::string& name, const rx::string& msg) { return rx::string::format("Sampler %s: %s", name, msg); }
 
-    ValidationReport validate_sampler_data(nlohmann::json& sampler_json) {
+    ValidationReport validate_sampler_data(rx::json& sampler_json) {
         ValidationReport report;
         const rx::string name = get_json_value<std::string>(sampler_json, "name", std::string{"<NAME_MISSING>"}).c_str();
         if(name == "<NAME_MISSING>") {
@@ -200,7 +196,7 @@ namespace nova::renderer::shaderpack {
         return rx::string::format("Material pass %s in material %s: %s", pass_name, mat_name, error);
     }
 
-    ValidationReport validate_material(nlohmann::json& material_json) {
+    ValidationReport validate_material(rx::json& material_json) {
         ValidationReport report;
 
         const rx::string name = get_json_value<std::string>(material_json, "name", std::string{"<NAME_MISSING>"}).c_str();
@@ -217,7 +213,7 @@ namespace nova::renderer::shaderpack {
         if(missing_passes) {
             report.errors.emplace_back(material_msg(name, "Missing material passes"));
         } else {
-            const nlohmann::json& passes_json = material_json.at("passes");
+            const rx::json& passes_json = material_json.at("passes");
             if(!passes_json.is_array()) {
                 report.errors.emplace_back(material_msg(name, "Passes field must be an array"));
                 return report;
@@ -242,7 +238,7 @@ namespace nova::renderer::shaderpack {
                 if(bindings_itr == pass_json.end()) {
                     report.warnings.emplace_back(material_pass_msg(name, pass_name, "Missing field bindings"));
                 } else {
-                    const nlohmann::json& bindings = *bindings_itr;
+                    const rx::json& bindings = *bindings_itr;
                     if(bindings.empty()) {
                         report.warnings.emplace_back(material_pass_msg(name, pass_name, "Field bindings exists but it's empty"));
                     }
@@ -253,12 +249,9 @@ namespace nova::renderer::shaderpack {
         return report;
     }
 
-    void ensure_field_exists(nlohmann::json& j,
-                             const rx::string& field_name,
-                             const rx::string& context,
-                             const nlohmann::json& default_value,
-                             ValidationReport& report) {
-        std::string field_name_std = field_name.data(); // STD string to easily interface with nlohmann::json
+    void ensure_field_exists(
+        rx::json& j, const rx::string& field_name, const rx::string& context, const rx::json& default_value, ValidationReport& report) {
+        std::string field_name_std = field_name.data(); // STD string to easily interface with rx::json
 
         if(j.find(field_name_std) == j.end()) {
             j[field_name_std] = default_value[field_name_std];

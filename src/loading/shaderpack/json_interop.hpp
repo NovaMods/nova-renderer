@@ -6,11 +6,16 @@
 #ifndef NOVA_RENDERER_JSON_INTEROP_HPP
 #define NOVA_RENDERER_JSON_INTEROP_HPP
 
-#include <nlohmann/json.hpp>
+#include <rx/core/json.h>
 
 #include "nova_renderer/shaderpack_data.hpp"
 
 namespace nova::renderer::shaderpack {
+    template<typename ValType>
+    ValType from_json(const rx::json& json);
+
+
+
     void from_json(const nlohmann::json& j, TextureFormat& format);
 
     void from_json(const nlohmann::json& j, TextureCreateInfo& tex);

@@ -1,8 +1,3 @@
-/*!
- * \author ddubois
- * \date 21-Aug-18.
- */
-
 #include "nova_renderer/loading/shaderpack_loading.hpp"
 
 #define ENABLE_HLSL
@@ -20,6 +15,7 @@
 #include "json_interop.hpp"
 #include "render_graph_builder.hpp"
 #include "shaderpack_validator.hpp"
+#include "rx/core/json.h"
 
 namespace nova::renderer::shaderpack {
     using namespace filesystem;
@@ -231,7 +227,8 @@ namespace nova::renderer::shaderpack {
         NOVA_LOG(TRACE) << "load_dynamic_resource_file called";
         const rx::string resources_string = folder_access->read_text_file("resources.json");
         try {
-            auto json_resources = nlohmann::json::parse(resources_string.data());
+
+            auto json_resources = rx::json(resources_string);
             const ValidationReport report = validate_shaderpack_resources_data(json_resources);
             print(report);
             if(!report.errors.is_empty()) {
