@@ -9,10 +9,19 @@
 #include <rx/core/json.h>
 #include <rx/core/optional.h>
 
-#include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/has_method.hpp"
+#include "nova_renderer/util/logger.hpp"
 
 namespace nova::renderer {
+    inline rx::optional<rx::string> get_json_string(const rx::json& json, const char* key) {
+        const auto val = json[key];
+        if(val) {
+            return val.as_string();
+        } else {
+            return rx::nullopt;
+        }
+    }
+
     /*!
      * \brief Retrieves an individual value from the provided JSON structure
      * \tparam ValType The type of the value to retrieve
@@ -20,11 +29,13 @@ namespace nova::renderer {
      * \param key The name of the value
      * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
      *
-     * \note Only enabled if we're not getting a string, because if the string is missing we can just return an empty string
+     * \note Only enabled if we're not getting a string. Use `get_json_string` to get a string
      */
-    template <typename ValType, rx::traits::enable_if<has_from_json<ValType>::Has>>
-    rx::optional<ValType> get_json_value(const rx::json& json_obj, const rx::string& key) {
-        const auto val = json_obj[key.data()];
+    template <typename ValType,
+              rx::traits::enable_if<has_from_json<ValType>::Has>,
+              std::enable_if_t<std::is_same_v<ValType, rx::string>>** = nullptr>
+    rx::optional<ValType> get_json_value(const rx::json& json_obj, const char* key) {
+        const auto val = json_obj[key];
         if(val) {
             return rx::optional<ValType>(ValType::from_json(json_obj));
         }
@@ -40,12 +51,10 @@ namespace nova::renderer {
      * \param empty_means_not_present If set to true an empty string will be interpreted as not found
      * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
      *
-     * \note Special case for strings 
+     * \note Special case for strings
      */
     template <typename ValType, std::enable_if_t<std::is_same_v<ValType, rx::string>>** = nullptr>
-    rx::optional<ValType> get_json_value(const rx::json& json_obj,
-                                         const rx::string& key,
-                                         const bool empty_means_not_present = false) {
+    rx::optional<ValType> get_json_value(const rx::json& json_obj, const rx::string& key, const bool empty_means_not_present = false) {
         const std::string key_std = key.data();
         const auto& itr = json_obj.find(key_std);
         if(itr != json_obj.end()) {
