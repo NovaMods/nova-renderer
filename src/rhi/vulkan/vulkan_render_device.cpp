@@ -772,7 +772,7 @@ namespace nova::renderer::rhi {
         color_blend_create_info.blendConstants[2] = 0.0F;
         color_blend_create_info.blendConstants[3] = 0.0F;
 
-        std::vector<VkDynamicState> dynamic_states;
+        rx::vector<VkDynamicState> dynamic_states;
 
         if(data.scissor_mode == shaderpack::ScissorTestMode::DynamicScissorRect) {
             dynamic_states.emplace_back(VK_DYNAMIC_STATE_SCISSOR);
@@ -1378,7 +1378,7 @@ namespace nova::renderer::rhi {
         vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, available_extensions.data());
 
         const auto extension_name_matcher = [](const char* ext_name) {
-            return [=](const VkExtensionProperties& ext_props) -> bool { return std::strcmp(ext_name, ext_props.extensionName) == 0; };
+            return [=](const VkExtensionProperties& ext_props) -> bool { return strcmp(ext_name, ext_props.extensionName) == 0; };
         };
 
         // TODO: Update as more GPUs support hardware raytracing
@@ -1816,7 +1816,7 @@ namespace nova::renderer::rhi {
 #if defined(NOVA_WINDOWS)
                 DebugBreak();
 #elif defined(NOVA_LINUX)
-                std::raise(SIGINT);
+                raise(SIGINT);
 #endif
             }
 
