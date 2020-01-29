@@ -1,6 +1,7 @@
 #include "vulkan_render_device.hpp"
 
-#include <csignal>
+#include <signal.h>
+#include <string.h>
 
 #include <rx/core/set.h>
 
