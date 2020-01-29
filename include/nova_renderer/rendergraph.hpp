@@ -272,7 +272,7 @@ namespace nova::renderer {
                 } else {
                     attachment_errors.push_back(
                         rx::string::format(
-                            "Pass %s writes to the backbuffer and %d other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures",
+                            "Pass %s writes to the backbuffer and %zu other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures",
                         create_info.name,
                         create_info.texture_outputs.size() - 1));
                 }
