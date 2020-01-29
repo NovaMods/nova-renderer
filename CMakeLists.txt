@@ -340,7 +340,6 @@ set(COMMON_LINK_LIBS
         SPIRV
         minitrace
         miniz
-        nlohmann::json
         vma::vma
         rex
         SPIRV-Tools
