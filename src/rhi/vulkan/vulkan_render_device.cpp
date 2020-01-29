@@ -1737,7 +1737,7 @@ namespace nova::renderer::rhi {
         VkShaderModule module;
         const auto result = vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module);
         if(result == VK_SUCCESS) {
-            return rx::optional(module);
+            return rx::optional<VkShaderModule>(module);
 
         } else {
             NOVA_LOG(ERROR) << "Could not create shader module: " << to_string(result);
