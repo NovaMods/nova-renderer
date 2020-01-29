@@ -188,7 +188,7 @@ namespace nova::filesystem {
 
         // Skip the last string in the vector, since it's the resourcepack root node
         bool is_first = false;
-        const uint32_t num_path_parts = names.size() - 1;
+        const uint32_t num_path_parts = static_cast<uint32_t>(names.size() - 1);
         uint32_t cur_path_part = 0;
         rx::string joined;
         names.each_rev([&](rx::string& str) {

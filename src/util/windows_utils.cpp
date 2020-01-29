@@ -1,11 +1,7 @@
-/*!
- * \author ddubois
- * \date 10-Oct-18.
- */
-
 #include "windows_utils.hpp"
 
 #include "nova_renderer/util/windows.hpp"
+#include "rx/core/string.h"
 
 std::wstring s2ws(const std::string& s) {
     const int slength = static_cast<int>(s.length()) + 1;
@@ -17,10 +13,10 @@ std::wstring s2ws(const std::string& s) {
     return r;
 }
 
-std::string get_last_windows_error() {
+rx::string get_last_windows_error() {
     const DWORD errorMessageID = GetLastError();
     if(errorMessageID == 0) {
-        return std::string(); // No error message has been recorded
+        return {}; // No error message has been recorded
     }
 
     LPSTR messageBuffer = nullptr;
@@ -37,5 +33,5 @@ std::string get_last_windows_error() {
     // Free the buffer.
     LocalFree(messageBuffer);
 
-    return message;
+    return message.c_str();
 }

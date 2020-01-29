@@ -2,7 +2,6 @@
 
 #include <array>
 
-#include <fmt/format.h>
 #include <rx/core/array.h>
 
 #include "nova_renderer/util/utils.hpp"

@@ -215,7 +215,7 @@ namespace nova::renderer::shaderpack {
         if(graph_data) {
             data.graph_data = *graph_data;
         } else {
-            NOVA_LOG(ERROR) << "Could not load render graph file. Error: " << graph_data.error.to_string();
+            NOVA_LOG(ERROR) << "Could not load render graph file. Error: " << graph_data.error.to_string().data();
         }
         data.pipelines = load_pipeline_files(folder_access);
         data.materials = load_material_files(folder_access);

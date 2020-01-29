@@ -9,6 +9,7 @@
 #define NOVA_RENDERER_WINDOWS_UTILS_HPP
 
 #include <string>
+#include <rx/core/string.h>
 
 /*!
  * \brief Converts a string to a wide string because Windows
@@ -22,6 +23,6 @@ std::wstring s2ws(const std::string& s);
  * \brief Retrieves the most recent Windows error and returns it to the user
  * \return The error string of the most recent Windows error
  */
-std::string get_last_windows_error();
+rx::string get_last_windows_error();
 
 #endif // NOVA_RENDERER_WINDOWS_UTILS_HPP

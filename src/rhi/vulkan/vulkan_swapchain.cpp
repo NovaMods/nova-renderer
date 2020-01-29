@@ -199,11 +199,11 @@ namespace nova::renderer::rhi {
         }
 
         // We want 32 bit rgba and srgb nonlinear... I think? Will have to read up on it more and figure out what's up
-        formats.each_fwd([&](VkSurfaceFormatKHR& fmt) {
-            if(fmt.format == VK_FORMAT_B8G8R8A8_UNORM && fmt.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-                return fmt;
-            }
-        });
+        if(const auto idx = formats.find_if([&](VkSurfaceFormatKHR& fmt) {
+               return fmt.format == VK_FORMAT_B8G8R8A8_UNORM && fmt.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+           }) != rx::vector<VkSurfaceFormatKHR>::k_npos) {
+            return formats[idx];
+        }
 
         // We can't have what we want, so I guess we'll just use what we got
         return formats[0];
@@ -213,11 +213,9 @@ namespace nova::renderer::rhi {
         const VkPresentModeKHR desired_mode = VK_PRESENT_MODE_MAILBOX_KHR;
 
         // Mailbox mode is best mode (also not sure why)
-        modes.each_fwd([&](VkPresentModeKHR& mode) {
-            if(mode == desired_mode) {
-                return desired_mode;
-            }
-        });
+        if(modes.find(desired_mode) != rx::vector<VkPresentModeKHR>::k_npos) {
+            return desired_mode;
+        }
 
         // FIFO, like FIFA, is forever
         return VK_PRESENT_MODE_FIFO_KHR;

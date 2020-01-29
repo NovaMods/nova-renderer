@@ -4,14 +4,16 @@
 #include <rx/core/string.h>
 
 namespace ntl {
+    struct NovaError;
+
     struct NovaError {
         rx::string message = "";
 
-        rx::optional<NovaError> cause;
+        NovaError* cause = nullptr;
 
         explicit NovaError(rx::string message);
 
-        NovaError(rx::string message, const NovaError& cause);
+        NovaError(rx::string message, NovaError* cause);
 
         [[nodiscard]] rx::string to_string() const;
     };
