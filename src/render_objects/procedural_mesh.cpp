@@ -65,7 +65,7 @@ namespace nova::renderer {
                 return true;
             })
             .on_error([](const ntl::NovaError& error) {
-                NOVA_LOG(ERROR) << "Could not allocate host memory for procedural mesh. Error: " << error.to_string();
+                NOVA_LOG(ERROR) << "Could not allocate host memory for procedural mesh. Error: " << error.to_string().data();
                 // TODO: Propagate the error
             });
     }

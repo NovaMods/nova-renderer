@@ -49,8 +49,6 @@ set(ENABLE_HLSL ON CACHE BOOL "Enable GLSLang's HLSL backend" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glslang)
 target_includes_system(glslang)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/fmt)
-
 set(GLM_TEST_ENABLE_CXX_17 ON)
 set(GLM_TEST_ENABLE OFF)
 set(GLM_TEST_ENABLE_SIMD_AVX2 ON)	# TODO: determine minimum CPU for Nova and use the right instruction set

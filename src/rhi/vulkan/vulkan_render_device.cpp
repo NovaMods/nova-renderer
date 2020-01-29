@@ -1022,7 +1022,7 @@ namespace nova::renderer::rhi {
             return image;
 
         } else {
-            NOVA_LOG(ERROR) << "Could not allocate memory for image " << info.name.data() << ": " << image_memory.error.to_string();
+            NOVA_LOG(ERROR) << "Could not allocate memory for image " << info.name.data() << ": " << image_memory.error.to_string().data();
 
             return nullptr;
         }
@@ -1451,7 +1451,7 @@ namespace nova::renderer::rhi {
             }
 
             if(graphics_family_idx != 0xFFFFFFFF) {
-                NOVA_LOG(INFO) << format(fmt("Selected GPU {:s}"), gpu.props.deviceName);
+                NOVA_LOG(INFO) << rx::string::format("Selected GPU %s", gpu.props.deviceName).data();
                 gpu.phys_device = current_device;
                 break;
             }

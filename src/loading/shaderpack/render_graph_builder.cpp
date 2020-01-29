@@ -4,6 +4,8 @@
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/util/logger.hpp"
+#include "rx/core/algorithm/max.h"
+#include "rx/core/algorithm/min.h"
 
 namespace nova::renderer::shaderpack {
     /*!
@@ -41,10 +43,10 @@ namespace nova::renderer::shaderpack {
     unsigned Range::last_used_pass() const {
         unsigned last_pass = 0;
         if(has_writer()) {
-            last_pass = std::max(last_pass, last_write_pass);
+            last_pass = rx::algorithm::max(last_pass, last_write_pass);
         }
         if(has_reader()) {
-            last_pass = std::max(last_pass, last_read_pass);
+            last_pass = rx::algorithm::max(last_pass, last_read_pass);
         }
         return last_pass;
     }
@@ -52,10 +54,10 @@ namespace nova::renderer::shaderpack {
     unsigned Range::first_used_pass() const {
         unsigned first_pass = ~0U;
         if(has_writer()) {
-            first_pass = std::min(first_pass, first_write_pass);
+            first_pass = rx::algorithm::min(first_pass, first_write_pass);
         }
         if(has_reader()) {
-            first_pass = std::min(first_pass, first_read_pass);
+            first_pass = rx::algorithm::min(first_pass, first_read_pass);
         }
         return first_pass;
     }

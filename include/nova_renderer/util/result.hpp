@@ -1,27 +1,22 @@
 #pragma once
 
-#include <functional>
-#include <memory>
-#include <string>
-
-// ReSharper thinks that the include isn't used, but it's used in a macro so it needs to be here
-// ReSharper disable once CppUnusedIncludeDirective
-#include <fmt/format.h>
+#include <rx/core/optional.h>
+#include <rx/core/string.h>
 
 namespace ntl {
     struct NovaError {
-        std::string message = "";
+        rx::string message = "";
 
-        std::unique_ptr<NovaError> cause;
+        rx::optional<NovaError> cause;
 
-        explicit NovaError(const std::string& message);
+        explicit NovaError(rx::string message);
 
-        NovaError(const std::string& message, NovaError cause);
+        NovaError(rx::string message, const NovaError& cause);
 
-        [[nodiscard]] std::string to_string() const;
+        [[nodiscard]] rx::string to_string() const;
     };
 
-    inline NovaError operator""_err(const char* str, const std::size_t size) { return NovaError(std::string(str, size)); }
+    inline NovaError operator""_err(const char* str, const rx_size size) { return NovaError(rx::string(str, size)); }
 
     template <typename ValueType, typename ErrorType = NovaError>
     struct [[nodiscard]] Result {
@@ -36,7 +31,7 @@ namespace ntl {
 
         explicit Result(const ValueType& value) : value(value), has_value(true) {}
 
-        explicit Result(ErrorType error) : error(std::move(error)) {}
+        explicit Result(ErrorType error) : error(rx::utility::move(error)) {}
 
         explicit Result(const Result<ValueType, ErrorType>& other) {
             if(other.has_value) {
@@ -57,12 +52,12 @@ namespace ntl {
 
         explicit Result(Result<ValueType, ErrorType> && old) noexcept {
             if(old.has_value) {
-                value = std::move(old.value);
+                value = rx::utility::move(old.value);
                 old.value = {};
 
                 has_value = true;
             } else {
-                error = std::move(old.error);
+                error = rx::utility::move(old.error);
                 old.error = {};
             }
         };
@@ -100,7 +95,7 @@ namespace ntl {
             if(has_value) {
                 return Result<RetVal>(func(value));
             } else {
-                return Result<RetVal>(std::move(error));
+                return Result<RetVal>(rx::utility::move(error));
             }
         }
 
@@ -111,7 +106,7 @@ namespace ntl {
             if(has_value) {
                 return func(value);
             } else {
-                return Result<RetVal>(std::move(error));
+                return Result<RetVal>(rx::utility::move(error));
             }
         }
 
@@ -122,7 +117,8 @@ namespace ntl {
             }
         }
 
-        void on_error(std::function<void(const ErrorType&)> error_func) const {
+        template <typename FuncType>
+        void on_error(FuncType && error_func) const {
             if(!has_value) {
                 error_func(error);
             }
@@ -137,5 +133,5 @@ namespace ntl {
     template <typename ValueType>
     Result(ValueType value)->Result<ValueType>;
 
-#define MAKE_ERROR(s, ...) ::ntl::NovaError(fmt::format(fmt(s), __VA_ARGS__).c_str())
+#define MAKE_ERROR(s, ...) ::ntl::NovaError(::rx::string::format(s, __VA_ARGS__))
 } // namespace ntl

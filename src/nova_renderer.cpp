@@ -30,9 +30,9 @@
 #include "render_objects/uniform_structs.hpp"
 #include "rhi/vulkan/vulkan_render_device.hpp"
 #include "rx/core/memory/bump_point_allocator.h"
+
 using namespace nova::mem;
 using namespace operators;
-using namespace fmt;
 
 const Bytes GLOBAL_MEMORY_POOL_SIZE = 1_gb;
 
@@ -109,7 +109,7 @@ namespace nova::renderer {
 
                     return 0;
                 })
-                .on_error([](const ntl::NovaError& error) { NOVA_LOG(ERROR) << error.to_string().c_str(); });
+                .on_error([](const ntl::NovaError& error) { NOVA_LOG(ERROR) << error.to_string().data(); });
         }
 
         {
@@ -629,7 +629,7 @@ namespace nova::renderer {
             mesh_memory = global_allocator->create<DeviceMemoryResource>(*mesh_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << mesh_memory_result.error.to_string().c_str();
+            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << mesh_memory_result.error.to_string().data();
         }
 
         // Assume 65k things, plus we need space for the builtin ubos
@@ -650,7 +650,7 @@ namespace nova::renderer {
             ubo_memory = global_allocator->create<DeviceMemoryResource>(*ubo_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << ubo_memory_result.error.to_string().c_str();
+            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << ubo_memory_result.error.to_string().data();
         }
 
         // Staging buffers will be pooled, so we don't need a _ton_ of memory for them
@@ -671,7 +671,7 @@ namespace nova::renderer {
             staging_buffer_memory = global_allocator->create<DeviceMemoryResource>(*staging_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create staging buffer memory pool: " << staging_memory_result.error.to_string();
+            NOVA_LOG(ERROR) << "Could not create staging buffer memory pool: " << staging_memory_result.error.to_string().data();
         }
     }
 

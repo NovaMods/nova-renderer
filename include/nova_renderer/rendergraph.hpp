@@ -1,6 +1,5 @@
 #pragma once
 
-#include <fmt/format.h>
 #include <nova_renderer/rhi/swapchain.hpp>
 
 #include "nova_renderer/frame_context.hpp"
