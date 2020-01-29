@@ -17,7 +17,7 @@ namespace nova::renderer {
 
     rx::optional<renderer::Pipeline> PipelineStorage::get_pipeline(const rx::string& pipeline_name) const {
         if(const auto* pipeline = pipelines.find(pipeline_name)) {
-            return rx::optional(*pipeline);
+            return *pipeline;
 
         } else {
             return rx::nullopt;
@@ -69,7 +69,7 @@ namespace nova::renderer {
             pipeline.pipeline_interface = pipeline_interface;
 
         } else {
-            NovaError error = NovaError(format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name),
+            NovaError error = NovaError(format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name.data()),
                                         rx::utility::move(rhi_pipeline.error));
             return ntl::Result<PipelineReturn>(rx::utility::move(error));
         }

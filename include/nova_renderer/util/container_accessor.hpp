@@ -21,7 +21,7 @@ namespace nova::renderer {
 
         ~MapAccessor() = default;
 
-        [[nodiscard]] const ValueType* operator->() const { return &(*map)[key]; }
+        [[nodiscard]] const ValueType* operator->() const { return map->find(key); }
 
         [[nodiscard]] const KeyType& get_key() const { return key; }
 

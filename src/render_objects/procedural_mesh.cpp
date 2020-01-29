@@ -159,7 +159,7 @@ namespace nova::renderer {
             barriers_before_upload.push_back(barrier_before_index_upload);
         }
 
-        if(barriers_before_upload.size() == 0) {
+        if(barriers_before_upload.is_empty()) {
             return;
         }
 
@@ -203,7 +203,7 @@ namespace nova::renderer {
             barriers_after_upload.push_back(barrier_after_index_upload);
         }
 
-        if(barriers_after_upload.size() == 0) {
+        if(barriers_after_upload.is_empty()) {
             return;
         }
 

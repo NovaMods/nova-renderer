@@ -29,7 +29,7 @@ namespace nova::renderer {
         // TODO: fil out this test when the RHI is stable
         TEST_SETUP_LOGGER();
 
-        std::array<char, FILENAME_MAX> buff{};
+        rx::array<char[FILENAME_MAX]> buff;
         getcwd(buff.data(), FILENAME_MAX);
         NOVA_LOG(DEBUG) << "Running in " << buff.data() << std::flush;
         NOVA_LOG(DEBUG) << "Predefined resources at: " << CMAKE_DEFINED_RESOURCES_PREFIX;

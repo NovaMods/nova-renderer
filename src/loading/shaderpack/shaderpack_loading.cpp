@@ -132,15 +132,15 @@ namespace nova::renderer::shaderpack {
             /* .generalConstantMatrixVectorIndexing = */ true,
         }};
 
-    ShaderpackResourcesData load_dynamic_resources_file(const FolderAccessorBase* folder_access);
+    rx::optional<ShaderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access);
 
-    ntl::Result<RendergraphData> load_rendergraph_file(const FolderAccessorBase* folder_access);
+    ntl::Result<RendergraphData> load_rendergraph_file(FolderAccessorBase* folder_access);
 
-    rx::vector<PipelineCreateInfo> load_pipeline_files(const FolderAccessorBase* folder_access);
-    rx::optional<PipelineCreateInfo> load_single_pipeline(const FolderAccessorBase* folder_access, const rx::string& pipeline_path);
+    rx::vector<PipelineCreateInfo> load_pipeline_files(FolderAccessorBase* folder_access);
+    rx::optional<PipelineCreateInfo> load_single_pipeline(FolderAccessorBase* folder_access, const rx::string& pipeline_path);
 
-    rx::vector<MaterialData> load_material_files(const FolderAccessorBase* folder_access);
-    MaterialData load_single_material(const FolderAccessorBase* folder_access, const rx::string& material_path);
+    rx::vector<MaterialData> load_material_files(FolderAccessorBase* folder_access);
+    MaterialData load_single_material(FolderAccessorBase* folder_access, const rx::string& material_path);
 
     void fill_in_render_target_formats(RenderpackData& data) {
         const auto& textures = data.resources.render_targets;
@@ -198,7 +198,7 @@ namespace nova::renderer::shaderpack {
     void cache_pipelines_by_renderpass(RenderpackData& data);
 
     RenderpackData load_shaderpack_data(const rx::string& shaderpack_name) {
-        const FolderAccessorBase* folder_access = VirtualFilesystem::get_instance()->get_folder_accessor(shaderpack_name);
+        FolderAccessorBase* folder_access = VirtualFilesystem::get_instance()->get_folder_accessor(shaderpack_name);
 
         // The shaderpack has a number of items: There's the shaders themselves, of course, but there's so, so much more
         // What else is there?
@@ -210,7 +210,7 @@ namespace nova::renderer::shaderpack {
         // All these things are loaded from the filesystem
 
         RenderpackData data{};
-        data.resources = load_dynamic_resources_file(folder_access);
+        data.resources = *load_dynamic_resources_file(folder_access);
         const auto& graph_data = load_rendergraph_file(folder_access);
         if(graph_data) {
             data.graph_data = *graph_data;
@@ -234,11 +234,11 @@ namespace nova::renderer::shaderpack {
             auto json_resources = nlohmann::json::parse(resources_string.data());
             const ValidationReport report = validate_shaderpack_resources_data(json_resources);
             print(report);
-            if(report.errors.size() != 0) {
+            if(!report.errors.is_empty()) {
                 return rx::nullopt;
             }
 
-            return rx::optional(json_resources.get<ShaderpackResourcesData>());
+            return json_resources.get<ShaderpackResourcesData>();
         }
         catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse your renderpack's resources.json: " << err.what();
@@ -279,7 +279,7 @@ namespace nova::renderer::shaderpack {
 
             } else {
                 return ntl::Result<RendergraphData>(
-                    MAKE_ERROR("At least one pass must write to the render target named {:s}", SCENE_OUTPUT_RT_NAME.data()));
+                    MAKE_ERROR("At least one pass must write to the render target named {:s}", SCENE_OUTPUT_RT_NAME));
             }
         }
         catch(nlohmann::json::parse_error& err) {
@@ -320,7 +320,7 @@ namespace nova::renderer::shaderpack {
         const ValidationReport report = validate_graphics_pipeline(json_pipeline);
         NOVA_LOG(TRACE) << "Finished validating JSON for pipeline " << pipeline_path.data();
         print(report);
-        if(report.errors.size() != 0) {
+        if(!report.errors.is_empty()) {
             NOVA_LOG(ERROR) << "Loading pipeline file " << pipeline_path.data() << " failed";
             return rx::nullopt;
         }
@@ -468,7 +468,7 @@ namespace nova::renderer::shaderpack {
         auto json_material = nlohmann::json::parse(material_text.data(), material_text.data() + material_text.size());
         const auto report = validate_material(json_material);
         print(report);
-        if(report.errors.size() != 0) {
+        if(!report.errors.is_empty()) {
             // There were errors, this material can't be loaded
             NOVA_LOG(TRACE) << "Load of material " << material_path.data() << " failed";
             return {};

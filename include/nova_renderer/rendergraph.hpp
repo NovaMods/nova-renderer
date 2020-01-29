@@ -274,7 +274,7 @@ namespace nova::renderer {
                     attachment_errors.push_back(format(
                         fmt("Pass {:s} writes to the backbuffer and {:d} other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures"),
                         create_info.name.data(),
-                        create_info.texture_outputs.size() - 1));
+                        create_info.texture_outputs.size() - 1).c_str());
                 }
 
                 framebuffer_size = device.get_swapchain()->get_size();
@@ -296,7 +296,8 @@ namespace nova::renderer {
                                 attachment_size.y,
                                 create_info.name.data(),
                                 framebuffer_size.x,
-                                framebuffer_size.y));
+                                    framebuffer_size.y)
+                                    .c_str());
                         }
 
                     } else {
@@ -324,10 +325,10 @@ namespace nova::renderer {
             return rx::nullopt;
         }();
 
-        if(attachment_errors.size() != 0) {
+        if(!attachment_errors.is_empty()) {
             attachment_errors.each_fwd([&](const rx::string& err) { NOVA_LOG(ERROR) << err.data(); });
 
-            NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name
+            NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name.data()
                             << " because there were errors in the attachment specification. Look above this message for details";
             return nullptr;
         }
@@ -337,7 +338,7 @@ namespace nova::renderer {
             renderpass->renderpass = renderpass_result.value;
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name << ": " << renderpass_result.error.to_string();
+            NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name.data() << ": " << renderpass_result.error.to_string();
             return nullptr;
         }
 
