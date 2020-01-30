@@ -7,6 +7,8 @@ namespace nova::renderer::rhi {
 
     bool ResourceBindingDescription::operator!=(const ResourceBindingDescription& other) { return !(*this == other); }
 
+    ResourceBarrier::ResourceBarrier() {}
+
     ShaderStage operator|=(const ShaderStage lhs, const ShaderStage rhs) {
         return static_cast<ShaderStage>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
     }

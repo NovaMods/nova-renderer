@@ -165,6 +165,8 @@ namespace nova::renderer::rhi {
 
             BufferMemoryBarrier buffer_memory_barrier;
         };
+
+        ResourceBarrier();
     };
 
     struct DescriptorImageInfo {

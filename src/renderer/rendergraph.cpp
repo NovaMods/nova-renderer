@@ -54,7 +54,8 @@ namespace nova::renderer {
 
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
-            const rx::vector<rhi::ResourceBarrier> barriers(&rx::memory::g_system_allocator, 1, backbuffer_barrier);
+            rx::vector<rhi::ResourceBarrier> barriers(&rx::memory::g_system_allocator, 1);
+            barriers.push_back(backbuffer_barrier);
             cmds.resource_barriers(rhi::PipelineStage::TopOfPipe, rhi::PipelineStage::ColorAttachmentOutput, barriers);
         }
     }
@@ -83,7 +84,8 @@ namespace nova::renderer {
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspect::Color;
 
-            const rx::vector<rhi::ResourceBarrier> barriers(&rx::memory::g_system_allocator, 1, backbuffer_barrier);
+            rx::vector<rhi::ResourceBarrier> barriers(&rx::memory::g_system_allocator, 1);
+            barriers.push_back(backbuffer_barrier);
             cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::BottomOfPipe, barriers);
         }
     }
@@ -185,7 +187,10 @@ namespace nova::renderer {
 
         if(start_index != ctx.cur_model_matrix_index) {
             // TODO: There's probably a better way to do this
-            const rx::vector<rhi::Buffer*> vertex_buffers = rx::vector<rhi::Buffer*>(7, batch.vertex_buffer);
+            rx::vector<rhi::Buffer*> vertex_buffers(7);
+            for(uint32_t i = 0; i < 7; i++) {
+                vertex_buffers.push_back(batch.vertex_buffer);
+            }
             cmds.bind_vertex_buffers(vertex_buffers);
             cmds.bind_index_buffer(batch.index_buffer);
 
@@ -213,7 +218,10 @@ namespace nova::renderer {
         if(start_index != ctx.cur_model_matrix_index) {
             const auto& [vertex_buffer, index_buffer] = batch.mesh->get_buffers_for_frame(ctx.frame_count % NUM_IN_FLIGHT_FRAMES);
             // TODO: There's probably a better way to do this
-            const rx::vector<rhi::Buffer*> vertex_buffers(7, vertex_buffer);
+            rx::vector<rhi::Buffer*> vertex_buffers(7);
+            for(uint32_t i = 0; i < 7; i++) {
+                vertex_buffers.push_back(vertex_buffer);
+            }
             cmds.bind_vertex_buffers(vertex_buffers);
             cmds.bind_index_buffer(index_buffer);
         }
