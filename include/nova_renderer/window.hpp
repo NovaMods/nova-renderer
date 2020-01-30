@@ -1,5 +1,6 @@
 #pragma once
 
+// TODO: Figure out how to get rid of this include
 #include <functional>
 
 #include <glm/vec2.hpp>
@@ -92,20 +93,14 @@ namespace nova::renderer {
 
 #endif
 
-#if NOVA_OPENGL_RHI
-        void swap_backbuffer() const;
-
-        static void* get_gl_proc_address(const char* proc_name);
-#endif
-
     private:
         GLFWwindow* window = nullptr;
 
-        std::pmr::vector<std::function<void(uint32_t, bool, bool, bool)>> key_callbacks;
+        rx::vector<std::function<void(uint32_t, bool, bool, bool)>> key_callbacks;
 
-        std::pmr::vector<std::function<void(double, double)>> mouse_callbacks;
+        rx::vector<std::function<void(double, double)>> mouse_callbacks;
 
-        std::pmr::vector<std::function<void(uint32_t, bool)>> mouse_button_callbacks;
+        rx::vector<std::function<void(uint32_t, bool)>> mouse_button_callbacks;
 
         static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 

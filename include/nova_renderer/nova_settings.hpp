@@ -1,9 +1,8 @@
 #pragma once
 
-#include <cstdint>
-#include <memory_resource>
-#include <string>
-#include <vector>
+#include <rx/core/string.h>
+#include <rx/core/vector.h>
+#include <stdint.h>
 
 namespace nova::renderer {
 
@@ -133,7 +132,7 @@ namespace nova::renderer {
                 /*!
                  * \brief The path to `renderdoc.dll` on your filesystem
                  */
-                std::string renderdoc_dll_path = R"(C:\Program Files\RenderDoc\renderdoc.dll)";
+                rx::string renderdoc_dll_path = R"(C:\Program Files\RenderDoc\renderdoc.dll)";
 
                 /*!
                  * \brief The base path for RenderDoc captures
@@ -243,6 +242,6 @@ namespace nova::renderer {
         const NovaSettings* operator->() const;
 
     private:
-        std::pmr::vector<ConfigListener*> config_change_listeners;
+        rx::vector<ConfigListener*> config_change_listeners;
     };
 } // namespace nova::renderer

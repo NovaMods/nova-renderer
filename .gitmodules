@@ -10,9 +10,6 @@
 [submodule "external/minitrace"]
 	path = external/minitrace
 	url = https://github.com/hrydgard/minitrace.git
-[submodule "external/fmt"]
-	path = external/fmt
-	url = https://github.com/fmtlib/fmt.git
 [submodule "external/miniz"]
 	path = external/miniz
 	url = https://github.com/richgel999/miniz.git

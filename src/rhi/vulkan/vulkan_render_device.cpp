@@ -1,6 +1,7 @@
 #include "vulkan_render_device.hpp"
 
-#include <csignal>
+#include <signal.h>
+#include <string.h>
 
 #include <rx/core/set.h>
 
@@ -771,7 +772,7 @@ namespace nova::renderer::rhi {
         color_blend_create_info.blendConstants[2] = 0.0F;
         color_blend_create_info.blendConstants[3] = 0.0F;
 
-        std::vector<VkDynamicState> dynamic_states;
+        rx::vector<VkDynamicState> dynamic_states;
 
         if(data.scissor_mode == shaderpack::ScissorTestMode::DynamicScissorRect) {
             dynamic_states.emplace_back(VK_DYNAMIC_STATE_SCISSOR);
@@ -1022,7 +1023,7 @@ namespace nova::renderer::rhi {
             return image;
 
         } else {
-            NOVA_LOG(ERROR) << "Could not allocate memory for image " << info.name.data() << ": " << image_memory.error.to_string();
+            NOVA_LOG(ERROR) << "Could not allocate memory for image " << info.name.data() << ": " << image_memory.error.to_string().data();
 
             return nullptr;
         }
@@ -1373,11 +1374,11 @@ namespace nova::renderer::rhi {
 
         uint32_t extension_count;
         vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, nullptr);
-        rx::vector<VkExtensionProperties> available_extensions(internal_allocator, extension_count, {});
+        rx::vector<VkExtensionProperties> available_extensions(internal_allocator, extension_count);
         vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, available_extensions.data());
 
         const auto extension_name_matcher = [](const char* ext_name) {
-            return [=](const VkExtensionProperties& ext_props) -> bool { return std::strcmp(ext_name, ext_props.extensionName) == 0; };
+            return [=](const VkExtensionProperties& ext_props) -> bool { return strcmp(ext_name, ext_props.extensionName) == 0; };
         };
 
         // TODO: Update as more GPUs support hardware raytracing
@@ -1395,7 +1396,7 @@ namespace nova::renderer::rhi {
 
         uint32_t device_count;
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
-        auto physical_devices = rx::vector<VkPhysicalDevice>(internal_allocator, device_count, {});
+        auto physical_devices = rx::vector<VkPhysicalDevice>(internal_allocator, device_count);
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, physical_devices.data()));
 
         uint32_t graphics_family_idx = 0xFFFFFFFF;
@@ -1451,7 +1452,7 @@ namespace nova::renderer::rhi {
             }
 
             if(graphics_family_idx != 0xFFFFFFFF) {
-                NOVA_LOG(INFO) << format(fmt("Selected GPU {:s}"), gpu.props.deviceName);
+                NOVA_LOG(INFO) << rx::string::format("Selected GPU %s", gpu.props.deviceName).data();
                 gpu.phys_device = current_device;
                 break;
             }
@@ -1476,7 +1477,8 @@ namespace nova::renderer::rhi {
         graphics_queue_create_info.queueFamilyIndex = graphics_family_idx;
         graphics_queue_create_info.pQueuePriorities = &priority;
 
-        rx::vector<VkDeviceQueueCreateInfo> queue_create_infos(internal_allocator, 1, graphics_queue_create_info);
+        rx::vector<VkDeviceQueueCreateInfo> queue_create_infos(internal_allocator, 1);
+        queue_create_infos.push_back(graphics_queue_create_info);
 
         VkPhysicalDeviceFeatures physical_device_features{};
         physical_device_features.geometryShader = VK_TRUE;
@@ -1551,7 +1553,7 @@ namespace nova::renderer::rhi {
 
         uint32_t num_surface_present_modes;
         vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, nullptr);
-        rx::vector<VkPresentModeKHR> present_modes(internal_allocator, num_surface_present_modes, {});
+        rx::vector<VkPresentModeKHR> present_modes(internal_allocator, num_surface_present_modes);
         vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, present_modes.data());
 
         swapchain = internal_allocator->create<VulkanSwapchain>(NUM_IN_FLIGHT_FRAMES, this, window.get_framebuffer_size(), present_modes);
@@ -1815,7 +1817,7 @@ namespace nova::renderer::rhi {
 #if defined(NOVA_WINDOWS)
                 DebugBreak();
 #elif defined(NOVA_LINUX)
-                std::raise(SIGINT);
+                raise(SIGINT);
 #endif
             }
 

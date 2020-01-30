@@ -30,9 +30,9 @@
 #include "render_objects/uniform_structs.hpp"
 #include "rhi/vulkan/vulkan_render_device.hpp"
 #include "rx/core/memory/bump_point_allocator.h"
+
 using namespace nova::mem;
 using namespace operators;
-using namespace fmt;
 
 const Bytes GLOBAL_MEMORY_POOL_SIZE = 1_gb;
 
@@ -109,7 +109,7 @@ namespace nova::renderer {
 
                     return 0;
                 })
-                .on_error([](const ntl::NovaError& error) { NOVA_LOG(ERROR) << error.to_string().c_str(); });
+                .on_error([](const ntl::NovaError& error) { NOVA_LOG(ERROR) << error.to_string().data(); });
         }
 
         {
@@ -150,7 +150,8 @@ namespace nova::renderer {
 
         NOVA_LOG(DEBUG) << "\n***********************\n        FRAME START        \n***********************";
 
-        const rx::vector last_frame_fences(global_allocator, 1, frame_fences[cur_frame_idx]);
+        rx::vector<rhi::Fence*> last_frame_fences{global_allocator};
+        last_frame_fences.push_back(frame_fences[cur_frame_idx]);
         device->reset_fences(last_frame_fences);
 
         rhi::CommandList* cmds = device->create_command_list(0,
@@ -179,7 +180,8 @@ namespace nova::renderer {
 
         // Wait for the GPU to finish before presenting. This destroys pipelining and throughput, however at this time I'm not sure how
         // best to say "when GPU finishes this task, CPU should do something"
-        const rx::vector<rhi::Fence*> fences(global_allocator, 1, frame_fences[cur_frame_idx]);
+        rx::vector<rhi::Fence*> fences{global_allocator};
+        fences.push_back(frame_fences[cur_frame_idx]);
         device->wait_for_fences(fences);
 
         device->get_swapchain()->present(cur_frame_idx);
@@ -226,7 +228,9 @@ namespace nova::renderer {
             vertex_barrier.buffer_memory_barrier.offset = 0;
             vertex_barrier.buffer_memory_barrier.size = vertex_buffer->size;
 
-            rx::vector<rhi::ResourceBarrier> barriers(global_allocator, 1, vertex_barrier);
+            rx::vector<rhi::ResourceBarrier> barriers{global_allocator
+                };
+            barriers.push_back(vertex_barrier);
             vertex_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, barriers);
 
             device->submit_command_list(vertex_upload_cmds, rhi::QueueType::Transfer);
@@ -263,7 +267,8 @@ namespace nova::renderer {
             index_barrier.buffer_memory_barrier.offset = 0;
             index_barrier.buffer_memory_barrier.size = index_buffer->size;
 
-            rx::vector<rhi::ResourceBarrier> barriers(global_allocator, 1, index_barrier);
+            rx::vector<rhi::ResourceBarrier> barriers{global_allocator};
+            barriers.push_back(index_barrier);
             indices_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, barriers);
 
             device->submit_command_list(indices_upload_cmds, rhi::QueueType::Transfer);
@@ -629,7 +634,7 @@ namespace nova::renderer {
             mesh_memory = global_allocator->create<DeviceMemoryResource>(*mesh_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << mesh_memory_result.error.to_string().c_str();
+            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << mesh_memory_result.error.to_string().data();
         }
 
         // Assume 65k things, plus we need space for the builtin ubos
@@ -650,7 +655,7 @@ namespace nova::renderer {
             ubo_memory = global_allocator->create<DeviceMemoryResource>(*ubo_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << ubo_memory_result.error.to_string().c_str();
+            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << ubo_memory_result.error.to_string().data();
         }
 
         // Staging buffers will be pooled, so we don't need a _ton_ of memory for them
@@ -671,7 +676,7 @@ namespace nova::renderer {
             staging_buffer_memory = global_allocator->create<DeviceMemoryResource>(*staging_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create staging buffer memory pool: " << staging_memory_result.error.to_string();
+            NOVA_LOG(ERROR) << "Could not create staging buffer memory pool: " << staging_memory_result.error.to_string().data();
         }
     }
 

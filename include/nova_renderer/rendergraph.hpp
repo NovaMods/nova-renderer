@@ -1,6 +1,5 @@
 #pragma once
 
-#include <fmt/format.h>
 #include <nova_renderer/rhi/swapchain.hpp>
 
 #include "nova_renderer/frame_context.hpp"
@@ -271,10 +270,11 @@ namespace nova::renderer {
                     renderpass->framebuffer = nullptr; // Will be resolved when rendering
 
                 } else {
-                    attachment_errors.push_back(format(
-                        fmt("Pass {:s} writes to the backbuffer and {:d} other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures"),
-                        create_info.name.data(),
-                        create_info.texture_outputs.size() - 1).c_str());
+                    attachment_errors.push_back(
+                        rx::string::format(
+                            "Pass %s writes to the backbuffer and %zu other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures",
+                        create_info.name,
+                        create_info.texture_outputs.size() - 1));
                 }
 
                 framebuffer_size = device.get_swapchain()->get_size();
@@ -289,15 +289,14 @@ namespace nova::renderer {
                     const glm::uvec2 attachment_size = {render_target->width, render_target->height};
                     if(framebuffer_size.x > 0) {
                         if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {
-                            attachment_errors.push_back(format(
-                                fmt("Attachment {:s} has a size of {:d}x{:d}, but the framebuffer for pass {:s} has a size of {:d}x{:d} - these must match! All attachments of a single renderpass must have the same size"),
-                                attachment_info.name.data(),
-                                attachment_size.x,
-                                attachment_size.y,
-                                create_info.name.data(),
-                                framebuffer_size.x,
-                                    framebuffer_size.y)
-                                    .c_str());
+                            attachment_errors.push_back(
+                                rx::string::format("Attachment %s has a size of %dx%d, but the framebuffer for pass %s has a size of %dx%d - these must match! All attachments of a single renderpass must have the same size",
+                                    attachment_info.name,
+                                    attachment_size.x,
+                                    attachment_size.y,
+                                    create_info.name,
+                                    framebuffer_size.x,
+                                    framebuffer_size.y));
                         }
 
                     } else {
@@ -338,7 +337,7 @@ namespace nova::renderer {
             renderpass->renderpass = renderpass_result.value;
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name.data() << ": " << renderpass_result.error.to_string();
+            NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name.data() << ": " << renderpass_result.error.to_string().data();
             return nullptr;
         }
 

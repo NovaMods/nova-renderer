@@ -136,11 +136,6 @@ string::string(memory::allocator* _allocator)
   resize(0);
 }
 
-string::string(memory::allocator* _allocator, const string& _contents)
-  : string{_allocator, _contents.data(), _contents.size()}
-{
-}
-
 string::string(memory::allocator* _allocator, const char* _contents)
   : string{_allocator, _contents, strlen(_contents)}
 {
@@ -158,6 +153,29 @@ string::string(memory::allocator* _allocator, const char* _first,
   : string{_allocator}
 {
   append(_first, _last);
+}
+
+string::string(string&& contents_)
+  : m_allocator{contents_.m_allocator}
+{
+  RX_ASSERT(m_allocator, "null allocator");
+
+  if (contents_.m_data == contents_.m_buffer) {
+    m_data = m_buffer;
+    m_last = m_buffer;
+    m_capacity = m_buffer + k_small_string;
+    reserve(contents_.size());
+    append(contents_.data(), contents_.size());
+  } else {
+    m_data = contents_.m_data;
+    m_last = contents_.m_last;
+    m_capacity = contents_.m_capacity;
+  }
+
+  contents_.m_data = contents_.m_buffer;
+  contents_.m_last = contents_.m_buffer;
+  contents_.m_capacity = contents_.m_buffer + k_small_string;
+  contents_.resize(0);
 }
 
 string::string(memory::view _view)
@@ -192,29 +210,6 @@ string::string(memory::view _view)
   }
 }
 
-string::string(string&& contents_)
-  : m_allocator{contents_.m_allocator}
-{
-  RX_ASSERT(m_allocator, "null allocator");
-
-  if (contents_.m_data == contents_.m_buffer) {
-    m_data = m_buffer;
-    m_last = m_buffer;
-    m_capacity = m_buffer + k_small_string;
-    reserve(contents_.size());
-    append(contents_.data(), contents_.size());
-  } else {
-    m_data = contents_.m_data;
-    m_last = contents_.m_last;
-    m_capacity = contents_.m_capacity;
-  }
-
-  contents_.m_data = contents_.m_buffer;
-  contents_.m_last = contents_.m_buffer;
-  contents_.m_capacity = contents_.m_buffer + k_small_string;
-  contents_.resize(0);
-}
-
 string::~string() {
   if (m_data != m_buffer) {
     m_allocator->deallocate(reinterpret_cast<rx_byte*>(m_data));
@@ -223,6 +218,12 @@ string::~string() {
 
 string& string::operator=(const string& _contents) {
   RX_ASSERT(&_contents != this, "self assignment");
+  string(_contents).swap(*this);
+  return *this;
+}
+
+string& string::operator=(const char* _contents) {
+  RX_ASSERT(_contents, "empty string");
   string(_contents).swap(*this);
   return *this;
 }
@@ -272,6 +273,46 @@ void string::resize(rx_size _size) {
   m_last = m_data + _size;
 }
 
+rx_size string::find_first_of(int _ch) const {
+  if (char* search{strchr(m_data, _ch)}) {
+    return search - m_data;
+  }
+  return k_npos;
+}
+
+rx_size string::find_first_of(const char* _contents) const {
+  if (const char* search{strstr(m_data, _contents)}) {
+    return search - m_data;
+  }
+  return k_npos;
+}
+
+rx_size string::find_last_of(int _ch) const {
+  if (const char* search{strrchr(m_data, _ch)}) {
+    return search - m_data;
+  }
+  return k_npos;
+}
+
+rx_size string::find_last_of(const char* _contents) const {
+  auto reverse_strstr{[](const char* _haystack, const char* _needle) {
+    const char* r{nullptr};
+    for (;;) {
+      const char* p = strstr(_haystack, _needle);
+      if (!p) {
+        return r;
+      }
+      r = p;
+      _haystack = p + 1;
+    }
+  }};
+
+  if (const char* search{reverse_strstr(m_data, _contents)}) {
+    return search - m_data;
+  }
+  return k_npos;
+}
+
 string& string::append(const char* _first, const char *_last) {
   const auto new_size{static_cast<rx_size>(m_last - m_data + _last - _first + 1)};
   if (m_data + new_size > m_capacity) {
@@ -290,13 +331,18 @@ string& string::append(const char* _contents) {
   return append(_contents, strlen(_contents));
 }
 
-void string::insert_at(rx_size _position, const string& _contents) {
+void string::insert_at(rx_size _position, const char* _contents, rx_size _size) {
+  RX_ASSERT(_position < size(), "out of bounds");
   const rx_size old_this_size{size()};
-  const rx_size old_that_size{_contents.size()};
+  const rx_size old_that_size{_size};
   resize(old_this_size + old_that_size);
   char* cursor{m_data + _position};
   memmove(cursor + old_that_size, cursor, old_this_size - _position);
-  memmove(cursor, _contents.data(), old_that_size);
+  memmove(cursor, _contents, old_that_size);
+}
+
+void string::insert_at(rx_size _position, const char* _contents) {
+  insert_at(_position, _contents, strlen(_contents));
 }
 
 string string::lstrip(const char* _set) const {
@@ -309,6 +355,51 @@ string string::rstrip(const char* _set) const {
   const char* ch{m_data + size()};
   for (; strchr(_set, *ch); ch--);
   return {m_allocator, m_data, ch};
+}
+
+vector<string> string::split(memory::allocator* _allocator, int _token, rx_size _count) const {
+  bool quoted{false};
+  bool limit{_count > 0};
+  vector<string> result{_allocator};
+
+  // When there is a limit we can reserve the storage upfront.
+  if (limit) {
+    result.reserve(_count);
+  }
+
+  result.push_back("");
+  _count--;
+
+  for (const char* ch{m_data}; *ch; ch++) {
+    // Handle escapes of quoted strings.
+    if (*ch == '\\' && (ch[1] == '\\' || ch[1] == '\"')) {
+      if (ch[1] == '\\') {
+        result.last() += "\\";
+      }
+
+      if (ch[1] == '\"') {
+        result.last() += "\"";
+      }
+
+      ch += 2;
+      continue;
+    }
+
+    // Handle quoted strings.
+    if (_count && *ch == '\"') {
+      quoted = !quoted;
+      continue;
+    }
+
+    if (*ch == _token && !quoted && (!limit || _count)) {
+      result.push_back("");
+      _count--;
+    } else {
+      result.last() += *ch;
+    }
+  }
+
+  return result;
 }
 
 string string::substring(rx_size _offset, rx_size _length) const {
@@ -330,51 +421,6 @@ rx_size string::scan(const char* _scan_format, ...) const {
   return static_cast<rx_size>(result);
 }
 
-vector<string> string::split(int _token, rx_size _count) const {
-  bool quoted{false};
-  bool limit{_count > 0};
-  vector<string> result;
-
-  // when there is a limit we can reserve the storage upfront
-  if (limit) {
-    result.reserve(_count);
-  }
-
-  result.push_back("");
-  _count--;
-
-  for (const char* ch{m_data}; *ch; ch++) {
-    // handle escapes of quoted strings
-    if (*ch == '\\' && (ch[1] == '\\' || ch[1] == '\"')) {
-      if (ch[1] == '\\') {
-        result.last() += "\\";
-      }
-
-      if (ch[1] == '\"') {
-        result.last() += "\"";
-      }
-
-      ch += 2;
-      continue;
-    }
-
-    // handle quoted strings
-    if (_count && *ch == '\"') {
-      quoted = !quoted;
-      continue;
-    }
-
-    if (*ch == _token && !quoted && (!limit || _count)) {
-      result.push_back("");
-      _count--;
-    } else {
-      result.last() += *ch;
-    }
-  }
-
-  return result;
-}
-
 char string::pop_back() {
   if (m_last == m_data) {
     return *data();
@@ -386,6 +432,10 @@ char string::pop_back() {
 }
 
 void string::erase(rx_size _begin, rx_size _end) {
+  RX_ASSERT(_begin < _end, "invalid range");
+  RX_ASSERT(_begin > size(), "out of bounds");
+  RX_ASSERT(_end > size(), "out of bounds");
+
   char *const begin{m_data + _begin};
   char *const end{m_data + _end};
 
@@ -394,91 +444,6 @@ void string::erase(rx_size _begin, rx_size _end) {
   memmove(begin, end, length);
   m_last = begin + length;
   *m_last = '\0';
-}
-
-// complicated because of small string optimization
-void string::swap(string& other_) {
-  RX_ASSERT(&other_ != this, "self swap");
-
-  utility::swap(m_data, other_.m_data);
-  utility::swap(m_last, other_.m_last);
-  utility::swap(m_capacity, other_.m_capacity);
-
-  char buffer[k_small_string];
-
-  if (m_data == other_.m_buffer) {
-    const char* element{other_.m_buffer};
-    const char* end{m_last};
-    char* out{buffer};
-
-    while (element != end) {
-      *out++ = *element++;
-    }
-  }
-
-  if (other_.m_data == m_buffer) {
-    other_.m_last = other_.m_last - other_.m_data + other_.m_buffer;
-    other_.m_data = other_.m_buffer;
-    other_.m_capacity = other_.m_buffer + k_small_string;
-
-    char* element{other_.m_data};
-    const char* end{other_.m_last};
-    const char* in{m_buffer};
-
-    while (element != end) {
-      *element++ = *in++;
-    }
-
-    *other_.m_last = '\0';
-  }
-
-  if (m_data == other_.m_buffer) {
-    m_last = m_last - m_data + m_buffer;
-    m_data = m_buffer;
-    m_capacity = m_buffer + k_small_string;
-
-    char* element{m_data};
-    const char* end{m_last};
-    const char* in{buffer};
-
-    while (element != end) {
-      *element++ = *in++;
-    }
-
-    *m_last = '\0';
-  }
-}
-
-bool operator==(const string& _lhs, const string& _rhs) {
-  if (&_lhs == &_rhs) {
-    return true;
-  }
-
-  if (_lhs.size() != _rhs.size()) {
-    return false;
-  }
-
-  return !strcmp(_lhs.data(), _rhs.data());
-}
-
-bool operator!=(const string& _lhs, const string& _rhs) {
-  if (&_lhs == &_rhs) {
-    return false;
-  }
-
-  if (_lhs.size() != _rhs.size()) {
-    return true;
-  }
-
-  return strcmp(_lhs.data(), _rhs.data());
-}
-
-bool operator<(const string& _lhs, const string& _rhs) {
-  return &_lhs == &_rhs ? false : strcmp(_lhs.data(), _rhs.data()) < 0;
-}
-
-bool operator>(const string& _lhs, const string& _rhs) {
-  return &_lhs == &_rhs ? false : strcmp(_lhs.data(), _rhs.data()) > 0;
 }
 
 string string::human_size_format(rx_size _size) {
@@ -585,6 +550,91 @@ wide_string string::to_utf16() const {
   contents.resize(length);
   utf8_to_utf16(m_data, length, contents.data());
   return contents;
+}
+
+// Complicated because of small string optimization.
+void string::swap(string& other_) {
+  RX_ASSERT(&other_ != this, "self swap");
+
+  utility::swap(m_data, other_.m_data);
+  utility::swap(m_last, other_.m_last);
+  utility::swap(m_capacity, other_.m_capacity);
+
+  char buffer[k_small_string];
+
+  if (m_data == other_.m_buffer) {
+    const char* element{other_.m_buffer};
+    const char* end{m_last};
+    char* out{buffer};
+
+    while (element != end) {
+      *out++ = *element++;
+    }
+  }
+
+  if (other_.m_data == m_buffer) {
+    other_.m_last = other_.m_last - other_.m_data + other_.m_buffer;
+    other_.m_data = other_.m_buffer;
+    other_.m_capacity = other_.m_buffer + k_small_string;
+
+    char* element{other_.m_data};
+    const char* end{other_.m_last};
+    const char* in{m_buffer};
+
+    while (element != end) {
+      *element++ = *in++;
+    }
+
+    *other_.m_last = '\0';
+  }
+
+  if (m_data == other_.m_buffer) {
+    m_last = m_last - m_data + m_buffer;
+    m_data = m_buffer;
+    m_capacity = m_buffer + k_small_string;
+
+    char* element{m_data};
+    const char* end{m_last};
+    const char* in{buffer};
+
+    while (element != end) {
+      *element++ = *in++;
+    }
+
+    *m_last = '\0';
+  }
+}
+
+bool operator==(const string& _lhs, const string& _rhs) {
+  if (&_lhs == &_rhs) {
+    return true;
+  }
+
+  if (_lhs.size() != _rhs.size()) {
+    return false;
+  }
+
+  return !strcmp(_lhs.data(), _rhs.data());
+}
+
+bool operator!=(const string& _lhs, const string& _rhs) {
+  if (&_lhs == &_rhs) {
+    return false;
+  }
+
+  if (_lhs.size() != _rhs.size()) {
+    return true;
+  }
+
+  return strcmp(_lhs.data(), _rhs.data());
+}
+
+bool operator<(const string& _lhs, const string& _rhs) {
+  return &_lhs == &_rhs ? false : strcmp(_lhs.data(), _rhs.data()) < 0;
+}
+
+bool operator>(const string& _lhs, const string& _rhs) {
+  return &_lhs == &_rhs ? false : strcmp(_lhs.data(), _rhs.data()) > 0;
 }
 
 void wide_string::resize(rx_size _size) {

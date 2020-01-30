@@ -26,36 +26,40 @@ struct string {
 
   string();
   string(const string& _contents);
+  string(string&& contents_);
   string(const char* _contents);
   string(const char* _contents, rx_size _size);
   string(const char* _first, const char* _last);
-
   string(memory::view _view);
+  ~string();
 
   template<typename... Ts>
-  static string format(memory::allocator* _allocator, const char* _format, Ts&&... _arguments);
+  static string format(memory::allocator* _allocator,
+    const char* _format, Ts&&... _arguments);
 
   template<typename... Ts>
   static string format(const char* _format, Ts&&... _arguments);
 
-  string(string&& contents_);
-
-  ~string();
-
   string& operator=(const string& _contents);
+  string& operator=(const char* _contents);
   string& operator=(string&& contents_);
 
   void reserve(rx_size _size);
   void resize(rx_size _size);
 
-  rx_size find(int _ch) const;
+  rx_size find_first_of(int _ch) const;
+  rx_size find_first_of(const char* _contents) const;
+  rx_size find_first_of(const string& _contents) const;
 
-  template<typename F>
-  rx_size find_if(F&& _compare) const;
+  rx_size find_last_of(int _ch) const;
+  rx_size find_last_of(const char* _contents) const;
+  rx_size find_last_of(const string& _contents) const;
 
   rx_size size() const;
   rx_size capacity() const;
+
   bool is_empty() const;
+
   void clear();
 
   string& append(const char* _first, const char* _last);
@@ -64,6 +68,8 @@ struct string {
   string& append(const string& _contents);
   string& append(char _ch);
 
+  void insert_at(rx_size _position, const char* _contents, rx_size _size);
+  void insert_at(rx_size _position, const char* _contents);
   void insert_at(rx_size _position, const string& _contents);
 
   // returns copy of string with leading characters in set removed
@@ -73,6 +79,7 @@ struct string {
   string rstrip(const char* _set) const;
 
   // split string by |token| up to |count| times, use |count| of zero for no limit
+  vector<string> split(memory::allocator* _allocator, int _ch, rx_size _count = 0) const;
   vector<string> split(int _ch, rx_size _count = 0) const;
 
   // take substring from |offset| of |length|, use |length| of zero for whole string
@@ -87,6 +94,9 @@ struct string {
 
   char& operator[](rx_size _index);
   const char& operator[](rx_size _index) const;
+
+  char& first();
+  const char& first() const;
 
   char& last();
   const char& last() const;
@@ -188,6 +198,11 @@ inline string string::format(const char* _format, Ts&&... _arguments) {
   return format(&memory::g_system_allocator, _format, utility::forward<Ts>(_arguments)...);
 }
 
+inline string::string(memory::allocator* _allocator, const string& _contents)
+  : string{_allocator, _contents.data(), _contents.size()}
+{
+}
+
 inline string::string()
   : string{&memory::g_system_allocator}
 {
@@ -213,23 +228,12 @@ inline string::string(const char* _first, const char* _last)
 {
 }
 
-inline rx_size string::find(int _ch) const {
-  for (rx_size i{0}; i < size(); i++) {
-    if (m_data[i] == _ch) {
-      return i;
-    }
-  }
-  return k_npos;
+inline rx_size string::find_first_of(const string& _contents) const {
+  return find_first_of(_contents.data());
 }
 
-template<typename F>
-inline rx_size string::find_if(F&& _compare) const {
-  for (rx_size i{0}; i < size(); i++) {
-    if (_compare(m_data[i])) {
-      return i;
-    }
-  }
-  return k_npos;
+inline rx_size string::find_last_of(const string& _contents) const {
+  return find_last_of(_contents.data());
 }
 
 inline rx_size string::size() const {
@@ -260,6 +264,14 @@ inline string& string::append(char ch) {
   return append(&ch, 1);
 }
 
+inline void string::insert_at(rx_size _position, const string& _contents) {
+  insert_at(_position, _contents.data(), _contents.size());
+}
+
+inline vector<string> string::split(int _ch, rx_size _count) const {
+  return split(m_allocator, _ch, _count);
+}
+
 inline char& string::operator[](rx_size index) {
   // NOTE(dweiler): <= is not a bug, indexing the null-terminator is allowed
   RX_ASSERT(index <= size(), "out of bounds");
@@ -270,6 +282,14 @@ inline const char& string::operator[](rx_size index) const {
   // NOTE(dweiler): <= is not a bug, indexing the null-terminator is allowed
   RX_ASSERT(index <= size(), "out of bounds");
   return m_data[index];
+}
+
+inline char& string::first() {
+  return m_data[0];
+}
+
+inline const char& string::first() const {
+  return m_data[0];
 }
 
 inline char& string::last() {

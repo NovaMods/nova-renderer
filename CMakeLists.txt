@@ -296,13 +296,11 @@ nova_format(nova-renderer "${OTHER_NOVA_SOURCE}")
 # Add VULKAN_SDK to the include path
 # TODO: Only add if the user is compiling the Vulkan backend
 
-message(STATUS "FMT headers: ${FMT_HEADERS}")
 message(STATUS "Miniz headers: ${INSTALL_HEADERS}")
 
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
-target_compile_definitions(nova-renderer PUBLIC FMT_STRING_ALIAS=1)
 
 if(NOVA_FORCE_DEBUGGING) 
     target_compile_definitions(nova-renderer PUBLIC NOVA_DEBUG)
@@ -313,7 +311,6 @@ endif()
 target_include_directories(nova-renderer PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $ENV{VULKAN_SDK}/Include
-        ${FMT_HEADERS}
         ${CMAKE_CURRENT_SOURCE_DIR}/external/miniz	# Miniz doesn't export a MINIZ_HEADERS variable?
         )
 target_link_directories(nova-renderer PUBLIC $ENV{VULKAN_SDK}/Lib)
@@ -336,7 +333,6 @@ add_coverage(nova-renderer)
 #########################
 set(COMMON_LINK_LIBS
         ${CMAKE_DL_LIBS}
-        fmt
         glm::glm
         glslang
         OGLCompiler

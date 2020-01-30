@@ -215,7 +215,7 @@ namespace nova::renderer::shaderpack {
         if(graph_data) {
             data.graph_data = *graph_data;
         } else {
-            NOVA_LOG(ERROR) << "Could not load render graph file. Error: " << graph_data.error.to_string();
+            NOVA_LOG(ERROR) << "Could not load render graph file. Error: " << graph_data.error.to_string().data();
         }
         data.pipelines = load_pipeline_files(folder_access);
         data.materials = load_material_files(folder_access);
@@ -279,11 +279,11 @@ namespace nova::renderer::shaderpack {
 
             } else {
                 return ntl::Result<RendergraphData>(
-                    MAKE_ERROR("At least one pass must write to the render target named {:s}", SCENE_OUTPUT_RT_NAME));
+                    MAKE_ERROR("At least one pass must write to the render target named %s", SCENE_OUTPUT_RT_NAME));
             }
         }
         catch(nlohmann::json::parse_error& err) {
-            return ntl::Result<RendergraphData>(MAKE_ERROR("Could not parse your shaderpack's passes.json: {:s}", err.what()));
+            return ntl::Result<RendergraphData>(MAKE_ERROR("Could not parse your shaderpack's passes.json: %s", err.what()));
         }
     }
 

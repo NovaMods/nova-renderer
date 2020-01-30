@@ -37,7 +37,7 @@ namespace nova::renderer {
                                                                                        rp_create->data.depth_texture);
         if(!pipeline_interface) {
             NOVA_LOG(ERROR) << "Pipeline " << create_info.name.data()
-                            << " has an invalid interface: " << pipeline_interface.error.to_string();
+                            << " has an invalid interface: " << pipeline_interface.error.to_string().data();
             return false;
         }
 
@@ -50,7 +50,7 @@ namespace nova::renderer {
 
             return true;
         } else {
-            NOVA_LOG(ERROR) << "Could not create pipeline " << create_info.name.data() << ": " << pipeline_result.error.to_string();
+            NOVA_LOG(ERROR) << "Could not create pipeline " << create_info.name.data() << ": " << pipeline_result.error.to_string().data();
 
             return false;
         }
@@ -69,8 +69,8 @@ namespace nova::renderer {
             pipeline.pipeline_interface = pipeline_interface;
 
         } else {
-            NovaError error = NovaError(format(fmt("Could not create pipeline {:s}"), pipeline_create_info.name.data()),
-                                        rx::utility::move(rhi_pipeline.error));
+            NovaError error = NovaError{rx::string::format("Could not create pipeline %s", pipeline_create_info.name),
+                                        allocator->create<NovaError>(rhi_pipeline.error)};
             return ntl::Result<PipelineReturn>(rx::utility::move(error));
         }
 
@@ -227,7 +227,7 @@ namespace nova::renderer {
             NOVA_LOG(TRACE) << "Found a SSBO resource named " << resource.name;
             add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::StorageBuffer);
         }
-    } 
+    }
 
     void PipelineStorage::add_resource_to_bindings(rx::map<rx::string, rhi::ResourceBindingDescription>& bindings,
                                                    const rhi::ShaderStage shader_stage,

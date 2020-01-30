@@ -22,15 +22,18 @@ template<typename T>
 struct vector {
   static constexpr const rx_size k_npos{-1_z};
 
+  constexpr vector();
   constexpr vector(memory::allocator* _allocator);
-  vector(memory::allocator* _allocator, rx_size _size, const T& _value = {});
+
+  vector(memory::allocator* _allocator, rx_size _size);
   vector(memory::allocator* _allocator, const vector& _other);
+
+  vector(rx_size _size);
   vector(memory::view _view);
 
-  constexpr vector();
-  vector(rx_size _size, const T& value = {});
   vector(const vector& _other);
   vector(vector&& other_);
+
   ~vector();
 
   vector& operator=(const vector& _other);
@@ -115,7 +118,7 @@ inline constexpr vector<T>::vector(memory::allocator* _allocator)
 }
 
 template<typename T>
-inline vector<T>::vector(memory::allocator* _allocator, rx_size _size, const T& _value)
+inline vector<T>::vector(memory::allocator* _allocator, rx_size _size)
   : m_allocator{_allocator}
   , m_data{nullptr}
   , m_size{_size}
@@ -128,7 +131,7 @@ inline vector<T>::vector(memory::allocator* _allocator, rx_size _size, const T& 
   RX_ASSERT(m_data, "out of memory");
 
   for (rx_size i{0}; i < m_size; i++) {
-    utility::construct<T>(data() + i, _value);
+    utility::construct<T>(data() + i);
   }
 }
 
@@ -165,8 +168,8 @@ inline constexpr vector<T>::vector()
 }
 
 template<typename T>
-inline vector<T>::vector(rx_size _size, const T& value)
-  : vector{&memory::g_system_allocator, _size, value}
+inline vector<T>::vector(rx_size _size)
+  : vector{&memory::g_system_allocator, _size}
 {
 }
 
