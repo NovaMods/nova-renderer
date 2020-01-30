@@ -150,7 +150,8 @@ namespace nova::renderer {
 
         NOVA_LOG(DEBUG) << "\n***********************\n        FRAME START        \n***********************";
 
-        const rx::vector last_frame_fences(global_allocator, 1, frame_fences[cur_frame_idx]);
+        rx::vector<rhi::Fence*> last_frame_fences(global_allocator, 1);
+        last_frame_fences.push_back(frame_fences[cur_frame_idx]);
         device->reset_fences(last_frame_fences);
 
         rhi::CommandList* cmds = device->create_command_list(0,
@@ -179,7 +180,8 @@ namespace nova::renderer {
 
         // Wait for the GPU to finish before presenting. This destroys pipelining and throughput, however at this time I'm not sure how
         // best to say "when GPU finishes this task, CPU should do something"
-        const rx::vector<rhi::Fence*> fences(global_allocator, 1, frame_fences[cur_frame_idx]);
+        rx::vector<rhi::Fence*> fences(global_allocator, 1);
+        fences.push_back(frame_fences[cur_frame_idx]);
         device->wait_for_fences(fences);
 
         device->get_swapchain()->present(cur_frame_idx);
@@ -226,7 +228,8 @@ namespace nova::renderer {
             vertex_barrier.buffer_memory_barrier.offset = 0;
             vertex_barrier.buffer_memory_barrier.size = vertex_buffer->size;
 
-            rx::vector<rhi::ResourceBarrier> barriers(global_allocator, 1, vertex_barrier);
+            rx::vector<rhi::ResourceBarrier> barriers(global_allocator, 1);
+            barriers.push_back(vertex_barrier);
             vertex_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, barriers);
 
             device->submit_command_list(vertex_upload_cmds, rhi::QueueType::Transfer);
@@ -263,7 +266,8 @@ namespace nova::renderer {
             index_barrier.buffer_memory_barrier.offset = 0;
             index_barrier.buffer_memory_barrier.size = index_buffer->size;
 
-            rx::vector<rhi::ResourceBarrier> barriers(global_allocator, 1, index_barrier);
+            rx::vector<rhi::ResourceBarrier> barriers(global_allocator, 1);
+            barriers.push_back(index_barrier);
             indices_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, barriers);
 
             device->submit_command_list(indices_upload_cmds, rhi::QueueType::Transfer);
