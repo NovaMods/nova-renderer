@@ -74,33 +74,29 @@ namespace nova::renderer {
     }
 
     void NovaWindow::register_key_callback(std::function<void(uint32_t, bool, bool, bool)> key_callback) {
-        key_callbacks.emplace_back(std::move(key_callback));
+        key_callbacks.emplace_back(rx::utility::move(key_callback));
     }
 
     void NovaWindow::register_mouse_callback(std::function<void(double, double)> mouse_callback) {
-        mouse_callbacks.emplace_back(std::move(mouse_callback));
+        mouse_callbacks.emplace_back(rx::utility::move(mouse_callback));
     }
 
     void NovaWindow::register_mouse_button_callback(std::function<void(uint32_t, bool)> mouse_callback) {
-        mouse_button_callbacks.emplace_back(std::move(mouse_callback));
+        mouse_button_callbacks.emplace_back(rx::utility::move(mouse_callback));
     }
 
     void NovaWindow::broadcast_key_event(const int key, const bool is_press, const bool is_control_down, const bool is_shift_down) {
-        for(const auto& callback : key_callbacks) {
+        key_callbacks.each_fwd([&](const std::function<void(uint32_t, bool, bool, bool)>& callback) {
             callback(key, is_press, is_control_down, is_shift_down);
-        }
+        });
     }
 
     void NovaWindow::broadcast_mouse_position(const double x_position, const double y_position) {
-        for(const auto& callback : mouse_callbacks) {
-            callback(x_position, y_position);
-        }
+        mouse_callbacks.each_fwd([&](const std::function<void(double, double)>& callback) { callback(x_position, y_position); });
     }
 
     void NovaWindow::broadcast_mouse_button(const int button, const bool is_pressed) {
-        for(const auto& callback : mouse_button_callbacks) {
-            callback(button, is_pressed);
-        }
+        mouse_button_callbacks.each_fwd([&](const std::function<void(uint32_t, bool)>& callback) { callback(button, is_pressed); });
     }
 
     // This _can_ be static, but I don't want it to be
@@ -140,11 +136,5 @@ namespace nova::renderer {
     Window NovaWindow::get_window_handle() const { return glfwGetX11Window(window); }
 
     Display* NovaWindow::get_display() const { return glfwGetX11Display(); }
-#endif
-
-#if NOVA_OPENGL_RHI
-    void NovaWindow::swap_backbuffer() const { glfwSwapBuffers(window); }
-
-    void* NovaWindow::get_gl_proc_address(const char* proc_name) { return reinterpret_cast<void*>(glfwGetProcAddress(proc_name)); }
 #endif
 } // namespace nova::renderer
