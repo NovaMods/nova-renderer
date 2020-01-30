@@ -4,7 +4,6 @@
 
 #include <cxxabi.h>
 #include <execinfo.h>
-#include <fmt/format.h>
 
 #include "nova_renderer/util/logger.hpp"
 
