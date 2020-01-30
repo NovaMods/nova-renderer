@@ -28,7 +28,7 @@ void nova_backtrace() {
                 rx::string symbol = str.substring(str.find_last_of("(") + 1, str.find_last_of("+") - str.find_last_of("(") - 1);
                 rx::string address = str.substring(str.find_last_of("+"), str.find_last_of(")") - str.find_last_of("+"));
 
-                if(symbol.length() > 0) {
+                if(symbol.size() > 0) {
                     char* name = abi::__cxa_demangle(symbol.data(), nullptr, nullptr, nullptr);
                     str = rx::string::format("%s(%s%s)", path, name, address);
 
