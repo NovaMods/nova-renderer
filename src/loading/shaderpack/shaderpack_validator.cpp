@@ -58,7 +58,7 @@ namespace nova::renderer::shaderpack {
 
     ValidationReport validate_graphics_pipeline(nlohmann::json& pipeline_json) {
         ValidationReport report;
-        const std::string name = get_json_value<std::string>(pipeline_json, "name").value_or("<NAME_MISSING>");
+        const std::string name = get_json_value<std::string>(pipeline_json, "name", std::string{"<NAME_MISSING>"});
         // Don't need to check for the name's existence here, it'll be checked with the rest of the required fields
 
         const rx::string pipeline_context = rx::string::format("Pipeline %s", name.c_str());
@@ -175,7 +175,7 @@ namespace nova::renderer::shaderpack {
 
     ValidationReport validate_sampler_data(nlohmann::json& sampler_json) {
         ValidationReport report;
-        const rx::string name = get_json_value<std::string>(sampler_json, "name").value_or("<NAME_MISSING>").c_str();
+        const rx::string name = get_json_value<std::string>(sampler_json, "name", std::string{"<NAME_MISSING>"}).c_str();
         if(name == "<NAME_MISSING>") {
             report.errors.emplace_back(sampler_msg(name, "Missing field name"));
         }
@@ -203,7 +203,7 @@ namespace nova::renderer::shaderpack {
     ValidationReport validate_material(nlohmann::json& material_json) {
         ValidationReport report;
 
-        const rx::string name = get_json_value<std::string>(material_json, "name").value_or("<NAME_MISSING>").c_str();
+        const rx::string name = get_json_value<std::string>(material_json, "name", std::string{"<NAME_MISSING>"}).c_str();
         if(name == "<NAME_MISSING>") {
             report.errors.emplace_back(material_msg(name, "Missing material name"));
         }
@@ -228,7 +228,7 @@ namespace nova::renderer::shaderpack {
             }
 
             for(const auto& pass_json : passes_json) {
-                const rx::string pass_name = get_json_value<std::string>(pass_json, "name").value_or("<NAME_MISSING>").c_str();
+                const rx::string pass_name = get_json_value<std::string>(pass_json, "name", std::string{"<NAME_MISSING>"}).c_str();
                 if(pass_name == "<NAME_MISSING>") {
                     report.errors.emplace_back(material_pass_msg(name, pass_name, "Missing field name"));
                 }

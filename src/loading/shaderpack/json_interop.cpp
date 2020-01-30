@@ -10,8 +10,8 @@ namespace nova::renderer::shaderpack {
                                                                          TextureDimensionTypeEnum::ScreenRelative,
                                                                          texture_dimension_type_enum_from_string);
 
-        format.width = get_json_value<float>(j, "width").value_or(0);
-        format.height = get_json_value<float>(j, "height").value_or(0);
+        format.width = get_json_value<float>(j, "width", 0);
+        format.height = get_json_value<float>(j, "height", 0);
     }
 
     void from_json(const nlohmann::json& j, TextureCreateInfo& tex) {
@@ -45,7 +45,7 @@ namespace nova::renderer::shaderpack {
             pass.output_buffers.emplace_back(str.c_str());
         });
 
-        pass.name = get_json_value<rx::string>(j, "name").value_or("<NAME_MISSING>");
+        pass.name = get_json_value<std::string>(j, "name", std::string{"<NAME_MISSING>"}).c_str();
     }
 
     void from_json(const nlohmann::json& j, StencilOpState& stencil_op) {
@@ -58,16 +58,16 @@ namespace nova::renderer::shaderpack {
     }
 
     void from_json(const nlohmann::json& j, PipelineCreateInfo& pipeline) {
-        pipeline.name = *get_json_value<rx::string>(j, "name");
-        pipeline.parent_name = get_json_value<rx::string>(j, "parent").value_or("");
-        pipeline.pass = *get_json_value<rx::string>(j, "pass");
+        pipeline.name = get_json_value<std::string>(j, "name")->c_str();
+        pipeline.parent_name = get_json_value<std::string>(j, "parent", std::string{}).c_str();
+        pipeline.pass = get_json_value<std::string>(j, "pass")->c_str();
 
         get_json_array<std::string>(j, "defines").each_fwd([&](const std::string& str) { pipeline.defines.emplace_back(str.c_str()); });
 
         pipeline.states = get_json_array<StateEnum>(j, "states", state_enum_from_string);
         pipeline.front_face = get_json_value<StencilOpState>(j, "frontFace");
         pipeline.back_face = get_json_value<StencilOpState>(j, "backFace");
-        pipeline.fallback = get_json_value<rx::string>(j, "fallback").value_or("");
+        pipeline.fallback = get_json_value<std::string>(j, "fallback", std::string{}).c_str();
         pipeline.depth_bias = get_json_value<float>(j, "depthBias", 0);
         pipeline.slope_scaled_depth_bias = get_json_value<float>(j, "slopeScaledDepthBias", 0);
         pipeline.stencil_ref = get_json_value<uint32_t>(j, "stencilRef", 0);
@@ -97,30 +97,30 @@ namespace nova::renderer::shaderpack {
         pipeline.depth_func = get_json_value<CompareOpEnum>(j, "depthFunc", CompareOpEnum::Less, compare_op_enum_from_string);
         pipeline.render_queue = get_json_value<RenderQueueEnum>(j, "renderQueue", RenderQueueEnum::Opaque, render_queue_enum_from_string);
 
-        pipeline.vertex_shader.filename = get_json_value<rx::string>(j, "vertexShader").value_or("<NAME_MISSING>");
+        pipeline.vertex_shader.filename = get_json_value<std::string>(j, "vertexShader", std::string{"<NAME_MISSING>"}).c_str();
 
-        rx::optional<rx::string> geometry_shader_name = get_json_value<rx::string>(j, "geometryShader", true);
+        rx::optional<std::string> geometry_shader_name = get_json_value<std::string>(j, "geometryShader");
         if(geometry_shader_name) {
             pipeline.geometry_shader = rx::optional<ShaderSource>();
-            pipeline.geometry_shader->filename = *geometry_shader_name;
+            pipeline.geometry_shader->filename = geometry_shader_name->c_str();
         }
 
-        rx::optional<rx::string> tess_control_shader_name = get_json_value<rx::string>(j, "tessellationControlShader", true);
+        rx::optional<std::string> tess_control_shader_name = get_json_value<std::string>(j, "tessellationControlShader");
         if(tess_control_shader_name) {
             pipeline.tessellation_control_shader = rx::optional<ShaderSource>();
-            pipeline.tessellation_control_shader->filename = *tess_control_shader_name;
+            pipeline.tessellation_control_shader->filename = tess_control_shader_name->c_str();
         }
 
-        rx::optional<rx::string> tess_eval_shader_name = get_json_value<rx::string>(j, "tessellationEvalShader", true);
+        rx::optional<std::string> tess_eval_shader_name = get_json_value<std::string>(j, "tessellationEvalShader");
         if(tess_eval_shader_name) {
             pipeline.tessellation_evaluation_shader = rx::optional<ShaderSource>();
-            pipeline.tessellation_evaluation_shader->filename = *tess_eval_shader_name;
+            pipeline.tessellation_evaluation_shader->filename = tess_eval_shader_name->c_str();
         }
 
-        rx::optional<rx::string> fragment_shader_name = get_json_value<rx::string>(j, "fragmentShader", true);
+        rx::optional<std::string> fragment_shader_name = get_json_value<std::string>(j, "fragmentShader");
         if(fragment_shader_name) {
             pipeline.fragment_shader = rx::optional<ShaderSource>();
-            pipeline.fragment_shader->filename = *fragment_shader_name;
+            pipeline.fragment_shader->filename = fragment_shader_name->c_str();
         }
     }
 

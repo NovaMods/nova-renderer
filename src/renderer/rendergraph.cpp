@@ -54,7 +54,7 @@ namespace nova::renderer {
 
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
-            rx::vector<rhi::ResourceBarrier> barriers(&rx::memory::g_system_allocator, 1);
+            rx::vector<rhi::ResourceBarrier> barriers{&rx::memory::g_system_allocator};
             barriers.push_back(backbuffer_barrier);
             cmds.resource_barriers(rhi::PipelineStage::TopOfPipe, rhi::PipelineStage::ColorAttachmentOutput, barriers);
         }
@@ -84,7 +84,7 @@ namespace nova::renderer {
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspect::Color;
 
-            rx::vector<rhi::ResourceBarrier> barriers(&rx::memory::g_system_allocator, 1);
+            rx::vector<rhi::ResourceBarrier> barriers{&rx::memory::g_system_allocator};
             barriers.push_back(backbuffer_barrier);
             cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::BottomOfPipe, barriers);
         }
@@ -187,7 +187,7 @@ namespace nova::renderer {
 
         if(start_index != ctx.cur_model_matrix_index) {
             // TODO: There's probably a better way to do this
-            rx::vector<rhi::Buffer*> vertex_buffers(7);
+            rx::vector<rhi::Buffer*> vertex_buffers;
             for(uint32_t i = 0; i < 7; i++) {
                 vertex_buffers.push_back(batch.vertex_buffer);
             }
@@ -218,7 +218,8 @@ namespace nova::renderer {
         if(start_index != ctx.cur_model_matrix_index) {
             const auto& [vertex_buffer, index_buffer] = batch.mesh->get_buffers_for_frame(ctx.frame_count % NUM_IN_FLIGHT_FRAMES);
             // TODO: There's probably a better way to do this
-            rx::vector<rhi::Buffer*> vertex_buffers(7);
+            rx::vector<rhi::Buffer*> vertex_buffers;
+            vertex_buffers.reserve(7);
             for(uint32_t i = 0; i < 7; i++) {
                 vertex_buffers.push_back(vertex_buffer);
             }

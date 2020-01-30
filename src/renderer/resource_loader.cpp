@@ -97,7 +97,7 @@ namespace nova::renderer {
             initial_texture_barrier.new_state = ResourceState::CopyDestination;
             initial_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
 
-            rx::vector<ResourceBarrier> initial_barriers(allocator, 1);
+            rx::vector<ResourceBarrier> initial_barriers{allocator};
             initial_barriers.push_back(initial_texture_barrier);
             cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::Transfer, initial_barriers);
             cmds->upload_data_to_image(resource.image, width, height, pixel_size, staging_buffer, data);
@@ -110,7 +110,7 @@ namespace nova::renderer {
             final_texture_barrier.new_state = ResourceState::ShaderRead;
             final_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
 
-            rx::vector<ResourceBarrier> final_barriers(allocator, 1);
+            rx::vector<ResourceBarrier> final_barriers{allocator};
             final_barriers.push_back(final_texture_barrier);
             cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::AllGraphics, final_barriers);
 
@@ -118,7 +118,7 @@ namespace nova::renderer {
             device.submit_command_list(cmds, QueueType::Transfer, upload_done_fence);
 
             // Be sure that the data copy is complete, so that this method doesn't return before the GPU is done with the staging buffer
-            rx::vector<Fence*> upload_done_fences(allocator, 1);
+            rx::vector<Fence*> upload_done_fences{allocator};
             upload_done_fences.push_back(upload_done_fence);
             device.wait_for_fences(upload_done_fences);
             device.destroy_fences(upload_done_fences, allocator);

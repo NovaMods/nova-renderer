@@ -150,7 +150,7 @@ namespace nova::renderer {
 
         NOVA_LOG(DEBUG) << "\n***********************\n        FRAME START        \n***********************";
 
-        rx::vector<rhi::Fence*> last_frame_fences(global_allocator, 1);
+        rx::vector<rhi::Fence*> last_frame_fences{global_allocator};
         last_frame_fences.push_back(frame_fences[cur_frame_idx]);
         device->reset_fences(last_frame_fences);
 
@@ -180,7 +180,7 @@ namespace nova::renderer {
 
         // Wait for the GPU to finish before presenting. This destroys pipelining and throughput, however at this time I'm not sure how
         // best to say "when GPU finishes this task, CPU should do something"
-        rx::vector<rhi::Fence*> fences(global_allocator, 1);
+        rx::vector<rhi::Fence*> fences{global_allocator};
         fences.push_back(frame_fences[cur_frame_idx]);
         device->wait_for_fences(fences);
 
@@ -228,7 +228,8 @@ namespace nova::renderer {
             vertex_barrier.buffer_memory_barrier.offset = 0;
             vertex_barrier.buffer_memory_barrier.size = vertex_buffer->size;
 
-            rx::vector<rhi::ResourceBarrier> barriers(global_allocator, 1);
+            rx::vector<rhi::ResourceBarrier> barriers{global_allocator
+                };
             barriers.push_back(vertex_barrier);
             vertex_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, barriers);
 
@@ -266,7 +267,7 @@ namespace nova::renderer {
             index_barrier.buffer_memory_barrier.offset = 0;
             index_barrier.buffer_memory_barrier.size = index_buffer->size;
 
-            rx::vector<rhi::ResourceBarrier> barriers(global_allocator, 1);
+            rx::vector<rhi::ResourceBarrier> barriers{global_allocator};
             barriers.push_back(index_barrier);
             indices_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, barriers);
 
