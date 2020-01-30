@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include <rx/core/core/string.h>
 
 void nova_backtrace();
-std::string get_last_linux_error();
+rx::string get_last_linux_error();
