@@ -1,14 +1,16 @@
 #include "linux_utils.hpp"
 
-#include <string.h>
+#include <exception>
 
 #include <cxxabi.h>
 #include <execinfo.h>
+#include <rx/core/array.h>
+#include <string.h>
 
 #include "nova_renderer/util/logger.hpp"
 
 void nova_backtrace() {
-    rx::array<void*[50]> array{};
+    rx::array<void* [50]> array {};
 
     // get void*'s for all entries on the stack
     int size = backtrace(array.data(), 10);
