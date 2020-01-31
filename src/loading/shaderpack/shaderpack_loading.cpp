@@ -14,8 +14,8 @@
 #include "../json_utils.hpp"
 #include "json_interop.hpp"
 #include "render_graph_builder.hpp"
-#include "shaderpack_validator.hpp"
 #include "rx/core/json.h"
+#include "shaderpack_validator.hpp"
 
 namespace nova::renderer::shaderpack {
     using namespace filesystem;
@@ -226,61 +226,51 @@ namespace nova::renderer::shaderpack {
     rx::optional<ShaderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access) {
         NOVA_LOG(TRACE) << "load_dynamic_resource_file called";
         const rx::string resources_string = folder_access->read_text_file("resources.json");
-        try {
 
-            auto json_resources = rx::json(resources_string);
-            const ValidationReport report = validate_shaderpack_resources_data(json_resources);
-            print(report);
-            if(!report.errors.is_empty()) {
-                return rx::nullopt;
-            }
-
-            return json_resources.get<ShaderpackResourcesData>();
-        }
-        catch(nlohmann::json::parse_error& err) {
-            NOVA_LOG(ERROR) << "Could not parse your renderpack's resources.json: " << err.what();
+        auto json_resources = rx::json(resources_string);
+        const ValidationReport report = validate_shaderpack_resources_data(json_resources);
+        print(report);
+        if(!report.errors.is_empty()) {
             return rx::nullopt;
         }
+
+        return ShaderpackResourcesData::from_json(json_resources);
     }
 
     ntl::Result<RendergraphData> load_rendergraph_file(FolderAccessorBase* folder_access) {
         NOVA_LOG(TRACE) << "load_passes_file called";
         const auto passes_bytes = folder_access->read_text_file("rendergraph.json");
-        try {
-            const auto json_passes = nlohmann::json::parse(passes_bytes.data(), passes_bytes.data() + passes_bytes.size());
 
-            auto rendergraph_file = json_passes.get<RendergraphData>();
+        const auto json_passes = rx::json(passes_bytes);
 
-            bool writes_to_scene_output_rt = false;
-            rendergraph_file.passes.each_fwd([&](const RenderPassCreateInfo& pass) {
-                // Check if this pass writes to the scene output RT
-                pass.texture_outputs.each_fwd([&](const TextureAttachmentInfo& tex) {
-                    if(tex.name == SCENE_OUTPUT_RT_NAME) {
-                        writes_to_scene_output_rt = true;
-                        return false;
-                    }
+        auto rendergraph_file = RendergraphData::from_json(json_passes);
 
-                    return true;
-                });
-
-                if(writes_to_scene_output_rt) {
+        bool writes_to_scene_output_rt = false;
+        rendergraph_file.passes.each_fwd([&](const RenderPassCreateInfo& pass) {
+            // Check if this pass writes to the scene output RT
+            pass.texture_outputs.each_fwd([&](const TextureAttachmentInfo& tex) {
+                if(tex.name == SCENE_OUTPUT_RT_NAME) {
+                    writes_to_scene_output_rt = true;
                     return false;
-
-                } else {
-                    return true;
                 }
+
+                return true;
             });
 
             if(writes_to_scene_output_rt) {
-                return ntl::Result<RendergraphData>(rendergraph_file);
+                return false;
 
             } else {
-                return ntl::Result<RendergraphData>(
-                    MAKE_ERROR("At least one pass must write to the render target named %s", SCENE_OUTPUT_RT_NAME));
+                return true;
             }
-        }
-        catch(nlohmann::json::parse_error& err) {
-            return ntl::Result<RendergraphData>(MAKE_ERROR("Could not parse your shaderpack's passes.json: %s", err.what()));
+        });
+
+        if(writes_to_scene_output_rt) {
+            return ntl::Result<RendergraphData>(rendergraph_file);
+
+        } else {
+            return ntl::Result<RendergraphData>(
+                MAKE_ERROR("At least one pass must write to the render target named %s", SCENE_OUTPUT_RT_NAME));
         }
     }
 
@@ -312,7 +302,7 @@ namespace nova::renderer::shaderpack {
         NOVA_LOG(TRACE) << "Task to load pipeline " << pipeline_path.data() << " started";
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
-        auto json_pipeline = nlohmann::json::parse(pipeline_bytes.data(), pipeline_bytes.data() + pipeline_bytes.size());
+        auto json_pipeline = rx::json(pipeline_bytes);
         NOVA_LOG(TRACE) << "Parsed JSON from disk for pipeline " << pipeline_path.data();
         const ValidationReport report = validate_graphics_pipeline(json_pipeline);
         NOVA_LOG(TRACE) << "Finished validating JSON for pipeline " << pipeline_path.data();
@@ -322,7 +312,7 @@ namespace nova::renderer::shaderpack {
             return rx::nullopt;
         }
 
-        auto new_pipeline = json_pipeline.get<PipelineCreateInfo>();
+        auto new_pipeline = PipelineCreateInfo::from_json(json_pipeline);
         NOVA_LOG(TRACE) << "Parsed JSON into pipeline_data for pipeline " << pipeline_path.data();
         new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename,
                                                              folder_access,
@@ -462,7 +452,7 @@ namespace nova::renderer::shaderpack {
     MaterialData load_single_material(FolderAccessorBase* folder_access, const rx::string& material_path) {
         const rx::string material_text = folder_access->read_text_file(material_path);
 
-        auto json_material = nlohmann::json::parse(material_text.data(), material_text.data() + material_text.size());
+        auto json_material = rx::json(material_text);
         const auto report = validate_material(json_material);
         print(report);
         if(!report.errors.is_empty()) {
@@ -474,7 +464,7 @@ namespace nova::renderer::shaderpack {
         const auto material_file_name = get_file_name(material_path);
         const auto material_extension_begin_idx = material_file_name.size() - 4; // ".mat"
 
-        auto material = json_material.get<MaterialData>();
+        auto material = MaterialData::from_json(json_material);
         material.name = material_file_name.substring(0, material_extension_begin_idx);
 
         NOVA_LOG(TRACE) << "Load of material " << material_path.data() << " succeeded - name " << material.name.data();
