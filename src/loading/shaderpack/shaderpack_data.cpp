@@ -4,6 +4,16 @@
 
 #include "../json_utils.hpp"
 
+#define FILL_FIELD(field, expr)                                                                                                            \
+    [&] {                                                                                                                                  \
+        const auto val = expr;                                                                                                             \
+        if(val) {                                                                                                                          \
+            field = *val;                                                                                                                  \
+        } else {                                                                                                                           \
+            return rx::nullopt;                                                                                                            \
+        }                                                                                                                                  \
+    }();
+
 namespace nova::renderer::shaderpack {
     /*!
      * \brief If a data member isn't in the JSON (which is fully supported and is 100% fine) then we use this to fill in
@@ -18,24 +28,25 @@ namespace nova::renderer::shaderpack {
 
     bool TextureFormat::operator!=(const TextureFormat& other) const { return !(*this == other); }
 
-    rx::optional<TextureFormat> TextureFormat::from_json(const rx::json& json) {}
+    rx::optional<TextureFormat> TextureFormat::from_json(const rx::json& json) {
+        TextureFormat format = {};
+
+        format.pixel_format = get_json_value(json, "pixelFormat", PixelFormatEnum::RGBA8, pixel_format_enum_from_string);
+        format.dimension_type = get_json_value<TextureDimensionTypeEnum>(json,
+                                                                         "dimensionType",
+                                                                         TextureDimensionTypeEnum::ScreenRelative,
+                                                                         texture_dimension_type_enum_from_string);
+        format.width = get_json_value<float>(json, "width", 0, &rx::json::as_float);
+        format.height = get_json_value<float>(json, "height", 0, &rx::json::as_float);
+
+        return format;
+    }
 
     rx::optional<TextureCreateInfo> TextureCreateInfo::from_json(const rx::json& json) {
         TextureCreateInfo info = {};
 
-        const auto name = get_json_string(json, "name");
-        if(name) {
-            info.name = *name;
-        } else {
-            return rx::nullopt;
-        }
-
-        const auto format = get_json_value<TextureFormat>(json, "format");
-        if(format) {
-            info.format = *format;
-        } else {
-            return rx::nullopt;
-        }
+        FILL_FIELD(info.name, get_json_string(json, "name"));
+        FILL_FIELD(info.format, get_json_value<TextureFormat>(json, "format"));
 
         return info;
     }
@@ -53,6 +64,39 @@ namespace nova::renderer::shaderpack {
 
     bool TextureAttachmentInfo::operator==(const TextureAttachmentInfo& other) const { return other.name == name; }
 
+    rx::optional<RenderPassCreateInfo> RenderPassCreateInfo::from_json(const rx::json& json) {
+        RenderPassCreateInfo info = {};
+
+        info.texture_inputs = get_json_array<rx::string>(json, "textureInputs", &rx::json::as_string);
+        info.texture_outputs = get_json_array<TextureAttachmentInfo>(json, "textureOutputs");
+        info.depth_texture = get_json_value<TextureAttachmentInfo>(json, "depthTexture");
+
+        info.input_buffers = get_json_array<rx::string>(json, "inputBuffers", &rx::json::as_string);
+        info.output_buffers = get_json_array<rx::string>(json, "outputBuffers", &rx::json::as_string);
+
+        info.name = get_json_value<rx::string>(json, "name", "<NAME_MISSING>", &rx::json::as_string);
+
+        return info;
+    }
+
+    rx::optional<RendergraphData> RendergraphData::from_json(const rx::json& json) {
+        RendergraphData data;
+
+        data.passes = get_json_array<RenderPassCreateInfo>(json, "passes");
+        data.builtin_passes = get_json_array<rx::string>(json, "builtinPasses");
+
+        return data;
+    }
+
+    rx::optional<SamplerCreateInfo> SamplerCreateInfo::from_json(const rx::json& json) {
+        SamplerCreateInfo info = {};
+
+        info.filter = get_json_value(json, "filter", TextureFilterEnum::Point, texture_filter_enum_from_json);
+        info.wrap_mode = get_json_value(json, "wrapMode", WrapModeEnum::Clamp, wrap_mode_enum_from_string);
+
+        return info;
+    }
+
     glm::uvec2 TextureFormat::get_size_in_pixels(const glm::uvec2& screen_size) const {
         float pixel_width = width;
         float pixel_height = height;
@@ -65,7 +109,7 @@ namespace nova::renderer::shaderpack {
         return {std::round(pixel_width), std::round(pixel_height)};
     }
 
-    PixelFormatEnum pixel_format_enum_from_string(const std::string& str) {
+    PixelFormatEnum pixel_format_enum_from_string(const rx::string& str) {
         if(str == "RGBA8") {
             return PixelFormatEnum::RGBA8;
         }
@@ -82,11 +126,11 @@ namespace nova::renderer::shaderpack {
             return PixelFormatEnum::DepthStencil;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported pixel format " << str;
+        NOVA_LOG(ERROR) << "Unsupported pixel format " << str.data();
         return {};
     }
 
-    TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const std::string& str) {
+    TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const rx::string& str) {
         if(str == "ScreenRelative") {
             return TextureDimensionTypeEnum ::ScreenRelative;
         }
@@ -94,11 +138,11 @@ namespace nova::renderer::shaderpack {
             return TextureDimensionTypeEnum::Absolute;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported texture dimension type " << str;
+        NOVA_LOG(ERROR) << "Unsupported texture dimension type " << str.data();
         return {};
     }
 
-    TextureFilterEnum texture_filter_enum_from_string(const std::string& str) {
+    TextureFilterEnum texture_filter_enum_from_json(const rx::string& str) {
         if(str == "TexelAA") {
             return TextureFilterEnum::TexelAA;
         }
@@ -109,11 +153,11 @@ namespace nova::renderer::shaderpack {
             return TextureFilterEnum::Point;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported texture filter " << str;
+        NOVA_LOG(ERROR) << "Unsupported texture filter " << str.data();
         return {};
     }
 
-    WrapModeEnum wrap_mode_enum_from_string(const std::string& str) {
+    WrapModeEnum wrap_mode_enum_from_string(const rx::string& str) {
         if(str == "Repeat") {
             return WrapModeEnum::Repeat;
         }
@@ -121,11 +165,11 @@ namespace nova::renderer::shaderpack {
             return WrapModeEnum::Clamp;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported wrap mode " << str;
+        NOVA_LOG(ERROR) << "Unsupported wrap mode " << str.data();
         return {};
     }
 
-    StencilOpEnum stencil_op_enum_from_string(const std::string& str) {
+    StencilOpEnum stencil_op_enum_from_string(const rx::string& str) {
         if(str == "Keep") {
             return StencilOpEnum::Keep;
         }
@@ -151,11 +195,11 @@ namespace nova::renderer::shaderpack {
             return StencilOpEnum::Invert;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported stencil op " << str;
+        NOVA_LOG(ERROR) << "Unsupported stencil op " << str.data();
         return {};
     }
 
-    CompareOpEnum compare_op_enum_from_string(const std::string& str) {
+    CompareOpEnum compare_op_enum_from_string(const rx::string& str) {
         if(str == "Never") {
             return CompareOpEnum::Never;
         }
@@ -181,11 +225,11 @@ namespace nova::renderer::shaderpack {
             return CompareOpEnum::Always;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported compare op " << str;
+        NOVA_LOG(ERROR) << "Unsupported compare op " << str.data();
         return {};
     }
 
-    MsaaSupportEnum msaa_support_enum_from_string(const std::string& str) {
+    MsaaSupportEnum msaa_support_enum_from_string(const rx::string& str) {
         if(str == "MSAA") {
             return MsaaSupportEnum::MSAA;
         }
@@ -196,11 +240,11 @@ namespace nova::renderer::shaderpack {
             return MsaaSupportEnum::None;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported antialiasing mode " << str;
+        NOVA_LOG(ERROR) << "Unsupported antialiasing mode " << str.data();
         return {};
     }
 
-    PrimitiveTopologyEnum primitive_topology_enum_from_string(const std::string& str) {
+    PrimitiveTopologyEnum primitive_topology_enum_from_string(const rx::string& str) {
         if(str == "Triangles") {
             return PrimitiveTopologyEnum::Triangles;
         }
@@ -208,11 +252,11 @@ namespace nova::renderer::shaderpack {
             return PrimitiveTopologyEnum::Lines;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported primitive mode " << str;
+        NOVA_LOG(ERROR) << "Unsupported primitive mode " << str.data();
         return {};
     }
 
-    BlendFactorEnum blend_factor_enum_from_string(const std::string& str) {
+    BlendFactorEnum blend_factor_enum_from_string(const rx::string& str) {
         if(str == "One") {
             return BlendFactorEnum::One;
         }
@@ -244,11 +288,11 @@ namespace nova::renderer::shaderpack {
             return BlendFactorEnum::OneMinusDstAlpha;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported blend factor " << str;
+        NOVA_LOG(ERROR) << "Unsupported blend factor " << str.data();
         return {};
     }
 
-    RenderQueueEnum render_queue_enum_from_string(const std::string& str) {
+    RenderQueueEnum render_queue_enum_from_string(const rx::string& str) {
         if(str == "Transparent") {
             return RenderQueueEnum::Transparent;
         }
@@ -259,11 +303,11 @@ namespace nova::renderer::shaderpack {
             return RenderQueueEnum::Cutout;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported render queue " << str;
+        NOVA_LOG(ERROR) << "Unsupported render queue " << str.data();
         return {};
     }
 
-    StateEnum state_enum_from_string(const std::string& str) {
+    StateEnum state_enum_from_string(const rx::string& str) {
         if(str == "Blending") {
             return StateEnum::Blending;
         }
@@ -295,7 +339,7 @@ namespace nova::renderer::shaderpack {
             return StateEnum::DisableAlphaWrite;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported state enum " << str;
+        NOVA_LOG(ERROR) << "Unsupported state enum " << str.data();
         return {};
     }
 
