@@ -55,14 +55,13 @@ namespace nova::renderer {
      */
     template <typename ValType, std::enable_if_t<std::is_same_v<ValType, rx::string>>** = nullptr>
     rx::optional<ValType> get_json_value(const rx::json& json_obj, const rx::string& key, const bool empty_means_not_present = false) {
-        const std::string key_std = key.data();
-        const auto& itr = json_obj.find(key_std);
-        if(itr != json_obj.end()) {
-            const auto str = itr->get<std::string>();
-            return (empty_means_not_present && str.empty()) ? rx::nullopt : rx::optional<rx::string>(str.c_str());
+        const auto& val = json_obj[key.data()];
+        if(val) {
+            const auto str = val.as_string();
+            return (empty_means_not_present && str.is_empty()) ? rx::nullopt : rx::optional<rx::string>(str);
         }
 
-        return rx::optional<rx::string>{};
+        return rx::nullopt;
     }
 
     /*!
@@ -73,15 +72,15 @@ namespace nova::renderer {
      * \param default_value The value to use if the requested key isn't present in the JSON
      * \return The value from the JSON if the key exists in the JSON, or `default_value` if it does not
      */
-    template <typename ValType>
+    template <typename ValType, rx::traits::enable_if<has_from_json<ValType>::Has>>
     ValType get_json_value(const rx::json& json_obj, const rx::string& key, ValType default_value) {
-        const std::string key_std = key.data();
-        const auto& itr = json_obj.find(key_std);
-        if(itr != json_obj.end()) {
-            return itr->get<ValType>();
+        const auto& val = json_obj[key.data()];
+        if(val) {
+            return ValType::from_json(val);
         }
 
-        NOVA_LOG(TRACE) << key_std << " not found - using a default value";
+        NOVA_LOG(TRACE) << key.data() << " not found - using a default value";
+
         return default_value;
     }
 
@@ -93,15 +92,12 @@ namespace nova::renderer {
      * \param deserializer A function that deserializes the JSON value
      * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
      */
-    template <typename ValType>
-    rx::optional<ValType> get_json_value(const rx::json& json_obj,
-                                         const rx::string& key,
-                                         std::function<ValType(const rx::json&)> deserializer) {
-        const std::string key_std = key.data();
-        const auto& itr = json_obj.find(key_std);
-        if(itr != json_obj.end()) {
-            ValType val = deserializer(*itr);
-            return rx::optional<ValType>{std::move(val)};
+    template <typename ValType, typename FuncType, rx::traits::enable_if<has_from_json<ValType>::Has>>
+    rx::optional<ValType> get_json_value(const rx::json& json_obj, const rx::string& key, FuncType&& deserializer) {
+        const auto& val_json = json_obj[key];
+        if(val_json) {
+            ValType val = deserializer(val);
+            return rx::optional<ValType>{rx::utility::move(val)};
         }
 
         return rx::nullopt;
@@ -116,15 +112,11 @@ namespace nova::renderer {
      * \param deserializer A function that deserializes the JSON value
      * \return The value from the JSON if the key exists in the JSON, or `default_value` if it does not
      */
-    template <typename ValType>
-    ValType get_json_value(const rx::json& json_obj,
-                           const rx::string& key,
-                           ValType default_value,
-                           std::function<ValType(const rx::json&)> deserializer) {
-        const std::string key_std = key.data();
-        const auto& itr = json_obj.find(key_std);
-        if(itr != json_obj.end()) {
-            ValType value = deserializer(*itr);
+    template <typename ValType, typename FuncType, rx::traits::enable_if<has_from_json<ValType>::Has>>
+    ValType get_json_value(const rx::json& json_obj, const rx::string& key, ValType default_value, FuncType&& deserializer) {
+        const auto& val = json_obj[key.data()];
+        if(val) {
+            ValType value = deserializer(val);
             return value;
         }
 
@@ -138,16 +130,15 @@ namespace nova::renderer {
      * \param key The name fo the array that has your values
      * \return An array of values, if the value can be found, or an empty vector if the values cannot be found
      */
-    template <typename ValType>
+    template <typename ValType, rx::traits::enable_if<has_from_json<ValType>::Has>>
     rx::vector<ValType> get_json_array(const rx::json& json_obj, const rx::string& key) {
-        const std::string key_std = key.data();
-        const auto& itr = json_obj.find(key_std);
-        if(itr != json_obj.end()) {
+        const auto& arr = json_obj[key];
+        if(arr && !arr.is_empty()) {
             rx::vector<ValType> vec;
-            vec.reserve(itr->size());
+            vec.reserve(arr.size());
 
-            for(const rx::basic_json<>& elem : *itr) {
-                vec.push_back(elem.get<ValType>());
+            for(uint32_t i = 0; i < arr.size(); i++) {
+                vec.push_back(ValType::from_json(arr[i]));
             }
 
             return vec;
@@ -164,24 +155,21 @@ namespace nova::renderer {
      * \param deserializer A function that can deserialize each value from JSON
      * \return An array of values, if the value can be found, or an empty vector if the values cannot be found
      */
-    template <typename ValType>
-    rx::vector<ValType> get_json_array(const rx::json& json_obj,
-                                       const rx::string& key,
-                                       std::function<ValType(const rx::json&)> deserializer) {
-        const std::string key_std = key.data();
-        const auto& itr = json_obj.find(key_std);
-        if(itr != json_obj.end()) {
+    template <typename ValType, typename FuncType, rx::traits::enable_if<has_from_json<ValType>::Has>>
+    rx::vector<ValType> get_json_array(const rx::json& json_obj, const rx::string& key, FuncType&& deserializer) {
+        const auto& arr = json_obj[key.data()];
+        if(arr && !arr.is_empty()) {
             rx::vector<ValType> vec;
-            vec.reserve(itr->size());
+            vec.reserve(arr.size());
 
-            for(auto& elem : *itr) {
-                vec.push_back(deserializer(elem));
+            for(uint32_t i = 0; i < arr.size(); i++) {
+                vec.push_back(deserializer(arr[i]));
             }
 
             return vec;
         }
 
-        return rx::vector<ValType>{};
+        return {};
     }
 } // namespace nova::renderer
 

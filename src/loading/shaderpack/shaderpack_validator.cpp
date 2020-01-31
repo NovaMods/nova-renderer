@@ -18,33 +18,34 @@ namespace nova::renderer::shaderpack {
      * If a field is in `pipeline_data` but not in this structure, it is a required field and cannot be given a
      * default value. It will thus cause an exception
      */
-    rx::json default_graphics_pipeline = {{"parentName", ""},
-                                          {"defines", std::array<std::string, 0>{}},
-                                          {"states", std::array<std::string, 0>{}},
-                                          {"frontFace", rx::json::object_t()},
-                                          {"backFace", rx::json::object_t()},
-                                          {"fallback", ""},
-                                          {"depthBias", 0},
-                                          {"slopeScaledDepthBias", 0},
-                                          {"stencilRef", 0},
-                                          {"stencilReadMask", 0},
-                                          {"stencilWriteMask", 0},
-                                          {"msaaSupport", "None"},
-                                          {"primitiveMode", "Triangles"},
-                                          {"sourceBlendFactor", "One"},
-                                          {"destinationBlendFactor", "Zero"},
-                                          {"alphaSrc", "One"},
-                                          {"alphaDst", "Zero"},
-                                          {"depthFunc", "Less"},
-                                          {"renderQueue", "Opaque"},
-                                          {"fragmentShader", ""},
-                                          {"tessellationControlShader", ""},
-                                          {"tessellationEvaluationShader", ""},
-                                          {"geometryShader", ""}};
+    const rx::array<rx::string[23]> required_fields = {"parentName",
+                                                       "defines",
+                                                       "states",
+                                                       "frontFace",
+                                                       "backFace",
+                                                       "fallback",
+                                                       "depthBias",
+                                                       "slopeScaledDepthBias",
+                                                       "stencilRef",
+                                                       "stencilReadMask",
+                                                       "stencilWriteMask",
+                                                       "msaaSupport",
+                                                       "primitiveMode",
+                                                       "sourceBlendFactor",
+                                                       "destinationBlendFactor",
+                                                       "alphaSrc",
+                                                       "alphaDst",
+                                                       "depthFunc",
+                                                       "renderQueue",
+                                                       "fragmentShader",
+                                                       "tessellationControlShader",
+                                                       "tessellationEvaluationShader",
+                                                       "geometryShader"};
+    ;
 
-    rx::array<rx::string[3]> required_graphics_pipeline_fields = {"name", "pass", "vertexShader"};
+    const rx::array<rx::string[3]> required_graphics_pipeline_fields = {"name", "pass", "vertexShader"};
 
-    rx::json default_texture_format = {{"pixelFormat", "RGBA8"}, {"dimensionType", "Absolute"}};
+    const rx::array<rx::string[2]> required_texture_fields = {"pixelFormat", "dimensionType"};
 
     void ensure_field_exists(
         rx::json& j, const rx::string& field_name, const rx::string& context, const rx::json& default_value, ValidationReport& report);
@@ -61,16 +62,17 @@ namespace nova::renderer::shaderpack {
 
         const rx::string pipeline_context = rx::string::format("Pipeline %s", name);
         // Check non-required fields first
-        default_graphics_pipeline.each([&](const auto& str) {
-            ensure_field_exists(pipeline_json, str.key().c_str(), pipeline_context, default_graphics_pipeline, report);
-        });
+        for(uint32_t i = 0; i < required_fields.size(); i++) {
+            if(!pipeline_json[required_fields[i].data()]) {
+                report.warnings.emplace_back(rx::string::format("%s: Missing optional field %s", pipeline_context, required_fields[i]));
+            }
+        }
 
         // Check required items
         report.errors.reserve(required_graphics_pipeline_fields.size());
         for(uint32_t i = 0; i < required_graphics_pipeline_fields.size(); i++) {
             const auto& field_name = required_graphics_pipeline_fields[i];
-            const auto field = pipeline_json[field_name.data()];
-            if(!field) {
+            if(!pipeline_json[field_name.data()]) {
                 report.errors.emplace_back(pipeline_msg(name, field_name));
             }
         }
@@ -151,8 +153,11 @@ namespace nova::renderer::shaderpack {
         ValidationReport report;
 
         const rx::string context = rx::string::format("Format of texture %s", texture_name);
-        ensure_field_exists(format_json, "pixelFormat", context, default_texture_format, report);
-        ensure_field_exists(format_json, "dimensionType", context, default_texture_format, report);
+        for(uint32_t i = 0; i < required_texture_fields.size(); i++) {
+            if(!format_json[required_texture_fields[i].data()]) {
+                report.warnings.emplace_back(rx::string::format("%s: Missing required field %s", context, required_texture_fields[i]));
+            }
+        }
 
         const bool missing_width = !format_json["width"];
         if(missing_width) {
@@ -259,8 +264,8 @@ namespace nova::renderer::shaderpack {
             j[field_name] = default_value[field_name];
             size_t out_size;
             const char* json_string = reinterpret_cast<const char*>(json_write_minified(j[field_name].raw(), &out_size));
-            report.warnings.emplace_back(context + ": Missing field " + field_name + ". A default value of '" +
-                                         json_string + "' will be used");
+            report.warnings.emplace_back(context + ": Missing field " + field_name + ". A default value of '" + json_string +
+                                         "' will be used");
         }
     }
 
