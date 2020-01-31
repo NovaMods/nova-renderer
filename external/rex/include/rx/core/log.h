@@ -17,7 +17,7 @@ struct log {
     k_error
   };
 
-   using event_type = event<level, string>;
+  using event_type = event<void(level, string)>;
 
   log(const char* _name, const char* _file_name, int _line);
 
@@ -28,7 +28,7 @@ struct log {
   const char* file_name() const;
   int line() const;
 
-  event_type::handle on_write(function<void(level, string)>&& callback_);
+  event_type::handle on_write(event_type::delegate&& callback_);
 
 private:
   void write(level _level, string&& contents_);

@@ -208,4 +208,7 @@ rx_size json::size() const {
   return 0;
 }
 
+json_value_s* json::raw() const {
+    return m_value;
+}
 } // namespace rx
