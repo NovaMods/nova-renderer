@@ -263,9 +263,8 @@ namespace nova::renderer::shaderpack {
         if(!j[field_name]) {
             j[field_name] = default_value[field_name];
             size_t out_size;
-            const char* json_string = reinterpret_cast<const char*>(json_write_minified(j[field_name].raw(), &out_size));
-            report.warnings.emplace_back(context + ": Missing field " + field_name + ". A default value of '" + json_string +
-                                         "' will be used");
+            //const char* json_string = reinterpret_cast<const char*>(json_write_minified(j[field_name].raw(), &out_size));
+            report.warnings.emplace_back(context + ": Missing field " + field_name + ". A default value will be used");
         }
     }
 
