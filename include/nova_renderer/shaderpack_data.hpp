@@ -300,6 +300,8 @@ namespace nova::renderer::shaderpack {
         rx::optional<ShaderSource> tessellation_control_shader;
         rx::optional<ShaderSource> tessellation_evaluation_shader;
         rx::optional<ShaderSource> fragment_shader;
+
+        static rx::optional<PipelineCreateInfo> from_json(const rx::json& json);
     };
 
     struct TextureFormat {
@@ -502,12 +504,16 @@ namespace nova::renderer::shaderpack {
         rx::vector<VkDescriptorSet> descriptor_sets;
 
         VkPipelineLayout layout = VK_NULL_HANDLE;
+
+        static rx::optional<MaterialPass> from_json(const rx::json& json);
     };
 
     struct MaterialData {
         rx::string name;
         rx::vector<MaterialPass> passes;
         rx::string geometry_filter;
+
+        static rx::optional<MaterialData> from_json(const rx::json& json);
     };
 
     /*!
@@ -530,7 +536,7 @@ namespace nova::renderer::shaderpack {
 
     [[nodiscard]] PixelFormatEnum pixel_format_enum_from_string(const rx::string& str);
     [[nodiscard]] TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const rx::string& str);
-    [[nodiscard]] TextureFilterEnum texture_filter_enum_from_json(const rx::string& str);
+    [[nodiscard]] TextureFilterEnum texture_filter_enum_from_string(const rx::string& str);
     [[nodiscard]] WrapModeEnum wrap_mode_enum_from_string(const rx::string& str);
     [[nodiscard]] StencilOpEnum stencil_op_enum_from_string(const rx::string& str);
     [[nodiscard]] CompareOpEnum compare_op_enum_from_string(const rx::string& str);
@@ -539,6 +545,18 @@ namespace nova::renderer::shaderpack {
     [[nodiscard]] BlendFactorEnum blend_factor_enum_from_string(const rx::string& str);
     [[nodiscard]] RenderQueueEnum render_queue_enum_from_string(const rx::string& str);
     [[nodiscard]] StateEnum state_enum_from_string(const rx::string& str);
+
+    [[nodiscard]] PixelFormatEnum pixel_format_enum_from_json(const rx::json& j);
+    [[nodiscard]] TextureDimensionTypeEnum texture_dimension_type_enum_from_json(const rx::json& j);
+    [[nodiscard]] TextureFilterEnum texture_filter_enum_from_json(const rx::json& j);
+    [[nodiscard]] WrapModeEnum wrap_mode_enum_from_json(const rx::json& j);
+    [[nodiscard]] StencilOpEnum stencil_op_enum_from_json(const rx::json& j);
+    [[nodiscard]] CompareOpEnum compare_op_enum_from_json(const rx::json& j);
+    [[nodiscard]] MsaaSupportEnum msaa_support_enum_from_json(const rx::json& j);
+    [[nodiscard]] PrimitiveTopologyEnum primitive_topology_enum_from_json(const rx::json& j);
+    [[nodiscard]] BlendFactorEnum blend_factor_enum_from_json(const rx::json& j);
+    [[nodiscard]] RenderQueueEnum render_queue_enum_from_json(const rx::json& j);
+    [[nodiscard]] StateEnum state_enum_from_json(const rx::json& j);
 
     [[nodiscard]] rx::string to_string(PixelFormatEnum val);
     [[nodiscard]] rx::string to_string(TextureDimensionTypeEnum val);

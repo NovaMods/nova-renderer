@@ -1,10 +1,4 @@
-/*!
- * \author ddubois
- * \date 05-Sep-18.
- */
-
-#ifndef NOVA_RENDERER_UTILS_HPP
-#define NOVA_RENDERER_UTILS_HPP
+#pragma once
 
 #include <rx/core/json.h>
 #include <rx/core/optional.h>
@@ -25,7 +19,7 @@ namespace nova::renderer {
     rx::optional<ValType> get_json_value(const rx::json& json_obj, const char* key) {
         const auto val = json_obj[key];
         if(val) {
-            return rx::optional<ValType>(ValType::from_json(json_obj));
+            return rx::optional<ValType>(ValType::from_json(val));
         }
 
         return rx::nullopt;
@@ -139,5 +133,3 @@ namespace nova::renderer {
         return {};
     }
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_UTILS_HPP
