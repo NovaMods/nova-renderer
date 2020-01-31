@@ -17,12 +17,7 @@ namespace nova::renderer {
      */
     template <typename ValType>
     rx::optional<ValType> get_json_value(const rx::json& json_obj, const char* key) {
-        const auto val = json_obj[key];
-        if(val) {
-            return rx::optional<ValType>(ValType::from_json(val));
-        }
-
-        return rx::nullopt;
+        return get_json_value<ValType>(json_obj, key, &ValType::from_json);
     }
 
     /*!
@@ -35,14 +30,7 @@ namespace nova::renderer {
      */
     template <typename ValType>
     ValType get_json_value(const rx::json& json_obj, const char* key, ValType default_value) {
-        const auto& val = json_obj[key];
-        if(val) {
-            return ValType::from_json(val);
-        }
-
-        NOVA_LOG(TRACE) << key << " not found - using a default value";
-
-        return default_value;
+        return get_json_value<ValType>(json_obj, key, default_value, &ValType::from_json);
     }
 
     /*!
@@ -58,7 +46,7 @@ namespace nova::renderer {
         const auto& val_json = json_obj[key];
         if(val_json) {
             ValType val = deserializer(val);
-            return rx::optional<ValType>{rx::utility::move(val)};
+            return val;
         }
 
         return rx::nullopt;
@@ -77,7 +65,7 @@ namespace nova::renderer {
     ValType get_json_value(const rx::json& json_obj, const char* key, ValType default_value, FuncType&& deserializer) {
         const auto& val = json_obj[key];
         if(val) {
-            ValType value = deserializer(val.as_string());
+            ValType value = deserializer(val);
             return value;
         }
 
@@ -93,19 +81,7 @@ namespace nova::renderer {
      */
     template <typename ValType>
     rx::vector<ValType> get_json_array(const rx::json& json_obj, const char* key) {
-        const auto& arr = json_obj[key];
-        if(arr && !arr.is_empty()) {
-            rx::vector<ValType> vec;
-            vec.reserve(arr.size());
-
-            for(uint32_t i = 0; i < arr.size(); i++) {
-                vec.push_back(ValType::from_json(arr[i]));
-            }
-
-            return vec;
-        }
-
-        return {};
+        return get_json_array<ValType>(json_obj, key, &ValType::from_json);
     }
 
     /*!

@@ -4,7 +4,7 @@
 
 #include "../json_utils.hpp"
 
-#define FILL_REQUIRED_FIELD(field, expr)                                                                                                            \
+#define FILL_REQUIRED_FIELD(field, expr)                                                                                                   \
     [&] {                                                                                                                                  \
         const auto val = expr;                                                                                                             \
         if(val) {                                                                                                                          \
@@ -63,6 +63,15 @@ namespace nova::renderer::shaderpack {
     }
 
     bool TextureAttachmentInfo::operator==(const TextureAttachmentInfo& other) const { return other.name == name; }
+
+    rx::optional<TextureAttachmentInfo> TextureAttachmentInfo::from_json(const rx::json& json) {
+        TextureAttachmentInfo info = {};
+
+        FILL_REQUIRED_FIELD(info.name, get_json_value<rx::string>(json, "name", &rx::json::as_string));
+        info.clear = get_json_value(json, "clear", false, &rx::json::as_boolean);
+
+        return info;
+    }
 
     rx::optional<RenderPassCreateInfo> RenderPassCreateInfo::from_json(const rx::json& json) {
         RenderPassCreateInfo info = {};
@@ -183,7 +192,15 @@ namespace nova::renderer::shaderpack {
     rx::optional<rx::map<rx::string, rx::string>> map_from_json_object(const rx::json& json) {
         rx::map<rx::string, rx::string> map;
 
-        //json.each()
+        json.each([&](const rx::json& elem) {
+            rx::string shader_variable;
+            FILL_REQUIRED_FIELD(shader_variable, get_json_value<rx::string>(elem, "variable", &rx::json::as_string));
+
+            rx::string resource_name;
+            FILL_REQUIRED_FIELD(resource_name, get_json_value<rx::string>(elem, "resource", &rx::json::as_string));
+
+            map.insert(shader_variable, resource_name);
+        });
 
         return map;
     }
@@ -193,7 +210,15 @@ namespace nova::renderer::shaderpack {
 
         FILL_REQUIRED_FIELD(pass.name, get_json_value<rx::string>(json, "name", &rx::json::as_string));
         FILL_REQUIRED_FIELD(pass.pipeline, get_json_value<rx::string>(json, "pipeline", &rx::json::as_string));
-        FILL_REQUIRED_FIELD(pass.bindings, get_json_value<rx::map<rx::string, rx::string>>(json, "bindings", &map_from_json_object));
+
+        const auto val = get_json_value<rx::map<rx::string, rx::string>>(json, "bindings", map_from_json_object);
+        if(val) {
+            pass.bindings = *val;
+        } else {
+            return rx::nullopt;
+        }
+
+        // FILL_REQUIRED_FIELD(pass.bindings, get_json_value<rx::map<rx::string, rx::string>>(json, "bindings", map_from_json_object));
 
         return pass;
     }

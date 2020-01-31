@@ -408,6 +408,8 @@ namespace nova::renderer::shaderpack {
         bool clear = false;
 
         bool operator==(const TextureAttachmentInfo& other) const;
+
+        static rx::optional<TextureAttachmentInfo> from_json(const rx::json& json);
     };
 
     /*!
