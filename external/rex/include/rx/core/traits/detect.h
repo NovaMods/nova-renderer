@@ -9,17 +9,17 @@ namespace detail {
 
   template<typename, template<typename> class, typename = empty<>>
   struct detect {
-    static inline bool value = false;
+    static inline constexpr const bool value = false;
   };
 
   template<typename T, template<typename> class O>
   struct detect<T, O, empty<O<T>>> {
-    static inline bool value = true;
+    static inline constexpr const bool value = true;
   };
 } // namespace detail
 
 template<typename T, template<typename> class O>
-inline bool detect = detail::detect<T, O>::value;
+inline constexpr const bool detect = detail::detect<T, O>::value;
 
 } // namespace rx::traits
 

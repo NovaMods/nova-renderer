@@ -76,11 +76,11 @@ struct json {
 
   memory::allocator* allocator() const;
 
-    json_value_s* raw() const;
+  json_value_s* raw() const;
 
 private:
   template<typename T>
-  using from_json =
+  using has_from_json =
     decltype(utility::declval<T>().from_json(utility::declval<json>()));
 
   struct shared {
@@ -245,7 +245,7 @@ inline T json::decode(const T& _default) const {
     if (is_string()) {
       return as_string();
     }
-  } else if constexpr(traits::detect<T, from_json>) {
+  } else if constexpr(traits::detect<T, has_from_json>) {
     return T::from_json(*this);
   }
 
