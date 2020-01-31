@@ -8,9 +8,7 @@
     [&] {                                                                                                                                  \
         const auto val = expr;                                                                                                             \
         if(val) {                                                                                                                          \
-            field = *val;                                                                                                                  \
-        } else {                                                                                                                           \
-            return rx::nullopt;                                                                                                            \
+            (field) = *val;                                                                                                                \
         }                                                                                                                                  \
     }();
 
@@ -28,7 +26,7 @@ namespace nova::renderer::shaderpack {
 
     bool TextureFormat::operator!=(const TextureFormat& other) const { return !(*this == other); }
 
-    rx::optional<TextureFormat> TextureFormat::from_json(const rx::json& json) {
+    TextureFormat TextureFormat::from_json(const rx::json& json) {
         TextureFormat format = {};
 
         format.pixel_format = get_json_value(json, "pixelFormat", PixelFormatEnum::RGBA8, pixel_format_enum_from_json);
@@ -36,22 +34,22 @@ namespace nova::renderer::shaderpack {
                                                                          "dimensionType",
                                                                          TextureDimensionTypeEnum::ScreenRelative,
                                                                          texture_dimension_type_enum_from_json);
-        format.width = get_json_value<float>(json, "width", 0, &rx::json::as_float);
-        format.height = get_json_value<float>(json, "height", 0, &rx::json::as_float);
+        format.width = get_json_value<float>(json, "width", 0);
+        format.height = get_json_value<float>(json, "height", 0);
 
         return format;
     }
 
-    rx::optional<TextureCreateInfo> TextureCreateInfo::from_json(const rx::json& json) {
+    TextureCreateInfo TextureCreateInfo::from_json(const rx::json& json) {
         TextureCreateInfo info = {};
 
-        FILL_REQUIRED_FIELD(info.name, get_json_value<rx::string>(json, "name", &rx::json::as_string));
-        FILL_REQUIRED_FIELD(info.format, get_json_value<TextureFormat>(json, "format"));
+        FILL_REQUIRED_FIELD(info.name, get_json_opt<rx::string>(json, "name"));
+        FILL_REQUIRED_FIELD(info.format, get_json_opt<TextureFormat>(json, "format"));
 
         return info;
     }
 
-    rx::optional<ShaderpackResourcesData> ShaderpackResourcesData::from_json(const rx::json& json) {
+    ShaderpackResourcesData ShaderpackResourcesData::from_json(const rx::json& json) {
         ShaderpackResourcesData data;
         data.render_targets = get_json_array<TextureCreateInfo>(json, "textures");
         data.samplers = get_json_array<SamplerCreateInfo>(json, "samplers");
@@ -64,31 +62,31 @@ namespace nova::renderer::shaderpack {
 
     bool TextureAttachmentInfo::operator==(const TextureAttachmentInfo& other) const { return other.name == name; }
 
-    rx::optional<TextureAttachmentInfo> TextureAttachmentInfo::from_json(const rx::json& json) {
+    TextureAttachmentInfo TextureAttachmentInfo::from_json(const rx::json& json) {
         TextureAttachmentInfo info = {};
 
-        FILL_REQUIRED_FIELD(info.name, get_json_value<rx::string>(json, "name", &rx::json::as_string));
-        info.clear = get_json_value(json, "clear", false, &rx::json::as_boolean);
+        FILL_REQUIRED_FIELD(info.name, get_json_opt<rx::string>(json, "name"));
+        info.clear = get_json_value(json, "clear", false);
 
         return info;
     }
 
-    rx::optional<RenderPassCreateInfo> RenderPassCreateInfo::from_json(const rx::json& json) {
+    RenderPassCreateInfo RenderPassCreateInfo::from_json(const rx::json& json) {
         RenderPassCreateInfo info = {};
 
-        info.texture_inputs = get_json_array<rx::string>(json, "textureInputs", &rx::json::as_string);
+        info.texture_inputs = get_json_array<rx::string>(json, "textureInputs");
         info.texture_outputs = get_json_array<TextureAttachmentInfo>(json, "textureOutputs");
-        info.depth_texture = get_json_value<TextureAttachmentInfo>(json, "depthTexture");
+        info.depth_texture = get_json_opt<TextureAttachmentInfo>(json, "depthTexture");
 
-        info.input_buffers = get_json_array<rx::string>(json, "inputBuffers", &rx::json::as_string);
-        info.output_buffers = get_json_array<rx::string>(json, "outputBuffers", &rx::json::as_string);
+        info.input_buffers = get_json_array<rx::string>(json, "inputBuffers");
+        info.output_buffers = get_json_array<rx::string>(json, "outputBuffers");
 
-        info.name = get_json_value<rx::string>(json, "name", "<NAME_MISSING>", &rx::json::as_string);
+        info.name = get_json_value<rx::string>(json, "name", "<NAME_MISSING>");
 
         return info;
     }
 
-    rx::optional<RendergraphData> RendergraphData::from_json(const rx::json& json) {
+    RendergraphData RendergraphData::from_json(const rx::json& json) {
         RendergraphData data;
 
         data.passes = get_json_array<RenderPassCreateInfo>(json, "passes");
@@ -97,7 +95,7 @@ namespace nova::renderer::shaderpack {
         return data;
     }
 
-    rx::optional<SamplerCreateInfo> SamplerCreateInfo::from_json(const rx::json& json) {
+    SamplerCreateInfo SamplerCreateInfo::from_json(const rx::json& json) {
         SamplerCreateInfo info = {};
 
         info.filter = get_json_value(json, "filter", TextureFilterEnum::Point, texture_filter_enum_from_json);
@@ -106,24 +104,24 @@ namespace nova::renderer::shaderpack {
         return info;
     }
 
-    rx::optional<PipelineCreateInfo> PipelineCreateInfo::from_json(const rx::json& json) {
+    PipelineCreateInfo PipelineCreateInfo::from_json(const rx::json& json) {
         PipelineCreateInfo pipeline = {};
 
-        FILL_REQUIRED_FIELD(pipeline.name, get_json_value<rx::string>(json, "name", &rx::json::as_string));
-        FILL_REQUIRED_FIELD(pipeline.pass, get_json_value<rx::string>(json, "pass", &rx::json::as_string));
-        pipeline.parent_name = get_json_value(json, "parent", "", &rx::json::as_string);
+        FILL_REQUIRED_FIELD(pipeline.name, get_json_opt<rx::string>(json, "name"));
+        FILL_REQUIRED_FIELD(pipeline.pass, get_json_opt<rx::string>(json, "pass"));
+        pipeline.parent_name = get_json_value(json, "parent", "");
 
-        pipeline.defines = get_json_array<rx::string>(json, "defined", &rx::json::as_string);
+        pipeline.defines = get_json_array<rx::string>(json, "defined");
 
-        pipeline.states = get_json_array<StateEnum>(json, "states", state_enum_from_string);
-        pipeline.front_face = get_json_value<StencilOpState>(json, "frontFace");
-        pipeline.back_face = get_json_value<StencilOpState>(json, "backFace");
-        pipeline.fallback = get_json_value<rx::string>(json, "fallback", {}, &rx::json::as_string);
-        pipeline.depth_bias = get_json_value<float>(json, "depthBias", 0, &rx::json::as_float);
-        pipeline.slope_scaled_depth_bias = get_json_value<float>(json, "slopeScaledDepthBias", 0, &rx::json::as_float);
-        pipeline.stencil_ref = get_json_value<uint32_t>(json, "stencilRef", 0, &rx::json::as_float);
-        pipeline.stencil_read_mask = get_json_value<uint32_t>(json, "stencilReadMask", 0, &rx::json::as_float);
-        pipeline.stencil_write_mask = get_json_value<uint32_t>(json, "stencilWriteMask", 0, &rx::json::as_float);
+        pipeline.states = get_json_array<StateEnum>(json, "states", state_enum_from_json);
+        pipeline.front_face = get_json_opt<StencilOpState>(json, "frontFace");
+        pipeline.back_face = get_json_opt<StencilOpState>(json, "backFace");
+        pipeline.fallback = get_json_value<rx::string>(json, "fallback", {});
+        pipeline.depth_bias = get_json_value<float>(json, "depthBias", 0);
+        pipeline.slope_scaled_depth_bias = get_json_value<float>(json, "slopeScaledDepthBias", 0);
+        pipeline.stencil_ref = get_json_value<uint32_t>(json, "stencilRef", 0);
+        pipeline.stencil_read_mask = get_json_value<uint32_t>(json, "stencilReadMask", 0);
+        pipeline.stencil_write_mask = get_json_value<uint32_t>(json, "stencilWriteMask", 0);
         pipeline.msaa_support = get_json_value<MsaaSupportEnum>(json, "msaaSupport", MsaaSupportEnum::None, msaa_support_enum_from_json);
         pipeline.primitive_mode = get_json_value<PrimitiveTopologyEnum>(json,
                                                                         "primitiveMode",
@@ -148,27 +146,27 @@ namespace nova::renderer::shaderpack {
         pipeline.depth_func = get_json_value<CompareOpEnum>(json, "depthFunc", CompareOpEnum::Less, compare_op_enum_from_json);
         pipeline.render_queue = get_json_value<RenderQueueEnum>(json, "renderQueue", RenderQueueEnum::Opaque, render_queue_enum_from_json);
 
-        pipeline.vertex_shader.filename = get_json_value<rx::string>(json, "vertexShader", "<NAME_MISSING>", &rx::json::as_string);
+        pipeline.vertex_shader.filename = get_json_value<rx::string>(json, "vertexShader", "<NAME_MISSING>");
 
-        const auto geometry_shader_name = get_json_value<rx::string>(json, "geometryShader", &rx::json::as_string);
+        const auto geometry_shader_name = get_json_opt<rx::string>(json, "geometryShader");
         if(geometry_shader_name) {
             pipeline.geometry_shader = rx::optional<ShaderSource>();
             pipeline.geometry_shader->filename = *geometry_shader_name;
         }
 
-        const auto tess_control_shader_name = get_json_value<rx::string>(json, "tessellationControlShader", &rx::json::as_string);
+        const auto tess_control_shader_name = get_json_opt<rx::string>(json, "tessellationControlShader");
         if(tess_control_shader_name) {
             pipeline.tessellation_control_shader = rx::optional<ShaderSource>();
             pipeline.tessellation_control_shader->filename = *tess_control_shader_name;
         }
 
-        const auto tess_eval_shader_name = get_json_value<rx::string>(json, "tessellationEvalShader", &rx::json::as_string);
+        const auto tess_eval_shader_name = get_json_opt<rx::string>(json, "tessellationEvalShader");
         if(tess_eval_shader_name) {
             pipeline.tessellation_evaluation_shader = rx::optional<ShaderSource>();
             pipeline.tessellation_evaluation_shader->filename = *tess_eval_shader_name;
         }
 
-        const auto fragment_shader_name = get_json_value<rx::string>(json, "fragmentShader", &rx::json::as_string);
+        const auto fragment_shader_name = get_json_opt<rx::string>(json, "fragmentShader");
         if(fragment_shader_name) {
             pipeline.fragment_shader = rx::optional<ShaderSource>();
             pipeline.fragment_shader->filename = *fragment_shader_name;
@@ -194,10 +192,10 @@ namespace nova::renderer::shaderpack {
 
         json.each([&](const rx::json& elem) {
             rx::string shader_variable;
-            FILL_REQUIRED_FIELD(shader_variable, get_json_value<rx::string>(elem, "variable", &rx::json::as_string));
+            FILL_REQUIRED_FIELD(shader_variable, get_json_opt<rx::string>(elem, "variable"));
 
             rx::string resource_name;
-            FILL_REQUIRED_FIELD(resource_name, get_json_value<rx::string>(elem, "resource", &rx::json::as_string));
+            FILL_REQUIRED_FIELD(resource_name, get_json_opt<rx::string>(elem, "resource"));
 
             map.insert(shader_variable, resource_name);
         });
@@ -205,30 +203,28 @@ namespace nova::renderer::shaderpack {
         return map;
     }
 
-    rx::optional<MaterialPass> MaterialPass::from_json(const rx::json& json) {
+    MaterialPass MaterialPass::from_json(const rx::json& json) {
         MaterialPass pass = {};
 
-        FILL_REQUIRED_FIELD(pass.name, get_json_value<rx::string>(json, "name", &rx::json::as_string));
-        FILL_REQUIRED_FIELD(pass.pipeline, get_json_value<rx::string>(json, "pipeline", &rx::json::as_string));
+        FILL_REQUIRED_FIELD(pass.name, get_json_opt<rx::string>(json, "name"));
+        FILL_REQUIRED_FIELD(pass.pipeline, get_json_opt<rx::string>(json, "pipeline"));
 
-        const auto val = get_json_value<rx::map<rx::string, rx::string>>(json, "bindings", map_from_json_object);
+        const auto val = get_json_opt<rx::map<rx::string, rx::string>>(json, "bindings", map_from_json_object);
         if(val) {
             pass.bindings = *val;
-        } else {
-            return rx::nullopt;
         }
 
-        // FILL_REQUIRED_FIELD(pass.bindings, get_json_value<rx::map<rx::string, rx::string>>(json, "bindings", map_from_json_object));
+        // FILL_REQUIRED_FIELD(pass.bindings, get_json_opt<rx::map<rx::string, rx::string>>(json, "bindings", map_from_json_object));
 
         return pass;
     }
 
-    rx::optional<MaterialData> MaterialData::from_json(const rx::json& json) {
+    MaterialData MaterialData::from_json(const rx::json& json) {
         MaterialData data = {};
 
-        FILL_REQUIRED_FIELD(data.name, get_json_value<rx::string>(json, "name", &rx::json::as_string));
+        FILL_REQUIRED_FIELD(data.name, get_json_opt<rx::string>(json, "name"));
         data.passes = get_json_array<MaterialPass>(json, "passes");
-        FILL_REQUIRED_FIELD(data.geometry_filter, get_json_value<rx::string>(json, "filter", &rx::json::as_string));
+        FILL_REQUIRED_FIELD(data.geometry_filter, get_json_opt<rx::string>(json, "filter"));
 
         return data;
     }

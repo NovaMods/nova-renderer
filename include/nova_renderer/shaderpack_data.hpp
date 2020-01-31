@@ -164,7 +164,7 @@ namespace nova::renderer::shaderpack {
          */
         WrapModeEnum wrap_mode{};
 
-        static rx::optional<SamplerCreateInfo> from_json(const rx::json& json);
+        static SamplerCreateInfo from_json(const rx::json& json);
     };
 
     struct StencilOpState {
@@ -301,7 +301,7 @@ namespace nova::renderer::shaderpack {
         rx::optional<ShaderSource> tessellation_evaluation_shader;
         rx::optional<ShaderSource> fragment_shader;
 
-        static rx::optional<PipelineCreateInfo> from_json(const rx::json& json);
+        static PipelineCreateInfo from_json(const rx::json& json);
     };
 
     struct TextureFormat {
@@ -329,7 +329,7 @@ namespace nova::renderer::shaderpack {
         bool operator==(const TextureFormat& other) const;
         bool operator!=(const TextureFormat& other) const;
 
-        static rx::optional<TextureFormat> from_json(const rx::json& json);
+        static TextureFormat from_json(const rx::json& json);
     };
 
     /*!
@@ -377,14 +377,14 @@ namespace nova::renderer::shaderpack {
 
         TextureFormat format{};
 
-        static rx::optional<TextureCreateInfo> from_json(const rx::json& json);
+        static TextureCreateInfo from_json(const rx::json& json);
     };
 
     struct ShaderpackResourcesData {
         rx::vector<TextureCreateInfo> render_targets;
         rx::vector<SamplerCreateInfo> samplers;
 
-        static rx::optional<ShaderpackResourcesData> from_json(const rx::json& json);
+        static ShaderpackResourcesData from_json(const rx::json& json);
     };
 
     /*!
@@ -409,7 +409,7 @@ namespace nova::renderer::shaderpack {
 
         bool operator==(const TextureAttachmentInfo& other) const;
 
-        static rx::optional<TextureAttachmentInfo> from_json(const rx::json& json);
+        static TextureAttachmentInfo from_json(const rx::json& json);
     };
 
     /*!
@@ -469,7 +469,7 @@ namespace nova::renderer::shaderpack {
 
         RenderPassCreateInfo() = default;
 
-        static rx::optional<RenderPassCreateInfo> from_json(const rx::json& json);
+        static RenderPassCreateInfo from_json(const rx::json& json);
     };
 
     /*!
@@ -486,7 +486,7 @@ namespace nova::renderer::shaderpack {
          */
         rx::vector<rx::string> builtin_passes;
 
-        static rx::optional<RendergraphData> from_json(const rx::json& json);
+        static RendergraphData from_json(const rx::json& json);
     };
 
     struct MaterialPass {
@@ -507,7 +507,7 @@ namespace nova::renderer::shaderpack {
 
         VkPipelineLayout layout = VK_NULL_HANDLE;
 
-        static rx::optional<MaterialPass> from_json(const rx::json& json);
+        static MaterialPass from_json(const rx::json& json);
     };
 
     struct MaterialData {
@@ -515,7 +515,7 @@ namespace nova::renderer::shaderpack {
         rx::vector<MaterialPass> passes;
         rx::string geometry_filter;
 
-        static rx::optional<MaterialData> from_json(const rx::json& json);
+        static MaterialData from_json(const rx::json& json);
     };
 
     /*!

@@ -242,7 +242,7 @@ namespace nova::renderer::shaderpack {
 
         const auto json_passes = rx::json(passes_bytes);
 
-        auto rendergraph_file = *RendergraphData::from_json(json_passes);
+        auto rendergraph_file = json_passes.decode<RendergraphData>({});
 
         bool writes_to_scene_output_rt = false;
         rendergraph_file.passes.each_fwd([&](const RenderPassCreateInfo& pass) {
@@ -311,7 +311,7 @@ namespace nova::renderer::shaderpack {
             return rx::nullopt;
         }
 
-        auto new_pipeline = *PipelineCreateInfo::from_json(json_pipeline);
+        auto new_pipeline = json_pipeline.decode<PipelineCreateInfo>({});
         NOVA_LOG(TRACE) << "Parsed JSON into pipeline_data for pipeline " << pipeline_path.data();
         new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename,
                                                              folder_access,
@@ -463,7 +463,7 @@ namespace nova::renderer::shaderpack {
         const auto material_file_name = get_file_name(material_path);
         const auto material_extension_begin_idx = material_file_name.size() - 4; // ".mat"
 
-        auto material = *MaterialData::from_json(json_material);
+        auto material = json_material.decode<MaterialData>({});
         material.name = material_file_name.substring(0, material_extension_begin_idx);
 
         NOVA_LOG(TRACE) << "Load of material " << material_path.data() << " succeeded - name " << material.name.data();

@@ -176,7 +176,7 @@ namespace nova::renderer::shaderpack {
 
     ValidationReport validate_sampler_data(rx::json& sampler_json) {
         ValidationReport report;
-        const rx::string name = get_json_value<std::string>(sampler_json, "name", std::string{"<NAME_MISSING>"}).c_str();
+        const rx::string name = get_json_value<rx::string>(sampler_json, "name", "<NAME_MISSING>");
         if(name == "<NAME_MISSING>") {
             report.errors.emplace_back(sampler_msg(name, "Missing field name"));
         }
