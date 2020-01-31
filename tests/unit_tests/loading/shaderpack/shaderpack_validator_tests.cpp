@@ -5,9 +5,8 @@
 
 #include "nova_renderer/util/utils.hpp"
 
-#include "../../../src/general_test_setup.hpp"
-
 #include "../../../../src/loading/shaderpack/shaderpack_validator.hpp"
+#include "../../../src/general_test_setup.hpp"
 #undef TEST
 #include <gtest/gtest.h>
 
@@ -17,62 +16,67 @@
 
 TEST(GraphicsPipelineValidator, NoWarningsOrErrors) {
     // clang-format off
-    nlohmann::json pipeline = {
-        {"name", "TestPipeline"},
-        {"parentName", "ParentOfTestPipeline"},
-        {"pass", "TestPass"},
-        {"defines",
-            {"USE_NORMALMAP", "USE_SPECULAR"}
-        },
-        { "states",
-            {"DisableDepthTest"}
-        },
-        { "vertexFields",
-            {"Position", "UV0", "Normal", "Tangent"}
-        },
-        {"frontFace",
-            {
-                {"failOp", "Keep"},
-                {"passOp", "Keep"},
-                {"depthFailOp", "Replace"},
-                {"compareOp", "Less"},
-                {"compareMask", 0xFF},
-                {"writeMask", 0xFF}
-            }
-        },
-        {"backFace",
-            {
-                {"failOp", "Keep"},
-                {"passOp", "Keep"},
-                {"depthFailOp", "Replace"},
-                {"compareOp", "Less"},
-                {"compareMask", 0xFF},
-                {"writeMask", 0xFF}
-            }
-        },
-        {"depthBias", 0},
-        {"slopeScaledDepthBias", 0.01},
-        {"stencilRef", 0},
-        {"stencilReadMask", 0xFF},
-        {"stencilWriteMask", 0xFF},
-        {"msaaSupport", "None"},
-        {"primitiveMode", "Triangles"},
-        {"sourceBlendFactor", "One"},
-        {"destinationBlendFactor", "Zero"},
-        {"fallback", ""},
-        {"alphaSrc", "One"},
-        {"alphaDst", "Zero"},
-        {"depthFunc", "Less"},
-        {"renderQueue", "Opaque"},
-        {"vertexShader", "TestVertexShader"},
-        {"geometryShader", "TestGeometryShader"},
-        {"tessellationControlShader", "TestTessellationControlShader"},
-        {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
-        {"fragmentShader", "TestFragmentShader"},
-    };
+    rx::json pipeline_json{""
+    "{"
+    "    \"name\": \"TestPipeline\","
+    "    \"parentName\": \"ParentOfTestPipeline\","
+    "    \"pass\": \"TestPass\","
+    "    \"defines\": ["
+    "        \"USE_NORMALMAP\","
+    "        \"USE_SPECULAR\""
+    "    ],"
+    "    \"states\": ["
+    "        \"DisableDepthTest\""
+    "    ],"
+    "    \"vertexFields\": ["
+    "        \"Position\","
+    "        \"UV0\","
+    "        \"Normal\","
+    "        \"Tangent\""
+    "    ],"
+    "    \"frontFace\": ["
+    "        {"
+    "            \"failOp\": \"Keep\","
+    "            \"passOp\": \"Keep\","
+    "            \"depthFailOp\": \"Replace\","
+    "            \"compareOp\": \"Less\","
+    "            \"compareMask\": 255,"
+    "            \"writeMask\": 255"
+    "        }"
+    "    ],"
+    "    \"backFace\": ["
+    "        {"
+    "            \"failOp\": \"Keep\","
+    "            \"passOp\": \"Keep\","
+    "            \"depthFailOp\": \"Replace\","
+    "            \"compareOp\": \"Less\","
+    "            \"compareMask\": 255,"
+    "            \"writeMask\": 255"
+    "        }"
+    "    ],"
+    "    \"depthBias\": 0,"
+    "    \"slopeScaledDepthBias\": 0.01,"
+    "    \"stencilRef\": 0,"
+    "    \"stencilReadMask\": 255,"
+    "    \"stencilWriteMask\": 255,"
+    "    \"msaaSupport\": \"None\","
+    "    \"primitiveMode\": \"Triangles\","
+    "    \"sourceBlendFactor\": \"One\","
+    "    \"destinationBlendFactor\": \"Zero\","
+    "    \"fallback\": \"\","
+    "    \"alphaSrc\": \"One\","
+    "    \"alphaDst\": \"Zero\","
+    "    \"depthFunc\": \"Less\","
+    "    \"renderQueue\": \"Opaque\","
+    "    \"vertexShader\": \"TestVertexShader\","
+    "    \"geometryShader\": \"TestGeometryShader\","
+    "    \"tessellationControlShader\": \"TestTessellationControlShader\","
+    "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
+    "    \"fragmentShader\": \"TestFragmentShader\","
+    "}"};
     // clang-format on
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
+    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline_json);
     nova::renderer::shaderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
