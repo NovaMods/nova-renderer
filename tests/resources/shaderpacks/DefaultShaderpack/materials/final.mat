@@ -5,9 +5,12 @@
         {
             "name": "main",
             "pipeline": "Final",
-            "bindings": {
-                "per_model_uniforms": "NovaModelMatrixBuffer"
-            }
+            "bindings": [
+                {
+                    "variable": "per_model_uniforms",
+                    "resource": "NovaModelMatrixBuffer"
+                }
+            ]
         }
     ]
 }
