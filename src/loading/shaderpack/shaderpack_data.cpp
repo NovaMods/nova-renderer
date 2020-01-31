@@ -18,6 +18,39 @@ namespace nova::renderer::shaderpack {
 
     bool TextureFormat::operator!=(const TextureFormat& other) const { return !(*this == other); }
 
+    rx::optional<TextureFormat> TextureFormat::from_json(const rx::json& json) {}
+
+    rx::optional<TextureCreateInfo> TextureCreateInfo::from_json(const rx::json& json) {
+        TextureCreateInfo info = {};
+
+        const auto name = get_json_string(json, "name");
+        if(name) {
+            info.name = *name;
+        } else {
+            return rx::nullopt;
+        }
+
+        const auto format = get_json_value<TextureFormat>(json, "format");
+        if(format) {
+            info.format = *format;
+        } else {
+            return rx::nullopt;
+        }
+
+        return info;
+    }
+
+    rx::optional<ShaderpackResourcesData> ShaderpackResourcesData::from_json(const rx::json& json) {
+        ShaderpackResourcesData data;
+        data.render_targets = get_json_array<TextureCreateInfo>(json, "textures");
+        data.samplers = get_json_array<SamplerCreateInfo>(json, "samplers");
+
+        // TODO: buffers
+        // TODO: arbitrary images
+
+        return data;
+    }
+
     bool TextureAttachmentInfo::operator==(const TextureAttachmentInfo& other) const { return other.name == name; }
 
     glm::uvec2 TextureFormat::get_size_in_pixels(const glm::uvec2& screen_size) const {

@@ -1,12 +1,15 @@
 #pragma once
 
+#include <string>
+
 #include <glm/glm.hpp>
 #include <rx/core/map.h>
 #include <rx/core/optional.h>
 #include <rx/core/string.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <string>
+
+#include "rx/core/json.h"
 
 namespace nova::renderer {
     namespace rhi {
@@ -321,6 +324,8 @@ namespace nova::renderer::shaderpack {
 
         bool operator==(const TextureFormat& other) const;
         bool operator!=(const TextureFormat& other) const;
+
+        static rx::optional<TextureFormat> from_json(const rx::json& json);
     };
 
     /*!
@@ -367,13 +372,15 @@ namespace nova::renderer::shaderpack {
         ImageUsage usage;
 
         TextureFormat format{};
+
+        static rx::optional<TextureCreateInfo> from_json(const rx::json& json);
     };
 
     struct ShaderpackResourcesData {
         rx::vector<TextureCreateInfo> render_targets;
         rx::vector<SamplerCreateInfo> samplers;
 
-        // TODO: Figure out shader readable textures
+        static rx::optional<ShaderpackResourcesData> from_json(const rx::json& json);
     };
 
     /*!
