@@ -4,9 +4,12 @@
 
 #include "rx/core/traits/return_type.h"
 #include "rx/core/traits/is_same.h"
+#include "rx/core/traits/detect.h"
 
 #include "rx/core/string.h"
 #include "rx/core/optional.h"
+
+#include "rx/core/utility/declval.h"
 
 #include "lib/json.h"
 
@@ -73,17 +76,12 @@ struct json {
 
   memory::allocator* allocator() const;
 
-  struct json_value_s* raw() const;
+    json_value_s* raw() const;
 
 private:
-  template<typename C>
-  struct detect_from_json {
-    template<typename T> static rx_u8 test(decltype(&T::from_json));
-    template<typename T> static rx_u16 test(...);
-  };
-
   template<typename T>
-  static inline bool has_from_json = sizeof(detect_from_json<T>::test(0)) == 1;
+  using from_json =
+    decltype(utility::declval<T>().from_json(utility::declval<json>()));
 
   struct shared {
     shared(memory::allocator* _allocator, const char* _contents, rx_size _length);
@@ -247,7 +245,7 @@ inline T json::decode(const T& _default) const {
     if (is_string()) {
       return as_string();
     }
-  } else if constexpr(has_from_json<T>) {
+  } else if constexpr(traits::detect<T, from_json>) {
     return T::from_json(*this);
   }
 
