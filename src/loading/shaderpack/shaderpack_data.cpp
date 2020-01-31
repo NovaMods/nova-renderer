@@ -104,6 +104,14 @@ namespace nova::renderer::shaderpack {
         return info;
     }
 
+    StencilOpState StencilOpState::from_json(const rx::json& json) {
+        StencilOpState state = {};
+
+        // TODO
+
+        return state;
+    }
+
     PipelineCreateInfo PipelineCreateInfo::from_json(const rx::json& json) {
         PipelineCreateInfo pipeline = {};
 

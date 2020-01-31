@@ -174,6 +174,8 @@ namespace nova::renderer::shaderpack {
         CompareOpEnum compare_op;
         uint32_t compare_mask;
         uint32_t write_mask;
+
+        static StencilOpState from_json(const rx::json& json);
     };
 
     struct ShaderSource {
@@ -308,21 +310,24 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief The format of the texture
          */
-        PixelFormatEnum pixel_format;
+        PixelFormatEnum pixel_format{};
 
         /*!
          * \brief How to interpret the dimensions of this texture
          */
-        TextureDimensionTypeEnum dimension_type;
+        TextureDimensionTypeEnum dimension_type{};
 
         /*!
          * \brief The width, in pixels, of the texture
          */
-        float width;
+        float width = 0;
+
         /*!
          * \brief The height, in pixels, of the texture
          */
-        float height;
+        float height = 0;
+
+        constexpr TextureFormat() = default;
 
         [[nodiscard]] glm::uvec2 get_size_in_pixels(const glm::uvec2& screen_size) const;
 
