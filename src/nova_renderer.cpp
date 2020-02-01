@@ -12,6 +12,8 @@
 
 #include <glslang/MachineIndependent/Initialize.h>
 #include <rx/core/global.h>
+#include <rx/core/log.h>
+#include <rx/core/memory/bump_point_allocator.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/loading/shaderpack_loading.hpp"
@@ -22,17 +24,17 @@
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/rhi/swapchain.hpp"
 #include "nova_renderer/ui_renderer.hpp"
-#include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/platform.hpp"
 
 #include "debugging/renderdoc.hpp"
 #include "loading/shaderpack/render_graph_builder.hpp"
 #include "render_objects/uniform_structs.hpp"
 #include "rhi/vulkan/vulkan_render_device.hpp"
-#include "rx/core/memory/bump_point_allocator.h"
 
 using namespace nova::mem;
 using namespace operators;
+
+RX_LOG("nova", logger);
 
 // TODO: Use this somehow
 const Bytes GLOBAL_MEMORY_POOL_SIZE = 1_gb;
@@ -106,11 +108,11 @@ namespace nova::renderer {
                     render_doc->SetCaptureOptionU32(eRENDERDOC_Option_SaveAllInitials, 1U);
                     render_doc->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, 1U);
 
-                    NOVA_LOG(INFO) << "Loaded RenderDoc successfully";
+                    rg_log(rx::log::level::k_info, "Loaded RenderDoc succeesfully");
 
                     return 0;
                 })
-                .on_error([](const ntl::NovaError& error) { NOVA_LOG(ERROR) << error.to_string().data(); });
+                .on_error([](const ntl::NovaError& error) { rg_log(rx::log::level::k_error, error.to_string()); });
         }
 
         {
@@ -149,7 +151,7 @@ namespace nova::renderer {
 
         cur_frame_idx = device->get_swapchain()->acquire_next_swapchain_image(frame_allocator);
 
-        NOVA_LOG(DEBUG) << "\n***********************\n        FRAME START        \n***********************";
+        rg_log(rx::log::level::k_verbose, "\n***********************\n        FRAME START        \n***********************");
 
         rx::vector<rhi::Fence*> last_frame_fences{global_allocator};
         last_frame_fences.push_back(frame_fences[cur_frame_idx]);
@@ -229,8 +231,7 @@ namespace nova::renderer {
             vertex_barrier.buffer_memory_barrier.offset = 0;
             vertex_barrier.buffer_memory_barrier.size = vertex_buffer->size;
 
-            rx::vector<rhi::ResourceBarrier> barriers{global_allocator
-                };
+            rx::vector<rhi::ResourceBarrier> barriers{global_allocator};
             barriers.push_back(vertex_barrier);
             vertex_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, barriers);
 
@@ -310,23 +311,23 @@ namespace nova::renderer {
             destroy_dynamic_resources();
 
             destroy_renderpasses();
-            NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
+            rg_log(rx::log::level::k_verbose, "Resources from old shaderpacks destroyed");
         }
 
         create_dynamic_textures(data.resources.render_targets);
-        NOVA_LOG(DEBUG) << "Dynamic textures created";
+        rg_log(rx::log::level::k_verbose, "Dynamic textures created");
 
         create_render_passes(data.graph_data.passes, data.pipelines);
 
-        NOVA_LOG(DEBUG) << "Created render passes";
+        rg_log(rx::log::level::k_verbose, "Created render passes");
 
         create_pipelines_and_materials(data.pipelines, data.materials);
 
-        NOVA_LOG(DEBUG) << "Created pipelines and materials";
+        rg_log(rx::log::level::k_verbose, "Created pipelines and materials");
 
         shaderpack_loaded = true;
 
-        NOVA_LOG(INFO) << "Shaderpack " << renderpack_name.data() << " loaded successfully";
+        rg_log(rx::log::level::k_verbose, "Shaderpack %s loaded successfully", renderpack_name);
     }
 
     const rx::vector<MaterialPass>& NovaRenderer::get_material_passes_for_pipeline(rhi::Pipeline* const pipeline) {
@@ -365,7 +366,7 @@ namespace nova::renderer {
                     }
                 });
             } else {
-                NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name.data();
+                rg_log(rx::log::level::k_error, "Could not create renderpass %s", create_info.name);
             }
         });
     }
@@ -473,7 +474,7 @@ namespace nova::renderer {
                 writes.push_back(write);
 
             } else {
-                NOVA_LOG(ERROR) << "Resource " << resource_name.data() << " is not known to Nova";
+                rg_log(rx::log::level::k_error, "Resource %s is not known to Nova", resource_name);
             }
         });
 
@@ -485,7 +486,8 @@ namespace nova::renderer {
             loaded_renderpack->resources.render_targets.each_fwd([&](const shaderpack::TextureCreateInfo& tex_data) {
                 device_resources->destroy_render_target(tex_data.name, renderpack_allocator);
             });
-            NOVA_LOG(DEBUG) << "Deleted all dynamic textures from renderpack " << loaded_renderpack->name.data();
+
+            rg_log(rx::log::level::k_verbose, "Deleted all dynamic textures from renderpack %s", loaded_renderpack->name);
         }
     }
 
@@ -503,7 +505,7 @@ namespace nova::renderer {
 
         const auto* pass_key = material_pass_keys.find(material_name);
         if(pass_key == nullptr) {
-            NOVA_LOG(ERROR) << "No material named " << material_name.material_name.data() << " for pass " << material_name.pass_name.data();
+            rg_log(rx::log::level::k_error, "No material named %s for pass %s", material_name.material_name, material_name.pass_name);
             return std::numeric_limits<uint64_t>::max();
         }
 
