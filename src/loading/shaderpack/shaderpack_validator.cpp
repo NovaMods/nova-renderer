@@ -92,7 +92,7 @@ namespace nova::renderer::shaderpack {
             if(!textures_itr.is_array() || textures_itr.is_empty()) {
                 missing_textures = true;
             } else {
-                textures_itr.each([&](rx::json& tex) {
+                textures_itr.each([&](const rx::json& tex) {
                     const ValidationReport texture_report = validate_texture_data(tex);
                     report.merge_in(texture_report);
                 });
@@ -109,7 +109,7 @@ namespace nova::renderer::shaderpack {
             if(!samplers_itr.is_array()) {
                 report.errors.emplace_back(resources_msg("Samplers array must be an array, but like it isn't"));
             } else {
-                samplers_itr.each([&](rx::json& sampler) {
+                samplers_itr.each([&](const rx::json& sampler) {
                     const ValidationReport sampler_report = validate_sampler_data(sampler);
                     report.merge_in(sampler_report);
                 });
@@ -121,7 +121,7 @@ namespace nova::renderer::shaderpack {
 
     static rx::string texture_msg(const rx::string& name, const rx::string& msg) { return rx::string::format("Texture %s: %s", name, msg); }
 
-    ValidationReport validate_texture_data(rx::json& texture_json) {
+    ValidationReport validate_texture_data(const rx::json& texture_json) {
         ValidationReport report;
         const auto name_json = texture_json["name"];
         rx::string name;
@@ -148,7 +148,7 @@ namespace nova::renderer::shaderpack {
         return rx::string::format("Format of texture %s: %s", tex_name, msg);
     }
 
-    ValidationReport validate_texture_format(rx::json& format_json, const rx::string& texture_name) {
+    ValidationReport validate_texture_format(const rx::json& format_json, const rx::string& texture_name) {
         ValidationReport report;
 
         const rx::string context = rx::string::format("Format of texture %s", texture_name);
@@ -173,7 +173,7 @@ namespace nova::renderer::shaderpack {
 
     static rx::string sampler_msg(const rx::string& name, const rx::string& msg) { return rx::string::format("Sampler %s: %s", name, msg); }
 
-    ValidationReport validate_sampler_data(rx::json& sampler_json) {
+    ValidationReport validate_sampler_data(const rx::json& sampler_json) {
         ValidationReport report;
         const rx::string name = get_json_value<rx::string>(sampler_json, "name", "<NAME_MISSING>");
         if(name == "<NAME_MISSING>") {
@@ -200,7 +200,7 @@ namespace nova::renderer::shaderpack {
         return rx::string::format("Material pass %s in material %s: %s", pass_name, mat_name, error);
     }
 
-    ValidationReport validate_material(rx::json& material_json) {
+    ValidationReport validate_material(const rx::json& material_json) {
         ValidationReport report;
 
         const auto name_maybe = material_json["name"];

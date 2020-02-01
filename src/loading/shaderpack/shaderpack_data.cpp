@@ -107,7 +107,12 @@ namespace nova::renderer::shaderpack {
     StencilOpState StencilOpState::from_json(const rx::json& json) {
         StencilOpState state = {};
 
-        // TODO
+        FILL_REQUIRED_FIELD(state.fail_op, get_json_opt<StencilOpEnum>(json, "failOp", stencil_op_enum_from_json));
+        FILL_REQUIRED_FIELD(state.pass_op, get_json_opt<StencilOpEnum>(json, "passOp", stencil_op_enum_from_json));
+        FILL_REQUIRED_FIELD(state.depth_fail_op, get_json_opt<StencilOpEnum>(json, "depthFailOp", stencil_op_enum_from_json));
+        FILL_REQUIRED_FIELD(state.compare_op, get_json_opt<CompareOpEnum>(json, "compareOp", compare_op_enum_from_json));
+        FILL_REQUIRED_FIELD(state.compare_mask, get_json_opt<uint32_t>(json, "compareMask"));
+        FILL_REQUIRED_FIELD(state.write_mask, get_json_opt<uint32_t>(json, "writeMask"));
 
         return state;
     }

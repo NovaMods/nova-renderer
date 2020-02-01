@@ -39,7 +39,7 @@ namespace nova::renderer::shaderpack {
      *
      * \param texture_json The JSON of the texture to validate
      */
-    ValidationReport validate_texture_data(rx::json& texture_json);
+    ValidationReport validate_texture_data(const rx::json& texture_json);
 
     /*!
      * \brief Validates a texture format, printing warnings to the warning logger and throwing an exception with any
@@ -47,7 +47,7 @@ namespace nova::renderer::shaderpack {
      *
      * \param format_json The JSON to validate
      */
-    ValidationReport validate_texture_format(rx::json& format_json, const rx::string& texture_name);
+    ValidationReport validate_texture_format(const rx::json& format_json, const rx::string& texture_name);
 
     /*!
      * \brief Validates that the provided JSON has all the fields it needed. Warnings about optional fields are
@@ -55,7 +55,7 @@ namespace nova::renderer::shaderpack {
      *
      * \param sampler_json The JSON to validate
      */
-    ValidationReport validate_sampler_data(rx::json& sampler_json);
+    ValidationReport validate_sampler_data(const rx::json& sampler_json);
 
     /*!
      * \brief Validates that the provided JSON for has all the fields it needs. Optional fields that are missing
@@ -65,5 +65,5 @@ namespace nova::renderer::shaderpack {
      *
      * \return A list of all errors encountered when validating this material
      */
-    ValidationReport validate_material(rx::json& material_json);
+    ValidationReport validate_material(const rx::json& material_json);
 } // namespace nova::renderer::shaderpack
