@@ -9,8 +9,7 @@
 #include "../json_utils.hpp"
 
 namespace nova::renderer::shaderpack {
-    // Uses std data types because rx::json uses them. It's not what I want but it's a thing. Maybe one day I'll switch to the Rex
-    // JSON thingie
+    constexpr uint32_t NUM_REQUIRED_FIELDS = 23;
 
     /*!
      * \brief All the default values for a JSON pipeline
@@ -18,29 +17,29 @@ namespace nova::renderer::shaderpack {
      * If a field is in `pipeline_data` but not in this structure, it is a required field and cannot be given a
      * default value. It will thus cause an exception
      */
-    const rx::array<rx::string[23]> required_fields = {"parentName",
-                                                       "defines",
-                                                       "states",
-                                                       "frontFace",
-                                                       "backFace",
-                                                       "fallback",
-                                                       "depthBias",
-                                                       "slopeScaledDepthBias",
-                                                       "stencilRef",
-                                                       "stencilReadMask",
-                                                       "stencilWriteMask",
-                                                       "msaaSupport",
-                                                       "primitiveMode",
-                                                       "sourceBlendFactor",
-                                                       "destinationBlendFactor",
-                                                       "alphaSrc",
-                                                       "alphaDst",
-                                                       "depthFunc",
-                                                       "renderQueue",
-                                                       "fragmentShader",
-                                                       "tessellationControlShader",
-                                                       "tessellationEvaluationShader",
-                                                       "geometryShader"};
+    const char* required_fields[NUM_REQUIRED_FIELDS] = {"parentName",
+                                                        "defines",
+                                                        "states",
+                                                        "frontFace",
+                                                        "backFace",
+                                                        "fallback",
+                                                        "depthBias",
+                                                        "slopeScaledDepthBias",
+                                                        "stencilRef",
+                                                        "stencilReadMask",
+                                                        "stencilWriteMask",
+                                                        "msaaSupport",
+                                                        "primitiveMode",
+                                                        "sourceBlendFactor",
+                                                        "destinationBlendFactor",
+                                                        "alphaSrc",
+                                                        "alphaDst",
+                                                        "depthFunc",
+                                                        "renderQueue",
+                                                        "fragmentShader",
+                                                        "tessellationControlShader",
+                                                        "tessellationEvaluationShader",
+                                                        "geometryShader"};
     ;
 
     const rx::array<rx::string[3]> required_graphics_pipeline_fields = {"name", "pass", "vertexShader"};
@@ -62,8 +61,8 @@ namespace nova::renderer::shaderpack {
 
         const rx::string pipeline_context = rx::string::format("Pipeline %s", name);
         // Check non-required fields first
-        for(uint32_t i = 0; i < required_fields.size(); i++) {
-            if(!pipeline_json[required_fields[i].data()]) {
+        for(uint32_t i = 0; i < NUM_REQUIRED_FIELDS; i++) {
+            if(!pipeline_json[required_fields[i]]) {
                 report.warnings.emplace_back(rx::string::format("%s: Missing optional field %s", pipeline_context, required_fields[i]));
             }
         }
@@ -263,7 +262,7 @@ namespace nova::renderer::shaderpack {
         if(!j[field_name]) {
             j[field_name] = default_value[field_name];
             size_t out_size;
-            //const char* json_string = reinterpret_cast<const char*>(json_write_minified(j[field_name].raw(), &out_size));
+            // const char* json_string = reinterpret_cast<const char*>(json_write_minified(j[field_name].raw(), &out_size));
             report.warnings.emplace_back(context + ": Missing field " + field_name + ". A default value will be used");
         }
     }

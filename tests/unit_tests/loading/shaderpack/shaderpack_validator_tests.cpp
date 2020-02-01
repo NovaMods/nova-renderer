@@ -67,8 +67,13 @@ TEST(GraphicsPipelineValidator, NoWarningsOrErrors) {
                            "    \"geometryShader\": \"TestGeometryShader\","
                            "    \"tessellationControlShader\": \"TestTessellationControlShader\","
                            "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                           "    \"fragmentShader\": \"TestFragmentShader\","
+                           "    \"fragmentShader\": \"TestFragmentShader\""
                            "}"};
+
+    const auto err = pipeline_json.error();
+    if(err) {
+        NOVA_LOG(ERROR) << "Could not create JSON resource: " << err->data();
+    }
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline_json);
     nova::renderer::shaderpack::print(report);
@@ -129,7 +134,7 @@ TEST(GraphicsPipelineValidator, MissingName) {
                       "    \"geometryShader\": \"TestGeometryShader\","
                       "    \"tessellationControlShader\": \"TestTessellationControlShader\","
                       "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
                       "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
@@ -257,7 +262,7 @@ TEST(GraphicsPipelineValidator, MissingVertexShader) {
                       "    \"geometryShader\": \"TestGeometryShader\","
                       "    \"tessellationControlShader\": \"TestTessellationControlShader\","
                       "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
                       "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
@@ -321,7 +326,7 @@ TEST(GraphicsPipelineValidator, MissingParentName) {
                       "    \"geometryShader\": \"TestGeometryShader\","
                       "    \"tessellationControlShader\": \"TestTessellationControlShader\","
                       "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
                       "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
@@ -382,7 +387,7 @@ TEST(GraphicsPipelineValidator, MissingDefines) {
                       "    \"geometryShader\": \"TestGeometryShader\","
                       "    \"tessellationControlShader\": \"TestTessellationControlShader\","
                       "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
                       "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
@@ -444,7 +449,7 @@ TEST(GraphicsPipelineValidator, MissingStates) {
                       "    \"geometryShader\": \"TestGeometryShader\","
                       "    \"tessellationControlShader\": \"TestTessellationControlShader\","
                       "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
                       "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
@@ -503,7 +508,7 @@ TEST(GraphicsPipelineValidator, MissingFrontFace) {
                       "    \"geometryShader\": \"TestGeometryShader\","
                       "    \"tessellationControlShader\": \"TestTessellationControlShader\","
                       "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
                       "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
@@ -517,51 +522,51 @@ TEST(GraphicsPipelineValidator, MissingFrontFace) {
 
 TEST(GraphicsPipelineValidator, MissingBackFace) {
     rx::json pipeline{""
-                           "{"
-                           "    \"name\": \"TestPipeline\","
-                           "    \"parentName\": \"ParentOfTestPipeline\","
-                           "    \"pass\": \"TestPass\","
-                           "    \"defines\": ["
-                           "        \"USE_NORMALMAP\","
-                           "        \"USE_SPECULAR\""
-                           "    ],"
-                           "    \"states\": ["
-                           "        \"DisableDepthTest\""
-                           "    ],"
-                           "    \"vertexFields\": ["
-                           "        \"Position\","
-                           "        \"UV0\","
-                           "        \"Normal\","
-                           "        \"Tangent\""
-                           "    ],"
-                           "    \"frontFace\": {"
-                           "        \"failOp\": \"Keep\","
-                           "        \"passOp\": \"Keep\","
-                           "        \"depthFailOp\": \"Replace\","
-                           "        \"compareOp\": \"Less\","
-                           "        \"compareMask\": 255,"
-                           "        \"writeMask\": 255"
-                           "    },"
-                           "    \"depthBias\": 0,"
-                           "    \"slopeScaledDepthBias\": 0.01,"
-                           "    \"stencilRef\": 0,"
-                           "    \"stencilReadMask\": 255,"
-                           "    \"stencilWriteMask\": 255,"
-                           "    \"msaaSupport\": \"None\","
-                           "    \"primitiveMode\": \"Triangles\","
-                           "    \"sourceBlendFactor\": \"One\","
-                           "    \"destinationBlendFactor\": \"Zero\","
-                           "    \"fallback\": \"\","
-                           "    \"alphaSrc\": \"One\","
-                           "    \"alphaDst\": \"Zero\","
-                           "    \"depthFunc\": \"Less\","
-                           "    \"renderQueue\": \"Opaque\","
-                           "    \"vertexShader\": \"TestVertexShader\","
-                           "    \"geometryShader\": \"TestGeometryShader\","
-                           "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                           "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                           "    \"fragmentShader\": \"TestFragmentShader\","
-                           "}"};
+                      "{"
+                      "    \"name\": \"TestPipeline\","
+                      "    \"parentName\": \"ParentOfTestPipeline\","
+                      "    \"pass\": \"TestPass\","
+                      "    \"defines\": ["
+                      "        \"USE_NORMALMAP\","
+                      "        \"USE_SPECULAR\""
+                      "    ],"
+                      "    \"states\": ["
+                      "        \"DisableDepthTest\""
+                      "    ],"
+                      "    \"vertexFields\": ["
+                      "        \"Position\","
+                      "        \"UV0\","
+                      "        \"Normal\","
+                      "        \"Tangent\""
+                      "    ],"
+                      "    \"frontFace\": {"
+                      "        \"failOp\": \"Keep\","
+                      "        \"passOp\": \"Keep\","
+                      "        \"depthFailOp\": \"Replace\","
+                      "        \"compareOp\": \"Less\","
+                      "        \"compareMask\": 255,"
+                      "        \"writeMask\": 255"
+                      "    },"
+                      "    \"depthBias\": 0,"
+                      "    \"slopeScaledDepthBias\": 0.01,"
+                      "    \"stencilRef\": 0,"
+                      "    \"stencilReadMask\": 255,"
+                      "    \"stencilWriteMask\": 255,"
+                      "    \"msaaSupport\": \"None\","
+                      "    \"primitiveMode\": \"Triangles\","
+                      "    \"sourceBlendFactor\": \"One\","
+                      "    \"destinationBlendFactor\": \"Zero\","
+                      "    \"fallback\": \"\","
+                      "    \"alphaSrc\": \"One\","
+                      "    \"alphaDst\": \"Zero\","
+                      "    \"depthFunc\": \"Less\","
+                      "    \"renderQueue\": \"Opaque\","
+                      "    \"vertexShader\": \"TestVertexShader\","
+                      "    \"geometryShader\": \"TestGeometryShader\","
+                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
+                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
+                      "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -574,59 +579,59 @@ TEST(GraphicsPipelineValidator, MissingBackFace) {
 
 TEST(GraphicsPipelineValidator, MissingFallback) {
     rx::json pipeline{""
-                            "{"
-                            "    \"name\": \"TestPipeline\","
-                            "    \"parentName\": \"ParentOfTestPipeline\","
-                            "    \"pass\": \"TestPass\","
-                            "    \"defines\": ["
-                            "        \"USE_NORMALMAP\","
-                            "        \"USE_SPECULAR\""
-                            "    ],"
-                            "    \"states\": ["
-                            "        \"DisableDepthTest\""
-                            "    ],"
-                            "    \"vertexFields\": ["
-                            "        \"Position\","
-                            "        \"UV0\","
-                            "        \"Normal\","
-                            "        \"Tangent\""
-                            "    ],"
-                            "    \"frontFace\": {"
-                            "        \"failOp\": \"Keep\","
-                            "        \"passOp\": \"Keep\","
-                            "        \"depthFailOp\": \"Replace\","
-                            "        \"compareOp\": \"Less\","
-                            "        \"compareMask\": 255,"
-                            "        \"writeMask\": 255"
-                            "    },"
-                            "    \"backFace\": {"
-                            "        \"failOp\": \"Keep\","
-                            "        \"passOp\": \"Keep\","
-                            "        \"depthFailOp\": \"Replace\","
-                            "        \"compareOp\": \"Less\","
-                            "        \"compareMask\": 255,"
-                            "        \"writeMask\": 255"
-                            "    },"
-                            "    \"depthBias\": 0,"
-                            "    \"slopeScaledDepthBias\": 0.01,"
-                            "    \"stencilRef\": 0,"
-                            "    \"stencilReadMask\": 255,"
-                            "    \"stencilWriteMask\": 255,"
-                            "    \"msaaSupport\": \"None\","
-                            "    \"primitiveMode\": \"Triangles\","
-                            "    \"sourceBlendFactor\": \"One\","
-                            "    \"destinationBlendFactor\": \"Zero\","
-                            "    \"fallback\": \"\","
-                            "    \"alphaSrc\": \"One\","
-                            "    \"alphaDst\": \"Zero\","
-                            "    \"depthFunc\": \"Less\","
-                            "    \"renderQueue\": \"Opaque\","
-                            "    \"vertexShader\": \"TestVertexShader\","
-                            "    \"geometryShader\": \"TestGeometryShader\","
-                            "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                            "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                            "    \"fragmentShader\": \"TestFragmentShader\","
-                            "}"};
+                      "{"
+                      "    \"name\": \"TestPipeline\","
+                      "    \"parentName\": \"ParentOfTestPipeline\","
+                      "    \"pass\": \"TestPass\","
+                      "    \"defines\": ["
+                      "        \"USE_NORMALMAP\","
+                      "        \"USE_SPECULAR\""
+                      "    ],"
+                      "    \"states\": ["
+                      "        \"DisableDepthTest\""
+                      "    ],"
+                      "    \"vertexFields\": ["
+                      "        \"Position\","
+                      "        \"UV0\","
+                      "        \"Normal\","
+                      "        \"Tangent\""
+                      "    ],"
+                      "    \"frontFace\": {"
+                      "        \"failOp\": \"Keep\","
+                      "        \"passOp\": \"Keep\","
+                      "        \"depthFailOp\": \"Replace\","
+                      "        \"compareOp\": \"Less\","
+                      "        \"compareMask\": 255,"
+                      "        \"writeMask\": 255"
+                      "    },"
+                      "    \"backFace\": {"
+                      "        \"failOp\": \"Keep\","
+                      "        \"passOp\": \"Keep\","
+                      "        \"depthFailOp\": \"Replace\","
+                      "        \"compareOp\": \"Less\","
+                      "        \"compareMask\": 255,"
+                      "        \"writeMask\": 255"
+                      "    },"
+                      "    \"depthBias\": 0,"
+                      "    \"slopeScaledDepthBias\": 0.01,"
+                      "    \"stencilRef\": 0,"
+                      "    \"stencilReadMask\": 255,"
+                      "    \"stencilWriteMask\": 255,"
+                      "    \"msaaSupport\": \"None\","
+                      "    \"primitiveMode\": \"Triangles\","
+                      "    \"sourceBlendFactor\": \"One\","
+                      "    \"destinationBlendFactor\": \"Zero\","
+                      "    \"fallback\": \"\","
+                      "    \"alphaSrc\": \"One\","
+                      "    \"alphaDst\": \"Zero\","
+                      "    \"depthFunc\": \"Less\","
+                      "    \"renderQueue\": \"Opaque\","
+                      "    \"vertexShader\": \"TestVertexShader\","
+                      "    \"geometryShader\": \"TestGeometryShader\","
+                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
+                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
+                      "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -689,7 +694,7 @@ TEST(GraphicsPipelineValidator, MissingDepthBias) {
                       "    \"geometryShader\": \"TestGeometryShader\","
                       "    \"tessellationControlShader\": \"TestTessellationControlShader\","
                       "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
                       "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
@@ -753,7 +758,7 @@ TEST(GraphicsPipelineValidator, MissingSlopeScaledDepthBias) {
                       "    \"geometryShader\": \"TestGeometryShader\","
                       "    \"tessellationControlShader\": \"TestTessellationControlShader\","
                       "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
                       "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
@@ -817,7 +822,7 @@ TEST(GraphicsPipelineValidator, MissingStencilRef) {
                       "    \"geometryShader\": \"TestGeometryShader\","
                       "    \"tessellationControlShader\": \"TestTessellationControlShader\","
                       "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
                       "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
@@ -881,7 +886,7 @@ TEST(GraphicsPipelineValidator, MissingStencilReadMask) {
                       "    \"geometryShader\": \"TestGeometryShader\","
                       "    \"tessellationControlShader\": \"TestTessellationControlShader\","
                       "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
                       "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
@@ -945,7 +950,7 @@ TEST(GraphicsPipelineValidator, MissingStencilWriteMask) {
                       "    \"geometryShader\": \"TestGeometryShader\","
                       "    \"tessellationControlShader\": \"TestTessellationControlShader\","
                       "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
                       "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
@@ -1009,7 +1014,7 @@ TEST(GraphicsPipelineValidator, MissingMsaaSupport) {
                       "    \"geometryShader\": \"TestGeometryShader\","
                       "    \"tessellationControlShader\": \"TestTessellationControlShader\","
                       "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
                       "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
@@ -1073,7 +1078,7 @@ TEST(GraphicsPipelineValidator, MissingSourceBlendFactor) {
                       "    \"geometryShader\": \"TestGeometryShader\","
                       "    \"tessellationControlShader\": \"TestTessellationControlShader\","
                       "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
                       "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
@@ -1137,7 +1142,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
                       "    \"geometryShader\": \"TestGeometryShader\","
                       "    \"tessellationControlShader\": \"TestTessellationControlShader\","
                       "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\","
+                      "    \"fragmentShader\": \"TestFragmentShader\""
                       "}"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
@@ -1150,7 +1155,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
               "Pipeline TestPipeline: Missing field destinationBlendFactor. A default value of '\"Zero\"' will be used");
 }
 //
-//TEST(GraphicsPipelineValidator, MissingAlphaSrc) {
+// TEST(GraphicsPipelineValidator, MissingAlphaSrc) {
 //    // clang-format off
 //    nlohmann::json pipeline = {
 //        {"name", "TestPipeline"},
@@ -1215,7 +1220,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field alphaSrc. A default value of '\"One\"' will be used");
 //}
 //
-//TEST(GraphicsPipelineValidator, MissingAlphaDst) {
+// TEST(GraphicsPipelineValidator, MissingAlphaDst) {
 //    // clang-format off
 //    nlohmann::json pipeline = {
 //        {"name", "TestPipeline"},
@@ -1280,7 +1285,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field alphaDst. A default value of '\"Zero\"' will be used");
 //}
 //
-//TEST(GraphicsPipelineValidator, MissingDepthFunc) {
+// TEST(GraphicsPipelineValidator, MissingDepthFunc) {
 //    // clang-format off
 //    nlohmann::json pipeline = {
 //        {"name", "TestPipeline"},
@@ -1345,7 +1350,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field depthFunc. A default value of '\"Less\"' will be used");
 //}
 //
-//TEST(GraphicsPipelineValidator, MissingRenderQueue) {
+// TEST(GraphicsPipelineValidator, MissingRenderQueue) {
 //    // clang-format off
 //    nlohmann::json pipeline = {
 //        {"name", "TestPipeline"},
@@ -1410,7 +1415,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field renderQueue. A default value of '\"Opaque\"' will be used");
 //}
 //
-//TEST(GraphicsPipelineValidator, MissingTessellationControlShader) {
+// TEST(GraphicsPipelineValidator, MissingTessellationControlShader) {
 //    // clang-format off
 //    nlohmann::json pipeline = {
 //        {"name", "TestPipeline"},
@@ -1472,10 +1477,11 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors.size(), 0);
 //
 //    ASSERT_EQ(report.warnings.size(), 1);
-//    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field tessellationControlShader. A default value of '\"\"' will be used");
+//    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field tessellationControlShader. A default value of '\"\"' will be
+//    used");
 //}
 //
-//TEST(GraphicsPipelineValidator, MissingTessellationEvaluationShader) {
+// TEST(GraphicsPipelineValidator, MissingTessellationEvaluationShader) {
 //    // clang-format off
 //    nlohmann::json pipeline = {
 //        {"name", "TestPipeline"},
@@ -1541,7 +1547,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //              "Pipeline TestPipeline: Missing field tessellationEvaluationShader. A default value of '\"\"' will be used");
 //}
 //
-//TEST(GraphicsPipelineValidator, MissingGeometryShader) {
+// TEST(GraphicsPipelineValidator, MissingGeometryShader) {
 //    // clang-format off
 //    nlohmann::json pipeline = {
 //        {"name", "TestPipeline"},
@@ -1606,7 +1612,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field geometryShader. A default value of '\"\"' will be used");
 //}
 //
-//TEST(GraphicsPipelineValidator, MissingFragmentShader) {
+// TEST(GraphicsPipelineValidator, MissingFragmentShader) {
 //    // clang-format off
 //    nlohmann::json pipeline = {
 //        {"name", "TestPipeline"},
@@ -1675,7 +1681,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 // *      Dynamic resources validator tests       *
 // ************************************************/
 //
-//TEST(ResourcesValidator, NoErrorsOrWarnings) {
+// TEST(ResourcesValidator, NoErrorsOrWarnings) {
 //    // clang-format off
 //    nlohmann::json resources = {
 //        { "textures",
@@ -1712,7 +1718,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors.size(), 0);
 //}
 //
-//TEST(ResourcesValidator, TextureMissing) {
+// TEST(ResourcesValidator, TextureMissing) {
 //    // clang-format off
 //    nlohmann::json sampler = {
 //        { "name",     "TestSampler" },
@@ -1731,10 +1737,11 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //
 //    ASSERT_EQ(report.warnings.size(), 1);
 //    EXPECT_EQ(report.warnings[0],
-//              "Resources file: Missing dynamic resources. If you ONLY use the backbuffer in your shaderpack, you can ignore this message");
+//              "Resources file: Missing dynamic resources. If you ONLY use the backbuffer in your shaderpack, you can ignore this
+//              message");
 //}
 //
-//TEST(ResourcesValidator, TextureWarningsPropagate) {
+// TEST(ResourcesValidator, TextureWarningsPropagate) {
 //    // clang-format off
 //    nlohmann::json resources = {
 //        { "textures",
@@ -1769,12 +1776,13 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors.size(), 0);
 //
 //    ASSERT_EQ(report.warnings.size(), 1);
-//    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of '\"RGBA8\"' will be used");
+//    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of '\"RGBA8\"' will be
+//    used");
 //
 //    EXPECT_EQ(resources.at("textures").at(0).at("format").at("pixelFormat"), "RGBA8");
 //}
 //
-//TEST(ResourcesValidator, SamplerErrorsPropagate) {
+// TEST(ResourcesValidator, SamplerErrorsPropagate) {
 //    // clang-format off
 //    nlohmann::json resources = {
 //        { "textures",
@@ -1816,7 +1824,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 // *      Texture validator tests     *
 // ************************************/
 //
-//TEST(TextureValidator, NoErrorsOrWarnings) {
+// TEST(TextureValidator, NoErrorsOrWarnings) {
 //    // clang-format off
 //    nlohmann::json texture = {
 //        { "name", "TestTexture" },
@@ -1838,7 +1846,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors.size(), 0);
 //}
 //
-//TEST(TextureValidator, NameMissing) {
+// TEST(TextureValidator, NameMissing) {
 //    // clang-format off
 //    nlohmann::json texture = {
 //            {"format", {
@@ -1859,7 +1867,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors[0], "Texture <NAME_MISSING>: Missing field name");
 //}
 //
-//TEST(TextureValidator, FormatMissing) {
+// TEST(TextureValidator, FormatMissing) {
 //    // clang-format off
 //    nlohmann::json texture = {
 //            {"name", "TestTexture"}
@@ -1875,7 +1883,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors[0], "Texture TestTexture: Missing field format");
 //}
 //
-//TEST(TextureValidator, TextureFormatWarningsPropagate) {
+// TEST(TextureValidator, TextureFormatWarningsPropagate) {
 //    // clang-format off
 //    nlohmann::json texture = {
 //            {"name", "TestTexture"},
@@ -1893,7 +1901,8 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors.size(), 0);
 //
 //    ASSERT_EQ(report.warnings.size(), 1);
-//    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of '\"RGBA8\"' will be used");
+//    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of '\"RGBA8\"' will be
+//    used");
 //
 //    EXPECT_EQ(texture.at("format").at("pixelFormat").get<std::string>(), "RGBA8");
 //}
@@ -1902,7 +1911,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 // *      Texture format validation tests     *
 // ********************************************/
 //
-//TEST(TextureFormatValidator, NoErrorsOrWarnings) {
+// TEST(TextureFormatValidator, NoErrorsOrWarnings) {
 //    // clang-format off
 //    nlohmann::json texture_format = {
 //            {"pixelFormat", "RGBA8"},
@@ -1920,7 +1929,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors.size(), 0);
 //}
 //
-//TEST(TextureFormatValidator, PixelFormatMissing) {
+// TEST(TextureFormatValidator, PixelFormatMissing) {
 //    // clang-format off
 //    nlohmann::json texture_format = {
 //            {"dimensionType", "Absolute"},
@@ -1936,12 +1945,13 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors.size(), 0);
 //
 //    ASSERT_EQ(report.warnings.size(), 1);
-//    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of '\"RGBA8\"' will be used");
+//    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of '\"RGBA8\"' will be
+//    used");
 //
 //    EXPECT_EQ(texture_format.at("pixelFormat").get<std::string>(), "RGBA8");
 //}
 //
-//TEST(TextureFormatValidator, DimensionTypeMissing) {
+// TEST(TextureFormatValidator, DimensionTypeMissing) {
 //    // clang-format off
 //    nlohmann::json texture_format = {
 //            {"pixelFormat", "RGBA8"},
@@ -1963,7 +1973,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(texture_format.at("dimensionType").get<std::string>(), "Absolute");
 //}
 //
-//TEST(TextureFormatValidator, WidthMissing) {
+// TEST(TextureFormatValidator, WidthMissing) {
 //    // clang-format off
 //    nlohmann::json texture_format = {
 //            {"pixelFormat", "RGBA8"},
@@ -1982,7 +1992,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors[0], "Format of texture TestTexture: Missing field width");
 //}
 //
-//TEST(TextureFormatValidator, HeightMissing) {
+// TEST(TextureFormatValidator, HeightMissing) {
 //    // clang-format off
 //    nlohmann::json texture_format = {
 //            {"pixelFormat", "RGBA8"},
@@ -2005,7 +2015,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 // *      Sampler validation tests        *
 // ****************************************/
 //
-//TEST(SamplerValidator, NoErrorsOrWarnings) {
+// TEST(SamplerValidator, NoErrorsOrWarnings) {
 //    // clang-format off
 //    nlohmann::json sampler = {
 //        { "name",     "TestSampler" },
@@ -2021,7 +2031,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors.size(), 0);
 //}
 //
-//TEST(SamplerValidator, MissingName) {
+// TEST(SamplerValidator, MissingName) {
 //    // clang-format off
 //    nlohmann::json sampler = {
 //            {"filter", "Bilinear"},
@@ -2038,7 +2048,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors[0], "Sampler <NAME_MISSING>: Missing field name");
 //}
 //
-//TEST(SamplerValidator, MissingFilter) {
+// TEST(SamplerValidator, MissingFilter) {
 //    // clang-format off
 //    nlohmann::json sampler = {
 //            {"name", "TestSampler"},
@@ -2055,7 +2065,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors[0], "Sampler TestSampler: Missing field filter");
 //}
 //
-//TEST(SamplerValidator, MissingWrapMode) {
+// TEST(SamplerValidator, MissingWrapMode) {
 //    // clang-format off
 //    nlohmann::json sampler = {
 //            {"name", "TestSampler"},
@@ -2076,11 +2086,11 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 // *      Material validation tests       *
 // ****************************************/
 //
-//TEST(MaterialValidator, NoErrorsOrWarnings) {
+// TEST(MaterialValidator, NoErrorsOrWarnings) {
 //    // clang-format off
 //    nlohmann::json material = {
 //        {"name", "TestMaterial"},
-//        {"passes", 
+//        {"passes",
 //            {
 //                {
 //                    {"name", "main"},
@@ -2106,7 +2116,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors.size(), 0);
 //}
 //
-//TEST(MaterialValidator, BindingsMissing) {
+// TEST(MaterialValidator, BindingsMissing) {
 //    // clang-format off
 //    nlohmann::json material = {
 //        {"name", "TestMaterial"},
@@ -2130,7 +2140,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.warnings[0], "Material pass main in material TestMaterial: Missing field bindings");
 //}
 //
-//TEST(MaterialValidator, BindingsEmpty) {
+// TEST(MaterialValidator, BindingsEmpty) {
 //    // clang-format off
 //    nlohmann::json material = {
 //        { "name", "TestMaterial" },
@@ -2155,7 +2165,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.warnings[0], "Material pass main in material TestMaterial: Field bindings exists but it's empty");
 //}
 //
-//TEST(MaterialValidator, FilterMissing) {
+// TEST(MaterialValidator, FilterMissing) {
 //    // clang-format off
 //    nlohmann::json material = {
 //        {"name", "TestMaterial"},
@@ -2186,7 +2196,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors[0], "Material TestMaterial: Missing geometry filter");
 //}
 //
-//TEST(MaterialValidator, NameMissing) {
+// TEST(MaterialValidator, NameMissing) {
 //    // clang-format off
 //    nlohmann::json material = {
 //        {"passes",
@@ -2217,7 +2227,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors[0], "Material <NAME_MISSING>: Missing material name");
 //}
 //
-//TEST(MaterialValidator, PassesMissing) {
+// TEST(MaterialValidator, PassesMissing) {
 //    // clang-format off
 //    nlohmann::json material = {
 //            {"name", "TestMaterial"},
@@ -2234,7 +2244,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors[0], "Material TestMaterial: Missing material passes");
 //}
 //
-//TEST(MaterialValidator, PassesWrongType) {
+// TEST(MaterialValidator, PassesWrongType) {
 //    // clang-format off
 //    nlohmann::json material = {
 //        {"name", "TestMaterial"},
@@ -2252,7 +2262,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors[0], "Material TestMaterial: Passes field must be an array");
 //}
 //
-//TEST(MaterialValidator, PassesEmptyArray) {
+// TEST(MaterialValidator, PassesEmptyArray) {
 //    // clang-format off
 //    nlohmann::json material = {
 //            {"name", "TestMaterial"},
@@ -2270,7 +2280,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors[0], "Material TestMaterial: Passes field must have at least one item");
 //}
 //
-//TEST(MaterialValidator, PassNoPipeline) {
+// TEST(MaterialValidator, PassNoPipeline) {
 //    // clang-format off
 //    nlohmann::json material = {
 //        {"name", "TestMaterial"},
@@ -2301,7 +2311,7 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
 //    EXPECT_EQ(report.errors[0], "Material pass main in material TestMaterial: Missing field pipeline");
 //}
 //
-//TEST(MaterialValidator, PassNoName) {
+// TEST(MaterialValidator, PassNoName) {
 //    // clang-format off
 //    nlohmann::json material = {
 //        {"name", "TestMaterial"},
