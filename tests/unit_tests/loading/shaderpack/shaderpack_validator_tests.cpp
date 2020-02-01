@@ -10,6 +10,8 @@
 #undef TEST
 #include <gtest/gtest.h>
 
+#include <string.h>
+
 /****************************************
  *      Pipeline validator tests        *
  ****************************************/
@@ -335,7 +337,6 @@ TEST(GraphicsPipelineValidator, MissingParentName) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field parentName. A default value of '\"\"' will be used");
 }
 
 TEST(GraphicsPipelineValidator, MissingDefines) {
@@ -396,7 +397,6 @@ TEST(GraphicsPipelineValidator, MissingDefines) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field defines. A default value of '[]' will be used");
 }
 
 TEST(GraphicsPipelineValidator, MissingStates) {
@@ -458,7 +458,6 @@ TEST(GraphicsPipelineValidator, MissingStates) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field states. A default value of '[]' will be used");
 }
 
 TEST(GraphicsPipelineValidator, MissingFrontFace) {
@@ -517,7 +516,6 @@ TEST(GraphicsPipelineValidator, MissingFrontFace) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field frontFace. A default value of '{}' will be used");
 }
 
 TEST(GraphicsPipelineValidator, MissingBackFace) {
@@ -574,72 +572,6 @@ TEST(GraphicsPipelineValidator, MissingBackFace) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field backFace. A default value of '{}' will be used");
-}
-
-TEST(GraphicsPipelineValidator, MissingFallback) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"backFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"depthBias\": 0,"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
-
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
-
-    EXPECT_EQ(report.errors.size(), 0);
-
-    ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field fallback. A default value of '\"\"' will be used");
 }
 
 TEST(GraphicsPipelineValidator, MissingDepthBias) {
@@ -703,7 +635,6 @@ TEST(GraphicsPipelineValidator, MissingDepthBias) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field depthBias. A default value of '0' will be used");
 }
 
 TEST(GraphicsPipelineValidator, MissingSlopeScaledDepthBias) {
@@ -767,7 +698,6 @@ TEST(GraphicsPipelineValidator, MissingSlopeScaledDepthBias) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field slopeScaledDepthBias. A default value of '0' will be used");
 }
 
 TEST(GraphicsPipelineValidator, MissingStencilRef) {
@@ -831,7 +761,6 @@ TEST(GraphicsPipelineValidator, MissingStencilRef) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field stencilRef. A default value of '0' will be used");
 }
 
 TEST(GraphicsPipelineValidator, MissingStencilReadMask) {
@@ -895,7 +824,6 @@ TEST(GraphicsPipelineValidator, MissingStencilReadMask) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field stencilReadMask. A default value of '0' will be used");
 }
 
 TEST(GraphicsPipelineValidator, MissingStencilWriteMask) {
@@ -959,7 +887,6 @@ TEST(GraphicsPipelineValidator, MissingStencilWriteMask) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field stencilWriteMask. A default value of '0' will be used");
 }
 
 TEST(GraphicsPipelineValidator, MissingMsaaSupport) {
@@ -1023,7 +950,6 @@ TEST(GraphicsPipelineValidator, MissingMsaaSupport) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field msaaSupport. A default value of '\"None\"' will be used");
 }
 
 TEST(GraphicsPipelineValidator, MissingSourceBlendFactor) {
@@ -1087,7 +1013,6 @@ TEST(GraphicsPipelineValidator, MissingSourceBlendFactor) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field sourceBlendFactor. A default value of '\"One\"' will be used");
 }
 
 TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
@@ -1151,9 +1076,8 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0],
-              "Pipeline TestPipeline: Missing field destinationBlendFactor. A default value of '\"Zero\"' will be used");
 }
+
 //
 // TEST(GraphicsPipelineValidator, MissingAlphaSrc) {
 //    // clang-format off
