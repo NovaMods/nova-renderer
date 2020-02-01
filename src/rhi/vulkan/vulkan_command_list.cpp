@@ -1,7 +1,5 @@
 #include "vulkan_command_list.hpp"
 
-#include "nova_renderer/util/logger.hpp"
-
 #include "vk_structs.hpp"
 #include "vulkan_render_device.hpp"
 #include "vulkan_utils.hpp"

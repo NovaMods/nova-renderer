@@ -3,8 +3,6 @@
 #include <rx/core/concurrency/scope_lock.h>
 #include <rx/core/log.h>
 
-#include "nova_renderer/util/logger.hpp"
-
 #include "regular_folder_accessor.hpp"
 #include "zip_folder_accessor.hpp"
 
@@ -32,7 +30,7 @@ namespace nova::filesystem {
     }
 
     FolderAccessorBase::FolderAccessorBase(rx::string folder)
-        : root_folder(std::move(folder)), resource_existence_mutex(new rx::concurrency::mutex) {}
+        : root_folder(rx::utility::move(folder)), resource_existence_mutex(new rx::concurrency::mutex) {}
 
     bool FolderAccessorBase::does_resource_exist(const rx::string& resource_path) {
         rx::concurrency::scope_lock l(*resource_existence_mutex);

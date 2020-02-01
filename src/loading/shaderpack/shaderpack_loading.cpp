@@ -12,7 +12,6 @@
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
 
 #include "../../filesystem/helpers.hpp"
-#include "../../tasks/task_scheduler.hpp"
 #include "../json_utils.hpp"
 #include "render_graph_builder.hpp"
 #include "shaderpack_validator.hpp"

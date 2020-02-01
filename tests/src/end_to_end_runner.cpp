@@ -21,18 +21,17 @@ void at_exit_handler();
 #include "nova_renderer/window.hpp"
 
 namespace nova::renderer {
+    RX_LOG("EndToEndRunner", logger);
+
     int main() {
 #ifdef __linux__
         atexit(at_exit_handler);
 #endif
 
-        // TODO: fil out this test when the RHI is stable
-        TEST_SETUP_LOGGER();
-
         rx::array<char[FILENAME_MAX]> buff;
         getcwd(buff.data(), FILENAME_MAX);
-        NOVA_LOG(DEBUG) << "Running in " << buff.data() << std::flush;
-        NOVA_LOG(DEBUG) << "Predefined resources at: " << CMAKE_DEFINED_RESOURCES_PREFIX;
+        logger(rx::log::level::k_info, "Running in %s", buff);
+        logger(rx::log::level::k_info, "Predefined resources at: %s", CMAKE_DEFINED_RESOURCES_PREFIX);
 
         NovaSettings settings;
         settings.vulkan.application_name = "Nova Renderer test";

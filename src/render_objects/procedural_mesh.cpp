@@ -4,7 +4,6 @@
 
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
-#include "nova_renderer/util/logger.hpp"
 
 #include "../util/memory_utils.hpp"
 using namespace nova::mem;

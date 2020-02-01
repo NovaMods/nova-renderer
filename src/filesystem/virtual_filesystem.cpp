@@ -2,8 +2,6 @@
 
 #include <rx/core/log.h>
 
-#include "nova_renderer/util/logger.hpp"
-
 #include "regular_folder_accessor.hpp"
 
 namespace nova::filesystem {

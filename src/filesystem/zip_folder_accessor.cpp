@@ -2,11 +2,11 @@
 
 #include <array>
 #include <memory>
+#include <sstream>
 
 #include <rx/core/array.h>
 #include <rx/core/log.h>
 
-#include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/utils.hpp"
 
 namespace nova::filesystem {
@@ -176,7 +176,7 @@ namespace nova::filesystem {
         }
 
         ss << folder.name.data();
-        NOVA_LOG(INFO) << ss.str();
+        logger(rx::log::level::k_info, ss.str().c_str());
 
         folder.children.each_fwd([&](const FileTreeNode& child) { print_file_tree(child, depth + 1); });
     }

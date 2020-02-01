@@ -5,10 +5,11 @@
 #include <signal.h>
 #include <string.h>
 
+#include <sstream>
+
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/memory/allocation_structs.hpp"
 #include "nova_renderer/renderables.hpp"
-#include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/window.hpp"
 
 #include "vk_structs.hpp"
@@ -940,7 +941,7 @@ namespace nova::renderer::rhi {
 
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
 
-            NOVA_LOG(INFO) << "Set image " << image->image << " to have name " << info.name.data();
+            logger(rx::log::level::k_info, "Set image %uz to have name %s", image->image, info.name);
         }
 
         VkMemoryRequirements requirements;

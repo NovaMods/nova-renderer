@@ -14,11 +14,11 @@ typedef int Bool; // Because X11 is stupid
 #include "nova_renderer/nova_renderer.hpp"
 #include "nova_renderer/util/platform.hpp"
 
-void glfw_error_callback(const int error, const char* desc) { NOVA_LOG(ERROR) << "GLFW error(" << error << ") " << desc; }
+RX_LOG("Window", logger);
+
+void glfw_error_callback(const int error, const char* desc) { logger(rx::log::level::k_error, "GLFW error(%u)%s", error, desc); }
 
 namespace nova::renderer {
-    RX_LOG("Window", logger);
-
     void NovaWindow::glfw_key_callback(GLFWwindow* window, const int key, int /* scancode */, const int action, int /* mods */) {
         void* user_data = glfwGetWindowUserPointer(window);
         auto* my_window = static_cast<NovaWindow*>(user_data);

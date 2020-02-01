@@ -5,8 +5,6 @@
 #include <rx/core/filesystem/file.h>
 #include <rx/core/log.h>
 
-#include "nova_renderer/util/logger.hpp"
-
 namespace nova::filesystem {
     RX_LOG("RegularFilesystem", logger);
 

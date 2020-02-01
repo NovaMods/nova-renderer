@@ -1,9 +1,6 @@
 #include "nova_renderer/resource_loader.hpp"
 
-#include <utility>
-
 #include "nova_renderer/nova_renderer.hpp"
-#include "nova_renderer/util/logger.hpp"
 
 using namespace nova::mem;
 

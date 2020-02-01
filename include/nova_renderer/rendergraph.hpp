@@ -10,7 +10,6 @@
 #include "nova_renderer/rhi/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
-#include "nova_renderer/util/logger.hpp"
 
 #include "resource_loader.hpp"
 

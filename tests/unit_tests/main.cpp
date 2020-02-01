@@ -1,11 +1,15 @@
-#include "../src/general_test_setup.hpp"
-
 #include <gtest/gtest.h>
 
-int main(int argc, char **argv) {
+#include "../src/general_test_setup.hpp"
+
+int main(int argc, char** argv) {
     TEST_CONFIGURE_RUNTIME();
-    TEST_SETUP_LOGGER();
+    init_rex();
 
     testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    const auto res = RUN_ALL_TESTS();
+
+    rex_fini();
+
+    return res;
 }

@@ -10,6 +10,8 @@
  *      Pipeline validator tests        *
  ****************************************/
 
+RX_LOG("ShaderpackValidatorTests", logger);
+
 TEST(GraphicsPipelineValidator, NoWarningsOrErrors) {
     rx::json pipeline_json{R"({
         "name": "TestPipeline",
@@ -67,7 +69,7 @@ TEST(GraphicsPipelineValidator, NoWarningsOrErrors) {
 
     const auto err = pipeline_json.error();
     if(err) {
-        NOVA_LOG(ERROR) << "Could not create JSON resource: " << err->data();
+        logger(rx::log::level::k_error, "Could not create JSON resource: %s", *err);
     }
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline_json);
@@ -1614,7 +1616,7 @@ TEST(TextureValidator, NoErrorsOrWarnings) {
 
     const auto err = texture.error();
     if(err) {
-        NOVA_LOG(ERROR) << err->data();
+        logger(rx::log::level::k_error, "%s", *err);
     }
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_data(texture);
@@ -1749,7 +1751,7 @@ TEST(TextureFormatValidator, HeightMissing) {
     })"};
 
     if(const auto err = texture_format.error()) {
-        NOVA_LOG(ERROR) << err->data();
+        logger(rx::log::level::k_error, "%s", *err);
     }
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,

@@ -6,7 +6,6 @@
 #include <rx/core/log.h>
 
 #include "nova_renderer/constants.hpp"
-#include "nova_renderer/util/logger.hpp"
 
 namespace nova::renderer::shaderpack {
     RX_LOG("RenderGraphBuilder", logger);
