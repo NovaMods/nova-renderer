@@ -9,7 +9,6 @@
 #include "../../../src/general_test_setup.hpp"
 #undef TEST
 #include <gtest/gtest.h>
-
 #include <string.h>
 
 /****************************************
@@ -17,60 +16,59 @@
  ****************************************/
 
 TEST(GraphicsPipelineValidator, NoWarningsOrErrors) {
-    rx::json pipeline_json{""
-                           "{"
-                           "    \"name\": \"TestPipeline\","
-                           "    \"parentName\": \"ParentOfTestPipeline\","
-                           "    \"pass\": \"TestPass\","
-                           "    \"defines\": ["
-                           "        \"USE_NORMALMAP\","
-                           "        \"USE_SPECULAR\""
-                           "    ],"
-                           "    \"states\": ["
-                           "        \"DisableDepthTest\""
-                           "    ],"
-                           "    \"vertexFields\": ["
-                           "        \"Position\","
-                           "        \"UV0\","
-                           "        \"Normal\","
-                           "        \"Tangent\""
-                           "    ],"
-                           "    \"frontFace\": {"
-                           "        \"failOp\": \"Keep\","
-                           "        \"passOp\": \"Keep\","
-                           "        \"depthFailOp\": \"Replace\","
-                           "        \"compareOp\": \"Less\","
-                           "        \"compareMask\": 255,"
-                           "        \"writeMask\": 255"
-                           "    },"
-                           "    \"backFace\": {"
-                           "        \"failOp\": \"Keep\","
-                           "        \"passOp\": \"Keep\","
-                           "        \"depthFailOp\": \"Replace\","
-                           "        \"compareOp\": \"Less\","
-                           "        \"compareMask\": 255,"
-                           "        \"writeMask\": 255"
-                           "    },"
-                           "    \"depthBias\": 0,"
-                           "    \"slopeScaledDepthBias\": 0.01,"
-                           "    \"stencilRef\": 0,"
-                           "    \"stencilReadMask\": 255,"
-                           "    \"stencilWriteMask\": 255,"
-                           "    \"msaaSupport\": \"None\","
-                           "    \"primitiveMode\": \"Triangles\","
-                           "    \"sourceBlendFactor\": \"One\","
-                           "    \"destinationBlendFactor\": \"Zero\","
-                           "    \"fallback\": \"\","
-                           "    \"alphaSrc\": \"One\","
-                           "    \"alphaDst\": \"Zero\","
-                           "    \"depthFunc\": \"Less\","
-                           "    \"renderQueue\": \"Opaque\","
-                           "    \"vertexShader\": \"TestVertexShader\","
-                           "    \"geometryShader\": \"TestGeometryShader\","
-                           "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                           "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                           "    \"fragmentShader\": \"TestFragmentShader\""
-                           "}"};
+    rx::json pipeline_json{R"({
+        "name": "TestPipeline",
+        "parentName": "ParentOfTestPipeline",
+        "pass": "TestPass",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "slopeScaledDepthBias": 0.01,
+        "stencilRef": 0,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const auto err = pipeline_json.error();
     if(err) {
@@ -85,59 +83,58 @@ TEST(GraphicsPipelineValidator, NoWarningsOrErrors) {
 }
 
 TEST(GraphicsPipelineValidator, MissingName) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"backFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"depthBias\": 0,"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "parentName": "ParentOfTestPipeline",
+        "pass": "TestPass",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "slopeScaledDepthBias": 0.01,
+        "stencilRef": 0,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -149,59 +146,58 @@ TEST(GraphicsPipelineValidator, MissingName) {
 }
 
 TEST(GraphicsPipelineValidator, MissingPass) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"backFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"depthBias\": 0,"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "name": "TestPipeline",
+        "parentName": "ParentOfTestPipeline",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "slopeScaledDepthBias": 0.01,
+        "stencilRef": 0,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -213,59 +209,58 @@ TEST(GraphicsPipelineValidator, MissingPass) {
 }
 
 TEST(GraphicsPipelineValidator, MissingVertexShader) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"backFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"depthBias\": 0,"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "name": "TestPipeline",
+        "parentName": "ParentOfTestPipeline",
+        "pass": "TestPass",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "slopeScaledDepthBias": 0.01,
+        "stencilRef": 0,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -277,59 +272,58 @@ TEST(GraphicsPipelineValidator, MissingVertexShader) {
 }
 
 TEST(GraphicsPipelineValidator, MissingParentName) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"backFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"depthBias\": 0,"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "name": "TestPipeline",
+        "pass": "TestPass",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "slopeScaledDepthBias": 0.01,
+        "stencilRef": 0,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -340,56 +334,55 @@ TEST(GraphicsPipelineValidator, MissingParentName) {
 }
 
 TEST(GraphicsPipelineValidator, MissingDefines) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"backFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"depthBias\": 0,"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "name": "TestPipeline",
+        "parentName": "ParentOfTestPipeline",
+        "pass": "TestPass",
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "slopeScaledDepthBias": 0.01,
+        "stencilRef": 0,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -400,57 +393,56 @@ TEST(GraphicsPipelineValidator, MissingDefines) {
 }
 
 TEST(GraphicsPipelineValidator, MissingStates) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"backFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"depthBias\": 0,"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "name": "TestPipeline",
+        "parentName": "ParentOfTestPipeline",
+        "pass": "TestPass",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "slopeScaledDepthBias": 0.01,
+        "stencilRef": 0,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -461,54 +453,51 @@ TEST(GraphicsPipelineValidator, MissingStates) {
 }
 
 TEST(GraphicsPipelineValidator, MissingFrontFace) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"backFace\": ["
-                      "        {"
-                      "            \"failOp\": \"Keep\","
-                      "            \"passOp\": \"Keep\","
-                      "            \"depthFailOp\": \"Replace\","
-                      "            \"compareOp\": \"Less\","
-                      "            \"compareMask\": 255,"
-                      "            \"writeMask\": 255"
-                      "        }"
-                      "    ],"
-                      "    \"depthBias\": 0,"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "name": "TestPipeline",
+        "parentName": "ParentOfTestPipeline",
+        "pass": "TestPass",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "slopeScaledDepthBias": 0.01,
+        "stencilRef": 0,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -519,52 +508,51 @@ TEST(GraphicsPipelineValidator, MissingFrontFace) {
 }
 
 TEST(GraphicsPipelineValidator, MissingBackFace) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"depthBias\": 0,"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "name": "TestPipeline",
+        "parentName": "ParentOfTestPipeline",
+        "pass": "TestPass",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "slopeScaledDepthBias": 0.01,
+        "stencilRef": 0,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -575,59 +563,58 @@ TEST(GraphicsPipelineValidator, MissingBackFace) {
 }
 
 TEST(GraphicsPipelineValidator, MissingDepthBias) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"backFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "name": "TestPipeline",
+        "parentName": "ParentOfTestPipeline",
+        "pass": "TestPass",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "slopeScaledDepthBias": 0.01,
+        "stencilRef": 0,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -638,59 +625,58 @@ TEST(GraphicsPipelineValidator, MissingDepthBias) {
 }
 
 TEST(GraphicsPipelineValidator, MissingSlopeScaledDepthBias) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"backFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"depthBias\": 0,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "name": "TestPipeline",
+        "parentName": "ParentOfTestPipeline",
+        "pass": "TestPass",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "stencilRef": 0,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -701,59 +687,58 @@ TEST(GraphicsPipelineValidator, MissingSlopeScaledDepthBias) {
 }
 
 TEST(GraphicsPipelineValidator, MissingStencilRef) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"backFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"depthBias\": 0,"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "name": "TestPipeline",
+        "parentName": "ParentOfTestPipeline",
+        "pass": "TestPass",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "slopeScaledDepthBias": 0.01,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -764,59 +749,58 @@ TEST(GraphicsPipelineValidator, MissingStencilRef) {
 }
 
 TEST(GraphicsPipelineValidator, MissingStencilReadMask) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"backFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"depthBias\": 0,"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "name": "TestPipeline",
+        "parentName": "ParentOfTestPipeline",
+        "pass": "TestPass",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "slopeScaledDepthBias": 0.01,
+        "stencilRef": 0,
+        "stencilWriteMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -827,59 +811,58 @@ TEST(GraphicsPipelineValidator, MissingStencilReadMask) {
 }
 
 TEST(GraphicsPipelineValidator, MissingStencilWriteMask) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"backFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"depthBias\": 0,"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "name": "TestPipeline",
+        "parentName": "ParentOfTestPipeline",
+        "pass": "TestPass",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "slopeScaledDepthBias": 0.01,
+        "stencilRef": 0,
+        "stencilReadMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -890,59 +873,58 @@ TEST(GraphicsPipelineValidator, MissingStencilWriteMask) {
 }
 
 TEST(GraphicsPipelineValidator, MissingMsaaSupport) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"backFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"depthBias\": 0,"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "name": "TestPipeline",
+        "parentName": "ParentOfTestPipeline",
+        "pass": "TestPass",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "slopeScaledDepthBias": 0.01,
+        "stencilRef": 0,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -953,59 +935,58 @@ TEST(GraphicsPipelineValidator, MissingMsaaSupport) {
 }
 
 TEST(GraphicsPipelineValidator, MissingSourceBlendFactor) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"backFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"depthBias\": 0,"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"destinationBlendFactor\": \"Zero\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "name": "TestPipeline",
+        "parentName": "ParentOfTestPipeline",
+        "pass": "TestPass",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "slopeScaledDepthBias": 0.01,
+        "stencilRef": 0,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "destinationBlendFactor": "Zero",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
@@ -1016,59 +997,58 @@ TEST(GraphicsPipelineValidator, MissingSourceBlendFactor) {
 }
 
 TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
-    rx::json pipeline{""
-                      "{"
-                      "    \"name\": \"TestPipeline\","
-                      "    \"parentName\": \"ParentOfTestPipeline\","
-                      "    \"pass\": \"TestPass\","
-                      "    \"defines\": ["
-                      "        \"USE_NORMALMAP\","
-                      "        \"USE_SPECULAR\""
-                      "    ],"
-                      "    \"states\": ["
-                      "        \"DisableDepthTest\""
-                      "    ],"
-                      "    \"vertexFields\": ["
-                      "        \"Position\","
-                      "        \"UV0\","
-                      "        \"Normal\","
-                      "        \"Tangent\""
-                      "    ],"
-                      "    \"frontFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"backFace\": {"
-                      "        \"failOp\": \"Keep\","
-                      "        \"passOp\": \"Keep\","
-                      "        \"depthFailOp\": \"Replace\","
-                      "        \"compareOp\": \"Less\","
-                      "        \"compareMask\": 255,"
-                      "        \"writeMask\": 255"
-                      "    },"
-                      "    \"depthBias\": 0,"
-                      "    \"slopeScaledDepthBias\": 0.01,"
-                      "    \"stencilRef\": 0,"
-                      "    \"stencilReadMask\": 255,"
-                      "    \"stencilWriteMask\": 255,"
-                      "    \"msaaSupport\": \"None\","
-                      "    \"primitiveMode\": \"Triangles\","
-                      "    \"sourceBlendFactor\": \"One\","
-                      "    \"fallback\": \"\","
-                      "    \"alphaSrc\": \"One\","
-                      "    \"alphaDst\": \"Zero\","
-                      "    \"depthFunc\": \"Less\","
-                      "    \"renderQueue\": \"Opaque\","
-                      "    \"vertexShader\": \"TestVertexShader\","
-                      "    \"geometryShader\": \"TestGeometryShader\","
-                      "    \"tessellationControlShader\": \"TestTessellationControlShader\","
-                      "    \"tessellationEvaluationShader\": \"TestTessellationEvaluationShader\","
-                      "    \"fragmentShader\": \"TestFragmentShader\""
-                      "}"};
+    rx::json pipeline{R"({
+        "name": "TestPipeline",
+        "parentName": "ParentOfTestPipeline",
+        "pass": "TestPass",
+        "defines": [
+            "USE_NORMALMAP",
+            "USE_SPECULAR"
+        ],
+        "states": [
+            "DisableDepthTest"
+        ],
+        "vertexFields": [
+            "Position",
+            "UV0",
+            "Normal",
+            "Tangent"
+        ],
+        "frontFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "backFace": {
+            "failOp": "Keep",
+            "passOp": "Keep",
+            "depthFailOp": "Replace",
+            "compareOp": "Less",
+            "compareMask": 255,
+            "writeMask": 255
+        },
+        "depthBias": 0,
+        "slopeScaledDepthBias": 0.01,
+        "stencilRef": 0,
+        "stencilReadMask": 255,
+        "stencilWriteMask": 255,
+        "msaaSupport": "None",
+        "primitiveMode": "Triangles",
+        "sourceBlendFactor": "One",
+        "fallback": "",
+        "alphaSrc": "One",
+        "alphaDst": "Zero",
+        "depthFunc": "Less",
+        "renderQueue": "Opaque",
+        "vertexShader": "TestVertexShader",
+        "geometryShader": "TestGeometryShader",
+        "tessellationControlShader": "TestTessellationControlShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "fragmentShader": "TestFragmentShader"
+    })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
     nova::renderer::shaderpack::print(report);
