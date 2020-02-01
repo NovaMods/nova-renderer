@@ -1476,7 +1476,7 @@ TEST(GraphicsPipelineValidator, MissingFragmentShader) {
         "vertexShader": "TestVertexShader",
         "geometryShader": "TestGeometryShader",
         "tessellationControlShader": "TestTessellationControlShader",
-        "tessellationEvaluationShader": "TestTessellationEvaluationShader",
+        "tessellationEvaluationShader": "TestTessellationEvaluationShader"
     })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
@@ -1530,7 +1530,6 @@ TEST(ResourcesValidator, TextureMissing) {
             }
         ]
     })"};
-
 
     nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_shaderpack_resources_data(resources);
     nova::renderer::shaderpack::print(report);
@@ -1611,7 +1610,12 @@ TEST(TextureValidator, NoErrorsOrWarnings) {
             "width": 1920,
             "height": 1080
         }
-    )"};
+    })"};
+
+    const auto err = texture.error();
+    if(err) {
+        NOVA_LOG(ERROR) << err->data();
+    }
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_data(texture);
     nova::renderer::shaderpack::print(report);
@@ -1628,7 +1632,7 @@ TEST(TextureValidator, NameMissing) {
             "width": 1920,
             "height": 1080
         }
-    )"};
+    })"};
 
     nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_data(texture);
     nova::renderer::shaderpack::print(report);
@@ -1641,7 +1645,7 @@ TEST(TextureValidator, NameMissing) {
 TEST(TextureValidator, FormatMissing) {
     rx::json texture{R"({
         "name": "TestTexture"
-    )"};
+    })"};
 
     nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_data(texture);
     nova::renderer::shaderpack::print(report);
@@ -1659,7 +1663,7 @@ TEST(TextureValidator, TextureFormatWarningsPropagate) {
             "width": 1920,
             "height": 1080
         }
-    )"};
+    })"};
 
     nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_data(texture);
     nova::renderer::shaderpack::print(report);
@@ -1741,8 +1745,12 @@ TEST(TextureFormatValidator, HeightMissing) {
     rx::json texture_format{R"({
         "pixelFormat": "RGBA8",
         "dimensionType": "Absolute",
-        "width": 1920,
+        "width": 1920
     })"};
+
+    if(const auto err = texture_format.error()) {
+        NOVA_LOG(ERROR) << err->data();
+    }
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
                                                                                                                     "TestTexture");
@@ -1802,7 +1810,7 @@ TEST(SamplerValidator, MissingFilter) {
 TEST(SamplerValidator, MissingWrapMode) {
     rx::json sampler{R"({
         "name": "TestSampler",
-        "filter": "Bilinear",
+        "filter": "Bilinear"
     })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_sampler_data(sampler);
@@ -1895,7 +1903,7 @@ TEST(MaterialValidator, FilterMissing) {
                     }
                 ]
             }
-        ],
+        ]
     })"};
 
     const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
