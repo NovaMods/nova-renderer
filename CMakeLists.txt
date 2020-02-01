@@ -172,13 +172,6 @@ set(NOVA_SOURCE
         src/loading/shaderpack/render_graph_builder.cpp
         src/loading/shaderpack/render_graph_builder.hpp
 
-        src/tasks/task_scheduler.cpp
-        src/tasks/task_scheduler.hpp
-        src/tasks/task_graph.hpp
-        src/tasks/wait_free_queue.hpp
-        src/tasks/condition_counter.cpp
-        src/tasks/condition_counter.hpp
-
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
         
