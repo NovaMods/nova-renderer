@@ -8,6 +8,8 @@
 using namespace nova::mem;
 
 namespace nova::renderer {
+    RX_LOG("DeviceResources", logger);
+
     using namespace rhi;
     using namespace shaderpack;
 
@@ -33,7 +35,7 @@ namespace nova::renderer {
         const BufferCreateInfo create_info = {size.b_count(), BufferUsage::UniformBuffer};
         resource.buffer = device.create_buffer(create_info, *uniform_buffer_memory, internal_allocator);
         if(resource.buffer == nullptr) {
-            NOVA_LOG(ERROR) << "Could not create uniform buffer " << name.data();
+            logger(rx::log::level::k_error, "Could not create uniform buffer %s", name);
             return rx::nullopt;
         }
 
@@ -139,7 +141,7 @@ namespace nova::renderer {
 
 #if NOVA_DEBUG
         else {
-            NOVA_LOG(ERROR) << "Could not find image \"" << name.data() << "\"";
+            logger(rx::log::level::k_error, "Could not find image \"%s\"", name);
         }
 #endif
 
@@ -178,7 +180,7 @@ namespace nova::renderer {
             return TextureResourceAccessor{&render_targets, name};
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create render target " << name.data();
+            logger(rx::log::level::k_error, "Could not create render target %s", name);
             return rx::nullopt;
         }
     }
@@ -199,7 +201,7 @@ namespace nova::renderer {
         }
 #if NOVA_DEBUG
         else {
-            NOVA_LOG(ERROR) << "Could not delete texture  " << texture_name.data() << ", are you sure you spelled it correctly?";
+            logger(rx::log::level::k_error, "Could not delete texture %s, are you sure you spelled it correctly?", texture_name);
         }
 #endif
     }
