@@ -327,7 +327,7 @@ namespace nova::renderer {
         }();
 
         if(!attachment_errors.is_empty()) {
-            attachment_errors.each_fwd([&](const rx::string& err) { rg_log(rx::log::level::k_error, err); });
+            attachment_errors.each_fwd([&](const rx::string& err) { rg_log(rx::log::level::k_error, "%s", err); });
 
             rg_log(
                 rx::log::level::k_error,

@@ -108,11 +108,11 @@ namespace nova::renderer {
                     render_doc->SetCaptureOptionU32(eRENDERDOC_Option_SaveAllInitials, 1U);
                     render_doc->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, 1U);
 
-                    rg_log(rx::log::level::k_info, "Loaded RenderDoc succeesfully");
+                    rg_log(rx::log::level::k_info, "Loaded RenderDoc successfully");
 
                     return 0;
                 })
-                .on_error([](const ntl::NovaError& error) { rg_log(rx::log::level::k_error, error.to_string()); });
+                .on_error([](const ntl::NovaError& error) { rg_log(rx::log::level::k_error, "%s", error.to_string()); });
         }
 
         {
@@ -561,7 +561,7 @@ namespace nova::renderer {
                 }
             }
         } else {
-            NOVA_LOG(ERROR) << "Could not find a mesh with ID " << renderable.mesh;
+            logger(rx::log::level::k_error, "Could not find a mesh with ID %u", renderable.mesh);
         }
 
         // Figure out where to put the renderable
@@ -571,7 +571,7 @@ namespace nova::renderer {
             passes->emplace_back(material);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not get place the new renderable in the appropriate draw command list";
+            logger(rx::log::level::k_error, "Could not get place the new renderable in the appropriate draw command list");
         }
 
         return id;
@@ -637,7 +637,7 @@ namespace nova::renderer {
             mesh_memory = global_allocator->create<DeviceMemoryResource>(*mesh_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << mesh_memory_result.error.to_string().data();
+            logger(rx::log::level::k_error, "Could not create mesh memory pool: %s", mesh_memory_result.error.to_string());
         }
 
         // Assume 65k things, plus we need space for the builtin ubos
@@ -658,7 +658,7 @@ namespace nova::renderer {
             ubo_memory = global_allocator->create<DeviceMemoryResource>(*ubo_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << ubo_memory_result.error.to_string().data();
+            logger(rx::log::level::k_error, "Could not create mesh memory pool: %s", ubo_memory_result.error.to_string());
         }
 
         // Staging buffers will be pooled, so we don't need a _ton_ of memory for them
@@ -679,7 +679,7 @@ namespace nova::renderer {
             staging_buffer_memory = global_allocator->create<DeviceMemoryResource>(*staging_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create staging buffer memory pool: " << staging_memory_result.error.to_string().data();
+            logger(rx::log::level::k_error, "Could not create staging buffer memory pool: %s", staging_memory_result.error.to_string());
         }
     }
 
@@ -706,7 +706,7 @@ namespace nova::renderer {
                                                                          true);
 
         if(!scene_output) {
-            NOVA_LOG(ERROR) << "Could not create scene output render target " << SCENE_OUTPUT_RT_NAME;
+            logger(rx::log::level::k_error, "Could not create scene output render target %s", SCENE_OUTPUT_RT_NAME);
         }
     }
 
@@ -715,14 +715,14 @@ namespace nova::renderer {
             builtin_buffer_names.emplace_back(PER_FRAME_DATA_NAME);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create builtin buffer " << PER_FRAME_DATA_NAME;
+            logger(rx::log::level::k_error, "Could not create builtin buffer ", PER_FRAME_DATA_NAME);
         }
 
         if(device_resources->create_uniform_buffer(MODEL_MATRIX_BUFFER_NAME, sizeof(glm::mat4) * 0xFFFF)) {
             builtin_buffer_names.emplace_back(MODEL_MATRIX_BUFFER_NAME);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create builtin buffer " << MODEL_MATRIX_BUFFER_NAME;
+            logger(rx::log::level::k_error, "Could not create builtin buffer %s", MODEL_MATRIX_BUFFER_NAME);
         }
     }
 
@@ -735,7 +735,7 @@ namespace nova::renderer {
             ui_renderpass->is_builtin = true;
 
             if(!rendergraph->add_renderpass(ui_renderpass, NullUiRenderpass::get_create_info(), *device_resources)) {
-                NOVA_LOG(ERROR) << "Could not create null UI renderpass";
+                logger(rx::log::level::k_error, "Could not create null UI renderpass");
             }
         }
     }
