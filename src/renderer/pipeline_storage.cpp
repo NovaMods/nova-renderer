@@ -8,6 +8,8 @@
 using namespace spirv_cross;
 
 namespace nova::renderer {
+    RX_LOG("PipelineStorage", logger);
+
     using namespace mem;
     using namespace ntl;
     using namespace shaderpack;
@@ -27,8 +29,10 @@ namespace nova::renderer {
     bool PipelineStorage::create_pipeline(const PipelineCreateInfo& create_info) {
         const auto rp_create = renderer.get_renderpass_metadata(create_info.pass);
         if(!rp_create) {
-            NOVA_LOG(ERROR) << "Pipeline " << create_info.name.data() << " wants to be rendered by renderpass " << create_info.pass.data()
-                            << ", but that renderpass doesn't have any metadata";
+            logger(rx::log::level::k_error,
+                   "Pipeline %s wants to be rendered by renderpass %s, but that renderpass doesn't have any metadata",
+                   create_info.name,
+                   create_info.pass);
             return false;
         }
 
@@ -36,8 +40,10 @@ namespace nova::renderer {
                                                                                        rp_create->data.texture_outputs,
                                                                                        rp_create->data.depth_texture);
         if(!pipeline_interface) {
-            NOVA_LOG(ERROR) << "Pipeline " << create_info.name.data()
-                            << " has an invalid interface: " << pipeline_interface.error.to_string().data();
+            logger(rx::log::level::k_error,
+                   "Pipeline %s has an invalid interface: %s",
+                   create_info.name,
+                   pipeline_interface.error.to_string());
             return false;
         }
 
@@ -50,7 +56,7 @@ namespace nova::renderer {
 
             return true;
         } else {
-            NOVA_LOG(ERROR) << "Could not create pipeline " << create_info.name.data() << ": " << pipeline_result.error.to_string().data();
+            logger(rx::log::level::k_error, "Could not create pipeline %s:%s", create_info.name, pipeline_result.error.to_string());
 
             return false;
         }
@@ -127,7 +133,7 @@ namespace nova::renderer {
                         return rhi::VertexFieldFormat::Float4;
 
                     default:
-                        NOVA_LOG(ERROR) << "Nova does not support float fields with " << spirv_type.vecsize << " vector elements";
+                        logger(rx::log::level::k_error, "Nova does not support float fields with %u vector elements", spirv_type.vecsize);
                         return rhi::VertexFieldFormat::Invalid;
                 }
             };
@@ -173,7 +179,7 @@ namespace nova::renderer {
             case SPIRType::Char:
                 [[fallthrough]];
             default:
-                NOVA_LOG(ERROR) << "Nova does not support vertex fields of type " << spirv_type.basetype;
+                logger(rx::log::level::k_error, "Nova does not support vertex fields of type %u", spirv_type.basetype);
         }
 
         return {};
@@ -204,27 +210,27 @@ namespace nova::renderer {
         const ShaderResources resources = shader_compiler.get_shader_resources();
 
         for(const auto& resource : resources.separate_images) {
-            NOVA_LOG(TRACE) << "Found a image named " << resource.name;
+            logger(rx::log::level::k_verbose, "Found a image named %s", resource.name);
             add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::Texture);
         }
 
         for(const auto& resource : resources.separate_samplers) {
-            NOVA_LOG(TRACE) << "Found a sampler named " << resource.name;
+            logger(rx::log::level::k_verbose, "Found a sampler named %s", resource.name);
             add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::Sampler);
         }
 
         for(const auto& resource : resources.sampled_images) {
-            NOVA_LOG(TRACE) << "Found a sampled image resource named " << resource.name;
+            logger(rx::log::level::k_verbose, "Found a sampled image resource named %s", resource.name);
             add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::CombinedImageSampler);
         }
 
         for(const auto& resource : resources.uniform_buffers) {
-            NOVA_LOG(TRACE) << "Found a UBO resource named " << resource.name;
+            logger(rx::log::level::k_verbose, "Found a UBO resource named %s", resource.name);
             add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::UniformBuffer);
         }
 
         for(const auto& resource : resources.storage_buffers) {
-            NOVA_LOG(TRACE) << "Found a SSBO resource named " << resource.name;
+            logger(rx::log::level::k_verbose, "Found a SSBO resource named %s", resource.name);
             add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::StorageBuffer);
         }
     }
@@ -258,8 +264,9 @@ namespace nova::renderer {
             rhi::ResourceBindingDescription& existing_binding = *binding;
             if(existing_binding != new_binding) {
                 // They have two different bindings with the same name. Not allowed
-                NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name
-                                << " in different shader stages. This is not allowed. Use unique names";
+                logger(rx::log::level::k_error,
+                       "You have two different uniforms named %s in different shader stages. This is not allowed. Use unique names",
+                       resource.name);
 
             } else {
                 // Same binding, probably at different stages - let's fix that
