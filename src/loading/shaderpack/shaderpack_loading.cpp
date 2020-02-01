@@ -4,6 +4,8 @@
 #include <SPIRV/GlslangToSpv.h>
 #include <glslang/Include/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
+#include <rx/core/json.h>
+#include <rx/core/log.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/folder_accessor.hpp"
@@ -13,10 +15,11 @@
 #include "../../tasks/task_scheduler.hpp"
 #include "../json_utils.hpp"
 #include "render_graph_builder.hpp"
-#include "rx/core/json.h"
 #include "shaderpack_validator.hpp"
 
 namespace nova::renderer::shaderpack {
+    RX_LOG("ShaderpackLoading", logger);
+
     using namespace filesystem;
 
     // Removed from the GLSLang version we're using
@@ -165,8 +168,10 @@ namespace nova::renderer::shaderpack {
                 if(pixel_format) {
                     output.pixel_format = *pixel_format;
                 } else {
-                    NOVA_LOG(ERROR) << "Render pass " << pass.name.data() << " is trying to use texture " << output.name.data()
-                                    << ", but it's not in the render graph's dynamic texture list";
+                    logger(rx::log::level::k_error,
+                           "Render pass %s is trying to use texture %s, but it's not in the render graph's dynamic texture list",
+                           pass.name,
+                           output.name);
                 }
 
                 return true;
@@ -210,7 +215,7 @@ namespace nova::renderer::shaderpack {
         if(graph_data) {
             data.graph_data = *graph_data;
         } else {
-            NOVA_LOG(ERROR) << "Could not load render graph file. Error: " << graph_data.error.to_string().data();
+            logger(rx::log::level::k_error, "Could not load render graph file. Error: %s", graph_data.error.to_string());
         }
         data.pipelines = load_pipeline_files(folder_access);
         data.materials = load_material_files(folder_access);
@@ -223,7 +228,7 @@ namespace nova::renderer::shaderpack {
     }
 
     rx::optional<ShaderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access) {
-        NOVA_LOG(TRACE) << "load_dynamic_resource_file called";
+        logger(rx::log::level::k_verbose, "load_dynamic_resource_file called");
         const rx::string resources_string = folder_access->read_text_file("resources.json");
 
         auto json_resources = rx::json(resources_string);
@@ -237,7 +242,7 @@ namespace nova::renderer::shaderpack {
     }
 
     ntl::Result<RendergraphData> load_rendergraph_file(FolderAccessorBase* folder_access) {
-        NOVA_LOG(TRACE) << "load_passes_file called";
+        logger(rx::log::level::k_verbose, "load_passes_file called");
         const auto passes_bytes = folder_access->read_text_file("rendergraph.json");
 
         const auto json_passes = rx::json(passes_bytes);
@@ -274,7 +279,7 @@ namespace nova::renderer::shaderpack {
     }
 
     rx::vector<PipelineCreateInfo> load_pipeline_files(FolderAccessorBase* folder_access) {
-        NOVA_LOG(TRACE) << "load_pipeline_files called";
+        logger(rx::log::level::k_verbose, "load_pipeline_files called");
 
         rx::vector<rx::string> potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
 
@@ -298,21 +303,21 @@ namespace nova::renderer::shaderpack {
     }
 
     rx::optional<PipelineCreateInfo> load_single_pipeline(FolderAccessorBase* folder_access, const rx::string& pipeline_path) {
-        NOVA_LOG(TRACE) << "Task to load pipeline " << pipeline_path.data() << " started";
+        logger(rx::log::level::k_verbose, "Task to load pipeline %s started", pipeline_path);
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
         auto json_pipeline = rx::json(pipeline_bytes);
-        NOVA_LOG(TRACE) << "Parsed JSON from disk for pipeline " << pipeline_path.data();
+        logger(rx::log::level::k_verbose, "Parsed JSON from disk for pipeline %s", pipeline_path);
         const ValidationReport report = validate_graphics_pipeline(json_pipeline);
-        NOVA_LOG(TRACE) << "Finished validating JSON for pipeline " << pipeline_path.data();
+        logger(rx::log::level::k_verbose, "Finished validating JSON for pipeline %s", pipeline_path);
         print(report);
         if(!report.errors.is_empty()) {
-            NOVA_LOG(ERROR) << "Loading pipeline file " << pipeline_path.data() << " failed";
+            logger(rx::log::level::k_error, "Loading pipeline file %s failed", pipeline_path);
             return rx::nullopt;
         }
 
         auto new_pipeline = json_pipeline.decode<PipelineCreateInfo>({});
-        NOVA_LOG(TRACE) << "Parsed JSON into pipeline_data for pipeline " << pipeline_path.data();
+        logger(rx::log::level::k_verbose, "Parsed JSON into pipeline_data for pipeline %s", pipeline_path);
         new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename,
                                                              folder_access,
                                                              rhi::ShaderStage::Vertex,
@@ -346,7 +351,7 @@ namespace nova::renderer::shaderpack {
                                                                       new_pipeline.defines);
         }
 
-        NOVA_LOG(TRACE) << "Load of pipeline " << pipeline_path.data() << " succeeded";
+        logger(rx::log::level::k_verbose, "Load of pipeline %s succeeded", pipeline_path);
 
         return new_pipeline;
     }
@@ -404,11 +409,11 @@ namespace nova::renderer::shaderpack {
         const char* info_log = shader.getInfoLog();
         if(std::strlen(info_log) > 0) {
             const char* info_debug_log = shader.getInfoDebugLog();
-            NOVA_LOG(INFO) << filename.data() << " compilation messages:\n" << info_log << "\n" << info_debug_log;
+            logger(rx::log::level::k_info, "%s compilation messages:\n%s\n%s", filename, info_log, info_debug_log);
         }
 
         if(!shader_compiled) {
-            NOVA_LOG(ERROR) << "Could not load shader " << filename.data() << ": Shader compilation failed";
+            logger(rx::log::level::k_error, "Could not load shader %s: Shader compilation failed", filename);
             return {};
         }
 
@@ -418,7 +423,7 @@ namespace nova::renderer::shaderpack {
         if(!shader_linked) {
             const char* program_info_log = program.getInfoLog();
             const char* program_debug_info_log = program.getInfoDebugLog();
-            NOVA_LOG(ERROR) << "Program failed to link: " << program_info_log << "\n" << program_debug_info_log;
+            logger(rx::log::level::k_error, "Program failed to link: %s\n%s", program_info_log, program_debug_info_log);
         }
 
         // Using std::vector is okay here because we have to interface with `glslang`
@@ -456,7 +461,7 @@ namespace nova::renderer::shaderpack {
         print(report);
         if(!report.errors.is_empty()) {
             // There were errors, this material can't be loaded
-            NOVA_LOG(TRACE) << "Load of material " << material_path.data() << " failed";
+            logger(rx::log::level::k_error, "Load of material %s failed", material_path);
             return {};
         }
 
@@ -466,7 +471,7 @@ namespace nova::renderer::shaderpack {
         auto material = json_material.decode<MaterialData>({});
         material.name = material_file_name.substring(0, material_extension_begin_idx);
 
-        NOVA_LOG(TRACE) << "Load of material " << material_path.data() << " succeeded - name " << material.name.data();
+        logger(rx::log::level::k_verbose, "Load of material &s succeeded - name %s", material_path, material.name);
         return material;
     }
 

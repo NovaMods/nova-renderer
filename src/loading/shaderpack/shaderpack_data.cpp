@@ -1,5 +1,7 @@
 #include "nova_renderer/shaderpack_data.hpp"
 
+#include <rx/core/log.h>
+
 #include "nova_renderer/rhi/rhi_enums.hpp"
 
 #include "../json_utils.hpp"
@@ -13,6 +15,8 @@
     }();
 
 namespace nova::renderer::shaderpack {
+    RX_LOG("ShaderpackData", logger);
+
     /*!
      * \brief If a data member isn't in the JSON (which is fully supported and is 100% fine) then we use this to fill in
      * any missing values
@@ -259,7 +263,7 @@ namespace nova::renderer::shaderpack {
             return PixelFormatEnum::DepthStencil;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported pixel format " << str.data();
+        logger(rx::log::level::k_error, "Unsupported pixel format %s", str);
         return {};
     }
 
@@ -271,7 +275,7 @@ namespace nova::renderer::shaderpack {
             return TextureDimensionTypeEnum::Absolute;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported texture dimension type " << str.data();
+        logger(rx::log::level::k_error, "Unsupported texture dimension type %s", str);
         return {};
     }
 
@@ -286,7 +290,7 @@ namespace nova::renderer::shaderpack {
             return TextureFilterEnum::Point;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported texture filter " << str.data();
+        logger(rx::log::level::k_error, "Unsupported texture filter %s", str);
         return {};
     }
 
@@ -298,7 +302,7 @@ namespace nova::renderer::shaderpack {
             return WrapModeEnum::Clamp;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported wrap mode " << str.data();
+        logger(rx::log::level::k_error, "Unsupported wrap mode %s", str);
         return {};
     }
 
@@ -328,7 +332,7 @@ namespace nova::renderer::shaderpack {
             return StencilOpEnum::Invert;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported stencil op " << str.data();
+        logger(rx::log::level::k_error, "Unsupported stencil op %s", str);
         return {};
     }
 
@@ -358,7 +362,7 @@ namespace nova::renderer::shaderpack {
             return CompareOpEnum::Always;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported compare op " << str.data();
+        logger(rx::log::level::k_error, "Unsupported compare op ", str);
         return {};
     }
 
@@ -373,7 +377,7 @@ namespace nova::renderer::shaderpack {
             return MsaaSupportEnum::None;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported antialiasing mode " << str.data();
+        logger(rx::log::level::k_error, "Unsupported antialiasing mode %s", str);
         return {};
     }
 
@@ -385,7 +389,7 @@ namespace nova::renderer::shaderpack {
             return PrimitiveTopologyEnum::Lines;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported primitive mode " << str.data();
+        logger(rx::log::level::k_error, "Unsupported primitive mode %s", str);
         return {};
     }
 
@@ -421,7 +425,7 @@ namespace nova::renderer::shaderpack {
             return BlendFactorEnum::OneMinusDstAlpha;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported blend factor " << str.data();
+        logger(rx::log::level::k_error, "Unsupported blend factor %s", str);
         return {};
     }
 
@@ -436,7 +440,7 @@ namespace nova::renderer::shaderpack {
             return RenderQueueEnum::Cutout;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported render queue " << str.data();
+        logger(rx::log::level::k_error, "Unsupported render queue %s", str);
         return {};
     }
 
@@ -472,7 +476,7 @@ namespace nova::renderer::shaderpack {
             return StateEnum::DisableAlphaWrite;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported state enum " << str.data();
+        logger(rx::log::level::k_error, "Unsupported state enum %s", str);
         return {};
     }
 
