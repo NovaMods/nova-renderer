@@ -2,7 +2,6 @@
 
 #include <rx/core/log.h>
 
-#include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/platform.hpp"
 #include "nova_renderer/util/utils.hpp"
 
