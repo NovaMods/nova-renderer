@@ -1,10 +1,14 @@
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
 
+#include <rx/core/log.h>
+
 #include "nova_renderer/util/logger.hpp"
 
 #include "regular_folder_accessor.hpp"
 
 namespace nova::filesystem {
+    RX_LOG("VirtualFilesystem", logger);
+
     VirtualFilesystem* VirtualFilesystem::instance = nullptr;
 
     VirtualFilesystem* VirtualFilesystem::get_instance() {
@@ -30,7 +34,7 @@ namespace nova::filesystem {
         });
 
         if(ret_val == nullptr) {
-            NOVA_LOG(ERROR) << "Could not file folder " << path.data();
+            logger(rx::log::level::k_error, "Could not file folder %s", path);
         }
 
         return ret_val;

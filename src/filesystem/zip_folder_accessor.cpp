@@ -4,14 +4,17 @@
 #include <memory>
 
 #include <rx/core/array.h>
+#include <rx/core/log.h>
 
 #include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/utils.hpp"
 
 namespace nova::filesystem {
+    RX_LOG("ZipFilesystem", logger);
+
     ZipFolderAccessor::ZipFolderAccessor(const rx::string& folder) : FolderAccessorBase(folder) {
         if(mz_zip_reader_init_file(&zip_archive, folder.data(), 0) == 0) {
-            NOVA_LOG(ERROR) << "Could not open zip archive " << folder.data();
+            logger(rx::log::level::k_error, "Could not open zip archive %s", folder);
         }
 
         build_file_tree();
@@ -23,7 +26,7 @@ namespace nova::filesystem {
         const auto full_path = rx::string::format("%s/%s", root_folder, path);
 
         if(!does_resource_exist_on_filesystem(full_path)) {
-            NOVA_LOG(ERROR) << "Resource at path " << full_path.data() << " does not exist";
+            logger(rx::log::level::k_error, "Resource at path %s does not exist", full_path);
             return {};
         }
 
@@ -35,7 +38,7 @@ namespace nova::filesystem {
             const mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
             const rx::string err = mz_zip_get_error_string(err_code);
 
-            NOVA_LOG(ERROR) << "Could not get information for file " << full_path.data() << ": " << err.data();
+            logger(rx::log::level::k_error, "Could not get information for file %s:%s", full_path, err);
         }
 
         rx::vector<uint8_t> resource_buffer;
@@ -50,7 +53,7 @@ namespace nova::filesystem {
             const mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
             const rx::string err = mz_zip_get_error_string(err_code);
 
-            NOVA_LOG(ERROR) << "Could not extract file " << full_path.data() << ": " << err.data();
+            logger(rx::log::level::k_error, "Could not extract file %s:%s", full_path, err);
         }
 
         return resource_buffer;
@@ -75,7 +78,7 @@ namespace nova::filesystem {
             });
 
             if(!found_node) {
-                NOVA_LOG(ERROR) << "Couldn't find node " << folder.data();
+                logger(rx::log::level::k_error, "Couldn't find node %s", folder);
             }
         });
 
