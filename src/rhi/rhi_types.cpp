@@ -9,6 +9,8 @@ namespace nova::renderer::rhi {
 
     ResourceBarrier::ResourceBarrier() {}
 
+    DescriptorResourceInfo::DescriptorResourceInfo() {}
+
     ShaderStage operator|=(const ShaderStage lhs, const ShaderStage rhs) {
         return static_cast<ShaderStage>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
     }
