@@ -3,6 +3,7 @@
 #include <exception>
 
 #include <cxxabi.h>
+#include <stdlib.h>
 #include <execinfo.h>
 #include <rx/core/array.h>
 #include <rx/core/log.h>
