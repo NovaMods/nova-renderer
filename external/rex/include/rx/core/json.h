@@ -224,7 +224,7 @@ inline bool json::is_integer() const {
 }
 
 inline bool json::is_empty() const {
-  return size() != 0;
+  return size() == 0;
 }
 
 inline string json::as_string() const {
