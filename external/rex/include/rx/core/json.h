@@ -76,7 +76,7 @@ struct json {
 
   memory::allocator* allocator() const;
 
-  json_value_s* raw() const;
+  struct json_value_s* raw() const;
 
 private:
   template<typename T>
@@ -254,15 +254,35 @@ inline T json::decode(const T& _default) const {
 
 template<typename F>
 inline bool json::each(F&& _function) const {
-  for (rx_size i{0}; i < size(); i++) {
-    if constexpr(traits::is_same<traits::return_type<F>, bool>) {
-      if (!_function(operator[](i))) {
-        return false;
+  const bool array = is_array();
+  const bool object = is_object();
+
+  RX_ASSERT(array || object, "not enumerable");
+
+  if (array) {
+    auto array = reinterpret_cast<struct json_array_s*>(m_value->payload);
+    for (auto element = array->start; element; element = element->next) {
+      if constexpr(traits::is_same<traits::return_type<F>, bool>) {
+        if (!_function({m_shared, element->value})) {
+          return false;
+        }
+      } else {
+        _function({m_shared, element->value});
       }
-    } else {
-      _function(operator[](i));
+    }
+  } else {
+    auto object = reinterpret_cast<struct json_object_s*>(m_value->payload);
+    for (auto element = object->start; element; element = element->next) {
+      if constexpr(traits::is_same<traits::return_type<F>, bool>) {
+        if (!_function({m_shared, element->value})) {
+          return false;
+        }
+      } else {
+        _function({m_shared, element->value});
+      }
     }
   }
+
   return true;
 }
 
