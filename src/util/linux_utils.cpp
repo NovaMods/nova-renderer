@@ -3,11 +3,11 @@
 #include <exception>
 
 #include <cxxabi.h>
-#include <stdlib.h>
 #include <errno.h>
 #include <execinfo.h>
 #include <rx/core/array.h>
 #include <rx/core/log.h>
+#include <stdlib.h>
 #include <string.h>
 
 void nova_backtrace() {
@@ -40,7 +40,7 @@ void nova_backtrace() {
                 }
             }
             catch(const std::exception& e) {
-                logger(rx::log::level::k_warning, "Demangle failed: %s", e.what().c_str());
+                logger(rx::log::level::k_warning, "Demangle failed: %s", e.what());
             }
         }
 
