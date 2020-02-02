@@ -45,7 +45,7 @@ namespace nova::renderer {
         settings.window.width = 640;
         settings.window.height = 480;
 
-        auto* renderer = rx::memory::g_system_allocator->create<NovaRenderer>(settings);
+        auto* renderer =  rx::memory::g_system_allocator->create<NovaRenderer>(settings);
 
         renderer->load_renderpack(CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack");
 

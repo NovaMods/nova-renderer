@@ -42,6 +42,7 @@ const Bytes GLOBAL_MEMORY_POOL_SIZE = 1_gb;
 using LogHandles = rx::vector<rx::log::event_type::handle>;
 
 RX_GLOBAL<LogHandles> logging_event_handles{"system", "log_handles", &rx::memory::g_system_allocator};
+// RX_GLOBAL<nova::renderer::NovaRenderer> g_renderer { "system", "renderer" };
 
 void init_rex() {
     static bool initialized = false;
