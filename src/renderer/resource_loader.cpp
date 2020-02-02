@@ -18,7 +18,8 @@ namespace nova::renderer {
 
     size_t size_in_bytes(PixelFormat pixel_format);
 
-    DeviceResources::DeviceResources(NovaRenderer& renderer) : renderer(renderer), device(renderer.get_engine()) {
+    DeviceResources::DeviceResources(NovaRenderer& renderer)
+        : renderer(renderer), device(renderer.get_engine()), internal_allocator(renderer.get_global_allocator()) {
         allocate_staging_buffer_memory();
 
         allocate_uniform_buffer_memory();
