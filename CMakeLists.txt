@@ -167,8 +167,6 @@ set(NOVA_SOURCE
         src/loading/json_utils.hpp
         src/loading/shaderpack/shaderpack_loading.cpp
         src/loading/shaderpack/shaderpack_data.cpp
-        src/loading/shaderpack/json_interop.cpp
-        src/loading/shaderpack/json_interop.hpp
         src/loading/shaderpack/shaderpack_validator.cpp
         src/loading/shaderpack/shaderpack_validator.hpp
         src/loading/shaderpack/render_graph_builder.cpp
@@ -340,7 +338,6 @@ set(COMMON_LINK_LIBS
         SPIRV
         minitrace
         miniz
-        nlohmann::json
         vma::vma
         rex
         SPIRV-Tools

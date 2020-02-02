@@ -54,7 +54,6 @@ set(GLM_TEST_ENABLE OFF)
 set(GLM_TEST_ENABLE_SIMD_AVX2 ON)	# TODO: determine minimum CPU for Nova and use the right instruction set
 include_target(glm::glm "${CMAKE_CURRENT_LIST_DIR}/glm")
 
-include_target(nlohmann::json "${CMAKE_CURRENT_LIST_DIR}/json/single_include")
 include_target(spirv::headers "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers")
 include_target(vma::vma "${3RD_PARTY_DIR}/VulkanMemoryAllocator/src")
 include_target(vulkan::sdk "${VULKAN_INCLUDE}")

@@ -180,6 +180,8 @@ namespace nova::renderer::rhi {
     };
 
     union DescriptorResourceInfo {
+        DescriptorResourceInfo();
+
         /*!
          * \brief Information to update an image descriptor
          */
@@ -188,7 +190,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Information to update a buffer descriptor
          */
-        DescriptorBufferInfo buffer_info;
+        DescriptorBufferInfo buffer_info{};
     };
 
     struct DescriptorSetWrite {

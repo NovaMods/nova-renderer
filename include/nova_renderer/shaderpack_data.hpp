@@ -1,12 +1,15 @@
 #pragma once
 
+#include <string>
+
 #include <glm/glm.hpp>
 #include <rx/core/map.h>
 #include <rx/core/optional.h>
 #include <rx/core/string.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <string>
+
+#include "rx/core/json.h"
 
 namespace nova::renderer {
     namespace rhi {
@@ -160,6 +163,8 @@ namespace nova::renderer::shaderpack {
          * \brief How the texture should wrap at the edges
          */
         WrapModeEnum wrap_mode{};
+
+        static SamplerCreateInfo from_json(const rx::json& json);
     };
 
     struct StencilOpState {
@@ -169,6 +174,8 @@ namespace nova::renderer::shaderpack {
         CompareOpEnum compare_op;
         uint32_t compare_mask;
         uint32_t write_mask;
+
+        static StencilOpState from_json(const rx::json& json);
     };
 
     struct ShaderSource {
@@ -295,32 +302,39 @@ namespace nova::renderer::shaderpack {
         rx::optional<ShaderSource> tessellation_control_shader;
         rx::optional<ShaderSource> tessellation_evaluation_shader;
         rx::optional<ShaderSource> fragment_shader;
+
+        static PipelineCreateInfo from_json(const rx::json& json);
     };
 
     struct TextureFormat {
         /*!
          * \brief The format of the texture
          */
-        PixelFormatEnum pixel_format;
+        PixelFormatEnum pixel_format{};
 
         /*!
          * \brief How to interpret the dimensions of this texture
          */
-        TextureDimensionTypeEnum dimension_type;
+        TextureDimensionTypeEnum dimension_type{};
 
         /*!
          * \brief The width, in pixels, of the texture
          */
-        float width;
+        float width = 0;
+
         /*!
          * \brief The height, in pixels, of the texture
          */
-        float height;
+        float height = 0;
+
+        constexpr TextureFormat() = default;
 
         [[nodiscard]] glm::uvec2 get_size_in_pixels(const glm::uvec2& screen_size) const;
 
         bool operator==(const TextureFormat& other) const;
         bool operator!=(const TextureFormat& other) const;
+
+        static TextureFormat from_json(const rx::json& json);
     };
 
     /*!
@@ -367,13 +381,15 @@ namespace nova::renderer::shaderpack {
         ImageUsage usage;
 
         TextureFormat format{};
+
+        static TextureCreateInfo from_json(const rx::json& json);
     };
 
     struct ShaderpackResourcesData {
         rx::vector<TextureCreateInfo> render_targets;
         rx::vector<SamplerCreateInfo> samplers;
 
-        // TODO: Figure out shader readable textures
+        static ShaderpackResourcesData from_json(const rx::json& json);
     };
 
     /*!
@@ -397,6 +413,8 @@ namespace nova::renderer::shaderpack {
         bool clear = false;
 
         bool operator==(const TextureAttachmentInfo& other) const;
+
+        static TextureAttachmentInfo from_json(const rx::json& json);
     };
 
     /*!
@@ -455,6 +473,8 @@ namespace nova::renderer::shaderpack {
         rx::vector<rx::string> pipeline_names;
 
         RenderPassCreateInfo() = default;
+
+        static RenderPassCreateInfo from_json(const rx::json& json);
     };
 
     /*!
@@ -470,6 +490,8 @@ namespace nova::renderer::shaderpack {
          * \brief Names of all the builtin renderpasses that the renderpack wants to use
          */
         rx::vector<rx::string> builtin_passes;
+
+        static RendergraphData from_json(const rx::json& json);
     };
 
     struct MaterialPass {
@@ -489,12 +511,16 @@ namespace nova::renderer::shaderpack {
         rx::vector<VkDescriptorSet> descriptor_sets;
 
         VkPipelineLayout layout = VK_NULL_HANDLE;
+
+        static MaterialPass from_json(const rx::json& json);
     };
 
     struct MaterialData {
         rx::string name;
         rx::vector<MaterialPass> passes;
         rx::string geometry_filter;
+
+        static MaterialData from_json(const rx::json& json);
     };
 
     /*!
@@ -515,22 +541,29 @@ namespace nova::renderer::shaderpack {
         rx::string name;
     };
 
-    // TODO: Wrap these in to_json/from_json thingies
+    [[nodiscard]] PixelFormatEnum pixel_format_enum_from_string(const rx::string& str);
+    [[nodiscard]] TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const rx::string& str);
+    [[nodiscard]] TextureFilterEnum texture_filter_enum_from_string(const rx::string& str);
+    [[nodiscard]] WrapModeEnum wrap_mode_enum_from_string(const rx::string& str);
+    [[nodiscard]] StencilOpEnum stencil_op_enum_from_string(const rx::string& str);
+    [[nodiscard]] CompareOpEnum compare_op_enum_from_string(const rx::string& str);
+    [[nodiscard]] MsaaSupportEnum msaa_support_enum_from_string(const rx::string& str);
+    [[nodiscard]] PrimitiveTopologyEnum primitive_topology_enum_from_string(const rx::string& str);
+    [[nodiscard]] BlendFactorEnum blend_factor_enum_from_string(const rx::string& str);
+    [[nodiscard]] RenderQueueEnum render_queue_enum_from_string(const rx::string& str);
+    [[nodiscard]] StateEnum state_enum_from_string(const rx::string& str);
 
-    // std::string allowed here because Nova uses these functions to deserialize JSON
-    // This system will be reworked when Nova moves away from nlohmann::json
-
-    [[nodiscard]] PixelFormatEnum pixel_format_enum_from_string(const std::string& str);
-    [[nodiscard]] TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const std::string& str);
-    [[nodiscard]] TextureFilterEnum texture_filter_enum_from_string(const std::string& str);
-    [[nodiscard]] WrapModeEnum wrap_mode_enum_from_string(const std::string& str);
-    [[nodiscard]] StencilOpEnum stencil_op_enum_from_string(const std::string& str);
-    [[nodiscard]] CompareOpEnum compare_op_enum_from_string(const std::string& str);
-    [[nodiscard]] MsaaSupportEnum msaa_support_enum_from_string(const std::string& str);
-    [[nodiscard]] PrimitiveTopologyEnum primitive_topology_enum_from_string(const std::string& str);
-    [[nodiscard]] BlendFactorEnum blend_factor_enum_from_string(const std::string& str);
-    [[nodiscard]] RenderQueueEnum render_queue_enum_from_string(const std::string& str);
-    [[nodiscard]] StateEnum state_enum_from_string(const std::string& str);
+    [[nodiscard]] PixelFormatEnum pixel_format_enum_from_json(const rx::json& j);
+    [[nodiscard]] TextureDimensionTypeEnum texture_dimension_type_enum_from_json(const rx::json& j);
+    [[nodiscard]] TextureFilterEnum texture_filter_enum_from_json(const rx::json& j);
+    [[nodiscard]] WrapModeEnum wrap_mode_enum_from_json(const rx::json& j);
+    [[nodiscard]] StencilOpEnum stencil_op_enum_from_json(const rx::json& j);
+    [[nodiscard]] CompareOpEnum compare_op_enum_from_json(const rx::json& j);
+    [[nodiscard]] MsaaSupportEnum msaa_support_enum_from_json(const rx::json& j);
+    [[nodiscard]] PrimitiveTopologyEnum primitive_topology_enum_from_json(const rx::json& j);
+    [[nodiscard]] BlendFactorEnum blend_factor_enum_from_json(const rx::json& j);
+    [[nodiscard]] RenderQueueEnum render_queue_enum_from_json(const rx::json& j);
+    [[nodiscard]] StateEnum state_enum_from_json(const rx::json& j);
 
     [[nodiscard]] rx::string to_string(PixelFormatEnum val);
     [[nodiscard]] rx::string to_string(TextureDimensionTypeEnum val);

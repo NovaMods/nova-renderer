@@ -34,6 +34,7 @@
 using namespace nova::mem;
 using namespace operators;
 
+// TODO: Use this somehow
 const Bytes GLOBAL_MEMORY_POOL_SIZE = 1_gb;
 
 void init_rex() {
@@ -189,7 +190,7 @@ namespace nova::renderer {
         mtr_flush();
     }
 
-    void NovaRenderer::set_num_meshes(const uint32_t num_meshes) { /* TODO? */
+    void NovaRenderer::set_num_meshes(const uint32_t /* num_meshes */) { /* TODO? */
     }
 
     MeshId NovaRenderer::create_mesh(const MeshData& mesh_data) {

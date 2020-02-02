@@ -332,7 +332,6 @@ string& string::append(const char* _contents) {
 }
 
 void string::insert_at(rx_size _position, const char* _contents, rx_size _size) {
-  RX_ASSERT(_position < size(), "out of bounds");
   const rx_size old_this_size{size()};
   const rx_size old_that_size{_size};
   resize(old_this_size + old_that_size);
@@ -433,8 +432,8 @@ char string::pop_back() {
 
 void string::erase(rx_size _begin, rx_size _end) {
   RX_ASSERT(_begin < _end, "invalid range");
-  RX_ASSERT(_begin > size(), "out of bounds");
-  RX_ASSERT(_end > size(), "out of bounds");
+  RX_ASSERT(_begin < size(), "out of bounds");
+  RX_ASSERT(_end <= size(), "out of bounds");
 
   char *const begin{m_data + _begin};
   char *const end{m_data + _end};

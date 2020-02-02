@@ -1,21 +1,11 @@
-/*!
- * \author ddubois
- * \date 05-Sep-18.
- */
+#pragma once
 
-#ifndef NOVA_RENDERER_UTILS_HPP
-#define NOVA_RENDERER_UTILS_HPP
-
-#include <optional>
-
-#include <nlohmann/json.hpp>
+#include <rx/core/json.h>
 #include <rx/core/optional.h>
 
 #include "nova_renderer/util/logger.hpp"
 
 namespace nova::renderer {
-    inline void from_json(const nlohmann::json& json, rx::string& str) { str.append(json.get<std::string>().c_str()); }
-
     /*!
      * \brief Retrieves an individual value from the provided JSON structure
      * \tparam ValType The type of the value to retrieve
@@ -23,42 +13,21 @@ namespace nova::renderer {
      * \param key The name of the value
      * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
      *
-     * \note Only enabled if we're not getting a string, because if the string is missing we can just return an empty string
+     * \note Only enabled if we're not getting a string. Use `get_json_string` to get a string
      */
-    template <typename ValType, std::enable_if_t<!std::is_same_v<ValType, rx::string>>** = nullptr>
-    rx::optional<ValType> get_json_value(const nlohmann::json& json_obj, const rx::string& key) {
-        const std::string key_std = key.data();
-        const auto& itr = json_obj.find(key_std);
-        if(itr != json_obj.end()) {
-            return rx::optional<ValType>(json_obj.at(key_std).get<ValType>());
-        }
-
-        return rx::nullopt;
-    }
+    template <typename ValType>
+    rx::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key);
 
     /*!
-     * \brief Retrieves an individual string value from the provided JSON structure
-     * \tparam ValType The type of the value to retrieve (always std::string here)
-     * \param json_obj The JSON object where your string might be found
-     * \param key The name of the string
-     * \param empty_means_not_present If set to true an empty string will be interpreted as not found
+     * \brief Retrieves an individual value from the provided JSON structure
+     * \tparam ValType The type of the value to retrieve
+     * \param json_obj The JSON object where your value might be found
+     * \param key The name of the value
+     * \param deserializer A function that deserializes the JSON value
      * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
-     *
-     * \note Special case for strings 
      */
-    template <typename ValType, std::enable_if_t<std::is_same_v<ValType, rx::string>>** = nullptr>
-    rx::optional<ValType> get_json_value(const nlohmann::json& json_obj,
-                                         const rx::string& key,
-                                         const bool empty_means_not_present = false) {
-        const std::string key_std = key.data();
-        const auto& itr = json_obj.find(key_std);
-        if(itr != json_obj.end()) {
-            const auto str = itr->get<std::string>();
-            return (empty_means_not_present && str.empty()) ? rx::nullopt : rx::optional<rx::string>(str.c_str());
-        }
-
-        return rx::optional<rx::string>{};
-    }
+    template <typename ValType, typename FuncType>
+    rx::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key, FuncType&& deserializer);
 
     /*!
      * \brief Retrieves an individual value from the provided JSON structure
@@ -69,38 +38,7 @@ namespace nova::renderer {
      * \return The value from the JSON if the key exists in the JSON, or `default_value` if it does not
      */
     template <typename ValType>
-    ValType get_json_value(const nlohmann::json& json_obj, const rx::string& key, ValType default_value) {
-        const std::string key_std = key.data();
-        const auto& itr = json_obj.find(key_std);
-        if(itr != json_obj.end()) {
-            return itr->get<ValType>();
-        }
-
-        NOVA_LOG(TRACE) << key_std << " not found - using a default value";
-        return default_value;
-    }
-
-    /*!
-     * \brief Retrieves an individual value from the provided JSON structure
-     * \tparam ValType The type of the value to retrieve
-     * \param json_obj The JSON object where your value might be found
-     * \param key The name of the value
-     * \param deserializer A function that deserializes the JSON value
-     * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
-     */
-    template <typename ValType>
-    rx::optional<ValType> get_json_value(const nlohmann::json& json_obj,
-                                         const rx::string& key,
-                                         std::function<ValType(const nlohmann::json&)> deserializer) {
-        const std::string key_std = key.data();
-        const auto& itr = json_obj.find(key_std);
-        if(itr != json_obj.end()) {
-            ValType val = deserializer(*itr);
-            return rx::optional<ValType>{std::move(val)};
-        }
-
-        return rx::nullopt;
-    }
+    ValType get_json_value(const rx::json& json_obj, const char* key, ValType default_value);
 
     /*!
      * \brief Retrieves an individual value from the provided JSON structure
@@ -111,20 +49,8 @@ namespace nova::renderer {
      * \param deserializer A function that deserializes the JSON value
      * \return The value from the JSON if the key exists in the JSON, or `default_value` if it does not
      */
-    template <typename ValType>
-    ValType get_json_value(const nlohmann::json& json_obj,
-                           const rx::string& key,
-                           ValType default_value,
-                           std::function<ValType(const nlohmann::json&)> deserializer) {
-        const std::string key_std = key.data();
-        const auto& itr = json_obj.find(key_std);
-        if(itr != json_obj.end()) {
-            ValType value = deserializer(*itr);
-            return value;
-        }
-
-        return default_value;
-    }
+    template <typename ValType, typename FuncType>
+    ValType get_json_value(const rx::json& json_obj, const char* key, ValType default_value, FuncType&& deserializer);
 
     /*!
      * \brief Retrieves an array of values from the provided JSON object
@@ -134,22 +60,7 @@ namespace nova::renderer {
      * \return An array of values, if the value can be found, or an empty vector if the values cannot be found
      */
     template <typename ValType>
-    rx::vector<ValType> get_json_array(const nlohmann::json& json_obj, const rx::string& key) {
-        const std::string key_std = key.data();
-        const auto& itr = json_obj.find(key_std);
-        if(itr != json_obj.end()) {
-            rx::vector<ValType> vec;
-            vec.reserve(itr->size());
-
-            for(const nlohmann::basic_json<>& elem : *itr) {
-                vec.push_back(elem.get<ValType>());
-            }
-
-            return vec;
-        }
-
-        return {};
-    }
+    rx::vector<ValType> get_json_array(const rx::json& json_obj, const char* key);
 
     /*!
      * \brief Retrieves an array of values from the provided JSON object
@@ -159,25 +70,81 @@ namespace nova::renderer {
      * \param deserializer A function that can deserialize each value from JSON
      * \return An array of values, if the value can be found, or an empty vector if the values cannot be found
      */
-    template <typename ValType>
-    rx::vector<ValType> get_json_array(const nlohmann::json& json_obj,
-                                       const rx::string& key,
-                                       std::function<ValType(const nlohmann::json&)> deserializer) {
-        const std::string key_std = key.data();
-        const auto& itr = json_obj.find(key_std);
-        if(itr != json_obj.end()) {
-            rx::vector<ValType> vec;
-            vec.reserve(itr->size());
+    template <typename ValType, typename FuncType>
+    rx::vector<ValType> get_json_array(const rx::json& json_obj, const char* key, FuncType&& deserializer);
 
-            for(auto& elem : *itr) {
-                vec.push_back(deserializer(elem));
+    template <typename ValType>
+    rx::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key) {
+        const auto& val_json = json_obj[key];
+        if(val_json) {
+            return val_json.decode<ValType>({});
+        }
+
+        return rx::nullopt;
+    }
+
+    template <typename ValType, typename FuncType>
+    rx::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key, FuncType&& deserializer) {
+        const auto& val_json = json_obj[key];
+        if(val_json) {
+            return deserializer(val_json);
+        }
+
+        return rx::nullopt;
+    }
+
+    template <typename ValType>
+    ValType get_json_value(const rx::json& json_obj, const char* key, ValType default_value) {
+        const auto& json_val = json_obj[key];
+        if(json_val) {
+            return json_val.decode<ValType>(default_value);
+        }
+
+        return default_value;
+    }
+
+    template <typename ValType, typename FuncType>
+    ValType get_json_value(const rx::json& json_obj, const char* key, ValType default_value, FuncType&& deserializer) {
+        const auto& val = json_obj[key];
+        if(val) {
+            ValType value = deserializer(val);
+            return value;
+        }
+
+        return default_value;
+    }
+
+    template <typename ValType>
+    rx::vector<ValType> get_json_array(const rx::json& json_obj, const char* key) {
+        const auto& arr = json_obj[key];
+        if(arr && !arr.is_empty()) {
+            rx::vector<ValType> vec;
+            vec.reserve(arr.size());
+
+            for(uint32_t i = 0; i < arr.size(); i++) {
+                vec.push_back(arr[i].decode<ValType>({}));
             }
 
             return vec;
         }
 
-        return rx::vector<ValType>{};
+        return {};
+    }
+
+    template <typename ValType, typename FuncType>
+    rx::vector<ValType> get_json_array(const rx::json& json_obj, const char* key, FuncType&& deserializer) {
+        const auto& arr = json_obj[key];
+        if(arr && !arr.is_empty()) {
+            rx::vector<ValType> vec;
+            vec.reserve(arr.size());
+
+            for(uint32_t i = 0; i < arr.size(); i++) {
+                vec.push_back(deserializer(arr[i]));
+            }
+
+            return vec;
+        }
+
+        return {};
     }
 } // namespace nova::renderer
-
-#endif // NOVA_RENDERER_UTILS_HPP

@@ -4,6 +4,14 @@
 
 #include "../json_utils.hpp"
 
+#define FILL_REQUIRED_FIELD(field, expr)                                                                                                   \
+    [&] {                                                                                                                                  \
+        const auto val = expr;                                                                                                             \
+        if(val) {                                                                                                                          \
+            (field) = *val;                                                                                                                \
+        }                                                                                                                                  \
+    }();
+
 namespace nova::renderer::shaderpack {
     /*!
      * \brief If a data member isn't in the JSON (which is fully supported and is 100% fine) then we use this to fill in
@@ -18,7 +26,167 @@ namespace nova::renderer::shaderpack {
 
     bool TextureFormat::operator!=(const TextureFormat& other) const { return !(*this == other); }
 
+    TextureFormat TextureFormat::from_json(const rx::json& json) {
+        TextureFormat format = {};
+
+        format.pixel_format = get_json_value(json, "pixelFormat", PixelFormatEnum::RGBA8, pixel_format_enum_from_json);
+        format.dimension_type = get_json_value<TextureDimensionTypeEnum>(json,
+                                                                         "dimensionType",
+                                                                         TextureDimensionTypeEnum::ScreenRelative,
+                                                                         texture_dimension_type_enum_from_json);
+        format.width = get_json_value<float>(json, "width", 0);
+        format.height = get_json_value<float>(json, "height", 0);
+
+        return format;
+    }
+
+    TextureCreateInfo TextureCreateInfo::from_json(const rx::json& json) {
+        TextureCreateInfo info = {};
+
+        FILL_REQUIRED_FIELD(info.name, get_json_opt<rx::string>(json, "name"));
+        FILL_REQUIRED_FIELD(info.format, get_json_opt<TextureFormat>(json, "format"));
+
+        return info;
+    }
+
+    ShaderpackResourcesData ShaderpackResourcesData::from_json(const rx::json& json) {
+        ShaderpackResourcesData data;
+        data.render_targets = get_json_array<TextureCreateInfo>(json, "textures");
+        data.samplers = get_json_array<SamplerCreateInfo>(json, "samplers");
+
+        // TODO: buffers
+        // TODO: arbitrary images
+
+        return data;
+    }
+
     bool TextureAttachmentInfo::operator==(const TextureAttachmentInfo& other) const { return other.name == name; }
+
+    TextureAttachmentInfo TextureAttachmentInfo::from_json(const rx::json& json) {
+        TextureAttachmentInfo info = {};
+
+        FILL_REQUIRED_FIELD(info.name, get_json_opt<rx::string>(json, "name"));
+        info.clear = get_json_value(json, "clear", false);
+
+        return info;
+    }
+
+    RenderPassCreateInfo RenderPassCreateInfo::from_json(const rx::json& json) {
+        RenderPassCreateInfo info = {};
+
+        info.texture_inputs = get_json_array<rx::string>(json, "textureInputs");
+        info.texture_outputs = get_json_array<TextureAttachmentInfo>(json, "textureOutputs");
+        info.depth_texture = get_json_opt<TextureAttachmentInfo>(json, "depthTexture");
+
+        info.input_buffers = get_json_array<rx::string>(json, "inputBuffers");
+        info.output_buffers = get_json_array<rx::string>(json, "outputBuffers");
+
+        info.name = get_json_value<rx::string>(json, "name", "<NAME_MISSING>");
+
+        return info;
+    }
+
+    RendergraphData RendergraphData::from_json(const rx::json& json) {
+        RendergraphData data;
+
+        data.passes = get_json_array<RenderPassCreateInfo>(json, "passes");
+        data.builtin_passes = get_json_array<rx::string>(json, "builtinPasses");
+
+        return data;
+    }
+
+    SamplerCreateInfo SamplerCreateInfo::from_json(const rx::json& json) {
+        SamplerCreateInfo info = {};
+
+        info.filter = get_json_value(json, "filter", TextureFilterEnum::Point, texture_filter_enum_from_json);
+        info.wrap_mode = get_json_value(json, "wrapMode", WrapModeEnum::Clamp, wrap_mode_enum_from_json);
+
+        return info;
+    }
+
+    StencilOpState StencilOpState::from_json(const rx::json& json) {
+        StencilOpState state = {};
+
+        FILL_REQUIRED_FIELD(state.fail_op, get_json_opt<StencilOpEnum>(json, "failOp", stencil_op_enum_from_json));
+        FILL_REQUIRED_FIELD(state.pass_op, get_json_opt<StencilOpEnum>(json, "passOp", stencil_op_enum_from_json));
+        FILL_REQUIRED_FIELD(state.depth_fail_op, get_json_opt<StencilOpEnum>(json, "depthFailOp", stencil_op_enum_from_json));
+        FILL_REQUIRED_FIELD(state.compare_op, get_json_opt<CompareOpEnum>(json, "compareOp", compare_op_enum_from_json));
+        FILL_REQUIRED_FIELD(state.compare_mask, get_json_opt<uint32_t>(json, "compareMask"));
+        FILL_REQUIRED_FIELD(state.write_mask, get_json_opt<uint32_t>(json, "writeMask"));
+
+        return state;
+    }
+
+    PipelineCreateInfo PipelineCreateInfo::from_json(const rx::json& json) {
+        PipelineCreateInfo pipeline = {};
+
+        FILL_REQUIRED_FIELD(pipeline.name, get_json_opt<rx::string>(json, "name"));
+        FILL_REQUIRED_FIELD(pipeline.pass, get_json_opt<rx::string>(json, "pass"));
+        pipeline.parent_name = get_json_value(json, "parent", "");
+
+        pipeline.defines = get_json_array<rx::string>(json, "defined");
+
+        pipeline.states = get_json_array<StateEnum>(json, "states", state_enum_from_json);
+        pipeline.front_face = get_json_opt<StencilOpState>(json, "frontFace");
+        pipeline.back_face = get_json_opt<StencilOpState>(json, "backFace");
+        pipeline.fallback = get_json_value<rx::string>(json, "fallback", {});
+        pipeline.depth_bias = get_json_value<float>(json, "depthBias", 0);
+        pipeline.slope_scaled_depth_bias = get_json_value<float>(json, "slopeScaledDepthBias", 0);
+        pipeline.stencil_ref = get_json_value<uint32_t>(json, "stencilRef", 0);
+        pipeline.stencil_read_mask = get_json_value<uint32_t>(json, "stencilReadMask", 0);
+        pipeline.stencil_write_mask = get_json_value<uint32_t>(json, "stencilWriteMask", 0);
+        pipeline.msaa_support = get_json_value<MsaaSupportEnum>(json, "msaaSupport", MsaaSupportEnum::None, msaa_support_enum_from_json);
+        pipeline.primitive_mode = get_json_value<PrimitiveTopologyEnum>(json,
+                                                                        "primitiveMode",
+                                                                        PrimitiveTopologyEnum::Triangles,
+                                                                        primitive_topology_enum_from_json);
+        pipeline.source_color_blend_factor = get_json_value<BlendFactorEnum>(json,
+                                                                             "sourceBlendFactor",
+                                                                             BlendFactorEnum::One,
+                                                                             blend_factor_enum_from_json);
+        pipeline.destination_color_blend_factor = get_json_value<BlendFactorEnum>(json,
+                                                                                  "destBlendFactor",
+                                                                                  BlendFactorEnum::Zero,
+                                                                                  blend_factor_enum_from_json);
+        pipeline.source_alpha_blend_factor = get_json_value<BlendFactorEnum>(json,
+                                                                             "alphaSrc",
+                                                                             BlendFactorEnum::One,
+                                                                             blend_factor_enum_from_json);
+        pipeline.destination_alpha_blend_factor = get_json_value<BlendFactorEnum>(json,
+                                                                                  "alphaDest",
+                                                                                  BlendFactorEnum::Zero,
+                                                                                  blend_factor_enum_from_json);
+        pipeline.depth_func = get_json_value<CompareOpEnum>(json, "depthFunc", CompareOpEnum::Less, compare_op_enum_from_json);
+        pipeline.render_queue = get_json_value<RenderQueueEnum>(json, "renderQueue", RenderQueueEnum::Opaque, render_queue_enum_from_json);
+
+        pipeline.vertex_shader.filename = get_json_value<rx::string>(json, "vertexShader", "<NAME_MISSING>");
+
+        const auto geometry_shader_name = get_json_opt<rx::string>(json, "geometryShader");
+        if(geometry_shader_name) {
+            pipeline.geometry_shader = rx::optional<ShaderSource>();
+            pipeline.geometry_shader->filename = *geometry_shader_name;
+        }
+
+        const auto tess_control_shader_name = get_json_opt<rx::string>(json, "tessellationControlShader");
+        if(tess_control_shader_name) {
+            pipeline.tessellation_control_shader = rx::optional<ShaderSource>();
+            pipeline.tessellation_control_shader->filename = *tess_control_shader_name;
+        }
+
+        const auto tess_eval_shader_name = get_json_opt<rx::string>(json, "tessellationEvalShader");
+        if(tess_eval_shader_name) {
+            pipeline.tessellation_evaluation_shader = rx::optional<ShaderSource>();
+            pipeline.tessellation_evaluation_shader->filename = *tess_eval_shader_name;
+        }
+
+        const auto fragment_shader_name = get_json_opt<rx::string>(json, "fragmentShader");
+        if(fragment_shader_name) {
+            pipeline.fragment_shader = rx::optional<ShaderSource>();
+            pipeline.fragment_shader->filename = *fragment_shader_name;
+        }
+
+        return pipeline;
+    }
 
     glm::uvec2 TextureFormat::get_size_in_pixels(const glm::uvec2& screen_size) const {
         float pixel_width = width;
@@ -32,7 +200,49 @@ namespace nova::renderer::shaderpack {
         return {std::round(pixel_width), std::round(pixel_height)};
     }
 
-    PixelFormatEnum pixel_format_enum_from_string(const std::string& str) {
+    rx::optional<rx::map<rx::string, rx::string>> map_from_json_object(const rx::json& json) {
+        rx::map<rx::string, rx::string> map;
+
+        json.each([&](const rx::json& elem) {
+            rx::string shader_variable;
+            FILL_REQUIRED_FIELD(shader_variable, get_json_opt<rx::string>(elem, "variable"));
+
+            rx::string resource_name;
+            FILL_REQUIRED_FIELD(resource_name, get_json_opt<rx::string>(elem, "resource"));
+
+            map.insert(shader_variable, resource_name);
+        });
+
+        return map;
+    }
+
+    MaterialPass MaterialPass::from_json(const rx::json& json) {
+        MaterialPass pass = {};
+
+        FILL_REQUIRED_FIELD(pass.name, get_json_opt<rx::string>(json, "name"));
+        FILL_REQUIRED_FIELD(pass.pipeline, get_json_opt<rx::string>(json, "pipeline"));
+
+        const auto val = get_json_opt<rx::map<rx::string, rx::string>>(json, "bindings", map_from_json_object);
+        if(val) {
+            pass.bindings = *val;
+        }
+
+        // FILL_REQUIRED_FIELD(pass.bindings, get_json_opt<rx::map<rx::string, rx::string>>(json, "bindings", map_from_json_object));
+
+        return pass;
+    }
+
+    MaterialData MaterialData::from_json(const rx::json& json) {
+        MaterialData data = {};
+
+        FILL_REQUIRED_FIELD(data.name, get_json_opt<rx::string>(json, "name"));
+        data.passes = get_json_array<MaterialPass>(json, "passes");
+        FILL_REQUIRED_FIELD(data.geometry_filter, get_json_opt<rx::string>(json, "filter"));
+
+        return data;
+    }
+
+    PixelFormatEnum pixel_format_enum_from_string(const rx::string& str) {
         if(str == "RGBA8") {
             return PixelFormatEnum::RGBA8;
         }
@@ -49,11 +259,11 @@ namespace nova::renderer::shaderpack {
             return PixelFormatEnum::DepthStencil;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported pixel format " << str;
+        NOVA_LOG(ERROR) << "Unsupported pixel format " << str.data();
         return {};
     }
 
-    TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const std::string& str) {
+    TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const rx::string& str) {
         if(str == "ScreenRelative") {
             return TextureDimensionTypeEnum ::ScreenRelative;
         }
@@ -61,11 +271,11 @@ namespace nova::renderer::shaderpack {
             return TextureDimensionTypeEnum::Absolute;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported texture dimension type " << str;
+        NOVA_LOG(ERROR) << "Unsupported texture dimension type " << str.data();
         return {};
     }
 
-    TextureFilterEnum texture_filter_enum_from_string(const std::string& str) {
+    TextureFilterEnum texture_filter_enum_from_string(const rx::string& str) {
         if(str == "TexelAA") {
             return TextureFilterEnum::TexelAA;
         }
@@ -76,11 +286,11 @@ namespace nova::renderer::shaderpack {
             return TextureFilterEnum::Point;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported texture filter " << str;
+        NOVA_LOG(ERROR) << "Unsupported texture filter " << str.data();
         return {};
     }
 
-    WrapModeEnum wrap_mode_enum_from_string(const std::string& str) {
+    WrapModeEnum wrap_mode_enum_from_string(const rx::string& str) {
         if(str == "Repeat") {
             return WrapModeEnum::Repeat;
         }
@@ -88,11 +298,11 @@ namespace nova::renderer::shaderpack {
             return WrapModeEnum::Clamp;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported wrap mode " << str;
+        NOVA_LOG(ERROR) << "Unsupported wrap mode " << str.data();
         return {};
     }
 
-    StencilOpEnum stencil_op_enum_from_string(const std::string& str) {
+    StencilOpEnum stencil_op_enum_from_string(const rx::string& str) {
         if(str == "Keep") {
             return StencilOpEnum::Keep;
         }
@@ -118,11 +328,11 @@ namespace nova::renderer::shaderpack {
             return StencilOpEnum::Invert;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported stencil op " << str;
+        NOVA_LOG(ERROR) << "Unsupported stencil op " << str.data();
         return {};
     }
 
-    CompareOpEnum compare_op_enum_from_string(const std::string& str) {
+    CompareOpEnum compare_op_enum_from_string(const rx::string& str) {
         if(str == "Never") {
             return CompareOpEnum::Never;
         }
@@ -148,11 +358,11 @@ namespace nova::renderer::shaderpack {
             return CompareOpEnum::Always;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported compare op " << str;
+        NOVA_LOG(ERROR) << "Unsupported compare op " << str.data();
         return {};
     }
 
-    MsaaSupportEnum msaa_support_enum_from_string(const std::string& str) {
+    MsaaSupportEnum msaa_support_enum_from_string(const rx::string& str) {
         if(str == "MSAA") {
             return MsaaSupportEnum::MSAA;
         }
@@ -163,11 +373,11 @@ namespace nova::renderer::shaderpack {
             return MsaaSupportEnum::None;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported antialiasing mode " << str;
+        NOVA_LOG(ERROR) << "Unsupported antialiasing mode " << str.data();
         return {};
     }
 
-    PrimitiveTopologyEnum primitive_topology_enum_from_string(const std::string& str) {
+    PrimitiveTopologyEnum primitive_topology_enum_from_string(const rx::string& str) {
         if(str == "Triangles") {
             return PrimitiveTopologyEnum::Triangles;
         }
@@ -175,11 +385,11 @@ namespace nova::renderer::shaderpack {
             return PrimitiveTopologyEnum::Lines;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported primitive mode " << str;
+        NOVA_LOG(ERROR) << "Unsupported primitive mode " << str.data();
         return {};
     }
 
-    BlendFactorEnum blend_factor_enum_from_string(const std::string& str) {
+    BlendFactorEnum blend_factor_enum_from_string(const rx::string& str) {
         if(str == "One") {
             return BlendFactorEnum::One;
         }
@@ -211,11 +421,11 @@ namespace nova::renderer::shaderpack {
             return BlendFactorEnum::OneMinusDstAlpha;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported blend factor " << str;
+        NOVA_LOG(ERROR) << "Unsupported blend factor " << str.data();
         return {};
     }
 
-    RenderQueueEnum render_queue_enum_from_string(const std::string& str) {
+    RenderQueueEnum render_queue_enum_from_string(const rx::string& str) {
         if(str == "Transparent") {
             return RenderQueueEnum::Transparent;
         }
@@ -226,11 +436,11 @@ namespace nova::renderer::shaderpack {
             return RenderQueueEnum::Cutout;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported render queue " << str;
+        NOVA_LOG(ERROR) << "Unsupported render queue " << str.data();
         return {};
     }
 
-    StateEnum state_enum_from_string(const std::string& str) {
+    StateEnum state_enum_from_string(const rx::string& str) {
         if(str == "Blending") {
             return StateEnum::Blending;
         }
@@ -262,9 +472,35 @@ namespace nova::renderer::shaderpack {
             return StateEnum::DisableAlphaWrite;
         }
 
-        NOVA_LOG(ERROR) << "Unsupported state enum " << str;
+        NOVA_LOG(ERROR) << "Unsupported state enum " << str.data();
         return {};
     }
+
+    PixelFormatEnum pixel_format_enum_from_json(const rx::json& j) { return pixel_format_enum_from_string(j.as_string()); }
+
+    TextureDimensionTypeEnum texture_dimension_type_enum_from_json(const rx::json& j) {
+        return texture_dimension_type_enum_from_string(j.as_string());
+    }
+
+    TextureFilterEnum texture_filter_enum_from_json(const rx::json& j) { return texture_filter_enum_from_string(j.as_string()); }
+
+    WrapModeEnum wrap_mode_enum_from_json(const rx::json& j) { return wrap_mode_enum_from_string(j.as_string()); }
+
+    StencilOpEnum stencil_op_enum_from_json(const rx::json& j) { return stencil_op_enum_from_string(j.as_string()); }
+
+    CompareOpEnum compare_op_enum_from_json(const rx::json& j) { return compare_op_enum_from_string(j.as_string()); }
+
+    MsaaSupportEnum msaa_support_enum_from_json(const rx::json& j) { return msaa_support_enum_from_string(j.as_string()); }
+
+    PrimitiveTopologyEnum primitive_topology_enum_from_json(const rx::json& j) {
+        return primitive_topology_enum_from_string(j.as_string());
+    }
+
+    BlendFactorEnum blend_factor_enum_from_json(const rx::json& j) { return blend_factor_enum_from_string(j.as_string()); }
+
+    RenderQueueEnum render_queue_enum_from_json(const rx::json& j) { return render_queue_enum_from_string(j.as_string()); }
+
+    StateEnum state_enum_from_json(const rx::json& j) { return state_enum_from_string(j.as_string()); }
 
     rx::string to_string(const PixelFormatEnum val) {
         switch(val) {

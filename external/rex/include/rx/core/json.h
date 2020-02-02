@@ -4,9 +4,12 @@
 
 #include "rx/core/traits/return_type.h"
 #include "rx/core/traits/is_same.h"
+#include "rx/core/traits/detect.h"
 
 #include "rx/core/string.h"
 #include "rx/core/optional.h"
+
+#include "rx/core/utility/declval.h"
 
 #include "lib/json.h"
 
@@ -61,6 +64,9 @@ struct json {
   string as_string() const;
   string as_string_with_allocator(memory::allocator* _allocator) const;
 
+  template<typename T>
+  T decode(const T& _default) const;
+
   // # of elements for objects and arrays only
   rx_size size() const;
   bool is_empty() const;
@@ -70,7 +76,13 @@ struct json {
 
   memory::allocator* allocator() const;
 
+  struct json_value_s* raw() const;
+
 private:
+  template<typename T>
+  using has_from_json =
+    decltype(utility::declval<T>().from_json(utility::declval<json>()));
+
   struct shared {
     shared(memory::allocator* _allocator, const char* _contents, rx_size _length);
     ~shared();
@@ -212,24 +224,65 @@ inline bool json::is_integer() const {
 }
 
 inline bool json::is_empty() const {
-  return size() != 0;
+  return size() == 0;
 }
 
 inline string json::as_string() const {
   return as_string_with_allocator(&memory::g_system_allocator);
 }
 
+template<typename T>
+inline T json::decode(const T& _default) const {
+  if constexpr(traits::is_same<T, rx_f32> || traits::is_same<T, rx_f64>) {
+    if (is_number()) {
+      return as_number();
+    }
+  } else if constexpr(traits::is_same<T, rx_s32>) {
+    if (is_integer()) {
+      return as_integer();
+    }
+  } else if constexpr(traits::is_same<T, string>) {
+    if (is_string()) {
+      return as_string();
+    }
+  } else if constexpr(traits::detect<T, has_from_json>) {
+    return T::from_json(*this);
+  }
+
+  return _default;
+}
+
 template<typename F>
 inline bool json::each(F&& _function) const {
-  for (rx_size i{0}; i < size(); i++) {
-    if constexpr(traits::is_same<traits::return_type<F>, bool>) {
-      if (!_function(operator[](i))) {
-        return false;
+  const bool array = is_array();
+  const bool object = is_object();
+
+  RX_ASSERT(array || object, "not enumerable");
+
+  if (array) {
+    auto array = reinterpret_cast<struct json_array_s*>(m_value->payload);
+    for (auto element = array->start; element; element = element->next) {
+      if constexpr(traits::is_same<traits::return_type<F>, bool>) {
+        if (!_function({m_shared, element->value})) {
+          return false;
+        }
+      } else {
+        _function({m_shared, element->value});
       }
-    } else {
-      _function(operator[](i));
+    }
+  } else {
+    auto object = reinterpret_cast<struct json_object_s*>(m_value->payload);
+    for (auto element = object->start; element; element = element->next) {
+      if constexpr(traits::is_same<traits::return_type<F>, bool>) {
+        if (!_function({m_shared, element->value})) {
+          return false;
+        }
+      } else {
+        _function({m_shared, element->value});
+      }
     }
   }
+
   return true;
 }
 
