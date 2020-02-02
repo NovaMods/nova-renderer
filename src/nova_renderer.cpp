@@ -39,9 +39,7 @@ RX_LOG("nova", logger);
 // TODO: Use this somehow
 const Bytes GLOBAL_MEMORY_POOL_SIZE = 1_gb;
 
-using LogHandles = rx::vector<rx::log::event_type::handle>;
-
-RX_GLOBAL<LogHandles> logging_event_handles{"system", "log_handles", &rx::memory::g_system_allocator};
+RX_GLOBAL<nova::renderer::LogHandles> logging_event_handles{"system", "log_handles", &rx::memory::g_system_allocator};
 // RX_GLOBAL<nova::renderer::NovaRenderer> g_renderer { "system", "renderer" };
 
 void init_rex() {
@@ -57,27 +55,28 @@ void init_rex() {
         system_group->find("allocator")->init();
         system_group->find("logger")->init();
 
-        auto* log_handles = system_group->find("log_handles");
-        log_handles->init();
+        auto* log_handles_global = system_group->find("log_handles");
+        log_handles_global->init();
+
+        auto* log_handles = log_handles_global->cast<nova::renderer::LogHandles>();
 
         rx::globals::find("loggers")->each([&](rx::global_node* _logger) {
-            log_handles->cast<LogHandles>()->push_back(
-                _logger->cast<rx::log>()->on_write([](const rx::log::level level, const rx::string& message) {
-                    switch(level) {
-                        case rx::log::level::k_error:
-                            printf("^rerror: ^w%s\n", message.data());
-                            break;
-                        case rx::log::level::k_info:
-                            printf("^cinfo: ^w%s\n", message.data());
-                            break;
-                        case rx::log::level::k_verbose:
-                            printf("^cverbose: ^w%s\n", message.data());
-                            break;
-                        case rx::log::level::k_warning:
-                            printf("^mwarning: ^w%s\n", message.data());
-                            break;
-                    }
-                }));
+            log_handles->push_back(_logger->cast<rx::log>()->on_write([](const rx::log::level level, const rx::string& message) {
+                switch(level) {
+                    case rx::log::level::k_error:
+                        printf("^rerror: ^w%s\n", message.data());
+                        break;
+                    case rx::log::level::k_info:
+                        printf("^cinfo: ^w%s\n", message.data());
+                        break;
+                    case rx::log::level::k_verbose:
+                        printf("^cverbose: ^w%s\n", message.data());
+                        break;
+                    case rx::log::level::k_warning:
+                        printf("^mwarning: ^w%s\n", message.data());
+                        break;
+                }
+            }));
         });
 
         rx::globals::init();

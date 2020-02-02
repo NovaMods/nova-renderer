@@ -32,7 +32,7 @@ namespace nova::filesystem {
         });
 
         if(ret_val == nullptr) {
-            logger(rx::log::level::k_error, "Could not file folder %s", path);
+            logger(rx::log::level::k_error, "Could not find folder %s", path);
         }
 
         return ret_val;

@@ -23,6 +23,21 @@ namespace spirv_cross {
 } // namespace spirv_cross
 
 namespace nova::renderer {
+    using LogHandles = rx::vector<rx::log::event_type::handle>;
+
+    /*!
+     * \brief Registers a log message writing function
+     *
+     * This function removes any previously registered logging handler, replacing it with the provided function
+     *
+     * If you don't call this function, Nova will send all log messages to `stdout`
+     *
+     * You may manually unregister your handler by calling `LogHandles::clear()`, but you don't need to. This function is intentionally not
+     * marked `[[nodiscard]]` because doing things with the handles is completely optional
+     */
+    template <typename LogHandlerFunc>
+    LogHandles& set_logging_handler(LogHandlerFunc&& log_handler);
+
     class UiRenderpass;
 
     namespace rhi {
@@ -309,6 +324,19 @@ namespace nova::renderer {
         rx::concurrency::mutex ui_function_mutex;
 #pragma endregion
     };
+
+    template <typename LogHandlerFunc>
+    LogHandles& set_logging_handler(LogHandlerFunc&& log_handler) {
+        rx::global_group* system_group{rx::globals::find("system")};
+
+        auto* log_handles = system_group->find("log_handles")->cast<LogHandles>();
+        log_handles->clear();
+
+        rx::globals::find("loggers")->each(
+            [&](rx::global_node* _logger) { log_handles->push_back(_logger->cast<rx::log>()->on_write(log_handler)); });
+
+        return *log_handles;
+    }
 
     template <typename RenderpassType>
     RenderpassType* NovaRenderer::set_ui_renderpass(RenderpassType* ui_renderpass, const shaderpack::RenderPassCreateInfo& create_info) {
