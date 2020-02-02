@@ -173,12 +173,6 @@ namespace nova::renderer {
 
         [[nodiscard]] PipelineStorage& get_pipeline_storage() const;
 
-        [[nodiscard]] static NovaRenderer* initialize(const NovaSettings& settings);
-
-        [[nodiscard]] static NovaRenderer* get_instance();
-
-        static void deinitialize();
-
     private:
         NovaSettingsAccessManager render_settings;
 
@@ -188,8 +182,6 @@ namespace nova::renderer {
 
         RENDERDOC_API_1_3_0* render_doc;
         rx::vector<rx::memory::allocator*> frame_allocators;
-
-        static std::unique_ptr<NovaRenderer> instance;
 
         rhi::Sampler* point_sampler;
 

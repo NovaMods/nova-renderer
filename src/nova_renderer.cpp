@@ -93,16 +93,14 @@ void rex_fini() {
 
         rx::globals::fini();
 
-        // system_group->find("logger")->fini();
-        // system_group->find("allocator")->fini();
+        system_group->find("logger")->fini();
+        system_group->find("allocator")->fini();
 
         deinitialized = true;
     }
 }
 
 namespace nova::renderer {
-    std::unique_ptr<NovaRenderer> NovaRenderer::instance;
-
     bool FullMaterialPassName::operator==(const FullMaterialPassName& other) const {
         return material_name == other.material_name && pass_name == other.pass_name;
     }
@@ -623,19 +621,6 @@ namespace nova::renderer {
     DeviceResources& NovaRenderer::get_resource_manager() const { return *device_resources; }
 
     PipelineStorage& NovaRenderer::get_pipeline_storage() const { return *pipeline_storage; }
-
-    NovaRenderer* NovaRenderer::get_instance() { return instance.get(); }
-
-    NovaRenderer* NovaRenderer::initialize(const NovaSettings& settings) {
-        init_rex();
-        return (instance = std::make_unique<NovaRenderer>(settings)).get();
-    }
-
-    void NovaRenderer::deinitialize() {
-        instance.reset();
-
-        rex_fini();
-    }
 
     void NovaRenderer::create_global_allocators() {
         global_allocator = &rx::memory::g_system_allocator;

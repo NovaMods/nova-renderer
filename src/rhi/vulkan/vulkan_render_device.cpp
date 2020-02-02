@@ -1530,7 +1530,7 @@ namespace nova::renderer::rhi {
         rx::vector<VkExtensionProperties> available(extension_count);
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available.data());
 
-        rx::set<rx::string> required(internal_allocator);
+        rx::set<rx::string> required{internal_allocator};
         required_device_extensions.each_fwd([&](const char* extension) { required.insert(extension); });
 
         available.each_fwd(
