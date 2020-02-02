@@ -17,12 +17,6 @@
 namespace nova::renderer::shaderpack {
     RX_LOG("ShaderpackData", logger);
 
-    /*!
-     * \brief If a data member isn't in the JSON (which is fully supported and is 100% fine) then we use this to fill in
-     * any missing values
-     */
-    PipelineCreateInfo default_pipeline;
-
     bool TextureFormat::operator==(const TextureFormat& other) const {
         return pixel_format == other.pixel_format && dimension_type == other.dimension_type && width == other.width &&
                height == other.height;
