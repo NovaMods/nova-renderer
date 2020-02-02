@@ -291,7 +291,8 @@ namespace nova::renderer::shaderpack {
         potential_pipeline_files.each_fwd([&](const rx::string& potential_file) {
             if(potential_file.ends_with(".pipeline")) {
                 // Pipeline file!
-                const auto& pipeline = load_single_pipeline(folder_access, potential_file);
+                const auto pipeline_relative_path = rx::string::format("%s/%s", "materials", potential_file);
+                const auto& pipeline = load_single_pipeline(folder_access, pipeline_relative_path);
                 if(pipeline) {
                     output.push_back(*pipeline);
                 }

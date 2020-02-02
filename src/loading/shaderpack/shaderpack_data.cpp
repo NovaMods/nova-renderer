@@ -161,25 +161,25 @@ namespace nova::renderer::shaderpack {
 
         const auto geometry_shader_name = get_json_opt<rx::string>(json, "geometryShader");
         if(geometry_shader_name) {
-            pipeline.geometry_shader = rx::optional<ShaderSource>();
+            pipeline.geometry_shader = ShaderSource{};
             pipeline.geometry_shader->filename = *geometry_shader_name;
         }
 
         const auto tess_control_shader_name = get_json_opt<rx::string>(json, "tessellationControlShader");
         if(tess_control_shader_name) {
-            pipeline.tessellation_control_shader = rx::optional<ShaderSource>();
+            pipeline.tessellation_control_shader = ShaderSource{};
             pipeline.tessellation_control_shader->filename = *tess_control_shader_name;
         }
 
         const auto tess_eval_shader_name = get_json_opt<rx::string>(json, "tessellationEvalShader");
         if(tess_eval_shader_name) {
-            pipeline.tessellation_evaluation_shader = rx::optional<ShaderSource>();
+            pipeline.tessellation_evaluation_shader = ShaderSource{};
             pipeline.tessellation_evaluation_shader->filename = *tess_eval_shader_name;
         }
 
         const auto fragment_shader_name = get_json_opt<rx::string>(json, "fragmentShader");
         if(fragment_shader_name) {
-            pipeline.fragment_shader = rx::optional<ShaderSource>();
+            pipeline.fragment_shader = ShaderSource{};
             pipeline.fragment_shader->filename = *fragment_shader_name;
         }
 

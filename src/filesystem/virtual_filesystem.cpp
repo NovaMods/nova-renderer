@@ -35,7 +35,10 @@ namespace nova::filesystem {
         resource_roots.each_fwd([&](FolderAccessorBase* root) {
             if(root && root->does_resource_exist(path)) {
                 ret_val = root->create_subfolder_accessor(path);
+                return false;
             }
+
+            return true;
         });
 
         if(ret_val == nullptr) {
