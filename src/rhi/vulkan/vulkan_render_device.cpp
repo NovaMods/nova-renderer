@@ -270,7 +270,7 @@ namespace nova::renderer::rhi {
         if(settings.settings.debug.enabled) {
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-            object_name.objectType = VK_OBJECT_TYPE_IMAGE;
+            object_name.objectType = VK_OBJECT_TYPE_RENDER_PASS;
             object_name.objectHandle = reinterpret_cast<uint64_t>(renderpass->pass);
             object_name.pObjectName = data.name.data();
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
