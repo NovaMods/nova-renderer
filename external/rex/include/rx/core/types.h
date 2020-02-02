@@ -25,6 +25,10 @@ constexpr rx_size operator"" _z(unsigned long long _value) {
   return static_cast<rx_size>(_value);
 }
 
+constexpr rx_u8 operator"" _u8(unsigned long long _value) {
+  return static_cast<rx_u8>(_value);
+}
+
 constexpr rx_u16 operator"" _u16(unsigned long long _value) {
   return static_cast<rx_u16>(_value);
 }

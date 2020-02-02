@@ -21,7 +21,7 @@ namespace rx::concurrency {
 struct thread
   : concepts::no_copy
 {
-  thread();
+  constexpr thread();
 
   thread(memory::allocator* _allocator, const char* _name, function<void(int)>&& function_);
   thread(const char* _name, function<void(int)>&& function_);
@@ -54,9 +54,23 @@ private:
   state* m_state;
 };
 
+inline constexpr thread::thread()
+  : m_allocator{nullptr}
+  , m_state{nullptr}
+{
+}
+
 inline thread::thread(const char* _name, function<void(int)>&& function_)
   : thread{&memory::g_system_allocator, _name, utility::move(function_)}
 {
+}
+
+inline thread::thread(thread&& thread_)
+  : m_allocator{thread_.m_allocator}
+  , m_state{thread_.m_state}
+{
+  thread_.m_allocator = nullptr;
+  thread_.m_state = nullptr;
 }
 
 } // namespace rx::concurrency

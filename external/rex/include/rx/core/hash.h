@@ -53,7 +53,7 @@ struct hash<rx_u64> {
 
 template<>
 struct hash<rx_s64> {
-  rx_size operator()(rx_s64 _value) const {
+  constexpr rx_size operator()(rx_s64 _value) const {
     return hash<rx_u64>{}(static_cast<rx_u64>(_value));
   }
 };
@@ -76,7 +76,7 @@ struct hash<rx_f64> {
 
 template<typename T>
 struct hash<T*> {
-  rx_size operator()(T* _value) const {
+  constexpr rx_size operator()(T* _value) const {
     if constexpr (sizeof _value == 8) {
       return hash<rx_u64>{}(reinterpret_cast<rx_u64>(_value));
     } else {
