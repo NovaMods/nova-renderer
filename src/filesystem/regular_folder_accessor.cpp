@@ -55,7 +55,12 @@ namespace nova::filesystem {
             // logger(rx::log::level::k_verbose, "%s exists", resource_path);
             resource_existence.insert(resource_path, true);
             return true;
+
+        } else if(const rx::filesystem::directory dir{resource_path}) {
+            resource_existence.insert(resource_path, true);
+            return true;
         }
+
         // NOVA_LOG(TRACE) << resource_path << " does not exist";
         resource_existence.insert(resource_path, false);
         return false;
