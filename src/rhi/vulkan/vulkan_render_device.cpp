@@ -1,11 +1,11 @@
 #include "vulkan_render_device.hpp"
 
+#include <sstream>
+
 #include <rx/core/log.h>
 #include <rx/core/set.h>
 #include <signal.h>
 #include <string.h>
-
-#include <sstream>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/memory/allocation_structs.hpp"
@@ -1423,7 +1423,8 @@ namespace nova::renderer::rhi {
                 continue;
             }
 
-            if(!does_device_support_extensions(current_device, device_extensions)) {
+            const auto supports_extensions = does_device_support_extensions(current_device, device_extensions);
+            if(!supports_extensions) {
                 continue;
             }
 
@@ -1465,6 +1466,9 @@ namespace nova::renderer::rhi {
 
         if(gpu.phys_device == nullptr) {
             logger(rx::log::level::k_error, "Failed to find good GPU");
+
+            // TODO: Message the user that GPU selection failed
+
             return;
         }
 
@@ -1543,7 +1547,8 @@ namespace nova::renderer::rhi {
             logger(rx::log::level::k_warning, "Device does not support these required extensions: %s", ss.str().c_str());
         }
 
-        return !required.is_empty();
+        const auto device_supports_required_extensions = required.is_empty();
+        return device_supports_required_extensions;
     }
 
     void VulkanRenderDevice::create_swapchain() {
