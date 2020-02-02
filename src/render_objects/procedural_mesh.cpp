@@ -1,14 +1,16 @@
 #include "nova_renderer/procedural_mesh.hpp"
 
+#include <rx/core/log.h>
+
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
-#include "nova_renderer/util/logger.hpp"
 
 #include "../util/memory_utils.hpp"
-
 using namespace nova::mem;
 
 namespace nova::renderer {
+    RX_LOG("ProceduralMesh", logger);
+
     using namespace rhi;
 
     ProceduralMesh::ProceduralMesh(const uint64_t vertex_buffer_size, const uint64_t index_buffer_size, RenderDevice* device)
@@ -47,7 +49,7 @@ namespace nova::renderer {
                 return true;
             })
             .on_error([](const ntl::NovaError& error) {
-                NOVA_LOG(ERROR) << "Could not allocate device memory for procedural mesh. Error: " << error.to_string().data();
+                logger(rx::log::level::k_error, "Could not allocate device memory for procedural mesh. Error: %s", error.to_string());
                 // TODO: Propagate the error
             });
 
@@ -65,7 +67,7 @@ namespace nova::renderer {
                 return true;
             })
             .on_error([](const ntl::NovaError& error) {
-                NOVA_LOG(ERROR) << "Could not allocate host memory for procedural mesh. Error: " << error.to_string().data();
+                logger(rx::log::level::k_error, "Could not allocate host memory for procedural mesh. Error: %s", error.to_string());
                 // TODO: Propagate the error
             });
     }
@@ -84,8 +86,10 @@ namespace nova::renderer {
     void ProceduralMesh::set_vertex_data(const void* data, const uint64_t size) {
 #ifdef NOVA_DEBUG
         if(size > vertex_buffer_size) {
-            NOVA_LOG(ERROR) << "Cannot upload vertex data. There's only space for " << vertex_buffer_size << " bytes, you tried to upload "
-                            << size << ". Truncating vertex data to fit";
+            logger(rx::log::level::k_error,
+                   "Cannot upload vertex data. There's only space for %uz bytes, you tried to upload %uz. Truncating vertex data to fit",
+                   vertex_buffer_size,
+                   size);
 
             device->write_data_to_buffer(data, vertex_buffer_size, 0, cached_vertex_buffer);
             num_vertex_bytes_to_upload = vertex_buffer_size;
@@ -104,8 +108,10 @@ namespace nova::renderer {
     void ProceduralMesh::set_index_data(const void* data, const uint64_t size) {
 #ifdef NOVA_DEBUG
         if(size > index_buffer_size) {
-            NOVA_LOG(ERROR) << "Cannot upload index data. There's only space for " << index_buffer_size << " bytes, you tried to upload "
-                            << size << ". Truncating vertex data to fit";
+            logger(rx::log::level::k_error,
+                   "Cannot upload index data. There's only space for %uz bytes, you tried to upload %uz. Truncating vertex data to fit",
+                   index_buffer_size,
+                   size);
 
             device->write_data_to_buffer(data, index_buffer_size, 0, cached_index_buffer);
             num_index_bytes_to_upload = index_buffer_size;

@@ -212,7 +212,7 @@ namespace nova::renderer {
         BlockAllocatorSettings index_memory_settings;
     };
 
-    class NovaSettingsAccessManager { // Classes named Manager are an antipattern so yes
+class NovaSettingsAccessManager { // Classes named Manager are an antipattern so yes
     public:
         NovaSettings settings;
 

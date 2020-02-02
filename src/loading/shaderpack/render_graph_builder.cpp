@@ -1,13 +1,15 @@
 #include "render_graph_builder.hpp"
 
 #include <minitrace.h>
+#include <rx/core/algorithm/max.h>
+#include <rx/core/algorithm/min.h>
+#include <rx/core/log.h>
 
 #include "nova_renderer/constants.hpp"
-#include "nova_renderer/util/logger.hpp"
-#include "rx/core/algorithm/max.h"
-#include "rx/core/algorithm/min.h"
 
 namespace nova::renderer::shaderpack {
+    RX_LOG("RenderGraphBuilder", logger);
+
     /*!
      * \brief Adds all the passes that `pass_name` depends on to the list of ordered passes
      *
@@ -78,7 +80,7 @@ namespace nova::renderer::shaderpack {
     ntl::Result<rx::vector<RenderPassCreateInfo>> order_passes(const rx::vector<RenderPassCreateInfo>& passes) {
         MTR_SCOPE("Renderpass", "order_passes");
 
-        NOVA_LOG(DEBUG) << "Executing Pass Scheduler";
+        logger(rx::log::level::k_verbose, "Executing Pass Scheduler");
 
         rx::map<rx::string, RenderPassCreateInfo> render_passes_to_order;
         passes.each_fwd([&](const RenderPassCreateInfo& create_info) { render_passes_to_order.insert(create_info.name, create_info); });
@@ -90,7 +92,7 @@ namespace nova::renderer::shaderpack {
          * Build some acceleration structures
          */
 
-        NOVA_LOG(TRACE) << "Collecting passes that write to each resource...";
+        logger(rx::log::level::k_verbose, "Collecting passes that write to each resource...");
         // Maps from resource name to pass that writes to that resource, then from resource name to pass that reads from
         // that resource
         auto resource_to_write_pass = rx::map<rx::string, rx::vector<rx::string>>{};
@@ -107,11 +109,11 @@ namespace nova::renderer::shaderpack {
          * Initial ordering of passes
          */
 
-        NOVA_LOG(TRACE) << "First pass at ordering passes...";
+        logger(rx::log::level::k_verbose, "First pass at ordering passes...");
         // The passes, in simple dependency order
         if(resource_to_write_pass.find(BACKBUFFER_NAME) == nullptr) {
-            NOVA_LOG(ERROR)
-                << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
+            logger(rx::log::level::k_error,
+                   "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything");
             return ntl::Result<rx::vector<RenderPassCreateInfo>>(ntl::NovaError("Failed to order passes because no backbuffer was found"));
         }
 
@@ -158,7 +160,8 @@ namespace nova::renderer::shaderpack {
                               const rx::map<rx::string, rx::vector<rx::string>>& resource_to_write_pass,
                               const uint32_t depth) {
         if(depth > passes.size()) {
-            NOVA_LOG(ERROR) << "Circular render graph detected! Please fix your render graph to not have circular dependencies";
+            logger(rx::log::level::k_error,
+                   "Circular render graph detected! Please fix your render graph to not have circular dependencies");
         }
 
         const auto& pass = *passes.find(pass_name);
@@ -166,8 +169,7 @@ namespace nova::renderer::shaderpack {
         pass.texture_inputs.each_fwd([&](const rx::string& texture_name) {
             if(const auto write_passes = resource_to_write_pass.find(texture_name); write_passes == nullptr) {
                 // TODO: Ignore the implicitly defined resources
-                NOVA_LOG(ERROR) << "Pass " << pass_name.data() << " reads from resource " << texture_name.data()
-                                << ", but nothing writes to it";
+                logger(rx::log::level::k_error, "Pass %s reads from resource %s, but nothing writes to it", pass_name, texture_name);
             } else {
                 ordered_passes += *write_passes;
 
@@ -179,8 +181,7 @@ namespace nova::renderer::shaderpack {
 
         pass.input_buffers.each_fwd([&](const rx::string& buffer_name) {
             if(const auto& write_passes = resource_to_write_pass.find(buffer_name); write_passes == nullptr) {
-                NOVA_LOG(ERROR) << "Pass " << pass_name.data() << " reads from buffer " << buffer_name.data()
-                                << ", but no passes write to it";
+                logger(rx::log::level::k_error, "Pass %s reads from buffer %s, but no passes write to it", pass_name, buffer_name);
             } else {
                 ordered_passes += *write_passes;
 
@@ -236,8 +237,10 @@ namespace nova::renderer::shaderpack {
 
         for(size_t i = 0; i < resources_in_order.size(); i++) {
             const auto& to_alias_name = resources_in_order[i];
-            NOVA_LOG(TRACE) << "Determining if we can alias `" << to_alias_name.data() << "`. Does it exist? "
-                            << (textures.find(to_alias_name) != nullptr);
+            logger(rx::log::level::k_verbose,
+                   "Determining if we can alias `%s`. Does it exist? %d",
+                   to_alias_name,
+                   (textures.find(to_alias_name) != nullptr));
 
             if(to_alias_name == BACKBUFFER_NAME || to_alias_name == SCENE_OUTPUT_RT_NAME) {
                 // Yay special cases!
@@ -248,7 +251,7 @@ namespace nova::renderer::shaderpack {
 
             // Only try to alias with lower-indexed resources
             for(size_t j = 0; j < i; j++) {
-                NOVA_LOG(TRACE) << "Trying to alias it with resource at index " << j << " out of " << resources_in_order.size();
+                logger(rx::log::level::k_verbose, "Trying to alias it with resource at index %zu out of %zu", j, resources_in_order.size());
                 const rx::string& try_alias_name = resources_in_order[j];
                 if(resource_used_range.find(to_alias_name)->is_disjoint_with(*resource_used_range.find(try_alias_name))) {
                     // They can be aliased if they have the same format

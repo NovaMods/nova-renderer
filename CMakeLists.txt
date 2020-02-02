@@ -89,7 +89,6 @@ set(NOVA_SOURCE
         include/nova_renderer/util/platform.hpp
         include/nova_renderer/util/result.hpp
         include/nova_renderer/util/utils.hpp
-        include/nova_renderer/util/logger.hpp
         include/nova_renderer/util/container_accessor.hpp
 
         include/nova_renderer/nova_renderer.hpp
@@ -160,7 +159,6 @@ set(NOVA_SOURCE
         src/renderer/pipeline_storage.cpp
         src/renderer/resource_loader.cpp
 
-        src/util/logger.cpp
         src/util/utils.cpp
         src/util/result.cpp
 
@@ -171,13 +169,6 @@ set(NOVA_SOURCE
         src/loading/shaderpack/shaderpack_validator.hpp
         src/loading/shaderpack/render_graph_builder.cpp
         src/loading/shaderpack/render_graph_builder.hpp
-
-        src/tasks/task_scheduler.cpp
-        src/tasks/task_scheduler.hpp
-        src/tasks/task_graph.hpp
-        src/tasks/wait_free_queue.hpp
-        src/tasks/condition_counter.cpp
-        src/tasks/condition_counter.hpp
 
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp

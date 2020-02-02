@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nova_renderer/rhi/swapchain.hpp>
+#include <rx/core/log.h>
 
 #include "nova_renderer/frame_context.hpp"
 #include "nova_renderer/procedural_mesh.hpp"
@@ -9,11 +10,12 @@
 #include "nova_renderer/rhi/rhi_types.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
-#include "nova_renderer/util/logger.hpp"
 
 #include "resource_loader.hpp"
 
 namespace nova::renderer {
+    RX_LOG("rendergraph", rg_log);
+
     class DeviceResources;
 
     namespace shaderpack {
@@ -270,9 +272,8 @@ namespace nova::renderer {
                     renderpass->framebuffer = nullptr; // Will be resolved when rendering
 
                 } else {
-                    attachment_errors.push_back(
-                        rx::string::format(
-                            "Pass %s writes to the backbuffer and %zu other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures",
+                    attachment_errors.push_back(rx::string::format(
+                        "Pass %s writes to the backbuffer and %zu other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures",
                         create_info.name,
                         create_info.texture_outputs.size() - 1));
                 }
@@ -289,21 +290,21 @@ namespace nova::renderer {
                     const glm::uvec2 attachment_size = {render_target->width, render_target->height};
                     if(framebuffer_size.x > 0) {
                         if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {
-                            attachment_errors.push_back(
-                                rx::string::format("Attachment %s has a size of %dx%d, but the framebuffer for pass %s has a size of %dx%d - these must match! All attachments of a single renderpass must have the same size",
-                                    attachment_info.name,
-                                    attachment_size.x,
-                                    attachment_size.y,
-                                    create_info.name,
-                                    framebuffer_size.x,
-                                    framebuffer_size.y));
+                            attachment_errors.push_back(rx::string::format(
+                                "Attachment %s has a size of %dx%d, but the framebuffer for pass %s has a size of %dx%d - these must match! All attachments of a single renderpass must have the same size",
+                                attachment_info.name,
+                                attachment_size.x,
+                                attachment_size.y,
+                                create_info.name,
+                                framebuffer_size.x,
+                                framebuffer_size.y));
                         }
 
                     } else {
                         framebuffer_size = attachment_size;
                     }
                 } else {
-                    NOVA_LOG(ERROR) << "No render target named " << attachment_info.name.data();
+                    rg_log(rx::log::level::k_error, "No render target named %s", attachment_info.name);
                     missing_render_targets = true;
                 }
             }
@@ -325,10 +326,12 @@ namespace nova::renderer {
         }();
 
         if(!attachment_errors.is_empty()) {
-            attachment_errors.each_fwd([&](const rx::string& err) { NOVA_LOG(ERROR) << err.data(); });
+            attachment_errors.each_fwd([&](const rx::string& err) { rg_log(rx::log::level::k_error, "%s", err); });
 
-            NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name.data()
-                            << " because there were errors in the attachment specification. Look above this message for details";
+            rg_log(
+                rx::log::level::k_error,
+                "Could not create renderpass %s because there were errors in the attachment specification. Look above this message for details",
+                create_info.name);
             return nullptr;
         }
 
@@ -337,7 +340,7 @@ namespace nova::renderer {
             renderpass->renderpass = renderpass_result.value;
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name.data() << ": " << renderpass_result.error.to_string().data();
+            rg_log(rx::log::level::k_error, "Could not create renderpass %s: %s", create_info.name, renderpass_result.error.to_string());
             return nullptr;
         }
 

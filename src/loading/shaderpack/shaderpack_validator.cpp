@@ -3,12 +3,15 @@
 #include <array>
 
 #include <rx/core/array.h>
+#include <rx/core/log.h>
 
 #include "nova_renderer/util/utils.hpp"
 
 #include "../json_utils.hpp"
 
 namespace nova::renderer::shaderpack {
+    RX_LOG("ShaderpackValidator", logger);
+
     constexpr uint32_t NUM_REQUIRED_FIELDS = 23;
 
     /*!
@@ -268,9 +271,9 @@ namespace nova::renderer::shaderpack {
     }
 
     void print(const ValidationReport& report) {
-        report.errors.each_fwd([&](const rx::string& error) { NOVA_LOG(ERROR) << error.data(); });
+        report.errors.each_fwd([&](const rx::string& error) { logger(rx::log::level::k_error, "%s", error); });
 
-        report.warnings.each_fwd([&](const rx::string& warning) { NOVA_LOG(DEBUG) << warning.data(); });
+        report.warnings.each_fwd([&](const rx::string& warning) { logger(rx::log::level::k_verbose, "%s", warning); });
     }
 
     void ValidationReport::merge_in(const ValidationReport& other) {

@@ -12,10 +12,11 @@ typedef int Bool; // Because X11 is stupid
 #include <GLFW/glfw3native.h>
 
 #include "nova_renderer/nova_renderer.hpp"
-#include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/platform.hpp"
 
-void glfw_error_callback(const int error, const char* desc) { NOVA_LOG(ERROR) << "GLFW error(" << error << ") " << desc; }
+RX_LOG("Window", logger);
+
+void glfw_error_callback(const int error, const char* desc) { logger(rx::log::level::k_error, "GLFW error(%u)%s", error, desc); }
 
 namespace nova::renderer {
     void NovaWindow::glfw_key_callback(GLFWwindow* window, const int key, int /* scancode */, const int action, int /* mods */) {
@@ -47,7 +48,7 @@ namespace nova::renderer {
 
     NovaWindow::NovaWindow(const NovaSettings& options) {
         if(!glfwInit()) {
-            NOVA_LOG(FATAL) << "Failed to init GLFW";
+            logger(rx::log::level::k_error, "Failed to init GLFW");
             return;
         }
 
@@ -61,7 +62,7 @@ namespace nova::renderer {
                                   nullptr,
                                   nullptr);
         if(!window) {
-            NOVA_LOG(FATAL) << "Failed to create window";
+            logger(rx::log::level::k_error, "Failed to create window");
             return;
         }
         glfwSetWindowUserPointer(window, this);

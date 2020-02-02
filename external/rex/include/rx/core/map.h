@@ -62,7 +62,7 @@ struct map {
 
 private:
   void clear_and_deallocate();
-  void initialize(memory::allocator* _allocator, rx_size _capacity);
+  constexpr void initialize(memory::allocator* _allocator, rx_size _capacity);
 
   static rx_size hash_key(const K& _key);
   static bool is_deleted(rx_size _hash);
@@ -129,7 +129,8 @@ inline map<K, V>::map(const map& _map)
   : map{_map.m_allocator}
 {
   for (rx_size i{0}; i < _map.m_capacity; i++) {
-    if (_map.element_hash(i) != 0) {
+    const auto hash = _map.element_hash(i);
+    if (hash != 0 && !_map.is_deleted(hash)) {
       insert(_map.m_keys[i], _map.m_values[i]);
     }
   }
@@ -142,16 +143,23 @@ inline map<K, V>::~map() {
 
 template<typename K, typename V>
 inline void map<K, V>::clear() {
+  if (m_size == 0) {
+    return;
+  }
+
   for (rx_size i{0}; i < m_capacity; i++) {
-    if (element_hash(i) != 0) {
+    const auto hash = element_hash(i);
+    if (hash != 0 && !is_deleted(hash)) {
       if constexpr (!traits::is_trivially_destructible<K>) {
         utility::destruct<K>(m_keys + i);
       }
       if constexpr (!traits::is_trivially_destructible<V>) {
         utility::destruct<V>(m_values + i);
       }
+      element_hash(i) = 0;
     }
   }
+
   m_size = 0;
 }
 
@@ -193,7 +201,8 @@ inline map<K, V>& map<K, V>::operator=(const map<K, V>& _map) {
   allocate();
 
   for (rx_size i{0}; i < _map.m_capacity; i++) {
-    if (_map.element_hash(i) != 0) {
+    const auto hash = _map.element_hash(i);
+    if (hash != 0 && !_map.is_deleted(hash)) {
       insert(_map.m_keys[i], _map.m_values[i]);
     }
   }
@@ -202,7 +211,7 @@ inline map<K, V>& map<K, V>::operator=(const map<K, V>& _map) {
 }
 
 template<typename K, typename V>
-inline void map<K, V>::initialize(memory::allocator* _allocator, rx_size _capacity) {
+inline constexpr void map<K, V>::initialize(memory::allocator* _allocator, rx_size _capacity) {
   m_allocator = _allocator;
   m_keys = nullptr;
   m_values = nullptr;

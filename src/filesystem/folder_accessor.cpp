@@ -1,13 +1,14 @@
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 
 #include <rx/core/concurrency/scope_lock.h>
-
-#include "nova_renderer/util/logger.hpp"
+#include <rx/core/log.h>
 
 #include "regular_folder_accessor.hpp"
 #include "zip_folder_accessor.hpp"
 
 namespace nova::filesystem {
+    RX_LOG("filesystem", logger);
+
     bool is_zip_folder(const rx::string& path_to_folder) { return path_to_folder.ends_with(".zip"); }
 
     FolderAccessorBase* FolderAccessorBase::create(const rx::string& path) {
@@ -23,13 +24,13 @@ namespace nova::filesystem {
             return allocator->create<RegularFolderAccessor>(path);
         }
 
-        NOVA_LOG(FATAL) << "Could not create folder accessor for path " << path.data();
+        logger(rx::log::level::k_error, "Could not create folder accessor for path %s", path);
 
         return nullptr;
     }
 
     FolderAccessorBase::FolderAccessorBase(rx::string folder)
-        : root_folder(std::move(folder)), resource_existence_mutex(new rx::concurrency::mutex) {}
+        : root_folder(rx::utility::move(folder)), resource_existence_mutex(new rx::concurrency::mutex) {}
 
     bool FolderAccessorBase::does_resource_exist(const rx::string& resource_path) {
         rx::concurrency::scope_lock l(*resource_existence_mutex);

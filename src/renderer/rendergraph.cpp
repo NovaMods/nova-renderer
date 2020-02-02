@@ -125,8 +125,8 @@ namespace nova::renderer {
 
                     return true;
                 })
-                .on_error([](const auto& err) {
-                    NOVA_LOG(ERROR) << "Could not determine renderpass execution order: " << err.to_string().data();
+                .on_error([&](const auto& err) {
+                    rg_log(rx::log::level::k_error, "Could not determine renderpass execution order: %s", err.to_string());
                 });
 
             is_dirty = false;

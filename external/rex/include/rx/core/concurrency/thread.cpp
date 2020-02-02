@@ -12,18 +12,6 @@ namespace rx::concurrency {
 
 static atomic<int> g_thread_id;
 
-thread::thread()
-  : m_allocator{nullptr}
-{
-}
-
-thread::thread(thread&& thread_)
-  : m_allocator{thread_.m_allocator}
-  , m_state{utility::move(thread_.m_state)}
-{
-  thread_.m_allocator = nullptr;
-}
-
 thread::thread(memory::allocator* _allocator, const char* _name, function<void(int)>&& function_)
   : m_allocator{_allocator}
 {

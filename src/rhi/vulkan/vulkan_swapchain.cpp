@@ -1,6 +1,6 @@
 #include "vulkan_swapchain.hpp"
 
-#include "nova_renderer/util/logger.hpp"
+#include <rx/core/log.h>
 
 #include "vulkan_render_device.hpp"
 #include "vulkan_utils.hpp"
@@ -10,6 +10,8 @@
 #endif
 
 namespace nova::renderer::rhi {
+    RX_LOG("VulkanSwapchain", logger);
+
     VulkanSwapchain::VulkanSwapchain(const uint32_t num_swapchain_images,
                                      VulkanRenderDevice* render_device,
                                      const glm::uvec2 window_dimensions,
@@ -21,7 +23,7 @@ namespace nova::renderer::rhi {
         rx::vector<VkImage> vk_images = get_swapchain_images();
 
         if(vk_images.is_empty()) {
-            NOVA_LOG(FATAL) << "The swapchain returned zero images";
+            logger(rx::log::level::k_error, "The swapchain returned zero images");
         }
 
         swapchain_image_layouts.resize(num_swapchain_images);
@@ -56,11 +58,11 @@ namespace nova::renderer::rhi {
                                                           &acquired_image_idx);
         if(acquire_result == VK_ERROR_OUT_OF_DATE_KHR || acquire_result == VK_SUBOPTIMAL_KHR) {
             // TODO: Recreate the swapchain and all screen-relative textures
-            NOVA_LOG(ERROR) << "Swapchain out of date! One day you'll write the code to recreate it";
+            logger(rx::log::level::k_error, "Swapchain out of date! One day you'll write the code to recreate it");
             return 0;
         }
         if(acquire_result != VK_SUCCESS) {
-            NOVA_LOG(ERROR) << __FILE__ << ":" << __LINE__ << "=> " << std::to_string(acquire_result);
+            logger(rx::log::level::k_error, "%s:%u=>%s", __FILE__, __LINE__, std::to_string(acquire_result));
         }
 
         // Block until we have the swapchain image in order to mimic D3D12. TODO: Reevaluate this decision
@@ -267,7 +269,7 @@ namespace nova::renderer::rhi {
 
         auto res = vkCreateSwapchainKHR(render_device->device, &info, nullptr, &swapchain);
 
-        NOVA_LOG(ERROR) << res;
+        logger(rx::log::level::k_error, "%u", res);
 
         swapchain_format = surface_format.format;
         this->present_mode = present_mode;

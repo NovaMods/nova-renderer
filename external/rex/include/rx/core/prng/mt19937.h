@@ -1,11 +1,12 @@
 #ifndef RX_CORE_PRNG_MT19937_H
 #define RX_CORE_PRNG_MT19937_H
 #include "rx/core/types.h"
+#include "rx/core/utility/nat.h"
 
 namespace rx::prng {
 
 struct mt19937 {
-  mt19937();
+  constexpr mt19937();
 
   void seed(rx_u32 _seed);
 
@@ -22,12 +23,16 @@ private:
   static constexpr const rx_u32 k_max{0xffffffff_u32};
   void generate();
 
-  rx_u32 m_state[k_size];
+  union {
+    utility::nat m_nat;
+    rx_u32 m_state[k_size];
+  };
   rx_size m_index;
 };
 
-inline mt19937::mt19937()
-  : m_index{0}
+inline constexpr mt19937::mt19937()
+  : m_nat{}
+  , m_index{0}
 {
 }
 

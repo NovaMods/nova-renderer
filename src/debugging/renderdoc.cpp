@@ -1,6 +1,7 @@
 #include "renderdoc.hpp"
 
-#include "nova_renderer/util/logger.hpp"
+#include <rx/core/log.h>
+
 #include "nova_renderer/util/platform.hpp"
 #include "nova_renderer/util/utils.hpp"
 
@@ -16,6 +17,8 @@
 #endif
 
 namespace nova::renderer {
+    RX_LOG("RenderDoc", logger);
+
     ntl::Result<RENDERDOC_API_1_3_0*> load_renderdoc(const rx::string& renderdoc_dll_path) {
 #if defined(NOVA_WINDOWS)
         using Hinstance = HINSTANCE__* const;
@@ -25,7 +28,7 @@ namespace nova::renderer {
             return ntl::Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc. Error: %s", error));
         }
 
-        NOVA_LOG(TRACE) << "Loaded RenderDoc DLL from " << renderdoc_dll_path.data();
+        logger(rx::log::level::k_verbose, "Loaded RenderDoc DLL from %s", renderdoc_dll_path);
 
         const auto get_api = reinterpret_cast<pRENDERDOC_GetAPI>(GetProcAddress(renderdoc_dll, "RENDERDOC_GetAPI"));
         if(!get_api) {
@@ -45,20 +48,19 @@ namespace nova::renderer {
 
         const auto get_api = reinterpret_cast<pRENDERDOC_GetAPI>(dlsym(renderdoc_so, "RENDERDOC_GetAPI"));
         if(get_api == nullptr) {
-            return ntl::Result<RENDERDOC_API_1_3_0*>(
-                MAKE_ERROR("Could not find the RenderDoc API loading function. Error: %s", dlerror()));
+            return ntl::Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not find the RenderDoc API loading function. Error: %s", dlerror()));
         }
 #endif
 
         RENDERDOC_API_1_3_0* api;
         const int32_t ret = get_api(eRENDERDOC_API_Version_1_3_0, reinterpret_cast<void**>(&api));
         if(ret != 1) {
-            NOVA_LOG(ERROR) << "Could not load RenderDoc API";
+            logger(rx::log::level::k_error, "Could not load RenderDoc API");
 
             return ntl::Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc API. Error code %d", ret));
         }
 
-        NOVA_LOG(TRACE) << "Loaded RenderDoc 1.3 API";
+        logger(rx::log::level::k_verbose, "Loaded RenderDoc 1.3 API");
         return ntl::Result(api);
     }
 } // namespace nova::renderer

@@ -1,9 +1,8 @@
 #ifndef RX_CORE_FILESYSTEM_FILE_H
 #define RX_CORE_FILESYSTEM_FILE_H
-#include "rx/core/string.h" // string
-#include "rx/core/optional.h" // optional
-#include "rx/core/concepts/no_copy.h" // no_copy
-#include "rx/core/filesystem/stream.h"
+#include "rx/core/string.h"
+#include "rx/core/optional.h"
+#include "rx/core/stream.h"
 
 namespace rx::filesystem {
 
@@ -24,8 +23,8 @@ struct file
   // Write |_size| bytes from |_data| into file.
   virtual rx_u64 write(const rx_byte* _data, rx_u64 _size);
 
-  // Seek to |where| in file.
-  virtual bool seek(rx_u64 _where);
+  // Seek to |_where| in file relative to |_whence|.
+  virtual bool seek(rx_s64 _where, whence _whence);
 
   // Flush to disk.
   virtual bool flush();

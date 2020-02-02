@@ -5,8 +5,11 @@
 #include "rx/core/log.h"
 #include "rx/core/assert.h"
 #include "rx/core/config.h"
-#include "rx/core/hints/unlikely.h"
+
 #include "rx/core/filesystem/file.h"
+
+#include "rx/core/hints/unlikely.h"
+#include "rx/core/hints/unreachable.h"
 
 RX_LOG("filesystem/file", logger);
 
@@ -40,23 +43,36 @@ file::~file() {
   close();
 }
 
-rx_u64 file::read(rx_byte* data, rx_u64 size) {
+rx_u64 file::read(rx_byte* _data, rx_u64 _size) {
   RX_ASSERT(m_impl, "invalid");
   RX_ASSERT(strcmp(m_mode, "rb") == 0 || strcmp(m_mode, "r") == 0,
     "cannot read with mode '%s'", m_mode);
-  return fread(data, 1, size, static_cast<FILE*>(m_impl));
+  return fread(_data, 1, _size, static_cast<FILE*>(m_impl));
 }
 
-rx_u64 file::write(const rx_byte* data, rx_u64 size) {
+rx_u64 file::write(const rx_byte* _data, rx_u64 _size) {
   RX_ASSERT(m_impl, "invalid");
   RX_ASSERT(strcmp(m_mode, "wb")  == 0, "cannot write with mode '%s'", m_mode);
-  return fwrite(data, 1, size, static_cast<FILE*>(m_impl));
+  return fwrite(_data, 1, _size, static_cast<FILE*>(m_impl));
 }
 
-bool file::seek(rx_u64 where) {
+bool file::seek(rx_s64 _where, whence _whence) {
   RX_ASSERT(m_impl, "invalid");
   RX_ASSERT(strcmp(m_mode, "rb") == 0, "cannot seek with mode '%s'", m_mode);
-  return fseek(static_cast<FILE*>(m_impl), static_cast<long>(where), SEEK_SET) == 0;
+
+  const auto fp = static_cast<FILE*>(m_impl);
+  const auto where = static_cast<long>(_where);
+
+  switch (_whence) {
+  case whence::k_set:
+    return fseek(fp, where, SEEK_SET) == 0;
+  case whence::k_current:
+    return fseek(fp, where, SEEK_CUR) == 0;
+  case whence::k_end:
+    return fseek(fp, where, SEEK_END) == 0;
+  }
+
+  RX_HINT_UNREACHABLE();
 }
 
 bool file::flush() {
@@ -70,12 +86,14 @@ optional<rx_u64> file::size() {
   RX_ASSERT(m_impl, "invalid");
   RX_ASSERT(strcmp(m_mode, "rb") == 0, "cannot get size with mode '%s'", m_mode);
 
-  auto fp{static_cast<FILE*>(m_impl)};
+  const auto fp = static_cast<FILE*>(m_impl);
+
   if (RX_HINT_UNLIKELY(fseek(fp, 0, SEEK_END) != 0)) {
     return nullopt;
   }
 
-  auto result{ftell(fp)};
+  const auto result = ftell(fp);
+
   if (RX_HINT_UNLIKELY(result == -1L)) {
     fseek(fp, 0, SEEK_SET);
     return nullopt;
@@ -210,7 +228,7 @@ static vector<rx_byte> convert_text_encoding(vector<rx_byte>&& data_) {
     data_.erase(0, 3);
   }
 
-  return data_;
+  return utility::move(data_);
 }
 
 optional<vector<rx_byte>> read_text_file(memory::allocator* _allocator, const char* _file_name) {

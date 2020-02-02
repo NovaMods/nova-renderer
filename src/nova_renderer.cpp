@@ -12,6 +12,8 @@
 
 #include <glslang/MachineIndependent/Initialize.h>
 #include <rx/core/global.h>
+#include <rx/core/log.h>
+#include <rx/core/memory/bump_point_allocator.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/loading/shaderpack_loading.hpp"
@@ -22,46 +24,83 @@
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/rhi/swapchain.hpp"
 #include "nova_renderer/ui_renderer.hpp"
-#include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/util/platform.hpp"
 
 #include "debugging/renderdoc.hpp"
 #include "loading/shaderpack/render_graph_builder.hpp"
 #include "render_objects/uniform_structs.hpp"
 #include "rhi/vulkan/vulkan_render_device.hpp"
-#include "rx/core/memory/bump_point_allocator.h"
 
 using namespace nova::mem;
 using namespace operators;
 
+RX_LOG("nova", logger);
+
 // TODO: Use this somehow
 const Bytes GLOBAL_MEMORY_POOL_SIZE = 1_gb;
 
+RX_GLOBAL<nova::renderer::LogHandles> logging_event_handles{"system", "log_handles", &rx::memory::g_system_allocator};
+// RX_GLOBAL<nova::renderer::NovaRenderer> g_renderer { "system", "renderer" };
+
 void init_rex() {
-    rx::globals::link();
+    static bool initialized = false;
 
-    rx::global_group* system_group{rx::globals::find("system")};
+    if(!initialized) {
+        rx::globals::link();
 
-    // Explicitly initialize globals that need to be initialized in a specific
-    // order for things to work.
-    system_group->find("allocator")->init();
-    system_group->find("logger")->init();
+        rx::global_group* system_group{rx::globals::find("system")};
 
-    rx::globals::init();
+        // Explicitly initialize globals that need to be initialized in a specific
+        // order for things to work.
+        system_group->find("allocator")->init();
+        system_group->find("logger")->init();
+
+        auto* log_handles_global = system_group->find("log_handles");
+        log_handles_global->init();
+
+        auto* log_handles = log_handles_global->cast<nova::renderer::LogHandles>();
+
+        rx::globals::find("loggers")->each([&](rx::global_node* _logger) {
+            log_handles->push_back(_logger->cast<rx::log>()->on_write([](const rx::log::level level, const rx::string& message) {
+                switch(level) {
+                    case rx::log::level::k_error:
+                        printf("^rerror: ^w%s\n", message.data());
+                        break;
+                    case rx::log::level::k_info:
+                        printf("^cinfo: ^w%s\n", message.data());
+                        break;
+                    case rx::log::level::k_verbose:
+                        printf("^cverbose: ^w%s\n", message.data());
+                        break;
+                    case rx::log::level::k_warning:
+                        printf("^mwarning: ^w%s\n", message.data());
+                        break;
+                }
+            }));
+        });
+
+        rx::globals::init();
+
+        initialized = true;
+    }
 }
 
 void rex_fini() {
-    rx::global_group* system_group{rx::globals::find("system")};
+    static bool deinitialized = false;
 
-    rx::globals::fini();
+    if(!deinitialized) {
+        rx::global_group* system_group{rx::globals::find("system")};
 
-    system_group->find("logger")->fini();
-    system_group->find("allocator")->fini();
+        rx::globals::fini();
+
+        system_group->find("logger")->fini();
+        system_group->find("allocator")->fini();
+
+        deinitialized = true;
+    }
 }
 
 namespace nova::renderer {
-    std::unique_ptr<NovaRenderer> NovaRenderer::instance;
-
     bool FullMaterialPassName::operator==(const FullMaterialPassName& other) const {
         return material_name == other.material_name && pass_name == other.pass_name;
     }
@@ -106,11 +145,11 @@ namespace nova::renderer {
                     render_doc->SetCaptureOptionU32(eRENDERDOC_Option_SaveAllInitials, 1U);
                     render_doc->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, 1U);
 
-                    NOVA_LOG(INFO) << "Loaded RenderDoc successfully";
+                    rg_log(rx::log::level::k_info, "Loaded RenderDoc successfully");
 
                     return 0;
                 })
-                .on_error([](const ntl::NovaError& error) { NOVA_LOG(ERROR) << error.to_string().data(); });
+                .on_error([](const ntl::NovaError& error) { rg_log(rx::log::level::k_error, "%s", error.to_string()); });
         }
 
         {
@@ -149,7 +188,7 @@ namespace nova::renderer {
 
         cur_frame_idx = device->get_swapchain()->acquire_next_swapchain_image(frame_allocator);
 
-        NOVA_LOG(DEBUG) << "\n***********************\n        FRAME START        \n***********************";
+        rg_log(rx::log::level::k_verbose, "\n***********************\n        FRAME START        \n***********************");
 
         rx::vector<rhi::Fence*> last_frame_fences{global_allocator};
         last_frame_fences.push_back(frame_fences[cur_frame_idx]);
@@ -229,8 +268,7 @@ namespace nova::renderer {
             vertex_barrier.buffer_memory_barrier.offset = 0;
             vertex_barrier.buffer_memory_barrier.size = vertex_buffer->size;
 
-            rx::vector<rhi::ResourceBarrier> barriers{global_allocator
-                };
+            rx::vector<rhi::ResourceBarrier> barriers{global_allocator};
             barriers.push_back(vertex_barrier);
             vertex_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, barriers);
 
@@ -310,23 +348,23 @@ namespace nova::renderer {
             destroy_dynamic_resources();
 
             destroy_renderpasses();
-            NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
+            rg_log(rx::log::level::k_verbose, "Resources from old shaderpacks destroyed");
         }
 
         create_dynamic_textures(data.resources.render_targets);
-        NOVA_LOG(DEBUG) << "Dynamic textures created";
+        rg_log(rx::log::level::k_verbose, "Dynamic textures created");
 
         create_render_passes(data.graph_data.passes, data.pipelines);
 
-        NOVA_LOG(DEBUG) << "Created render passes";
+        rg_log(rx::log::level::k_verbose, "Created render passes");
 
         create_pipelines_and_materials(data.pipelines, data.materials);
 
-        NOVA_LOG(DEBUG) << "Created pipelines and materials";
+        rg_log(rx::log::level::k_verbose, "Created pipelines and materials");
 
         shaderpack_loaded = true;
 
-        NOVA_LOG(INFO) << "Shaderpack " << renderpack_name.data() << " loaded successfully";
+        rg_log(rx::log::level::k_verbose, "Shaderpack %s loaded successfully", renderpack_name);
     }
 
     const rx::vector<MaterialPass>& NovaRenderer::get_material_passes_for_pipeline(rhi::Pipeline* const pipeline) {
@@ -365,7 +403,7 @@ namespace nova::renderer {
                     }
                 });
             } else {
-                NOVA_LOG(ERROR) << "Could not create renderpass " << create_info.name.data();
+                rg_log(rx::log::level::k_error, "Could not create renderpass %s", create_info.name);
             }
         });
     }
@@ -473,7 +511,7 @@ namespace nova::renderer {
                 writes.push_back(write);
 
             } else {
-                NOVA_LOG(ERROR) << "Resource " << resource_name.data() << " is not known to Nova";
+                rg_log(rx::log::level::k_error, "Resource %s is not known to Nova", resource_name);
             }
         });
 
@@ -485,7 +523,8 @@ namespace nova::renderer {
             loaded_renderpack->resources.render_targets.each_fwd([&](const shaderpack::TextureCreateInfo& tex_data) {
                 device_resources->destroy_render_target(tex_data.name, renderpack_allocator);
             });
-            NOVA_LOG(DEBUG) << "Deleted all dynamic textures from renderpack " << loaded_renderpack->name.data();
+
+            rg_log(rx::log::level::k_verbose, "Deleted all dynamic textures from renderpack %s", loaded_renderpack->name);
         }
     }
 
@@ -503,7 +542,7 @@ namespace nova::renderer {
 
         const auto* pass_key = material_pass_keys.find(material_name);
         if(pass_key == nullptr) {
-            NOVA_LOG(ERROR) << "No material named " << material_name.material_name.data() << " for pass " << material_name.pass_name.data();
+            rg_log(rx::log::level::k_error, "No material named %s for pass %s", material_name.material_name, material_name.pass_name);
             return std::numeric_limits<uint64_t>::max();
         }
 
@@ -559,7 +598,7 @@ namespace nova::renderer {
                 }
             }
         } else {
-            NOVA_LOG(ERROR) << "Could not find a mesh with ID " << renderable.mesh;
+            logger(rx::log::level::k_error, "Could not find a mesh with ID %u", renderable.mesh);
         }
 
         // Figure out where to put the renderable
@@ -569,7 +608,7 @@ namespace nova::renderer {
             passes->emplace_back(material);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not get place the new renderable in the appropriate draw command list";
+            logger(rx::log::level::k_error, "Could not get place the new renderable in the appropriate draw command list");
         }
 
         return id;
@@ -582,19 +621,6 @@ namespace nova::renderer {
     DeviceResources& NovaRenderer::get_resource_manager() const { return *device_resources; }
 
     PipelineStorage& NovaRenderer::get_pipeline_storage() const { return *pipeline_storage; }
-
-    NovaRenderer* NovaRenderer::get_instance() { return instance.get(); }
-
-    NovaRenderer* NovaRenderer::initialize(const NovaSettings& settings) {
-        init_rex();
-        return (instance = std::make_unique<NovaRenderer>(settings)).get();
-    }
-
-    void NovaRenderer::deinitialize() {
-        instance.reset();
-
-        rex_fini();
-    }
 
     void NovaRenderer::create_global_allocators() {
         global_allocator = &rx::memory::g_system_allocator;
@@ -635,7 +661,7 @@ namespace nova::renderer {
             mesh_memory = global_allocator->create<DeviceMemoryResource>(*mesh_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << mesh_memory_result.error.to_string().data();
+            logger(rx::log::level::k_error, "Could not create mesh memory pool: %s", mesh_memory_result.error.to_string());
         }
 
         // Assume 65k things, plus we need space for the builtin ubos
@@ -656,7 +682,7 @@ namespace nova::renderer {
             ubo_memory = global_allocator->create<DeviceMemoryResource>(*ubo_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create mesh memory pool: " << ubo_memory_result.error.to_string().data();
+            logger(rx::log::level::k_error, "Could not create mesh memory pool: %s", ubo_memory_result.error.to_string());
         }
 
         // Staging buffers will be pooled, so we don't need a _ton_ of memory for them
@@ -677,7 +703,7 @@ namespace nova::renderer {
             staging_buffer_memory = global_allocator->create<DeviceMemoryResource>(*staging_memory_result.value);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create staging buffer memory pool: " << staging_memory_result.error.to_string().data();
+            logger(rx::log::level::k_error, "Could not create staging buffer memory pool: %s", staging_memory_result.error.to_string());
         }
     }
 
@@ -704,7 +730,7 @@ namespace nova::renderer {
                                                                          true);
 
         if(!scene_output) {
-            NOVA_LOG(ERROR) << "Could not create scene output render target " << SCENE_OUTPUT_RT_NAME;
+            logger(rx::log::level::k_error, "Could not create scene output render target %s", SCENE_OUTPUT_RT_NAME);
         }
     }
 
@@ -713,14 +739,14 @@ namespace nova::renderer {
             builtin_buffer_names.emplace_back(PER_FRAME_DATA_NAME);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create builtin buffer " << PER_FRAME_DATA_NAME;
+            logger(rx::log::level::k_error, "Could not create builtin buffer ", PER_FRAME_DATA_NAME);
         }
 
         if(device_resources->create_uniform_buffer(MODEL_MATRIX_BUFFER_NAME, sizeof(glm::mat4) * 0xFFFF)) {
             builtin_buffer_names.emplace_back(MODEL_MATRIX_BUFFER_NAME);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create builtin buffer " << MODEL_MATRIX_BUFFER_NAME;
+            logger(rx::log::level::k_error, "Could not create builtin buffer %s", MODEL_MATRIX_BUFFER_NAME);
         }
     }
 
@@ -733,7 +759,7 @@ namespace nova::renderer {
             ui_renderpass->is_builtin = true;
 
             if(!rendergraph->add_renderpass(ui_renderpass, NullUiRenderpass::get_create_info(), *device_resources)) {
-                NOVA_LOG(ERROR) << "Could not create null UI renderpass";
+                logger(rx::log::level::k_error, "Could not create null UI renderpass");
             }
         }
     }

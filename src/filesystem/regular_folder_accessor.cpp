@@ -3,10 +3,11 @@
 #include <rx/core/concurrency/scope_lock.h>
 #include <rx/core/filesystem/directory.h>
 #include <rx/core/filesystem/file.h>
-
-#include "nova_renderer/util/logger.hpp"
+#include <rx/core/log.h>
 
 namespace nova::filesystem {
+    RX_LOG("RegularFilesystem", logger);
+
     RegularFolderAccessor::RegularFolderAccessor(const rx::string& folder) : FolderAccessorBase(folder) {}
 
     rx::vector<uint8_t> RegularFolderAccessor::read_file(const rx::string& path) {
@@ -21,7 +22,7 @@ namespace nova::filesystem {
         }();
 
         if(!does_resource_exist_on_filesystem(full_path)) {
-            NOVA_LOG(ERROR) << "Resource at path " << full_path.data() << " doesn't exist";
+            logger(rx::log::level::k_error, "Resource at path %s doesn't exist", full_path);
             return {};
         }
 
@@ -51,7 +52,7 @@ namespace nova::filesystem {
         }
 
         if(const rx::filesystem::file file{resource_path, "r"}) {
-            // NOVA_LOG(TRACE) << resource_path << " exists";
+            // logger(rx::log::level::k_verbose, "%s exists", resource_path);
             resource_existence.insert(resource_path, true);
             return true;
         }

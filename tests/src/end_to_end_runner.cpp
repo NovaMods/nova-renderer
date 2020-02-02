@@ -21,18 +21,19 @@ void at_exit_handler();
 #include "nova_renderer/window.hpp"
 
 namespace nova::renderer {
+    RX_LOG("EndToEndRunner", logger);
+
     int main() {
+        init_rex();
+
 #ifdef __linux__
         atexit(at_exit_handler);
 #endif
 
-        // TODO: fil out this test when the RHI is stable
-        TEST_SETUP_LOGGER();
-
         rx::array<char[FILENAME_MAX]> buff;
         getcwd(buff.data(), FILENAME_MAX);
-        NOVA_LOG(DEBUG) << "Running in " << buff.data() << std::flush;
-        NOVA_LOG(DEBUG) << "Predefined resources at: " << CMAKE_DEFINED_RESOURCES_PREFIX;
+        logger(rx::log::level::k_info, "Running in %s", buff);
+        logger(rx::log::level::k_info, "Predefined resources at: %s", CMAKE_DEFINED_RESOURCES_PREFIX);
 
         NovaSettings settings;
         settings.vulkan.application_name = "Nova Renderer test";
@@ -44,7 +45,7 @@ namespace nova::renderer {
         settings.window.width = 640;
         settings.window.height = 480;
 
-        const auto renderer = NovaRenderer::initialize(settings);
+        auto* renderer =  rx::memory::g_system_allocator->create<NovaRenderer>(settings);
 
         renderer->load_renderpack(CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack");
 
@@ -79,7 +80,9 @@ namespace nova::renderer {
             renderer->execute_frame();
         }
 
-        NovaRenderer::deinitialize();
+        rx::memory::g_system_allocator->destroy<NovaRenderer>(renderer);
+
+        rex_fini();
 
         return 0;
     }

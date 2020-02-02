@@ -50,7 +50,7 @@ struct set {
 
 private:
   void clear_and_deallocate();
-  void initialize(memory::allocator* _allocator, rx_size _capacity);
+  constexpr void initialize(memory::allocator* _allocator, rx_size _capacity);
 
   static rx_size hash_key(const K& _key);
   static bool is_deleted(rx_size _hash);
@@ -114,7 +114,8 @@ inline set<K>::set(const set& _set)
   : set{_set.m_allocator}
 {
   for (rx_size i{0}; i < _set.m_capacity; i++) {
-    if (_set.element_hash(i) != 0) {
+    const auto hash = _set.element_hash(i);
+    if (hash != 0 && !_set.is_deleted(hash)) {
       insert(_set.m_keys[i]);
     }
   }
@@ -127,13 +128,20 @@ inline set<K>::~set() {
 
 template<typename K>
 inline void set<K>::clear() {
+  if (m_size == 0) {
+    return;
+  }
+
   for (rx_size i{0}; i < m_capacity; i++) {
-    if (element_hash(i) != 0) {
+    const rx_size hash = element_hash(i);
+    if (hash != 0 && !is_deleted(hash)) {
       if constexpr (!traits::is_trivially_destructible<K>) {
         utility::destruct<K>(m_keys + i);
       }
+      element_hash(i) = 0;
     }
   }
+
   m_size = 0;
 }
 
@@ -173,7 +181,8 @@ inline set<K>& set<K>::operator=(const set<K>& _set) {
   allocate();
 
   for (rx_size i{0}; i < _set.m_capacity; i++) {
-    if (_set.element_hash(i) != 0) {
+    const auto hash = _set.element_hash(i);
+    if (hash != 0 && !_set.is_deleted(hash)) {
       insert(_set.m_keys[i]);
     }
   }
@@ -182,7 +191,7 @@ inline set<K>& set<K>::operator=(const set<K>& _set) {
 }
 
 template<typename K>
-inline void set<K>::initialize(memory::allocator* _allocator, rx_size _capacity) {
+inline constexpr void set<K>::initialize(memory::allocator* _allocator, rx_size _capacity) {
   m_allocator = _allocator;
   m_keys = nullptr;
   m_hashes = nullptr;
@@ -211,8 +220,7 @@ inline void set<K>::insert(const K& _key) {
 template<typename K>
 bool set<K>::find(const K& _key) const {
   if (rx_size index; lookup_index(_key, index)) {
-    return !is_deleted(index);
-    // return true;
+    return true;
   }
   return false;
 }

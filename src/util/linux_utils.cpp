@@ -3,20 +3,23 @@
 #include <exception>
 
 #include <cxxabi.h>
+#include <errno.h>
 #include <execinfo.h>
 #include <rx/core/array.h>
+#include <rx/core/log.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "nova_renderer/util/logger.hpp"
-
 void nova_backtrace() {
+    RX_LOG("LinuxUtil", logger);
+
     rx::array<void* [50]> array {};
 
     // get void*'s for all entries on the stack
     int size = backtrace(array.data(), 10);
 
     // print out all the frames to stderr
-    NOVA_LOG(ERROR) << "Stacktrace: ";
+    logger(rx::log::level::k_error, "Stacktrace: ");
     char** data = backtrace_symbols(array.data(), size);
 
     for(int i = 0; i < size; i++) {
@@ -37,7 +40,7 @@ void nova_backtrace() {
                 }
             }
             catch(const std::exception& e) {
-                NOVA_LOG(WARN) << "Demangle failed: " << e.what() << std::endl;
+                logger(rx::log::level::k_warning, "Demangle failed: %s", e.what());
             }
         }
 
@@ -45,7 +48,7 @@ void nova_backtrace() {
             str = str.substring(0, str.size() - 1);
         }
 
-        NOVA_LOG(ERROR) << "\t" << str.data();
+        logger(rx::log::level::k_error, "\t%s", str);
     }
     // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
     free(data);

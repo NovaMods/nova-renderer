@@ -1,11 +1,6 @@
-/*!
- * \author David
- * \date 18-May-16.
- */
-
 #include "nova_renderer/util/utils.hpp"
 
-#include "nova_renderer/util/logger.hpp"
+#include <sstream>
 
 namespace nova::renderer {
     // taken from https://www.fluentcpp.com/2017/04/21/how-to-split-a-string-in-c/

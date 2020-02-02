@@ -1,19 +1,21 @@
 #include "vulkan_render_device.hpp"
 
+#include <rx/core/log.h>
+#include <rx/core/set.h>
 #include <signal.h>
 #include <string.h>
 
-#include <rx/core/set.h>
+#include <sstream>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/memory/allocation_structs.hpp"
 #include "nova_renderer/renderables.hpp"
-#include "nova_renderer/util/logger.hpp"
 #include "nova_renderer/window.hpp"
 
 #include "vk_structs.hpp"
 #include "vulkan_command_list.hpp"
 #include "vulkan_utils.hpp"
+
 // TODO: Move window creation out of the RHI
 #ifdef NOVA_LINUX
 #define NOVA_VK_XLIB
@@ -27,6 +29,8 @@
 using namespace nova::mem;
 
 namespace nova::renderer::rhi {
+    RX_LOG("VulkanRenderDevice", logger);
+
     VulkanRenderDevice::VulkanRenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator* allocator)
         : RenderDevice(settings, window, allocator), command_pools_by_thread_idx(internal_allocator) {
         create_instance();
@@ -254,9 +258,10 @@ namespace nova::renderer::rhi {
 
         if(writes_to_backbuffer) {
             if(data.texture_outputs.size() > 1) {
-                NOVA_LOG(ERROR)
-                    << "Pass " << data.name.data()
-                    << " writes to the backbuffer, and other textures. Passes that write to the backbuffer are not allowed to write to any other textures";
+                logger(
+                    rx::log::level::k_error,
+                    "Pass %s writes to the backbuffer, and other textures. Passes that write to the backbuffer are not allowed to write to any other textures",
+                    data.name);
             }
         }
 
@@ -572,7 +577,7 @@ namespace nova::renderer::rhi {
     ntl::Result<Pipeline*> VulkanRenderDevice::create_pipeline(PipelineInterface* pipeline_interface,
                                                                const shaderpack::PipelineCreateInfo& data,
                                                                rx::memory::allocator* allocator) {
-        NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name.data();
+        logger(rx::log::level::k_verbose, "Creating a VkPipeline for pipeline %s", data.name);
 
         const auto* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
         auto* vk_pipeline = allocate_object<VulkanPipeline>(allocator);
@@ -580,7 +585,7 @@ namespace nova::renderer::rhi {
         rx::vector<VkPipelineShaderStageCreateInfo> shader_stages(internal_allocator);
         rx::map<VkShaderStageFlags, VkShaderModule> shader_modules(internal_allocator);
 
-        NOVA_LOG(TRACE) << "Compiling vertex module";
+        logger(rx::log::level::k_verbose, "Compiling vertex module");
         const auto vertex_module = create_shader_module(data.vertex_shader.source);
         if(vertex_module) {
             shader_modules.insert(VK_SHADER_STAGE_VERTEX_BIT, *vertex_module);
@@ -589,7 +594,7 @@ namespace nova::renderer::rhi {
         }
 
         if(data.geometry_shader) {
-            NOVA_LOG(TRACE) << "Compiling geometry module";
+            logger(rx::log::level::k_verbose, "Compiling geometry module");
             const auto geometry_module = create_shader_module(data.geometry_shader->source);
             if(geometry_module) {
                 shader_modules.insert(VK_SHADER_STAGE_GEOMETRY_BIT, *geometry_module);
@@ -599,7 +604,7 @@ namespace nova::renderer::rhi {
         }
 
         if(data.tessellation_control_shader) {
-            NOVA_LOG(TRACE) << "Compiling tessellation_control module";
+            logger(rx::log::level::k_verbose, "Compiling tessellation_control module");
             const auto tessellation_control_module = create_shader_module(data.tessellation_control_shader->source);
             if(tessellation_control_module) {
                 shader_modules.insert(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, *tessellation_control_module);
@@ -609,7 +614,7 @@ namespace nova::renderer::rhi {
         }
 
         if(data.tessellation_evaluation_shader) {
-            NOVA_LOG(TRACE) << "Compiling tessellation_evaluation module";
+            logger(rx::log::level::k_verbose, "Compiling tessellation_evaluation module");
             const auto tessellation_evaulation_module = create_shader_module(data.tessellation_evaluation_shader->source);
             if(tessellation_evaulation_module) {
                 shader_modules.insert(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, *tessellation_evaulation_module);
@@ -619,7 +624,7 @@ namespace nova::renderer::rhi {
         }
 
         if(data.fragment_shader) {
-            NOVA_LOG(TRACE) << "Compiling fragment module";
+            logger(rx::log::level::k_verbose, "Compiling fragment module");
             const auto fragment_module = create_shader_module(data.fragment_shader->source);
             if(fragment_module) {
                 shader_modules.insert(VK_SHADER_STAGE_FRAGMENT_BIT, *fragment_module);
@@ -817,7 +822,7 @@ namespace nova::renderer::rhi {
             object_name.objectHandle = reinterpret_cast<uint64_t>(vk_pipeline->pipeline);
             object_name.pObjectName = data.name.data();
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
-            NOVA_LOG(INFO) << "Set pipeline " << vk_pipeline->pipeline << " to have name " << data.name.data();
+            logger(rx::log::level::k_info, "Set pipeline %s to have name %s", vk_pipeline->pipeline, data.name);
         }
 
         return ntl::Result(static_cast<Pipeline*>(vk_pipeline));
@@ -936,7 +941,7 @@ namespace nova::renderer::rhi {
 
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
 
-            NOVA_LOG(INFO) << "Set image " << image->image << " to have name " << info.name.data();
+            logger(rx::log::level::k_info, "Set image %uz to have name %s", image->image, info.name);
         }
 
         VkMemoryRequirements requirements;
@@ -1023,7 +1028,7 @@ namespace nova::renderer::rhi {
             return image;
 
         } else {
-            NOVA_LOG(ERROR) << "Could not allocate memory for image " << info.name.data() << ": " << image_memory.error.to_string().data();
+            logger(rx::log::level::k_error, "Could not allocate memory for image %s:%s", info.name, image_memory.error.to_string());
 
             return nullptr;
         }
@@ -1243,7 +1248,7 @@ namespace nova::renderer::rhi {
                 return compute_family_index;
         }
 
-        NOVA_LOG(ERROR) << "Unknown queue type " << static_cast<uint32_t>(type);
+        logger(rx::log::level::k_error, "Unknown queue type &u", static_cast<uint32_t>(type));
         return 999999; // Will probably cause a crash, which is actually what we want rn
     }
 
@@ -1452,14 +1457,14 @@ namespace nova::renderer::rhi {
             }
 
             if(graphics_family_idx != 0xFFFFFFFF) {
-                NOVA_LOG(INFO) << rx::string::format("Selected GPU %s", gpu.props.deviceName).data();
+                logger(rx::log::level::k_info, "Selected GPU %s", gpu.props.deviceName);
                 gpu.phys_device = current_device;
                 break;
             }
         }
 
         if(gpu.phys_device == nullptr) {
-            NOVA_LOG(ERROR) << "Failed to find good GPU";
+            logger(rx::log::level::k_error, "Failed to find good GPU");
             return;
         }
 
@@ -1525,7 +1530,7 @@ namespace nova::renderer::rhi {
         rx::vector<VkExtensionProperties> available(extension_count);
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available.data());
 
-        rx::set<rx::string> required(internal_allocator);
+        rx::set<rx::string> required{internal_allocator};
         required_device_extensions.each_fwd([&](const char* extension) { required.insert(extension); });
 
         available.each_fwd(
@@ -1535,7 +1540,7 @@ namespace nova::renderer::rhi {
             std::stringstream ss;
             required.each([&](const rx::string& extension) { ss << extension.data() << ", "; });
 
-            NOVA_LOG(WARN) << "Device does not support these required extensions: " << ss.str();
+            logger(rx::log::level::k_warning, "Device does not support these required extensions: %s", ss.str().c_str());
         }
 
         return !required.is_empty();
@@ -1632,7 +1637,7 @@ namespace nova::renderer::rhi {
 
         all_bindings.each_value([&](const ResourceBindingDescription& binding) {
             if(binding.set >= bindings_by_set.size()) {
-                NOVA_LOG(ERROR) << "You've skipped one or more descriptor sets! Don't do that, Nova can't handle it";
+                logger(rx::log::level::k_error, "You've skipped one or more descriptor sets! Don't do that, Nova can't handle it");
                 return true;
             }
 
@@ -1742,7 +1747,7 @@ namespace nova::renderer::rhi {
             return rx::optional<VkShaderModule>(module);
 
         } else {
-            NOVA_LOG(ERROR) << "Could not create shader module: " << to_string(result);
+            logger(rx::log::level::k_error, "Could not create shader module: %s", to_string(result));
             return rx::nullopt;
         }
     }
@@ -1807,7 +1812,7 @@ namespace nova::renderer::rhi {
         const rx::string msg = ss.str().c_str();
 
         if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
-            NOVA_LOG(ERROR) << "[" << type.data() << "] " << msg.data();
+            logger(rx::log::level::k_error, "[%s]%s", type, msg);
 #ifdef NOVA_LINUX
             nova_backtrace();
 #endif
@@ -1823,21 +1828,21 @@ namespace nova::renderer::rhi {
 
         } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {
             // Warnings may hint at unexpected / non-spec API usage
-            NOVA_LOG(WARN) << "[" << type.data() << "] " << msg.data();
+            logger(rx::log::level::k_warning, "[%s]%s", type, msg);
 
         } else if(((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) != 0) &&
                   ((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U)) { // No validation info!
             // Informal messages that may become handy during debugging
-            NOVA_LOG(INFO) << "[" << type.data() << "] " << msg.data();
+            logger(rx::log::level::k_info, "[%s]%s", type, msg);
 
         } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) != 0) {
             // Diagnostic info from the Vulkan loader and layers
             // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
-            NOVA_LOG(DEBUG) << "[" << type.data() << "] " << msg.data();
+            logger(rx::log::level::k_verbose, "[%s]%s", type, msg);
 
         } else if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U) { // No validation info!
             // Catch-all to be super sure
-            NOVA_LOG(INFO) << "[" << type.data() << "]" << msg.data();
+            logger(rx::log::level::k_info, "[%s]%s", type, msg);
         }
 
         return VK_FALSE;

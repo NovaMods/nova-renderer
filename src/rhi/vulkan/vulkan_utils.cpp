@@ -1,10 +1,13 @@
 #include "vulkan_utils.hpp"
 
+#include <rx/core/log.h>
+
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
-#include "nova_renderer/util/logger.hpp"
 
 namespace nova::renderer::rhi {
+    RX_LOG("VulkanUtil", logger);
+
     VkImageLayout to_vk_image_layout(const ResourceState layout) {
         switch(layout) {
             case ResourceState::Common:
@@ -38,7 +41,7 @@ namespace nova::renderer::rhi {
                 return VK_IMAGE_LAYOUT_UNDEFINED;
 
             default:
-                NOVA_LOG(ERROR) << static_cast<uint32_t>(layout) << " is not a valid image state";
+                logger(rx::log::level::k_error, "%u is not a valid image state", static_cast<uint32_t>(layout));
                 return VK_IMAGE_LAYOUT_GENERAL;
         }
     }
@@ -229,7 +232,7 @@ namespace nova::renderer::rhi {
                 return VK_FORMAT_D24_UNORM_S8_UINT;
 
             default:
-                NOVA_LOG(ERROR) << "Unknown pixel format, returning RGBA8";
+                logger(rx::log::level::k_error, "Unknown pixel format, returning RGBA8");
                 return VK_FORMAT_R8G8B8A8_UNORM;
         }
     }

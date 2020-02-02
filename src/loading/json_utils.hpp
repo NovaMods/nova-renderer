@@ -3,8 +3,6 @@
 #include <rx/core/json.h>
 #include <rx/core/optional.h>
 
-#include "nova_renderer/util/logger.hpp"
-
 namespace nova::renderer {
     /*!
      * \brief Retrieves an individual value from the provided JSON structure
