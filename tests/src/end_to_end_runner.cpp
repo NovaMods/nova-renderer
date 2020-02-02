@@ -24,6 +24,8 @@ namespace nova::renderer {
     RX_LOG("EndToEndRunner", logger);
 
     int main() {
+        init_rex();
+
 #ifdef __linux__
         atexit(at_exit_handler);
 #endif

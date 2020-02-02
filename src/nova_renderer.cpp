@@ -39,26 +39,65 @@ RX_LOG("nova", logger);
 // TODO: Use this somehow
 const Bytes GLOBAL_MEMORY_POOL_SIZE = 1_gb;
 
+using LogHandles = rx::vector<rx::log::event_type::handle>;
+
+RX_GLOBAL<LogHandles> logging_event_handles{"system", "log_handles", &rx::memory::g_system_allocator};
+
 void init_rex() {
-    rx::globals::link();
+    static bool initialized = false;
 
-    rx::global_group* system_group{rx::globals::find("system")};
+    if(!initialized) {
+        rx::globals::link();
 
-    // Explicitly initialize globals that need to be initialized in a specific
-    // order for things to work.
-    system_group->find("allocator")->init();
-    system_group->find("logger")->init();
+        rx::global_group* system_group{rx::globals::find("system")};
 
-    rx::globals::init();
+        // Explicitly initialize globals that need to be initialized in a specific
+        // order for things to work.
+        system_group->find("allocator")->init();
+        system_group->find("logger")->init();
+
+        auto* log_handles = system_group->find("log_handles");
+        log_handles->init();
+
+        rx::globals::find("loggers")->each([&](rx::global_node* _logger) {
+            log_handles->cast<LogHandles>()->push_back(
+                _logger->cast<rx::log>()->on_write([](const rx::log::level level, const rx::string& message) {
+                    switch(level) {
+                        case rx::log::level::k_error:
+                            printf("^rerror: ^w%s\n", message.data());
+                            break;
+                        case rx::log::level::k_info:
+                            printf("^cinfo: ^w%s\n", message.data());
+                            break;
+                        case rx::log::level::k_verbose:
+                            printf("^cverbose: ^w%s\n", message.data());
+                            break;
+                        case rx::log::level::k_warning:
+                            printf("^mwarning: ^w%s\n", message.data());
+                            break;
+                    }
+                }));
+        });
+
+        rx::globals::init();
+
+        initialized = true;
+    }
 }
 
 void rex_fini() {
-    rx::global_group* system_group{rx::globals::find("system")};
+    static bool deinitialized = false;
 
-    rx::globals::fini();
+    if(!deinitialized) {
+        rx::global_group* system_group{rx::globals::find("system")};
 
-    system_group->find("logger")->fini();
-    system_group->find("allocator")->fini();
+        rx::globals::fini();
+
+        // system_group->find("logger")->fini();
+        // system_group->find("allocator")->fini();
+
+        deinitialized = true;
+    }
 }
 
 namespace nova::renderer {
