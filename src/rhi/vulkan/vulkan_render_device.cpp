@@ -1246,10 +1246,11 @@ namespace nova::renderer::rhi {
 
             case QueueType::AsyncCompute:
                 return compute_family_index;
-        }
 
-        logger(rx::log::level::k_error, "Unknown queue type %u", static_cast<uint32_t>(type));
-        return 999999; // Will cause a crash, which is actually what we want rn
+            default:
+                RX_ASSERT(false, "Unknown queue type %u", static_cast<uint32_t>(type));
+                return 9999;    // I have to return _something_ or Visual Studio gets mad
+        }
     }
 
     void VulkanRenderDevice::create_surface() {

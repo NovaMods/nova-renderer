@@ -297,6 +297,10 @@ else()
     target_compile_definitions(nova-renderer PUBLIC $<$<CONFIG:Debug>:NOVA_DEBUG>)
 endif()
 
+if(NOVA_DEBUG) 
+    target_compile_definitions(nova-renderer PUBLIC RX_DEBUG)
+endif()
+
 target_include_directories(nova-renderer PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $ENV{VULKAN_SDK}/Include
