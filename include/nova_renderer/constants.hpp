@@ -22,6 +22,7 @@ namespace nova::renderer {
     constexpr const char* MATERIALS_DIRECTORY = "materials";
     constexpr const char* SHADERS_DIRECTORY = "shaders";
     constexpr const char* RENDERPACK_DESCRIPTOR_FILE = "renderpack.json";
+    constexpr const char* RESOURCES_FILE = "resources.json";
     constexpr const char* MATERIAL_FILE_EXTENSION = ".mat";
 
     /*!

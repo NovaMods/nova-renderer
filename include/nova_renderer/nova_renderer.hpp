@@ -108,7 +108,7 @@ namespace nova::renderer {
          * \return The renderpass you added, but you no longer have ownership
          */
         template <typename RenderpassType>
-        [[nodiscard]] RenderpassType* set_ui_renderpass(RenderpassType* ui_renderpass, const shaderpack::RenderPassCreateInfo& create_info);
+        bool set_ui_renderpass(RenderpassType* ui_renderpass, const shaderpack::RenderPassCreateInfo& create_info);
 
         [[nodiscard]] const rx::vector<MaterialPass>& get_material_passes_for_pipeline(rhi::Pipeline* const pipeline);
 
@@ -339,8 +339,7 @@ namespace nova::renderer {
     }
 
     template <typename RenderpassType>
-    RenderpassType* NovaRenderer::set_ui_renderpass(RenderpassType* ui_renderpass, const shaderpack::RenderPassCreateInfo& create_info) {
-        RenderpassType* renderpass = rendergraph->add_renderpass(rx::utility::move(ui_renderpass), create_info, *device_resources);
-        return renderpass;
+    bool NovaRenderer::set_ui_renderpass(RenderpassType* ui_renderpass, const shaderpack::RenderPassCreateInfo& create_info) {
+        return rendergraph->add_renderpass(rx::utility::move(ui_renderpass), create_info, *device_resources);
     }
 } // namespace nova::renderer

@@ -95,6 +95,8 @@ namespace nova::renderer {
             initial_texture_barrier.access_after_barrier = ResourceAccess::CopyWrite;
             initial_texture_barrier.old_state = ResourceState::Undefined;
             initial_texture_barrier.new_state = ResourceState::CopyDestination;
+            initial_texture_barrier.source_queue = QueueType::Transfer;
+            initial_texture_barrier.destination_queue = QueueType::Transfer;
             initial_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
 
             rx::vector<ResourceBarrier> initial_barriers{allocator};
@@ -108,13 +110,15 @@ namespace nova::renderer {
             final_texture_barrier.access_after_barrier = ResourceAccess::ShaderRead;
             final_texture_barrier.old_state = ResourceState::CopyDestination;
             final_texture_barrier.new_state = ResourceState::ShaderRead;
+            final_texture_barrier.source_queue = QueueType::Transfer;
+            final_texture_barrier.destination_queue = QueueType::Graphics;
             final_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
 
             rx::vector<ResourceBarrier> final_barriers{allocator};
             final_barriers.push_back(final_texture_barrier);
             cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::AllGraphics, final_barriers);
 
-            Fence* upload_done_fence = device.create_fence(allocator);
+            Fence* upload_done_fence = device.create_fence(false, allocator);
             device.submit_command_list(cmds, QueueType::Transfer, upload_done_fence);
 
             // Be sure that the data copy is complete, so that this method doesn't return before the GPU is done with the staging buffer
@@ -259,7 +263,12 @@ namespace nova::renderer {
 
     void DeviceResources::return_staging_buffer(Buffer* buffer) {
         const auto size = buffer->size.b_count();
-        staging_buffers.find(size)->push_back(buffer);
+        auto* buffers = staging_buffers.find(size);
+        if(!buffers) {
+            buffers = staging_buffers.insert(size, {});
+        }
+
+        buffers->push_back(buffer);
     }
 
     size_t size_in_bytes(const PixelFormat pixel_format) {

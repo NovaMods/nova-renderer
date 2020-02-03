@@ -222,9 +222,9 @@ namespace nova::renderer {
         Rendergraph(rx::memory::allocator* allocator, rhi::RenderDevice& device);
 
         template <typename RenderpassType>
-        [[nodiscard]] RenderpassType* add_renderpass(RenderpassType* renderpass,
-                                                     const shaderpack::RenderPassCreateInfo& create_info,
-                                                     const DeviceResources& resource_storage);
+        [[nodiscard]] bool add_renderpass(RenderpassType* renderpass,
+                            const shaderpack::RenderPassCreateInfo& create_info,
+                            const DeviceResources& resource_storage);
 
         void destroy_renderpass(const rx::string& name);
 
@@ -248,9 +248,9 @@ namespace nova::renderer {
     };
 
     template <typename RenderpassType>
-    RenderpassType* Rendergraph::add_renderpass(RenderpassType* renderpass,
-                                                const shaderpack::RenderPassCreateInfo& create_info,
-                                                const DeviceResources& resource_storage) {
+    bool Rendergraph::add_renderpass(RenderpassType* renderpass,
+                                     const shaderpack::RenderPassCreateInfo& create_info,
+                                     const DeviceResources& resource_storage) {
         RenderpassMetadata metadata;
         metadata.data = create_info;
 
@@ -311,7 +311,7 @@ namespace nova::renderer {
         });
 
         if(missing_render_targets) {
-            return nullptr;
+            return false;
         }
 
         // Can't combine these if statements and I don't want to `.find` twice
@@ -332,7 +332,7 @@ namespace nova::renderer {
                 rx::log::level::k_error,
                 "Could not create renderpass %s because there were errors in the attachment specification. Look above this message for details",
                 create_info.name);
-            return nullptr;
+            return false;
         }
 
         ntl::Result<rhi::Renderpass*> renderpass_result = device.create_renderpass(create_info, framebuffer_size, allocator);
@@ -341,7 +341,7 @@ namespace nova::renderer {
 
         } else {
             rg_log(rx::log::level::k_error, "Could not create renderpass %s: %s", create_info.name, renderpass_result.error.to_string());
-            return nullptr;
+            return false;
         }
 
         // Backbuffer framebuffers are owned by the swapchain, not the renderpass that writes to them, so if the
@@ -364,6 +364,6 @@ namespace nova::renderer {
 
         is_dirty = true;
 
-        return renderpass;
+        return true;
     }
 } // namespace nova::renderer

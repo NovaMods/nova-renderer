@@ -72,15 +72,62 @@ namespace nova::renderer {
             });
     }
 
+    ProceduralMesh::ProceduralMesh(ProceduralMesh&& old) noexcept
+        : device{old.device},
+          vertex_buffers{rx::utility::move(vertex_buffers)},
+          index_buffers{rx::utility::move(index_buffers)},
+          cached_vertex_buffer{old.cached_vertex_buffer},
+          cached_index_buffer{old.cached_index_buffer},
+          num_vertex_bytes_to_upload{old.num_vertex_bytes_to_upload},
+          num_index_bytes_to_upload{old.num_index_bytes_to_upload},
+          allocator{old.allocator},
+          device_memory_allocation_strategy{old.device_memory_allocation_strategy},
+          host_memory_allocation_strategy{old.host_memory_allocation_strategy},
+          device_buffers_memory{old.device_buffers_memory},
+          cached_buffers_memory {
+        old.cached_buffers_memory
+    }
+#if NOVA_DEBUG
+    , vertex_buffer_size{old.vertex_buffer_size}, index_buffer_size { old.index_buffer_size }
+#endif
+    { old.device = nullptr; }
+
+    ProceduralMesh& ProceduralMesh::operator=(ProceduralMesh&& old) noexcept {
+        device = old.device;
+        vertex_buffers = rx::utility::move(vertex_buffers);
+        index_buffers = rx::utility::move(index_buffers);
+        cached_vertex_buffer = old.cached_vertex_buffer;
+        cached_index_buffer = old.cached_index_buffer;
+        num_vertex_bytes_to_upload = old.num_vertex_bytes_to_upload;
+        num_index_bytes_to_upload = old.num_index_bytes_to_upload;
+        allocator = old.allocator;
+        device_memory_allocation_strategy = old.device_memory_allocation_strategy;
+        host_memory_allocation_strategy = old.host_memory_allocation_strategy;
+        device_buffers_memory = old.device_buffers_memory;
+        cached_buffers_memory = old.cached_buffers_memory;
+
+#if NOVA_DEBUG
+        vertex_buffer_size = old.vertex_buffer_size;
+        index_buffer_size = old.index_buffer_size;
+#endif
+
+        old.device = nullptr;
+
+        return *this;
+    }
+
     ProceduralMesh::~ProceduralMesh() {
-        // TODO: Free the device memory with the RenderDevice
-        // Requires support from the RHI
+        if(device) {
 
-        allocator->destroy<DeviceMemoryResource>(device_buffers_memory);
-        allocator->destroy<DeviceMemoryResource>(cached_buffers_memory);
+            // TODO: Free the device memory with the RenderDevice
+            // Requires support from the RHI
 
-        allocator->destroy<mem::BlockAllocationStrategy>(device_memory_allocation_strategy);
-        allocator->destroy<mem::BlockAllocationStrategy>(host_memory_allocation_strategy);
+            allocator->destroy<DeviceMemoryResource>(device_buffers_memory);
+            allocator->destroy<DeviceMemoryResource>(cached_buffers_memory);
+
+            allocator->destroy<mem::BlockAllocationStrategy>(device_memory_allocation_strategy);
+            allocator->destroy<mem::BlockAllocationStrategy>(host_memory_allocation_strategy);
+        }
     }
 
     void ProceduralMesh::set_vertex_data(const void* data, const uint64_t size) {

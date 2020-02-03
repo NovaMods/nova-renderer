@@ -228,7 +228,7 @@ namespace nova::renderer::shaderpack {
 
     rx::optional<ShaderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access) {
         logger(rx::log::level::k_verbose, "load_dynamic_resource_file called");
-        const rx::string resources_string = folder_access->read_text_file("resources.json");
+        const rx::string resources_string = folder_access->read_text_file(RESOURCES_FILE);
 
         auto json_resources = rx::json(resources_string);
         const ValidationReport report = validate_shaderpack_resources_data(json_resources);

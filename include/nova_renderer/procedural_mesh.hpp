@@ -7,6 +7,7 @@
 #include "nova_renderer/memory/block_allocation_strategy.hpp"
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
+#include "rx/core/concepts/no_copy.h"
 
 namespace nova::renderer {
     /*!
@@ -15,7 +16,7 @@ namespace nova::renderer {
      * ProceduralMesh should _not_ be used if you're not going to update the mesh frequently. It stores four copies of the mesh data - once
      * in host memory, and three times in device memory (one for each in-flight frame)
      */
-    class ProceduralMesh {
+    class ProceduralMesh : rx::concepts::no_copy {
     public:
         struct Buffers {
             rhi::Buffer* vertex_buffer;
@@ -32,6 +33,9 @@ namespace nova::renderer {
          * \param device The device to create the buffers on
          */
         ProceduralMesh(uint64_t vertex_buffer_size, uint64_t index_buffer_size, rhi::RenderDevice* device);
+
+        ProceduralMesh(ProceduralMesh&& old) noexcept;
+        ProceduralMesh& operator=(ProceduralMesh&& old) noexcept;
 
         ~ProceduralMesh();
 
@@ -68,7 +72,7 @@ namespace nova::renderer {
         [[nodiscard]] Buffers get_buffers_for_frame(uint8_t frame_idx) const;
 
     private:
-        rhi::RenderDevice* device;
+        rhi::RenderDevice* device = nullptr;
 
         rx::array<rhi::Buffer* [NUM_IN_FLIGHT_FRAMES]> vertex_buffers;
         rx::array<rhi::Buffer* [NUM_IN_FLIGHT_FRAMES]> index_buffers;

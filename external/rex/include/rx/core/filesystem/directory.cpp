@@ -118,5 +118,4 @@ void directory::each(function<void(item&&)>&& _function) {
   FindClose(handle);
 #endif
 }
-
 } // namespace rx::filesystem

@@ -400,10 +400,10 @@ namespace nova::renderer {
 
         pass_create_infos.each_fwd([&](const shaderpack::RenderPassCreateInfo& create_info) {
             Renderpass* renderpass = global_allocator->create<Renderpass>(create_info.name);
-            if(auto* pass = rendergraph->add_renderpass(renderpass, create_info, *device_resources); pass != nullptr) {
+            if(rendergraph->add_renderpass(renderpass, create_info, *device_resources)) {
                 pipelines.each_fwd([&](const shaderpack::PipelineCreateInfo& pipeline) {
                     if(pipeline.pass == create_info.name) {
-                        pass->pipeline_names.emplace_back(pipeline.name);
+                        renderpass->pipeline_names.emplace_back(pipeline.name);
                     }
                 });
             } else {
