@@ -83,7 +83,8 @@ file::file(const char* _file_name, const char* _mode)
   *mode++ = L'\0';
 
   // Utilize _wfopen on Windows so we can open files with UNICODE names.
-  m_impl = static_cast<void*>(_wfopen(reinterpret_cast<const wchar_t*>(file_name.data()), mode_buffer));
+  m_impl = static_cast<void*>(
+    _wfopen(reinterpret_cast<const wchar_t*>(file_name.data()), mode_buffer));
 }
 #else
 file::file(const char* _file_name, const char* _mode)

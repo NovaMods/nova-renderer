@@ -659,11 +659,8 @@ bool operator>(const string& _lhs, const string& _rhs) {
 }
 
 void wide_string::resize(rx_size _size) {
-  const rx_size previous_size{m_size};
   m_data = reinterpret_cast<rx_u16*>(m_allocator->reallocate(reinterpret_cast<rx_byte*>(m_data), (_size + 1) * sizeof *m_data));
-  for (rx_size i{previous_size}; i < _size; i++) {
-    m_data[i] = 0;
-  }
+  m_data[_size] = 0;
   m_size = _size;
 }
 

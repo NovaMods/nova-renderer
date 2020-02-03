@@ -76,9 +76,9 @@ struct json {
 
   memory::allocator* allocator() const;
 
-  struct json_value_s* raw() const;
+    struct json_value_s* raw() const;
 
-  private:
+private:
   template<typename T>
   using has_from_json =
     decltype(utility::declval<T>().from_json(utility::declval<json>()));
