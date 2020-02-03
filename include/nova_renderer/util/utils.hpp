@@ -34,16 +34,6 @@ namespace nova::renderer {
 
     bool ends_with(const std::string& string, const std::string& ending);
 
-    template<typename Arg>
-    uint32_t va_count(const Arg& arg) {
-        return 1;
-    }
-
-    template<typename Arg, typename... Args>
-    uint32_t va_count(const Arg arg, const Args&... args) {
-        return 1 + va_count(args);
-    }
-
 #define FORMAT(s, ...) fmt::format(fmt(s), __VA_ARGS__)
 
 } // namespace nova::renderer
