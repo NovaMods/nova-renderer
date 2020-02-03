@@ -7,9 +7,9 @@ namespace nova::renderer::rhi {
 
     bool ResourceBindingDescription::operator!=(const ResourceBindingDescription& other) { return !(*this == other); }
 
-    ResourceBarrier::ResourceBarrier() {}
+    ResourceBarrier::ResourceBarrier() = default;
 
-    DescriptorResourceInfo::DescriptorResourceInfo() {}
+    DescriptorResourceInfo::DescriptorResourceInfo() = default;
 
     uint32_t PipelineInterface::get_num_descriptors_of_type(const DescriptorType type) const {
         uint32_t num_descriptors = 0;
