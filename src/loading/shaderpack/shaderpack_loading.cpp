@@ -8,13 +8,13 @@
 #include <rx/core/log.h>
 
 #include "nova_renderer/constants.hpp"
+#include "nova_renderer/filesystem/filesystem_helpers.hpp"
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
 
 #include "../json_utils.hpp"
 #include "render_graph_builder.hpp"
 #include "shaderpack_validator.hpp"
-#include "nova_renderer/filesystem/filesystem_helpers.hpp"
 
 namespace nova::renderer::shaderpack {
     RX_LOG("ShaderpackLoading", logger);
