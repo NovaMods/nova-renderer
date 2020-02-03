@@ -8,10 +8,10 @@
 #include <rx/core/log.h>
 
 #include "nova_renderer/constants.hpp"
+#include "nova_renderer/filesystem/filesystem_helpers.hpp"
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
 
-#include "../../filesystem/helpers.hpp"
 #include "../json_utils.hpp"
 #include "render_graph_builder.hpp"
 #include "shaderpack_validator.hpp"
@@ -291,7 +291,8 @@ namespace nova::renderer::shaderpack {
         potential_pipeline_files.each_fwd([&](const rx::string& potential_file) {
             if(potential_file.ends_with(".pipeline")) {
                 // Pipeline file!
-                const auto& pipeline = load_single_pipeline(folder_access, potential_file);
+                const auto pipeline_relative_path = rx::string::format("%s/%s", "materials", potential_file);
+                const auto& pipeline = load_single_pipeline(folder_access, pipeline_relative_path);
                 if(pipeline) {
                     output.push_back(*pipeline);
                 }
@@ -444,7 +445,8 @@ namespace nova::renderer::shaderpack {
 
         potential_material_files.each_fwd([&](const rx::string& potential_file) {
             if(potential_file.ends_with(".mat")) {
-                const MaterialData& material = load_single_material(folder_access, potential_file);
+                const auto material_filename = rx::string::format("%s/%s", MATERIALS_DIRECTORY, potential_file);
+                const MaterialData& material = load_single_material(folder_access, material_filename);
                 output.push_back(material);
             }
         });

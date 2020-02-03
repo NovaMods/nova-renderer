@@ -11,7 +11,7 @@ find_package(Threads REQUIRED)
 ###################
 set(NOVA_E2E_TEST_SOURCES src/end_to_end_runner.cpp src/general_test_setup.hpp)
 add_executable(nova-test-end-to-end ${NOVA_E2E_TEST_SOURCES})
-target_compile_definitions(nova-test-end-to-end PRIVATE CMAKE_DEFINED_RESOURCES_PREFIX="${CMAKE_CURRENT_LIST_DIR}/resources/")
+target_compile_definitions(nova-test-end-to-end PRIVATE CMAKE_DEFINED_RESOURCES_PREFIX="${CMAKE_CURRENT_LIST_DIR}/resources")
 target_compile_options_if_supported(nova-test-end-to-end PRIVATE -Wno-unknown-pragmas -g)
 target_link_libraries(nova-test-end-to-end PRIVATE nova-renderer Threads::Threads)
 remove_permissive(nova-test-end-to-end)
@@ -28,7 +28,7 @@ set(NOVA_UNIT_TEST_SOURCES
 	)
 
 add_executable(nova-test-unit ${NOVA_UNIT_TEST_SOURCES})
-target_compile_definitions(nova-test-unit PRIVATE CMAKE_DEFINED_RESOURCES_PREFIX="${CMAKE_CURRENT_LIST_DIR}/resources/")
+target_compile_definitions(nova-test-unit PRIVATE CMAKE_DEFINED_RESOURCES_PREFIX="${CMAKE_CURRENT_LIST_DIR}/resources")
 target_link_libraries(nova-test-unit PRIVATE nova-renderer gtest Threads::Threads)
 target_compile_options_if_supported(nova-test-unit PRIVATE -Wno-unknown-pragmas)
 remove_permissive(nova-test-unit)

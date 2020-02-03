@@ -100,6 +100,7 @@ set(NOVA_SOURCE
         include/nova_renderer/constants.hpp
         include/nova_renderer/frame_context.hpp
 
+        include/nova_renderer/filesystem/filesystem_helpers.hpp
         include/nova_renderer/filesystem/folder_accessor.hpp
         include/nova_renderer/filesystem/virtual_filesystem.hpp
 
@@ -141,7 +142,6 @@ set(NOVA_SOURCE
         src/rhi/vulkan/vulkan_swapchain.cpp
         src/rhi/vulkan/vulkan_swapchain.hpp
 
-        src/filesystem/helpers.hpp
         src/filesystem/zip_folder_accessor.hpp
         src/filesystem/regular_folder_accessor.hpp
         src/filesystem/folder_accessor.cpp
@@ -295,6 +295,10 @@ if(NOVA_FORCE_DEBUGGING)
     target_compile_definitions(nova-renderer PUBLIC NOVA_DEBUG)
 else()
     target_compile_definitions(nova-renderer PUBLIC $<$<CONFIG:Debug>:NOVA_DEBUG>)
+endif()
+
+if(NOVA_DEBUG) 
+    target_compile_definitions(nova-renderer PUBLIC RX_DEBUG)
 endif()
 
 target_include_directories(nova-renderer PUBLIC

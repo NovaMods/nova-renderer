@@ -23,12 +23,22 @@ namespace nova::filesystem {
     void VirtualFilesystem::add_resource_root(FolderAccessorBase* root_accessor) { resource_roots.push_back(root_accessor); }
 
     FolderAccessorBase* VirtualFilesystem::get_folder_accessor(const rx::string& path) const {
+        if(resource_roots.is_empty()) {
+            logger(rx::log::level::k_error,
+                   "No resource roots available in the virtual filesystem! You must register at least one resource root path");
+
+            return nullptr;
+        }
+
         FolderAccessorBase* ret_val = nullptr;
 
         resource_roots.each_fwd([&](FolderAccessorBase* root) {
             if(root && root->does_resource_exist(path)) {
                 ret_val = root->create_subfolder_accessor(path);
+                return false;
             }
+
+            return true;
         });
 
         if(ret_val == nullptr) {

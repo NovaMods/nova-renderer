@@ -98,11 +98,22 @@ namespace nova::renderer::shaderpack {
         auto resource_to_write_pass = rx::map<rx::string, rx::vector<rx::string>>{};
 
         passes.each_fwd([&](const RenderPassCreateInfo& pass) {
-            pass.texture_outputs.each_fwd(
-                [&](const TextureAttachmentInfo& output) { resource_to_write_pass.find(output.name)->push_back(pass.name); });
+            pass.texture_outputs.each_fwd([&](const TextureAttachmentInfo& output) {
+                auto* write_pass_list = resource_to_write_pass.find(output.name);
+                if(!write_pass_list) {
+                    write_pass_list = resource_to_write_pass.insert(output.name, {});
+                }
+                write_pass_list->push_back(pass.name);
+            });
 
             pass.output_buffers.each_fwd(
-                [&](const rx::string& buffer_output) { resource_to_write_pass.find(buffer_output)->push_back(pass.name); });
+                [&](const rx::string& buffer_name) {
+                auto* write_pass_list = resource_to_write_pass.find(buffer_name);
+                if(!write_pass_list) {
+                    write_pass_list = resource_to_write_pass.insert(buffer_name, {});
+                }
+                write_pass_list->push_back(pass.name);
+            });
         });
 
         /*

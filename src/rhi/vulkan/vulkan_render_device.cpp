@@ -1,11 +1,11 @@
 #include "vulkan_render_device.hpp"
 
+#include <sstream>
+
 #include <rx/core/log.h>
 #include <rx/core/set.h>
 #include <signal.h>
 #include <string.h>
-
-#include <sstream>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/memory/allocation_structs.hpp"
@@ -270,7 +270,7 @@ namespace nova::renderer::rhi {
         if(settings.settings.debug.enabled) {
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-            object_name.objectType = VK_OBJECT_TYPE_IMAGE;
+            object_name.objectType = VK_OBJECT_TYPE_RENDER_PASS;
             object_name.objectHandle = reinterpret_cast<uint64_t>(renderpass->pass);
             object_name.pObjectName = data.name.data();
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
@@ -1246,10 +1246,11 @@ namespace nova::renderer::rhi {
 
             case QueueType::AsyncCompute:
                 return compute_family_index;
-        }
 
-        logger(rx::log::level::k_error, "Unknown queue type &u", static_cast<uint32_t>(type));
-        return 999999; // Will probably cause a crash, which is actually what we want rn
+            default:
+                RX_ASSERT(false, "Unknown queue type %u", static_cast<uint32_t>(type));
+                return 9999;    // I have to return _something_ or Visual Studio gets mad
+        }
     }
 
     void VulkanRenderDevice::create_surface() {
@@ -1423,7 +1424,8 @@ namespace nova::renderer::rhi {
                 continue;
             }
 
-            if(!does_device_support_extensions(current_device, device_extensions)) {
+            const auto supports_extensions = does_device_support_extensions(current_device, device_extensions);
+            if(!supports_extensions) {
                 continue;
             }
 
@@ -1465,6 +1467,9 @@ namespace nova::renderer::rhi {
 
         if(gpu.phys_device == nullptr) {
             logger(rx::log::level::k_error, "Failed to find good GPU");
+
+            // TODO: Message the user that GPU selection failed
+
             return;
         }
 
@@ -1482,7 +1487,7 @@ namespace nova::renderer::rhi {
         graphics_queue_create_info.queueFamilyIndex = graphics_family_idx;
         graphics_queue_create_info.pQueuePriorities = &priority;
 
-        rx::vector<VkDeviceQueueCreateInfo> queue_create_infos(internal_allocator, 1);
+        rx::vector<VkDeviceQueueCreateInfo> queue_create_infos{internal_allocator};
         queue_create_infos.push_back(graphics_queue_create_info);
 
         VkPhysicalDeviceFeatures physical_device_features{};
@@ -1543,7 +1548,8 @@ namespace nova::renderer::rhi {
             logger(rx::log::level::k_warning, "Device does not support these required extensions: %s", ss.str().c_str());
         }
 
-        return !required.is_empty();
+        const auto device_supports_required_extensions = required.is_empty();
+        return device_supports_required_extensions;
     }
 
     void VulkanRenderDevice::create_swapchain() {
