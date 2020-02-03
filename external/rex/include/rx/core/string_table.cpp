@@ -28,7 +28,7 @@ optional<rx_size> string_table::find(const char* _string) const {
 optional<rx_size> string_table::add(const char* _string, rx_size _size) {
   const rx_size index = m_data.size();
   const rx_size total = _size + 1;
-  if (m_data.resize(index + total)) {
+  if (m_data.resize(index + total, utility::uninitialized{})) {
     memcpy(m_data.data() + index, _string, total);
     return index;
   }

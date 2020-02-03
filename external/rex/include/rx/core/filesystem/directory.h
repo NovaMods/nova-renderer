@@ -79,7 +79,7 @@ inline directory::directory(string&& path_)
 }
 
 inline directory::operator bool() const {
-    return m_impl;
+  return m_impl;
 }
 
 inline const string& directory::path() const & {

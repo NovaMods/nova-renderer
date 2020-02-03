@@ -6,6 +6,8 @@
 
 #include "rx/core/utility/swap.h"
 
+#include "rx/core/hints/unreachable.h"
+
 namespace rx {
 
 static void format_va(string& contents_, const char* _format, va_list _va) {
@@ -510,12 +512,32 @@ bool string::contains(const string& _needle) const {
 }
 
 rx_size string::hash() const {
-  // djb2
-  rx_size value{5381};
-  for (const char *ch{m_data}; *ch; ch++) {
-    value = ((value << 5) + value) + *ch;
+  // The following is an implementation of FNV1a. The difference here matters
+  // because rx_size is the hash type which may be 4-byte or 8-byte depending
+  // on architecture.
+  //
+  // The previous hash function was just DJB2 X=33 which left most of the
+  // rx_size empty on 64-bit for short keys.
+  if constexpr (sizeof(rx_size) == 8) {
+    static constexpr const rx_u64 k_prime = 0x100000001b3_u64;
+    rx_u64 hash = 0xcbf29ce484222325_u64;
+    for (const char *ch = m_data; *ch; ch++) {
+      const rx_byte value = *ch;
+      hash = hash ^ value;
+      hash *= k_prime;
+    }
+    return static_cast<rx_size>(hash);
+  } else {
+    static constexpr const rx_u32 k_prime = 0x1000193_u32;
+    rx_u32 hash = 0x811c9dc5_u32;
+    for (const char *ch = m_data; *ch; ch++) {
+      const rx_byte value = *ch;
+      hash = hash ^ value;
+      hash &= k_prime;
+    }
+    return static_cast<rx_size>(hash);
   }
-  return value;
+  RX_HINT_UNREACHABLE();
 }
 
 memory::view string::disown() {

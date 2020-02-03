@@ -236,15 +236,15 @@ inline rx_size string::find_last_of(const string& _contents) const {
   return find_last_of(_contents.data());
 }
 
-inline rx_size string::size() const {
+RX_HINT_FORCE_INLINE rx_size string::size() const {
   return m_last - m_data;
 }
 
-inline rx_size string::capacity() const {
+RX_HINT_FORCE_INLINE rx_size string::capacity() const {
   return m_capacity - m_data;
 }
 
-inline bool string::is_empty() const {
+RX_HINT_FORCE_INLINE bool string::is_empty() const {
   return m_last - m_data == 0;
 }
 
@@ -284,27 +284,27 @@ inline const char& string::operator[](rx_size index) const {
   return m_data[index];
 }
 
-inline char& string::first() {
+RX_HINT_FORCE_INLINE char& string::first() {
   return m_data[0];
 }
 
-inline const char& string::first() const {
+RX_HINT_FORCE_INLINE const char& string::first() const {
   return m_data[0];
 }
 
-inline char& string::last() {
+RX_HINT_FORCE_INLINE char& string::last() {
   return m_data[size() - 1];
 }
 
-inline const char& string::last() const {
+RX_HINT_FORCE_INLINE const char& string::last() const {
   return m_data[size() - 1];
 }
 
-inline char* string::data() {
+RX_HINT_FORCE_INLINE char* string::data() {
   return m_data;
 }
 
-inline const char* string::data() const {
+RX_HINT_FORCE_INLINE const char* string::data() const {
   return m_data;
 }
 
@@ -341,7 +341,7 @@ bool operator!=(const string& lhs, const string& rhs);
 bool operator<(const string& lhs, const string& rhs);
 bool operator>(const string& lhs, const string& rhs);
 
-inline memory::allocator* string::allocator() const {
+RX_HINT_FORCE_INLINE memory::allocator* string::allocator() const {
   return m_allocator;
 }
 
@@ -366,11 +366,11 @@ inline wide_string::wide_string(const wide_string& _other)
 {
 }
 
-inline rx_size wide_string::size() const {
+RX_HINT_FORCE_INLINE rx_size wide_string::size() const {
   return m_size;
 }
 
-inline bool wide_string::is_empty() const {
+RX_HINT_FORCE_INLINE bool wide_string::is_empty() const {
   return m_size == 0;
 }
 
@@ -384,15 +384,15 @@ inline const rx_u16& wide_string::operator[](rx_size _index) const {
   return m_data[_index];
 }
 
-inline rx_u16* wide_string::data() {
+RX_HINT_FORCE_INLINE rx_u16* wide_string::data() {
   return m_data;
 }
 
-inline const rx_u16* wide_string::data() const {
+RX_HINT_FORCE_INLINE const rx_u16* wide_string::data() const {
   return m_data;
 }
 
-inline memory::allocator* wide_string::allocator() const {
+RX_HINT_FORCE_INLINE memory::allocator* wide_string::allocator() const {
   return m_allocator;
 }
 

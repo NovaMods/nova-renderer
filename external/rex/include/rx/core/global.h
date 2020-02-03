@@ -2,15 +2,26 @@
 #define RX_CORE_GLOBAL_H
 #include "rx/core/memory/uninitialized_storage.h"
 #include "rx/core/assert.h"
+#include "rx/core/xor_list.h"
 
 namespace rx {
 
-struct global_group;
+// Constant, sharable properties for a given global<T>. Nodes get a pointer
+// to static instance data of this, allowing them to avoid storing this data
+// themselves.
+//
+// This saves 8 bytes in global_node for 32-bit.
+// This saves 12 bytes in global_node for 64-bit.
+struct global_shared {
+  rx_u16 size;
+  rx_u16 alignment;
+  void (*finalizer)(void* _data);
+};
 
 struct global_node {
-  template<typename T, rx_size E, typename... Ts>
+  template<typename T, typename... Ts>
   global_node(const char* _group, const char* _name,
-    memory::uninitialized_storage<T>& _storage, rx_byte (&_argument_store)[E],
+    memory::uninitialized_storage<T>& _storage, const global_shared* _shared,
     Ts&&... _arguments);
 
   void init();
@@ -109,40 +120,38 @@ private:
       argument<Ns>(*reinterpret_cast<arguments<Ts...>*>(_argument_store))...);
   }
 
-  template<typename T>
-  static void destruct_global(rx_byte* _data) {
-    utility::destruct<T>(_data);
-  }
-
-  rx_byte* m_global_store;
-  rx_byte* m_argument_store;
-
-  struct {
-    rx_u16 size;
-    rx_u16 alignment;
-  } m_global_traits;
+  const global_shared* m_shared;
 
   void (*m_init_global)(rx_byte* _storage, rx_byte* _argument_store);
-  void (*m_fini_global)(rx_byte* _storage);
   void (*m_fini_arguments)(rx_byte* _argument_store);
 
-  // Links for group-local linked-list of nodes.
-  global_node* m_next_grouped;
-  global_node* m_prev_grouped;
-
-  // Links for global linked-list of nodes.
-  global_node* m_next_ungrouped;
-  global_node* m_prev_ungrouped;
+  xor_list::node m_grouped;
+  xor_list::node m_ungrouped;
 
   const char* m_group;
   const char* m_name;
 
-  bool m_enabled;
-  bool m_initialized;
+  enum : rx_u16 {
+    k_enabled     = 1 << 0,
+    k_initialized = 1 << 1
+  };
+
+  rx_u16 m_global_store;
+  rx_u16 m_flags;
+
+  // This needs to be aligned by 16-byte otherwise `arguments` will invoke
+  // undefined behavior.
+  alignas(16) rx_byte m_argument_store[64];
 };
 
 template<typename T>
 struct global {
+  static inline const global_shared s_shared = {
+    sizeof(T),
+    alignof(T),
+    &utility::destruct<T>
+  };
+
   template<typename... Ts>
   global(const char* _group, const char* _name, Ts&&... _arguments);
 
@@ -165,7 +174,6 @@ struct global {
 
 private:
   memory::uninitialized_storage<T> m_global_store;
-  rx_byte m_argument_store[64];
   global_node m_node;
 };
 
@@ -191,13 +199,11 @@ private:
 
   const char* m_name;
 
-  // Linked-list of nodes for this group.
-  global_node* m_head;
-  global_node* m_tail;
+  // Nodes for this group. This is constructed after a call to |globals::link|.
+  xor_list m_list;
 
-  // Links for global linked-list of groups in |globals|
-  global_group* m_next;
-  global_group* m_prev;
+  // Link for global linked-list of groups in |globals|.
+  xor_list::node m_link;
 };
 
 struct globals {
@@ -217,41 +223,42 @@ private:
   static void link(global_node* _node);
   static void link(global_group* _group);
 
-  // Global linked-list of "groups"
-  static inline global_group* s_group_head;
-  static inline global_group* s_group_tail;
+  // Global linked-list of groups.
+  static inline xor_list s_group_list;
 
-  // Global linked-list of "nodes"
-  static inline global_node* s_node_head;
-  static inline global_node* s_node_tail;
+  // Global linked-list of ungrouped nodes.
+  static inline xor_list s_node_list;
 };
 
 // global_node
-template<typename T, rx_size E, typename... Ts>
+template<typename T, typename... Ts>
 inline global_node::global_node(const char* _group, const char* _name,
-  memory::uninitialized_storage<T>& _storage, rx_byte (&_argument_store)[E],
+  memory::uninitialized_storage<T>& _global_store, const global_shared* _shared,
   Ts&&... _arguments)
-  : m_global_store{reinterpret_cast<rx_byte*>(_storage.data())}
-  , m_argument_store{_argument_store}
+  : m_shared{_shared}
   , m_init_global{construct_global<T, Ts...>}
-  , m_fini_global{destruct_global<T>}
   , m_fini_arguments{nullptr}
-  , m_next_grouped{nullptr}
-  , m_prev_grouped{nullptr}
-  , m_next_ungrouped{nullptr}
-  , m_prev_ungrouped{nullptr}
   , m_group{_group ? _group : "system"}
   , m_name{_name}
-  , m_enabled{true}
-  , m_initialized{false}
+  , m_flags{k_enabled}
 {
-  m_global_traits.size = sizeof(T);
-  m_global_traits.alignment = alignof(T);
+  // |global<T>| embeds uninitialized_storage<T> with |global_node| proceeding
+  // it, by taking the difference of |this - _global_storage.data()| we can
+  // determine how many bytes in memory from this object, backwards is the
+  // storage for the node. We do this to save space, since we only need two
+  // bytes to store this.
+  //
+  // This saves 2-bytes in global_node for 32-bit.
+  // This saves 6-bytes in global_node for 64-bit.
+  const rx_uintptr this_address = reinterpret_cast<rx_uintptr>(this);
+  const rx_uintptr store_address = reinterpret_cast<rx_uintptr>(_global_store.data());
+  const rx_uintptr difference = this_address - store_address;
+  RX_ASSERT(difference <= 0xffff, "global is too large");
+  m_global_store = static_cast<rx_u32>(difference);
 
   if constexpr (sizeof...(Ts) != 0) {
-    static_assert(sizeof(arguments<Ts...>) <= sizeof _argument_store,
+    static_assert(sizeof(arguments<Ts...>) <= sizeof m_argument_store,
       "too much constructor data to store for global");
-
     construct_arguments<Ts...>(m_argument_store, utility::forward<Ts>(_arguments)...);
     m_fini_arguments = destruct_arguments<Ts...>;
   }
@@ -269,7 +276,6 @@ inline void global_node::init(Ts&&... _arguments) {
   }
 
   construct_arguments<Ts...>(m_argument_store, utility::forward<Ts>(_arguments)...);
-
   init();
 }
 
@@ -278,35 +284,32 @@ inline const char* global_node::name() const {
 }
 
 inline rx_byte* global_node::data() {
-  return m_global_store;
+  // Reconstruct the storage pointer from |m_global_store|.
+  return reinterpret_cast<rx_byte*>(reinterpret_cast<rx_uintptr>(this) - m_global_store);
 }
 
 inline const rx_byte* global_node::data() const {
-  return m_global_store;
+  // Reconstruct the storage pointer from |m_global_store|.
+  return reinterpret_cast<const rx_byte*>(reinterpret_cast<rx_uintptr>(this) - m_global_store);
 }
 
 template<typename T>
 inline T* global_node::cast() {
-  RX_ASSERT(m_global_traits.size == sizeof(T)
-    && m_global_traits.alignment == alignof(T), "invalid type cast");
-
-  return reinterpret_cast<T*>(m_global_store);
+  RX_ASSERT(m_shared->size == sizeof(T), "invalid type cast");
+  RX_ASSERT(m_shared->alignment == alignof(T), "invalid type cast");
+  return reinterpret_cast<T*>(data());
 }
 
 template<typename T>
 inline const T* global_node::cast() const {
-  RX_ASSERT(m_global_traits.size == sizeof(T)
-    && m_global_traits.alignment == alignof(T), "invalid type cast");
-  return reinterpret_cast<const T*>(m_global_store);
+  RX_ASSERT(m_shared->size == sizeof(T), "invalid type cast");
+  RX_ASSERT(m_shared->alignment == alignof(T), "invalid type cast");
+  return reinterpret_cast<const T*>(data());
 }
 
 // global_group
 inline global_group::global_group(const char* _name)
   : m_name{_name}
-  , m_head{nullptr}
-  , m_tail{nullptr}
-  , m_next{nullptr}
-  , m_prev{nullptr}
 {
   globals::link(this);
 }
@@ -317,8 +320,8 @@ inline constexpr const char* global_group::name() const {
 
 template<typename F>
 inline void global_group::each(F&& _function) {
-  for (global_node* node{m_head}; node; node = node->m_next_grouped) {
-    _function(node);
+  for (xor_list::enumerate node = {m_list.head(), &global_node::m_grouped}; node; node.next()) {
+    _function(node.data());
   }
 }
 
@@ -326,7 +329,7 @@ inline void global_group::each(F&& _function) {
 template<typename T>
 template<typename... Ts>
 inline global<T>::global(const char* _group, const char* _name, Ts&&... _arguments)
-  : m_node{_group, _name, m_global_store, m_argument_store, utility::forward<Ts>(_arguments)...}
+  : m_node{_group, _name, m_global_store, &s_shared, utility::forward<Ts>(_arguments)...}
 {
 }
 

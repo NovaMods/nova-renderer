@@ -1,5 +1,7 @@
 #ifndef RX_CORE_VECTOR_H
 #define RX_CORE_VECTOR_H
+#include <string.h> // memcpy
+
 #include "rx/core/assert.h" // RX_ASSERT
 #include "rx/core/config.h" // RX_COMPILER_GCC
 
@@ -11,6 +13,7 @@
 
 #include "rx/core/utility/forward.h"
 #include "rx/core/utility/move.h"
+#include "rx/core/utility/uninitialized.h"
 
 #include "rx/core/memory/system_allocator.h" // memory::{system_allocator, allocator}
 
@@ -25,6 +28,7 @@ struct vector {
   constexpr vector();
   constexpr vector(memory::allocator* _allocator);
 
+  vector(memory::allocator* _allocator, rx_size _size, utility::uninitialized);
   vector(memory::allocator* _allocator, rx_size _size);
   vector(memory::allocator* _allocator, const vector& _other);
 
@@ -47,6 +51,10 @@ struct vector {
 
   // resize to |size| with |value| for new objects
   bool resize(rx_size _size, const T& _value = {});
+
+  // Resize of |_size| where the contents stays uninitialized.
+  // This should only be used with trivially copyable T.
+  bool resize(rx_size _size, utility::uninitialized);
 
   // reserve |size| elements
   bool reserve(rx_size _size);
@@ -118,6 +126,21 @@ inline constexpr vector<T>::vector(memory::allocator* _allocator)
 }
 
 template<typename T>
+inline vector<T>::vector(memory::allocator* _allocator, rx_size _size, utility::uninitialized)
+  : m_allocator{_allocator}
+  , m_data{nullptr}
+  , m_size{_size}
+  , m_capacity{_size}
+{
+  RX_ASSERT(traits::is_trivially_copyable<T>,
+    "T isn't trivial, cannot leave uninitialized");
+  RX_ASSERT(m_allocator, "null allocator");
+
+  m_data = reinterpret_cast<T*>(m_allocator->allocate(m_size * sizeof *m_data));
+  RX_ASSERT(m_data, "out of memory");
+}
+
+template<typename T>
 inline vector<T>::vector(memory::allocator* _allocator, rx_size _size)
   : m_allocator{_allocator}
   , m_data{nullptr}
@@ -130,8 +153,9 @@ inline vector<T>::vector(memory::allocator* _allocator, rx_size _size)
 
   RX_ASSERT(m_data, "out of memory");
 
-  for (rx_size i{0}; i < m_size; i++) {
-    utility::construct<T>(data() + i);
+  // TODO(dweiler): is_trivial trait so we can memset this.
+  for (rx_size i = 0; i < m_size; i++) {
+    utility::construct<T>(m_data + i);
   }
 }
 
@@ -146,8 +170,10 @@ inline vector<T>::vector(memory::allocator* _allocator, const vector& _other)
   m_data = reinterpret_cast<T*>(m_allocator->allocate(_other.m_capacity * sizeof *m_data));
   RX_ASSERT(m_data, "out of memory");
 
-  for (rx_size i{0}; i < m_size; i++) {
-    utility::construct<T>(data() + i, _other[i]);
+  if constexpr(traits::is_trivially_copyable<T>) {
+    memcpy(m_data, _other.m_data, _other.m_size * sizeof *m_data);
+  } else for (rx_size i{0}; i < m_size; i++) {
+    utility::construct<T>(m_data + i, _other.m_data[i]);
   }
 }
 
@@ -211,8 +237,10 @@ inline vector<T>& vector<T>::operator=(const vector& _other) {
   m_data = reinterpret_cast<T*>(m_allocator->allocate(_other.m_capacity * sizeof *m_data));
   RX_ASSERT(m_data, "out of memory");
 
-  for (rx_size i{0}; i < m_size; i++) {
-    utility::construct<T>(data() + i, _other[i]);
+  if constexpr(traits::is_trivially_copyable<T>) {
+    memcpy(m_data, _other.m_data, _other.m_size * sizeof *m_data);
+  } else for (rx_size i = 0; i < m_size; i++) {
+    utility::construct<T>(m_data + i, _other.m_data[i]);
   }
 
   return *this;
@@ -276,7 +304,7 @@ bool vector<T>::grow_or_shrink_to(rx_size _size) {
 
   if (_size < m_size) {
     if constexpr (!traits::is_trivially_destructible<T>) {
-      for (rx_size i{m_size-1}; i >= _size; i--) {
+      for (rx_size i = m_size-1; i >= _size; i--) {
         utility::destruct<T>(m_data + i);
       }
     }
@@ -291,9 +319,26 @@ bool vector<T>::resize(rx_size _size, const T& _value) {
     return false;
   }
 
-  // copy construct new objects
+  // Copy construct the objects.
   for (rx_size i{m_size}; i < _size; i++) {
-    utility::construct<T>(m_data + i, _value);
+    if constexpr(traits::is_trivially_copyable<T>) {
+      m_data[i] = _value;
+    } else {
+      utility::construct<T>(m_data + i, _value);
+    }
+  }
+
+  m_size = _size;
+  return true;
+}
+
+template<typename T>
+bool vector<T>::resize(rx_size _size, utility::uninitialized) {
+  RX_ASSERT(traits::is_trivially_copyable<T>,
+    "T isn't trivial, cannot leave uninitialized");
+
+  if (!grow_or_shrink_to(_size)) {
+    return false;
   }
 
   m_size = _size;
@@ -338,7 +383,7 @@ template<typename T>
 inline void vector<T>::clear() {
   if (m_size) {
     if constexpr (!traits::is_trivially_destructible<T>) {
-      for (rx_size i{m_size-1}; i < m_size; i--) {
+      for (rx_size i = m_size-1; i < m_size; i--) {
         utility::destruct<T>(m_data + i);
       }
     }
@@ -373,7 +418,7 @@ inline bool vector<T>::push_back(const T& _value) {
     return false;
   }
 
-  // copy construct object
+  // Copy construct object.
   utility::construct<T>(m_data + m_size, _value);
 
   m_size++;
@@ -386,7 +431,7 @@ inline bool vector<T>::push_back(T&& value_) {
     return false;
   }
 
-  // move construct object
+  // Move construct object.
   utility::construct<T>(m_data + m_size, utility::move(value_));
 
   m_size++;
@@ -400,7 +445,7 @@ inline bool vector<T>::emplace_back(Ts&&... _args) {
     return false;
   }
 
-  // forward construct object
+  // Forward construct object.
   utility::construct<T>(m_data + m_size, utility::forward<Ts>(_args)...);
 
   m_size++;
@@ -408,17 +453,17 @@ inline bool vector<T>::emplace_back(Ts&&... _args) {
 }
 
 template<typename T>
-inline rx_size vector<T>::size() const {
+RX_HINT_FORCE_INLINE rx_size vector<T>::size() const {
   return m_size;
 }
 
 template<typename T>
-inline rx_size vector<T>::capacity() const {
+RX_HINT_FORCE_INLINE rx_size vector<T>::capacity() const {
   return m_capacity;
 }
 
 template<typename T>
-inline bool vector<T>::is_empty() const {
+RX_HINT_FORCE_INLINE bool vector<T>::is_empty() const {
   return m_size == 0;
 }
 
@@ -504,37 +549,37 @@ inline bool vector<T>::each_rev(F&& _func) const {
 }
 
 template<typename T>
-inline const T& vector<T>::first() const {
+RX_HINT_FORCE_INLINE const T& vector<T>::first() const {
   return m_data[0];
 }
 
 template<typename T>
-inline T& vector<T>::first() {
+RX_HINT_FORCE_INLINE T& vector<T>::first() {
   return m_data[0];
 }
 
 template<typename T>
-inline const T& vector<T>::last() const {
+RX_HINT_FORCE_INLINE const T& vector<T>::last() const {
   return m_data[m_size - 1];
 }
 
 template<typename T>
-inline T& vector<T>::last() {
+RX_HINT_FORCE_INLINE T& vector<T>::last() {
   return m_data[m_size - 1];
 }
 
 template<typename T>
-const T* vector<T>::data() const {
+RX_HINT_FORCE_INLINE const T* vector<T>::data() const {
   return m_data;
 }
 
 template<typename T>
-inline T* vector<T>::data() {
+RX_HINT_FORCE_INLINE T* vector<T>::data() {
   return m_data;
 }
 
 template<typename T>
-inline memory::allocator* vector<T>::allocator() const {
+RX_HINT_FORCE_INLINE memory::allocator* vector<T>::allocator() const {
   return m_allocator;
 }
 

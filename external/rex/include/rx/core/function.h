@@ -96,7 +96,7 @@ inline function<R(Ts...)>::function(memory::allocator* _allocator, F&& _function
   , m_destruct{destruct<F>}
   , m_data{_allocator}
 {
-  m_data.resize(sizeof _function);
+  m_data.resize(sizeof _function, utility::uninitialized{});
   m_construct(m_data.data(), reinterpret_cast<rx_byte*>(&_function));
 }
 
@@ -107,7 +107,7 @@ inline function<R(Ts...)>::function(const function& _function)
   , m_destruct{_function.m_destruct}
 {
   if (m_invoke) {
-    m_data.resize(_function.m_data.size());
+    m_data.resize(_function.m_data.size(), utility::uninitialized{});
     m_construct(m_data.data(), _function.m_data.data());
   }
 }
@@ -137,7 +137,7 @@ inline function<R(Ts...)>& function<R(Ts...)>::operator=(const function& _functi
   m_destruct = _function.m_destruct;
 
   if (m_invoke) {
-    m_data.resize(_function.m_data.size());
+    m_data.resize(_function.m_data.size(), utility::uninitialized{});
     m_construct(m_data.data(), _function.m_data.data());
   }
 

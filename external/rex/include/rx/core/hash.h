@@ -2,12 +2,30 @@
 #define RX_CORE_HASH_H
 #include "rx/core/types.h"
 
+#include "rx/core/traits/detect.h"
+#include "rx/core/traits/underlying_type.h"
+
+#include "rx/core/utility/declval.h"
+
 namespace rx {
 
 template<typename T>
 struct hash {
+  template<typename U>
+  using has_hash = decltype(utility::declval<U>().hash());
+
   rx_size operator()(const T& _value) const {
-    return _value.hash();
+    if constexpr (traits::detect<T, has_hash>) {
+      // The type has a hash member function we can use.
+      return _value.hash();
+    } else if constexpr (traits::is_enum<T>) {
+      // We can convert the enum to the underlying type and forward to existing
+      // integer hash specialization.
+      using underlying_type = traits::underlying_type<T>;
+      return hash<underlying_type>{}(static_cast<underlying_type>(_value));
+    } else {
+      static_assert("implement size_t T::hash()");
+    }
   }
 };
 
