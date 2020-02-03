@@ -196,13 +196,9 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Information to update a buffer descriptor
          */
-<<<<<<< HEAD
         DescriptorBufferInfo buffer_info{};
-=======
-        DescriptorBufferInfo buffer_info;
 
         DescriptorSamplerInfo sampler_info;
->>>>>>> [rhi] Descriptor capacitors
     };
 
     struct DescriptorSetWrite {

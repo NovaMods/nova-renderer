@@ -273,22 +273,19 @@ namespace nova::renderer::rhi {
          * \brief Initializes the engine
          * \param settings The settings passed to nova
          * \param window The OS window that we'll be rendering to
+         * \param allocator The allocator to use for internal memory
          *
          * Intentionally does nothing. This constructor serves mostly to ensure that concrete render engines have a
          * constructor that takes in some settings
          *
          * \attention Called by the various render engine implementations
          */
-<<<<<<< HEAD
         RenderDevice(NovaSettingsAccessManager& settings,
                      NovaWindow& window,
                      rx::memory::allocator* allocator = &rx::memory::g_system_allocator);
 
         template <typename ObjectType, typename... Args>
         ObjectType* allocate_object(rx::memory::allocator* local_allocator, Args... args);
-=======
-        RenderDevice(mem::AllocatorHandle<>& allocator, NovaSettingsAccessManager& settings, NovaWindow& window);
->>>>>>> [rhi] Descriptor capacitors
     };
 
     template <typename ObjectType, typename... Args>
