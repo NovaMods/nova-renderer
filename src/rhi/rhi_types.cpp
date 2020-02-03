@@ -10,14 +10,14 @@ namespace nova::renderer::rhi {
     ResourceBarrier::ResourceBarrier() {}
 
     DescriptorResourceInfo::DescriptorResourceInfo() {}
-    
+
     uint32_t PipelineInterface::get_num_descriptors_of_type(const DescriptorType type) const {
         uint32_t num_descriptors = 0;
-        for(const auto& [name, description] : bindings) {
+        bindings.each_value([&](const ResourceBindingDescription& description) {
             if(description.type == type) {
                 num_descriptors++;
             }
-        }
+        });
 
         return num_descriptors;
     }
