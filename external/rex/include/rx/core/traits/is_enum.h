@@ -4,7 +4,7 @@
 
 namespace rx::traits {
 
-#if __has_feature(is_enum) || defined(RX_COMPILER_GCC)
+#if __has_feature(is_enum) || defined(RX_COMPILER_GCC) || defined(RX_COMPILER_MSVC)
 template<typename T>
 inline constexpr bool is_enum = __is_enum(T);
 #else

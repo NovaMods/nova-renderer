@@ -48,7 +48,7 @@ directory::directory(memory::allocator* _allocator, string&& path_)
 
   // Execute one FindFirstFileW to check if the directory exists.
   const auto path = reinterpret_cast<const LPCWSTR>(path_data.data());
-  const HANDLE handle = FindFirstFileW(path, &context->find_data));
+  const HANDLE handle = FindFirstFileW(path, &context->find_data);
   if (handle != INVALID_HANDLE_VALUE) {
     // The directory exists and has been opened. Cache the handle and the path
     // conversion for |each|.
@@ -134,21 +134,23 @@ void directory::each(function<void(item&&)>&& _function) {
   // Enumerate each file in the directory.
   for (;;) {
     // Skip '.' and '..'.
-    if (find_data.cFileName[0] == L'.' && !find_data.cFileName[1 + !!(find_data.cFileName[1] == L'.')]) {
-      if (!FindNextFileW(context->handle, &find_data)) {
+    if (context->find_data.cFileName[0] == L'.'
+      && !context->find_data.cFileName[1 + !!(context->find_data.cFileName[1] == L'.')])
+    {
+      if (!FindNextFileW(context->handle, &context->find_data)) {
         break;
       }
       continue;
     }
 
-    const wide_string utf16_name = reinterpret_cast<rx_u16*>(&find_data.cFileName);
-    const item::type kind = find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY
+    const wide_string utf16_name = reinterpret_cast<rx_u16*>(&context->find_data.cFileName);
+    const item::type kind = context->find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY
       ? item::type::k_directory
       : item::type::k_file;
 
     _function({utf16_name.to_utf8(), kind});
 
-    if (!FindNextFileW(context->handle, &find_data)) {
+    if (!FindNextFileW(context->handle, &context->find_data)) {
       break;
     }
   }
