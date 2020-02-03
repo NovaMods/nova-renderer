@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rx/core/hash.h>
+
 #include "nova_renderer/util/utils.hpp"
 
 namespace nova::renderer::rhi {
@@ -163,3 +165,10 @@ namespace nova::renderer::rhi {
 
     uint32_t get_byte_size(VertexFieldFormat format);
 } // namespace nova::renderer::rhi
+
+namespace rx {
+    template <>
+    struct hash<nova::renderer::rhi::DescriptorType> {
+        rx_size operator()(nova::renderer::rhi::DescriptorType value) const { return hash<rx_u32>{}(static_cast<rx_u32>(value)); }
+    };
+} // namespace rx
