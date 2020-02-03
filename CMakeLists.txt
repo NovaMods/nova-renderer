@@ -102,6 +102,7 @@ set(NOVA_SOURCE
 
         include/nova_renderer/filesystem/folder_accessor.hpp
         include/nova_renderer/filesystem/virtual_filesystem.hpp
+        include/nova_renderer/filesystem/filesystem_helpers.hpp
 
         include/nova_renderer/loading/shaderpack_loading.hpp
 
@@ -141,7 +142,7 @@ set(NOVA_SOURCE
         src/rhi/vulkan/vulkan_swapchain.cpp
         src/rhi/vulkan/vulkan_swapchain.hpp
 
-        src/filesystem/helpers.hpp
+        src/filesystem/filesystem_helpers.cpp
         src/filesystem/zip_folder_accessor.hpp
         src/filesystem/regular_folder_accessor.hpp
         src/filesystem/folder_accessor.cpp

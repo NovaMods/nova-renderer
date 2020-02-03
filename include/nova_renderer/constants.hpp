@@ -19,6 +19,10 @@ namespace nova::renderer {
     constexpr mem::Bytes PER_FRAME_MEMORY_SIZE = 2_mb;
 
     constexpr const char* RENDERPACK_DIRECTORY = "shaderpacks";
+    constexpr const char* MATERIALS_DIRECTORY = "materials";
+    constexpr const char* SHADERS_DIRECTORY = "shaders";
+    constexpr const char* RENDERPACK_DESCRIPTOR_FILE = "renderpack.json";
+    constexpr const char* MATERIAL_FILE_EXTENSION = ".mat";
 
     /*!
      * \brief Name of Nova's white texture

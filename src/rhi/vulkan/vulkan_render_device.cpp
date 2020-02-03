@@ -1248,8 +1248,8 @@ namespace nova::renderer::rhi {
                 return compute_family_index;
         }
 
-        logger(rx::log::level::k_error, "Unknown queue type &u", static_cast<uint32_t>(type));
-        return 999999; // Will probably cause a crash, which is actually what we want rn
+        logger(rx::log::level::k_error, "Unknown queue type %u", static_cast<uint32_t>(type));
+        return 999999; // Will cause a crash, which is actually what we want rn
     }
 
     void VulkanRenderDevice::create_surface() {

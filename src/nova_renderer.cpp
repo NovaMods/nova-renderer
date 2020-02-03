@@ -265,6 +265,8 @@ namespace nova::renderer {
             vertex_barrier.new_state = rhi::ResourceState::Common;
             vertex_barrier.access_before_barrier = rhi::ResourceAccess::CopyWrite;
             vertex_barrier.access_after_barrier = rhi::ResourceAccess::VertexAttributeRead;
+            vertex_barrier.source_queue = rhi::QueueType::Transfer;
+            vertex_barrier.destination_queue = rhi::QueueType::Graphics;
             vertex_barrier.buffer_memory_barrier.offset = 0;
             vertex_barrier.buffer_memory_barrier.size = vertex_buffer->size;
 
@@ -303,6 +305,8 @@ namespace nova::renderer {
             index_barrier.new_state = rhi::ResourceState::Common;
             index_barrier.access_before_barrier = rhi::ResourceAccess::CopyWrite;
             index_barrier.access_after_barrier = rhi::ResourceAccess::IndexRead;
+            index_barrier.source_queue = rhi::QueueType::Transfer;
+            index_barrier.destination_queue = rhi::QueueType::Graphics;
             index_barrier.buffer_memory_barrier.offset = 0;
             index_barrier.buffer_memory_barrier.size = index_buffer->size;
 
