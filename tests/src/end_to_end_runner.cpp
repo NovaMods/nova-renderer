@@ -86,6 +86,8 @@ namespace nova::renderer {
         return 0;
     }
 
+    // This is for scoping purposes so that things used in main
+    // don't get destructed after rex_fini has been called
     int rex_main() {
         init_rex();
         auto ret = main();
@@ -99,6 +101,8 @@ int main() {
     signal(SIGSEGV, sigsegv_handler);
     signal(SIGABRT, sigabrt_handler);
 #endif
+    // Don't use nova::renderer::main(), see
+    // rex_main() for more info
     return nova::renderer::rex_main();
 }
 
