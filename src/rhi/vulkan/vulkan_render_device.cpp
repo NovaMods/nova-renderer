@@ -828,7 +828,7 @@ namespace nova::renderer::rhi {
             object_name.objectHandle = reinterpret_cast<uint64_t>(vk_pipeline->pipeline);
             object_name.pObjectName = data.name.data();
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
-            logger(rx::log::level::k_info, "Set pipeline %s to have name %s", vk_pipeline->pipeline, data.name);
+            logger(rx::log::level::k_info, "Set pipeline %u to have name %s", vk_pipeline->pipeline, data.name);
         }
 
         return ntl::Result(static_cast<Pipeline*>(vk_pipeline));
@@ -1714,9 +1714,6 @@ namespace nova::renderer::rhi {
                                                                              const VkDebugUtilsMessageTypeFlagsEXT message_types,
                                                                              const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
                                                                              void* render_device) {
-        rx::string message;
-        message.reserve(1024); // Intentionally large and kinda terrible, but I don't want to end up making a massive numebr of allocations
-
         rx::string type = "General";
         if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) != 0U) {
             type = "Validation";
@@ -1754,7 +1751,7 @@ namespace nova::renderer::rhi {
                 if(callback_data->pObjects[i].pObjectName != nullptr) {
                     object_list.append(rx::string::format(" \"%s\"", callback_data->pObjects[i].pObjectName));
                 }
-                object_list.append(" (%x)", callback_data->pObjects[i].objectHandle);
+                object_list.append(rx::string::format(" (%x)", callback_data->pObjects[i].objectHandle));
                 if(i != callback_data->objectCount - 1) {
                     object_list.append(", ");
                 }
@@ -1766,10 +1763,10 @@ namespace nova::renderer::rhi {
             vk_message.append(callback_data->pMessage);
         }
 
-        const rx::string msg = rx::string::format("[%s] %s %s %s %s", type, queue_list, command_buffer_list, object_list, message);
+        const rx::string msg = rx::string::format("[%s] %s %s %s %s", type, queue_list, command_buffer_list, object_list, vk_message);
 
         if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
-            logger(rx::log::level::k_error, "[%s]%s", type, msg);
+            logger(rx::log::level::k_error, "%s", msg);
 #ifdef NOVA_LINUX
             nova_backtrace();
 #endif
