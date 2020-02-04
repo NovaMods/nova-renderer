@@ -24,8 +24,6 @@ namespace nova::renderer {
     RX_LOG("EndToEndRunner", logger);
 
     int main() {
-        init_rex();
-
 #ifdef __linux__
         atexit(at_exit_handler);
 #endif
@@ -85,9 +83,14 @@ namespace nova::renderer {
 
         rx::memory::g_system_allocator->destroy<NovaRenderer>(renderer);
 
-        rex_fini();
-
         return 0;
+    }
+
+    int rex_main() {
+        init_rex();
+        auto ret = main();
+        rex_fini();
+        return ret;
     }
 } // namespace nova::renderer
 
@@ -96,7 +99,7 @@ int main() {
     signal(SIGSEGV, sigsegv_handler);
     signal(SIGABRT, sigabrt_handler);
 #endif
-    return nova::renderer::main();
+    return nova::renderer::rex_main();
 }
 
 #ifdef __linux__

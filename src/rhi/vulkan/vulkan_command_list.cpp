@@ -107,12 +107,17 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanCommandList::begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) {
-        // TODO: Store this somewhere better
-        // TODO: Get max framebuffer attachments from GPU
-        const static rx::vector<VkClearValue> CLEAR_VALUES(9);
-
         auto* vk_renderpass = static_cast<VulkanRenderpass*>(renderpass);
         auto* vk_framebuffer = static_cast<VulkanFramebuffer*>(framebuffer);
+
+        // FIXME: @dethraid this has been changed by @janrupf to fix a SIGSEGV
+        //       and to match the number of clear values as used below in the
+        //      VkRenderPassBeginInfo, however, there was another comment about
+        //      required changes here before:
+        //
+        // // TODO: Store this somewhere better
+        // // TODO: Get max framebuffer attachments from GPU
+        rx::vector<VkClearValue> CLEAR_VALUES(vk_framebuffer->num_attachments);
 
         VkRenderPassBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
