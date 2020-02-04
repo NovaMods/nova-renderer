@@ -1348,7 +1348,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::create_device_and_queues() {
-        static rx::vector<char*> device_extensions;
+        rx::vector<char*> device_extensions;
         device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
         device_extensions.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
 
