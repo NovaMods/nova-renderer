@@ -28,9 +28,9 @@ namespace nova::renderer::rhi {
 
     VkShaderStageFlags to_vk_shader_stage_flags(ShaderStage flags);
 
-    std::string to_string(VkResult result);
+    rx::string to_string(VkResult result);
 
-    std::string to_string(VkObjectType obj_type);
+    rx::string to_string(VkObjectType obj_type);
 
     VkFormat to_vk_vertex_format(VertexFieldFormat field);
 

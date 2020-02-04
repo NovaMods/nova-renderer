@@ -824,7 +824,7 @@ namespace nova::renderer::rhi {
         if(settings.settings.debug.enabled) {
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-            object_name.objectType = VK_OBJECT_TYPE_IMAGE;
+            object_name.objectType = VK_OBJECT_TYPE_PIPELINE;
             object_name.objectHandle = reinterpret_cast<uint64_t>(vk_pipeline->pipeline);
             object_name.pObjectName = data.name.data();
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
@@ -1714,6 +1714,9 @@ namespace nova::renderer::rhi {
                                                                              const VkDebugUtilsMessageTypeFlagsEXT message_types,
                                                                              const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
                                                                              void* render_device) {
+        rx::string message;
+        message.reserve(1024); // Intentionally large and kinda terrible, but I don't want to end up making a massive numebr of allocations
+
         rx::string type = "General";
         if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) != 0U) {
             type = "Validation";
@@ -1721,53 +1724,49 @@ namespace nova::renderer::rhi {
             type = "Performance";
         }
 
-        std::stringstream ss;
-        ss << "[" << type.data() << "]";
+        rx::string queue_list;
         if(callback_data->queueLabelCount != 0) {
-            ss << " Queues: ";
+            queue_list.append(" Queues: ");
             for(uint32_t i = 0; i < callback_data->queueLabelCount; i++) {
-                ss << callback_data->pQueueLabels[i].pLabelName;
+                queue_list.append(callback_data->pQueueLabels[i].pLabelName);
                 if(i != callback_data->queueLabelCount - 1) {
-                    ss << ", ";
+                    queue_list.append(", ");
                 }
             }
         }
 
-        ss << " ";
-
+        rx::string command_buffer_list;
         if(callback_data->cmdBufLabelCount != 0) {
-            ss << "Command Buffers: ";
+            command_buffer_list.append("Command Buffers: ");
             for(uint32_t i = 0; i < callback_data->cmdBufLabelCount; i++) {
-                ss << callback_data->pCmdBufLabels[i].pLabelName;
+                command_buffer_list.append(callback_data->pCmdBufLabels[i].pLabelName);
                 if(i != callback_data->cmdBufLabelCount - 1) {
-                    ss << ", ";
+                    command_buffer_list.append(", ");
                 }
             }
         }
 
-        ss << " ";
-
+        rx::string object_list;
         if(callback_data->objectCount != 0) {
-            ss << "Objects: ";
+            object_list.append("Objects: ");
             for(uint32_t i = 0; i < callback_data->objectCount; i++) {
-                ss << to_string(callback_data->pObjects[i].objectType);
+                object_list.append(to_string(callback_data->pObjects[i].objectType));
                 if(callback_data->pObjects[i].pObjectName != nullptr) {
-                    ss << " \"" << callback_data->pObjects[i].pObjectName << "\"";
+                    object_list.append(rx::string::format(" \"%s\"", callback_data->pObjects[i].pObjectName));
                 }
-                ss << " (" << std::hex << callback_data->pObjects[i].objectHandle << std::dec << ") ";
+                object_list.append(" (%x)", callback_data->pObjects[i].objectHandle);
                 if(i != callback_data->objectCount - 1) {
-                    ss << ", ";
+                    object_list.append(", ");
                 }
             }
         }
 
-        ss << " ";
-
+        rx::string vk_message;
         if(callback_data->pMessage != nullptr) {
-            ss << callback_data->pMessage;
+            vk_message.append(callback_data->pMessage);
         }
 
-        const rx::string msg = ss.str().c_str();
+        const rx::string msg = rx::string::format("[%s] %s %s %s %s", type, queue_list, command_buffer_list, object_list, message);
 
         if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
             logger(rx::log::level::k_error, "[%s]%s", type, msg);
@@ -1786,21 +1785,21 @@ namespace nova::renderer::rhi {
 
         } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {
             // Warnings may hint at unexpected / non-spec API usage
-            logger(rx::log::level::k_warning, "[%s]%s", type, msg);
+            logger(rx::log::level::k_warning, "%s", msg);
 
         } else if(((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) != 0) &&
                   ((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U)) { // No validation info!
             // Informal messages that may become handy during debugging
-            logger(rx::log::level::k_info, "[%s]%s", type, msg);
+            logger(rx::log::level::k_info, "%s", msg);
 
         } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) != 0) {
             // Diagnostic info from the Vulkan loader and layers
             // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
-            logger(rx::log::level::k_verbose, "[%s]%s", type, msg);
+            logger(rx::log::level::k_verbose, "%s", msg);
 
         } else if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U) { // No validation info!
             // Catch-all to be super sure
-            logger(rx::log::level::k_info, "[%s]%s", type, msg);
+            logger(rx::log::level::k_info, "%s", msg);
         }
 
         return VK_FALSE;
