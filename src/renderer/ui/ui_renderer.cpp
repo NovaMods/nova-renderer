@@ -8,7 +8,11 @@ namespace nova::renderer {
     void UiRenderpass::render_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) { render_ui(cmds, ctx); }
 
     shaderpack::RenderPassCreateInfo UiRenderpass::get_create_info() {
-        static auto create_info = [&] {
+        // TODO: This once was static, but caused a SIGSEGV because of being destructed too late
+        //       It probably doesn't harm that this is not static anymore, but maybe it can be moved
+        //       somewhere where it is just created once per program run and destructed before the
+        //       rex allocator
+        auto create_info = [&] {
             shaderpack::RenderPassCreateInfo new_create_info = {};
             new_create_info.name = UI_RENDER_PASS_NAME;
             new_create_info.texture_inputs.emplace_back(SCENE_OUTPUT_RT_NAME);
