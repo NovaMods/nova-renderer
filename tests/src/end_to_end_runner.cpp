@@ -80,6 +80,7 @@ namespace nova::renderer {
 
         while(!window.should_close()) {
             renderer->execute_frame();
+            window.poll_input();
         }
 
         rx::memory::g_system_allocator->destroy<NovaRenderer>(renderer);
