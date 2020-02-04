@@ -340,6 +340,6 @@ namespace nova::renderer {
 
     template <typename RenderpassType>
     bool NovaRenderer::set_ui_renderpass(RenderpassType* ui_renderpass, const shaderpack::RenderPassCreateInfo& create_info) {
-        return rendergraph->add_renderpass(rx::utility::move(ui_renderpass), create_info, *device_resources);
+        return rendergraph->add_renderpass(ui_renderpass, create_info, *device_resources);
     }
 } // namespace nova::renderer
