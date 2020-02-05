@@ -403,6 +403,10 @@ else()
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs X11)
 endif()
 
+if(MSVC)
+    target_sources(nova-renderer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/tools/vs-visualizers/RexCore.natvis)
+endif()
+
 ###############################
 # Link all required libraries #
 ###############################
