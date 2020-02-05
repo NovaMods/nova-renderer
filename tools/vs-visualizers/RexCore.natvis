@@ -1,14 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?> 
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
     <Type Name="rx::vector&lt;*&gt;">
+        <DisplayString Condition="m_size == 0">empty</DisplayString>
         <DisplayString>{{ size={m_size} }}</DisplayString>
         <Expand>
             <Item Name="[size]" ExcludeView="simple">m_size</Item>
-            <Item Name="[capacity]" ExcludeView="simple">m_capacity</Item>
             <ArrayItems>
                 <Size>m_size</Size>
                 <ValuePointer>m_data</ValuePointer>
             </ArrayItems>
+            <Item Name="[capacity]" ExcludeView="simple">m_capacity</Item>
+            <Item Name="[allocator]" ExcludeView="simple">m_allocator</Item>
+        </Expand>
+    </Type>
+    <Type Name="rx::string">
+        <DisplayString>{{ {m_data} }}</DisplayString>
+        <Expand>
+            <Item Name="[size]" ExcludeView="simple">m_last - m_size</Item>
+            <Item Name="[contents]" ExcludeView="simple">m_data</Item>
+            <Item Name="[capacity]" ExcludeView="simple">m_capacity</Item>
             <Item Name="[allocator]" ExcludeView="simple">m_allocator</Item>
         </Expand>
     </Type>
