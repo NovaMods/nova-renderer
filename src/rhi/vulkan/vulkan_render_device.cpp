@@ -553,7 +553,7 @@ namespace nova::renderer::rhi {
                         VkDescriptorBufferInfo vk_buffer_info = {};
                         vk_buffer_info.buffer = vk_buffer->buffer;
                         vk_buffer_info.offset = vk_buffer->memory.allocation_info.offset.b_count();
-                        vk_buffer_info.range = vk_buffer->memory.allocation_info.size.b_count();
+                        vk_buffer_info.range = vk_buffer->size.b_count();
 
                         buffer_infos.emplace_back(vk_buffer_info);
                     });
@@ -877,7 +877,9 @@ namespace nova::renderer::rhi {
         auto* vulkan_heap = static_cast<VulkanDeviceMemory*>(allocation.memory);
         buffer->memory = allocation;
 
-        vkBindBufferMemory(device, buffer->buffer, vulkan_heap->memory, allocation.allocation_info.offset.b_count());
+        vkBindBufferMemory(device, buffer->buffer, vulkan_heap->memory, allocation.allocation_info.offset.b_count());\
+
+        buffer->size = info.size;
 
         return buffer;
     }

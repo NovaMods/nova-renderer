@@ -326,7 +326,7 @@ namespace nova::renderer {
         mesh.index_buffer = index_buffer;
         mesh.num_indices = static_cast<uint32_t>(mesh_data.indices.size());
 
-        MeshId new_mesh_id = next_mesh_id;
+        const MeshId new_mesh_id = next_mesh_id;
         next_mesh_id++;
         meshes.insert(new_mesh_id, mesh);
 
@@ -334,12 +334,12 @@ namespace nova::renderer {
     }
 
     ProceduralMeshAccessor NovaRenderer::create_procedural_mesh(const uint64_t vertex_size, const uint64_t index_size) {
-        MeshId our_id = next_mesh_id;
+        const MeshId our_id = next_mesh_id;
         next_mesh_id++;
 
-        proc_meshes.insert(our_id, ProceduralMesh(vertex_size, index_size, device.get()));
+        proc_meshes.insert(our_id, ProceduralMesh{vertex_size, index_size, device.get()});
 
-        return ProceduralMeshAccessor(&proc_meshes, our_id);
+        return ProceduralMeshAccessor{&proc_meshes, our_id};
     }
 
     void NovaRenderer::load_renderpack(const rx::string& renderpack_name) {

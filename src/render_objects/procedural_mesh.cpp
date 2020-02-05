@@ -36,13 +36,11 @@ namespace nova::renderer {
             .map([&](DeviceMemory* memory) {
                 device_buffers_memory = allocator->create<DeviceMemoryResource>(memory, device_memory_allocation_strategy);
 
-                const auto vertex_create_info = BufferCreateInfo{vertex_buffer_size, BufferUsage::VertexBuffer};
-                for(uint32_t i = 0; i < vertex_buffers.size(); i++) {
-                    vertex_buffers[i] = device->create_buffer(vertex_create_info, *device_buffers_memory, allocator);
-                }
+                const BufferCreateInfo vertex_create_info{vertex_buffer_size, BufferUsage::VertexBuffer};
+                const BufferCreateInfo index_create_info{index_buffer_size, BufferUsage::IndexBuffer};
 
-                const auto index_create_info = BufferCreateInfo{index_buffer_size, BufferUsage::IndexBuffer};
-                for(uint32_t i = 0; i < index_buffers.size(); i++) {
+                for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
+                    vertex_buffers[i] = device->create_buffer(vertex_create_info, *device_buffers_memory, allocator);
                     index_buffers[i] = device->create_buffer(index_create_info, *device_buffers_memory, allocator);
                 }
 
@@ -74,8 +72,8 @@ namespace nova::renderer {
 
     ProceduralMesh::ProceduralMesh(ProceduralMesh&& old) noexcept
         : device{old.device},
-          vertex_buffers{rx::utility::move(vertex_buffers)},
-          index_buffers{rx::utility::move(index_buffers)},
+          vertex_buffers{rx::utility::move(old.vertex_buffers)},
+          index_buffers{rx::utility::move(old.index_buffers)},
           cached_vertex_buffer{old.cached_vertex_buffer},
           cached_index_buffer{old.cached_index_buffer},
           num_vertex_bytes_to_upload{old.num_vertex_bytes_to_upload},
@@ -94,8 +92,8 @@ namespace nova::renderer {
 
     ProceduralMesh& ProceduralMesh::operator=(ProceduralMesh&& old) noexcept {
         device = old.device;
-        vertex_buffers = rx::utility::move(vertex_buffers);
-        index_buffers = rx::utility::move(index_buffers);
+        vertex_buffers = rx::utility::move(old.vertex_buffers);
+        index_buffers = rx::utility::move(old.index_buffers);
         cached_vertex_buffer = old.cached_vertex_buffer;
         cached_index_buffer = old.cached_index_buffer;
         num_vertex_bytes_to_upload = old.num_vertex_bytes_to_upload;
