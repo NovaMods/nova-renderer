@@ -63,4 +63,26 @@ namespace nova::renderer::rhi {
                 return 16;
         }
     }
+
+    rx::string descriptor_type_to_string(DescriptorType type) {
+        switch(type) {
+            case DescriptorType::CombinedImageSampler:
+                return "CombinedImageSampler";
+
+            case DescriptorType::UniformBuffer:
+                return "UniformBuffer";
+
+            case DescriptorType::StorageBuffer:
+                return "StorageBuffer";
+
+            case DescriptorType::Texture:
+                return "Texture";
+
+            case DescriptorType::Sampler:
+                return "Sampler";
+
+            default:
+                return "Unknown";
+        }
+    }
 } // namespace nova::renderer::rhi

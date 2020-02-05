@@ -12,10 +12,10 @@
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/window.hpp"
 
+#include "rx/core/algorithm/max.h"
 #include "vk_structs.hpp"
 #include "vulkan_command_list.hpp"
 #include "vulkan_utils.hpp"
-
 // TODO: Move window creation out of the RHI
 #ifdef NOVA_LINUX
 #define NOVA_VK_XLIB
@@ -369,9 +369,9 @@ namespace nova::renderer::rhi {
         render_pass_create_info.dependencyCount = 1;
         render_pass_create_info.pDependencies = &image_available_dependency;
 
-        rx::vector<VkAttachmentReference> attachment_references(internal_allocator);
-        rx::vector<VkAttachmentDescription> attachment_descriptions(internal_allocator);
-        rx::vector<VkImageView> framebuffer_attachments(internal_allocator);
+        rx::vector<VkAttachmentReference> attachment_references{internal_allocator};
+        rx::vector<VkAttachmentDescription> attachment_descriptions{internal_allocator};
+        rx::vector<VkImageView> framebuffer_attachments{internal_allocator};
 
         // Collect framebuffer size information from color output attachments
         color_attachments.each_fwd([&](const shaderpack::TextureAttachmentInfo& attachment) {
@@ -492,7 +492,7 @@ namespace nova::renderer::rhi {
         alloc_info.descriptorSetCount = static_cast<uint32_t>(vk_pipeline_interface->layouts_by_set.size());
         alloc_info.pSetLayouts = vk_pipeline_interface->layouts_by_set.data();
 
-        rx::vector<VkDescriptorSet> sets(internal_allocator);
+        rx::vector<VkDescriptorSet> sets{internal_allocator};
         sets.resize(vk_pipeline_interface->layouts_by_set.size());
         vkAllocateDescriptorSets(device, &alloc_info, sets.data());
 
@@ -877,7 +877,7 @@ namespace nova::renderer::rhi {
         auto* vulkan_heap = static_cast<VulkanDeviceMemory*>(allocation.memory);
         buffer->memory = allocation;
 
-        vkBindBufferMemory(device, buffer->buffer, vulkan_heap->memory, allocation.allocation_info.offset.b_count());\
+        vkBindBufferMemory(device, buffer->buffer, vulkan_heap->memory, allocation.allocation_info.offset.b_count());
 
         buffer->size = info.size;
 
@@ -1203,7 +1203,7 @@ namespace nova::renderer::rhi {
 
             default:
                 RX_ASSERT(false, "Unknown queue type %u", static_cast<uint32_t>(type));
-                return 9999;    // I have to return _something_ or Visual Studio gets mad
+                return 9999; // I have to return _something_ or Visual Studio gets mad
         }
     }
 
@@ -1589,11 +1589,41 @@ namespace nova::renderer::rhi {
          * -
          */
 
-        rx::vector<rx::vector<VkDescriptorSetLayoutBinding>> bindings_by_set(allocator);
-        bindings_by_set.resize(all_bindings.size());
+        uint32_t num_sets = 0;
+        all_bindings.each_value([&](const ResourceBindingDescription& desc) {
+            if(desc.set >= gpu.props.limits.maxBoundDescriptorSets) {
+                logger(rx::log::level::k_error,
+                       "Descriptor set %u is out of range - your GPU only supports %u sets!",
+                       desc.set,
+                       gpu.props.limits.maxBoundDescriptorSets);
+            } else {
+                num_sets = rx::algorithm::max(num_sets, desc.set + 1);
+            }
+        });
 
+        // Some precalculations so we know how much room we actually need
+        rx::vector<uint32_t> num_bindings_per_set{allocator};
+        num_bindings_per_set.resize(num_sets);
+
+        all_bindings.each_value([&](const ResourceBindingDescription& desc) {
+            num_bindings_per_set[desc.set] = rx::algorithm::max(num_bindings_per_set[desc.set], desc.binding + 1);
+        });
+
+        rx::vector<rx::vector<VkDescriptorSetLayoutBinding>> bindings_by_set(allocator);
         rx::vector<rx::vector<VkDescriptorBindingFlagsEXT>> binding_flags_by_set(allocator);
-        binding_flags_by_set.resize(all_bindings.size());
+        bindings_by_set.reserve(num_sets);
+        binding_flags_by_set.reserve(num_sets);
+
+        uint32_t set = 0;
+
+        num_bindings_per_set.each_fwd([&](const uint32_t num_bindings) {
+            // Emplace back vectors large enough to hold all the bindings we have
+            bindings_by_set.emplace_back(num_bindings);
+            binding_flags_by_set.emplace_back(num_bindings);
+
+            logger(rx::log::level::k_verbose, "Set %u has %u bindings", set, num_bindings);
+            set++;
+        });
 
         all_bindings.each_value([&](const ResourceBindingDescription& binding) {
             if(binding.set >= bindings_by_set.size()) {
@@ -1607,14 +1637,18 @@ namespace nova::renderer::rhi {
             descriptor_binding.descriptorCount = binding.count;
             descriptor_binding.stageFlags = to_vk_shader_stage_flags(binding.stages);
 
+            logger(rx::log::level::k_verbose, "Descriptor %u.%u is type %s", binding.set, binding.binding, descriptor_type_to_string(binding.type));
+
             if(binding.is_unbounded) {
-                binding_flags_by_set[binding.set].push_back(VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT);
+                binding_flags_by_set[binding.set][binding.binding] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT;
+
+                logger(rx::log::level::k_verbose, "Descriptor %u.%u is unbounded", binding.set, binding.binding);
 
             } else {
-                binding_flags_by_set[binding.set].push_back(0);
+                binding_flags_by_set[binding.set][binding.binding] = 0;
             }
 
-            bindings_by_set[binding.set].push_back(descriptor_binding);
+            bindings_by_set[binding.set][binding.binding] = descriptor_binding;
 
             return true;
         });
@@ -1625,6 +1659,8 @@ namespace nova::renderer::rhi {
         rx::vector<VkDescriptorSetLayoutBindingFlagsCreateInfoEXT> flag_infos(allocator);
         flag_infos.reserve(bindings_by_set.size());
 
+        // We may make bindings_by_set much larger than it needs to be is there's multiple descriptor bindings per set. Thus, only iterate
+        // through the sets we actually care about
         bindings_by_set.each_fwd([&](const rx::vector<VkDescriptorSetLayoutBinding>& bindings) {
             VkDescriptorSetLayoutCreateInfo create_info = {};
             create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;

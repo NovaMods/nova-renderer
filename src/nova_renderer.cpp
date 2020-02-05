@@ -64,16 +64,16 @@ void init_rex() {
             log_handles->push_back(_logger->cast<rx::log>()->on_write([](const rx::log::level level, const rx::string& message) {
                 switch(level) {
                     case rx::log::level::k_error:
-                        printf("^rerror: ^w%s\n", message.data());
+                        printf("[error  ]: %s\n", message.data());
                         break;
                     case rx::log::level::k_info:
-                        printf("^cinfo: ^w%s\n", message.data());
+                        printf("[info   ]: %s\n", message.data());
                         break;
                     case rx::log::level::k_verbose:
-                        printf("^cverbose: ^w%s\n", message.data());
+                        printf("[verbose]: %s\n", message.data());
                         break;
                     case rx::log::level::k_warning:
-                        printf("^mwarning: ^w%s\n", message.data());
+                        printf("[warning]: %s\n", message.data());
                         break;
                 }
             }));
