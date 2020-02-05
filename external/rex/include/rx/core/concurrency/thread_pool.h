@@ -1,7 +1,8 @@
 #ifndef RX_CORE_CONCURRENCY_THREAD_POOL_H
 #define RX_CORE_CONCURRENCY_THREAD_POOL_H
-#include "rx/core/queue.h"
+#include "rx/core/list.h"
 #include "rx/core/function.h"
+#include "rx/core/dynamic_pool.h"
 
 #include "rx/core/concurrency/thread.h"
 #include "rx/core/concurrency/mutex.h"
@@ -13,8 +14,8 @@ struct thread_pool
   : concepts::no_copy
   , concepts::no_move
 {
-  thread_pool(memory::allocator* _allocator, rx_size _threads);
-  thread_pool(rx_size _threads);
+  thread_pool(memory::allocator* _allocator, rx_size _threads, rx_size _static_pool_size);
+  thread_pool(rx_size _threads, rx_size _job_pool_size);
   ~thread_pool();
 
   // insert |_task| into the thread pool to be executed, the integer passed
@@ -31,15 +32,17 @@ private:
   mutex m_mutex;
   condition_variable m_task_cond;
   condition_variable m_ready_cond;
-  queue<function<void(int)>> m_queue; // protected by |m_mutex|
-  vector<thread> m_threads;           // protected by |m_mutex|
-  bool m_stop;                        // protected by |m_mutex|
+
+  list m_queue;              // protected by |m_mutex|
+  vector<thread> m_threads;  // protected by |m_mutex|
+  dynamic_pool m_job_memory; // protected by |m_mutex|
+  bool m_stop;               // protected by |m_mutex|
 
   static RX_GLOBAL<thread_pool> s_thread_pool;
 };
 
-inline thread_pool::thread_pool(rx_size _threads)
-  : thread_pool{&memory::g_system_allocator, _threads}
+inline thread_pool::thread_pool(rx_size _threads, rx_size _static_pool_size)
+  : thread_pool{&memory::g_system_allocator, _threads, _static_pool_size}
 {
 }
 

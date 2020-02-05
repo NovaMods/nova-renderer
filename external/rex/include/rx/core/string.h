@@ -273,13 +273,13 @@ inline vector<string> string::split(int _ch, rx_size _count) const {
 }
 
 inline char& string::operator[](rx_size index) {
-  // NOTE(dweiler): <= is not a bug, indexing the null-terminator is allowed
+  // NOTE(dweiler): The <= is not a bug, indexing the null-terminator is allowed.
   RX_ASSERT(index <= size(), "out of bounds");
   return m_data[index];
 }
 
 inline const char& string::operator[](rx_size index) const {
-  // NOTE(dweiler): <= is not a bug, indexing the null-terminator is allowed
+  // NOTE(dweiler): The <= is not a bug, indexing the null-terminator is allowed.
   RX_ASSERT(index <= size(), "out of bounds");
   return m_data[index];
 }

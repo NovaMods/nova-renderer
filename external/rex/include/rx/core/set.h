@@ -260,9 +260,9 @@ inline rx_size set<K>::hash_key(const K& _key) {
 
   // MSB is used to indicate deleted elements
   if constexpr(sizeof hash_value == 8) {
-    hash_value &= 0x7FFFFFFFFFFFFFFF;
+    hash_value &= 0x7FFFFFFFFFFFFFFF_z;
   } else {
-    hash_value &= 0x7FFFFFFF;
+    hash_value &= 0x7FFFFFFF_z;
   }
 
   // don't ever hash to zero since zero is used to indicate unused slots
@@ -383,7 +383,7 @@ inline bool set<K>::lookup_index(const K& _key, rx_size& _index) const {
   rx_size distance{0};
   for (;;) {
     const rx_size hash_element{element_hash(position)};
-    if (hash_element == 0 || is_deleted(hash_element)) {
+    if (hash_element == 0) {
       return false;
     } else if (distance > probe_distance(hash_element, position)) {
       return false;

@@ -1,37 +1,54 @@
 #ifndef RX_CORE_XOR_LIST_H
 #define RX_CORE_XOR_LIST_H
 #include "rx/core/types.h"
+#include "rx/core/utility/move.h"
+#include "rx/core/concepts/no_copy.h"
 
 namespace rx {
 
 // # XOR doubly-linked-list
 //
 // An intrusive, doubly-linked list where nodes require half the storage since
-// the link structure only requires one pointer.
+// the link structure only requires one pointer instead of two.
 //
 // Like all intrusive containers, you must embed the node in your own structure
-// which is called a "link". The use of |push| takes a pointer to this node.
-// Retrieving the data associated with the node requires finding the offset
-// relative to the node to reconstruct, this link address is given to the
-// enumerate structure or |node::data|.
+// which is called a "link". The use of |push_front| and |push_back| takes a
+// pointer to this node. Retrieving the data associated with the node requires
+// finding the offset relative to the node to reconstruct, this link address is
+// given to |enumerate_head|, |enumerate_tail| or |node::data| by pointer to
+// the link node in the structure.
 //
 // This should not be used unless you need to reduce the storage costs of your
 // nodes. Rex makes use of this for it's globals system since rx::global<T> is
-// quite large.
+// quite large and minimizing their size is worthwhile.
 //
 // 32-bit: 8 bytes
 // 64-bit: 16 bytes
-struct xor_list {
+struct xor_list
+  : concepts::no_copy
+{
+  struct node;
+
+  constexpr xor_list();
+  xor_list(xor_list&& xor_list_);
+  xor_list& operator=(xor_list&& xor_list_);
+
+  void push(node* _node);
+
   // 32-bit: 4 bytes
   // 64-bit: 8 bytes
-  struct node {
+  struct node
+    : concepts::no_copy
+  {
     constexpr node();
+    node(node&& node_);
+    node& operator=(node&& node_);
 
     template<typename T>
-    const T* data(rx_size _offset) const;
+    const T* data(node T::*_link) const;
 
     template<typename T>
-    T* data(rx_size _offset);
+    T* data(node T::*_link);
 
   private:
     friend struct xor_list;
@@ -39,23 +56,21 @@ struct xor_list {
     node* m_link;
   };
 
-  constexpr xor_list();
-
-  void push(node* _node);
-
-  node* head() const;
-  node* tail() const;
-
 private:
   node* m_head;
   node* m_tail;
 
   // 32-bit: 12 bytes
   // 64-bit: 24 bytes
-  struct iterator {
+  struct iterator
+    : concepts::no_copy
+  {
     constexpr iterator(node* _node);
+    iterator(iterator&& iterator_);
+    iterator& operator=(iterator&& iterator_);
 
     void next();
+    void prev();
 
   protected:
     node* m_this;
@@ -67,8 +82,11 @@ public:
   // 32-bit: 12 (base class) + 4 bytes
   // 64-bit: 24 (base class) + 8 bytes
   template<typename T>
-  struct enumerate : iterator {
-    enumerate(node* _root, node T::*link);
+  struct enumerate
+    : iterator
+  {
+    enumerate(enumerate&& enumerate_);
+    enumerate& operator=(enumerate&& enumerate_);
 
     operator bool() const;
 
@@ -82,8 +100,16 @@ public:
     const T* data() const;
 
   private:
-    rx_size m_link_offset;
+    friend struct xor_list;
+    constexpr enumerate(node* _root, node T::*_link);
+
+    node T::*m_link;
   };
+
+  template<typename T>
+  enumerate<T> enumerate_head(node T::*_link) const;
+  template<typename T>
+  enumerate<T> enumerate_tail(node T::*_link) const;
 };
 
 inline constexpr xor_list::node::node()
@@ -92,15 +118,19 @@ inline constexpr xor_list::node::node()
 }
 
 template<typename T>
-inline const T* xor_list::node::data(rx_size _offset) const {
-  const auto address = reinterpret_cast<rx_uintptr>(this);
-  return reinterpret_cast<const T*>(address - _offset);
+inline const T* xor_list::node::data(node T::*_link) const {
+  const auto this_address = reinterpret_cast<rx_uintptr>(this);
+  const auto link_offset = &(reinterpret_cast<const volatile T*>(0)->*_link);
+  const auto link_address = reinterpret_cast<rx_uintptr>(link_offset);
+  return reinterpret_cast<const T*>(this_address - link_address);
 }
 
 template<typename T>
-inline T* xor_list::node::data(rx_size _offset) {
-  const auto address = reinterpret_cast<rx_uintptr>(this);
-  return reinterpret_cast<T*>(address - _offset);
+inline T* xor_list::node::data(node T::*_link) {
+  const auto this_address = reinterpret_cast<rx_uintptr>(this);
+  const auto link_offset = &(reinterpret_cast<const volatile T*>(0)->*_link);
+  const auto link_address = reinterpret_cast<rx_uintptr>(link_offset);
+  return reinterpret_cast<T*>(this_address - link_address);
 }
 
 inline constexpr xor_list::xor_list()
@@ -109,12 +139,20 @@ inline constexpr xor_list::xor_list()
 {
 }
 
-inline xor_list::node* xor_list::head() const {
-  return m_head;
+inline xor_list::xor_list(xor_list&& xor_list_)
+  : m_head{xor_list_.m_head}
+  , m_tail{xor_list_.m_tail}
+{
+  xor_list_.m_head = nullptr;
+  xor_list_.m_tail = nullptr;
 }
 
-inline xor_list::node* xor_list::tail() const {
-  return m_tail;
+inline xor_list& xor_list::operator=(xor_list&& xor_list_) {
+  m_head = xor_list_.m_head;
+  m_tail = xor_list_.m_tail;
+  xor_list_.m_head = nullptr;
+  xor_list_.m_tail = nullptr;
+  return *this;
 }
 
 inline constexpr xor_list::iterator::iterator(node* _node)
@@ -124,24 +162,49 @@ inline constexpr xor_list::iterator::iterator(node* _node)
 {
 }
 
-template<typename T>
-inline xor_list::enumerate<T>::enumerate(node* _root, node T::*link)
-  : iterator{_root}
+inline xor_list::iterator::iterator(iterator&& iterator_)
+  : m_this{iterator_.m_this}
+  , m_prev{iterator_.m_prev}
+  , m_next{iterator_.m_next}
 {
-  // NOTE(dweiler): This invokes undefined behhavior according to the C++
-  // standard. It's technically possible to store the `node T::*link` and do
-  // a subtraction from |m_this| to get the relative address which would avoid
-  // undefined behavior, however I don't see a simple way of doing that
-  // currently.
-  //
-  // For now, just synthesize a null-pointer, dereference it with pointer to
-  // member representing the link, then take the address of it, which will be
-  // relative to null-pointer, which is 0. This is the "offset" in the |T|
-  // structure where the link can be found.
-  const auto relative_address
-    = &(reinterpret_cast<const volatile T*>(0)->*link);
+  iterator_.m_this = nullptr;
+  iterator_.m_prev = nullptr;
+  iterator_.m_next = nullptr;
+}
 
-  m_link_offset = reinterpret_cast<rx_size>(relative_address);
+inline xor_list::iterator& xor_list::iterator::operator=(iterator&& iterator_) {
+  m_this = iterator_.m_this;
+  m_prev = iterator_.m_prev;
+  m_next = iterator_.m_next;
+
+  iterator_.m_this = nullptr;
+  iterator_.m_prev = nullptr;
+  iterator_.m_next = nullptr;
+
+  return *this;
+}
+
+template<typename T>
+inline xor_list::enumerate<T>::enumerate(enumerate&& enumerate_)
+  : iterator{utility::move(enumerate_)}
+  , m_link{enumerate_.m_link}
+{
+  enumerate_.m_link = nullptr;
+}
+
+template<typename T>
+inline xor_list::enumerate<T>& xor_list::enumerate<T>::operator=(enumerate&& enumerate_) {
+  iterator::operator=(utility::move(enumerate_));
+  m_link = enumerate_.m_link;
+  enumerate_.m_link = nullptr;
+  return *this;
+}
+
+template<typename T>
+inline constexpr xor_list::enumerate<T>::enumerate(node* _root, node T::*_link)
+  : iterator{_root}
+  , m_link{_link}
+{
 }
 
 template<typename T>
@@ -171,12 +234,22 @@ inline const T* xor_list::enumerate<T>::operator->() const {
 
 template<typename T>
 inline T* xor_list::enumerate<T>::data() {
-  return m_this->data<T>(m_link_offset);
+  return m_this->data<T>(m_link);
 }
 
 template<typename T>
 inline const T* xor_list::enumerate<T>::data() const {
-  return m_this->data<T>(m_link_offset);
+  return m_this->data<T>(m_link);
+}
+
+template<typename T>
+inline xor_list::enumerate<T> xor_list::enumerate_head(node T::*_link) const {
+  return {m_head, _link};
+}
+
+template<typename T>
+inline xor_list::enumerate<T> xor_list::enumerate_tail(node T::*_link) const {
+  return {m_tail, _link};
 }
 
 } // namespace rx

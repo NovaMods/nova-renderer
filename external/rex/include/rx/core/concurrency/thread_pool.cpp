@@ -7,12 +7,22 @@
 namespace rx::concurrency {
 
 RX_LOG("thread_pool", logger);
-RX_GLOBAL<thread_pool> thread_pool::s_thread_pool{"system", "thread_pool", 4_z};
+RX_GLOBAL<thread_pool> thread_pool::s_thread_pool{"system", "thread_pool", 4_z, 4096_z};
 
-thread_pool::thread_pool(memory::allocator* _allocator, rx_size _threads)
+struct work {
+  work(function<void(int)>&& _callback)
+    : callback{utility::move(_callback)}
+  {
+  }
+
+  list::node link;
+  function<void(int)> callback;
+};
+
+thread_pool::thread_pool(memory::allocator* _allocator, rx_size _threads, rx_size _static_pool_size)
   : m_allocator{_allocator}
-  , m_queue{m_allocator}
   , m_threads{m_allocator}
+  , m_job_memory{m_allocator, sizeof(work), _static_pool_size}
   , m_stop{false}
 {
   logger(log::level::k_info, "starting pool with %zu threads", _threads);
@@ -35,7 +45,13 @@ thread_pool::thread_pool(memory::allocator* _allocator, rx_size _threads)
             logger(log::level::k_info, "stopping thread %d", _thread_id);
             return;
           }
-          task = m_queue.pop();
+
+          auto node = m_queue.pop_back();
+          auto item = node->data<work>(&work::link);
+
+          task = utility::move(item->callback);
+
+          m_job_memory.destroy(item);
         }
 
         logger(log::level::k_verbose, "starting task on thread %d", _thread_id);
@@ -75,8 +91,9 @@ thread_pool::~thread_pool() {
 
 void thread_pool::add(function<void(int)>&& task_) {
   {
-    scope_lock lock(m_mutex);
-    m_queue.push(utility::move(task_));
+    scope_lock lock{m_mutex};
+    auto item = m_job_memory.create<work>(utility::move(task_));
+    m_queue.push_back(&item->link);
   }
   m_task_cond.signal();
 }

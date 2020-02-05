@@ -106,7 +106,7 @@ struct vector {
   memory::view disown();
 
 private:
-  // NOTE(dweiler): does not adjust m_size just adjusts capacity
+  // NOTE(dweiler): This does not adjust m_size, it only adjusts capacity.
   bool grow_or_shrink_to(rx_size _size);
 
   memory::allocator* m_allocator;

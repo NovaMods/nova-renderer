@@ -79,8 +79,8 @@ private:
     }
   };
   template<rx_size I, typename F, typename... Rs>
-  static auto argument(const arguments<F, Rs...>& _arguments) {
-    return read_argument<I, F, Rs...>::value(&_arguments);
+  static auto argument(const arguments<F, Rs...>* _arguments) {
+    return read_argument<I, F, Rs...>::value(_arguments);
   }
 
   template<rx_size...>
@@ -117,7 +117,7 @@ private:
     [[maybe_unused]] rx_byte* _argument_store)
   {
     utility::construct<T>(_storage,
-      argument<Ns>(*reinterpret_cast<arguments<Ts...>*>(_argument_store))...);
+      argument<Ns>(reinterpret_cast<arguments<Ts...>*>(_argument_store))...);
   }
 
   const global_shared* m_shared;
@@ -139,8 +139,7 @@ private:
   rx_u16 m_global_store;
   rx_u16 m_flags;
 
-  // This needs to be aligned by 16-byte otherwise `arguments` will invoke
-  // undefined behavior.
+  // This needs to be aligned otherwise `arguments` will invoke undefined behavior.
   alignas(16) rx_byte m_argument_store[64];
 };
 
@@ -275,7 +274,8 @@ inline void global_node::init(Ts&&... _arguments) {
     m_fini_arguments(m_argument_store);
   }
 
-  construct_arguments<Ts...>(m_argument_store, utility::forward<Ts>(_arguments)...);
+  construct_arguments<traits::remove_reference<Ts>...>
+    (m_argument_store, utility::forward<traits::remove_reference<Ts>>(_arguments)...);
   init();
 }
 
@@ -320,7 +320,7 @@ inline constexpr const char* global_group::name() const {
 
 template<typename F>
 inline void global_group::each(F&& _function) {
-  for (xor_list::enumerate node = {m_list.head(), &global_node::m_grouped}; node; node.next()) {
+  for (auto node = m_list.enumerate_head(&global_node::m_grouped); node; node.next()) {
     _function(node.data());
   }
 }

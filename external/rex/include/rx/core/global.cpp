@@ -60,7 +60,7 @@ void global_node::fini() {
 
 // global_group
 global_node* global_group::find(const char* _name) {
-  for (xor_list::enumerate node = {m_list.head(), &global_node::m_grouped}; node; node.next()) {
+  for (auto node = m_list.enumerate_head(&global_node::m_grouped); node; node.next()) {
     if (!strcmp(node->name(), _name)) {
       return node.data();
     }
@@ -69,32 +69,32 @@ global_node* global_group::find(const char* _name) {
 }
 
 void global_group::init() {
-  for (xor_list::enumerate node = {m_list.head(), &global_node::m_grouped}; node; node.next()) {
+  for (auto node = m_list.enumerate_head(&global_node::m_grouped); node; node.next()) {
     node->init();
   }
 }
 
 void global_group::fini() {
-  for (xor_list::enumerate node = {m_list.tail(), &global_node::m_grouped}; node; node.next()) {
+  for (auto node = m_list.enumerate_tail(&global_node::m_grouped); node; node.prev()) {
     node->fini();
   }
 }
 
 void global_group::init_global() {
-  for (xor_list::enumerate node = {m_list.head(), &global_node::m_grouped}; node; node.next()) {
+  for (auto node = m_list.enumerate_head(&global_node::m_grouped); node; node.next()) {
     node->init_global();
   }
 }
 
 void global_group::fini_global() {
-  for (xor_list::enumerate node = {m_list.tail(), &global_node::m_grouped}; node; node.next()) {
+  for (auto node = m_list.enumerate_tail(&global_node::m_grouped); node; node.prev()) {
     node->fini_global();
   }
 }
 
 // globals
 global_group* globals::find(const char* _name) {
-  for (xor_list::enumerate group = {s_group_list.head(), &global_group::m_link}; group; group.next()) {
+  for (auto group = s_group_list.enumerate_head(&global_group::m_link); group; group.next()) {
     if (!strcmp(group->name(), _name)) {
       return group.data();
     }
@@ -108,8 +108,8 @@ void globals::link() {
   // by |global_node::m_grouped| when the given global shares the same group
   // name as the group.
   concurrency::scope_lock lock{g_lock};
-  for (xor_list::enumerate group = {s_group_list.head(), &global_group::m_link}; group; group.next()) {
-    for (xor_list::enumerate node = {s_node_list.head(), &global_node::m_ungrouped}; node; node.next()) {
+  for (auto group = s_group_list.enumerate_head(&global_group::m_link); group; group.next()) {
+    for (auto node = s_node_list.enumerate_head(&global_node::m_ungrouped); node; node.next()) {
       if (!strcmp(node->m_group, group->name())) {
         group->m_list.push(&node->m_grouped);
       }
@@ -118,13 +118,13 @@ void globals::link() {
 }
 
 void globals::init() {
-  for (xor_list::enumerate group = {s_group_list.head(), &global_group::m_link}; group; group.next()) {
+  for (auto group = s_group_list.enumerate_head(&global_group::m_link); group; group.next()) {
     group->init_global();
   }
 }
 
 void globals::fini() {
-  for (xor_list::enumerate group = {s_group_list.tail(), &global_group::m_link}; group; group.next()) {
+  for (auto group = s_group_list.enumerate_tail(&global_group::m_link); group; group.prev()) {
     group->fini_global();
   }
 }

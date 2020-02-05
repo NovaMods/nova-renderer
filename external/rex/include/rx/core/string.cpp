@@ -409,7 +409,7 @@ string string::substring(rx_size _offset, rx_size _length) const {
   if (_length == 0) {
     return {m_allocator, begin};
   }
-  // NOTE(dweiler): you can substring the whole string.
+  // NOTE(dweiler): You can substring the whole string.
   RX_ASSERT(begin + _length <= m_data + size(), "out of bounds");
   return {m_allocator, begin, _length};
 }

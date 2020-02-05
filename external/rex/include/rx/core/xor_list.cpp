@@ -28,4 +28,8 @@ void xor_list::iterator::next() {
   }
 }
 
+void xor_list::iterator::prev() {
+  next();
+}
+
 } // namespace rx

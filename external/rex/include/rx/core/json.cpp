@@ -42,10 +42,6 @@ static void* json_allocator(void* _user, rx_size _size) {
   return allocator->allocate(_size);
 }
 
-json_value_s* json::raw() const {
-    return m_value;
-}
-
 json::shared::shared(memory::allocator* _allocator, const char* _contents, rx_size _length)
   : m_allocator{_allocator}
   , m_root{nullptr}
