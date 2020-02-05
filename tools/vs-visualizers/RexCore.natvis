@@ -16,7 +16,7 @@
     <Type Name="rx::string">
         <DisplayString>{{ {m_data} }}</DisplayString>
         <Expand>
-            <Item Name="[size]" ExcludeView="simple">m_last - m_size</Item>
+            <Item Name="[size]" ExcludeView="simple">m_last - m_data</Item>
             <Item Name="[contents]" ExcludeView="simple">m_data</Item>
             <Item Name="[capacity]" ExcludeView="simple">m_capacity</Item>
             <Item Name="[allocator]" ExcludeView="simple">m_allocator</Item>
