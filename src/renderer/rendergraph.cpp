@@ -94,7 +94,9 @@ namespace nova::renderer {
 
     void Rendergraph::destroy_renderpass(const rx::string& name) {
         if(Renderpass** renderpass = renderpasses.find(name)) {
-            device.destroy_framebuffer((*renderpass)->framebuffer, allocator);
+            if((*renderpass)->framebuffer) {
+                device.destroy_framebuffer((*renderpass)->framebuffer, allocator);
+            }
 
             device.destroy_renderpass((*renderpass)->renderpass, allocator);
 

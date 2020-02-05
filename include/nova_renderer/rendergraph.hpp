@@ -357,7 +357,7 @@ namespace nova::renderer {
         renderpass->pipeline_names = create_info.pipeline_names;
         renderpass->id = static_cast<uint32_t>(renderpass_metadatas.size());
 
-        renderpasses.erase(create_info.name);
+        destroy_renderpass(create_info.name);
 
         renderpasses.insert(create_info.name, rx::utility::move(renderpass));
         renderpass_metadatas.insert(create_info.name, metadata);

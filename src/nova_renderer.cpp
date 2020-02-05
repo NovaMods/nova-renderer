@@ -762,13 +762,13 @@ namespace nova::renderer {
 
     void NovaRenderer::create_builtin_renderpasses() const {
         // UI render pass
-        {
+        /*{
             Renderpass* ui_renderpass = global_allocator->create<NullUiRenderpass>();
             ui_renderpass->is_builtin = true;
 
             if(!rendergraph->add_renderpass(ui_renderpass, NullUiRenderpass::get_create_info(), *device_resources)) {
                 logger(rx::log::level::k_error, "Could not create null UI renderpass");
             }
-        }
+        }*/
     }
 } // namespace nova::renderer
