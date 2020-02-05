@@ -157,6 +157,8 @@ namespace nova::renderer::shaderpack {
         pipeline.depth_func = get_json_value<CompareOpEnum>(json, "depthFunc", CompareOpEnum::Less, compare_op_enum_from_json);
         pipeline.render_queue = get_json_value<RenderQueueEnum>(json, "renderQueue", RenderQueueEnum::Opaque, render_queue_enum_from_json);
 
+        pipeline.scissor_mode = get_json_value<ScissorTestMode>(json, "scissorMode", ScissorTestMode::Off, scissor_test_mode_from_json);
+
         pipeline.vertex_shader.filename = get_json_value<rx::string>(json, "vertexShader", "<NAME_MISSING>");
 
         const auto geometry_shader_name = get_json_opt<rx::string>(json, "geometryShader");
@@ -438,6 +440,21 @@ namespace nova::renderer::shaderpack {
         return {};
     }
 
+    ScissorTestMode scissor_test_mode_from_string(const rx::string& str) {
+        if(str == "Off") {
+            return ScissorTestMode::Off;
+
+        } else if(str == "StaticScissorRect") {
+            return ScissorTestMode::StaticScissorRect;
+
+        } else if(str == "DynamicScissorRect") {
+            return ScissorTestMode::DynamicScissorRect;
+        }
+
+        logger(rx::log::level::k_error, "Unsupported scissor mode %s", str);
+        return {};
+    }
+
     StateEnum state_enum_from_string(const rx::string& str) {
         if(str == "Blending") {
             return StateEnum::Blending;
@@ -497,6 +514,8 @@ namespace nova::renderer::shaderpack {
     BlendFactorEnum blend_factor_enum_from_json(const rx::json& j) { return blend_factor_enum_from_string(j.as_string()); }
 
     RenderQueueEnum render_queue_enum_from_json(const rx::json& j) { return render_queue_enum_from_string(j.as_string()); }
+
+    ScissorTestMode scissor_test_mode_from_json(const rx::json& j) { return scissor_test_mode_from_string(j.as_string()); }
 
     StateEnum state_enum_from_json(const rx::json& j) { return state_enum_from_string(j.as_string()); }
 

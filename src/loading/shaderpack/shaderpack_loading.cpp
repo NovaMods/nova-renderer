@@ -306,7 +306,7 @@ namespace nova::renderer::shaderpack {
         logger(rx::log::level::k_verbose, "Task to load pipeline %s started", pipeline_path);
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
-        auto json_pipeline = rx::json(pipeline_bytes);
+        auto json_pipeline = rx::json{pipeline_bytes};
         logger(rx::log::level::k_verbose, "Parsed JSON from disk for pipeline %s", pipeline_path);
         const ValidationReport report = validate_graphics_pipeline(json_pipeline);
         logger(rx::log::level::k_verbose, "Finished validating JSON for pipeline %s", pipeline_path);

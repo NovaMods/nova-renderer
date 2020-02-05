@@ -554,6 +554,7 @@ namespace nova::renderer::shaderpack {
     [[nodiscard]] PrimitiveTopologyEnum primitive_topology_enum_from_string(const rx::string& str);
     [[nodiscard]] BlendFactorEnum blend_factor_enum_from_string(const rx::string& str);
     [[nodiscard]] RenderQueueEnum render_queue_enum_from_string(const rx::string& str);
+    [[nodiscard]] ScissorTestMode scissor_test_mode_from_string(const rx::string& str);
     [[nodiscard]] StateEnum state_enum_from_string(const rx::string& str);
 
     [[nodiscard]] PixelFormatEnum pixel_format_enum_from_json(const rx::json& j);
@@ -566,6 +567,7 @@ namespace nova::renderer::shaderpack {
     [[nodiscard]] PrimitiveTopologyEnum primitive_topology_enum_from_json(const rx::json& j);
     [[nodiscard]] BlendFactorEnum blend_factor_enum_from_json(const rx::json& j);
     [[nodiscard]] RenderQueueEnum render_queue_enum_from_json(const rx::json& j);
+    [[nodiscard]] ScissorTestMode scissor_test_mode_from_json(const rx::json& j);
     [[nodiscard]] StateEnum state_enum_from_json(const rx::json& j);
 
     [[nodiscard]] rx::string to_string(PixelFormatEnum val);
