@@ -540,6 +540,8 @@ namespace nova::renderer::rhi {
 
                     vk_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     vk_write.pImageInfo = &image_infos[write_begin_idx];
+                    
+                    logger(rx::log::level::k_verbose, "Updating CombinedImageSampler descriptor set %x", vk_write.dstSet);
 
                     vk_writes.push_back(vk_write);
                 } break;
@@ -561,14 +563,13 @@ namespace nova::renderer::rhi {
                     vk_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                     vk_write.pBufferInfo = &buffer_infos[write_begin_idx];
 
+                    logger(rx::log::level::k_verbose, "Updating UniformBuffer descriptor set %x", vk_write.dstSet);
+
                     vk_writes.push_back(vk_write);
                 } break;
 
-                case DescriptorType::StorageBuffer: {
-                    // TODO
-                } break;
-
-                default:;
+                default:
+                    logger(rx::log::level::k_verbose, "Don't know how to update %s descriptor set %x", descriptor_type_to_string(write.type), vk_write.dstSet);
             }
         });
 

@@ -1,10 +1,14 @@
 #include "vulkan_command_list.hpp"
 
+#include <rx/core/log.h>
+
 #include "vk_structs.hpp"
 #include "vulkan_render_device.hpp"
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer::rhi {
+    RX_LOG("VulkanCommandList", logger);
+
     VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderDevice* render_device)
         : cmds(cmds), render_device(*render_device) {
 
@@ -144,6 +148,9 @@ namespace nova::renderer::rhi {
 
         for(uint32_t i = 0; i < descriptor_sets.size(); i++) {
             const auto* vk_set = static_cast<const VulkanDescriptorSet*>(descriptor_sets[i]);
+
+            logger(rx::log::level::k_verbose, "Binding descriptor set %x", vk_set->descriptor_set);
+
             vkCmdBindDescriptorSets(cmds,
                                     VK_PIPELINE_BIND_POINT_GRAPHICS,
                                     vk_interface->pipeline_layout,

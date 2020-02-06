@@ -1,10 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <memory_resource>
-#include <optional>
-#include <string>
-
 #include <glm/glm.hpp>
 #include <rx/core/map.h>
 #include <rx/core/optional.h>
