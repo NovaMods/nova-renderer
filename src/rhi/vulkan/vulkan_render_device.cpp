@@ -384,7 +384,7 @@ namespace nova::renderer::rhi {
                 // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip
                 // everything
 
-                VkAttachmentDescription desc = {};
+                VkAttachmentDescription desc;
                 desc.flags = 0;
                 desc.format = vk_swapchain->get_swapchain_format();
                 desc.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -397,7 +397,7 @@ namespace nova::renderer::rhi {
 
                 attachment_descriptions.push_back(desc);
 
-                VkAttachmentReference ref = {};
+                VkAttachmentReference ref;
 
                 ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                 ref.attachment = static_cast<uint32_t>(attachment_descriptions.size()) - 1;
@@ -407,7 +407,7 @@ namespace nova::renderer::rhi {
                 return false;
             }
 
-            VkAttachmentDescription desc = {};
+            VkAttachmentDescription desc;
             desc.flags = 0;
             desc.format = to_vk_format(attachment.pixel_format);
             desc.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -420,7 +420,7 @@ namespace nova::renderer::rhi {
 
             attachment_descriptions.push_back(desc);
 
-            VkAttachmentReference ref = {};
+            VkAttachmentReference ref;
 
             ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             ref.attachment = static_cast<uint32_t>(attachment_descriptions.size()) - 1;
@@ -537,7 +537,7 @@ namespace nova::renderer::rhi {
                     const auto first_image_info_idx = image_infos.size();
 
                     write.resources.each_fwd([&](const DescriptorResourceInfo& info) {
-                        VkDescriptorImageInfo vk_image_info = {};
+                        VkDescriptorImageInfo vk_image_info;
                         vk_image_info.imageView = image_view_for_image(info.image_info.image);
                         vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                         vk_image_info.sampler = static_cast<VulkanSampler*>(info.image_info.sampler)->sampler;
@@ -561,7 +561,7 @@ namespace nova::renderer::rhi {
                     write.resources.each_fwd([&](const DescriptorResourceInfo& info) {
                         const auto* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
 
-                        VkDescriptorBufferInfo vk_buffer_info = {};
+                        VkDescriptorBufferInfo vk_buffer_info;
                         vk_buffer_info.buffer = vk_buffer->buffer;
                         vk_buffer_info.offset = vk_buffer->memory.allocation_info.offset.b_count();
                         vk_buffer_info.range = vk_buffer->size.b_count();
@@ -584,7 +584,7 @@ namespace nova::renderer::rhi {
                     write.resources.each_fwd([&](const DescriptorResourceInfo& info) {
                         const auto* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
 
-                        VkDescriptorBufferInfo vk_buffer_info = {};
+                        VkDescriptorBufferInfo vk_buffer_info;
                         vk_buffer_info.buffer = vk_buffer->buffer;
                         vk_buffer_info.offset = vk_buffer->memory.allocation_info.offset.b_count();
                         vk_buffer_info.range = vk_buffer->size.b_count();
@@ -700,9 +700,9 @@ namespace nova::renderer::rhi {
 
         if(data.tessellation_evaluation_shader) {
             logger(rx::log::level::k_verbose, "Compiling tessellation_evaluation module");
-            const auto tessellation_evaulation_module = create_shader_module(data.tessellation_evaluation_shader->source);
-            if(tessellation_evaulation_module) {
-                shader_modules.insert(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, *tessellation_evaulation_module);
+            const auto tessellation_evaluation_module = create_shader_module(data.tessellation_evaluation_shader->source);
+            if(tessellation_evaluation_module) {
+                shader_modules.insert(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, *tessellation_evaluation_module);
             } else {
                 return ntl::Result<Pipeline*>(ntl::NovaError("Could not geometry vertex module"));
             }
@@ -1081,7 +1081,6 @@ namespace nova::renderer::rhi {
             image_view_create_info.subresourceRange.baseMipLevel = 0;
             image_view_create_info.subresourceRange.levelCount = 1;
 
-            auto vk_alloc = wrap_allocator(allocator);
             vkCreateImageView(device, &image_view_create_info, &vk_alloc, &image->image_view);
 
             return image;
@@ -1679,7 +1678,7 @@ namespace nova::renderer::rhi {
         return pools_by_queue;
     }
 
-    uint32_t VulkanRenderDevice::find_memory_type_with_flags(const uint32_t search_flags, const MemorySearchMode search_mode) {
+    uint32_t VulkanRenderDevice::find_memory_type_with_flags(const uint32_t search_flags, const MemorySearchMode search_mode) const {
         for(uint32_t i = 0; i < gpu.memory_properties.memoryTypeCount; i++) {
             const VkMemoryType& memory_type = gpu.memory_properties.memoryTypes[i];
             switch(search_mode) {
