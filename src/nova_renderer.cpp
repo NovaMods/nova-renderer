@@ -163,6 +163,8 @@ namespace nova::renderer {
 
         create_global_sync_objects();
 
+        create_global_samplers();
+
         create_resource_storage();
 
         create_builtin_render_targets();
@@ -720,6 +722,9 @@ namespace nova::renderer {
         for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
             frame_fences[i] = fences[i];
         }
+    }
+
+    void NovaRenderer::create_global_samplers() { 
     }
 
     void NovaRenderer::create_resource_storage() {

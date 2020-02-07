@@ -242,6 +242,8 @@ namespace nova::renderer {
 
         void create_global_sync_objects();
 
+        void create_global_samplers();
+
         void create_resource_storage();
 
         void create_builtin_render_targets() const;
