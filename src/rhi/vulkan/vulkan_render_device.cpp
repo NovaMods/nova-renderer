@@ -1105,9 +1105,15 @@ namespace nova::renderer::rhi {
         return semaphore;
     }
 
-    rx::vector<Semaphore*> VulkanRenderDevice::create_semaphores(uint32_t num_semaphores, rx::memory::allocator* allocator) {
-        // TODO
-        return rx::vector<Semaphore*>();
+    rx::vector<Semaphore*> VulkanRenderDevice::create_semaphores(const uint32_t num_semaphores, rx::memory::allocator* allocator) {
+        auto semaphores = rx::vector<Semaphore*>{allocator};
+        semaphores.reserve(num_semaphores);
+
+        for(uint32_t i = 0; i < num_semaphores; i++) {
+            semaphores.emplace_back(create_semaphore(allocator));
+        }
+
+        return semaphores;
     }
 
     Fence* VulkanRenderDevice::create_fence(const bool signaled, rx::memory::allocator* allocator) {
