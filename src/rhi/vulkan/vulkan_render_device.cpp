@@ -1096,7 +1096,13 @@ namespace nova::renderer::rhi {
     Semaphore* VulkanRenderDevice::create_semaphore(rx::memory::allocator* allocator) {
         auto* semaphore = allocator->create<VulkanSemaphore>();
 
-        return nullptr;
+        VkSemaphoreCreateInfo create_info = {};
+        create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        auto vk_alloc = wrap_allocator(allocator);
+        vkCreateSemaphore(device, &create_info, &vk_alloc, &semaphore->semaphore);
+
+        return semaphore;
     }
 
     rx::vector<Semaphore*> VulkanRenderDevice::create_semaphores(uint32_t num_semaphores, rx::memory::allocator* allocator) {
