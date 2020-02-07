@@ -527,7 +527,9 @@ namespace nova::renderer::rhi {
 
             switch(write.type) {
                 case DescriptorType::CombinedImageSampler: {
-                    const auto write_begin_idx = image_infos.size();
+                    // We have a single array for all the image infos, so we need to save the index of the image info for this descriptor
+                    // update
+                    const auto first_image_info_idx = image_infos.size();
 
                     write.resources.each_fwd([&](const DescriptorResourceInfo& info) {
                         VkDescriptorImageInfo vk_image_info = {};
@@ -539,15 +541,17 @@ namespace nova::renderer::rhi {
                     });
 
                     vk_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    vk_write.pImageInfo = &image_infos[write_begin_idx];
-                    
+                    vk_write.pImageInfo = &image_infos[first_image_info_idx];
+
                     logger(rx::log::level::k_verbose, "Updating CombinedImageSampler descriptor set %x", vk_write.dstSet);
 
                     vk_writes.push_back(vk_write);
                 } break;
 
                 case DescriptorType::UniformBuffer: {
-                    const auto write_begin_idx = image_infos.size();
+                    // We have a single array for all the buffer infos, so we need to save the index of the buffer info for this descriptor
+                    // update
+                    const auto first_buffer_info_idx = buffer_infos.size();
 
                     write.resources.each_fwd([&](const DescriptorResourceInfo& info) {
                         const auto* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
@@ -561,15 +565,84 @@ namespace nova::renderer::rhi {
                     });
 
                     vk_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                    vk_write.pBufferInfo = &buffer_infos[write_begin_idx];
+                    vk_write.pBufferInfo = &buffer_infos[first_buffer_info_idx];
 
                     logger(rx::log::level::k_verbose, "Updating UniformBuffer descriptor set %x", vk_write.dstSet);
 
                     vk_writes.push_back(vk_write);
                 } break;
 
+                case DescriptorType::StorageBuffer: {
+                    // We have a single array for all the buffer infos, so we need to save the index of the buffer info for this descriptor
+                    // update
+                    const auto first_buffer_info_idx = buffer_infos.size();
+                    write.resources.each_fwd([&](const DescriptorResourceInfo& info) {
+                        const auto* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
+
+                        VkDescriptorBufferInfo vk_buffer_info = {};
+                        vk_buffer_info.buffer = vk_buffer->buffer;
+                        vk_buffer_info.offset = vk_buffer->memory.allocation_info.offset.b_count();
+                        vk_buffer_info.range = vk_buffer->size.b_count();
+
+                        buffer_infos.emplace_back(vk_buffer_info);
+                    });
+
+                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    vk_write.pBufferInfo = &buffer_infos[first_buffer_info_idx];
+
+                    logger(rx::log::level::k_verbose, "Updating StorageBuffer descriptor set %x", vk_write.dstSet);
+
+                    vk_writes.push_back(vk_write);
+                } break;
+
+                case DescriptorType::Texture: {
+                    // We have a single array for all the image infos, so we need to save the index of the image info for this descriptor
+                    // update
+                    const auto first_image_info_idx = image_infos.size();
+
+                    write.resources.each_fwd([&](const DescriptorResourceInfo& info) {
+                        VkDescriptorImageInfo vk_image_info = {};
+                        vk_image_info.imageView = image_view_for_image(info.image_info.image);
+                        vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+                        image_infos.emplace_back(vk_image_info);
+                    });
+
+                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    vk_write.pImageInfo = &image_infos[first_image_info_idx];
+
+                    logger(rx::log::level::k_verbose, "Updating Texture descriptor set %x", vk_write.dstSet);
+
+                    vk_writes.push_back(vk_write);
+                } break;
+
+                case DescriptorType::Sampler: {
+                    // We have a single array for all the image infos, so we need to save the index of the image info for this descriptor
+                    // update
+                    // Also we store the sampler infos in the same array as the image infos and it's weird
+                    const auto first_image_info_idx = image_infos.size();
+
+                    write.resources.each_fwd([&](const DescriptorResourceInfo& info) {
+                        VkDescriptorImageInfo vk_image_info = {};
+                        vk_image_info.sampler = static_cast<VulkanSampler*>(info.image_info.sampler)->sampler;
+
+                        image_infos.emplace_back(vk_image_info);
+                    });
+
+                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    vk_write.pImageInfo = &image_infos[first_image_info_idx];
+
+                    logger(rx::log::level::k_verbose, "Updating Sampler descriptor set %x", vk_write.dstSet);
+
+                    vk_writes.push_back(vk_write);
+
+                } break;
+
                 default:
-                    logger(rx::log::level::k_verbose, "Don't know how to update %s descriptor set %x", descriptor_type_to_string(write.type), vk_write.dstSet);
+                    logger(rx::log::level::k_verbose,
+                           "Don't know how to update %s descriptor set %x",
+                           descriptor_type_to_string(write.type),
+                           vk_write.dstSet);
             }
         });
 
@@ -900,6 +973,27 @@ namespace nova::renderer::rhi {
         uint8_t* mapped_bytes = static_cast<uint8_t*>(*heap_mappings.find(memory->memory)) + allocation_info.offset.b_count() +
                                 offset.b_count();
         memcpy(mapped_bytes, data, num_bytes.b_count());
+    }
+
+    Sampler* VulkanRenderDevice::create_sampler(const SamplerCreateInfo& create_info, rx::memory::allocator* allocator) {
+        auto* sampler = allocate_object<VulkanSampler>(allocator);
+
+        VkSamplerCreateInfo vk_create_info = {};
+        vk_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        vk_create_info.minFilter = to_vk_filter(create_info.min_filter);
+        vk_create_info.magFilter = to_vk_filter(create_info.mag_filter);
+        vk_create_info.addressModeU = to_vk_address_mode(create_info.x_wrap_mode);
+        vk_create_info.addressModeV = to_vk_address_mode(create_info.y_wrap_mode);
+        vk_create_info.addressModeW = to_vk_address_mode(create_info.z_wrap_mode);
+        vk_create_info.mipLodBias = create_info.mip_bias;
+        vk_create_info.anisotropyEnable = create_info.enable_anisotropy ? VK_TRUE : VK_FALSE;
+        vk_create_info.maxAnisotropy = create_info.max_anisotropy;
+        vk_create_info.minLod = create_info.min_lod;
+        vk_create_info.maxLod = create_info.max_lod;
+
+        vkCreateSampler(device, &vk_create_info, nullptr, &sampler->sampler);
+
+        return sampler;
     }
 
     Image* VulkanRenderDevice::create_image(const shaderpack::TextureCreateInfo& info, rx::memory::allocator* allocator) {
@@ -1638,7 +1732,11 @@ namespace nova::renderer::rhi {
             descriptor_binding.descriptorCount = binding.count;
             descriptor_binding.stageFlags = to_vk_shader_stage_flags(binding.stages);
 
-            logger(rx::log::level::k_verbose, "Descriptor %u.%u is type %s", binding.set, binding.binding, descriptor_type_to_string(binding.type));
+            logger(rx::log::level::k_verbose,
+                   "Descriptor %u.%u is type %s",
+                   binding.set,
+                   binding.binding,
+                   descriptor_type_to_string(binding.type));
 
             if(binding.is_unbounded) {
                 binding_flags_by_set[binding.set][binding.binding] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT;

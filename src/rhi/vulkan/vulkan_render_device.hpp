@@ -99,6 +99,8 @@ namespace nova::renderer::rhi {
 
         void write_data_to_buffer(const void* data, mem::Bytes num_bytes, mem::Bytes offset, const Buffer* buffer) override;
 
+        Sampler* create_sampler(const SamplerCreateInfo& create_info, rx::memory::allocator* allocator) override;
+
         Image* create_image(const shaderpack::TextureCreateInfo& info, rx::memory::allocator* allocator) override;
 
         Semaphore* create_semaphore(rx::memory::allocator* allocator) override;

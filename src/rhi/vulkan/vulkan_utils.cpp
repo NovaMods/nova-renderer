@@ -237,6 +237,44 @@ namespace nova::renderer::rhi {
         }
     }
 
+    VkFilter to_vk_filter(const TextureFilter filter) {
+        switch(filter) {
+            case TextureFilter::Point:
+                return VK_FILTER_NEAREST;
+
+            case TextureFilter::Bilinear:
+                return VK_FILTER_LINEAR;
+
+            case TextureFilter::Trilinear:
+                return VK_FILTER_CUBIC_IMG;
+
+            default:
+                return VK_FILTER_NEAREST;
+        }
+    }
+
+    VkSamplerAddressMode to_vk_address_mode(const TextureCoordWrapMode wrap_mode) {
+        switch(wrap_mode) {
+            case TextureCoordWrapMode::Repeat:
+                return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+            case TextureCoordWrapMode::MirroredRepeat:
+                return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+
+            case TextureCoordWrapMode::ClampToEdge:
+                return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+
+            case TextureCoordWrapMode::ClampToBorder:
+                return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+
+            case TextureCoordWrapMode::MirrorClampToEdge:
+                return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
+
+            default:
+                return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        }
+    }
+
     VkDescriptorType to_vk_descriptor_type(const DescriptorType type) {
         switch(type) {
             case DescriptorType::CombinedImageSampler:

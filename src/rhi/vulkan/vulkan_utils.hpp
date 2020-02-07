@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 
@@ -24,6 +22,10 @@ namespace nova::renderer::rhi {
 
     VkFormat to_vk_format(shaderpack::PixelFormatEnum format);
 
+    VkFilter to_vk_filter(TextureFilter filter);
+
+    VkSamplerAddressMode to_vk_address_mode(TextureCoordWrapMode wrap_mode);
+
     VkDescriptorType to_vk_descriptor_type(DescriptorType type);
 
     VkShaderStageFlags to_vk_shader_stage_flags(ShaderStage flags);
@@ -34,7 +36,37 @@ namespace nova::renderer::rhi {
 
     VkFormat to_vk_vertex_format(VertexFieldFormat field);
 
+    /*!
+     * \brief Wraps a Rex allocator so the Vulkan driver can use it
+     */
+    inline VkAllocationCallbacks wrap_allocator(rx::memory::allocator* allocator);
+
     bool operator&(const ShaderStage& lhs, const ShaderStage& rhs);
+
+    inline VkAllocationCallbacks wrap_allocator(rx::memory::allocator* allocator) {
+        VkAllocationCallbacks callbacks{};
+
+        callbacks.pUserData = allocator;
+        callbacks.pfnAllocation =
+            [](void* user_data, const size_t size, size_t /* alignment */, VkSystemAllocationScope /* allocation_scope */) -> void* {
+            auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);
+            return allocator->allocate(size);
+        };
+        callbacks.pfnReallocation = [](void* user_data,
+                                       void* original,
+                                       const size_t size,
+                                       size_t /* alignment */,
+                                       VkSystemAllocationScope /* allocation_scope */) -> void* {
+            auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);
+            return allocator->reallocate(reinterpret_cast<rx_byte*>(original), size);
+        };
+        callbacks.pfnFree = [](void* user_data, void* memory) {
+            auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);
+            allocator->deallocate(reinterpret_cast<rx_byte*>(memory));
+        };
+
+        return callbacks;
+    }
 } // namespace nova::renderer::rhi
 
 // Only validate errors in debug mode

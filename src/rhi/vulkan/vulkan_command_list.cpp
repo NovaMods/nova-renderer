@@ -7,7 +7,7 @@
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer::rhi {
-    RX_LOG("VulkanCommandList", logger);
+    RX_LOG("VkCmdLst", logger);
 
     VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderDevice* render_device)
         : cmds(cmds), render_device(*render_device) {

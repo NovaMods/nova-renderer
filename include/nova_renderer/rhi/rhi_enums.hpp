@@ -159,6 +159,20 @@ namespace nova::renderer::rhi {
         Image,
     };
 
+    enum class TextureFilter {
+        Point,
+        Bilinear,
+        Trilinear,
+    };
+
+    enum class TextureCoordWrapMode {
+        Repeat,
+        MirroredRepeat,
+        ClampToEdge,
+        ClampToBorder,
+        MirrorClampToEdge,
+    };
+
     bool is_depth_format(PixelFormat format);
 
     uint32_t get_byte_size(VertexFieldFormat format);

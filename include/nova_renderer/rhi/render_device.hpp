@@ -108,8 +108,8 @@ namespace nova::renderer::rhi {
             const rx::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
             rx::memory::allocator* allocator = nullptr) = 0;
 
-        [[nodiscard]] virtual DescriptorPool* create_descriptor_pool(
-            const rx::map<DescriptorType, uint32_t>& descriptor_capacity, rx::memory::allocator* allocator) = 0;
+        [[nodiscard]] virtual DescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
+                                                                     rx::memory::allocator* allocator) = 0;
 
         [[nodiscard]] virtual rx::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
                                                                                 DescriptorPool* pool,
@@ -145,6 +145,11 @@ namespace nova::renderer::rhi {
          * \param buffer The buffer to write to
          */
         virtual void write_data_to_buffer(const void* data, mem::Bytes num_bytes, mem::Bytes offset, const Buffer* buffer) = 0;
+
+        /*!
+         * \brief Creates a new Sampler object
+         */
+        [[nodiscard]] virtual Sampler* create_sampler(const SamplerCreateInfo& create_info, rx::memory::allocator* allocator = nullptr) = 0;
 
         /*!
          * \brief Creates an empty image

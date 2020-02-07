@@ -29,6 +29,23 @@ namespace nova::renderer::rhi {
         bool is_dynamic = true;
     };
 
+    struct SamplerCreateInfo {
+        TextureFilter min_filter = TextureFilter::Point;
+        TextureFilter mag_filter = TextureFilter::Point;
+
+        TextureCoordWrapMode x_wrap_mode = TextureCoordWrapMode::ClampToEdge;
+        TextureCoordWrapMode y_wrap_mode = TextureCoordWrapMode::ClampToEdge;
+        TextureCoordWrapMode z_wrap_mode = TextureCoordWrapMode::ClampToEdge;
+
+        float mip_bias = 0;
+
+        bool enable_anisotropy = false;
+        float max_anisotropy = 1;
+
+        float min_lod = 0;
+        float max_lod = 0;
+    };
+
     struct Sampler {};
 
     struct TextureCreateInfo {
