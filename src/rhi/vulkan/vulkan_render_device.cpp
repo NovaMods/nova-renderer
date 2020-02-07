@@ -991,7 +991,8 @@ namespace nova::renderer::rhi {
         vk_create_info.minLod = create_info.min_lod;
         vk_create_info.maxLod = create_info.max_lod;
 
-        vkCreateSampler(device, &vk_create_info, nullptr, &sampler->sampler);
+        auto alloc_calls = wrap_allocator(allocator);
+        vkCreateSampler(device, &vk_create_info, &alloc_calls, &sampler->sampler);
 
         return sampler;
     }
@@ -1084,7 +1085,8 @@ namespace nova::renderer::rhi {
     }
 
     Semaphore* VulkanRenderDevice::create_semaphore(rx::memory::allocator* allocator) {
-        // TODO
+        auto* semaphore = allocate_object<VulkanSampler>(allocator);
+
         return nullptr;
     }
 
