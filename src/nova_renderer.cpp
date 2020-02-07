@@ -724,7 +724,11 @@ namespace nova::renderer {
         }
     }
 
-    void NovaRenderer::create_global_samplers() { 
+    void NovaRenderer::create_global_samplers() {
+        {
+            // Default sampler create info will give us a delicious point sampler
+            point_sampler = device->create_sampler({}, global_allocator);
+        }
     }
 
     void NovaRenderer::create_resource_storage() {
