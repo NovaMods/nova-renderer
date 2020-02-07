@@ -513,13 +513,13 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::update_descriptor_sets(rx::vector<DescriptorSetWrite>& writes) {
-        rx::vector<VkWriteDescriptorSet> vk_writes(internal_allocator);
+        rx::vector<VkWriteDescriptorSet> vk_writes{internal_allocator};
         vk_writes.reserve(writes.size());
 
-        rx::vector<VkDescriptorImageInfo> image_infos(internal_allocator);
+        rx::vector<VkDescriptorImageInfo> image_infos{internal_allocator};
         image_infos.reserve(writes.size());
 
-        rx::vector<VkDescriptorBufferInfo> buffer_infos(internal_allocator);
+        rx::vector<VkDescriptorBufferInfo> buffer_infos{internal_allocator};
         buffer_infos.reserve(writes.size());
 
         writes.each_fwd([&](const DescriptorSetWrite& write) {
@@ -613,7 +613,7 @@ namespace nova::renderer::rhi {
                         image_infos.emplace_back(vk_image_info);
                     });
 
-                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
                     vk_write.pImageInfo = &image_infos[first_image_info_idx];
 
                     logger(rx::log::level::k_verbose, "Updating Texture descriptor set %x", vk_write.dstSet);
@@ -629,12 +629,12 @@ namespace nova::renderer::rhi {
 
                     write.resources.each_fwd([&](const DescriptorResourceInfo& info) {
                         VkDescriptorImageInfo vk_image_info = {};
-                        vk_image_info.sampler = static_cast<VulkanSampler*>(info.image_info.sampler)->sampler;
+                        vk_image_info.sampler = static_cast<VulkanSampler*>(info.sampler_info.sampler)->sampler;
 
                         image_infos.emplace_back(vk_image_info);
                     });
 
-                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
                     vk_write.pImageInfo = &image_infos[first_image_info_idx];
 
                     logger(rx::log::level::k_verbose, "Updating Sampler descriptor set %x", vk_write.dstSet);
