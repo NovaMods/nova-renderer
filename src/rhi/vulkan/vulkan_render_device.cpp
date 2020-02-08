@@ -497,11 +497,15 @@ namespace nova::renderer::rhi {
         alloc_info.descriptorSetCount = static_cast<uint32_t>(vk_pipeline_interface->layouts_by_set.size());
         alloc_info.pSetLayouts = vk_pipeline_interface->layouts_by_set.data();
 
-        rx::vector<VkDescriptorSet> sets{internal_allocator};
+        VkDescriptorSetVariableDescriptorCountAllocateInfo set_counts = {};
+        set_counts.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+
+
+        rx::vector<VkDescriptorSet> sets{allocator};
         sets.resize(vk_pipeline_interface->layouts_by_set.size());
         vkAllocateDescriptorSets(device, &alloc_info, sets.data());
 
-        rx::vector<DescriptorSet*> final_sets(allocator);
+        rx::vector<DescriptorSet*> final_sets{allocator};
         final_sets.reserve(sets.size());
         sets.each_fwd([&](const VkDescriptorSet set) {
             auto* vk_set = allocator->create<VulkanDescriptorSet>();
@@ -1356,7 +1360,7 @@ namespace nova::renderer::rhi {
         application_info.pApplicationName = settings.settings.vulkan.application_name;
         application_info.applicationVersion = VK_MAKE_VERSION(version.major, version.minor, version.patch);
         application_info.pEngineName = "Nova Renderer 0.9";
-        application_info.apiVersion = VK_API_VERSION_1_1;
+        application_info.apiVersion = VK_API_VERSION_1_2;
 
         VkInstanceCreateInfo create_info;
         create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -1468,13 +1472,13 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::create_device_and_queues() {
-        rx::vector<char*> device_extensions;
+        rx::vector<char*> device_extensions{internal_allocator};
         device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
         device_extensions.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
 
         uint32_t device_count;
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
-        auto physical_devices = rx::vector<VkPhysicalDevice>(internal_allocator, device_count);
+        auto physical_devices = rx::vector<VkPhysicalDevice>{internal_allocator, device_count};
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, physical_devices.data()));
 
         uint32_t graphics_family_idx = 0xFFFFFFFF;
@@ -1566,6 +1570,7 @@ namespace nova::renderer::rhi {
         physical_device_features.geometryShader = VK_TRUE;
         physical_device_features.tessellationShader = VK_TRUE;
         physical_device_features.samplerAnisotropy = VK_TRUE;
+        physical_device_features.shaderSampledImageArrayDynamicIndexing = VK_TRUE;
 
         VkDeviceCreateInfo device_create_info{};
         device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -1584,11 +1589,12 @@ namespace nova::renderer::rhi {
 
         // Set up descriptor indexing
         // Currently Nova only cares about indexing for texture descriptors
-        VkPhysicalDeviceDescriptorIndexingFeaturesEXT descriptor_indexing_features = {};
-        descriptor_indexing_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
+        VkPhysicalDeviceDescriptorIndexingFeatures descriptor_indexing_features = {};
+        descriptor_indexing_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
         descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
         descriptor_indexing_features.runtimeDescriptorArray = true;
         descriptor_indexing_features.descriptorBindingVariableDescriptorCount = VK_TRUE;
+        descriptor_indexing_features.descriptorBindingPartiallyBound = VK_TRUE;
         device_create_info.pNext = &descriptor_indexing_features;
 
         auto vk_alloc = wrap_allocator(internal_allocator);
@@ -1730,7 +1736,7 @@ namespace nova::renderer::rhi {
         });
 
         rx::vector<rx::vector<VkDescriptorSetLayoutBinding>> bindings_by_set{allocator};
-        rx::vector<rx::vector<VkDescriptorBindingFlagsEXT>> binding_flags_by_set{allocator};
+        rx::vector<rx::vector<VkDescriptorBindingFlags>> binding_flags_by_set{allocator};
         bindings_by_set.reserve(num_sets);
         binding_flags_by_set.reserve(num_sets);
 
@@ -1764,7 +1770,8 @@ namespace nova::renderer::rhi {
                    descriptor_type_to_string(binding.type));
 
             if(binding.is_unbounded) {
-                binding_flags_by_set[binding.set][binding.binding] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT;
+                binding_flags_by_set[binding.set][binding.binding] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+                                                                     VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
 
                 logger(rx::log::level::k_verbose, "Descriptor %u.%u is unbounded", binding.set, binding.binding);
 
@@ -1777,10 +1784,10 @@ namespace nova::renderer::rhi {
             return true;
         });
 
-        rx::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos(allocator);
+        rx::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos{allocator};
         dsl_create_infos.reserve(bindings_by_set.size());
 
-        rx::vector<VkDescriptorSetLayoutBindingFlagsCreateInfoEXT> flag_infos(allocator);
+        rx::vector<VkDescriptorSetLayoutBindingFlagsCreateInfo> flag_infos{allocator};
         flag_infos.reserve(bindings_by_set.size());
 
         // We may make bindings_by_set much larger than it needs to be is there's multiple descriptor bindings per set. Thus, only iterate
@@ -1792,8 +1799,8 @@ namespace nova::renderer::rhi {
             create_info.pBindings = bindings.data();
 
             const auto& flags = binding_flags_by_set[dsl_create_infos.size()];
-            VkDescriptorSetLayoutBindingFlagsCreateInfoEXT binding_flags = {};
-            binding_flags.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT;
+            VkDescriptorSetLayoutBindingFlagsCreateInfo binding_flags = {};
+            binding_flags.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
             binding_flags.bindingCount = static_cast<uint32_t>(flags.size());
             binding_flags.pBindingFlags = flags.data();
             flag_infos.emplace_back(binding_flags);
