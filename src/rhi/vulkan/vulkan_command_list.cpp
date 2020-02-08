@@ -20,6 +20,16 @@ namespace nova::renderer::rhi {
         vkBeginCommandBuffer(cmds, &begin_info);
     }
 
+    void VulkanCommandList::set_debug_name(const rx::string& name) {
+        VkDebugUtilsObjectNameInfoEXT vk_name{};
+        vk_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        vk_name.objectType = VK_OBJECT_TYPE_COMMAND_BUFFER;
+        vk_name.objectHandle = reinterpret_cast<uint64_t>(cmds);
+        vk_name.pObjectName = name.data();
+
+        render_device.vkSetDebugUtilsObjectNameEXT(render_device.device, &vk_name);
+    }
+
     void VulkanCommandList::resource_barriers(const PipelineStage stages_before_barrier,
                                               const PipelineStage stages_after_barrier,
                                               const rx::vector<ResourceBarrier>& barriers) {

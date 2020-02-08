@@ -88,6 +88,7 @@ namespace nova::renderer {
             Buffer* staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
 
             CommandList* cmds = device.create_command_list(0, QueueType::Transfer, CommandList::Level::Primary, allocator);
+            cmds->set_debug_name(rx::string::format("UploadTo%s", name));
 
             ResourceBarrier initial_texture_barrier = {};
             initial_texture_barrier.resource_to_barrier = resource.image;
@@ -168,7 +169,7 @@ namespace nova::renderer {
         if(image) {
             // Barrier it into the correct format and return it
 
-            image->is_dynamic = false;
+            image->is_dynamic = true;
 
             TextureResource resource = {};
             resource.name = name;
@@ -176,6 +177,49 @@ namespace nova::renderer {
             resource.height = height;
             resource.width = width;
             resource.image = image;
+
+            {
+                CommandList* cmds = device.create_command_list(0, QueueType::Graphics, CommandList::Level::Primary, allocator);
+                cmds->set_debug_name(rx::string::format("ChangeFormatOf%s", name));
+
+                ResourceBarrier initial_texture_barrier = {};
+                initial_texture_barrier.resource_to_barrier = resource.image;
+                initial_texture_barrier.old_state = ResourceState::Undefined;
+                initial_texture_barrier.source_queue = QueueType::Graphics;
+                initial_texture_barrier.destination_queue = QueueType::Graphics;
+
+                PipelineStage stage_after_barrier;
+
+                if(is_depth_format(pixel_format)) {
+                    initial_texture_barrier.image_memory_barrier.aspect = ImageAspect::Depth;
+                    initial_texture_barrier.new_state = ResourceState::DepthWrite;
+                    initial_texture_barrier.access_before_barrier = ResourceAccess::MemoryWrite;
+                    initial_texture_barrier.access_after_barrier = ResourceAccess::DepthStencilAttachmentRead;
+
+                    stage_after_barrier = PipelineStage::EarlyFragmentTests;
+
+                } else {
+                    initial_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
+                    initial_texture_barrier.new_state = ResourceState::RenderTarget;
+                    initial_texture_barrier.access_before_barrier = ResourceAccess::MemoryWrite;
+                    initial_texture_barrier.access_after_barrier = ResourceAccess::ColorAttachmentRead;
+
+                    stage_after_barrier = PipelineStage::ColorAttachmentOutput;
+                }
+
+                rx::vector<ResourceBarrier> initial_barriers{allocator};
+                initial_barriers.push_back(initial_texture_barrier);
+                cmds->resource_barriers(PipelineStage::TopOfPipe, stage_after_barrier, initial_barriers);
+
+                Fence* upload_done_fence = device.create_fence(false, allocator);
+                device.submit_command_list(cmds, QueueType::Graphics, upload_done_fence);
+
+                // Be sure that the data copy is complete, so that this method doesn't return before the GPU is done with the staging buffer
+                rx::vector<Fence*> upload_done_fences{allocator};
+                upload_done_fences.push_back(upload_done_fence);
+                device.wait_for_fences(upload_done_fences);
+                device.destroy_fences(upload_done_fences, allocator);
+            }
 
             render_targets.insert(name, resource);
 

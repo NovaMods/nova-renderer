@@ -39,6 +39,11 @@ namespace nova::renderer::rhi {
         CommandList& operator=(const CommandList& other) = delete;
 
         /*!
+         * \brief Sets the debug name of this command list, so that API debugging tools can give you a nice name
+         */
+        virtual void set_debug_name(const rx::string& name) = 0;
+
+        /*!
          * \brief Inserts a barrier so that all access to a resource before the barrier is resolved before any access
          * to the resource after the barrier
          *

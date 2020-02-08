@@ -20,6 +20,8 @@ namespace nova::renderer::rhi {
 
         ~VulkanCommandList() override = default;
 
+        void set_debug_name(const rx::string& name) override;
+
         void resource_barriers(PipelineStage stages_before_barrier,
                                PipelineStage stages_after_barrier,
                                const rx::vector<ResourceBarrier>& barriers) override;
@@ -50,7 +52,7 @@ namespace nova::renderer::rhi {
 
         void upload_data_to_image(
             Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) override;
-
+       
     private:
         const VulkanRenderDevice& render_device;
     };

@@ -200,6 +200,7 @@ namespace nova::renderer {
                                                              rhi::QueueType::Graphics,
                                                              rhi::CommandList::Level::Primary,
                                                              frame_allocator);
+        cmds->set_debug_name("RendergraphCommands");
 
         // This may or may not work well lmao
         proc_meshes.each_value([&](ProceduralMesh& proc_mesh) { proc_mesh.record_commands_to_upload_data(cmds, cur_frame_idx); });
@@ -259,6 +260,7 @@ namespace nova::renderer {
                                                                                rhi::QueueType::Transfer,
                                                                                rhi::CommandList::Level::Primary,
                                                                                global_allocator);
+            vertex_upload_cmds->set_debug_name("VertexDataUpload");
             vertex_upload_cmds->copy_buffer(vertex_buffer, 0, staging_vertex_buffer, 0, vertex_buffer_create_info.size);
 
             rhi::ResourceBarrier vertex_barrier = {};
@@ -299,6 +301,7 @@ namespace nova::renderer {
                                                                                 rhi::QueueType::Transfer,
                                                                                 rhi::CommandList::Level::Primary,
                                                                                 global_allocator);
+            indices_upload_cmds->set_debug_name("IndexDataUpload");
             indices_upload_cmds->copy_buffer(index_buffer, 0, staging_index_buffer, 0, index_buffer_create_info.size);
 
             rhi::ResourceBarrier index_barrier = {};
