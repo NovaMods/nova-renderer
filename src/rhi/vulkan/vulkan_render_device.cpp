@@ -331,7 +331,9 @@ namespace nova::renderer::rhi {
         auto* pipeline_interface = allocator->create<VulkanPipelineInterface>();
         pipeline_interface->bindings = bindings;
 
-        pipeline_interface->layouts_by_set = create_descriptor_set_layouts(bindings, allocator);
+        pipeline_interface->layouts_by_set = create_descriptor_set_layouts(bindings,
+                                                                           pipeline_interface->variable_descriptor_set_counts,
+                                                                           allocator);
 
         VkPipelineLayoutCreateInfo pipeline_layout_create_info;
         pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -497,9 +499,15 @@ namespace nova::renderer::rhi {
         alloc_info.descriptorSetCount = static_cast<uint32_t>(vk_pipeline_interface->layouts_by_set.size());
         alloc_info.pSetLayouts = vk_pipeline_interface->layouts_by_set.data();
 
+        rx::vector<uint32_t> counts{allocator};
+        counts.reserve(vk_pipeline_interface->layouts_by_set.size());
+
         VkDescriptorSetVariableDescriptorCountAllocateInfo set_counts = {};
         set_counts.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+        set_counts.descriptorSetCount = vk_pipeline_interface->variable_descriptor_set_counts.size();
+        set_counts.pDescriptorCounts = vk_pipeline_interface->variable_descriptor_set_counts.data();
 
+        alloc_info.pNext = &set_counts;
 
         rx::vector<VkDescriptorSet> sets{allocator};
         sets.resize(vk_pipeline_interface->layouts_by_set.size());
@@ -1244,7 +1252,7 @@ namespace nova::renderer::rhi {
         VkCommandBuffer new_buffer;
         vkAllocateCommandBuffers(device, &create_info, &new_buffer);
 
-        auto* list =  allocator->create<VulkanCommandList>(new_buffer, this);
+        auto* list = allocator->create<VulkanCommandList>(new_buffer, this);
 
         return list;
     }
@@ -1706,7 +1714,9 @@ namespace nova::renderer::rhi {
     }
 
     rx::vector<VkDescriptorSetLayout> VulkanRenderDevice::create_descriptor_set_layouts(
-        const rx::map<rx::string, ResourceBindingDescription>& all_bindings, rx::memory::allocator* allocator) const {
+        const rx::map<rx::string, ResourceBindingDescription>& all_bindings,
+        rx::vector<uint32_t>& variable_descriptor_counts,
+        rx::memory::allocator* allocator) const {
 
         /*
          * A few tasks to accomplish:
@@ -1726,6 +1736,8 @@ namespace nova::renderer::rhi {
                 num_sets = rx::algorithm::max(num_sets, desc.set + 1);
             }
         });
+
+        variable_descriptor_counts.resize(num_sets, 0);
 
         // Some precalculations so we know how much room we actually need
         rx::vector<uint32_t> num_bindings_per_set{allocator};
@@ -1772,6 +1784,9 @@ namespace nova::renderer::rhi {
             if(binding.is_unbounded) {
                 binding_flags_by_set[binding.set][binding.binding] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
                                                                      VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+
+                // Record the maximum number of descriptors in the variable size array in this set
+                variable_descriptor_counts[binding.set] = binding.count;
 
                 logger(rx::log::level::k_verbose, "Descriptor %u.%u is unbounded", binding.set, binding.binding);
 

@@ -53,6 +53,8 @@ namespace nova::renderer::rhi {
          * The index in the vector is the index of the set
          */
         rx::vector<VkDescriptorSetLayout> layouts_by_set;
+
+        rx::vector<uint32_t> variable_descriptor_set_counts;
     };
 
     struct VulkanPipeline : Pipeline {
