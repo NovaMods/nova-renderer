@@ -20,6 +20,8 @@ I tried having my resoruce own their own descriptor sets. This initially made se
 
 ## Descriptor Indexing Guide
 
+Note: This guide is written for Vulkan 1.2, wher edescriptor indexing is a core feature. If you're using an older verion of Vulkan, you need to enable the descriptor indexing extension and use the `EXT` versions of all the types and constants mentioned here
+
 ### Creating your VkDevice
 
 You need to enable descriptor indexing features through the `VkPhysicalDeviceDescriptorIndexingFeatures` struct. This struct should be in the `pNext` chain of your `VkDeviceCreateInfo`. You should only enable the features that you'll actually need. Nova enables dynamic indexing of sampled image arrays, variable descriptor counts, and partially bound descriptors. This allows me to have a single large array of textures to use for texture streaming
@@ -41,7 +43,7 @@ VkDevice device;
 vkCreateDevice(phys_device, &device_create_info, nullptr, &device);
 ```
 
-### Creating the descriptor sets
+### Creating the descriptor set layout
 
 #### Unbounded (variable size) descriptor arrays
 
@@ -55,7 +57,7 @@ When one of the descriptors is an unbounded array, the `descriptorCount` member 
 
 #### Partially populated (bound) descriptors
 
-We enabled partially populated descriptors when creating our VkDevice, but we also have to tell Vulkan which descriptors we plan to partially populate
+We enabled partially populated descriptors when creating our VkDevice, but we also have to tell Vulkan which descriptors we plan to partially populate. Doing this is simple: add the `VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT` flag to your `VkDescriptorSetLayoutBindingFlagsCreateInfo` for any bindings for a partially bound array. Nova makes heavy use of partially bound descriptor arrays - All of my unbounded descriptor arrays are partially sized
 
 #### Example code
 
@@ -77,4 +79,56 @@ VkDescriptorSetLayout layout;
 vkCreateDescriptorSetLayout(device, &create_info, nullptr, &layout);
 ```
 
+#### Possible problems
+
+One problem I ran into, which caused me a great deal of grief, is that I got the `descriptorCount` for my unbounded array by performing shader reflection on some SPIR-V that I had compiled from HLSL. Turns out, SPIRV Cross will report an array size of 1 for a HLSL array without a size
+
+My HLSL:
+```hlsl
+[[vk::binding(1, 1)]]
+Texture2D ui_textures[] : register(t0);
+```
+
+Giving the array a size resolved my issue
+
+### Creating the descriptor sets
+
+When you create an descriptor set for an unbounded array with a variable size, you must use the `VkDescriptorSetVariableDescriptorCountAllocateInfo` struct to tell Vulkan the maximum number of elements in your array. This struct should be in the `pNext` chain of your `VkDescriptorSetAllocateInfo`. You don't need to worry about the sizes of any bindings which do not have a variable size - or if you do, the spec doesn't mention it - but you absolutely do need to worry about the maximum size of any variable size descriptors. If you're like me and you get your descriptor sizes from shader reflection, you'll need to propagate that information to where you create your descriptor sets. I simply pass down my `VkDescriptorSetCreateInfo`s, you may want to do something else
+
+```cpp
+uint32_t counts[3];
+counts[2] = 32; // Maximum of 32 descriptors for binding 2
+
+VkDescriptorSetVariableDescriptorCountAllocateInfo set_counts = {};
+set_counts.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+set_counts.descriptorSetCount = 3;
+set_counts.pDescriptorCounts = counts;
+
+VkDescriptorSetAllocateInfo alloc_info = ...;
+alloc_info.pNext = &set_counts;
+
+VkDescriptorSet set;
+vkAllocateDescriptorSets(device, &alloc_info, &set);
+```
+
 ### Binding resources to unbounded array descriptors
+
+Binding resources to an unbounded array descriptor works just like binding resources to a regular array descriptor. You create a `VkDescriptorSetWrite` struct with the appropriate `VkDescriptorSet` and descriptor binding. The `descriptorCount` member should be the number of elements in your array. Here's an example for binding textures:
+
+```cpp
+VkDescriptorImageInfo image_infos[2];
+image_infos[0].imageView = image_view_1;
+image_infos[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+image_infos[1].imageView = image_view_2;
+image_infos[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+VkWriteDesctorSet write{};
+vk_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+vk_write.dstSet = descriptor_set;
+vk_write.dstBinding = 2;    // We're updating binding 2, which is the one with the VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT and VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT flags from the above example
+vk_write.descriptorCount = 2;   // Write two textures to this descriptor
+vk_write.dstArrayElement = 0;   // Start at array index 0
+vk_write.pImageInfos = image_infos;
+
+vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+```
