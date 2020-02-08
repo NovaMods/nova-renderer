@@ -72,6 +72,10 @@ binding_flags.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREA
 binding_flags.bindingCount = 3;
 binding_flags.pBindingFlags = flags;
 
+// When you make the VkDescriptorSetLayoutBinding for your varaible length array, the `descriptorCount` member is the
+// maximum number of descriptors in that array. I've omitted the code here for brevity, and because it's not different
+// for varaible count arrays vs normal descriptor arrays
+
 VkDescriptorSetLayoutCreateInfo create_info = ...;
 create_info.pNext = &binding_flags;
 
@@ -93,15 +97,19 @@ Giving the array a size resolved my issue
 
 ### Creating the descriptor sets
 
-When you create an descriptor set for an unbounded array with a variable size, you must use the `VkDescriptorSetVariableDescriptorCountAllocateInfo` struct to tell Vulkan the maximum number of elements in your array. This struct should be in the `pNext` chain of your `VkDescriptorSetAllocateInfo`. You don't need to worry about the sizes of any bindings which do not have a variable size - or if you do, the spec doesn't mention it - but you absolutely do need to worry about the maximum size of any variable size descriptors. If you're like me and you get your descriptor sizes from shader reflection, you'll need to propagate that information to where you create your descriptor sets. I simply pass down my `VkDescriptorSetCreateInfo`s, you may want to do something else
+When you create an descriptor set for an unbounded array with a variable size, you must use the `VkDescriptorSetVariableDescriptorCountAllocateInfo` struct to tell Vulkan the descriptor counts of each set with a variable descriptor count. This struct should be in the `pNext` chain of your `VkDescriptorSetAllocateInfo`. 
+
+The spec is worded strangely for this struct. Essentially it seems to be the maximum number of descriptors in each of your unbounded arrays. Since am unbounded array must be the last binding in a descritor set, there can only be one unbounded array per descriptor set. This means you only need to specify one count per descriptor set - which is exaclty what `VkDescriptorSetVariableDescriptorCountAllocateInfo` has you do
+
+You don't need to worry about descriptor counts for sets that don't have any unbounded arrays - or if you do, the spec doesn't make that clear - but you absolutely do need to worry about descriptor counts for sets that _do_ have unbounded arrays. If you're like me and you get your descriptor sizes from shader reflection, you'll need to propagate that information to where you create your descriptor sets. I simply pass down an array of the descriptor counts of variable size descriptors in each descriptor set as an array of ints, this strategy will probably work for you
 
 ```cpp
-uint32_t counts[3];
-counts[2] = 32; // Maximum of 32 descriptors for binding 2
+uint32_t counts[1];
+counts[0] = 32; // Set 0 has a variable count descriptor with a maximum of 32 elements
 
 VkDescriptorSetVariableDescriptorCountAllocateInfo set_counts = {};
 set_counts.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
-set_counts.descriptorSetCount = 3;
+set_counts.descriptorSetCount = 1;
 set_counts.pDescriptorCounts = counts;
 
 VkDescriptorSetAllocateInfo alloc_info = ...;
