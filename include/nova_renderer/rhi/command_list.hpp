@@ -7,7 +7,7 @@
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
-    enum class IndexSize {
+    enum class IndexType {
         Uint16,
         Uint32,
     };
@@ -135,7 +135,7 @@ namespace nova::renderer::rhi {
          *
          * The index buffer must use 32-bit indices. This will likely change in the future but for now it's a thing
          */
-        virtual void bind_index_buffer(const Buffer* buffer) = 0;
+        virtual void bind_index_buffer(const Buffer* buffer, IndexType index_size) = 0;
 
         /*!
          * \brief Records rendering instances of an indexed mesh

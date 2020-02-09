@@ -8,12 +8,12 @@
 
 namespace nova::renderer::rhi {
     RX_LOG("VkCmdLst", logger);
-    VkIndexType to_vk_index_type(IndexSize index_type) {
+    VkIndexType to_vk_index_type(const IndexType index_type) {
         switch(index_type) {
-            case IndexSize::Uint16:
+            case IndexType::Uint16:
                 return VK_INDEX_TYPE_UINT16;
 
-            case IndexSize::Uint32:
+            case IndexType::Uint32:
                 [[fallthrough]];
             default:
                 return VK_INDEX_TYPE_UINT32;
@@ -198,10 +198,10 @@ namespace nova::renderer::rhi {
         vkCmdBindVertexBuffers(cmds, 0, static_cast<uint32_t>(vk_buffers.size()), vk_buffers.data(), offsets.data());
     }
 
-    void VulkanCommandList::bind_index_buffer(const Buffer* buffer, const IndexSize index_size) {
+    void VulkanCommandList::bind_index_buffer(const Buffer* buffer, const IndexType index_type) {
         const auto* vk_buffer = static_cast<const VulkanBuffer*>(buffer);
 
-        vkCmdBindIndexBuffer(cmds, vk_buffer->buffer, 0, to_vk_index_type(index_size));
+        vkCmdBindIndexBuffer(cmds, vk_buffer->buffer, 0, to_vk_index_type(index_type));
     }
 
     void VulkanCommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t offset, const uint32_t num_instances) {

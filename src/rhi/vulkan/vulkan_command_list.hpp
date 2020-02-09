@@ -44,7 +44,7 @@ namespace nova::renderer::rhi {
 
         void bind_vertex_buffers(const rx::vector<Buffer*>& buffers) override;
 
-        void bind_index_buffer(const Buffer* buffer, IndexSize index_size) override;
+        void bind_index_buffer(const Buffer* buffer, IndexType index_type) override;
 
         void draw_indexed_mesh(uint32_t num_indices, uint32_t offset, uint32_t num_instances) override;
 
