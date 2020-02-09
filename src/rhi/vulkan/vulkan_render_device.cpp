@@ -942,6 +942,8 @@ namespace nova::renderer::rhi {
         vk_create_info.size = info.size.b_count();
         vk_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
+        VmaAllocationCreateInfo vma_alloc{};
+
         switch(info.buffer_usage) {
             case BufferUsage::UniformBuffer: {
                 if(info.size < gpu.props.limits.maxUniformBufferRange) {
@@ -950,53 +952,51 @@ namespace nova::renderer::rhi {
                 } else {
                     vk_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
                 }
+                vma_alloc.usage = VMA_MEMORY_USAGE_GPU_ONLY;
             } break;
 
             case BufferUsage::IndexBuffer: {
                 vk_create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+                vma_alloc.usage = VMA_MEMORY_USAGE_GPU_ONLY;
             } break;
 
             case BufferUsage::VertexBuffer: {
                 vk_create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+                vma_alloc.usage = VMA_MEMORY_USAGE_GPU_ONLY;
             } break;
 
             case BufferUsage::StagingBuffer: {
                 vk_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+                vma_alloc.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+                vma_alloc.usage = VMA_MEMORY_USAGE_CPU_ONLY;
             } break;
         }
 
-        // TODO: Switch to VMA
+        const auto result = vmaCreateBuffer(vma, &vk_create_info, &vma_alloc, &buffer->buffer, &buffer->allocation, nullptr);
+        if(result == VK_SUCCESS) {
+            logger(rx::log::level::k_verbose, "Created buffer %s with size %u", info.name, vk_create_info.size);
 
-        auto vk_alloc = wrap_allocator(allocator);
-        vkCreateBuffer(device, &vk_create_info, &vk_alloc, &buffer->buffer);
+            buffer->size = info.size;
 
-        logger(rx::log::level::k_verbose, "Created buffer %s with size %u", info.name, vk_create_info.size);
+            if(settings->debug.enabled) {
+                VkDebugUtilsObjectNameInfoEXT object_name = {};
+                object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+                object_name.objectType = VK_OBJECT_TYPE_BUFFER;
+                object_name.objectHandle = reinterpret_cast<uint64_t>(buffer->buffer);
+                object_name.pObjectName = info.name.data();
 
-        VkMemoryRequirements requirements;
-        vkGetBufferMemoryRequirements(device, buffer->buffer, &requirements);
+                NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
 
-        const auto allocation = memory.allocate(requirements.size);
+                logger(rx::log::level::k_info, "Set buffer %uz to have name %s", buffer->buffer, info.name);
+            }
 
-        auto* vulkan_heap = static_cast<VulkanDeviceMemory*>(allocation.memory);
-        buffer->memory = allocation;
+            return buffer;
 
-        vkBindBufferMemory(device, buffer->buffer, vulkan_heap->memory, allocation.allocation_info.offset.b_count());
+        } else {
+            logger(rx::log::level::k_error, "Could not create buffer %s: %s", info.name, to_string(result));
 
-        buffer->size = info.size;
-
-        if(settings->debug.enabled) {
-            VkDebugUtilsObjectNameInfoEXT object_name = {};
-            object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-            object_name.objectType = VK_OBJECT_TYPE_BUFFER;
-            object_name.objectHandle = reinterpret_cast<uint64_t>(buffer->buffer);
-            object_name.pObjectName = info.name.data();
-
-            NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
-
-            logger(rx::log::level::k_info, "Set buffer %uz to have name %s", buffer->buffer, info.name);
+            return nullptr;
         }
-
-        return buffer;
     }
 
     void VulkanRenderDevice::write_data_to_buffer(const void* data,
@@ -1049,6 +1049,9 @@ namespace nova::renderer::rhi {
         // This may or may not change depending on performance data, but given Nova's atlas-centric design I don't think it'll change much
         const auto image_pixel_size = info.format.get_size_in_pixels(swapchain_size);
 
+        VmaAllocationCreateInfo vma_info = {};
+        vma_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
         VkImageCreateInfo image_create_info = {};
         image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         image_create_info.imageType = VK_IMAGE_TYPE_2D;
@@ -1061,43 +1064,43 @@ namespace nova::renderer::rhi {
         image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
         image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
 
-        if(info.usage == shaderpack::ImageUsage::SampledImage) {
-            image_create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        if(format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT) {
+            image->is_depth_tex = true;
         }
 
-        if(format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT) {
-            image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-            image->is_depth_tex = true;
+        if(info.usage == shaderpack::ImageUsage::SampledImage) {
+            image_create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
         } else {
-            image_create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+            // If the image isn't a sampled image, it's a render target
+            // Render targets get dedicated allocations
+
+            if(format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT) {
+                image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+            } else {
+                image_create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+            }
+
+            vma_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
         }
+
         image_create_info.queueFamilyIndexCount = 1;
         image_create_info.pQueueFamilyIndices = &graphics_family_index;
         image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-        auto vk_alloc = wrap_allocator(allocator);
-        vkCreateImage(device, &image_create_info, &vk_alloc, &image->image);
+        const auto result = vmaCreateImage(vma, &image_create_info, &vma_info, &image->image, &image->allocation, nullptr);
+        if(result == VK_SUCCESS) {
+            if(settings->debug.enabled) {
+                VkDebugUtilsObjectNameInfoEXT object_name = {};
+                object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+                object_name.objectType = VK_OBJECT_TYPE_IMAGE;
+                object_name.objectHandle = reinterpret_cast<uint64_t>(image->image);
+                object_name.pObjectName = info.name.data();
 
-        if(settings->debug.enabled) {
-            VkDebugUtilsObjectNameInfoEXT object_name = {};
-            object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-            object_name.objectType = VK_OBJECT_TYPE_IMAGE;
-            object_name.objectHandle = reinterpret_cast<uint64_t>(image->image);
-            object_name.pObjectName = info.name.data();
+                NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
 
-            NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
-
-            logger(rx::log::level::k_info, "Set image %uz to have name %s", image->image, info.name);
-        }
-
-        VkMemoryRequirements requirements;
-        vkGetImageMemoryRequirements(device, image->image, &requirements);
-
-        const auto image_memory = allocate_device_memory(requirements.size, MemoryUsage::DeviceOnly, ObjectType::RenderTexture, allocator);
-
-        if(image_memory) {
-            const auto* vk_image_memory = static_cast<const VulkanDeviceMemory*>(image_memory.value);
-            vkBindImageMemory(device, image->image, vk_image_memory->memory, 0);
+                logger(rx::log::level::k_info, "Set image %uz to have name %s", image->image, info.name);
+            }
 
             VkImageViewCreateInfo image_view_create_info = {};
             image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1106,7 +1109,6 @@ namespace nova::renderer::rhi {
             image_view_create_info.format = image_create_info.format;
             if(format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT) {
                 image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-                image->is_depth_tex = true;
             } else {
                 image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             }
@@ -1115,12 +1117,13 @@ namespace nova::renderer::rhi {
             image_view_create_info.subresourceRange.baseMipLevel = 0;
             image_view_create_info.subresourceRange.levelCount = 1;
 
+            auto vk_alloc = wrap_allocator(allocator);
             vkCreateImageView(device, &image_view_create_info, &vk_alloc, &image->image_view);
 
             return image;
 
         } else {
-            logger(rx::log::level::k_error, "Could not allocate memory for image %s:%s", info.name, image_memory.error.to_string());
+            logger(rx::log::level::k_error, "Could not create image %s: %s", info.name, to_string(result));
 
             return nullptr;
         }
@@ -1535,7 +1538,11 @@ namespace nova::renderer::rhi {
         create_info.pAllocationCallbacks = &vk_internal_allocator;
         create_info.instance = instance;
 
-        vmaCreateAllocator(&create_info, &vma);
+        const auto result = vmaCreateAllocator(&create_info, &vma);
+
+        if(result != VK_SUCCESS) {
+            logger(rx::log::level::k_error, "Could not initialize VMA: %s", to_string(result));
+        }
     }
 
     void VulkanRenderDevice::create_device_and_queues() {
