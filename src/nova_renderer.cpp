@@ -194,6 +194,8 @@ namespace nova::renderer {
 
         rx::vector<rhi::Fence*> last_frame_fences{global_allocator};
         last_frame_fences.push_back(frame_fences[cur_frame_idx]);
+
+        device->wait_for_fences(last_frame_fences);
         device->reset_fences(last_frame_fences);
 
         rhi::CommandList* cmds = device->create_command_list(0,
