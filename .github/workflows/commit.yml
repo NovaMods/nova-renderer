@@ -101,13 +101,21 @@ jobs:
           curl -L \
           'https://sdk.lunarg.com/sdk/download/${{ matrix.vulkan }}/windows/VulkanSDK-${{ matrix.vulkan }}-Installer.exe?Human=true' \
           -o VulkanSDK-Installer.exe
-          curl -L \
-           'https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/latest/windows/vulkan-runtime.exe' -o VulkanRuntime-Installer.exe
       # 2. Install the VulkanSDK
       - name: Install VulkanSDK
         shell: powershell
         run: |
           Start-Process .\VulkanSDK-Installer.exe /S -Wait
+      # Download the Vulkan Runtime
+      - name: Download Vulkan Runtime
+        shell: bash
+        run: |
+          curl -L \
+           'https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/latest/windows/vulkan-runtime.exe' -o VulkanRuntime-Installer.exe
+      # 2. Install the Vulkan Runtime
+      - name: Install Vulkan Runtime
+        shell: powershell
+        run: |
           Start-Process .\VulkanRuntime-Installer.exe /S -Wait
       
       # 3. Checkout the repository, this is done via a github action
