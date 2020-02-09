@@ -11,7 +11,7 @@ namespace nova::renderer {
     template <typename KeyType, typename ValueType>
     class MapAccessor {
     public:
-        MapAccessor(const rx::map<KeyType, ValueType>* map, const KeyType& key) : map(map), key(key) {}
+        MapAccessor(rx::map<KeyType, ValueType>* map, const KeyType& key) : map(map), key(key) {}
 
         MapAccessor(const MapAccessor& other) = default;
         MapAccessor& operator=(const MapAccessor& other) = default;
@@ -28,7 +28,7 @@ namespace nova::renderer {
         [[nodiscard]] const KeyType& get_key() const { return key; }
 
     private:
-        const rx::map<KeyType, ValueType>* map;
+        rx::map<KeyType, ValueType>* map;
         KeyType key;
     };
 } // namespace nova::renderer

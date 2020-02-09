@@ -974,6 +974,18 @@ namespace nova::renderer::rhi {
 
         buffer->size = info.size;
 
+        if(settings->debug.enabled) {
+            VkDebugUtilsObjectNameInfoEXT object_name = {};
+            object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+            object_name.objectType = VK_OBJECT_TYPE_BUFFER;
+            object_name.objectHandle = reinterpret_cast<uint64_t>(buffer->buffer);
+            object_name.pObjectName = info.name.data();
+
+            NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
+
+            logger(rx::log::level::k_info, "Set buffer %uz to have name %s", buffer->buffer, info.name);
+        }
+
         return buffer;
     }
 

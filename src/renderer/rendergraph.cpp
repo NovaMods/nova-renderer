@@ -10,7 +10,7 @@ namespace nova::renderer {
 
     Renderpass::Renderpass(rx::string name, const bool is_builtin) : name(std::move(name)), is_builtin(is_builtin) {}
 
-    void Renderpass::render(rhi::CommandList& cmds, FrameContext& ctx) {
+    void Renderpass::execute(rhi::CommandList& cmds, FrameContext& ctx) {
         // TODO: Figure if any of these barriers are implicit
         // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource instead of
         // using a robust default
@@ -21,7 +21,7 @@ namespace nova::renderer {
 
         cmds.begin_renderpass(renderpass, framebuffer);
 
-        execute(cmds, ctx);
+        record_renderpass_contents(cmds, ctx);
 
         cmds.end_renderpass();
 
@@ -60,7 +60,7 @@ namespace nova::renderer {
         }
     }
 
-    void Renderpass::execute(rhi::CommandList& cmds, FrameContext& ctx) {
+    void Renderpass::record_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) {
         auto& pipeline_storage = ctx.nova->get_pipeline_storage();
 
         // TODO: I _actually_ want to get all the draw commands from NovaRenderer, instead of storing them in this struct

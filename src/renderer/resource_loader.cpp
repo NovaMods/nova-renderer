@@ -30,7 +30,7 @@ namespace nova::renderer {
         resource.name = name;
         resource.size = size;
 
-        const BufferCreateInfo create_info = {size.b_count(), BufferUsage::UniformBuffer};
+        const BufferCreateInfo create_info = {rx::string::format("UniformBuffer%s", name), size.b_count(), BufferUsage::UniformBuffer};
         resource.buffer = device.create_buffer(create_info, *uniform_buffer_memory, internal_allocator);
         if(resource.buffer == nullptr) {
             logger(rx::log::level::k_error, "Could not create uniform buffer %s", name);
@@ -136,7 +136,7 @@ namespace nova::renderer {
         return TextureResourceAccessor{&textures, name};
     }
 
-    rx::optional<TextureResourceAccessor> DeviceResources::get_texture(const rx::string& name) const {
+    rx::optional<TextureResourceAccessor> DeviceResources::get_texture(const rx::string& name) {
         if(textures.find(name) != nullptr) {
             return TextureResourceAccessor{&textures, name};
 
@@ -231,7 +231,7 @@ namespace nova::renderer {
         }
     }
 
-    rx::optional<TextureResourceAccessor> DeviceResources::get_render_target(const rx::string& name) const {
+    rx::optional<TextureResourceAccessor> DeviceResources::get_render_target(const rx::string& name) {
         if(render_targets.find(name) != nullptr) {
             return TextureResourceAccessor{&render_targets, name};
 
@@ -299,7 +299,7 @@ namespace nova::renderer {
             }
         }
 
-        const BufferCreateInfo info = {actual_size, BufferUsage::StagingBuffer};
+        const BufferCreateInfo info = {"GenericStagingBuffer", actual_size, BufferUsage::StagingBuffer};
 
         Buffer* buffer = device.create_buffer(info, *staging_buffer_memory, internal_allocator);
         return buffer;

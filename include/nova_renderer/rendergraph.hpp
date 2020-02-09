@@ -166,7 +166,7 @@ namespace nova::renderer {
          * everything you should need to render. If there's something you need that isn't in the frame context, submit an issue on the Nova
          * GitHub
          */
-        virtual void render(rhi::CommandList& cmds, FrameContext& ctx);
+        virtual void execute(rhi::CommandList& cmds, FrameContext& ctx);
 
         /*!
          * \brief Returns the framebuffer that this renderpass should render to
@@ -196,7 +196,7 @@ namespace nova::renderer {
          * everything you should need to render. If there's something you need that isn't in the frame context, submit an issue on the Nova
          * GitHub
          */
-        virtual void execute(rhi::CommandList& cmds, FrameContext& ctx);
+        virtual void record_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx);
 
         /*!
          * \brief Records all the resource barriers that need to take place after this renderpass renders anything
@@ -224,7 +224,7 @@ namespace nova::renderer {
         template <typename RenderpassType>
         [[nodiscard]] bool add_renderpass(RenderpassType* renderpass,
                             const shaderpack::RenderPassCreateInfo& create_info,
-                            const DeviceResources& resource_storage);
+                            DeviceResources& resource_storage);
 
         void destroy_renderpass(const rx::string& name);
 
@@ -250,7 +250,7 @@ namespace nova::renderer {
     template <typename RenderpassType>
     bool Rendergraph::add_renderpass(RenderpassType* renderpass,
                                      const shaderpack::RenderPassCreateInfo& create_info,
-                                     const DeviceResources& resource_storage) {
+                                     DeviceResources& resource_storage) {
         RenderpassMetadata metadata;
         metadata.data = create_info;
 

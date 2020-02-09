@@ -202,9 +202,6 @@ namespace nova::renderer {
                                                              frame_allocator);
         cmds->set_debug_name("RendergraphCommands");
 
-        // This may or may not work well lmao
-        proc_meshes.each_value([&](ProceduralMesh& proc_mesh) { proc_mesh.record_commands_to_upload_data(cmds, cur_frame_idx); });
-
         FrameContext ctx = {};
         ctx.frame_count = frame_count;
         ctx.nova = this;
@@ -216,7 +213,7 @@ namespace nova::renderer {
 
         renderpass_order.each_fwd([&](const rx::string& renderpass_name) {
             auto* renderpass = rendergraph->get_renderpass(renderpass_name);
-            renderpass->render(*cmds, ctx);
+            renderpass->execute(*cmds, ctx);
         });
 
         device->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences[cur_frame_idx]);

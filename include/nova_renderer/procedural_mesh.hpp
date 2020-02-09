@@ -1,13 +1,14 @@
 #pragma once
 
 #include <rx/core/array.h>
+#include <rx/core/concepts/no_copy.h>
+#include <rx/core/string.h>
 #include <stdint.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/memory/block_allocation_strategy.hpp"
 #include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
-#include "rx/core/concepts/no_copy.h"
 
 namespace nova::renderer {
     /*!
@@ -31,8 +32,12 @@ namespace nova::renderer {
          * \param vertex_buffer_size The number of bytes the vertex buffer needs
          * \param index_buffer_size The number of bytes that the index buffer needs
          * \param device The device to create the buffers on
+         * \param name Name of this procedural mesh
          */
-        ProceduralMesh(uint64_t vertex_buffer_size, uint64_t index_buffer_size, rhi::RenderDevice* device);
+        ProceduralMesh(uint64_t vertex_buffer_size,
+                       uint64_t index_buffer_size,
+                       rhi::RenderDevice* device,
+                       const rx::string& name = "ProceduralMesh");
 
         ProceduralMesh(ProceduralMesh&& old) noexcept;
         ProceduralMesh& operator=(ProceduralMesh&& old) noexcept;
@@ -73,6 +78,8 @@ namespace nova::renderer {
 
     private:
         rhi::RenderDevice* device = nullptr;
+
+        rx::string name;
 
         rx::array<rhi::Buffer* [NUM_IN_FLIGHT_FRAMES]> vertex_buffers;
         rx::array<rhi::Buffer* [NUM_IN_FLIGHT_FRAMES]> index_buffers;

@@ -81,7 +81,7 @@ namespace nova::renderer {
         /*!
          * \brief Retrieves the texture with the specified name
          */
-        [[nodiscard]] rx::optional<TextureResourceAccessor> get_texture(const rx::string& name) const;
+        [[nodiscard]] rx::optional<TextureResourceAccessor> get_texture(const rx::string& name);
 
         /*!
          * \brief Creates a new render target with the specified size and format
@@ -111,7 +111,7 @@ namespace nova::renderer {
         /*!
          * \brief Retrieves the render target with the specified name
          */
-        [[nodiscard]] rx::optional<TextureResourceAccessor> get_render_target(const rx::string& name) const;
+        [[nodiscard]] rx::optional<TextureResourceAccessor> get_render_target(const rx::string& name);
 
         void destroy_render_target(const rx::string& texture_name, rx::memory::allocator* allocator);
 

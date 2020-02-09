@@ -11,6 +11,8 @@ namespace nova::renderer::rhi {
 
 #pragma region Structs
     struct BufferCreateInfo {
+        rx::string name;
+
         mem::Bytes size = 0;
 
         BufferUsage buffer_usage{};
