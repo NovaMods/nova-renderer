@@ -560,7 +560,7 @@ namespace nova::renderer::rhi {
                     vk_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     vk_write.pImageInfo = &image_infos[first_image_info_idx];
 
-                    logger(rx::log::level::k_verbose, "Updating CombinedImageSampler descriptor set %x", vk_write.dstSet);
+                    // logger(rx::log::level::k_verbose, "Updating CombinedImageSampler descriptor set %x", vk_write.dstSet);
 
                     vk_writes.push_back(vk_write);
                 } break;
@@ -584,7 +584,7 @@ namespace nova::renderer::rhi {
                     vk_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                     vk_write.pBufferInfo = &buffer_infos[first_buffer_info_idx];
 
-                    logger(rx::log::level::k_verbose, "Updating UniformBuffer descriptor set %x", vk_write.dstSet);
+                    // logger(rx::log::level::k_verbose, "Updating UniformBuffer descriptor set %x", vk_write.dstSet);
 
                     vk_writes.push_back(vk_write);
                 } break;
@@ -607,7 +607,7 @@ namespace nova::renderer::rhi {
                     vk_write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     vk_write.pBufferInfo = &buffer_infos[first_buffer_info_idx];
 
-                    logger(rx::log::level::k_verbose, "Updating StorageBuffer descriptor set %x", vk_write.dstSet);
+                    // logger(rx::log::level::k_verbose, "Updating StorageBuffer descriptor set %x", vk_write.dstSet);
 
                     vk_writes.push_back(vk_write);
                 } break;
@@ -628,7 +628,7 @@ namespace nova::renderer::rhi {
                     vk_write.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
                     vk_write.pImageInfo = &image_infos[first_image_info_idx];
 
-                    logger(rx::log::level::k_verbose, "Updating Texture descriptor set %x", vk_write.dstSet);
+                    // logger(rx::log::level::k_verbose, "Updating Texture descriptor set %x", vk_write.dstSet);
 
                     vk_writes.push_back(vk_write);
                 } break;
@@ -649,14 +649,14 @@ namespace nova::renderer::rhi {
                     vk_write.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
                     vk_write.pImageInfo = &image_infos[first_image_info_idx];
 
-                    logger(rx::log::level::k_verbose, "Updating Sampler descriptor set %x", vk_write.dstSet);
+                    // logger(rx::log::level::k_verbose, "Updating Sampler descriptor set %x", vk_write.dstSet);
 
                     vk_writes.push_back(vk_write);
 
                 } break;
 
                 default:
-                    logger(rx::log::level::k_verbose,
+                    logger(rx::log::level::k_error,
                            "Don't know how to update %s descriptor set %x",
                            descriptor_type_to_string(write.type),
                            vk_write.dstSet);
@@ -1070,7 +1070,7 @@ namespace nova::renderer::rhi {
         auto vk_alloc = wrap_allocator(allocator);
         vkCreateImage(device, &image_create_info, &vk_alloc, &image->image);
 
-        if(settings.settings.debug.enabled) {
+        if(settings->debug.enabled) {
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             object_name.objectType = VK_OBJECT_TYPE_IMAGE;
@@ -1334,12 +1334,21 @@ namespace nova::renderer::rhi {
         submit_info.signalSemaphoreCount = static_cast<uint32_t>(vk_signal_semaphores.size());
         submit_info.pSignalSemaphores = vk_signal_semaphores.data();
 
-        if(fence_to_signal) {
-            const auto* vk_fence = static_cast<const VulkanFence*>(fence_to_signal);
-            vkQueueSubmit(queue_to_submit_to, 1, &submit_info, vk_fence->fence);
+        const auto vk_signal_fence = [&] {
+            if(fence_to_signal) {
+                return static_cast<const VulkanFence*>(fence_to_signal)->fence;
 
-        } else {
-            vkQueueSubmit(queue_to_submit_to, 1, &submit_info, nullptr);
+            } else {
+                return VkFence{};
+            }
+        }();
+
+        const auto result = vkQueueSubmit(queue_to_submit_to, 1, &submit_info, vk_signal_fence);
+
+        if(settings->debug.enabled) {
+            if(result != VK_SUCCESS) {
+                logger(rx::log::level::k_error, "Could submit command list: %s", to_string(result));
+            }
         }
     }
 
@@ -1419,14 +1428,17 @@ namespace nova::renderer::rhi {
 #error Unsupported Operating system
 #endif
 
-        rx::vector<VkValidationFeatureEnableEXT> enabled_validation_features; // = {VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT};
+        rx::vector<VkValidationFeatureEnableEXT> enabled_validation_features;
 
         if(settings.settings.debug.enabled) {
             enabled_extension_names.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
             enabled_extension_names.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
+            enabled_validation_features.push_back(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT);
+
             if(settings.settings.debug.enable_gpu_based_validation) {
                 enabled_validation_features.push_back(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT);
+                enabled_validation_features.push_back(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT);
             }
         }
 
@@ -1606,6 +1618,11 @@ namespace nova::renderer::rhi {
         physical_device_features.tessellationShader = VK_TRUE;
         physical_device_features.samplerAnisotropy = VK_TRUE;
         physical_device_features.shaderSampledImageArrayDynamicIndexing = VK_TRUE;
+
+        if(settings->debug.enable_gpu_based_validation) {
+            physical_device_features.fragmentStoresAndAtomics = VK_TRUE;
+            physical_device_features.vertexPipelineStoresAndAtomics = VK_TRUE;
+        }
 
         VkDeviceCreateInfo device_create_info{};
         device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

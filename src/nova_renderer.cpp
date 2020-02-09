@@ -192,11 +192,11 @@ namespace nova::renderer {
 
         rg_log(rx::log::level::k_verbose, "\n***********************\n        FRAME START        \n***********************");
 
-        rx::vector<rhi::Fence*> last_frame_fences{global_allocator};
-        last_frame_fences.push_back(frame_fences[cur_frame_idx]);
+        rx::vector<rhi::Fence*> cur_frame_fences{global_allocator};
+        cur_frame_fences.push_back(frame_fences[cur_frame_idx]);
 
-        device->wait_for_fences(last_frame_fences);
-        device->reset_fences(last_frame_fences);
+        device->wait_for_fences(cur_frame_fences);
+        device->reset_fences(cur_frame_fences);
 
         rhi::CommandList* cmds = device->create_command_list(0,
                                                              rhi::QueueType::Graphics,
@@ -222,11 +222,11 @@ namespace nova::renderer {
 
         // Wait for the GPU to finish before presenting. This destroys pipelining and throughput, however at this time I'm not sure how
         // best to say "when GPU finishes this task, CPU should do something"
-        rx::vector<rhi::Fence*> fences{global_allocator};
-        fences.push_back(frame_fences[cur_frame_idx]);
-        device->wait_for_fences(fences);
+        device->wait_for_fences(cur_frame_fences);
 
         device->get_swapchain()->present(cur_frame_idx);
+
+        logger(rx::log::level::k_verbose, "Finished frame");
 
         mtr_flush();
     }

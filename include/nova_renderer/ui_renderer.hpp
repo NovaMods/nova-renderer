@@ -17,12 +17,13 @@ namespace nova::renderer {
         static shaderpack::RenderPassCreateInfo get_create_info();
 
     protected:
-        void execute(rhi::CommandList& cmds, FrameContext& ctx) override final;
+        void record_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) override final;
 
         /*!
          * \brief Renders the host application's UI
          *
-         * Clients of Nova must provide their own implementation of `UiRenderpass`. Nova will then use that implementation to
+         * Clients of Nova must provide their own implementation of `UiRenderpass`. Nova will then use that implementation to render that
+         * application's UI
          */
         virtual void render_ui(rhi::CommandList& cmds, FrameContext& ctx) = 0;
     };

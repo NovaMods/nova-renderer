@@ -87,7 +87,15 @@ namespace nova::renderer::rhi {
         present_info.pImageIndices = &image_idx;
         present_info.pResults = &swapchain_result;
 
-        vkQueuePresentKHR(render_device->graphics_queue, &present_info);
+        const auto result = vkQueuePresentKHR(render_device->graphics_queue, &present_info);
+
+        if(result != VK_SUCCESS) {
+            logger(rx::log::level::k_error, "Could not present swapchain images: vkQueuePresentKHR failed: %s", to_string(result));
+        }
+
+        if(swapchain_result != VK_SUCCESS) {
+            logger(rx::log::level::k_error, "Could not present swapchain image %u: Presenting failed: %s", image_idx, to_string(result));
+        }
     }
 
     void VulkanSwapchain::transition_swapchain_images_into_color_attachment_layout(const rx::vector<VkImage>& images) const {

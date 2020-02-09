@@ -17,6 +17,8 @@ namespace nova::renderer {
 
         record_pre_renderpass_barriers(cmds, ctx);
 
+        setup_renderpass(cmds, ctx);
+
         const auto framebuffer = get_framebuffer(ctx);
 
         cmds.begin_renderpass(renderpass, framebuffer);
@@ -160,6 +162,8 @@ namespace nova::renderer {
             return ctx.swapchain_framebuffer;
         }
     }
+
+    void Renderpass::setup_renderpass(rhi::CommandList& cmds, FrameContext& ctx) {}
 
     void renderer::MaterialPass::record(rhi::CommandList& cmds, FrameContext& ctx) const {
         cmds.bind_descriptor_sets(descriptor_sets, pipeline_interface);

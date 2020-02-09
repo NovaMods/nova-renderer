@@ -177,10 +177,19 @@ namespace nova::renderer {
         /*!
          * \brief Records all the resource barriers that need to take place before this renderpass renders anything
          *
-         * By default `render` calls this method before calling `render_renderpass_contents`. If you override `render`, you'll need to call
+         * By default `render` calls this method before calling `setup_renderpass`. If you override `render`, you'll need to call
          * this method yourself before using any of this renderpass's resources
          */
         void record_pre_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const;
+
+        /*!
+         * \brief Allows a renderpass to perform work before the recording of the actual renderpass
+         *
+         * This is useful for e.g. uploading streamed in vertex data
+         *
+         * The default `render` method calls this after `record_pre_renderpass_barriers` and before `record_renderpass_contents`
+         */
+        virtual void setup_renderpass(rhi::CommandList& cmds, FrameContext& ctx);
 
         /*!
          * \brief Renders the contents of this renderpass
