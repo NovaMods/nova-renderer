@@ -40,13 +40,6 @@ namespace nova::renderer {
             .map([&](DeviceMemory* memory) {
                 device_buffers_memory = allocator->create<DeviceMemoryResource>(memory, device_memory_allocation_strategy);
 
-                const BufferCreateInfo vertex_create_info{rx::string::format("%sVertices", name),
-                                                          vertex_buffer_size,
-                                                          BufferUsage::VertexBuffer};
-                const BufferCreateInfo index_create_info{rx::string::format("%sIndices", name),
-                                                         index_buffer_size,
-                                                         BufferUsage::IndexBuffer};
-
                 for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
                     vertex_buffers[i] = device->create_buffer({rx::string::format("%sVertices%d", name, i),
                                                                vertex_buffer_size,
@@ -225,7 +218,7 @@ namespace nova::renderer {
             barrier_before_index_upload.source_queue = QueueType::Graphics;
             barrier_before_index_upload.destination_queue = QueueType::Graphics;
             barrier_before_index_upload.buffer_memory_barrier.offset = 0;
-            barrier_before_index_upload.buffer_memory_barrier.size = num_vertex_bytes_to_upload;
+            barrier_before_index_upload.buffer_memory_barrier.size = num_index_bytes_to_upload;
 
             barriers_before_upload.push_back(barrier_before_index_upload);
         }

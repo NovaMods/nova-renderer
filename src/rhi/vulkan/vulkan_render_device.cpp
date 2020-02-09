@@ -962,6 +962,8 @@ namespace nova::renderer::rhi {
         auto vk_alloc = wrap_allocator(allocator);
         vkCreateBuffer(device, &vk_create_info, &vk_alloc, &buffer->buffer);
 
+        logger(rx::log::level::k_verbose, "Created buffer %s with size %u", info.name, vk_create_info.size);
+
         VkMemoryRequirements requirements;
         vkGetBufferMemoryRequirements(device, buffer->buffer, &requirements);
 
