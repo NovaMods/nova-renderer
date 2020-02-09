@@ -17,7 +17,7 @@ namespace nova::renderer {
         static shaderpack::RenderPassCreateInfo get_create_info();
 
     protected:
-        void render_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) override final;
+        void execute(rhi::CommandList& cmds, FrameContext& ctx) override final;
 
         /*!
          * \brief Renders the host application's UI

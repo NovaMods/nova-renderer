@@ -196,7 +196,7 @@ namespace nova::renderer {
          * everything you should need to render. If there's something you need that isn't in the frame context, submit an issue on the Nova
          * GitHub
          */
-        virtual void render_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx);
+        virtual void execute(rhi::CommandList& cmds, FrameContext& ctx);
 
         /*!
          * \brief Records all the resource barriers that need to take place after this renderpass renders anything

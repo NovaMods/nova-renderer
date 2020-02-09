@@ -21,7 +21,7 @@ namespace nova::renderer {
 
         cmds.begin_renderpass(renderpass, framebuffer);
 
-        render_renderpass_contents(cmds, ctx);
+        execute(cmds, ctx);
 
         cmds.end_renderpass();
 
@@ -60,7 +60,7 @@ namespace nova::renderer {
         }
     }
 
-    void Renderpass::render_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) {
+    void Renderpass::execute(rhi::CommandList& cmds, FrameContext& ctx) {
         auto& pipeline_storage = ctx.nova->get_pipeline_storage();
 
         // TODO: I _actually_ want to get all the draw commands from NovaRenderer, instead of storing them in this struct

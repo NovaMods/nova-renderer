@@ -5,7 +5,7 @@
 namespace nova::renderer {
     UiRenderpass::UiRenderpass() : Renderpass(UI_RENDER_PASS_NAME, true) {}
 
-    void UiRenderpass::render_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) { render_ui(cmds, ctx); }
+    void UiRenderpass::execute(rhi::CommandList& cmds, FrameContext& ctx) { render_ui(cmds, ctx); }
 
     shaderpack::RenderPassCreateInfo UiRenderpass::get_create_info() {
         // TODO: This once was static, but caused a SIGSEGV because of being destructed too late

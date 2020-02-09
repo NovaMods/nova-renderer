@@ -23,6 +23,8 @@ namespace nova::renderer {
 
         [[nodiscard]] const ValueType* operator->() const { return map->find(key); }
 
+        [[nodiscard]] ValueType* operator->() { return map->find(key); }
+
         [[nodiscard]] const KeyType& get_key() const { return key; }
 
     private:
