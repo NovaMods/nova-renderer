@@ -166,6 +166,11 @@ jobs:
         with:
           name: binary-windows-msvc
           path: artifacts
+      # Cache dependendies
+      #- name: Cache dependencies
+      #  uses: actions/cache@v1
+      #  with:
+      #    path: 
 
   build-simple-artifacts:
     # Let's use linux for packaging up our artifacts which don't
