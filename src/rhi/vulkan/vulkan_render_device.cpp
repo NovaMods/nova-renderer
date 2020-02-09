@@ -1927,16 +1927,20 @@ namespace nova::renderer::rhi {
         attributes.reserve(vertex_fields.size());
         bindings.reserve(vertex_fields.size());
 
+        uint32_t vertex_size = 0;
+        vertex_fields.each_fwd([&](const VertexField& field) { vertex_size += get_byte_size(field.format); });
+
         uint32_t cur_binding = 0;
         uint32_t byte_offset = 0;
         vertex_fields.each_fwd([&](const VertexField& field) {
+            const auto field_size = get_byte_size(field.format);
             const auto attr_format = to_vk_vertex_format(field.format);
             attributes.emplace_back(VkVertexInputAttributeDescription{cur_binding, 0, attr_format, byte_offset});
 
-            bindings.emplace_back(VkVertexInputBindingDescription{cur_binding, sizeof(FullVertex), VK_VERTEX_INPUT_RATE_VERTEX});
+            bindings.emplace_back(VkVertexInputBindingDescription{cur_binding, vertex_size, VK_VERTEX_INPUT_RATE_VERTEX});
 
             cur_binding++;
-            byte_offset += get_byte_size(field.format);
+            byte_offset += field_size;
         });
 
         return {attributes, bindings};
