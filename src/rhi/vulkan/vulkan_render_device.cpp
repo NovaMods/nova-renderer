@@ -959,6 +959,8 @@ namespace nova::renderer::rhi {
             } break;
         }
 
+        TODO: Switch to VMA
+
         auto vk_alloc = wrap_allocator(allocator);
         vkCreateBuffer(device, &vk_create_info, &vk_alloc, &buffer->buffer);
 
