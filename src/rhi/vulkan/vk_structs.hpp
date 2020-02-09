@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "nova_renderer/rhi/device_memory_resource.hpp"
+#include <vk_mem_alloc.h>
+
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 #include "vulkan.hpp"

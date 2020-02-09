@@ -581,7 +581,7 @@ namespace nova::renderer::rhi {
 
                         VkDescriptorBufferInfo vk_buffer_info;
                         vk_buffer_info.buffer = vk_buffer->buffer;
-                        vk_buffer_info.offset = vk_buffer->memory.allocation_info.offset.b_count();
+                        vk_buffer_info.offset = 0;
                         vk_buffer_info.range = vk_buffer->size.b_count();
 
                         buffer_infos.emplace_back(vk_buffer_info);
@@ -604,7 +604,7 @@ namespace nova::renderer::rhi {
 
                         VkDescriptorBufferInfo vk_buffer_info;
                         vk_buffer_info.buffer = vk_buffer->buffer;
-                        vk_buffer_info.offset = vk_buffer->memory.allocation_info.offset.b_count();
+                        vk_buffer_info.offset = 0;
                         vk_buffer_info.range = vk_buffer->size.b_count();
 
                         buffer_infos.emplace_back(vk_buffer_info);
@@ -1005,14 +1005,8 @@ namespace nova::renderer::rhi {
                                                   const Buffer* buffer) {
         const auto* vulkan_buffer = static_cast<const VulkanBuffer*>(buffer);
 
-        const AllocationInfo& allocation_info = vulkan_buffer->memory.allocation_info;
-        const auto* memory = static_cast<const VulkanDeviceMemory*>(vulkan_buffer->memory.memory);
+        auto* mapped_bytes = vulkan_buffer->allocation->GetMappedData();
 
-        // TODO: heap_mappings doesn't have the buffer's memory in it
-        // Alternately, the buffer's memory isn't in heap_mappings
-        // Something something assuming constantly mapped?
-        uint8_t* mapped_bytes = static_cast<uint8_t*>(*heap_mappings.find(memory->memory)) + allocation_info.offset.b_count() +
-                                offset.b_count();
         memcpy(mapped_bytes, data, num_bytes.b_count());
     }
 
