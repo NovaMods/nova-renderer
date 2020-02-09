@@ -62,13 +62,15 @@ namespace nova::renderer::rhi {
             return 0;
         }
         if(acquire_result != VK_SUCCESS) {
-            logger(rx::log::level::k_error, "%s:%u=>%s", __FILE__, __LINE__, std::to_string(acquire_result));
+            logger(rx::log::level::k_error, "%s:%u=>%s", __FILE__, __LINE__, to_string(acquire_result));
         }
 
         // Block until we have the swapchain image in order to mimic D3D12. TODO: Reevaluate this decision
         rx::vector<Fence*> fences;
         fences.push_back(vk_fence);
         render_device->wait_for_fences(fences);
+
+        render_device->destroy_fences(fences, allocator);
 
         return static_cast<uint8_t>(acquired_image_idx);
     }
