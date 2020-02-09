@@ -73,6 +73,10 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/miniz)
 # Rex Core lib
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/rex)
 
+# VMA
+# Apparently they don't have an `include/` directory, you just include the src folder? Thanks AMD :|
+include_directories(${CMAKE_CURRENT_LIST_DIR}/VulkanMemoryAllocator/src)
+
 # Hide unnecessary targets from all
 
 set_property(TARGET glslang PROPERTY EXCLUDE_FROM_ALL True)
