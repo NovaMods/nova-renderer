@@ -44,7 +44,7 @@ namespace nova::renderer::rhi {
 
         void bind_vertex_buffers(const rx::vector<Buffer*>& buffers) override;
 
-        void bind_index_buffer(const Buffer* buffer) override;
+        void bind_index_buffer(const Buffer* buffer, IndexSize index_size) override;
 
         void draw_indexed_mesh(uint32_t num_indices, uint32_t offset, uint32_t num_instances) override;
 
@@ -52,7 +52,7 @@ namespace nova::renderer::rhi {
 
         void upload_data_to_image(
             Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) override;
-       
+
     private:
         const VulkanRenderDevice& render_device;
     };

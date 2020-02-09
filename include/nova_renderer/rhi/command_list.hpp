@@ -7,6 +7,10 @@
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
+    enum class IndexSize {
+        Uint16,
+        Uint32,
+    };
 
     /*!
      * \brief An API-agnostic command list
