@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vk_mem_alloc.h>
+
 #include "nova_renderer/rhi/render_device.hpp"
 
 #include "vk_structs.hpp"
@@ -24,6 +26,8 @@ namespace nova::renderer::rhi {
      */
     class VulkanRenderDevice final : public RenderDevice {
     public:
+        VkAllocationCallbacks vk_internal_allocator;
+
         // Global Vulkan objects
         VkInstance instance;
 
@@ -149,6 +153,8 @@ namespace nova::renderer::rhi {
     private:
         VulkanDeviceInfo vk_info;
 
+        VmaAllocator vma;
+
         /*!
          * The index in the vector is the thread index, the key in the map is the queue family index
          */
@@ -182,6 +188,8 @@ namespace nova::renderer::rhi {
          * This allows things outside of a render engine to make decisions based on GPU information
          */
         void save_device_info();
+
+        void initialize_vma();
 
         void create_device_and_queues();
 

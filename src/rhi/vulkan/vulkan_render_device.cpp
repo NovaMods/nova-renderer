@@ -1,3 +1,5 @@
+// This define MUST be before including vulkan_render_device.hpp
+#define VMA_IMPLEMENTATION
 #include "vulkan_render_device.hpp"
 
 #include <sstream>
@@ -32,7 +34,9 @@ namespace nova::renderer::rhi {
     RX_LOG("VulkanRenderDevice", logger);
 
     VulkanRenderDevice::VulkanRenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator* allocator)
-        : RenderDevice(settings, window, allocator), command_pools_by_thread_idx(internal_allocator) {
+        : RenderDevice{settings, window, allocator},
+          vk_internal_allocator{wrap_allocator(internal_allocator)},
+          command_pools_by_thread_idx{internal_allocator} {
         create_instance();
 
         if(settings.settings.debug.enabled) {
@@ -44,6 +48,8 @@ namespace nova::renderer::rhi {
         create_device_and_queues();
 
         save_device_info();
+
+        initialize_vma();
 
         if(settings.settings.debug.enabled) {
             // Late init, can only be used when the device has already been created
@@ -959,7 +965,7 @@ namespace nova::renderer::rhi {
             } break;
         }
 
-        TODO: Switch to VMA
+        // TODO: Switch to VMA
 
         auto vk_alloc = wrap_allocator(allocator);
         vkCreateBuffer(device, &vk_create_info, &vk_alloc, &buffer->buffer);
@@ -1422,6 +1428,7 @@ namespace nova::renderer::rhi {
 
         rx::vector<const char*> enabled_extension_names(internal_allocator);
         enabled_extension_names.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+        enabled_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 #ifdef NOVA_LINUX
         enabled_extension_names.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
 #elif defined(NOVA_WINDOWS)
@@ -1520,10 +1527,21 @@ namespace nova::renderer::rhi {
         info.supports_mesh_shaders = available_extensions.find_if(extension_name_matcher(VK_NV_MESH_SHADER_EXTENSION_NAME));
     }
 
+    void VulkanRenderDevice::initialize_vma() {
+        VmaAllocatorCreateInfo create_info{};
+        create_info.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+        create_info.physicalDevice = gpu.phys_device;
+        create_info.device = device;
+        create_info.pAllocationCallbacks = &vk_internal_allocator;
+        create_info.instance = instance;
+
+        vmaCreateAllocator(&create_info, &vma);
+    }
+
     void VulkanRenderDevice::create_device_and_queues() {
         rx::vector<char*> device_extensions{internal_allocator};
         device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-        device_extensions.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+        device_extensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
 
         uint32_t device_count;
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
