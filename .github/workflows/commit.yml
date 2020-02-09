@@ -111,7 +111,7 @@ jobs:
         shell: bash
         run: |
           curl -L \
-           'https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/latest/windows/vulkan-runtime.exe' -o VulkanRuntime-Installer.exe
+           'https://sdk.lunarg.com/sdk/download/${{ matrix.vulkan }}/windows/vulkan-${{ matrix.vulkan }}-runtime.exe' -o VulkanRuntime-Installer.exe
           ls 
       # 2. Install the Vulkan Runtime
       - name: Install Vulkan Runtime
