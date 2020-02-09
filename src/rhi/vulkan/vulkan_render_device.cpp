@@ -948,11 +948,12 @@ namespace nova::renderer::rhi {
             case BufferUsage::UniformBuffer: {
                 if(info.size < gpu.props.limits.maxUniformBufferRange) {
                     vk_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+                    vma_alloc.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
                 } else {
                     vk_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
                 }
-                vma_alloc.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+                vma_alloc.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
             } break;
 
             case BufferUsage::IndexBuffer: {
@@ -1000,8 +1001,8 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::write_data_to_buffer(const void* data,
-                                                  const mem::Bytes num_bytes,
-                                                  const mem::Bytes offset,
+                                                  const Bytes num_bytes,
+                                                  const Bytes offset,
                                                   const Buffer* buffer) {
         const auto* vulkan_buffer = static_cast<const VulkanBuffer*>(buffer);
 
