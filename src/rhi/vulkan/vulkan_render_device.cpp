@@ -1250,8 +1250,7 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderDevice::destroy_texture(Image* resource, rx::memory::allocator* allocator) {
         auto* vk_image = static_cast<VulkanImage*>(resource);
-        // TODO
-        // vmaDestroyImage(vma_allocator, vk_image->image, vk_image->allocation);
+        vmaDestroyImage(vma, vk_image->image, vk_image->allocation);
 
         allocator->deallocate(reinterpret_cast<rx_byte*>(resource));
     }
