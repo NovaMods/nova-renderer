@@ -1178,15 +1178,28 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::wait_for_fences(const rx::vector<Fence*> fences) {
-        vkWaitForFences(device,
-                        static_cast<uint32_t>(fences.size()),
-                        &(static_cast<VulkanFence*>(fences[0])->fence),
-                        VK_TRUE,
-                        std::numeric_limits<uint64_t>::max());
+        rx::vector<VkFence> vk_fences{internal_allocator};
+        vk_fences.reserve(fences.size());
+        fences.each_fwd([&](const Fence* fence) {
+            const auto* vk_fence = static_cast<const VulkanFence*>(fence);
+            vk_fences.push_back(vk_fence->fence);
+        });
+
+        const auto result = vkWaitForFences(device,
+                                            static_cast<uint32_t>(vk_fences.size()),
+                                            vk_fences.data(),
+                                            VK_TRUE,
+                                            std::numeric_limits<uint64_t>::max());
+
+        if(settings->debug.enabled) {
+            if(result != VK_SUCCESS) {
+                logger(rx::log::level::k_error, "Could not wait for fences. %s (error code %x)", to_string(result), result);
+            }
+        }
     }
 
     void VulkanRenderDevice::reset_fences(const rx::vector<Fence*>& fences) {
-        rx::vector<VkFence> vk_fences(internal_allocator);
+        rx::vector<VkFence> vk_fences{internal_allocator};
         vk_fences.reserve(fences.size());
         fences.each_fwd([&](const Fence* fence) {
             const auto* vk_fence = static_cast<const VulkanFence*>(fence);
