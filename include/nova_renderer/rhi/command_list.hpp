@@ -93,6 +93,8 @@ namespace nova::renderer::rhi {
          * \param staging_buffer The buffer to use to upload the data to the image. This buffer must be host writable, and must be in the
          * CopySource state
          * \param data A pointer to the data to upload to the image
+         *
+         * \note The image must be in the Common layout prior to uploading data to it
          */
         virtual void upload_data_to_image(
             Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) = 0;

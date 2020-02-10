@@ -973,7 +973,7 @@ namespace nova::renderer::rhi {
             } break;
         }
 
-        const auto result = vmaCreateBuffer(vma, &vk_create_info, &vma_alloc, &buffer->buffer, &buffer->allocation, nullptr);
+        const auto result = vmaCreateBuffer(vma, &vk_create_info, &vma_alloc, &buffer->buffer, &buffer->allocation, &buffer->allocation_info);
         if(result == VK_SUCCESS) {
             logger(rx::log::level::k_verbose, "Created buffer %s with size %u", info.name, vk_create_info.size);
 
@@ -1006,9 +1006,7 @@ namespace nova::renderer::rhi {
                                                   const Buffer* buffer) {
         const auto* vulkan_buffer = static_cast<const VulkanBuffer*>(buffer);
 
-        auto* mapped_bytes = vulkan_buffer->allocation->GetMappedData();
-
-        memcpy(mapped_bytes, data, num_bytes.b_count());
+        memcpy(vulkan_buffer->allocation_info.pMappedData, data, num_bytes.b_count());
     }
 
     Sampler* VulkanRenderDevice::create_sampler(const SamplerCreateInfo& create_info, rx::memory::allocator* allocator) {

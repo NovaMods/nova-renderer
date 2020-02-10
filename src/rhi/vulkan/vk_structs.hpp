@@ -28,6 +28,7 @@ namespace nova::renderer::rhi {
     struct VulkanBuffer : Buffer {
         VkBuffer buffer = VK_NULL_HANDLE;
         VmaAllocation allocation{};
+        VmaAllocationInfo allocation_info{};
     };
 
     struct VulkanRenderpass : Renderpass {

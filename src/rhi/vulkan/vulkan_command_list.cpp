@@ -1,6 +1,7 @@
 #include "vulkan_command_list.hpp"
 
 #include <rx/core/log.h>
+#include <vk_mem_alloc.h>
 
 #include "vk_structs.hpp"
 #include "vulkan_render_device.hpp"
@@ -214,7 +215,21 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanCommandList::upload_data_to_image(
-        Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) {
-        // TODO
+        Image* image, const size_t width, const size_t height, const size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) {
+        auto* vk_image = static_cast<VulkanImage*>(image);
+        auto* vk_buffer = static_cast<VulkanBuffer*>(staging_buffer);
+
+        memcpy(vk_buffer->allocation_info.pMappedData, data, width * height * bytes_per_pixel);
+
+        VkBufferImageCopy image_copy{};
+        if(!vk_image->is_depth_tex) {
+            image_copy.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        } else {
+            logger(rx::log::level::k_error, "Can not upload data to depth images");
+        }
+        image_copy.imageSubresource.layerCount = 1;
+        image_copy.imageExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1};
+
+        vkCmdCopyBufferToImage(cmds, vk_buffer->buffer, vk_image->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &image_copy);
     }
 } // namespace nova::renderer::rhi

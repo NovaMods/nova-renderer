@@ -117,7 +117,7 @@ namespace nova::renderer {
 
             rx::vector<ResourceBarrier> final_barriers{allocator};
             final_barriers.push_back(final_texture_barrier);
-            cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::AllGraphics, final_barriers);
+            cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::VertexShader, final_barriers);
 
             Fence* upload_done_fence = device.create_fence(false, allocator);
             device.submit_command_list(cmds, QueueType::Transfer, upload_done_fence);
@@ -129,6 +129,8 @@ namespace nova::renderer {
             device.destroy_fences(upload_done_fences, allocator);
 
             return_staging_buffer(staging_buffer);
+
+            logger(rx::log::level::k_verbose, "Uploaded texture data to texture %s", name);
         }
 
         textures.insert(name, resource);
