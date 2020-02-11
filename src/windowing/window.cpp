@@ -70,7 +70,6 @@ namespace nova::renderer {
         glfwSetKeyCallback(window, &NovaWindow::glfw_key_callback);
         glfwSetMouseButtonCallback(window, &NovaWindow::glfw_mouse_button_callback);
         glfwSetCursorPosCallback(window, &NovaWindow::glfw_mouse_callback);
-
     }
 
     NovaWindow::~NovaWindow() {
