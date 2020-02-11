@@ -14,6 +14,12 @@
 #include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
 
+namespace rx {
+    namespace memory {
+        struct bump_point_allocator;
+    }
+}
+
 void init_rex();
 void rex_fini();
 
@@ -195,7 +201,7 @@ namespace nova::renderer {
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
-        rx::vector<rx::memory::allocator*> frame_allocators;
+        rx::vector<rx::memory::bump_point_allocator*> frame_allocators;
 
         rhi::Sampler* point_sampler;
 

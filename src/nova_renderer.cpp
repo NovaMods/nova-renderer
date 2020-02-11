@@ -186,11 +186,10 @@ namespace nova::renderer {
         MTR_SCOPE("RenderLoop", "execute_frame");
         frame_count++;
 
-        rx::memory::allocator* frame_allocator = frame_allocators[frame_count % NUM_IN_FLIGHT_FRAMES];
+        rx::memory::bump_point_allocator* frame_allocator = frame_allocators[frame_count % NUM_IN_FLIGHT_FRAMES];
+        frame_allocator->reset();
 
         cur_frame_idx = device->get_swapchain()->acquire_next_swapchain_image(frame_allocator);
-
-        rg_log(rx::log::level::k_verbose, "\n***********************\n        FRAME START        \n***********************");
 
         rx::vector<rhi::Fence*> cur_frame_fences{global_allocator};
         cur_frame_fences.push_back(frame_fences[cur_frame_idx]);
@@ -225,8 +224,6 @@ namespace nova::renderer {
         device->wait_for_fences(cur_frame_fences);
 
         device->get_swapchain()->present(cur_frame_idx);
-
-        logger(rx::log::level::k_verbose, "Finished frame");
 
         mtr_flush();
     }
