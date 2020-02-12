@@ -14,7 +14,7 @@
         </Expand>
     </Type>
     <Type Name="rx::string">
-        <DisplayString Condition="m_data == m_buffer">Small String</DisplayString>
+        <DisplayString Condition="m_data == m_buffer">{{ {m_data} }}(Small String)</DisplayString>
         <DisplayString>{{ {m_data} }}</DisplayString>
         <Expand>
             <Item Name="[size]" ExcludeView="simple">m_last - m_data</Item>
