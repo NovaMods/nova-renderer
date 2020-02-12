@@ -31,7 +31,7 @@ Nova intentionally uses the graphics apis directly because we need as much contr
 
 #### Use task-based multithreading
 
-Nova must run well on the CPUs of today as well as the CPUs of tomorrow. While CPU clock speed increases, if that every
+Nova must run well on the CPUs of today as well as the CPUs of tomorrow. While CPU clock speed increases, if that ever
  happens, will  automatically make Nova run faster, increased core count will not. Given recent trends in CPU 
  development, designing for an arbitrary number of threads seems most prudent. Thus, Nova must use task-based 
  multithreading, where small, compartmentalized tasks are sent to a thread pool, the size of which is equal to the
@@ -113,10 +113,9 @@ I started Nova because I thought it'd be fun. First and foremost, Nova is fun. I
 un-fun, I will either reboot it again or drop it. An unfun Nova isn't worth developing, even if it would fit the other 
 two goals better.
 
-#### Multi-API
+#### Vulkan-API
 
-Nova will support at least three APIs: Vulkan, Direct3D 12, and OpenGL 4.5, with Metal support being a possibility. This is because I 
-think that rendering with multiple APIs is more fun and more impressive than just rendering with one.
+Nova will support one API: Vulkan. This is because dealing with more than one API has lead to wasted time due to designing abstractions instead of actual development.
 
 ## New
 
