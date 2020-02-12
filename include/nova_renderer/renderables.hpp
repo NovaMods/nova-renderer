@@ -1,21 +1,20 @@
 #pragma once
 
 #include <atomic>
-#include <memory_resource>
-#include <string>
-#include <vector>
 
 #include <glm/glm.hpp>
+#include <rx/core/string.h>
+#include <rx/core/vector.h>
 
 namespace nova::renderer {
     struct FullVertex {
-        glm::vec3 position;          // 12 bytes
-        glm::vec3 normal;            // 12 bytes
-        glm::vec3 tangent;           // 12 bytes
-        glm::u16vec2 main_uv;        // 4 bytes
-        glm::u8vec2 secondary_uv;    // 2 bytes
-        uint32_t virtual_texture_id; // 4 bytes
-        glm::vec4 additional_stuff;  // 16 bytes
+        glm::vec3 position;             // 12 bytes
+        glm::vec3 normal;               // 12 bytes
+        glm::vec3 tangent;              // 12 bytes
+        uint32_t main_uv;               // 4 bytes
+        uint32_t secondary_uv;          // 4 bytes
+        uint32_t virtual_texture_id;    // 4 bytes
+        glm::vec4 additional_stuff;     // 12 bytes
     };
 
     static_assert(sizeof(FullVertex) % 16 == 0, "full_vertex struct is not aligned to 16 bytes!");
@@ -28,8 +27,8 @@ namespace nova::renderer {
      * making them use special vertex formats
      */
     struct MeshData {
-        std::pmr::vector<FullVertex> vertex_data;
-        std::pmr::vector<uint32_t> indices;
+        rx::vector<FullVertex> vertex_data;
+        rx::vector<uint32_t> indices;
     };
 
     using MeshId = uint64_t;
@@ -53,7 +52,7 @@ namespace nova::renderer {
     struct RenderableMetadata {
         RenderableId id = 0;
 
-        std::pmr::vector<std::string> passes;
+        rx::vector<rx::string> passes;
     };
 
     struct RenderCommand {
