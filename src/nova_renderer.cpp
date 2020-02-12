@@ -465,7 +465,7 @@ namespace nova::renderer {
 
                     bind_data_to_material_descriptor_sets(pass, pass_data.bindings, pipeline.pipeline_interface->bindings);
 
-                    FullMaterialPassName full_pass_name = {pass_data.material_name, pass_data.name};
+                    const FullMaterialPassName full_pass_name{pass_data.material_name, pass_data.name};
 
                     MaterialPassMetadata pass_metadata{};
                     pass_metadata.data = pass_data;

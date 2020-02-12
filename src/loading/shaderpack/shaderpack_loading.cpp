@@ -457,7 +457,7 @@ namespace nova::renderer::shaderpack {
     MaterialData load_single_material(FolderAccessorBase* folder_access, const rx::string& material_path) {
         const rx::string material_text = folder_access->read_text_file(material_path);
 
-        auto json_material = rx::json(material_text);
+        const auto json_material = rx::json{material_text};
         const auto report = validate_material(json_material);
         print(report);
         if(!report.errors.is_empty()) {
@@ -471,6 +471,10 @@ namespace nova::renderer::shaderpack {
 
         auto material = json_material.decode<MaterialData>({});
         material.name = material_file_name.substring(0, material_extension_begin_idx);
+
+        material.passes.each_fwd([&](MaterialPass& pass) {
+            pass.material_name = material.name;
+        });
 
         logger(rx::log::level::k_verbose, "Load of material &s succeeded - name %s", material_path, material.name);
         return material;
