@@ -457,9 +457,11 @@ namespace nova::renderer {
                     MaterialPass pass = {};
                     pass.pipeline_interface = pipeline.pipeline_interface;
 
-                    pass.descriptor_sets = device->create_descriptor_sets(pipeline.pipeline_interface,
-                                                                          global_descriptor_pool,
-                                                                          renderpack_allocator);
+                    if(!pipeline.pipeline_interface->bindings.is_empty()) {
+                        pass.descriptor_sets = device->create_descriptor_sets(pipeline.pipeline_interface,
+                                                                              global_descriptor_pool,
+                                                                              renderpack_allocator);
+                    }
 
                     bind_data_to_material_descriptor_sets(pass, pass_data.bindings, pipeline.pipeline_interface->bindings);
 

@@ -859,7 +859,7 @@ namespace nova::renderer::rhi {
         VkPipelineColorBlendAttachmentState color_blend_attachment;
         color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
                                                 VK_COLOR_COMPONENT_A_BIT;
-        color_blend_attachment.blendEnable = VK_TRUE;
+        color_blend_attachment.blendEnable = should_blend ? VK_TRUE : VK_FALSE;
         color_blend_attachment.srcColorBlendFactor = to_blend_factor(data.source_color_blend_factor);
         color_blend_attachment.dstColorBlendFactor = to_blend_factor(data.destination_color_blend_factor);
         color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
@@ -903,9 +903,7 @@ namespace nova::renderer::rhi {
         pipeline_create_info.pRasterizationState = &rasterizer_create_info;
         pipeline_create_info.pMultisampleState = &multisample_create_info;
         pipeline_create_info.pDepthStencilState = &depth_stencil_create_info;
-        if(should_blend) {
-            pipeline_create_info.pColorBlendState = &color_blend_create_info;
-        }
+        pipeline_create_info.pColorBlendState = &color_blend_create_info;
         pipeline_create_info.pDynamicState = &dynamic_state_create_info;
         pipeline_create_info.layout = vk_interface->pipeline_layout;
 
