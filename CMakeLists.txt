@@ -289,7 +289,6 @@ message(STATUS "Miniz headers: ${INSTALL_HEADERS}")
 
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
-target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
 
 if(NOVA_FORCE_DEBUGGING) 
     target_compile_definitions(nova-renderer PUBLIC NOVA_DEBUG)
