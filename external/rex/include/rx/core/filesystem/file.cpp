@@ -39,34 +39,12 @@ rx_u32 file::flags_from_mode(const char* _mode) {
   return flags;
 }
 
-file::file(void* _impl, const char* _file_name, const char* _mode)
-  : stream{flags_from_mode(_mode)}
-  , m_impl{_impl}
-  , m_file_name{_file_name}
-  , m_mode{_mode}
-{
-}
-
-file::file(file&& other_)
-  : stream{utility::move(other_)}
-  , m_impl{other_.m_impl}
-  , m_file_name{other_.m_file_name}
-  , m_mode{other_.m_mode}
-{
-  other_.m_impl = nullptr;
-  other_.m_file_name = nullptr;
-  other_.m_mode = nullptr;
-}
-
-file::~file() {
-  close();
-}
-
 #if defined(RX_PLATFORM_WINDOWS)
-file::file(const char* _file_name, const char* _mode)
+file::file(memory::allocator* _allocator, const char* _file_name, const char* _mode)
   : stream{flags_from_mode(_mode)}
+  , m_allocator{_allocator}
   , m_impl{nullptr}
-  , m_file_name{_file_name}
+  , m_name{m_allocator, _file_name}
   , m_mode{_mode}
 {
   // Convert |_file_name| to UTF-16.
@@ -87,10 +65,11 @@ file::file(const char* _file_name, const char* _mode)
     _wfopen(reinterpret_cast<const wchar_t*>(file_name.data()), mode_buffer));
 }
 #else
-file::file(const char* _file_name, const char* _mode)
+file::file(memory::allocator* _allocator, const char* _file_name, const char* _mode)
   : stream{flags_from_mode(_mode)}
+  , m_allocator{_allocator}
   , m_impl{static_cast<void*>(fopen(_file_name, _mode))}
-  , m_file_name{_file_name}
+  , m_name{m_allocator, _file_name}
   , m_mode{_mode}
 {
 }
@@ -134,18 +113,31 @@ rx_u64 file::on_size() {
   RX_ASSERT(strcmp(m_mode, "rb") == 0, "cannot get size with mode '%s'", m_mode);
 
   const auto fp = static_cast<FILE*>(m_impl);
+
+  // Determine where we are in the file so we can restore our seek position
+  const auto current_position = ftell(fp);
+  if (RX_HINT_UNLIKELY(current_position == -1L)) {
+    // |fp| doesn't support querying it's position.
+    return 0;
+  }
+
+  // Seek to the beginning of the end of the file.
   if (RX_HINT_UNLIKELY(fseek(fp, 0, SEEK_END) != 0)) {
+    // |fp| doesn't support seeking.
     return 0;
   }
 
-  const auto result = ftell(fp);
-  if (RX_HINT_UNLIKELY(result == -1L)) {
-    fseek(fp, 0, SEEK_SET);
+  const auto ending_position = ftell(fp);
+  if (RX_HINT_UNLIKELY(ending_position == -1L)) {
+    // Restore the position before seeking to the end.
+    fseek(fp, current_position, SEEK_SET);
     return 0;
   }
 
-  fseek(fp, 0, SEEK_SET);
-  return result;
+  // Restore the position before seeking to the end to determine size.
+  fseek(fp, current_position, SEEK_SET);
+
+  return ending_position;
 }
 
 bool file::close() {
@@ -208,6 +200,14 @@ bool file::read_line(string& line_) {
 
 bool file::is_valid() const {
   return m_impl != nullptr;
+}
+
+inline const string& file::name() const & {
+  return m_name;
+}
+
+inline memory::allocator* file::allocator() const {
+  return m_allocator;
 }
 
 optional<vector<rx_byte>> read_binary_file(memory::allocator* _allocator, const char* _file_name) {

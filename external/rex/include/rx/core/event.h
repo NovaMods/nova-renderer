@@ -38,7 +38,7 @@ struct event<R(Ts...)> {
 
 private:
   friend struct handle;
-  concurrency::spin_lock m_lock;
+  mutable concurrency::spin_lock m_lock;
   vector<delegate> m_delegates; // protected by |m_lock|
 };
 

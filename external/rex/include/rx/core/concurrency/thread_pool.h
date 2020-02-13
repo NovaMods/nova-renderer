@@ -8,9 +8,11 @@
 #include "rx/core/concurrency/mutex.h"
 #include "rx/core/concurrency/condition_variable.h"
 
+#include "rx/core/hints/empty_bases.h"
+
 namespace rx::concurrency {
 
-struct thread_pool
+struct RX_HINT_EMPTY_BASES thread_pool
   : concepts::no_copy
   , concepts::no_move
 {

@@ -5,6 +5,8 @@
 
 namespace rx {
 
+struct string;
+
 struct stream
   : concepts::no_copy
 {
@@ -60,6 +62,9 @@ struct stream
   // state the stream is in. Streams that don't support querying the size
   // should construct the base class without k_has_size.
   virtual rx_u64 on_size() = 0;
+
+  // The name of the stream.
+  virtual const string& name() const & = 0;
 
 private:
   rx_u32 m_flags;

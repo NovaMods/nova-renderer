@@ -1,5 +1,9 @@
+#include <limits.h> // UCHAR_MAX
+
 #include "rx/core/stream.h"
 #include "rx/core/string.h" // utf16_to_utf8
+
+#include "rx/core/hints/may_alias.h"
 
 namespace rx {
 
@@ -86,18 +90,79 @@ optional<vector<rx_byte>> read_text_stream(memory::allocator* _allocator, stream
     auto data = convert_text_encoding(utility::move(*result));
 
 #if defined(RX_PLATFORM_WINDOWS)
-    // Remove all instances of CR from the byte stream.
-    auto next = reinterpret_cast<rx_byte*>(memchr(data.data(), '\r', data.size()));
+    // Quickly scan through word at a time |_src| for CR.
+    auto scan = [](const void* _src, rx_size _size) {
+      static constexpr auto k_ss = sizeof(rx_size);
+      static constexpr auto k_align = k_ss - 1;
+      static constexpr auto k_ones = -1_z / UCHAR_MAX; // All bits set.
+      static constexpr auto k_highs = k_ones * (UCHAR_MAX / 2 + 1); // All high bits set.
+      static constexpr auto k_c = static_cast<const rx_byte>('\r');
+      static constexpr auto k_k = k_ones * k_c;
 
-    // Leverage the use of optimized memchr to skip through large swaths of
-    // binary data quickly, rather than the more obvious per-byte approach here.
-    while (next) {
-      const rx_ptrdiff index = next - data.data();
-      data.erase(index, index + 1);
-      next = reinterpret_cast<rx_byte*>(memchr(next + 1, '\r', data.size() - index));
+      auto has_zero = [&](rx_size _value) {
+        return _value - k_ones & (~_value) & k_highs;
+      };
+
+      // Search for CR until |s| is aligned on |k_align| alignment.
+      auto s = reinterpret_cast<const rx_byte*>(_src);
+      auto n = _size;
+      for (; (reinterpret_cast<rx_uintptr>(s) & k_align) && n && *s != k_c; s++, n--);
+
+      // Do checks for CR word at a time, stopping at word containing CR.
+      if (n && *s != k_c) {
+        // Need to typedef with an alias type since we're breaking strict
+        // aliasing, let the compiler know.
+        typedef rx_size RX_HINT_MAY_ALIAS word_type;
+
+        // Scan word at a time, stopping at word containing first |k_c|.
+        auto w = reinterpret_cast<const word_type*>(s);
+        for (; n >= k_ss && !has_zero(*w ^ k_k); w++, n -= k_ss);
+        s = reinterpret_cast<const rx_byte*>(w);
+      }
+
+      // Handle trailing bytes to determine where in word |k_c| is.
+      for (; n && *s != k_c; s++, n--);
+
+      return n ? s : nullptr;
+    };
+
+    const rx_byte* src = data.data();
+    rx_byte* dst = data.data();
+    rx_size size = data.size();
+    auto next = scan(src, size);
+    if (!next) {
+      // Contents do not contain any CR.
+      return data;
     }
-#endif
 
+    // Remove all instances of CR from the byte stream using instruction-level
+    // parallelism.
+    //
+    // Note that the very first iteration will always have |src| == |dst|, so
+    // optimize away the initial memmove here as nothing needs to be moved at
+    // the beginning.
+    const auto length = next - src;
+    const auto length_plus_one = length + 1;
+    dst += length;
+    src += length_plus_one;
+    size -= length_plus_one;
+
+    // Subsequent iterations will move contents forward.
+    while ((next = scan(src, size))) {
+      const auto length = next - src;
+      const auto length_plus_one = length + 1;
+      memmove(dst, src, length);
+      dst += length;
+      src += length_plus_one;
+      size -= length_plus_one;
+    }
+
+    // Ensure the result is null-terminated after all those moves.
+    *dst++ = '\0';
+
+    // Respecify the size of storage after removing all those CRs.
+    data.resize(dst - data.data());
+#endif
     return data;
   }
 

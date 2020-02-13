@@ -12,15 +12,15 @@ namespace rx {
 // the link structure only requires one pointer instead of two.
 //
 // Like all intrusive containers, you must embed the node in your own structure
-// which is called a "link". The use of |push_front| and |push_back| takes a
-// pointer to this node. Retrieving the data associated with the node requires
-// finding the offset relative to the node to reconstruct, this link address is
-// given to |enumerate_head|, |enumerate_tail| or |node::data| by pointer to
-// the link node in the structure.
+// which is called a "link". The use of |push| takes a pointer to this node.
+// Retrieving the data associated with the node requires finding the offset
+// relative to the node to reconstruct, this link address is given to
+// |enumerate_head|, |enumerate_tail| or |node::data| by pointer to the link
+// node in your structure.
 //
 // This should not be used unless you need to reduce the storage costs of your
 // nodes. Rex makes use of this for it's globals system since rx::global<T> is
-// quite large and minimizing their size is worthwhile.
+// quite large and minimizing the size is worthwhile.
 //
 // 32-bit: 8 bytes
 // 64-bit: 16 bytes

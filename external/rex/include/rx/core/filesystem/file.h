@@ -7,9 +7,12 @@
 namespace rx::filesystem {
 
 struct file
-  : stream
+  final : stream
 {
-  constexpr file();
+  file();
+  file(memory::allocator* _allocator);
+  file(memory::allocator* _allocator, const char* _file_name, const char* _mode);
+  file(memory::allocator* _allocator, const string& _file_name, const char* _mode);
   file(const char* _file_name, const char* _mode);
   file(const string& _file_name, const char* _mode);
   file(file&& other_);
@@ -56,6 +59,10 @@ struct file
 
   operator bool() const;
 
+  virtual const string& name() const &;
+
+  memory::allocator* allocator() const;
+
 private:
   file(void* _impl, const char* _file_name, const char* _mode);
 
@@ -63,23 +70,54 @@ private:
 
   friend struct process;
 
+  memory::allocator* m_allocator;
   void* m_impl;
-
-  const char* m_file_name;
+  string m_name;
   const char* m_mode;
 };
 
-inline constexpr file::file()
+inline file::file()
+  : file{&memory::g_system_allocator}
+{
+}
+
+inline file::file(memory::allocator* _allocator)
   : stream{0}
-  , m_impl{nullptr}
-  , m_file_name{nullptr}
+  , m_allocator{_allocator}
+  , m_name{m_allocator}
   , m_mode{nullptr}
 {
 }
 
-inline file::file(const string& _file_name, const char* _mode)
-  : file{_file_name.data(), _mode}
+inline file::file(memory::allocator* _allocator, const string& _file_name, const char* _mode)
+  : file{_allocator, _file_name.data(), _mode}
 {
+}
+
+inline file::file(const char* _file_name, const char* _mode)
+  : file{&memory::g_system_allocator, _file_name, _mode}
+{
+}
+
+inline file::file(const string& _file_name, const char* _mode)
+  : file{&memory::g_system_allocator, _file_name, _mode}
+{
+}
+
+inline file::file(file&& other_)
+  : stream{utility::move(other_)}
+  , m_allocator{other_.m_allocator}
+  , m_impl{other_.m_impl}
+  , m_name{utility::move(other_.m_name)}
+  , m_mode{other_.m_mode}
+{
+  other_.m_allocator = nullptr;
+  other_.m_impl = nullptr;
+  other_.m_mode = nullptr;
+}
+
+inline file::~file() {
+  close();
 }
 
 inline file::operator bool() const {

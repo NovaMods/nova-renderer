@@ -8,13 +8,15 @@
 #include "rx/core/concepts/no_copy.h"
 #include "rx/core/concepts/no_move.h"
 
+#include "rx/core/hints/empty_bases.h"
+
 namespace rx::memory {
 
 // represents uninitialized storage suitable in size and alignment for
 // an object of type |T|, can be type erased for implementing deferred static
 // globals and variant types
 template<typename T>
-struct uninitialized_storage
+struct RX_HINT_EMPTY_BASES uninitialized_storage
   : concepts::no_copy
   , concepts::no_move
 {

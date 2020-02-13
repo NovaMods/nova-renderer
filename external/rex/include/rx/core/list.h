@@ -14,7 +14,7 @@ namespace rx {
 // pointer to this node. Retrieving the data associated with the node requires
 // finding the offset relative to the node to reconstruct, this link address is
 // given to |enumerate_head|, |enumerate_tail| or |node::data| by pointer to
-// the link node in the structure.
+// the link node in your structure.
 //
 // 32-bit: 8 bytes
 // 64-bit: 16 bytes
