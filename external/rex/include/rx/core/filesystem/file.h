@@ -9,8 +9,8 @@ namespace rx::filesystem {
 struct file
   final : stream
 {
-  file();
-  file(memory::allocator* _allocator);
+  constexpr file();
+  constexpr file(memory::allocator* _allocator);
   file(memory::allocator* _allocator, const char* _file_name, const char* _mode);
   file(memory::allocator* _allocator, const string& _file_name, const char* _mode);
   file(const char* _file_name, const char* _mode);
@@ -76,14 +76,15 @@ private:
   const char* m_mode;
 };
 
-inline file::file()
+inline constexpr file::file()
   : file{&memory::g_system_allocator}
 {
 }
 
-inline file::file(memory::allocator* _allocator)
+inline constexpr file::file(memory::allocator* _allocator)
   : stream{0}
   , m_allocator{_allocator}
+  , m_impl{nullptr}
   , m_name{m_allocator}
   , m_mode{nullptr}
 {

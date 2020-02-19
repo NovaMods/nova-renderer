@@ -1,4 +1,4 @@
-#include <string.h> // strcmp, memcpy
+#include <string.h> // strcmp, memcpy, memmove
 #include <stdarg.h> // va_{list, start, end, copy}
 #include <stdio.h> // vsnprintf
 
@@ -126,16 +126,6 @@ string string::formatter(memory::allocator* _allocator,
   format_va(contents, _format, va);
   va_end(va);
   return contents;
-}
-
-string::string(memory::allocator* _allocator)
-  : m_allocator{_allocator}
-  , m_data{m_buffer}
-  , m_last{m_buffer}
-  , m_capacity{m_buffer + k_small_string}
-{
-  RX_ASSERT(m_allocator, "null allocator");
-  resize(0);
 }
 
 string::string(memory::allocator* _allocator, const char* _contents)

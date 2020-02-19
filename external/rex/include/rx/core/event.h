@@ -5,6 +5,8 @@
 #include "rx/core/concurrency/spin_lock.h"
 #include "rx/core/concurrency/scope_lock.h"
 
+#include "rx/core/hints/empty_bases.h"
+
 namespace rx {
 
 template<typename T>
@@ -14,7 +16,7 @@ template<typename R, typename... Ts>
 struct event<R(Ts...)> {
   using delegate = function<R(Ts...)>;
 
-  struct handle
+  struct RX_HINT_EMPTY_BASES handle
     : concepts::no_copy
   {
     constexpr handle(event* _event, rx_size _index);

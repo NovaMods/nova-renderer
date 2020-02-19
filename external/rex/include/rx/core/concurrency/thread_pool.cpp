@@ -15,7 +15,7 @@ struct work {
   {
   }
 
-  list::node link;
+  intrusive_list::node link;
   function<void(int)> callback;
 };
 

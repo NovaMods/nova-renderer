@@ -4,10 +4,11 @@
 #include "rx/core/assert.h"
 
 #include "rx/core/hints/unlikely.h"
+#include "rx/core/hints/empty_bases.h"
 
 namespace rx {
 
-struct static_pool
+struct RX_HINT_EMPTY_BASES static_pool
   : concepts::no_copy
 {
   static_pool(memory::allocator* _allocator, rx_size _object_size, rx_size _object_count);

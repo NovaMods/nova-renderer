@@ -2,7 +2,7 @@
 #define RX_CORE_GLOBAL_H
 #include "rx/core/memory/uninitialized_storage.h"
 #include "rx/core/assert.h"
-#include "rx/core/xor_list.h"
+#include "rx/core/intrusive_xor_list.h"
 
 namespace rx {
 
@@ -125,8 +125,8 @@ private:
   void (*m_init_global)(rx_byte* _storage, rx_byte* _argument_store);
   void (*m_fini_arguments)(rx_byte* _argument_store);
 
-  xor_list::node m_grouped;
-  xor_list::node m_ungrouped;
+  intrusive_xor_list::node m_grouped;
+  intrusive_xor_list::node m_ungrouped;
 
   const char* m_group;
   const char* m_name;
@@ -199,10 +199,10 @@ private:
   const char* m_name;
 
   // Nodes for this group. This is constructed after a call to |globals::link|.
-  xor_list m_list;
+  intrusive_xor_list m_list;
 
   // Link for global linked-list of groups in |globals|.
-  xor_list::node m_link;
+  intrusive_xor_list::node m_link;
 };
 
 struct globals {
@@ -223,10 +223,10 @@ private:
   static void link(global_group* _group);
 
   // Global linked-list of groups.
-  static inline xor_list s_group_list;
+  static inline intrusive_xor_list s_group_list;
 
   // Global linked-list of ungrouped nodes.
-  static inline xor_list s_node_list;
+  static inline intrusive_xor_list s_node_list;
 };
 
 // global_node

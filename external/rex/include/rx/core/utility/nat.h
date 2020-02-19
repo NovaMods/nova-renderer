@@ -3,9 +3,9 @@
 
 namespace rx::utility {
 
-// Special tag type which represents a NAT "not-a-type". Common used as a stand
-// in type in a union which constains non-trivial to construct members to enable
-// constexpr initialization of that union.
+// Special tag type which represents a NAT "not-a-type". Commonly used as a
+// stand in type in a union which constains non-trivial to construct members to
+// enable constexpr initialization.
 //
 // One such example is optional<T> which has constexpr constructors because the
 // uninitialized case initializes an embedded NAT.

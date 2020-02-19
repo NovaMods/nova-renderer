@@ -2,14 +2,6 @@
 
 namespace rx {
 
-dynamic_pool::dynamic_pool(memory::allocator* _allocator, rx_size _object_size, rx_size _objects_per_pool)
-  : m_allocator{_allocator}
-  , m_object_size{_object_size}
-  , m_objects_per_pool{_objects_per_pool}
-  , m_pools{m_allocator}
-{
-}
-
 dynamic_pool::dynamic_pool(dynamic_pool&& pool_)
   : m_allocator{pool_.m_allocator}
   , m_pools{utility::move(pool_.m_pools)}

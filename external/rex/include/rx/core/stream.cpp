@@ -1,4 +1,5 @@
 #include <limits.h> // UCHAR_MAX
+#include <string.h> // memmove
 
 #include "rx/core/stream.h"
 #include "rx/core/string.h" // utf16_to_utf8

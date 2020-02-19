@@ -18,13 +18,13 @@ struct string {
   static constexpr const rx_size k_npos{-1_z};
   static constexpr const rx_size k_small_string{16};
 
-  string(memory::allocator* _allocator);
+  constexpr string(memory::allocator* _allocator);
   string(memory::allocator* _allocator, const string& _contents);
   string(memory::allocator* _allocator, const char* _contents);
   string(memory::allocator* _allocator, const char* _contents, rx_size _size);
   string(memory::allocator* _allocator, const char* _first, const char* _last);
 
-  string();
+  constexpr string();
   string(const string& _contents);
   string(string&& contents_);
   string(const char* _contents);
@@ -129,7 +129,7 @@ private:
   char* m_data;
   char* m_last;
   char* m_capacity;
-  char m_buffer[k_small_string] = {0};
+  char m_buffer[k_small_string];
 };
 
 // utf-16, Windows compatible "wide-string"
@@ -203,7 +203,18 @@ inline string::string(memory::allocator* _allocator, const string& _contents)
 {
 }
 
-inline string::string()
+inline constexpr string::string(memory::allocator* _allocator)
+  : m_allocator{_allocator}
+  , m_data{m_buffer}
+  , m_last{m_buffer}
+  , m_capacity{m_buffer + k_small_string}
+  , m_buffer{}
+{
+  RX_ASSERT(m_allocator, "null allocator");
+  m_buffer[0] = '\0';
+}
+
+inline constexpr string::string()
   : string{&memory::g_system_allocator}
 {
 }

@@ -1,6 +1,6 @@
 #ifndef RX_CORE_CONCURRENCY_THREAD_POOL_H
 #define RX_CORE_CONCURRENCY_THREAD_POOL_H
-#include "rx/core/list.h"
+#include "rx/core/intrusive_list.h"
 #include "rx/core/function.h"
 #include "rx/core/dynamic_pool.h"
 
@@ -35,7 +35,7 @@ private:
   condition_variable m_task_cond;
   condition_variable m_ready_cond;
 
-  list m_queue;              // protected by |m_mutex|
+  intrusive_list m_queue;    // protected by |m_mutex|
   vector<thread> m_threads;  // protected by |m_mutex|
   dynamic_pool m_job_memory; // protected by |m_mutex|
   bool m_stop;               // protected by |m_mutex|

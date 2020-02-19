@@ -3,12 +3,14 @@
 #include "rx/core/optional.h"
 #include "rx/core/vector.h"
 
+#include "rx/core/hints/empty_bases.h"
+
 namespace rx {
 
 struct string;
 
-struct stream
-  : concepts::no_copy
+struct RX_HINT_EMPTY_BASES stream
+   : concepts::no_copy
 {
   // Stream flags.
   enum : rx_u32 {

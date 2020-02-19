@@ -1,7 +1,5 @@
 #ifndef RX_CORE_VECTOR_H
 #define RX_CORE_VECTOR_H
-#include <string.h> // memcpy
-
 #include "rx/core/assert.h" // RX_ASSERT
 #include "rx/core/config.h" // RX_COMPILER_GCC
 
@@ -9,15 +7,20 @@
 #include "rx/core/traits/is_trivially_copyable.h"
 #include "rx/core/traits/is_trivially_destructible.h"
 #include "rx/core/traits/return_type.h"
-#include "rx/core/traits/enable_if.h"
 
 #include "rx/core/utility/forward.h"
 #include "rx/core/utility/move.h"
 #include "rx/core/utility/uninitialized.h"
 
+#include "rx/core/hints/restrict.h"
+
 #include "rx/core/memory/system_allocator.h" // memory::{system_allocator, allocator}
 
 namespace rx {
+
+namespace detail {
+  void copy(void *RX_HINT_RESTRICT dst_, const void* RX_HINT_RESTRICT _src, rx_size _size);
+}
 
 // 32-bit: 16 bytes
 // 64-bit: 32 bytes
@@ -171,7 +174,7 @@ inline vector<T>::vector(memory::allocator* _allocator, const vector& _other)
   RX_ASSERT(m_data, "out of memory");
 
   if constexpr(traits::is_trivially_copyable<T>) {
-    memcpy(m_data, _other.m_data, _other.m_size * sizeof *m_data);
+    detail::copy(m_data, _other.m_data, _other.m_size * sizeof *m_data);
   } else for (rx_size i{0}; i < m_size; i++) {
     utility::construct<T>(m_data + i, _other.m_data[i]);
   }
@@ -238,7 +241,7 @@ inline vector<T>& vector<T>::operator=(const vector& _other) {
   RX_ASSERT(m_data, "out of memory");
 
   if constexpr(traits::is_trivially_copyable<T>) {
-    memcpy(m_data, _other.m_data, _other.m_size * sizeof *m_data);
+    detail::copy(m_data, _other.m_data, _other.m_size * sizeof *m_data);
   } else for (rx_size i = 0; i < m_size; i++) {
     utility::construct<T>(m_data + i, _other.m_data[i]);
   }
