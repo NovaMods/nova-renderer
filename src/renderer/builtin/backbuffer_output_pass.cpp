@@ -1,7 +1,7 @@
 #include "backbuffer_output_pass.hpp"
 
 namespace nova::renderer {
-    struct BackbufferOutputRenderpassCreateInfo : shaderpack::RenderPassCreateInfo {
+    struct RX_HINT_EMPTY_BASES BackbufferOutputRenderpassCreateInfo : shaderpack::RenderPassCreateInfo {
         BackbufferOutputRenderpassCreateInfo();
     };
 
@@ -17,7 +17,7 @@ namespace nova::renderer {
 
     BackbufferOutputRenderpass::BackbufferOutputRenderpass() : Renderpass(BACKBUFFER_OUTPUT_RENDER_PASS_NAME, true) {}
 
-    shaderpack::RenderPassCreateInfo BackbufferOutputRenderpass::get_create_info() {
+    const shaderpack::RenderPassCreateInfo& BackbufferOutputRenderpass::get_create_info() {
         return *backbuffer_output_create_info;
     }
 }

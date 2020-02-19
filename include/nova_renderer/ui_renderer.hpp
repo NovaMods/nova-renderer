@@ -14,7 +14,7 @@ namespace nova::renderer {
         UiRenderpass(UiRenderpass&& old) noexcept = default;
         UiRenderpass& operator=(UiRenderpass&& old) noexcept = default;
 
-        static shaderpack::RenderPassCreateInfo get_create_info();
+        static const shaderpack::RenderPassCreateInfo& get_create_info();
 
     protected:
         void record_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) override final;

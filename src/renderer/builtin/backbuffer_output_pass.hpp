@@ -6,6 +6,6 @@ namespace nova::renderer {
     public:
         BackbufferOutputRenderpass();
 
-        static shaderpack::RenderPassCreateInfo get_create_info();
+        static const shaderpack::RenderPassCreateInfo& get_create_info();
     };
 } // namespace nova::renderer

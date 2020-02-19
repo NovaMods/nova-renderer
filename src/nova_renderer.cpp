@@ -34,6 +34,8 @@
 using namespace nova::mem;
 using namespace operators;
 
+RX_GLOBAL_GROUP("Nova", g_nova_globals);
+
 RX_LOG("nova", logger);
 
 // TODO: Use this somehow
@@ -59,8 +61,8 @@ void init_rex() {
 
         auto* log_handles = log_handles_global->cast<nova::renderer::LogHandles>();
 
-        rx::globals::find("loggers")->each([&](rx::global_node* _logger) {
-            log_handles->push_back(_logger->cast<rx::log>()->on_write([](const rx::log::level level, const rx::string& message) {
+        rx::globals::find("loggers")->each([&](rx::global_node* logger_node) {
+            log_handles->push_back(logger_node->cast<rx::log>()->on_write([](const rx::log::level level, const rx::string& message) {
                 switch(level) {
                     case rx::log::level::k_error:
                         printf("[error  ]: %s\n", message.data());
