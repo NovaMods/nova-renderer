@@ -495,7 +495,7 @@ namespace nova::renderer::shaderpack {
         }
     }
 
-    rx::vector<uint32_t> compile_shader(const rx::string& source, const rhi::ShaderStage stage, const glslang::EShSource source_language) {
+    rx::vector<uint32_t> compile_shader(const rx::string& source, const rhi::ShaderStage stage, const rhi::ShaderLanguage source_language) {
         MTR_SCOPE("compile_shader", "Self");
 
         const auto glslang_stage = to_glslang_shader_stage(stage);
@@ -508,11 +508,11 @@ namespace nova::renderer::shaderpack {
         const auto* source_ptr = source.data();
         shader.setStrings(&source_ptr, 1);
 
-        if(source_language == glslang::EShSourceHlsl) {
+        if(source_language == rhi::ShaderLanguage::Hlsl) {
             shader.setEnvInput(glslang::EShSourceHlsl, glslang_stage, glslang::EShClientVulkan, 100);
             shader.setHlslIoMapping(true);
 
-        } else if(source_language == glslang::EShSourceGlsl) {
+        } else if(source_language == rhi::ShaderLanguage::Glsl) {
             // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
             shader.setEnvInput(glslang::EShSourceGlsl, glslang_stage, glslang::EShClientVulkan, 100);
 
