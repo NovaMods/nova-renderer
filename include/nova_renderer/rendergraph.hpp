@@ -246,7 +246,7 @@ namespace nova::renderer {
          * Exact name and usage are still under revision, this is the alpha version of this method
          */
         template <typename RenderpassType, typename... Args>
-        [[nodiscard]] RenderpassType* create_renderpass(DeviceResources& resource_storage, Args&... args);
+        [[nodiscard]] RenderpassType* create_renderpass(DeviceResources& resource_storage, Args&&... args);
 
         /*!
          * \brief Adds an already-created renderpass with a specific create info
@@ -283,7 +283,7 @@ namespace nova::renderer {
     };
 
     template <typename RenderpassType, typename... Args>
-    RenderpassType* Rendergraph::create_renderpass(DeviceResources& resource_storage, Args&... args) {
+    RenderpassType* Rendergraph::create_renderpass(DeviceResources& resource_storage, Args&&... args) {
 
         auto* renderpass = allocator->create<RenderpassType>(rx::utility::forward<Args>(args)...);
         const auto& create_info = RenderpassType::get_create_info();

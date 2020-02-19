@@ -4,7 +4,7 @@
 namespace nova::renderer {
     class BackbufferOutputRenderpass final : public Renderpass {
     public:
-        BackbufferOutputRenderpass();
+        explicit BackbufferOutputRenderpass(NovaRenderer* nova);
 
         static const shaderpack::RenderPassCreateInfo& get_create_info();
     };

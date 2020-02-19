@@ -59,6 +59,8 @@ namespace nova::renderer {
      */
     constexpr const char* BACKBUFFER_OUTPUT_RENDER_PASS_NAME = "BackbufferOutput";
 
+    constexpr const char* BACKBUFFER_OUTPUT_PIPELINE_NAME = "BackbufferOutput";
+
     /*!
      * \brief Name of the render target that renderpacks must render to
      */

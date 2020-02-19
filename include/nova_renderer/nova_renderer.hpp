@@ -111,7 +111,7 @@ namespace nova::renderer {
          * \return A pointer to the newly created renderpass
          */
         template <typename RenderpassType, typename... Args>
-        RenderpassType* create_ui_renderpass(Args&... args);
+        RenderpassType* create_ui_renderpass(Args&&... args);
 
         [[nodiscard]] const rx::vector<MaterialPass>& get_material_passes_for_pipeline(rhi::Pipeline* const pipeline);
 
@@ -344,7 +344,7 @@ namespace nova::renderer {
     }
 
     template <typename RenderpassType, typename... Args>
-    RenderpassType* NovaRenderer::create_ui_renderpass(Args&... args) {
+    RenderpassType* NovaRenderer::create_ui_renderpass(Args&&... args) {
         return rendergraph->create_renderpass<RenderpassType>(*device_resources, rx::utility::forward<Args>(args)...);
     }
 } // namespace nova::renderer

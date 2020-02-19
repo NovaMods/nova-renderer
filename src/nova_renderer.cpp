@@ -788,7 +788,8 @@ namespace nova::renderer {
     void NovaRenderer::create_renderpass_manager() { rendergraph = global_allocator->create<Rendergraph>(global_allocator, *device); }
 
     void NovaRenderer::create_builtin_renderpasses() const {
-        if(rendergraph->create_renderpass<BackbufferOutputRenderpass>(*device_resources) == nullptr) {
+        auto* nova_alias = this;
+        if(rendergraph->create_renderpass<BackbufferOutputRenderpass>(*device_resources, nova_alias) == nullptr) {
             logger(rx::log::level::k_error, "Could not create the backbuffer output renderpass");
         }
     }
