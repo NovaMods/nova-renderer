@@ -54,9 +54,10 @@ namespace nova::renderer {
      */
     constexpr const char* UI_RENDER_PASS_NAME = "NovaUI";
 
-    constexpr const char* UI_MATERIAL_NAME = "BestFriendGUI";
-
-    constexpr const char* UI_MATERIAL_PASS_NAME = "BestFriendGUI";
+    /*!
+     * \brief Name of the renderpass that outputs to the backbuffer
+     */
+    constexpr const char* BACKBUFFER_OUTPUT_RENDER_PASS_NAME = "BackbufferOutput";
 
     /*!
      * \brief Name of the render target that renderpacks must render to
