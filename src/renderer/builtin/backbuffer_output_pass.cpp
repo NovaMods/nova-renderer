@@ -31,7 +31,7 @@ namespace nova::renderer {
 
     RX_GLOBAL<BackbufferOutputRenderpassCreateInfo> backbuffer_output_create_info{"Nova", "BackbufferOutputCreateInfo"};
 
-    BackbufferOutputRenderpass::BackbufferOutputRenderpass(NovaRenderer* nova) : Renderpass(BACKBUFFER_OUTPUT_RENDER_PASS_NAME, true) {
+    BackbufferOutputRenderpass::BackbufferOutputRenderpass(const NovaRenderer* nova) : Renderpass(BACKBUFFER_OUTPUT_RENDER_PASS_NAME, true) {
         auto& pipeline_storage = nova->get_pipeline_storage();
     }
 
