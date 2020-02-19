@@ -115,6 +115,18 @@ namespace nova::renderer {
 
         void destroy_render_target(const rx::string& texture_name, rx::memory::allocator* allocator);
 
+        /*!
+         * \brief Retrieves a staging buffer at least the specified size
+         *
+         * The actual buffer returned may be larger than what you need
+         *
+         * When you're done with the staging buffer, return it to the pool with `return_staging_buffer`
+         */
+        rhi::Buffer* get_staging_buffer_with_size(mem::Bytes size);
+
+        void return_staging_buffer(rhi::Buffer* buffer);
+
+    private:
         NovaRenderer& renderer;
 
         rhi::RenderDevice& device;
@@ -136,16 +148,5 @@ namespace nova::renderer {
         void allocate_staging_buffer_memory();
 
         void allocate_uniform_buffer_memory();
-
-        /*!
-         * \brief Retrieves a staging buffer at least the specified size
-         *
-         * The actual buffer returned may be larger than what you need
-         *
-         * When you're done with the staging buffer, return it to the pool with `return_staging_buffer`
-         */
-        rhi::Buffer* get_staging_buffer_with_size(mem::Bytes size);
-
-        void return_staging_buffer(rhi::Buffer* buffer);
     };
 } // namespace nova::renderer

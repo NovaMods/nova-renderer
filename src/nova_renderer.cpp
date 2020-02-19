@@ -29,8 +29,8 @@
 #include "debugging/renderdoc.hpp"
 #include "loading/shaderpack/render_graph_builder.hpp"
 #include "render_objects/uniform_structs.hpp"
-#include "rhi/vulkan/vulkan_render_device.hpp"
 #include "renderer/builtin/backbuffer_output_pass.hpp"
+#include "rhi/vulkan/vulkan_render_device.hpp"
 using namespace nova::mem;
 using namespace operators;
 
@@ -739,15 +739,31 @@ namespace nova::renderer {
 
     void NovaRenderer::create_builtin_render_targets() const {
         const auto& swapchain_size = device->get_swapchain()->get_size();
-        const auto scene_output = device_resources->create_render_target(SCENE_OUTPUT_RT_NAME,
-                                                                         swapchain_size.x,
-                                                                         swapchain_size.y,
-                                                                         rhi::PixelFormat::Rgba8,
-                                                                         global_allocator,
-                                                                         true);
 
-        if(!scene_output) {
-            logger(rx::log::level::k_error, "Could not create scene output render target %s", SCENE_OUTPUT_RT_NAME);
+        {
+            const auto scene_output = device_resources->create_render_target(SCENE_OUTPUT_RT_NAME,
+                                                                             swapchain_size.x,
+                                                                             swapchain_size.y,
+                                                                             rhi::PixelFormat::Rgba8,
+                                                                             global_allocator,
+                                                                             true);
+
+            if(!scene_output) {
+                logger(rx::log::level::k_error, "Could not create scene output render target");
+            }
+        }
+
+        {
+            const auto ui_output = device_resources->create_render_target(UI_OUTPUT_RT_NAME,
+                                                                          swapchain_size.x,
+                                                                          swapchain_size.y,
+                                                                          rhi::PixelFormat::Rgba8,
+                                                                          global_allocator,
+                                                                          true);
+
+            if(!ui_output) {
+                logger(rx::log::level::k_error, "Could not create UI output render target");
+            }
         }
     }
 
@@ -773,7 +789,6 @@ namespace nova::renderer {
         // UI render pass
         /*{
             Renderpass* ui_renderpass = global_allocator->create<NullUiRenderpass>();
-            ui_renderpass->is_builtin = true;
 
             if(!rendergraph->add_renderpass(ui_renderpass, NullUiRenderpass::get_create_info(), *device_resources)) {
                 logger(rx::log::level::k_error, "Could not create null UI renderpass");
@@ -782,9 +797,10 @@ namespace nova::renderer {
 
         {
             Renderpass* backbuffer_pass = global_allocator->create<BackbufferOutputRenderpass>();
-            backbuffer_pass->is_builtin = true;
 
-
+            if(!rendergraph->add_renderpass(backbuffer_pass, BackbufferOutputRenderpass::get_create_info(), *device_resources)) {
+                logger(rx::log::level::k_error, "Could not create the backbuffer output renderpass");
+            }
         }
     }
 } // namespace nova::renderer

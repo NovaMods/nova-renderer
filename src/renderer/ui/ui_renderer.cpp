@@ -9,7 +9,7 @@ namespace nova::renderer {
 
     UiRenderpassCreateInfo::UiRenderpassCreateInfo() {
         name = UI_RENDER_PASS_NAME;
-        texture_outputs.emplace_back(UI_OUTPUT_RT_NAME, shaderpack::PixelFormatEnum::RGBA8, false);
+        texture_outputs.emplace_back(UI_OUTPUT_RT_NAME, shaderpack::PixelFormatEnum::RGBA8, true);
     }
 
     RX_GLOBAL<shaderpack::RenderPassCreateInfo> ui_create_info{"Nova", "UiRenderpassCreateInfo"};
