@@ -64,6 +64,13 @@ namespace nova::renderer {
     constexpr const char* SCENE_OUTPUT_RT_NAME = "NovaSceneOutput";
 
     /*!
+     * \brief Name of the UI render target
+     *
+     * All UI renderpasses MUST will render to this render target
+     */
+    constexpr const char* UI_OUTPUT_RT_NAME = "NovaUiOutput";
+
+    /*!
      * \brief Name of the backbuffer
      *
      * Nova presents the backbuffer to the screen every frame. The builtin UI render pass adds the UI to the backbuffer after the rest of

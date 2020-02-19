@@ -30,7 +30,7 @@
 #include "loading/shaderpack/render_graph_builder.hpp"
 #include "render_objects/uniform_structs.hpp"
 #include "rhi/vulkan/vulkan_render_device.hpp"
-
+#include "renderer/builtin/backbuffer_output_pass.hpp"
 using namespace nova::mem;
 using namespace operators;
 
@@ -40,7 +40,6 @@ RX_LOG("nova", logger);
 const Bytes GLOBAL_MEMORY_POOL_SIZE = 1_gb;
 
 RX_GLOBAL<nova::renderer::LogHandles> logging_event_handles{"system", "log_handles", &rx::memory::g_system_allocator};
-// RX_GLOBAL<nova::renderer::NovaRenderer> g_renderer { "system", "renderer" };
 
 void init_rex() {
     static bool initialized = false;
@@ -780,5 +779,12 @@ namespace nova::renderer {
                 logger(rx::log::level::k_error, "Could not create null UI renderpass");
             }
         }*/
+
+        {
+            Renderpass* backbuffer_pass = global_allocator->create<BackbufferOutputRenderpass>();
+            backbuffer_pass->is_builtin = true;
+
+
+        }
     }
 } // namespace nova::renderer

@@ -156,6 +156,8 @@ set(NOVA_SOURCE
         src/render_objects/renderables.cpp
         src/renderer/rendergraph.cpp
         src/renderer/ui/ui_renderer.cpp
+        src/renderer/builtin/backbuffer_output_pass.hpp
+        src/renderer/builtin/backbuffer_output_pass.cpp
         src/renderer/pipeline_storage.cpp
         src/renderer/resource_loader.cpp
 
