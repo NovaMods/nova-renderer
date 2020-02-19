@@ -1,6 +1,7 @@
 #include "vulkan_command_list.hpp"
 
 #include <rx/core/log.h>
+#include <string.h>
 #include <vk_mem_alloc.h>
 
 #include "vk_structs.hpp"
