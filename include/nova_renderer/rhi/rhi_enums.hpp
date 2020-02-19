@@ -126,6 +126,12 @@ namespace nova::renderer::rhi {
         FragmentDensityProcess = 0x00800000,
     };
 
+    enum class ShaderLanguage {
+        Hlsl,
+        Glsl,
+        Spirv,
+    };
+
     enum class ShaderStage {
         Vertex = 0x0001,
         TessellationControl = 0x0002,

@@ -13,6 +13,7 @@
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
 
 #include "../json_utils.hpp"
+#include "minitrace.h"
 #include "render_graph_builder.hpp"
 #include "shaderpack_validator.hpp"
 
@@ -197,6 +198,8 @@ namespace nova::renderer::shaderpack {
     void cache_pipelines_by_renderpass(RenderpackData& data);
 
     RenderpackData load_shaderpack_data(const rx::string& shaderpack_name) {
+        MTR_SCOPE("load_shaderpack_data", shaderpack_name.data());
+
         FolderAccessorBase* folder_access = VirtualFilesystem::get_instance()->get_folder_accessor(shaderpack_name);
 
         // The shaderpack has a number of items: There's the shaders themselves, of course, but there's so, so much more
@@ -227,7 +230,8 @@ namespace nova::renderer::shaderpack {
     }
 
     rx::optional<ShaderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access) {
-        logger(rx::log::level::k_verbose, "load_dynamic_resource_file called");
+        MTR_SCOPE("load_dynamic_resource_file", "Self");
+
         const rx::string resources_string = folder_access->read_text_file(RESOURCES_FILE);
 
         auto json_resources = rx::json(resources_string);
@@ -241,7 +245,8 @@ namespace nova::renderer::shaderpack {
     }
 
     ntl::Result<RendergraphData> load_rendergraph_file(FolderAccessorBase* folder_access) {
-        logger(rx::log::level::k_verbose, "load_passes_file called");
+        MTR_SCOPE("load_rendergraph_file", "Self");
+
         const auto passes_bytes = folder_access->read_text_file("rendergraph.json");
 
         const auto json_passes = rx::json(passes_bytes);
@@ -278,7 +283,7 @@ namespace nova::renderer::shaderpack {
     }
 
     rx::vector<PipelineCreateInfo> load_pipeline_files(FolderAccessorBase* folder_access) {
-        logger(rx::log::level::k_verbose, "load_pipeline_files called");
+        MTR_SCOPE("load_pipeline_files", "Self");
 
         rx::vector<rx::string> potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
 
@@ -303,13 +308,12 @@ namespace nova::renderer::shaderpack {
     }
 
     rx::optional<PipelineCreateInfo> load_single_pipeline(FolderAccessorBase* folder_access, const rx::string& pipeline_path) {
-        logger(rx::log::level::k_verbose, "Task to load pipeline %s started", pipeline_path);
+        MTR_SCOPE("load_single_pipeline", pipeline_path.data());
+
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
         auto json_pipeline = rx::json{pipeline_bytes};
-        logger(rx::log::level::k_verbose, "Parsed JSON from disk for pipeline %s", pipeline_path);
         const ValidationReport report = validate_graphics_pipeline(json_pipeline);
-        logger(rx::log::level::k_verbose, "Finished validating JSON for pipeline %s", pipeline_path);
         print(report);
         if(!report.errors.is_empty()) {
             logger(rx::log::level::k_error, "Loading pipeline file %s failed", pipeline_path);
@@ -317,7 +321,6 @@ namespace nova::renderer::shaderpack {
         }
 
         auto new_pipeline = json_pipeline.decode<PipelineCreateInfo>({});
-        logger(rx::log::level::k_verbose, "Parsed JSON into pipeline_data for pipeline %s", pipeline_path);
         new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename,
                                                              folder_access,
                                                              rhi::ShaderStage::Vertex,
@@ -362,80 +365,37 @@ namespace nova::renderer::shaderpack {
                                           FolderAccessorBase* folder_access,
                                           const rhi::ShaderStage stage,
                                           const rx::vector<rx::string>& defines) {
-        // Be sure that we have glslang when we need to compile shaders
-        glslang::InitializeProcess();
+        MTR_SCOPE("load_shader_file", filename.data());
 
-        const auto glslang_stage = to_glslang_shader_stage(stage);
-        glslang::TShader shader(glslang_stage);
-
-        rx::string shader_source = folder_access->read_text_file(filename);
-
-        auto* shader_source_data = shader_source.data();
-        shader.setStrings(&shader_source_data, 1);
-
-        // Check the extension to know what kind of shader file the user has provided. SPIR-V files can be loaded
-        // as-is, but GLSL, GLSL ES, and HLSL files need to be transpiled to SPIR-V
         if(filename.ends_with(".spirv")) {
             // SPIR-V file!
 
             rx::vector<uint8_t> bytes = folder_access->read_file(filename);
-            auto view = bytes.disown();
-            return rx::vector<uint32_t>(view);
-        }
-        if(filename.ends_with(".hlsl")) {
-            shader.setEnvInput(glslang::EShSourceHlsl, glslang_stage, glslang::EShClientVulkan, 100);
-            shader.setHlslIoMapping(true);
-
-        } else {
-            // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
-            shader.setEnvInput(glslang::EShSourceGlsl, glslang_stage, glslang::EShClientVulkan, 100);
+            const auto view = bytes.disown();
+            return rx::vector<uint32_t>{view};
         }
 
-        shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_0);
+        rx::string shader_source = folder_access->read_text_file(filename);
 
-        // TODO: Query the runtime for what version of SPIR-V we should target
-        // For now just target the one that Works On My Machine
-        shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3);
+        const auto& compiled_shader = [&] {
+            if(filename.ends_with(".hlsl")) {
+                return compile_shader(shader_source, stage, rhi::ShaderLanguage::Hlsl);
 
-        shader.setEntryPoint("main");
+            } else {
+                return compile_shader(shader_source, stage, rhi::ShaderLanguage::Glsl);
+            }
+        }();
 
-        const bool shader_compiled = shader.parse(&DEFAULT_BUILT_IN_RESOURCE,
-                                                  450,
-                                                  ECoreProfile,
-                                                  false,
-                                                  false,
-                                                  EShMessages(EShMsgVulkanRules | EShMsgSpvRules));
-
-        const char* info_log = shader.getInfoLog();
-        if(std::strlen(info_log) > 0) {
-            const char* info_debug_log = shader.getInfoDebugLog();
-            logger(rx::log::level::k_info, "%s compilation messages:\n%s\n%s", filename, info_log, info_debug_log);
+        if(compiled_shader.is_empty()) {
+            logger(rx::log::level::k_error, "Could not compile shader file %s", filename);
         }
 
-        if(!shader_compiled) {
-            logger(rx::log::level::k_error, "Could not load shader %s: Shader compilation failed", filename);
-            return {};
-        }
-
-        glslang::TProgram program;
-        program.addShader(&shader);
-        const bool shader_linked = program.link(EShMsgDefault);
-        if(!shader_linked) {
-            const char* program_info_log = program.getInfoLog();
-            const char* program_debug_info_log = program.getInfoDebugLog();
-            logger(rx::log::level::k_error, "Program failed to link: %s\n%s", program_info_log, program_debug_info_log);
-        }
-
-        // Using std::vector is okay here because we have to interface with `glslang`
-        std::vector<uint32_t> spirv_std;
-        GlslangToSpv(*program.getIntermediate(glslang_stage), spirv_std);
-
-        rx::vector<uint32_t> spirv_rx(spirv_std.size());
-        memcpy(spirv_rx.data(), spirv_std.data(), spirv_std.size() * sizeof(uint32_t));
-        return spirv_rx;
+        return compiled_shader;
     }
 
     rx::vector<MaterialData> load_material_files(FolderAccessorBase* folder_access) {
+        MTR_SCOPE("load_material_files", "Self");
+
         rx::vector<rx::string> potential_material_files = folder_access->get_all_items_in_folder("materials");
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
@@ -455,6 +415,8 @@ namespace nova::renderer::shaderpack {
     }
 
     MaterialData load_single_material(FolderAccessorBase* folder_access, const rx::string& material_path) {
+        MTR_SCOPE("load_single_material", material_path.data());
+
         const rx::string material_text = folder_access->read_text_file(material_path);
 
         const auto json_material = rx::json{material_text};
@@ -472,9 +434,7 @@ namespace nova::renderer::shaderpack {
         auto material = json_material.decode<MaterialData>({});
         material.name = material_file_name.substring(0, material_extension_begin_idx);
 
-        material.passes.each_fwd([&](MaterialPass& pass) {
-            pass.material_name = material.name;
-        });
+        material.passes.each_fwd([&](MaterialPass& pass) { pass.material_name = material.name; });
 
         logger(rx::log::level::k_verbose, "Load of material &s succeeded - name %s", material_path, material.name);
         return material;
@@ -533,5 +493,74 @@ namespace nova::renderer::shaderpack {
             default:
                 return EShLangCount;
         }
+    }
+
+    rx::vector<uint32_t> compile_shader(const rx::string& source, const rhi::ShaderStage stage, const glslang::EShSource source_language) {
+        MTR_SCOPE("compile_shader", "Self");
+
+        const auto glslang_stage = to_glslang_shader_stage(stage);
+
+        // Be sure that we have glslang when we need to compile shaders
+        glslang::InitializeProcess();
+
+        glslang::TShader shader{glslang_stage};
+
+        const auto* source_ptr = source.data();
+        shader.setStrings(&source_ptr, 1);
+
+        if(source_language == glslang::EShSourceHlsl) {
+            shader.setEnvInput(glslang::EShSourceHlsl, glslang_stage, glslang::EShClientVulkan, 100);
+            shader.setHlslIoMapping(true);
+
+        } else if(source_language == glslang::EShSourceGlsl) {
+            // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
+            shader.setEnvInput(glslang::EShSourceGlsl, glslang_stage, glslang::EShClientVulkan, 100);
+
+        } else {
+            logger(rx::log::level::k_error, "Incompatible shader source language");
+        }
+
+        shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_0);
+
+        // TODO: Query the runtime for what version of SPIR-V we should target
+        // For now just target the one that Works On My Machine
+        shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3);
+
+        shader.setEntryPoint("main");
+
+        const bool shader_compiled = shader.parse(&DEFAULT_BUILT_IN_RESOURCE,
+                                                  450,
+                                                  ECoreProfile,
+                                                  false,
+                                                  false,
+                                                  EShMessages(EShMsgVulkanRules | EShMsgSpvRules));
+
+        const char* info_log = shader.getInfoLog();
+        if(std::strlen(info_log) > 0) {
+            const char* info_debug_log = shader.getInfoDebugLog();
+            logger(rx::log::level::k_info, "Shader compilation messages:\n%s\n%s", info_log, info_debug_log);
+        }
+
+        if(!shader_compiled) {
+            logger(rx::log::level::k_error, "Could not compile shader");
+            return {};
+        }
+
+        glslang::TProgram program;
+        program.addShader(&shader);
+        const bool shader_linked = program.link(EShMsgDefault);
+        if(!shader_linked) {
+            const char* program_info_log = program.getInfoLog();
+            const char* program_debug_info_log = program.getInfoDebugLog();
+            logger(rx::log::level::k_error, "Program failed to link: %s\n%s", program_info_log, program_debug_info_log);
+        }
+
+        // Using std::vector is okay here because we have to interface with `glslang`
+        std::vector<uint32_t> spirv_std;
+        GlslangToSpv(*program.getIntermediate(glslang_stage), spirv_std);
+
+        rx::vector<uint32_t> spirv_rx(spirv_std.size());
+        memcpy(spirv_rx.data(), spirv_std.data(), spirv_std.size() * sizeof(uint32_t));
+        return spirv_rx;
     }
 } // namespace nova::renderer::shaderpack
