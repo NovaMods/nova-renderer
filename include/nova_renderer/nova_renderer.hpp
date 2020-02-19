@@ -18,7 +18,7 @@ namespace rx {
     namespace memory {
         struct bump_point_allocator;
     }
-}
+} // namespace rx
 
 void init_rex();
 void rex_fini();
@@ -108,13 +108,10 @@ namespace nova::renderer {
          * depth/stencil attachment. After calling this function, Nova records commands to end that same renderpass. This allows the host
          * application to only care about rendering the UI, instead of worrying about any pass scheduling concerns
          *
-         * \param ui_renderpass The renderpass to use for UI
-         * \param create_info The create info for the renderpass
-         *
-         * \return The renderpass you added, but you no longer have ownership
+         * \return A pointer to the newly created renderpass
          */
-        template <typename RenderpassType>
-        bool set_ui_renderpass(RenderpassType* ui_renderpass, const shaderpack::RenderPassCreateInfo& create_info);
+        template <typename RenderpassType, typename... Args>
+        RenderpassType* create_ui_renderpass(Args&... args);
 
         [[nodiscard]] const rx::vector<MaterialPass>& get_material_passes_for_pipeline(rhi::Pipeline* const pipeline);
 
@@ -346,8 +343,8 @@ namespace nova::renderer {
         return *log_handles;
     }
 
-    template <typename RenderpassType>
-    bool NovaRenderer::set_ui_renderpass(RenderpassType* ui_renderpass, const shaderpack::RenderPassCreateInfo& create_info) {
-        return rendergraph->add_renderpass(ui_renderpass, create_info, *device_resources);
+    template <typename RenderpassType, typename... Args>
+    RenderpassType* NovaRenderer::create_ui_renderpass(Args&... args) {
+        return rendergraph->create_renderpass<RenderpassType>(*device_resources, rx::utility::forward<Args>(args)...);
     }
 } // namespace nova::renderer

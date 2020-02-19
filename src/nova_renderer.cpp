@@ -401,8 +401,8 @@ namespace nova::renderer {
         device->set_num_renderpasses(static_cast<uint32_t>(pass_create_infos.size()));
 
         pass_create_infos.each_fwd([&](const shaderpack::RenderPassCreateInfo& create_info) {
-            Renderpass* renderpass = global_allocator->create<Renderpass>(create_info.name);
-            if(rendergraph->add_renderpass(renderpass, create_info, *device_resources)) {
+            auto* renderpass = global_allocator->create<Renderpass>(create_info.name);
+            if(rendergraph->add_renderpass(renderpass, create_info, *device_resources) != nullptr) {
                 pipelines.each_fwd([&](const shaderpack::PipelineCreateInfo& pipeline) {
                     if(pipeline.pass == create_info.name) {
                         renderpass->pipeline_names.emplace_back(pipeline.name);
@@ -788,21 +788,8 @@ namespace nova::renderer {
     void NovaRenderer::create_renderpass_manager() { rendergraph = global_allocator->create<Rendergraph>(global_allocator, *device); }
 
     void NovaRenderer::create_builtin_renderpasses() const {
-        // UI render pass
-        /*{
-            Renderpass* ui_renderpass = global_allocator->create<NullUiRenderpass>();
-
-            if(!rendergraph->add_renderpass(ui_renderpass, NullUiRenderpass::get_create_info(), *device_resources)) {
-                logger(rx::log::level::k_error, "Could not create null UI renderpass");
-            }
-        }*/
-
-        {
-            Renderpass* backbuffer_pass = global_allocator->create<BackbufferOutputRenderpass>();
-
-            if(!rendergraph->add_renderpass(backbuffer_pass, BackbufferOutputRenderpass::get_create_info(), *device_resources)) {
-                logger(rx::log::level::k_error, "Could not create the backbuffer output renderpass");
-            }
+        if(rendergraph->create_renderpass<BackbufferOutputRenderpass>(*device_resources) == nullptr) {
+            logger(rx::log::level::k_error, "Could not create the backbuffer output renderpass");
         }
     }
 } // namespace nova::renderer

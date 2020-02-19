@@ -19,8 +19,7 @@ namespace nova::renderer {
     void UiRenderpass::record_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) { render_ui(cmds, ctx); }
 
     const shaderpack::RenderPassCreateInfo& UiRenderpass::get_create_info() {
-        const auto& info = *ui_create_info;
-        return info;
+        return *ui_create_info;
     }
 
     void NullUiRenderpass::render_ui(rhi::CommandList& /* cmds */, FrameContext& /* ctx */) {
