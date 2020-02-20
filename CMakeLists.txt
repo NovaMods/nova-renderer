@@ -117,6 +117,7 @@ set(NOVA_SOURCE
         include/nova_renderer/rhi/swapchain.hpp
         include/nova_renderer/rhi/rhi_enums.hpp
         include/nova_renderer/rhi/rhi_types.hpp
+        include/nova_renderer/rhi/pipeline_create_info.hpp
         include/nova_renderer/rhi/render_device.hpp
         include/nova_renderer/rhi/device_memory_resource.hpp
 
