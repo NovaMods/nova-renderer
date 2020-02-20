@@ -10,6 +10,7 @@
 #include "nova_renderer/window.hpp"
 
 namespace nova::renderer {
+    struct PipelineStateCreateInfo;
     struct DeviceMemoryResource;
 } // namespace nova::renderer
 
@@ -120,7 +121,7 @@ namespace nova::renderer::rhi {
         virtual void reset_descriptor_pool(DescriptorPool* pool) = 0;
 
         [[nodiscard]] virtual ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
-                                                                     const shaderpack::PipelineCreateInfo& data,
+                                                                     const PipelineStateCreateInfo& data,
                                                                      rx::memory::allocator* allocator) = 0;
 
         /*!

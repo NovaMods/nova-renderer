@@ -7,6 +7,12 @@
 // ReSharper disable once CppUnusedIncludeDirective
 #include "vulkan.hpp"
 
+namespace nova {
+    namespace renderer {
+        enum class CompareOp;
+    }
+}
+
 namespace nova::renderer::rhi {
     VkImageLayout to_vk_image_layout(ResourceState layout);
 
@@ -16,7 +22,7 @@ namespace nova::renderer::rhi {
 
     VkBlendFactor to_blend_factor(shaderpack::BlendFactorEnum factor);
 
-    VkCompareOp to_compare_op(shaderpack::CompareOpEnum compare_op);
+    VkCompareOp to_compare_op(CompareOp compare_op);
 
     VkStencilOp to_stencil_op(shaderpack::StencilOpEnum stencil_op);
 

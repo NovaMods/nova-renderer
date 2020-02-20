@@ -12,6 +12,7 @@
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/memory/allocation_structs.hpp"
 #include "nova_renderer/renderables.hpp"
+#include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/window.hpp"
 
 #include "rx/core/algorithm/max.h"
@@ -678,7 +679,7 @@ namespace nova::renderer::rhi {
     }
 
     ntl::Result<Pipeline*> VulkanRenderDevice::create_pipeline(PipelineInterface* pipeline_interface,
-                                                               const shaderpack::PipelineCreateInfo& data,
+                                                               const PipelineStateCreateInfo& data,
                                                                rx::memory::allocator* allocator) {
         logger(rx::log::level::k_verbose, "Creating a VkPipeline for pipeline %s", data.name);
 
@@ -702,37 +703,17 @@ namespace nova::renderer::rhi {
             if(geometry_module) {
                 shader_modules.insert(VK_SHADER_STAGE_GEOMETRY_BIT, *geometry_module);
             } else {
-                return ntl::Result<Pipeline*>(ntl::NovaError("Could not geometry vertex module"));
+                return ntl::Result<Pipeline*>(ntl::NovaError("Could not geometry module"));
             }
         }
 
-        if(data.tessellation_control_shader) {
-            logger(rx::log::level::k_verbose, "Compiling tessellation_control module");
-            const auto tessellation_control_module = create_shader_module(data.tessellation_control_shader->source);
-            if(tessellation_control_module) {
-                shader_modules.insert(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, *tessellation_control_module);
-            } else {
-                return ntl::Result<Pipeline*>(ntl::NovaError("Could not geometry vertex module"));
-            }
-        }
-
-        if(data.tessellation_evaluation_shader) {
-            logger(rx::log::level::k_verbose, "Compiling tessellation_evaluation module");
-            const auto tessellation_evaluation_module = create_shader_module(data.tessellation_evaluation_shader->source);
-            if(tessellation_evaluation_module) {
-                shader_modules.insert(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, *tessellation_evaluation_module);
-            } else {
-                return ntl::Result<Pipeline*>(ntl::NovaError("Could not geometry vertex module"));
-            }
-        }
-
-        if(data.fragment_shader) {
+        if(data.pixel_shader) {
             logger(rx::log::level::k_verbose, "Compiling fragment module");
-            const auto fragment_module = create_shader_module(data.fragment_shader->source);
+            const auto fragment_module = create_shader_module(data.pixel_shader->source);
             if(fragment_module) {
                 shader_modules.insert(VK_SHADER_STAGE_FRAGMENT_BIT, *fragment_module);
             } else {
-                return ntl::Result<Pipeline*>(ntl::NovaError("Could not geometry vertex module"));
+                return ntl::Result<Pipeline*>(ntl::NovaError("Could not pixel module"));
             }
         } // namespace nova::renderer::rhi
 
@@ -765,20 +746,25 @@ namespace nova::renderer::rhi {
         input_assembly_create_info.pNext = nullptr;
         input_assembly_create_info.flags = 0;
         input_assembly_create_info.primitiveRestartEnable = VK_FALSE;
-        switch(data.primitive_mode) {
-            case shaderpack::PrimitiveTopologyEnum::Triangles:
+        switch(data.topology) {
+            case PrimitiveTopology::TriangleList:
                 input_assembly_create_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
                 break;
-            case shaderpack::PrimitiveTopologyEnum::Lines:
+
+            case PrimitiveTopology::LineList:
                 input_assembly_create_info.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+                break;
+
+            case PrimitiveTopology::PointList:
+                input_assembly_create_info.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
                 break;
         }
 
         VkViewport viewport;
         viewport.x = 0;
         viewport.y = 0;
-        viewport.width = static_cast<float>(swapchain_size.x);
-        viewport.height = static_cast<float>(swapchain_size.y);
+        viewport.width = data.viewport_size.x;
+        viewport.height = data.viewport_size.y;
         viewport.minDepth = 0.0F;
         viewport.maxDepth = 1.0F;
 
@@ -805,11 +791,14 @@ namespace nova::renderer::rhi {
         rasterizer_create_info.lineWidth = 1.0F;
         rasterizer_create_info.cullMode = VK_CULL_MODE_BACK_BIT;
         rasterizer_create_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
-        rasterizer_create_info.depthBiasEnable = VK_TRUE;
         rasterizer_create_info.depthClampEnable = VK_FALSE;
-        rasterizer_create_info.depthBiasConstantFactor = data.depth_bias;
-        rasterizer_create_info.depthBiasClamp = 0.0F;
-        rasterizer_create_info.depthBiasSlopeFactor = data.slope_scaled_depth_bias;
+        rasterizer_create_info.depthBiasConstantFactor = data.rasterizer_state.depth_bias;
+        rasterizer_create_info.depthBiasSlopeFactor = data.rasterizer_state.slope_scaled_depth_bias;
+        rasterizer_create_info.depthBiasClamp = data.rasterizer_state.maximum_depth_bias;
+
+        if(rasterizer_create_info.depthBiasConstantFactor != 0 || rasterizer_create_info.depthBiasSlopeFactor != 0) {
+            rasterizer_create_info.depthBiasEnable = VK_TRUE;
+        }
 
         VkPipelineMultisampleStateCreateInfo multisample_create_info;
         multisample_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -826,14 +815,21 @@ namespace nova::renderer::rhi {
 
         VkPipelineDepthStencilStateCreateInfo depth_stencil_create_info = {};
         depth_stencil_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-        depth_stencil_create_info.depthTestEnable = static_cast<VkBool32>(data.states.find(shaderpack::StateEnum::DisableDepthTest) ==
-                                                                          npos);
 
-        depth_stencil_create_info.depthWriteEnable = static_cast<VkBool32>(data.states.find(shaderpack::StateEnum::DisableDepthWrite) ==
-                                                                           npos);
+        if(data.depth_state) {
+            depth_stencil_create_info.depthTestEnable = VK_TRUE;
+            depth_stencil_create_info.depthWriteEnable = static_cast<VkBool32>(data.depth_state->enable_depth_write);
+            depth_stencil_create_info.depthCompareOp = to_compare_op(data.depth_state->compare_op);
 
-        depth_stencil_create_info.depthCompareOp = to_compare_op(data.depth_func);
-        depth_stencil_create_info.depthBoundsTestEnable = VK_FALSE;
+            if(data.depth_state->bounds_test_state) {
+                depth_stencil_create_info.depthBoundsTestEnable = VK_TRUE;
+                if(data.depth_state->bounds_test_state->mode == DepthBoundsTestMode::Static) {
+                    depth_stencil_create_info.minDepthBounds = data.depth_state->bounds_test_state->static_state.min_bound;
+                    depth_stencil_create_info.maxDepthBounds = data.depth_state->bounds_test_state->static_state.max_bound;
+                }
+            }
+        }
+
         depth_stencil_create_info.stencilTestEnable = static_cast<VkBool32>(data.states.find(shaderpack::StateEnum::EnableStencilTest) !=
                                                                             npos);
 
@@ -971,7 +967,12 @@ namespace nova::renderer::rhi {
             } break;
         }
 
-        const auto result = vmaCreateBuffer(vma, &vk_create_info, &vma_alloc, &buffer->buffer, &buffer->allocation, &buffer->allocation_info);
+        const auto result = vmaCreateBuffer(vma,
+                                            &vk_create_info,
+                                            &vma_alloc,
+                                            &buffer->buffer,
+                                            &buffer->allocation,
+                                            &buffer->allocation_info);
         if(result == VK_SUCCESS) {
             logger(rx::log::level::k_verbose, "Created buffer %s with size %u", info.name, vk_create_info.size);
 
@@ -998,10 +999,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void VulkanRenderDevice::write_data_to_buffer(const void* data,
-                                                  const Bytes num_bytes,
-                                                  const Bytes offset,
-                                                  const Buffer* buffer) {
+    void VulkanRenderDevice::write_data_to_buffer(const void* data, const Bytes num_bytes, const Bytes offset, const Buffer* buffer) {
         const auto* vulkan_buffer = static_cast<const VulkanBuffer*>(buffer);
 
         memcpy(vulkan_buffer->allocation_info.pMappedData, data, num_bytes.b_count());

@@ -4,6 +4,7 @@
 
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
+#include "nova_renderer/rhi/pipeline_create_info.hpp"
 
 namespace nova::renderer::rhi {
     RX_LOG("VulkanUtil", logger);
@@ -152,30 +153,30 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkCompareOp to_compare_op(const shaderpack::CompareOpEnum compare_op) {
+    VkCompareOp to_compare_op(const CompareOp compare_op) {
         switch(compare_op) {
-            case shaderpack::CompareOpEnum::Never:
+            case CompareOp::Never:
                 return VK_COMPARE_OP_NEVER;
 
-            case shaderpack::CompareOpEnum::Less:
+            case CompareOp::Less:
                 return VK_COMPARE_OP_LESS;
 
-            case shaderpack::CompareOpEnum::LessEqual:
+            case CompareOp::LessEqual:
                 return VK_COMPARE_OP_LESS_OR_EQUAL;
 
-            case shaderpack::CompareOpEnum::Greater:
+            case CompareOp::Greater:
                 return VK_COMPARE_OP_GREATER;
 
-            case shaderpack::CompareOpEnum::GreaterEqual:
+            case CompareOp::GreaterEqual:
                 return VK_COMPARE_OP_GREATER_OR_EQUAL;
 
-            case shaderpack::CompareOpEnum::Equal:
+            case CompareOp::Equal:
                 return VK_COMPARE_OP_EQUAL;
 
-            case shaderpack::CompareOpEnum::NotEqual:
+            case CompareOp::NotEqual:
                 return VK_COMPARE_OP_NOT_EQUAL;
 
-            case shaderpack::CompareOpEnum::Always:
+            case CompareOp::Always:
                 return VK_COMPARE_OP_ALWAYS;
 
             default:
