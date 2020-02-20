@@ -168,7 +168,7 @@ namespace nova::renderer::rhi {
                 // everything
                 writes_to_backbuffer = true;
 
-                VkAttachmentDescription desc = {};
+                VkAttachmentDescription desc;
                 desc.flags = 0;
                 desc.format = vk_swapchain->get_swapchain_format();
                 desc.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -181,7 +181,7 @@ namespace nova::renderer::rhi {
 
                 attachments.push_back(desc);
 
-                VkAttachmentReference ref = {};
+                VkAttachmentReference ref;
 
                 ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                 ref.attachment = static_cast<uint32_t>(attachments.size()) - 1;
@@ -192,7 +192,7 @@ namespace nova::renderer::rhi {
                 framebuffer_height = swapchain_extent.height;
 
             } else {
-                VkAttachmentDescription desc = {};
+                VkAttachmentDescription desc;
                 desc.flags = 0;
                 desc.format = to_vk_format(attachment.pixel_format);
                 desc.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -205,8 +205,7 @@ namespace nova::renderer::rhi {
 
                 attachments.push_back(desc);
 
-                VkAttachmentReference ref = {};
-
+                VkAttachmentReference ref;
                 ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                 ref.attachment = static_cast<uint32_t>(attachments.size()) - 1;
 
@@ -500,7 +499,7 @@ namespace nova::renderer::rhi {
         const auto* vk_pipeline_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
         const auto* vk_pool = static_cast<const VulkanDescriptorPool*>(pool);
 
-        VkDescriptorSetAllocateInfo alloc_info = {};
+        VkDescriptorSetAllocateInfo alloc_info;
         alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         alloc_info.descriptorPool = vk_pool->descriptor_pool;
         alloc_info.descriptorSetCount = static_cast<uint32_t>(vk_pipeline_interface->layouts_by_set.size());
@@ -770,7 +769,7 @@ namespace nova::renderer::rhi {
 
         VkRect2D scissor;
         scissor.offset = {0, 0};
-        scissor.extent = {swapchain_size.x, swapchain_size.y};
+        scissor.extent = {static_cast<uint32_t>(data.viewport_size.x), static_cast<uint32_t>(data.viewport_size.y)};
 
         VkPipelineViewportStateCreateInfo viewport_state_create_info;
         viewport_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -811,74 +810,84 @@ namespace nova::renderer::rhi {
         multisample_create_info.alphaToCoverageEnable = VK_FALSE;
         multisample_create_info.alphaToOneEnable = VK_FALSE;
 
-        const auto npos = rx::vector<shaderpack::StateEnum>::k_npos;
-
         VkPipelineDepthStencilStateCreateInfo depth_stencil_create_info = {};
         depth_stencil_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 
         if(data.depth_state) {
-            depth_stencil_create_info.depthTestEnable = VK_TRUE;
-            depth_stencil_create_info.depthWriteEnable = static_cast<VkBool32>(data.depth_state->enable_depth_write);
-            depth_stencil_create_info.depthCompareOp = to_compare_op(data.depth_state->compare_op);
+            const auto& depth_state = *data.depth_state;
 
-            if(data.depth_state->bounds_test_state) {
+            depth_stencil_create_info.depthTestEnable = VK_TRUE;
+            depth_stencil_create_info.depthWriteEnable = static_cast<VkBool32>(depth_state.enable_depth_write);
+            depth_stencil_create_info.depthCompareOp = to_compare_op(depth_state.compare_op);
+
+            if(depth_state.bounds_test_state) {
                 depth_stencil_create_info.depthBoundsTestEnable = VK_TRUE;
-                if(data.depth_state->bounds_test_state->mode == DepthBoundsTestMode::Static) {
-                    depth_stencil_create_info.minDepthBounds = data.depth_state->bounds_test_state->static_state.min_bound;
-                    depth_stencil_create_info.maxDepthBounds = data.depth_state->bounds_test_state->static_state.max_bound;
+                if(depth_state.bounds_test_state->mode == DepthBoundsTestMode::Static) {
+                    depth_stencil_create_info.minDepthBounds = depth_state.bounds_test_state->static_state.min_bound;
+                    depth_stencil_create_info.maxDepthBounds = depth_state.bounds_test_state->static_state.max_bound;
                 }
             }
         }
 
-        depth_stencil_create_info.stencilTestEnable = static_cast<VkBool32>(data.states.find(shaderpack::StateEnum::EnableStencilTest) !=
-                                                                            npos);
+        if(data.stencil_state) {
+            const auto stencil_state = *data.stencil_state;
 
-        if(data.front_face) {
-            depth_stencil_create_info.front.failOp = to_stencil_op(data.front_face->fail_op);
-            depth_stencil_create_info.front.passOp = to_stencil_op(data.front_face->pass_op);
-            depth_stencil_create_info.front.depthFailOp = to_stencil_op(data.front_face->depth_fail_op);
-            depth_stencil_create_info.front.compareOp = to_compare_op(data.front_face->compare_op);
-            depth_stencil_create_info.front.compareMask = data.front_face->compare_mask;
-            depth_stencil_create_info.front.writeMask = data.front_face->write_mask;
+            depth_stencil_create_info.stencilTestEnable = VK_TRUE;
+
+            depth_stencil_create_info.front.failOp = to_stencil_op(stencil_state.front_face_op.fail_op);
+            depth_stencil_create_info.front.passOp = to_stencil_op(stencil_state.front_face_op.pass_op);
+            depth_stencil_create_info.front.depthFailOp = to_stencil_op(stencil_state.front_face_op.depth_fail_op);
+            depth_stencil_create_info.front.compareOp = to_compare_op(stencil_state.front_face_op.compare_op);
+            depth_stencil_create_info.front.compareMask = stencil_state.front_face_op.compare_mask;
+            depth_stencil_create_info.front.writeMask = stencil_state.front_face_op.write_mask;
+
+            depth_stencil_create_info.back.failOp = to_stencil_op(stencil_state.back_face_op.fail_op);
+            depth_stencil_create_info.back.passOp = to_stencil_op(stencil_state.back_face_op.pass_op);
+            depth_stencil_create_info.back.depthFailOp = to_stencil_op(stencil_state.back_face_op.depth_fail_op);
+            depth_stencil_create_info.back.compareOp = to_compare_op(stencil_state.back_face_op.compare_op);
+            depth_stencil_create_info.back.compareMask = stencil_state.back_face_op.compare_mask;
+            depth_stencil_create_info.back.writeMask = stencil_state.back_face_op.write_mask;
         }
-        if(data.back_face) {
-            depth_stencil_create_info.back.failOp = to_stencil_op(data.back_face->fail_op);
-            depth_stencil_create_info.back.passOp = to_stencil_op(data.back_face->pass_op);
-            depth_stencil_create_info.back.depthFailOp = to_stencil_op(data.back_face->depth_fail_op);
-            depth_stencil_create_info.back.compareOp = to_compare_op(data.back_face->compare_op);
-            depth_stencil_create_info.back.compareMask = data.back_face->compare_mask;
-            depth_stencil_create_info.back.writeMask = data.back_face->write_mask;
-        }
-
-        const auto should_blend = data.states.find(shaderpack::StateEnum::Blending) != npos;
-
-        VkPipelineColorBlendAttachmentState color_blend_attachment;
-        color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-                                                VK_COLOR_COMPONENT_A_BIT;
-        color_blend_attachment.blendEnable = should_blend ? VK_TRUE : VK_FALSE;
-        color_blend_attachment.srcColorBlendFactor = to_blend_factor(data.source_color_blend_factor);
-        color_blend_attachment.dstColorBlendFactor = to_blend_factor(data.destination_color_blend_factor);
-        color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
-        color_blend_attachment.srcAlphaBlendFactor = to_blend_factor(data.source_alpha_blend_factor);
-        color_blend_attachment.dstAlphaBlendFactor = to_blend_factor(data.destination_alpha_blend_factor);
-        color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
         VkPipelineColorBlendStateCreateInfo color_blend_create_info;
         color_blend_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         color_blend_create_info.pNext = nullptr;
         color_blend_create_info.flags = 0;
-        color_blend_create_info.logicOpEnable = VK_FALSE;
-        color_blend_create_info.logicOp = VK_LOGIC_OP_COPY;
-        color_blend_create_info.attachmentCount = 1;
-        color_blend_create_info.pAttachments = &color_blend_attachment;
-        color_blend_create_info.blendConstants[0] = 0.0F;
-        color_blend_create_info.blendConstants[1] = 0.0F;
-        color_blend_create_info.blendConstants[2] = 0.0F;
-        color_blend_create_info.blendConstants[3] = 0.0F;
+
+        rx::vector<VkPipelineColorBlendAttachmentState> attachment_states{allocator};
+        if(data.blend_state) {
+            const auto& blend_state = *data.blend_state;
+
+            attachment_states.reserve(blend_state.render_target_states.size());
+
+            blend_state.render_target_states.each_fwd([&](const RenderTargetColorBlendState& render_target_blend) {
+                VkPipelineColorBlendAttachmentState color_blend_attachment;
+                color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+                                                        VK_COLOR_COMPONENT_A_BIT;
+                color_blend_attachment.blendEnable = render_target_blend.enable ? VK_TRUE : VK_FALSE;
+                color_blend_attachment.srcColorBlendFactor = to_blend_factor(render_target_blend.src_color_factor);
+                color_blend_attachment.dstColorBlendFactor = to_blend_factor(render_target_blend.dst_color_factor);
+                color_blend_attachment.colorBlendOp = to_blend_op(render_target_blend.color_op);
+                color_blend_attachment.srcAlphaBlendFactor = to_blend_factor(render_target_blend.src_alpha_factor);
+                color_blend_attachment.dstAlphaBlendFactor = to_blend_factor(render_target_blend.dst_alpha_factor);
+                color_blend_attachment.alphaBlendOp = to_blend_op(render_target_blend.alpha_op);
+
+                attachment_states.emplace_back(color_blend_attachment);
+            });
+
+            color_blend_create_info.logicOpEnable = VK_FALSE;
+            color_blend_create_info.logicOp = VK_LOGIC_OP_COPY;
+            color_blend_create_info.attachmentCount = attachment_states.size();
+            color_blend_create_info.pAttachments = attachment_states.data();
+            color_blend_create_info.blendConstants[0] = blend_state.blend_constants.r;
+            color_blend_create_info.blendConstants[1] = blend_state.blend_constants.g;
+            color_blend_create_info.blendConstants[2] = blend_state.blend_constants.b;
+            color_blend_create_info.blendConstants[3] = blend_state.blend_constants.a;
+        }
 
         rx::vector<VkDynamicState> dynamic_states;
 
-        if(data.scissor_mode == shaderpack::ScissorTestMode::DynamicScissorRect) {
+        if(data.enable_scissor_test) {
             dynamic_states.emplace_back(VK_DYNAMIC_STATE_SCISSOR);
         }
 
@@ -910,7 +919,7 @@ namespace nova::renderer::rhi {
         auto vk_alloc = wrap_allocator(allocator);
         VkResult result = vkCreateGraphicsPipelines(device, nullptr, 1, &pipeline_create_info, &vk_alloc, &vk_pipeline->pipeline);
         if(result != VK_SUCCESS) {
-            return ntl::Result<Pipeline*>(MAKE_ERROR("Could not compile pipeline {:s}", data.name.data()));
+            return ntl::Result<Pipeline*>(MAKE_ERROR("Could not compile pipeline %s", data.name));
         }
 
         if(settings.settings.debug.enabled) {
@@ -924,7 +933,7 @@ namespace nova::renderer::rhi {
         }
 
         return ntl::Result(static_cast<Pipeline*>(vk_pipeline));
-    } // namespace nova::renderer::rhi
+    }
 
     Buffer* VulkanRenderDevice::create_buffer(const BufferCreateInfo& info,
                                               DeviceMemoryResource& memory,

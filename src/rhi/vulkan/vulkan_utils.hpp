@@ -9,6 +9,9 @@
 
 namespace nova {
     namespace renderer {
+        enum class BlendOp;
+        enum class BlendFactor;
+        enum class StencilOp;
         enum class CompareOp;
     }
 }
@@ -20,11 +23,13 @@ namespace nova::renderer::rhi {
 
     VkPrimitiveTopology to_primitive_topology(shaderpack::PrimitiveTopologyEnum topology);
 
-    VkBlendFactor to_blend_factor(shaderpack::BlendFactorEnum factor);
+    VkBlendFactor to_blend_factor(BlendFactor factor);
+    
+    VkBlendOp to_blend_op(const BlendOp blend_op);
 
     VkCompareOp to_compare_op(CompareOp compare_op);
 
-    VkStencilOp to_stencil_op(shaderpack::StencilOpEnum stencil_op);
+    VkStencilOp to_stencil_op(StencilOp stencil_op);
 
     VkFormat to_vk_format(shaderpack::PixelFormatEnum format);
 

@@ -372,10 +372,18 @@ namespace nova::renderer {
         glm::vec2 viewport_size{};
 
         /*!
+         * \brief Enables the scissor test, allowing e.g. UI elements to only render to a specific portion of the screen
+         */
+        bool enable_scissor_test = false;
+
+        /*!
          * \brief Topology of the vertex data
          */
         PrimitiveTopology topology = PrimitiveTopology::TriangleList;
 
+        /*!
+         * \brief The state of the rasterizer when this pipeline state is active
+         */
         RasterizerState rasterizer_state{};
 
         /*!

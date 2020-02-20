@@ -3,8 +3,8 @@
 #include <rx/core/log.h>
 
 #include "nova_renderer/renderables.hpp"
-#include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
+#include "nova_renderer/rhi/render_device.hpp"
 
 namespace nova::renderer::rhi {
     RX_LOG("VulkanUtil", logger);
@@ -126,30 +126,52 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkBlendFactor to_blend_factor(shaderpack::BlendFactorEnum factor) {
+    VkBlendFactor to_blend_factor(const BlendFactor factor) {
         switch(factor) {
-            case shaderpack::BlendFactorEnum::DstAlpha:
+            case BlendFactor::DstAlpha:
                 return VK_BLEND_FACTOR_DST_ALPHA;
-            case shaderpack::BlendFactorEnum::DstColor:
+            case BlendFactor::DstColor:
                 return VK_BLEND_FACTOR_DST_COLOR;
-            case shaderpack::BlendFactorEnum::One:
+            case BlendFactor::One:
                 return VK_BLEND_FACTOR_ONE;
-            case shaderpack::BlendFactorEnum::OneMinusDstAlpha:
+            case BlendFactor::OneMinusDstAlpha:
                 return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
-            case shaderpack::BlendFactorEnum::OneMinusDstColor:
+            case BlendFactor::OneMinusDstColor:
                 return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
-            case shaderpack::BlendFactorEnum::OneMinusSrcAlpha:
+            case BlendFactor::OneMinusSrcAlpha:
                 return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-            case shaderpack::BlendFactorEnum::OneMinusSrcColor:
+            case BlendFactor::OneMinusSrcColor:
                 return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
-            case shaderpack::BlendFactorEnum::SrcAlpha:
+            case BlendFactor::SrcAlpha:
                 return VK_BLEND_FACTOR_SRC_ALPHA;
-            case shaderpack::BlendFactorEnum::SrcColor:
+            case BlendFactor::SrcColor:
                 return VK_BLEND_FACTOR_SRC_COLOR;
-            case shaderpack::BlendFactorEnum::Zero:
+            case BlendFactor::Zero:
                 return VK_BLEND_FACTOR_ZERO;
             default:
                 return VK_BLEND_FACTOR_ZERO;
+        }
+    }
+
+    VkBlendOp to_blend_op(const BlendOp blend_op) {
+        switch(blend_op) {
+            case BlendOp::Add:
+                return VK_BLEND_OP_ADD;
+
+            case BlendOp::Subtract:
+                return VK_BLEND_OP_SUBTRACT;
+
+            case BlendOp::ReverseSubtract:
+                return VK_BLEND_OP_REVERSE_SUBTRACT;
+
+            case BlendOp::Min:
+                return VK_BLEND_OP_MIN;
+
+            case BlendOp::Max:
+                return VK_BLEND_OP_MAX;
+
+            default:
+                return VK_BLEND_OP_ADD;
         }
     }
 
@@ -184,30 +206,30 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkStencilOp to_stencil_op(shaderpack::StencilOpEnum stencil_op) {
+    VkStencilOp to_stencil_op(const StencilOp stencil_op) {
         switch(stencil_op) {
-            case shaderpack::StencilOpEnum::Keep:
+            case StencilOp::Keep:
                 return VK_STENCIL_OP_KEEP;
 
-            case shaderpack::StencilOpEnum::Zero:
+            case StencilOp::Zero:
                 return VK_STENCIL_OP_ZERO;
 
-            case shaderpack::StencilOpEnum::Replace:
+            case StencilOp::Replace:
                 return VK_STENCIL_OP_REPLACE;
 
-            case shaderpack::StencilOpEnum::Increment:
+            case StencilOp::Increment:
                 return VK_STENCIL_OP_INCREMENT_AND_CLAMP;
 
-            case shaderpack::StencilOpEnum::IncrementAndWrap:
+            case StencilOp::IncrementAndWrap:
                 return VK_STENCIL_OP_INCREMENT_AND_WRAP;
 
-            case shaderpack::StencilOpEnum::Decrement:
+            case StencilOp::Decrement:
                 return VK_STENCIL_OP_DECREMENT_AND_CLAMP;
 
-            case shaderpack::StencilOpEnum::DecrementAndWrap:
+            case StencilOp::DecrementAndWrap:
                 return VK_STENCIL_OP_DECREMENT_AND_WRAP;
 
-            case shaderpack::StencilOpEnum::Invert:
+            case StencilOp::Invert:
                 return VK_STENCIL_OP_INVERT;
 
             default:
