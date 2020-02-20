@@ -9,6 +9,10 @@
  */
 
 namespace nova::renderer {
+    namespace rhi {
+        struct VertexField;
+    }
+
     /*!
      * \brief SPIR-V shader source
      */
@@ -364,7 +368,7 @@ namespace nova::renderer {
         /*!
          * \brief Description of the fields in the vertex data
          */
-        rx::vector<rhi::VertexField> vertex_field{};
+        rx::vector<rhi::VertexField> vertex_fields{};
 
         /*!
          * \brief Size of the viewport that this pipeline state renders to, measured in pixels

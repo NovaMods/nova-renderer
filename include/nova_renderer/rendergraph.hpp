@@ -135,13 +135,6 @@ namespace nova::renderer {
 
         virtual ~Renderpass() = default;
 
-        /*!
-         * \brief Creates resources, such as pipelines and materials, that this renderpass needs to use
-         *
-         * This gets called by the rendergraph _after_ it creates the GPU renderpass and framebuffer for this renderpass
-         */
-        virtual void create_renderpass_resources();
-
         uint32_t id = 0;
         rx::string name;
 

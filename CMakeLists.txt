@@ -99,6 +99,7 @@ set(NOVA_SOURCE
         include/nova_renderer/window.hpp
         include/nova_renderer/constants.hpp
         include/nova_renderer/frame_context.hpp
+        include/nova_renderer/renderpack_data_conversions.hpp
 
         include/nova_renderer/filesystem/filesystem_helpers.hpp
         include/nova_renderer/filesystem/folder_accessor.hpp
@@ -172,6 +173,7 @@ set(NOVA_SOURCE
         src/loading/shaderpack/shaderpack_validator.hpp
         src/loading/shaderpack/render_graph_builder.cpp
         src/loading/shaderpack/render_graph_builder.hpp
+        src/loading/shaderpack/renderpack_data_conversions.cpp
 
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
