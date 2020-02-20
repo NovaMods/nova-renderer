@@ -1,8 +1,13 @@
 #pragma once
+
+#include <rx/core/optional.h>
+
 #include "rhi/pipeline_create_info.hpp"
 
 namespace nova {
     namespace renderer {
+        class Rendergraph;
+
         namespace shaderpack {
             struct PipelineData;
         }
@@ -11,5 +16,6 @@ namespace nova {
 
 namespace nova::renderer::renderpack {
 
-    PipelineStateCreateInfo to_pipeline_state_create_info(const shaderpack::PipelineData& data);
+    rx::optional<PipelineStateCreateInfo> to_pipeline_state_create_info(const shaderpack::PipelineData& data,
+                                                                        const Rendergraph& rendergraph);
 };

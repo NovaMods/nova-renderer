@@ -56,8 +56,6 @@ namespace nova::renderer {
         [[nodiscard]] ntl::Result<rhi::PipelineInterface*> create_pipeline_interface(
             const PipelineStateCreateInfo& pipeline_create_info) const;
 
-        [[nodiscard]] rx::vector<rhi::VertexField> get_vertex_fields(const ShaderSource& vertex_shader) const;
-
         static void get_shader_module_descriptors(const rx::vector<uint32_t>& spirv,
                                                   rhi::ShaderStage shader_stage,
                                                   rx::map<rx::string, rhi::ResourceBindingDescription>& bindings);

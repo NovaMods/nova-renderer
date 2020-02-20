@@ -54,7 +54,7 @@ namespace nova::renderer::rhi {
 
     bool operator&(const ShaderStage& lhs, const ShaderStage& rhs);
 
-    inline VkAllocationCallbacks wrap_allocator(rx::memory::allocator* allocator) {
+    RX_HINT_FORCE_INLINE VkAllocationCallbacks wrap_allocator(rx::memory::allocator* allocator) {
         VkAllocationCallbacks callbacks{};
 
         callbacks.pUserData = allocator;
