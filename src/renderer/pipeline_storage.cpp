@@ -1,6 +1,7 @@
 #include "nova_renderer/pipeline_storage.hpp"
 
 #include "nova_renderer/nova_renderer.hpp"
+#include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 
 #include "spirv_glsl.hpp"
@@ -26,19 +27,9 @@ namespace nova::renderer {
         }
     }
 
-    bool PipelineStorage::create_pipeline(const PipelineCreateInfo& create_info) {
-        const auto rp_create = renderer.get_renderpass_metadata(create_info.pass);
-        if(!rp_create) {
-            logger(rx::log::level::k_error,
-                   "Pipeline %s wants to be rendered by renderpass %s, but that renderpass doesn't have any metadata",
-                   create_info.name,
-                   create_info.pass);
-            return false;
-        }
+    bool PipelineStorage::create_pipeline(const PipelineStateCreateInfo& create_info) {
 
-        Result<rhi::PipelineInterface*> pipeline_interface = create_pipeline_interface(create_info,
-                                                                                       rp_create->data.texture_outputs,
-                                                                                       rp_create->data.depth_texture);
+        Result<rhi::PipelineInterface*> pipeline_interface = create_pipeline_interface(create_info);
         if(!pipeline_interface) {
             logger(rx::log::level::k_error,
                    "Pipeline %s has an invalid interface: %s",
@@ -63,8 +54,8 @@ namespace nova::renderer {
     }
 
     Result<PipelineReturn> PipelineStorage::create_graphics_pipeline(rhi::PipelineInterface* pipeline_interface,
-                                                                     const PipelineCreateInfo& pipeline_create_info) const {
-        renderer::Pipeline pipeline;
+                                                                     const PipelineStateCreateInfo& pipeline_create_info) const {
+        Pipeline pipeline;
         PipelineMetadata metadata;
 
         metadata.data = pipeline_create_info;
@@ -83,33 +74,21 @@ namespace nova::renderer {
         return Result(PipelineReturn{pipeline, metadata});
     }
 
-    Result<rhi::PipelineInterface*> PipelineStorage::create_pipeline_interface(
-        const PipelineCreateInfo& pipeline_create_info,
-        const rx::vector<TextureAttachmentInfo>& color_attachments,
-        const rx::optional<TextureAttachmentInfo>& depth_texture) const {
+    Result<rhi::PipelineInterface*> PipelineStorage::create_pipeline_interface(const PipelineStateCreateInfo& pipeline_create_info) const {
 
         rx::map<rx::string, rhi::ResourceBindingDescription> bindings;
 
         get_shader_module_descriptors(pipeline_create_info.vertex_shader.source, rhi::ShaderStage::Vertex, bindings);
 
-        if(pipeline_create_info.tessellation_control_shader) {
-            get_shader_module_descriptors(pipeline_create_info.tessellation_control_shader->source,
-                                          rhi::ShaderStage::TessellationControl,
-                                          bindings);
-        }
-        if(pipeline_create_info.tessellation_evaluation_shader) {
-            get_shader_module_descriptors(pipeline_create_info.tessellation_evaluation_shader->source,
-                                          rhi::ShaderStage::TessellationEvaluation,
-                                          bindings);
-        }
         if(pipeline_create_info.geometry_shader) {
             get_shader_module_descriptors(pipeline_create_info.geometry_shader->source, rhi::ShaderStage::Geometry, bindings);
         }
-        if(pipeline_create_info.fragment_shader) {
-            get_shader_module_descriptors(pipeline_create_info.fragment_shader->source, rhi::ShaderStage::Fragment, bindings);
+        if(pipeline_create_info.pixel_shader) {
+            get_shader_module_descriptors(pipeline_create_info.pixel_shader->source, rhi::ShaderStage::Fragment, bindings);
         }
 
-        return device.create_pipeline_interface(bindings, color_attachments, depth_texture, allocator)
+        return device
+            .create_pipeline_interface(bindings, pipeline_create_info.color_attachments, pipeline_create_info.depth_texture, allocator)
             .map([&](rhi::PipelineInterface* pipeline_interface) {
                 pipeline_interface->vertex_fields = get_vertex_fields(pipeline_create_info.vertex_shader);
                 return pipeline_interface;
@@ -186,7 +165,7 @@ namespace nova::renderer {
     }
 
     rx::vector<rhi::VertexField> PipelineStorage::get_vertex_fields(const ShaderSource& vertex_shader) const {
-        const CompilerGLSL shader_compiler(vertex_shader.source.data(), vertex_shader.source.size());
+        const CompilerGLSL shader_compiler{vertex_shader.source.data(), vertex_shader.source.size()};
 
         const auto& shader_vertex_fields = shader_compiler.get_shader_resources().stage_inputs;
 
@@ -206,7 +185,7 @@ namespace nova::renderer {
     void PipelineStorage::get_shader_module_descriptors(const rx::vector<uint32_t>& spirv,
                                                         const rhi::ShaderStage shader_stage,
                                                         rx::map<rx::string, rhi::ResourceBindingDescription>& bindings) {
-        const CompilerGLSL shader_compiler(spirv.data(), spirv.size());
+        const CompilerGLSL shader_compiler{spirv.data(), spirv.size()};
         const ShaderResources resources = shader_compiler.get_shader_resources();
 
         for(const auto& resource : resources.separate_images) {
