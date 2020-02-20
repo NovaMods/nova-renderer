@@ -1,14 +1,17 @@
 #include "backbuffer_output_pass.hpp"
 
-#include "nova_renderer/nova_renderer.hpp"
 #include "nova_renderer/loading/shaderpack_loading.hpp"
+#include "nova_renderer/nova_renderer.hpp"
+#include "nova_renderer/rhi/pipeline_create_info.hpp"
 
 namespace nova::renderer {
+    RX_LOG("BackbufferOut", logger);
+
     struct RX_HINT_EMPTY_BASES BackbufferOutputRenderpassCreateInfo : shaderpack::RenderPassCreateInfo {
         BackbufferOutputRenderpassCreateInfo();
     };
 
-    struct RX_HINT_EMPTY_BASES BackbufferOutputPipelineCreateInfo : shaderpack::PipelineCreateInfo {
+    struct RX_HINT_EMPTY_BASES BackbufferOutputPipelineCreateInfo : PipelineStateCreateInfo {
         BackbufferOutputPipelineCreateInfo();
     };
 
@@ -22,7 +25,6 @@ namespace nova::renderer {
 
     BackbufferOutputPipelineCreateInfo::BackbufferOutputPipelineCreateInfo() {
         name = BACKBUFFER_OUTPUT_PIPELINE_NAME;
-        pass = BACKBUFFER_OUTPUT_RENDER_PASS_NAME;
 
         const rx::string vertex_source{R"(
             struct VsInput {
@@ -69,14 +71,22 @@ namespace nova::renderer {
                 return combined_color;
             })"};
         const auto& pixel_spirv = shaderpack::compile_shader(pixel_source, rhi::ShaderStage::Fragment, rhi::ShaderLanguage::Hlsl);
-        fragment_shader = { "/nova/shaders/backbuffer_output.pixel.hlsl", pixel_spirv };
+        fragment_shader = {"/nova/shaders/backbuffer_output.pixel.hlsl", pixel_spirv};
     }
 
     RX_GLOBAL<BackbufferOutputRenderpassCreateInfo> backbuffer_output_create_info{"Nova", "BackbufferOutputCreateInfo"};
 
+    RX_GLOBAL<BackbufferOutputPipelineCreateInfo> backbuffer_output_pipeline_create_info{"Nova", "BackbufferOutputPipelineCreateInfo"};
+
     BackbufferOutputRenderpass::BackbufferOutputRenderpass(const NovaRenderer* nova)
         : Renderpass(BACKBUFFER_OUTPUT_RENDER_PASS_NAME, true) {
         auto& pipeline_storage = nova->get_pipeline_storage();
+        if(!pipeline_storage.create_pipeline(*backbuffer_output_pipeline_create_info)) {
+            logger(rx::log::level::k_error, "Could not create backbuffer output pipeline");
+            return;
+        }
+
+
     }
 
     const shaderpack::RenderPassCreateInfo& BackbufferOutputRenderpass::get_create_info() { return *backbuffer_output_create_info; }

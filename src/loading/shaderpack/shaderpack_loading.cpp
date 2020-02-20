@@ -134,8 +134,8 @@ namespace nova::renderer::shaderpack {
 
     ntl::Result<RendergraphData> load_rendergraph_file(FolderAccessorBase* folder_access);
 
-    rx::vector<PipelineCreateInfo> load_pipeline_files(FolderAccessorBase* folder_access);
-    rx::optional<PipelineCreateInfo> load_single_pipeline(FolderAccessorBase* folder_access, const rx::string& pipeline_path);
+    rx::vector<PipelineData> load_pipeline_files(FolderAccessorBase* folder_access);
+    rx::optional<PipelineData> load_single_pipeline(FolderAccessorBase* folder_access, const rx::string& pipeline_path);
 
     rx::vector<MaterialData> load_material_files(FolderAccessorBase* folder_access);
     MaterialData load_single_material(FolderAccessorBase* folder_access, const rx::string& material_path);
@@ -282,12 +282,12 @@ namespace nova::renderer::shaderpack {
         }
     }
 
-    rx::vector<PipelineCreateInfo> load_pipeline_files(FolderAccessorBase* folder_access) {
+    rx::vector<PipelineData> load_pipeline_files(FolderAccessorBase* folder_access) {
         MTR_SCOPE("load_pipeline_files", "Self");
 
         rx::vector<rx::string> potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
 
-        rx::vector<PipelineCreateInfo> output;
+        rx::vector<PipelineData> output;
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
@@ -307,7 +307,7 @@ namespace nova::renderer::shaderpack {
         return output;
     }
 
-    rx::optional<PipelineCreateInfo> load_single_pipeline(FolderAccessorBase* folder_access, const rx::string& pipeline_path) {
+    rx::optional<PipelineData> load_single_pipeline(FolderAccessorBase* folder_access, const rx::string& pipeline_path) {
         MTR_SCOPE("load_single_pipeline", pipeline_path.data());
 
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
@@ -320,7 +320,7 @@ namespace nova::renderer::shaderpack {
             return rx::nullopt;
         }
 
-        auto new_pipeline = json_pipeline.decode<PipelineCreateInfo>({});
+        auto new_pipeline = json_pipeline.decode<PipelineData>({});
         new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename,
                                                              folder_access,
                                                              rhi::ShaderStage::Vertex,
@@ -441,7 +441,7 @@ namespace nova::renderer::shaderpack {
     }
 
     void cache_pipelines_by_renderpass(RenderpackData& data) {
-        data.pipelines.each_fwd([&](const PipelineCreateInfo& pipeline_info) {
+        data.pipelines.each_fwd([&](const PipelineData& pipeline_info) {
             data.graph_data.passes.each_fwd([&](RenderPassCreateInfo& renderpass_info) {
                 if(pipeline_info.pass == renderpass_info.name) {
                     renderpass_info.pipeline_names.emplace_back(pipeline_info.pass);

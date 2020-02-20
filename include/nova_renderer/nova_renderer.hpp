@@ -282,7 +282,7 @@ namespace nova::renderer {
         void create_dynamic_textures(const rx::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
 
         void create_render_passes(const rx::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
-                                  const rx::vector<shaderpack::PipelineCreateInfo>& pipelines) const;
+                                  const rx::vector<shaderpack::PipelineData>& pipelines) const;
 
         void destroy_dynamic_resources();
 
@@ -296,7 +296,7 @@ namespace nova::renderer {
 
         rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas;
 
-        void create_pipelines_and_materials(const rx::vector<shaderpack::PipelineCreateInfo>& pipeline_create_infos,
+        void create_pipelines_and_materials(const rx::vector<shaderpack::PipelineData>& pipeline_create_infos,
                                             const rx::vector<shaderpack::MaterialData>& materials);
 
         void create_materials_for_pipeline(const renderer::Pipeline& pipeline,

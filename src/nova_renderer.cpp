@@ -396,14 +396,14 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_render_passes(const rx::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
-                                            const rx::vector<shaderpack::PipelineCreateInfo>& pipelines) const {
+                                            const rx::vector<shaderpack::PipelineData>& pipelines) const {
 
         device->set_num_renderpasses(static_cast<uint32_t>(pass_create_infos.size()));
 
         pass_create_infos.each_fwd([&](const shaderpack::RenderPassCreateInfo& create_info) {
             auto* renderpass = global_allocator->create<Renderpass>(create_info.name);
             if(rendergraph->add_renderpass(renderpass, create_info, *device_resources) != nullptr) {
-                pipelines.each_fwd([&](const shaderpack::PipelineCreateInfo& pipeline) {
+                pipelines.each_fwd([&](const shaderpack::PipelineData& pipeline) {
                     if(pipeline.pass == create_info.name) {
                         renderpass->pipeline_names.emplace_back(pipeline.name);
                     }
@@ -414,7 +414,7 @@ namespace nova::renderer {
         });
     }
 
-    void NovaRenderer::create_pipelines_and_materials(const rx::vector<shaderpack::PipelineCreateInfo>& pipeline_create_infos,
+    void NovaRenderer::create_pipelines_and_materials(const rx::vector<shaderpack::PipelineData>& pipeline_create_infos,
                                                       const rx::vector<shaderpack::MaterialData>& materials) {
         uint32_t total_num_descriptors = 0;
         materials.each_fwd([&](const shaderpack::MaterialData& material_data) {
@@ -431,7 +431,7 @@ namespace nova::renderer {
             global_descriptor_pool = device->create_descriptor_pool(descriptor_counts, renderpack_allocator);
         }
 
-        pipeline_create_infos.each_fwd([&](const shaderpack::PipelineCreateInfo& pipeline_create_info) {
+        pipeline_create_infos.each_fwd([&](const shaderpack::PipelineData& pipeline_create_info) {
             if(pipeline_storage->create_pipeline(pipeline_create_info)) {
                 auto pipeline = pipeline_storage->get_pipeline(pipeline_create_info.name);
                 create_materials_for_pipeline(*pipeline, materials, pipeline_create_info.name);

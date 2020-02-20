@@ -176,7 +176,7 @@ namespace nova::renderer::shaderpack {
         static StencilOpState from_json(const rx::json& json);
     };
 
-    struct ShaderSource {
+    struct RenderpackShaderSource {
         rx::string filename;
         rx::vector<uint32_t> source;
     };
@@ -184,7 +184,7 @@ namespace nova::renderer::shaderpack {
     /*!
      * \brief All the data that Nova uses to build a pipeline
      */
-    struct PipelineCreateInfo {
+    struct PipelineData {
         /*!
          * \brief The name of this pipeline
          */
@@ -294,14 +294,14 @@ namespace nova::renderer::shaderpack {
 
         ScissorTestMode scissor_mode = ScissorTestMode::Off;
 
-        ShaderSource vertex_shader{};
+        RenderpackShaderSource vertex_shader{};
 
-        rx::optional<ShaderSource> geometry_shader;
-        rx::optional<ShaderSource> tessellation_control_shader;
-        rx::optional<ShaderSource> tessellation_evaluation_shader;
-        rx::optional<ShaderSource> fragment_shader;
+        rx::optional<RenderpackShaderSource> geometry_shader;
+        rx::optional<RenderpackShaderSource> tessellation_control_shader;
+        rx::optional<RenderpackShaderSource> tessellation_evaluation_shader;
+        rx::optional<RenderpackShaderSource> fragment_shader;
 
-        static PipelineCreateInfo from_json(const rx::json& json);
+        static PipelineData from_json(const rx::json& json);
     };
 
     struct TextureFormat {
@@ -525,7 +525,7 @@ namespace nova::renderer::shaderpack {
      * \brief All the data that can be in a shaderpack
      */
     struct RenderpackData {
-        rx::vector<PipelineCreateInfo> pipelines;
+        rx::vector<PipelineData> pipelines;
 
         /*!
          * \brief All the renderpasses that this shaderpack needs, in submission order
