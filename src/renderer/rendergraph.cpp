@@ -10,6 +10,10 @@ namespace nova::renderer {
 
     Renderpass::Renderpass(rx::string name, const bool is_builtin) : name(std::move(name)), is_builtin(is_builtin) {}
 
+    void Renderpass::create_renderpass_resources() {
+        // Intentionally empty, can be filled out be subclasses if they so desire
+    }
+
     void Renderpass::execute(rhi::CommandList& cmds, FrameContext& ctx) {
         // TODO: Figure if any of these barriers are implicit
         // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource instead of

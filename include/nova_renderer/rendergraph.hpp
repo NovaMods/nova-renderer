@@ -12,6 +12,7 @@
 #include "nova_renderer/util/container_accessor.hpp"
 
 #include "resource_loader.hpp"
+#include "rhi/pipeline_create_info.hpp"
 
 namespace nova::renderer {
     RX_LOG("rendergraph", rg_log);
@@ -105,7 +106,7 @@ namespace nova::renderer {
     };
 
     struct PipelineMetadata {
-        shaderpack::PipelineCreateInfo data;
+        PipelineStateCreateInfo data;
 
         rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas{};
     };
@@ -133,6 +134,13 @@ namespace nova::renderer {
         Renderpass& operator=(const Renderpass& other) = delete;
 
         virtual ~Renderpass() = default;
+
+        /*!
+         * \brief Creates resources, such as pipelines and materials, that this renderpass needs to use
+         *
+         * This gets called by the rendergraph _after_ it creates the GPU renderpass and framebuffer for this renderpass
+         */
+        virtual void create_renderpass_resources();
 
         uint32_t id = 0;
         rx::string name;
