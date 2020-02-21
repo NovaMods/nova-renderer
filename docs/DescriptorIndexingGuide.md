@@ -6,7 +6,7 @@ First, let's talk about what we're trying to do
 
 ## Use Case
 
-Most renderers need some way for shaders to access resources like textures, buffers, etc. For the Vulkan API, this way is the almighty descriptor set. Descriptor sets, as I understand them, are essentially a pointer to a resource. You update your descriptor sets with your resource, then you bind the descriptor sets to your command buffer, then shaders involved in sunsequent drawcalls can look at the descriptors to know what resources they should actually read from. I'm not entirely sure why there's this indirection - and in fact, on AMD GPUs descriptor sets are actually just pointers - but the indireciton exists, and we all have to find a way to deal with it
+Most renderers need some way for shaders to access resources like textures, buffers, etc. For the Vulkan API, this way is the almighty descriptor set. Descriptor sets, as I understand them, are essentially a pointer to a resource. You update your descriptor sets with your resource, then you bind the descriptor sets to your command buffer, then shaders involved in subsequent drawcalls can look at the descriptors to know what resources they should actually read from. I'm not entirely sure why there's this indirection - and in fact, on AMD GPUs descriptor sets are actually just pointers - but the indirection exists, and we all have to find a way to deal with it
 
 So, how do we update descriptor sets with our resources? How do we bind descriptor sets to a command buffer? Where do the descriptor sets live?
 
