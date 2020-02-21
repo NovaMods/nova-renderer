@@ -162,6 +162,8 @@ namespace nova::renderer {
         }
         pixel_shader = {"/nova/shaders/backbuffer_output.pixel.hlsl", pixel_spirv};
 
+        vertex_fields.emplace_back("position", rhi::VertexFieldFormat::Float2);
+
         // TODO: Figure out how to make the input textures into input attachments
         color_attachments.emplace_back(BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false);
     }
@@ -867,6 +869,7 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_builtin_pipelines() {
+        backbuffer_output_pipeline_create_info->viewport_size = device->get_swapchain()->get_size();
         if(!pipeline_storage->create_pipeline(*backbuffer_output_pipeline_create_info)) {
             logger(rx::log::level::k_error, "Could not create builtin pipeline %s", backbuffer_output_pipeline_create_info->name);
         }
