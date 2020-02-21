@@ -1,7 +1,7 @@
 #ifndef RX_CORE_STREAM_H
 #define RX_CORE_STREAM_H
-#include "rx/core/optional.h"
 #include "rx/core/vector.h"
+#include "rx/core/optional.h"
 
 #include "rx/core/hints/empty_bases.h"
 
@@ -16,7 +16,7 @@ struct RX_HINT_EMPTY_BASES stream
   enum : rx_u32 {
     k_read  = 1 << 0,
     k_write = 1 << 1,
-    k_size  = 1 << 2,
+    k_tell  = 1 << 2,
     k_seek  = 1 << 3,
     k_flush = 1 << 4
   };
@@ -31,16 +31,18 @@ struct RX_HINT_EMPTY_BASES stream
     k_end      // End of stream.
   };
 
-  rx_u64 read(rx_byte* _data, rx_u64 _size);
-  rx_u64 write(const rx_byte* _data, rx_u32 _size);
-  bool seek(rx_s64 _where, whence _whence);
-  bool flush();
-  optional<rx_u64> size();
+  [[nodiscard]] rx_u64 read(rx_byte* _data, rx_u64 _size);
+  [[nodiscard]] rx_u64 write(const rx_byte* _data, rx_u64 _size);
+  [[nodiscard]] bool seek(rx_s64 _where, whence _whence);
+  [[nodiscard]] bool flush();
+
+  rx_u64 tell();
+  rx_u64 size();
 
   // Query the support of features on the given stream.
   constexpr bool can_read() const;
   constexpr bool can_write() const;
-  constexpr bool can_size() const;
+  constexpr bool can_tell() const;
   constexpr bool can_seek() const;
   constexpr bool can_flush() const;
 
@@ -60,10 +62,8 @@ struct RX_HINT_EMPTY_BASES stream
   // Flush any buffered contents in the stream out.
   virtual bool on_flush() = 0;
 
-  // Query the size of the stream. This must return the size regardless what
-  // state the stream is in. Streams that don't support querying the size
-  // should construct the base class without k_has_size.
-  virtual rx_u64 on_size() = 0;
+  // Where we are in the stream.
+  virtual rx_u64 on_tell() = 0;
 
   // The name of the stream.
   virtual const string& name() const & = 0;
@@ -95,8 +95,8 @@ bool inline constexpr stream::can_write() const {
   return m_flags & k_write;
 }
 
-bool inline constexpr stream::can_size() const {
-  return m_flags & k_size;
+bool inline constexpr stream::can_tell() const {
+  return m_flags & k_tell;
 }
 
 bool inline constexpr stream::can_seek() const {

@@ -51,8 +51,8 @@ bool mmap::on_flush() {
   return true;
 }
 
-rx_u64 mmap::on_size() {
-  return m_size;
+rx_u64 mmap::on_tell() {
+  return m_rd ? m_rd - m_data : m_wr - m_data;
 }
 
 } // namespace rx::filesystem

@@ -413,6 +413,10 @@ rx_size utf16_to_utf8(const rx_u16* _utf16_contents, rx_size _length,
 rx_size utf8_to_utf16(const char* _utf8_contents, rx_size _length,
   rx_u16* utf16_contents_);
 
+RX_HINT_FORCE_INLINE rx::string operator""_s(const char* _contents, rx_size _length) {
+  return {_contents, _length};
+}
+
 } // namespace rx
 
 #endif // RX_CORE_STRING_H

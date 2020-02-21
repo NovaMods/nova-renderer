@@ -19,7 +19,7 @@ rx_u32 file::flags_from_mode(const char* _mode) {
   rx_u32 flags = 0;
 
   // These few flags are true regardless of the mode.
-  flags |= stream::k_size;
+  flags |= stream::k_tell;
   flags |= stream::k_seek;
 
   for (const char* ch = _mode; *ch; ch++) {
@@ -103,41 +103,15 @@ bool file::on_seek(rx_s64 _where, whence _whence) {
   RX_HINT_UNREACHABLE();
 }
 
+rx_u64 file::on_tell() {
+  RX_ASSERT(m_impl, "invalid");
+  const auto fp = static_cast<FILE*>(m_impl);
+  return ftell(fp);
+}
+
 bool file::on_flush() {
   RX_ASSERT(m_impl, "invalid");
   return fflush(static_cast<FILE*>(m_impl)) == 0;
-}
-
-rx_u64 file::on_size() {
-  RX_ASSERT(m_impl, "invalid");
-  RX_ASSERT(strcmp(m_mode, "rb") == 0, "cannot get size with mode '%s'", m_mode);
-
-  const auto fp = static_cast<FILE*>(m_impl);
-
-  // Determine where we are in the file so we can restore our seek position
-  const auto current_position = ftell(fp);
-  if (RX_HINT_UNLIKELY(current_position == -1L)) {
-    // |fp| doesn't support querying it's position.
-    return 0;
-  }
-
-  // Seek to the beginning of the end of the file.
-  if (RX_HINT_UNLIKELY(fseek(fp, 0, SEEK_END) != 0)) {
-    // |fp| doesn't support seeking.
-    return 0;
-  }
-
-  const auto ending_position = ftell(fp);
-  if (RX_HINT_UNLIKELY(ending_position == -1L)) {
-    // Restore the position before seeking to the end.
-    fseek(fp, current_position, SEEK_SET);
-    return 0;
-  }
-
-  // Restore the position before seeking to the end to determine size.
-  fseek(fp, current_position, SEEK_SET);
-
-  return ending_position;
 }
 
 bool file::close() {

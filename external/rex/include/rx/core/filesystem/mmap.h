@@ -7,7 +7,7 @@ namespace rx::filesystem {
 struct mmap
   : stream
 {
-  static constexpr rx_u32 k_stream_flags = stream::k_size & stream::k_seek;
+  static constexpr rx_u32 k_stream_flags = stream::k_tell & stream::k_seek;
   static constexpr rx_u32 k_read_flags = k_stream_flags & stream::k_read;
   static constexpr rx_u32 k_write_flags = k_stream_flags & stream::k_write;
 
@@ -18,7 +18,7 @@ struct mmap
   virtual rx_u64 on_write(const rx_byte* _data, rx_u64 _size);
   virtual bool on_seek(rx_s64 _where, whence _whence);
   virtual bool on_flush();
-  virtual rx_u64 on_size();
+  virtual rx_u64 on_tell();
 
 private:
   rx_u64 readable_bytes() const;

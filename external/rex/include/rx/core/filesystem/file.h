@@ -1,6 +1,5 @@
 #ifndef RX_CORE_FILESYSTEM_FILE_H
 #define RX_CORE_FILESYSTEM_FILE_H
-#include "rx/core/optional.h"
 #include "rx/core/stream.h"
 #include "rx/core/string.h"
 
@@ -29,12 +28,11 @@ struct file
   // Seek to |_where| in file relative to |_whence|.
   virtual bool on_seek(rx_s64 _where, whence _whence);
 
+  // Tell where we're at in the file.
+  virtual rx_u64 on_tell();
+
   // Flush to disk.
   virtual bool on_flush();
-
-  // Query the size of the file. This works regardless of where in the file
-  // the current file pointer is.
-  virtual rx_u64 on_size();
 
   bool read_line(string& line_);
   bool close();

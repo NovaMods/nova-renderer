@@ -72,7 +72,7 @@ struct logger {
   ~logger();
 
   void write(const log* _owner, string&& contents_, log::level _level, time_t _time);
-  void flush(rx_size _max_padding);
+  bool flush(rx_size _max_padding);
 
   void process(int _thread_id); // running in |m_thread|
 
@@ -156,7 +156,7 @@ void logger::write(const log* _owner, string&& contents_, log::level _level, tim
 #endif
 }
 
-void logger::flush(rx_size max_padding) {
+bool logger::flush(rx_size max_padding) {
   m_queue.each_fwd([&](const message& _message) {
     const auto name_string{_message.m_owner->name()};
     const auto level_string{get_level_string(_message.m_level)};
@@ -170,8 +170,10 @@ void logger::flush(rx_size max_padding) {
       _message.m_contents);
     return true;
   });
-  m_file.flush();
+
   m_queue.clear();
+
+  return m_file.flush();
 }
 
 void logger::process(int) {

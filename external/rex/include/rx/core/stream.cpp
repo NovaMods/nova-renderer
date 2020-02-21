@@ -51,7 +51,7 @@ rx_u64 stream::read(rx_byte* _data, rx_u64 _size) {
   return on_read(_data, _size);
 }
 
-rx_u64 stream::write(const rx_byte* _data, rx_u32 _size) {
+rx_u64 stream::write(const rx_byte* _data, rx_u64 _size) {
   RX_ASSERT(can_write(), "cannot write");
   return on_write(_data, _size);
 }
@@ -66,17 +66,31 @@ bool stream::flush() {
   return on_flush();
 }
 
-optional<rx_u64> stream::size() {
-  if (can_size()) {
-    return on_size();
+rx_u64 stream::tell() {
+  RX_ASSERT(can_tell(), "cannot tell");
+  return on_tell();
+}
+
+rx_u64 stream::size() {
+  const auto cursor = tell();
+
+  if (!seek(0, whence::k_end)) {
+    return 0;
   }
-  return nullopt;
+
+  const auto result = tell();
+  if (!seek(cursor, whence::k_set)) {
+    return 0;
+  }
+
+  return result;
 }
 
 optional<vector<rx_byte>> read_binary_stream(memory::allocator* _allocator, stream* _stream) {
-  if (const auto size = _stream->size()) {
-    vector<rx_byte> result = {_allocator, *size, utility::uninitialized{}};
-    if (_stream->read(result.data(), *size) == *size) {
+  if (_stream->can_seek() && _stream->can_tell()) {
+    const auto size = _stream->size();
+    vector<rx_byte> result = {_allocator, size, utility::uninitialized{}};
+    if (_stream->read(result.data(), size) == size) {
       return result;
     }
   }
