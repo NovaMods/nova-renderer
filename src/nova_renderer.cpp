@@ -243,9 +243,9 @@ namespace nova::renderer {
 
         create_renderpass_manager();
 
-        create_builtin_renderpasses();
+        initialize_descriptor_pool();
 
-        create_builtin_pipelines();
+        create_builtin_renderpasses();
     }
 
     NovaRenderer::~NovaRenderer() { mtr_shutdown(); }
@@ -487,21 +487,6 @@ namespace nova::renderer {
 
     void NovaRenderer::create_pipelines_and_materials(const rx::vector<shaderpack::PipelineData>& pipeline_create_infos,
                                                       const rx::vector<shaderpack::MaterialData>& materials) {
-        uint32_t total_num_descriptors = 0;
-        materials.each_fwd([&](const shaderpack::MaterialData& material_data) {
-            material_data.passes.each_fwd([&](const shaderpack::MaterialPass& material_pass) {
-                total_num_descriptors += static_cast<uint32_t>(material_pass.bindings.size());
-            });
-        });
-
-        if(total_num_descriptors > 0) {
-            rx::map<rhi::DescriptorType, uint32_t> descriptor_counts;
-            descriptor_counts.insert(rhi::DescriptorType::UniformBuffer, total_num_descriptors);
-            descriptor_counts.insert(rhi::DescriptorType::CombinedImageSampler, total_num_descriptors);
-            descriptor_counts.insert(rhi::DescriptorType::Sampler, 5);
-            global_descriptor_pool = device->create_descriptor_pool(descriptor_counts, renderpack_allocator);
-        }
-
         pipeline_create_infos.each_fwd([&](const shaderpack::PipelineData& pipeline_create_info) {
             const auto pipeline_state_create_info = renderpack::to_pipeline_state_create_info(pipeline_create_info, *rendergraph);
             if(!pipeline_state_create_info) {
@@ -595,6 +580,12 @@ namespace nova::renderer {
 
                 resource_info.buffer_info.buffer = buffer;
                 write.type = rhi::DescriptorType::UniformBuffer;
+
+                writes.push_back(write);
+
+            } else if(resource_name == POINT_SAMPLER_NAME) {
+                resource_info.sampler_info.sampler = point_sampler;
+                write.type = rhi::DescriptorType::Sampler;
 
                 writes.push_back(write);
 
@@ -815,7 +806,7 @@ namespace nova::renderer {
         pipeline_storage = global_allocator->create<PipelineStorage>(*this, global_allocator);
     }
 
-    void NovaRenderer::create_builtin_render_targets() const {
+    void NovaRenderer::create_builtin_render_targets() {
         const auto& swapchain_size = device->get_swapchain()->get_size();
 
         {
@@ -828,6 +819,13 @@ namespace nova::renderer {
 
             if(!scene_output) {
                 logger(rx::log::level::k_error, "Could not create scene output render target");
+
+            } else {
+                dynamic_texture_infos
+                    .insert(SCENE_OUTPUT_RT_NAME,
+                            {SCENE_OUTPUT_RT_NAME,
+                             shaderpack::ImageUsage::RenderTarget,
+                             {shaderpack::PixelFormatEnum::RGBA8, shaderpack::TextureDimensionTypeEnum::ScreenRelative, 1, 1}});
             }
         }
 
@@ -841,6 +839,13 @@ namespace nova::renderer {
 
             if(!ui_output) {
                 logger(rx::log::level::k_error, "Could not create UI output render target");
+
+            } else {
+                dynamic_texture_infos
+                    .insert(UI_OUTPUT_RT_NAME,
+                            {UI_OUTPUT_RT_NAME,
+                             shaderpack::ImageUsage::RenderTarget,
+                             {shaderpack::PixelFormatEnum::RGBA8, shaderpack::TextureDimensionTypeEnum::ScreenRelative, 1, 1}});
             }
         }
     }
@@ -875,19 +880,28 @@ namespace nova::renderer {
         } else {
             const auto pipeline = pipeline_storage->get_pipeline(backbuffer_output_pipeline_create_info->name);
 
-            shaderpack::MaterialData
-                material{BACKBUFFER_OUTPUT_MATERIAL_NAME,
-                         rx::array{
-                             shaderpack::MaterialPass{"main", BACKBUFFER_OUTPUT_MATERIAL_NAME, BACKBUFFER_OUTPUT_PIPELINE_NAME, {}, {}}},
-                         "block"};
-
-            material.passes[0].bindings.insert("ui_output", UI_OUTPUT_RT_NAME);
-            material.passes[0].bindings.insert("scene_output", SCENE_OUTPUT_RT_NAME);
-            material.passes[0].bindings.insert("output_sampler", POINT_SAMPLER_NAME);
+            const shaderpack::MaterialData material{BACKBUFFER_OUTPUT_MATERIAL_NAME,
+                                                    rx::array{
+                                                        shaderpack::MaterialPass{"main",
+                                                                                 BACKBUFFER_OUTPUT_MATERIAL_NAME,
+                                                                                 BACKBUFFER_OUTPUT_PIPELINE_NAME,
+                                                                                 rx::array{rx::pair{"ui_output", UI_OUTPUT_RT_NAME},
+                                                                                           rx::pair{"scene_output", SCENE_OUTPUT_RT_NAME},
+                                                                                           rx::pair{"output_sampler", POINT_SAMPLER_NAME}},
+                                                                                 {}}},
+                                                    "block"};
 
             const rx::vector<shaderpack::MaterialData> materials = rx::array{material};
             create_materials_for_pipeline(*pipeline, materials, backbuffer_output_pipeline_create_info->name);
         }
+    }
+
+    void NovaRenderer::initialize_descriptor_pool() {
+        rx::map<rhi::DescriptorType, uint32_t> descriptor_counts;
+        descriptor_counts.insert(rhi::DescriptorType::UniformBuffer, 4096);
+        descriptor_counts.insert(rhi::DescriptorType::CombinedImageSampler, 4096);
+        descriptor_counts.insert(rhi::DescriptorType::Sampler, 5);
+        global_descriptor_pool = device->create_descriptor_pool(descriptor_counts, global_allocator);
     }
 
     void NovaRenderer::create_builtin_pipelines() {}

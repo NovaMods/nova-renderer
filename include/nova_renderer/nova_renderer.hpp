@@ -67,7 +67,7 @@ namespace nova::renderer {
      */
     class NovaRenderer {
     public:
-        /*!
+         /*!
          * \brief Initializes the Nova Renderer
          */
         explicit NovaRenderer(const NovaSettings& settings);
@@ -249,13 +249,15 @@ namespace nova::renderer {
 
         void create_resource_storage();
 
-        void create_builtin_render_targets() const;
+        void create_builtin_render_targets();
 
         void create_uniform_buffers();
 
         void create_renderpass_manager();
 
         void create_builtin_renderpasses();
+
+        void initialize_descriptor_pool();
 
         void create_builtin_pipelines();
 #pragma endregion
