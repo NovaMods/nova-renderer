@@ -11,6 +11,7 @@
 #pragma warning(pop)
 
 #include <glslang/MachineIndependent/Initialize.h>
+#include <rx/core/array.h>
 #include <rx/core/global.h>
 #include <rx/core/log.h>
 #include <rx/core/memory/bump_point_allocator.h>
@@ -866,12 +867,24 @@ namespace nova::renderer {
         if(rendergraph->create_renderpass<BackbufferOutputRenderpass>(*device_resources, this) == nullptr) {
             logger(rx::log::level::k_error, "Could not create the backbuffer output renderpass");
         }
-    }
 
-    void NovaRenderer::create_builtin_pipelines() {
         backbuffer_output_pipeline_create_info->viewport_size = device->get_swapchain()->get_size();
         if(!pipeline_storage->create_pipeline(*backbuffer_output_pipeline_create_info)) {
             logger(rx::log::level::k_error, "Could not create builtin pipeline %s", backbuffer_output_pipeline_create_info->name);
+
+        } else {
+            const auto pipeline = pipeline_storage->get_pipeline(backbuffer_output_pipeline_create_info->name);
+
+            const shaderpack::MaterialData
+                material{BACKBUFFER_OUTPUT_MATERIAL_NAME,
+                         rx::array{
+                             shaderpack::MaterialPass{"main", BACKBUFFER_OUTPUT_MATERIAL_NAME, BACKBUFFER_OUTPUT_PIPELINE_NAME, {}, {}}},
+                         "block"};
+
+            const rx::vector<shaderpack::MaterialData> materials = rx::array{material};
+            create_materials_for_pipeline(*pipeline, materials, backbuffer_output_pipeline_create_info->name);
         }
     }
+
+    void NovaRenderer::create_builtin_pipelines() {}
 } // namespace nova::renderer

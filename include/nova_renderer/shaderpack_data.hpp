@@ -508,8 +508,6 @@ namespace nova::renderer::shaderpack {
          */
         rx::vector<VkDescriptorSet> descriptor_sets;
 
-        VkPipelineLayout layout = VK_NULL_HANDLE;
-
         static MaterialPass from_json(const rx::json& json);
     };
 
