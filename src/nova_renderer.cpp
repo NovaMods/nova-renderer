@@ -887,7 +887,7 @@ namespace nova::renderer {
                                                                                  BACKBUFFER_OUTPUT_PIPELINE_NAME,
                                                                                  rx::array{rx::pair{"ui_output", UI_OUTPUT_RT_NAME},
                                                                                            rx::pair{"scene_output", SCENE_OUTPUT_RT_NAME},
-                                                                                           rx::pair{"output_sampler", POINT_SAMPLER_NAME}},
+                                                                                           rx::pair{"tex_sampler", POINT_SAMPLER_NAME}},
                                                                                  {}}},
                                                     "block"};
 
@@ -897,11 +897,10 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::initialize_descriptor_pool() {
-        rx::map<rhi::DescriptorType, uint32_t> descriptor_counts;
-        descriptor_counts.insert(rhi::DescriptorType::UniformBuffer, 4096);
-        descriptor_counts.insert(rhi::DescriptorType::CombinedImageSampler, 4096);
-        descriptor_counts.insert(rhi::DescriptorType::Sampler, 5);
-        global_descriptor_pool = device->create_descriptor_pool(descriptor_counts, global_allocator);
+        global_descriptor_pool = device->create_descriptor_pool(rx::array{rx::pair{rhi::DescriptorType::UniformBuffer, 4096},
+                                                                          rx::pair{rhi::DescriptorType::CombinedImageSampler, 4096},
+                                                                          rx::pair{rhi::DescriptorType::Sampler, 5}},
+                                                                global_allocator);
     }
 
     void NovaRenderer::create_builtin_pipelines() {}
