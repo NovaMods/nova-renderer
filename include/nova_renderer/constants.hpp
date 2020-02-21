@@ -82,4 +82,6 @@ namespace nova::renderer {
      * the rendergraph has finished
      */
     constexpr const char* BACKBUFFER_NAME = "NovaBackbuffer";
+
+    constexpr const char* POINT_SAMPLER_NAME = "NovaPointSampler";
 } // namespace nova::renderer

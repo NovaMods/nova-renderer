@@ -875,11 +875,15 @@ namespace nova::renderer {
         } else {
             const auto pipeline = pipeline_storage->get_pipeline(backbuffer_output_pipeline_create_info->name);
 
-            const shaderpack::MaterialData
+            shaderpack::MaterialData
                 material{BACKBUFFER_OUTPUT_MATERIAL_NAME,
                          rx::array{
                              shaderpack::MaterialPass{"main", BACKBUFFER_OUTPUT_MATERIAL_NAME, BACKBUFFER_OUTPUT_PIPELINE_NAME, {}, {}}},
                          "block"};
+
+            material.passes[0].bindings.insert("ui_output", UI_OUTPUT_RT_NAME);
+            material.passes[0].bindings.insert("scene_output", SCENE_OUTPUT_RT_NAME);
+            material.passes[0].bindings.insert("output_sampler", POINT_SAMPLER_NAME);
 
             const rx::vector<shaderpack::MaterialData> materials = rx::array{material};
             create_materials_for_pipeline(*pipeline, materials, backbuffer_output_pipeline_create_info->name);
