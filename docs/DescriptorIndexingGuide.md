@@ -6,7 +6,7 @@ First, let's talk about what we're trying to do
 
 ## Use Case
 
-Most renderers need some way for shaders to access resources like textures, buffers, etc. For the Vulkan API, this way is the almighty descriptor set. Descriptor sets, as I understand them, are essentially a pointer to a resource. You update your descriptor sets with your resoruces, then you bind the descriptor sets to your command buffer, then shaders involved in sunsequent drawcalls can look at the descriptors to know what resources they should actually read from. I'm not entirely sure why there's this indirection - and in fact, on AMD GPUs descriptor sets are actually just pointers - but the indireciton exists, and we all have to find a way to deal with it
+Most renderers need some way for shaders to access resources like textures, buffers, etc. For the Vulkan API, this way is the almighty descriptor set. Descriptor sets, as I understand them, are essentially a pointer to a resource. You update your descriptor sets with your resource, then you bind the descriptor sets to your command buffer, then shaders involved in sunsequent drawcalls can look at the descriptors to know what resources they should actually read from. I'm not entirely sure why there's this indirection - and in fact, on AMD GPUs descriptor sets are actually just pointers - but the indireciton exists, and we all have to find a way to deal with it
 
 So, how do we update descriptor sets with our resources? How do we bind descriptor sets to a command buffer? Where do the descriptor sets live?
 
@@ -16,7 +16,7 @@ Before getting into updating and binding descriptor sets, we're going to talk ab
 
 My renderer has a concept of a Material. My Materials have a VkPipeline, and a bunch of VkDescriptorSets that represent all the resources needed by the Material. This includes things the artists care about, like textures and artist-tunable material parameters, along with things like the camera matrices, per-frame information like the current time and player's position, etc. The idea is that I can bind each Material's descriptors atomically, then issue drawcalls for everything using that Material, then bind the next Material's descriptors, all without worrying about only updating some of the descriptors. This is somewhat ineffecient and I'm binding more than I need to, but for now it's fine
 
-I tried having my resoruce own their own descriptor sets. This initially made sense to me, until I realized that descriptor sets were tied to the pipeline layout they're created from. Having one descriptor per resource didn't work, but having one descriptor per resource _per pipeline_ made more sense
+I tried having my resource own their own descriptor sets. This initially made sense to me, until I realized that descriptor sets were tied to the pipeline layout they're created from. Having one descriptor per resource didn't work, but having one descriptor per resource _per pipeline_ made more sense
 
 ## Descriptor Indexing Guide
 
