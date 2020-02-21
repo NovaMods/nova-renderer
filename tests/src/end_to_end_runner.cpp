@@ -52,7 +52,7 @@ namespace nova::renderer {
         NovaWindow& window = renderer->get_window();
 
         MeshData cube = {};
-        cube.vertex_data = {
+        cube.vertex_data = rx::array{
             FullVertex{{-1, -1, -1}, {}, {}, {}, {}, {}, {}},
             FullVertex{{-1, -1, 1}, {}, {}, {}, {}, {}, {}},
             FullVertex{{-1, 1, -1}, {}, {}, {}, {}, {}, {}},
@@ -62,7 +62,7 @@ namespace nova::renderer {
             FullVertex{{1, 1, -1}, {}, {}, {}, {}, {}, {}},
             FullVertex{{1, 1, 1}, {}, {}, {}, {}, {}, {}},
         };
-        cube.indices = {0, 1, 3, 6, 0, 2, 5, 0, 4, 6, 4, 0, 0, 3, 2, 5, 1, 0, 3, 1, 5, 7, 4, 6, 4, 7, 5, 7, 6, 2, 7, 2, 3, 7, 3, 5};
+        cube.indices = rx::array{0, 1, 3, 6, 0, 2, 5, 0, 4, 6, 4, 0, 0, 3, 2, 5, 1, 0, 3, 1, 5, 7, 4, 6, 4, 7, 5, 7, 6, 2, 7, 2, 3, 7, 3, 5};
 
         const MeshId mesh_id = renderer->create_mesh(cube);
 
