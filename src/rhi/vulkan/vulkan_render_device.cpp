@@ -860,7 +860,7 @@ namespace nova::renderer::rhi {
 
             attachment_states.reserve(blend_state.render_target_states.size());
 
-            blend_state.render_target_states.each_fwd([&](const RenderTargetColorBlendState& render_target_blend) {
+            blend_state.render_target_states.each_fwd([&](const RenderTargetBlendState& render_target_blend) {
                 VkPipelineColorBlendAttachmentState color_blend_attachment;
                 color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
                                                         VK_COLOR_COMPONENT_A_BIT;

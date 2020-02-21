@@ -114,7 +114,9 @@ namespace nova::renderer {
         float maximum_depth_bias = 0;
     };
 
-    // TODO: Figure out multisampling. The Vulkan book's section is sadly incomplete
+    struct MultisamplingState {
+        // TODO: Figure out multisampling. The Vulkan book's section is sadly incomplete
+    };
 
     enum class StencilOp { Keep, Zero, Replace, Increment, IncrementAndWrap, Decrement, DecrementAndWrap, Invert };
 
@@ -286,7 +288,7 @@ namespace nova::renderer {
     /*!
      * \brief Blending state for a single attachment
      */
-    struct RenderTargetColorBlendState {
+    struct RenderTargetBlendState {
         /*!
          * \brief Whether to enable blending for this attachment
          *
@@ -328,11 +330,11 @@ namespace nova::renderer {
     /*!
      * \brief How to blend colors
      */
-    struct ColorBlendState {
+    struct BlendState {
         /*!
          * \brief How to blend each render target that this pipeline state renders to
          */
-        rx::vector<RenderTargetColorBlendState> render_target_states{};
+        rx::vector<RenderTargetBlendState> render_target_states{};
 
         /*!
          * \brief Constant values to use for any render targets where one of the blend factors involves either a constant color or constant
@@ -390,6 +392,8 @@ namespace nova::renderer {
          */
         RasterizerState rasterizer_state{};
 
+        rx::optional<MultisamplingState> multisampling_state{};
+
         /*!
          * What depth operations to perform
          *
@@ -409,7 +413,7 @@ namespace nova::renderer {
          *
          * If this optional has a value, blending will be enabled. Otherwise, blending will be disabled
          */
-        rx::optional<ColorBlendState> blend_state{};
+        rx::optional<BlendState> blend_state{};
 
         bool enable_color_write = true;
 
