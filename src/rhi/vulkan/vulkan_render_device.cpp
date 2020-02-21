@@ -729,7 +729,7 @@ namespace nova::renderer::rhi {
             shader_stages.push_back(shader_stage_create_info);
         });
 
-        const auto& [vertex_attribute_descriptions, vertex_binding_descriptions] = get_input_assembler_setup(vk_interface->vertex_fields);
+        const auto& [vertex_attribute_descriptions, vertex_binding_descriptions] = get_input_assembler_setup(data.vertex_fields);
 
         VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info;
         vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -797,6 +797,9 @@ namespace nova::renderer::rhi {
 
         if(rasterizer_create_info.depthBiasConstantFactor != 0 || rasterizer_create_info.depthBiasSlopeFactor != 0) {
             rasterizer_create_info.depthBiasEnable = VK_TRUE;
+
+        } else {
+            rasterizer_create_info.depthBiasEnable = VK_FALSE;
         }
 
         VkPipelineMultisampleStateCreateInfo multisample_create_info;
@@ -849,10 +852,12 @@ namespace nova::renderer::rhi {
             depth_stencil_create_info.back.writeMask = stencil_state.back_face_op.write_mask;
         }
 
-        VkPipelineColorBlendStateCreateInfo color_blend_create_info;
+        VkPipelineColorBlendStateCreateInfo color_blend_create_info{};
         color_blend_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         color_blend_create_info.pNext = nullptr;
         color_blend_create_info.flags = 0;
+        color_blend_create_info.logicOpEnable = VK_FALSE;
+        color_blend_create_info.logicOp = VK_LOGIC_OP_COPY;
 
         rx::vector<VkPipelineColorBlendAttachmentState> attachment_states{allocator};
         if(data.blend_state) {
@@ -875,14 +880,27 @@ namespace nova::renderer::rhi {
                 attachment_states.emplace_back(color_blend_attachment);
             });
 
-            color_blend_create_info.logicOpEnable = VK_FALSE;
-            color_blend_create_info.logicOp = VK_LOGIC_OP_COPY;
             color_blend_create_info.attachmentCount = attachment_states.size();
             color_blend_create_info.pAttachments = attachment_states.data();
             color_blend_create_info.blendConstants[0] = blend_state.blend_constants.r;
             color_blend_create_info.blendConstants[1] = blend_state.blend_constants.g;
             color_blend_create_info.blendConstants[2] = blend_state.blend_constants.b;
             color_blend_create_info.blendConstants[3] = blend_state.blend_constants.a;
+
+        } else {
+            attachment_states.reserve(data.color_attachments.size());
+
+            data.color_attachments.each_fwd([&](const shaderpack::TextureAttachmentInfo& /* attachment_info */) {
+                VkPipelineColorBlendAttachmentState color_blend_attachment{};
+                color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+                                                        VK_COLOR_COMPONENT_A_BIT;
+                color_blend_attachment.blendEnable = VK_FALSE;
+
+                attachment_states.emplace_back(color_blend_attachment);
+            });
+
+            color_blend_create_info.attachmentCount = attachment_states.size();
+            color_blend_create_info.pAttachments = attachment_states.data();
         }
 
         rx::vector<VkDynamicState> dynamic_states;

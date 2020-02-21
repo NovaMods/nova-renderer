@@ -122,8 +122,6 @@ namespace nova::renderer::rhi {
     struct PipelineInterface {
         rx::map<rx::string, ResourceBindingDescription> bindings;
 
-        rx::vector<VertexField> vertex_fields;
-
         [[nodiscard]] uint32_t get_num_descriptors_of_type(DescriptorType type) const;
     };
 

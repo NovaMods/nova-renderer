@@ -1,6 +1,8 @@
 #pragma once
 
-#include "rx/core/string.h"
+#include <rx/core/string.h>
+
+#include "nova_renderer/rhi/rhi_types.hpp"
 
 /*!
  * \file pipeline_create_info.hpp
@@ -9,10 +11,6 @@
  */
 
 namespace nova::renderer {
-    namespace rhi {
-        struct VertexField;
-    }
-
     /*!
      * \brief SPIR-V shader source
      */

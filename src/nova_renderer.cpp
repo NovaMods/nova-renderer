@@ -21,6 +21,7 @@
 #include "nova_renderer/memory/bump_point_allocation_strategy.hpp"
 #include "nova_renderer/procedural_mesh.hpp"
 #include "nova_renderer/rendergraph.hpp"
+#include "nova_renderer/renderpack_data_conversions.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/rhi/swapchain.hpp"
 #include "nova_renderer/ui_renderer.hpp"
@@ -492,10 +493,13 @@ namespace nova::renderer {
         }
 
         pipeline_create_infos.each_fwd([&](const shaderpack::PipelineData& pipeline_create_info) {
-            const auto pipeline_state_create_info = to_pipeline_state_create_info(pipeline_create_info);
+            const auto pipeline_state_create_info = renderpack::to_pipeline_state_create_info(pipeline_create_info, *rendergraph);
+            if(!pipeline_state_create_info) {
+                logger(rx ::log::level::k_error, "Could not create pipeline %s", pipeline_create_info.name);
+            }
 
-            if(pipeline_storage->create_pipeline(pipeline_state_create_info)) {
-                auto pipeline = pipeline_storage->get_pipeline(pipeline_state_create_info.name);
+            if(pipeline_storage->create_pipeline(*pipeline_state_create_info)) {
+                auto pipeline = pipeline_storage->get_pipeline(pipeline_state_create_info->name);
                 create_materials_for_pipeline(*pipeline, materials, pipeline_create_info.name);
             }
         });

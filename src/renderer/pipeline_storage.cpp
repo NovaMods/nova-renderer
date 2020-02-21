@@ -87,12 +87,10 @@ namespace nova::renderer {
             get_shader_module_descriptors(pipeline_create_info.pixel_shader->source, rhi::ShaderStage::Fragment, bindings);
         }
 
-        return device
-            .create_pipeline_interface(bindings, pipeline_create_info.color_attachments, pipeline_create_info.depth_texture, allocator)
-            .map([&](rhi::PipelineInterface* pipeline_interface) {
-                pipeline_interface->vertex_fields = get_vertex_fields(pipeline_create_info.vertex_shader);
-                return pipeline_interface;
-            });
+        return device.create_pipeline_interface(bindings,
+                                                pipeline_create_info.color_attachments,
+                                                pipeline_create_info.depth_texture,
+                                                allocator);
     }
 
     void PipelineStorage::get_shader_module_descriptors(const rx::vector<uint32_t>& spirv,
