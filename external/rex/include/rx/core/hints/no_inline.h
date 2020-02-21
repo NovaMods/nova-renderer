@@ -4,7 +4,7 @@
 
 // # Prevent inlining
 //
-// Hints to the compiler that a given function should not be inlined. This is
+// Hints to the compiler that a given function should not be inlined.
 #if defined(RX_COMPILER_GCC) || defined(RX_COMPILER_CLANG)
 #define RX_HINT_NO_INLINE __attribute__((noinline))
 #elif defined(RX_COMPILER_MSVC)

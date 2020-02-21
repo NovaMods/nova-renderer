@@ -1,7 +1,6 @@
 #ifndef RX_CORE_VECTOR_H
 #define RX_CORE_VECTOR_H
-#include "rx/core/assert.h" // RX_ASSERT
-#include "rx/core/config.h" // RX_COMPILER_GCC
+#include "rx/core/array.h"
 
 #include "rx/core/traits/is_same.h"
 #include "rx/core/traits/is_trivially_copyable.h"
@@ -26,18 +25,27 @@ namespace detail {
 // 64-bit: 32 bytes
 template<typename T>
 struct vector {
+  template<rx_size E>
+  using initializers = array<T[E]>;
+
   static constexpr const rx_size k_npos{-1_z};
 
   constexpr vector();
   constexpr vector(memory::allocator* _allocator);
+  constexpr vector(memory::view _view);
+
+  // Construct a vector from an array of initializers. This is similar to
+  // how initializer_list works in C++11 except it requires no compiler proxy
+  // and is actually faster since the initializer type can be moved.
+  template<rx_size E>
+  vector(memory::allocator* _allocator, initializers<E>&& _initializers);
+  template<rx_size E>
+  vector(initializers<E>&& _initializers);
 
   vector(memory::allocator* _allocator, rx_size _size, utility::uninitialized);
   vector(memory::allocator* _allocator, rx_size _size);
   vector(memory::allocator* _allocator, const vector& _other);
-
   vector(rx_size _size);
-  vector(memory::view _view);
-
   vector(const vector& _other);
   vector(vector&& other_);
 
@@ -119,6 +127,12 @@ private:
 };
 
 template<typename T>
+inline constexpr vector<T>::vector()
+  : vector{&memory::g_system_allocator}
+{
+}
+
+template<typename T>
 inline constexpr vector<T>::vector(memory::allocator* _allocator)
   : m_allocator{_allocator}
   , m_data{nullptr}
@@ -126,6 +140,37 @@ inline constexpr vector<T>::vector(memory::allocator* _allocator)
   , m_capacity{0}
 {
   RX_ASSERT(m_allocator, "null allocator");
+}
+
+template<typename T>
+inline constexpr vector<T>::vector(memory::view _view)
+  : m_allocator{_view.owner}
+  , m_data{reinterpret_cast<T*>(_view.data)}
+  , m_size{_view.size}
+  , m_capacity{m_size}
+{
+  RX_ASSERT(m_allocator, "null allocator");
+}
+
+template<typename T>
+template<rx_size E>
+inline vector<T>::vector(memory::allocator* _allocator, initializers<E>&& _initializers)
+  : vector{_allocator}
+{
+  grow_or_shrink_to(E);
+  if constexpr(traits::is_trivially_copyable<T>) {
+    detail::copy(m_data, _initializers.data(), sizeof(T) * E);
+  } else for (rx_size i = 0; i < E; i++) {
+    utility::construct<T>(m_data + i, utility::move(_initializers[i]));
+  }
+  m_size = E;
+}
+
+template<typename T>
+template<rx_size E>
+inline vector<T>::vector(initializers<E>&& _initializers)
+  : vector{&memory::g_system_allocator, utility::move(_initializers)}
+{
 }
 
 template<typename T>
@@ -178,22 +223,6 @@ inline vector<T>::vector(memory::allocator* _allocator, const vector& _other)
   } else for (rx_size i{0}; i < m_size; i++) {
     utility::construct<T>(m_data + i, _other.m_data[i]);
   }
-}
-
-template<typename T>
-inline vector<T>::vector(memory::view _view)
-  : m_allocator{_view.owner}
-  , m_data{reinterpret_cast<T*>(_view.data)}
-  , m_size{_view.size}
-  , m_capacity{m_size}
-{
-  RX_ASSERT(m_allocator, "null allocator");
-}
-
-template<typename T>
-inline constexpr vector<T>::vector()
-  : vector{&memory::g_system_allocator}
-{
 }
 
 template<typename T>

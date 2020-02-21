@@ -3,6 +3,8 @@
 #include "rx/core/types.h"
 #include "rx/core/assert.h"
 
+#include "rx/core/utility/forward.h"
+
 namespace rx {
 
 template<typename T>
@@ -10,15 +12,31 @@ struct array;
 
 template<typename T, rx_size E>
 struct array<T[E]> {
+  template<typename... Ts>
+  constexpr array(Ts&&... _arguments);
+
   constexpr T& operator[](rx_size _index);
   constexpr const T& operator[](rx_size _index) const;
 
   constexpr T* data();
   constexpr const T* data() const;
+
   constexpr rx_size size() const;
 
+private:
   T m_data[E];
 };
+
+// Deduction guide for array{Ts...} to become array<T[E]>.
+template <typename T, typename... Ts>
+array(T, Ts...)->array<T[1 + sizeof...(Ts)]>;
+
+template<typename T, rx_size E>
+template<typename... Ts>
+inline constexpr array<T[E]>::array(Ts&&... _arguments)
+  : m_data{utility::forward<Ts>(_arguments)...}
+{
+}
 
 template<typename T, rx_size E>
 inline constexpr T& array<T[E]>::operator[](rx_size _index) {
