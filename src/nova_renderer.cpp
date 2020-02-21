@@ -118,7 +118,6 @@ namespace nova::renderer {
             struct VsOutput {
                 float4 position : SV_POSITION;
                 float2 uv : TEXCOORD;
-
             };
 
             VsOutput main(VsInput input) {
@@ -129,6 +128,9 @@ namespace nova::renderer {
                 return output;
             })"};
         const auto& vertex_spirv = shaderpack::compile_shader(vertex_source, rhi::ShaderStage::Vertex, rhi::ShaderLanguage::Hlsl);
+        if(vertex_spirv.is_empty()) {
+            logger(rx::log::level::k_error, "Could not compile builtin backbuffer output vertex shader");
+        }
         vertex_shader = {"/nova/shaders/backbuffer_output.vertex.hlsl", vertex_spirv};
 
         const rx::string pixel_source{R"(
@@ -139,22 +141,25 @@ namespace nova::renderer {
             Texture2D scene_output : register(t1);
 
             [[vk::binding(2, 0)]]
-            SamplerState sampler : register(s0);
+            SamplerState tex_sampler : register(s0);
 
             struct VsOutput {
                 float4 position : SV_POSITION;
-                float2 us : TEXCOORD;
+                float2 uv : TEXCOORD;
             };
 
             float3 main(VsOutput input) : SV_Target {
-                float4 ui_color = ui_output.Sample(sampler, input.uv);
-                float4 scene_color = scene_output.Sample(sampler, input.uv);
+                float4 ui_color = ui_output.Sample(tex_sampler, input.uv);
+                float4 scene_color = scene_output.Sample(tex_sampler, input.uv);
 
                 float3 combined_color = lerp(ui_color.rgb, scene_color.rgb, ui_color.a);
 
                 return combined_color;
             })"};
         const auto& pixel_spirv = shaderpack::compile_shader(pixel_source, rhi::ShaderStage::Fragment, rhi::ShaderLanguage::Hlsl);
+        if(pixel_spirv.is_empty()) {
+            logger(rx::log::level::k_error, "Could not compile builtin backbuffer output pixel shader");
+        }
         pixel_shader = {"/nova/shaders/backbuffer_output.pixel.hlsl", pixel_spirv};
 
         // TODO: Figure out how to make the input textures into input attachments
@@ -236,6 +241,8 @@ namespace nova::renderer {
         create_renderpass_manager();
 
         create_builtin_renderpasses();
+
+        create_builtin_pipelines();
     }
 
     NovaRenderer::~NovaRenderer() { mtr_shutdown(); }
@@ -856,6 +863,12 @@ namespace nova::renderer {
     void NovaRenderer::create_builtin_renderpasses() {
         if(rendergraph->create_renderpass<BackbufferOutputRenderpass>(*device_resources, this) == nullptr) {
             logger(rx::log::level::k_error, "Could not create the backbuffer output renderpass");
+        }
+    }
+
+    void NovaRenderer::create_builtin_pipelines() {
+        if(!pipeline_storage->create_pipeline(*backbuffer_output_pipeline_create_info)) {
+            logger(rx::log::level::k_error, "Could not create builtin pipeline %s", backbuffer_output_pipeline_create_info->name);
         }
     }
 } // namespace nova::renderer

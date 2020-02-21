@@ -256,6 +256,8 @@ namespace nova::renderer {
         void create_renderpass_manager();
 
         void create_builtin_renderpasses();
+
+        void create_builtin_pipelines();
 #pragma endregion
 
 #pragma region Renderpack
