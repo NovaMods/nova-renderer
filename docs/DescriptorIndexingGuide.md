@@ -72,7 +72,7 @@ binding_flags.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREA
 binding_flags.bindingCount = 3;
 binding_flags.pBindingFlags = flags;
 
-// When you make the VkDescriptorSetLayoutBinding for your varaible length array, the `descriptorCount` member is the
+// When you make the VkDescriptorSetLayoutBinding for your variable length array, the `descriptorCount` member is the
 // maximum number of descriptors in that array. I've omitted the code here for brevity, and because it's not different
 // for varaible count arrays vs normal descriptor arrays
 
