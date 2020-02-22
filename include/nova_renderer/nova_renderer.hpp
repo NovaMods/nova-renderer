@@ -204,6 +204,8 @@ namespace nova::renderer {
 
         MeshId fullscreen_triangle_id;
 
+        RenderableId backbuffer_output_renderable;
+
         /*!
          * \brief The allocator that all of Nova's memory will be allocated through
          *
@@ -228,6 +230,7 @@ namespace nova::renderer {
         rhi::DescriptorPool* global_descriptor_pool;
 
         DeviceMemoryResource* staging_buffer_memory;
+
         void* staging_buffer_memory_ptr;
 
 #pragma region Initialization

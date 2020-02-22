@@ -8,6 +8,8 @@
 namespace nova::renderer {
     using namespace shaderpack;
 
+    RX_LOG("Rendergraph", logger);
+
     Renderpass::Renderpass(rx::string name, const bool is_builtin) : name(std::move(name)), is_builtin(is_builtin) {}
 
     void Renderpass::execute(rhi::CommandList& cmds, FrameContext& ctx) {

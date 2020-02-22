@@ -946,7 +946,6 @@ namespace nova::renderer::rhi {
             object_name.objectHandle = reinterpret_cast<uint64_t>(vk_pipeline->pipeline);
             object_name.pObjectName = data.name.data();
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
-            logger(rx::log::level::k_info, "Set pipeline %u to have name %s", vk_pipeline->pipeline, data.name);
         }
 
         return ntl::Result(static_cast<Pipeline*>(vk_pipeline));
@@ -1000,8 +999,6 @@ namespace nova::renderer::rhi {
                                             &buffer->allocation,
                                             &buffer->allocation_info);
         if(result == VK_SUCCESS) {
-            logger(rx::log::level::k_verbose, "Created buffer %s with size %u", info.name, vk_create_info.size);
-
             buffer->size = info.size;
 
             if(settings->debug.enabled) {
@@ -1012,8 +1009,6 @@ namespace nova::renderer::rhi {
                 object_name.pObjectName = info.name.data();
 
                 NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
-
-                logger(rx::log::level::k_info, "Set buffer %uz to have name %s", buffer->buffer, info.name);
             }
 
             return buffer;
@@ -1113,8 +1108,6 @@ namespace nova::renderer::rhi {
                 object_name.pObjectName = info.name.data();
 
                 NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
-
-                logger(rx::log::level::k_info, "Set image %uz to have name %s", image->image, info.name);
             }
 
             VkImageViewCreateInfo image_view_create_info = {};

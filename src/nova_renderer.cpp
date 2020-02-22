@@ -875,7 +875,10 @@ namespace nova::renderer {
     void NovaRenderer::create_renderpass_manager() { rendergraph = global_allocator->create<Rendergraph>(global_allocator, *device); }
 
     void NovaRenderer::create_builtin_renderpasses() {
-        if(rendergraph->create_renderpass<BackbufferOutputRenderpass>(*device_resources, this) == nullptr) {
+        const auto& ui_output = *device_resources->get_render_target(UI_OUTPUT_RT_NAME);
+        const auto& scene_output = *device_resources->get_render_target(SCENE_OUTPUT_RT_NAME);
+
+        if(rendergraph->create_renderpass<BackbufferOutputRenderpass>(*device_resources, ui_output->image, scene_output->image) == nullptr) {
             logger(rx::log::level::k_error, "Could not create the backbuffer output renderpass");
         }
 
@@ -899,6 +902,11 @@ namespace nova::renderer {
 
             const rx::vector<shaderpack::MaterialData> materials = rx::array{material};
             create_materials_for_pipeline(*pipeline, materials, backbuffer_output_pipeline_create_info->name);
+
+            const static FullMaterialPassName BACKBUFFER_OUTPUT_MATERIAL{BACKBUFFER_OUTPUT_MATERIAL_NAME, "main"};
+            const static StaticMeshRenderableData FULLSCREEN_TRIANGLE_RENDERABLE{{fullscreen_triangle_id}};
+
+            backbuffer_output_renderable = add_renderable_for_material(BACKBUFFER_OUTPUT_MATERIAL, FULLSCREEN_TRIANGLE_RENDERABLE);
         }
     }
 
