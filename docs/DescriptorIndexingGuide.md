@@ -14,13 +14,13 @@ So, how do we update descriptor sets with our resources? How do we bind descript
 
 Before getting into updating and binding descriptor sets, we're going to talk about where they live. Every developer I've talked to has had a different answer for this question. My answer makes sense for me, but you may want to do something different. Such is Vulkan.
 
-My renderer has a concept of a Material. My Materials have a VkPipeline, and a bunch of VkDescriptorSets that represent all the resources needed by the Material. This includes things the artists care about, like textures and artist-tunable material parameters, along with things like the camera matrices, per-frame information like the current time and player's position, etc. The idea is that I can bind each Material's descriptors atomically, then issue drawcalls for everything using that Material, then bind the next Material's descriptors, all without worrying about only updating some of the descriptors. This is somewhat ineffecient and I'm binding more than I need to, but for now it's fine
+My renderer has a concept of a Material. My Materials have a VkPipeline, and a bunch of VkDescriptorSets that represent all the resources needed by the Material. This includes things the artists care about, like textures and artist-tunable material parameters, along with things like the camera matrices, per-frame information like the current time and player's position, etc. The idea is that I can bind each Material's descriptors atomically, then issue drawcalls for everything using that Material, then bind the next Material's descriptors, all without worrying about only updating some of the descriptors. This is somewhat inefficient and I'm binding more than I need to, but for now it's fine
 
 I tried having my resource own their own descriptor sets. This initially made sense to me, until I realized that descriptor sets were tied to the pipeline layout they're created from. Having one descriptor per resource didn't work, but having one descriptor per resource _per pipeline_ made more sense
 
 ## Descriptor Indexing Guide
 
-Note: This guide is written for Vulkan 1.2, wher edescriptor indexing is a core feature. If you're using an older verion of Vulkan, you need to enable the descriptor indexing extension and use the `EXT` versions of all the types and constants mentioned here
+Note: This guide is written for Vulkan 1.2, where descriptor indexing is a core feature. If you're using an older version of Vulkan, you need to enable the descriptor indexing extension and use the `EXT` versions of all the types and constants mentioned here
 
 ### Creating your VkDevice
 
@@ -47,7 +47,7 @@ vkCreateDevice(phys_device, &device_create_info, nullptr, &device);
 
 #### Unbounded (variable size) descriptor arrays
 
-Nova uses an unbounded descriptor array for its texture resources. This allows Nova to stream in textures and add them to the array as needed. Materials use indexes to refer to which texture in the array they use. [The Chunk Stories blog](http://chunkstories.xyz/blog/a-note-on-descriptor-indexing/) has a wonderful explaination of why this is a good strategy, I agree with all the points they make
+Nova uses an unbounded descriptor array for its texture resources. This allows Nova to stream in textures and add them to the array as needed. Materials use indexes to refer to which texture in the array they use. [The Chunk Stories blog](http://chunkstories.xyz/blog/a-note-on-descriptor-indexing/) has a wonderful explanation of why this is a good strategy, I agree with all the points they make
 
 Vulkan has a restriction that an unbounded array must be the last descriptor in the set. This is kinda annoying, but it's something that I can easily check with shader reflection so no worries
 
@@ -85,7 +85,7 @@ vkCreateDescriptorSetLayout(device, &create_info, nullptr, &layout);
 
 #### Possible problems
 
-One problem I ran into, which caused me a great deal of grief, is that I got the `descriptorCount` for my unbounded array by performing shader reflection on some SPIR-V that I had compiled from HLSL. Turns out, SPIRV Cross will report an array size of 1 for a HLSL array without a size
+One problem I ran into, which caused me a great deal of grief, is that I got the `descriptorCount` for my unbounded array by performing shader reflection on some SPIR-V that I had compiled from HLSL. Turns out, SPIR-V Cross will report an array size of 1 for a HLSL array without a size
 
 My HLSL:
 ```hlsl
@@ -99,7 +99,7 @@ Giving the array a size resolved my issue
 
 When you create an descriptor set for an unbounded array with a variable size, you must use the `VkDescriptorSetVariableDescriptorCountAllocateInfo` struct to tell Vulkan the descriptor counts of each set with a variable descriptor count. This struct should be in the `pNext` chain of your `VkDescriptorSetAllocateInfo`. 
 
-The spec is worded strangely for this struct. Essentially it seems to be the maximum number of descriptors in each of your unbounded arrays. Since am unbounded array must be the last binding in a descritor set, there can only be one unbounded array per descriptor set. This means you only need to specify one count per descriptor set - which is exaclty what `VkDescriptorSetVariableDescriptorCountAllocateInfo` has you do
+The spec is worded strangely for this struct. Essentially it seems to be the maximum number of descriptors in each of your unbounded arrays. Since am unbounded array must be the last binding in a descriptor set, there can only be one unbounded array per descriptor set. This means you only need to specify one count per descriptor set - which is exactly what `VkDescriptorSetVariableDescriptorCountAllocateInfo` has you do
 
 You don't need to worry about descriptor counts for sets that don't have any unbounded arrays - or if you do, the spec doesn't make that clear - but you absolutely do need to worry about descriptor counts for sets that _do_ have unbounded arrays. If you're like me and you get your descriptor sizes from shader reflection, you'll need to propagate that information to where you create your descriptor sets. I simply pass down an array of the descriptor counts of variable size descriptors in each descriptor set as an array of ints, this strategy will probably work for you
 
@@ -130,7 +130,7 @@ image_infos[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 image_infos[1].imageView = image_view_2;
 image_infos[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-VkWriteDesctorSet write{};
+VkWriteDescriptorSet write{};
 vk_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 vk_write.dstSet = descriptor_set;
 vk_write.dstBinding = 2;    // We're updating binding 2, which is the one with the VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT and VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT flags from the above example
