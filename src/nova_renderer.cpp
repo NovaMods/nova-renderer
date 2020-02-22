@@ -239,7 +239,9 @@ namespace nova::renderer {
 
         create_builtin_render_targets();
 
-        create_uniform_buffers();
+        create_builtin_uniform_buffers();
+
+        create_builtin_meshes();
 
         create_renderpass_manager();
 
@@ -306,7 +308,7 @@ namespace nova::renderer {
     MeshId NovaRenderer::create_mesh(const MeshData& mesh_data) {
         rhi::BufferCreateInfo vertex_buffer_create_info;
         vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::VertexBuffer;
-        vertex_buffer_create_info.size = mesh_data.vertex_data.size() * sizeof(FullVertex);
+        vertex_buffer_create_info.size = mesh_data.vertex_data.size() * sizeof(uint8_t);
 
         rhi::Buffer* vertex_buffer = device->create_buffer(vertex_buffer_create_info, *mesh_memory, global_allocator);
 
@@ -319,10 +321,7 @@ namespace nova::renderer {
             rhi::Buffer* staging_vertex_buffer = device->create_buffer(staging_vertex_buffer_create_info,
                                                                        *staging_buffer_memory,
                                                                        global_allocator);
-            device->write_data_to_buffer(mesh_data.vertex_data.data(),
-                                         mesh_data.vertex_data.size() * sizeof(FullVertex),
-                                         0,
-                                         staging_vertex_buffer);
+            device->write_data_to_buffer(mesh_data.vertex_data.data(), vertex_buffer_create_info.size, 0, staging_vertex_buffer);
 
             rhi::CommandList* vertex_upload_cmds = device->create_command_list(0,
                                                                                rhi::QueueType::Transfer,
@@ -568,10 +567,9 @@ namespace nova::renderer {
                 rhi::Image* image = (*dyn_tex)->image;
 
                 resource_info.image_info.image = image;
-                resource_info.image_info.sampler = point_sampler;
                 resource_info.image_info.format = dynamic_texture_infos.find(resource_name)->format;
 
-                write.type = rhi::DescriptorType::CombinedImageSampler;
+                write.type = rhi::DescriptorType::Texture;
 
                 writes.push_back(write);
 
@@ -850,7 +848,7 @@ namespace nova::renderer {
         }
     }
 
-    void NovaRenderer::create_uniform_buffers() {
+    void NovaRenderer::create_builtin_uniform_buffers() {
         if(device_resources->create_uniform_buffer(PER_FRAME_DATA_NAME, sizeof(PerFrameUniforms))) {
             builtin_buffer_names.emplace_back(PER_FRAME_DATA_NAME);
 
@@ -864,6 +862,14 @@ namespace nova::renderer {
         } else {
             logger(rx::log::level::k_error, "Could not create builtin buffer %s", MODEL_MATRIX_BUFFER_NAME);
         }
+    }
+
+    void NovaRenderer::create_builtin_meshes() {
+        static float triangle_vertices[] = {0.0f, 0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 2.0f, 0.0f};
+        MeshData fullscreen_triangle_data{{global_allocator, 9 * sizeof(float)}, rx::array{0, 1, 2}};
+        memcpy(fullscreen_triangle_data.vertex_data.data(), triangle_vertices, 9 * sizeof(float));
+
+        fullscreen_triangle_id = create_mesh(fullscreen_triangle_data);
     }
 
     void NovaRenderer::create_renderpass_manager() { rendergraph = global_allocator->create<Rendergraph>(global_allocator, *device); }

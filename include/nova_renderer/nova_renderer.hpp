@@ -67,7 +67,7 @@ namespace nova::renderer {
      */
     class NovaRenderer {
     public:
-         /*!
+        /*!
          * \brief Initializes the Nova Renderer
          */
         explicit NovaRenderer(const NovaSettings& settings);
@@ -202,6 +202,8 @@ namespace nova::renderer {
 
         rhi::Sampler* point_sampler;
 
+        MeshId fullscreen_triangle_id;
+
         /*!
          * \brief The allocator that all of Nova's memory will be allocated through
          *
@@ -251,7 +253,9 @@ namespace nova::renderer {
 
         void create_builtin_render_targets();
 
-        void create_uniform_buffers();
+        void create_builtin_uniform_buffers();
+
+        void create_builtin_meshes();
 
         void create_renderpass_manager();
 

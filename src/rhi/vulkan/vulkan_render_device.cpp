@@ -555,10 +555,9 @@ namespace nova::renderer::rhi {
                     const auto first_image_info_idx = image_infos.size();
 
                     write.resources.each_fwd([&](const DescriptorResourceInfo& info) {
-                        VkDescriptorImageInfo vk_image_info;
+                        VkDescriptorImageInfo vk_image_info{};
                         vk_image_info.imageView = image_view_for_image(info.image_info.image);
                         vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                        vk_image_info.sampler = static_cast<VulkanSampler*>(info.image_info.sampler)->sampler;
 
                         image_infos.emplace_back(vk_image_info);
                     });

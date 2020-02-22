@@ -191,7 +191,6 @@ namespace nova::renderer::rhi {
     struct DescriptorImageInfo {
         Image* image;
         shaderpack::TextureFormat format;
-        Sampler* sampler;
     };
 
     struct DescriptorBufferInfo {

@@ -8,13 +8,13 @@
 
 namespace nova::renderer {
     struct FullVertex {
-        glm::vec3 position;             // 12 bytes
-        glm::vec3 normal;               // 12 bytes
-        glm::vec3 tangent;              // 12 bytes
-        uint32_t main_uv;               // 4 bytes
-        uint32_t secondary_uv;          // 4 bytes
-        uint32_t virtual_texture_id;    // 4 bytes
-        glm::vec4 additional_stuff;     // 12 bytes
+        glm::vec3 position;          // 12 bytes
+        glm::vec3 normal;            // 12 bytes
+        glm::vec3 tangent;           // 12 bytes
+        uint32_t main_uv;            // 4 bytes
+        uint32_t secondary_uv;       // 4 bytes
+        uint32_t virtual_texture_id; // 4 bytes
+        glm::vec4 additional_stuff;  // 12 bytes
     };
 
     static_assert(sizeof(FullVertex) % 16 == 0, "full_vertex struct is not aligned to 16 bytes!");
@@ -27,7 +27,13 @@ namespace nova::renderer {
      * making them use special vertex formats
      */
     struct MeshData {
-        rx::vector<FullVertex> vertex_data;
+        /*!
+         * \brief Byte array of your vertex data
+         *
+         * There's an implicit assumption in all my code that the vertex data you supply will be the vertex data that your pipelines want. I
+         * currently have no way to enforce this, although that might be what I do next
+         */
+        rx::vector<uint8_t> vertex_data;
         rx::vector<uint32_t> indices;
     };
 
