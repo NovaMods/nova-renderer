@@ -123,7 +123,7 @@ namespace nova::renderer {
 
             VsOutput main(VsInput input) {
                 VsOutput output;
-                output.position = float4(input.position, 0, 1);
+                output.position = float4(input.position * 2.0 - 1.0, 0, 1);
                 output.uv = input.position; // TODO: Figure out if I should flip the texture coordinates
 
                 return output;
@@ -865,9 +865,9 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_builtin_meshes() {
-        static float triangle_vertices[] = {0.0f, 0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 2.0f, 0.0f};
-        MeshData fullscreen_triangle_data{{global_allocator, 9 * sizeof(float)}, rx::array{0, 1, 2}};
-        memcpy(fullscreen_triangle_data.vertex_data.data(), triangle_vertices, 9 * sizeof(float));
+        static float triangle_vertices[] = {0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 2.0f};
+        MeshData fullscreen_triangle_data{{global_allocator, 6 * sizeof(float)}, rx::array{0, 1, 2}};
+        memcpy(fullscreen_triangle_data.vertex_data.data(), triangle_vertices, 6 * sizeof(float));
 
         fullscreen_triangle_id = create_mesh(fullscreen_triangle_data);
     }
