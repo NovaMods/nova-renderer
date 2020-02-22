@@ -67,6 +67,7 @@ namespace nova::renderer {
     void BackbufferOutputRenderpass::record_post_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const {
         Renderpass::record_post_renderpass_barriers(cmds, ctx);
 
+        // TODO: Figure out how to make the backend deal with the barriers
         cmds.resource_barriers(rhi::PipelineStage::FragmentShader, rhi::PipelineStage::ColorAttachmentOutput, post_pass_barriers);
     }
 } // namespace nova::renderer

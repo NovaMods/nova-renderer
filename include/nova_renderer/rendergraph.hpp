@@ -348,6 +348,7 @@ namespace nova::renderer {
                     } else {
                         framebuffer_size = attachment_size;
                     }
+
                 } else {
                     rg_log(rx::log::level::k_error, "No render target named %s", attachment_info.name);
                     missing_render_targets = true;

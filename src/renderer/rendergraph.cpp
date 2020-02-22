@@ -113,7 +113,6 @@ namespace nova::renderer {
 
     rx::vector<rx::string> Rendergraph::calculate_renderpass_execution_order() {
         if(is_dirty) {
-            // Oh look some bullshit I have to do because C++ doesn't have an API as cool as Java Streams
             const auto create_infos = [&]() {
                 rx::vector<RenderPassCreateInfo> create_info_temp(allocator);
                 create_info_temp.reserve(renderpass_metadatas.size());
