@@ -25,8 +25,8 @@ namespace detail {
 // 64-bit: 32 bytes
 template<typename T>
 struct vector {
-  template<rx_size E>
-  using initializers = array<T[E]>;
+  template<typename U, rx_size E>
+  using initializers = array<U[E]>;
 
   static constexpr const rx_size k_npos{-1_z};
 
@@ -37,10 +37,10 @@ struct vector {
   // Construct a vector from an array of initializers. This is similar to
   // how initializer_list works in C++11 except it requires no compiler proxy
   // and is actually faster since the initializer type can be moved.
-  template<rx_size E>
-  vector(memory::allocator* _allocator, initializers<E>&& _initializers);
-  template<rx_size E>
-  vector(initializers<E>&& _initializers);
+  template<typename U, rx_size E>
+  vector(memory::allocator* _allocator, initializers<U, E>&& _initializers);
+  template<typename U, rx_size E>
+  vector(initializers<U, E>&& _initializers);
 
   vector(memory::allocator* _allocator, rx_size _size, utility::uninitialized);
   vector(memory::allocator* _allocator, rx_size _size);
@@ -153,8 +153,8 @@ inline constexpr vector<T>::vector(memory::view _view)
 }
 
 template<typename T>
-template<rx_size E>
-inline vector<T>::vector(memory::allocator* _allocator, initializers<E>&& _initializers)
+template<typename U, rx_size E>
+inline vector<T>::vector(memory::allocator* _allocator, initializers<U, E>&& _initializers)
   : vector{_allocator}
 {
   grow_or_shrink_to(E);
@@ -167,8 +167,8 @@ inline vector<T>::vector(memory::allocator* _allocator, initializers<E>&& _initi
 }
 
 template<typename T>
-template<rx_size E>
-inline vector<T>::vector(initializers<E>&& _initializers)
+template<typename U, rx_size E>
+inline vector<T>::vector(initializers<U, E>&& _initializers)
   : vector{&memory::g_system_allocator, utility::move(_initializers)}
 {
 }
