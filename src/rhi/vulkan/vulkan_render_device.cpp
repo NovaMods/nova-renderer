@@ -1213,6 +1213,13 @@ namespace nova::renderer::rhi {
         if(settings->debug.enabled) {
             if(result != VK_SUCCESS) {
                 logger(rx::log::level::k_error, "Could not wait for fences. %s (error code %x)", to_string(result), result);
+                if(result == VK_ERROR_DEVICE_LOST) {
+#if defined(NOVA_WINDOWS)
+                    DebugBreak();
+#elif defined(NOVA_LINUX)
+                    raise(SIGINT);
+#endif
+                }
             }
         }
     }
