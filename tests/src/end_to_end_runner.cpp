@@ -51,7 +51,7 @@ namespace nova::renderer {
 
         NovaWindow& window = renderer->get_window();
 
-        const static rx::array cube_vertices{
+        const static rx::array CUBE_VERTICES{
             FullVertex{{-1, -1, -1}, {}, {}, {}, {}, {}, {}},
             FullVertex{{-1, -1, 1}, {}, {}, {}, {}, {}, {}},
             FullVertex{{-1, 1, -1}, {}, {}, {}, {}, {}, {}},
@@ -62,10 +62,15 @@ namespace nova::renderer {
             FullVertex{{1, 1, 1}, {}, {}, {}, {}, {}, {}},
         };
 
-        const static rx::array<uint32_t> cube_indices{0, 1, 3, 6, 0, 2, 5, 0, 4, 6, 4, 0, 0, 3, 2, 5, 1, 0,
-                                                      3, 1, 5, 7, 4, 6, 4, 7, 5, 7, 6, 2, 7, 2, 3, 7, 3, 5};
+        const static rx::array CUBE_INDICES{0, 1, 3, 6, 0, 2, 5, 0, 4, 6, 4, 0, 0, 3, 2, 5, 1, 0,
+                                            3, 1, 5, 7, 4, 6, 4, 7, 5, 7, 6, 2, 7, 2, 3, 7, 3, 5};
 
-        MeshData cube = {7, static_cast<uint32_t>(cube_indices.size()), cube_vertices.data(), cube_vertices.size * sizeof(FullVertex), cube_indices.data(), cube_indices.size * sizeof(uint32_t)};
+        const MeshData cube = {7,
+                               static_cast<uint32_t>(CUBE_INDICES.size()),
+                               CUBE_VERTICES.data(),
+                               CUBE_VERTICES.size() * sizeof(FullVertex),
+                               CUBE_INDICES.data(),
+                               CUBE_INDICES.size() * sizeof(uint32_t)};
 
         const MeshId mesh_id = renderer->create_mesh(cube);
 
