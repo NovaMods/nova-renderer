@@ -31,6 +31,18 @@
 
 using namespace nova::mem;
 
+#if defined(NOVA_WINDOWS)
+#define BREAK_ON_DEVICE_LOST(result)                                                                                                       \
+    if(result == VK_ERROR_DEVICE_LOST) {                                                                                                   \
+        DebugBreak();                                                                                                                      \
+    }
+#elif defined(NOVA_LINUX)
+#define BREAK_ON_DEVICE_LOST(result)                                                                                                       \
+    if(result == VK_ERROR_DEVICE_LOST) {                                                                                                   \
+        raise(SIGINT);                                                                                                                     \
+    }
+#endif
+
 namespace nova::renderer::rhi {
     RX_LOG("VulkanRenderDevice", logger);
 
@@ -1213,13 +1225,7 @@ namespace nova::renderer::rhi {
         if(settings->debug.enabled) {
             if(result != VK_SUCCESS) {
                 logger(rx::log::level::k_error, "Could not wait for fences. %s (error code %x)", to_string(result), result);
-                if(result == VK_ERROR_DEVICE_LOST) {
-#if defined(NOVA_WINDOWS)
-                    DebugBreak();
-#elif defined(NOVA_LINUX)
-                    raise(SIGINT);
-#endif
-                }
+                BREAK_ON_DEVICE_LOST(result);
             }
         }
     }
@@ -1373,6 +1379,7 @@ namespace nova::renderer::rhi {
         if(settings->debug.enabled) {
             if(result != VK_SUCCESS) {
                 logger(rx::log::level::k_error, "Could submit command list: %s", to_string(result));
+                BREAK_ON_DEVICE_LOST(result);
             }
         }
     }

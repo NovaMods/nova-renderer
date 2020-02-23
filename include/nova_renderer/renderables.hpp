@@ -27,26 +27,23 @@ namespace nova::renderer {
      * making them use special vertex formats
      */
     struct MeshData {
-        /*!
-         * \brief Byte array of your vertex data
-         *
-         * There's an implicit assumption in all my code that the vertex data you supply will be the vertex data that your pipelines want. I
-         * currently have no way to enforce this, although that might be what I do next
-         */
-        rx::vector<uint8_t> vertex_data;
-        rx::vector<uint32_t> indices;
+        size_t num_vertex_attributes{};
+        uint32_t num_indices{};
+
+        rx::memory::view vertex_data{};
+        rx::memory::view index_data{};
     };
 
     using MeshId = uint64_t;
 
     struct StaticMeshRenderableUpdateData {
-        MeshId mesh;
+        MeshId mesh{};
     };
 
     struct StaticMeshRenderableData : StaticMeshRenderableUpdateData {
-        glm::vec3 initial_position = {};
-        glm::vec3 initial_rotation = {};
-        glm::vec3 initial_scale = glm::vec3(1);
+        glm::vec3 initial_position{};
+        glm::vec3 initial_rotation{};
+        glm::vec3 initial_scale{1};
 
         bool is_static = true;
     };
@@ -58,15 +55,15 @@ namespace nova::renderer {
     struct RenderableMetadata {
         RenderableId id = 0;
 
-        rx::vector<rx::string> passes;
+        rx::vector<rx::string> passes{};
     };
 
     struct RenderCommand {
-        RenderableId id = 0;
+        RenderableId id{};
 
         bool is_visible = true;
 
-        glm::mat4 model_matrix = glm::mat4(1);
+        glm::mat4 model_matrix{1};
     };
 
     struct StaticMeshRenderCommand : RenderCommand {};

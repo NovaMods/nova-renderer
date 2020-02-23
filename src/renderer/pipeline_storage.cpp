@@ -100,27 +100,22 @@ namespace nova::renderer {
         const ShaderResources resources = shader_compiler.get_shader_resources();
 
         for(const auto& resource : resources.separate_images) {
-            logger(rx::log::level::k_verbose, "Found a image named %s", resource.name);
             add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::Texture);
         }
 
         for(const auto& resource : resources.separate_samplers) {
-            logger(rx::log::level::k_verbose, "Found a sampler named %s", resource.name);
             add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::Sampler);
         }
 
         for(const auto& resource : resources.sampled_images) {
-            logger(rx::log::level::k_verbose, "Found a sampled image resource named %s", resource.name);
             add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::CombinedImageSampler);
         }
 
         for(const auto& resource : resources.uniform_buffers) {
-            logger(rx::log::level::k_verbose, "Found a UBO resource named %s", resource.name);
             add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::UniformBuffer);
         }
 
         for(const auto& resource : resources.storage_buffers) {
-            logger(rx::log::level::k_verbose, "Found a SSBO resource named %s", resource.name);
             add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::StorageBuffer);
         }
     }
@@ -130,12 +125,12 @@ namespace nova::renderer {
                                                    const CompilerGLSL& shader_compiler,
                                                    const spirv_cross::Resource& resource,
                                                    const rhi::DescriptorType type) {
-        const uint32_t set = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
-        const uint32_t binding = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
+        const uint32_t set_idx = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+        const uint32_t binding_idx = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
 
         rhi::ResourceBindingDescription new_binding = {};
-        new_binding.set = set;
-        new_binding.binding = binding;
+        new_binding.set = set_idx;
+        new_binding.binding = binding_idx;
         new_binding.type = type;
         new_binding.count = 1;
         new_binding.stages = shader_stage;

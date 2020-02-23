@@ -56,6 +56,7 @@ namespace nova::renderer {
         rhi::Buffer* index_buffer = nullptr;
 
         uint32_t num_indices = 0;
+        size_t num_vertex_attributes{};
     };
 #pragma endregion
 
