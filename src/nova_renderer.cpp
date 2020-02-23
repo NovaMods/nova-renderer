@@ -316,7 +316,7 @@ namespace nova::renderer {
 
         rhi::BufferCreateInfo vertex_buffer_create_info;
         vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::VertexBuffer;
-        vertex_buffer_create_info.size = mesh_data.vertex_data.size * sizeof(uint8_t);
+        vertex_buffer_create_info.size = mesh_data.vertex_data_size;
 
         rhi::Buffer* vertex_buffer = device->create_buffer(vertex_buffer_create_info, *mesh_memory, global_allocator);
 
@@ -329,7 +329,7 @@ namespace nova::renderer {
             rhi::Buffer* staging_vertex_buffer = device->create_buffer(staging_vertex_buffer_create_info,
                                                                        *staging_buffer_memory,
                                                                        global_allocator);
-            device->write_data_to_buffer(mesh_data.vertex_data.data, vertex_buffer_create_info.size, 0, staging_vertex_buffer);
+            device->write_data_to_buffer(mesh_data.vertex_data_ptr, vertex_buffer_create_info.size, 0, staging_vertex_buffer);
 
             rhi::CommandList* vertex_upload_cmds = device->create_command_list(0,
                                                                                rhi::QueueType::Transfer,
@@ -360,7 +360,7 @@ namespace nova::renderer {
 
         rhi::BufferCreateInfo index_buffer_create_info;
         index_buffer_create_info.buffer_usage = rhi::BufferUsage::IndexBuffer;
-        index_buffer_create_info.size = mesh_data.index_data.size;
+        index_buffer_create_info.size = mesh_data.index_data_size;
 
         rhi::Buffer* index_buffer = device->create_buffer(index_buffer_create_info, *mesh_memory, global_allocator);
 
@@ -370,7 +370,7 @@ namespace nova::renderer {
             rhi::Buffer* staging_index_buffer = device->create_buffer(staging_index_buffer_create_info,
                                                                       *staging_buffer_memory,
                                                                       global_allocator);
-            device->write_data_to_buffer(mesh_data.index_data.data, index_buffer_create_info.size, 0, staging_index_buffer);
+            device->write_data_to_buffer(mesh_data.index_data_ptr, index_buffer_create_info.size, 0, staging_index_buffer);
 
             rhi::CommandList* indices_upload_cmds = device->create_command_list(0,
                                                                                 rhi::QueueType::Transfer,
@@ -876,10 +876,15 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_builtin_meshes() {
-        rx::vector<float> triangle_vertices = rx::array{0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 2.0f};
-        rx::vector<uint32_t> triangle_indices = rx::array{0, 1, 2};
+        const static rx::array TRIANGLE_VERTICES{0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 2.0f};
+        const static rx::array TRIANGLE_INDICES{0, 1, 2};
 
-        const MeshData fullscreen_triangle_data{1, 3, triangle_vertices.disown(), triangle_indices.disown()};
+        const MeshData fullscreen_triangle_data{1,
+                                                3,
+                                                TRIANGLE_VERTICES.data(),
+                                                TRIANGLE_VERTICES.size() * sizeof(float),
+                                                TRIANGLE_INDICES.data(),
+                                                TRIANGLE_INDICES.size() * sizeof(uint32_t)};
 
         fullscreen_triangle_id = create_mesh(fullscreen_triangle_data);
     }

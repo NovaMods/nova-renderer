@@ -30,8 +30,25 @@ namespace nova::renderer {
         size_t num_vertex_attributes{};
         uint32_t num_indices{};
 
-        rx::memory::view vertex_data{};
-        rx::memory::view index_data{};
+        /*!
+         * \brief Pointer to the vertex data of this mesh
+         */
+        const void* vertex_data_ptr{};
+
+        /*!
+         * \brief Number of bytes of vertex data
+         */
+        size_t vertex_data_size{};
+
+        /*!
+         * \brief Pointer to the index data of this mesh
+         */
+        const void* index_data_ptr{};
+
+        /*!
+         * \brief Number of bytes of index data
+         */
+        size_t index_data_size{};
     };
 
     using MeshId = uint64_t;
