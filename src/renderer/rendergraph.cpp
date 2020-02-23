@@ -202,7 +202,7 @@ namespace nova::renderer {
             cmds.bind_vertex_buffers(vertex_buffers);
             cmds.bind_index_buffer(batch.index_buffer, rhi::IndexType::Uint32);
 
-            cmds.draw_indexed_mesh(static_cast<uint32_t>(batch.index_buffer->size.b_count() / sizeof(uint32_t)));
+            cmds.draw_indexed_mesh(batch.num_indices);
         }
     }
 

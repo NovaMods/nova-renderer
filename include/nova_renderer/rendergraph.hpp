@@ -27,6 +27,7 @@ namespace nova::renderer {
     template <typename RenderCommandType>
     struct MeshBatch {
         size_t num_vertex_attributes{};
+        uint32_t num_indices{};
 
         rhi::Buffer* vertex_buffer = nullptr;
         rhi::Buffer* index_buffer = nullptr;

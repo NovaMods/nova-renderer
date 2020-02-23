@@ -653,6 +653,7 @@ namespace nova::renderer {
                 if(need_to_add_batch) {
                     MeshBatch<StaticMeshRenderCommand> batch;
                     batch.num_vertex_attributes = mesh->num_vertex_attributes;
+                    batch.num_indices = mesh->num_indices;
                     batch.vertex_buffer = mesh->vertex_buffer;
                     batch.index_buffer = mesh->index_buffer;
                     batch.commands.emplace_back(command);
