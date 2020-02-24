@@ -5,7 +5,7 @@
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
-#include "nova_renderer/shaderpack_data.hpp"
+#include "nova_renderer/renderpack_data.hpp"
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/window.hpp"
 
@@ -185,7 +185,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Clean up any GPU objects a Renderpass may own
          *
-         * While Renderpasses are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
+         * While Renderpasses are per-shaderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
          * need to clean up their GPU objects
          */
         virtual void destroy_renderpass(RhiRenderpass* pass, rx::memory::allocator* allocator) = 0;
@@ -193,7 +193,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Clean up any GPU objects a Framebuffer may own
          *
-         * While Framebuffers are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
+         * While Framebuffers are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
          * need to clean up their GPU objects
          */
         virtual void destroy_framebuffer(RhiFramebuffer* framebuffer, rx::memory::allocator* allocator) = 0;
@@ -201,7 +201,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Clean up any GPU objects a PipelineInterface may own
          *
-         * While PipelineInterfaces are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we
+         * While PipelineInterfaces are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we
          * still need to clean up their GPU objects
          */
         virtual void destroy_pipeline_interface(RhiPipelineInterface* pipeline_interface, rx::memory::allocator* allocator) = 0;
@@ -209,7 +209,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Clean up any GPU objects a Pipeline may own
          *
-         * While Pipelines are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
+         * While Pipelines are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
          * need to clean up their GPU objects
          */
         virtual void destroy_pipeline(RhiPipeline* pipeline, rx::memory::allocator* allocator) = 0;
@@ -217,7 +217,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Clean up any GPU objects an Image may own
          *
-         * While Images are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still need
+         * While Images are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still need
          * to clean up their GPU objects
          */
         virtual void destroy_texture(RhiImage* resource, rx::memory::allocator* allocator) = 0;
@@ -225,7 +225,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Clean up any GPU objects a Semaphores may own
          *
-         * While Semaphores are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still
+         * While Semaphores are per-shaderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
          * need to clean up their GPU objects
          */
         virtual void destroy_semaphores(rx::vector<RhiSemaphore*>& semaphores, rx::memory::allocator* allocator) = 0;
@@ -233,7 +233,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Clean up any GPU objects a Fence may own
          *
-         * While Fence are per-shaderpack objects, and their CPU memory will be cleaned up when a new shaderpack is loaded, we still need to
+         * While Fence are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still need to
          * clean up their GPU objects
          */
         virtual void destroy_fences(const rx::vector<RhiFence*>& fences, rx::memory::allocator* allocator) = 0;

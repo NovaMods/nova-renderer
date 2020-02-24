@@ -17,7 +17,7 @@
 #include <rx/core/memory/bump_point_allocator.h>
 
 #include "nova_renderer/constants.hpp"
-#include "nova_renderer/loading/shaderpack_loading.hpp"
+#include "nova_renderer/loading/renderpack_loading.hpp"
 #include "nova_renderer/memory/block_allocation_strategy.hpp"
 #include "nova_renderer/memory/bump_point_allocation_strategy.hpp"
 #include "nova_renderer/procedural_mesh.hpp"
@@ -29,7 +29,7 @@
 #include "nova_renderer/util/platform.hpp"
 
 #include "debugging/renderdoc.hpp"
-#include "loading/shaderpack/render_graph_builder.hpp"
+#include "loading/renderpack/render_graph_builder.hpp"
 #include "render_objects/uniform_structs.hpp"
 #include "renderer/builtin/backbuffer_output_pass.hpp"
 #include "rhi/vulkan/vulkan_render_device.hpp"
@@ -327,8 +327,8 @@ namespace nova::renderer {
             staging_vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
 
             rhi::RhiBuffer* staging_vertex_buffer = device->create_buffer(staging_vertex_buffer_create_info,
-                                                                       *staging_buffer_memory,
-                                                                       global_allocator);
+                                                                          *staging_buffer_memory,
+                                                                          global_allocator);
             device->write_data_to_buffer(mesh_data.vertex_data_ptr, vertex_buffer_create_info.size, 0, staging_vertex_buffer);
 
             rhi::CommandList* vertex_upload_cmds = device->create_command_list(0,
@@ -368,8 +368,8 @@ namespace nova::renderer {
             rhi::RhiBufferCreateInfo staging_index_buffer_create_info = index_buffer_create_info;
             staging_index_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
             rhi::RhiBuffer* staging_index_buffer = device->create_buffer(staging_index_buffer_create_info,
-                                                                      *staging_buffer_memory,
-                                                                      global_allocator);
+                                                                         *staging_buffer_memory,
+                                                                         global_allocator);
             device->write_data_to_buffer(mesh_data.index_data_ptr, index_buffer_create_info.size, 0, staging_index_buffer);
 
             rhi::CommandList* indices_upload_cmds = device->create_command_list(0,
@@ -424,16 +424,16 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::load_renderpack(const rx::string& renderpack_name) {
-        MTR_SCOPE("ShaderpackLoading", "load_shaderpack");
+        MTR_SCOPE("RenderpackLoading", "load_renderpack");
         glslang::InitializeProcess();
 
-        const renderpack::RenderpackData data = renderpack::load_shaderpack_data(renderpack_name);
+        const renderpack::RenderpackData data = renderpack::load_renderpack_data(renderpack_name);
 
-        if(shaderpack_loaded) {
+        if(renderpacks_loaded) {
             destroy_dynamic_resources();
 
             destroy_renderpasses();
-            rg_log(rx::log::level::k_verbose, "Resources from old shaderpacks destroyed");
+            rg_log(rx::log::level::k_verbose, "Resources from old renderpack destroyed");
         }
 
         create_dynamic_textures(data.resources.render_targets);
@@ -447,9 +447,9 @@ namespace nova::renderer {
 
         rg_log(rx::log::level::k_verbose, "Created pipelines and materials");
 
-        shaderpack_loaded = true;
+        renderpacks_loaded = true;
 
-        rg_log(rx::log::level::k_verbose, "Shaderpack %s loaded successfully", renderpack_name);
+        rg_log(rx::log::level::k_verbose, "Renderpack %s loaded successfully", renderpack_name);
     }
 
     const rx::vector<MaterialPass>& NovaRenderer::get_material_passes_for_pipeline(rhi::RhiPipeline* const pipeline) {
@@ -737,9 +737,9 @@ namespace nova::renderer {
     void NovaRenderer::create_global_gpu_pools() {
         const uint64_t mesh_memory_size = 512000000;
         ntl::Result<rhi::RhiDeviceMemory*> memory_result = device->allocate_device_memory(mesh_memory_size,
-                                                                                       rhi::MemoryUsage::DeviceOnly,
-                                                                                       rhi::ObjectType::Buffer,
-                                                                                       global_allocator);
+                                                                                          rhi::MemoryUsage::DeviceOnly,
+                                                                                          rhi::ObjectType::Buffer,
+                                                                                          global_allocator);
         const ntl::Result<DeviceMemoryResource*> mesh_memory_result = memory_result.map([&](rhi::RhiDeviceMemory* memory) {
             auto* allocator = global_allocator->create<BlockAllocationStrategy>(global_allocator, Bytes(mesh_memory_size), 64_b);
             return global_allocator->create<DeviceMemoryResource>(memory, allocator);
@@ -830,11 +830,10 @@ namespace nova::renderer {
                 logger(rx::log::level::k_error, "Could not create scene output render target");
 
             } else {
-                dynamic_texture_infos
-                    .insert(SCENE_OUTPUT_RT_NAME,
-                            {SCENE_OUTPUT_RT_NAME,
-                             renderpack::ImageUsage::RenderTarget,
-                             {rhi::PixelFormat::Rgba8, renderpack::TextureDimensionType::ScreenRelative, 1, 1}});
+                dynamic_texture_infos.insert(SCENE_OUTPUT_RT_NAME,
+                                             {SCENE_OUTPUT_RT_NAME,
+                                              renderpack::ImageUsage::RenderTarget,
+                                              {rhi::PixelFormat::Rgba8, renderpack::TextureDimensionType::ScreenRelative, 1, 1}});
             }
         }
 
@@ -850,11 +849,10 @@ namespace nova::renderer {
                 logger(rx::log::level::k_error, "Could not create UI output render target");
 
             } else {
-                dynamic_texture_infos
-                    .insert(UI_OUTPUT_RT_NAME,
-                            {UI_OUTPUT_RT_NAME,
-                             renderpack::ImageUsage::RenderTarget,
-                             {rhi::PixelFormat::Rgba8, renderpack::TextureDimensionType::ScreenRelative, 1, 1}});
+                dynamic_texture_infos.insert(UI_OUTPUT_RT_NAME,
+                                             {UI_OUTPUT_RT_NAME,
+                                              renderpack::ImageUsage::RenderTarget,
+                                              {rhi::PixelFormat::Rgba8, renderpack::TextureDimensionType::ScreenRelative, 1, 1}});
             }
         }
     }

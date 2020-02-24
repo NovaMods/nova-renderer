@@ -5,7 +5,7 @@
 #include "nova_renderer/memory/bytes.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"
-#include "nova_renderer/shaderpack_data.hpp"
+#include "nova_renderer/renderpack_data.hpp"
 
 namespace nova::renderer::rhi {
 

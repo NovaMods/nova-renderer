@@ -12,7 +12,7 @@ namespace nova::filesystem {
      * \brief A collection of resources on the filesystem
      *
      * "resourcepack" isn't the exact right name here. This isn't strictly a resourcepack in the Minecraft sense - it
-     * can be, sure, but it can also be a pure shaderpack. Ths main point is to abstract away loading resources from a
+     * can be, sure, but it can also be a pure renderpack. Ths main point is to abstract away loading resources from a
      * folder or a zip file - the calling code shouldn't care how the data is stored on the filesystem
      */
     class FolderAccessorBase {

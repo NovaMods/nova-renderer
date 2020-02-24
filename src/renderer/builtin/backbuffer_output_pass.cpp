@@ -1,6 +1,6 @@
 #include "backbuffer_output_pass.hpp"
 
-#include "nova_renderer/loading/shaderpack_loading.hpp"
+#include "nova_renderer/loading/renderpack_loading.hpp"
 #include "nova_renderer/nova_renderer.hpp"
 
 namespace nova::renderer {

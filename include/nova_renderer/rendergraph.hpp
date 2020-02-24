@@ -8,7 +8,7 @@
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
-#include "nova_renderer/shaderpack_data.hpp"
+#include "nova_renderer/renderpack_data.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
 
 #include "resource_loader.hpp"
