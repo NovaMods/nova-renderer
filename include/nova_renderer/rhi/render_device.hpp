@@ -185,7 +185,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Clean up any GPU objects a Renderpass may own
          *
-         * While Renderpasses are per-shaderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
+         * While Renderpasses are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
          * need to clean up their GPU objects
          */
         virtual void destroy_renderpass(RhiRenderpass* pass, rx::memory::allocator* allocator) = 0;
@@ -225,7 +225,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Clean up any GPU objects a Semaphores may own
          *
-         * While Semaphores are per-shaderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
+         * While Semaphores are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
          * need to clean up their GPU objects
          */
         virtual void destroy_semaphores(rx::vector<RhiSemaphore*>& semaphores, rx::memory::allocator* allocator) = 0;
