@@ -6,7 +6,7 @@
 namespace nova::renderer {
     RX_LOG("BackbufferOut", logger);
 
-    struct RX_HINT_EMPTY_BASES BackbufferOutputRenderpassCreateInfo : shaderpack::RenderPassCreateInfo {
+    struct RX_HINT_EMPTY_BASES BackbufferOutputRenderpassCreateInfo : renderpack::RenderPassCreateInfo {
         BackbufferOutputRenderpassCreateInfo();
     };
 
@@ -17,7 +17,7 @@ namespace nova::renderer {
         texture_inputs.emplace_back(SCENE_OUTPUT_RT_NAME);
 
         texture_outputs.reserve(1);
-        texture_outputs.emplace_back(BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false);
+        texture_outputs.emplace_back(BACKBUFFER_NAME, rhi::PixelFormat::Rgba8, false);
 
         pipeline_names.reserve(1);
         pipeline_names.emplace_back(BACKBUFFER_OUTPUT_PIPELINE_NAME);
@@ -62,7 +62,7 @@ namespace nova::renderer {
         post_pass_barriers.push_back(post_pass_barrier);
     }
 
-    const shaderpack::RenderPassCreateInfo& BackbufferOutputRenderpass::get_create_info() { return *backbuffer_output_create_info; }
+    const renderpack::RenderPassCreateInfo& BackbufferOutputRenderpass::get_create_info() { return *backbuffer_output_create_info; }
 
     void BackbufferOutputRenderpass::record_post_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const {
         Renderpass::record_post_renderpass_barriers(cmds, ctx);

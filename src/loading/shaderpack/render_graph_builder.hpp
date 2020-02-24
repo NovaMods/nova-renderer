@@ -3,7 +3,7 @@
 #include "nova_renderer/shaderpack_data.hpp"
 #include "nova_renderer/util/result.hpp"
 
-namespace nova::renderer::shaderpack {
+namespace nova::renderer::renderpack {
     struct Range {
         uint32_t first_write_pass = ~0U;
         uint32_t last_write_pass = 0;

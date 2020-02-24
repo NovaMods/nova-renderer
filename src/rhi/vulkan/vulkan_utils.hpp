@@ -21,7 +21,7 @@ namespace nova::renderer::rhi {
 
     VkAccessFlags to_vk_access_flags(ResourceAccess access);
 
-    VkPrimitiveTopology to_primitive_topology(shaderpack::PrimitiveTopologyEnum topology);
+    VkPrimitiveTopology to_primitive_topology(renderpack::RPPrimitiveTopology topology);
 
     VkBlendFactor to_blend_factor(BlendFactor factor);
     
@@ -31,7 +31,7 @@ namespace nova::renderer::rhi {
 
     VkStencilOp to_stencil_op(StencilOp stencil_op);
 
-    VkFormat to_vk_format(shaderpack::PixelFormatEnum format);
+    VkFormat to_vk_format(PixelFormat format);
 
     VkFilter to_vk_filter(TextureFilter filter);
 

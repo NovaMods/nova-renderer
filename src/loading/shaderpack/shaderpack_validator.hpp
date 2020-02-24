@@ -4,7 +4,7 @@
 #include <rx/core/string.h>
 #include <rx/core/vector.h>
 
-namespace nova::renderer::shaderpack {
+namespace nova::renderer::renderpack {
     struct ValidationReport {
         rx::vector<rx::string> warnings;
         rx::vector<rx::string> errors;

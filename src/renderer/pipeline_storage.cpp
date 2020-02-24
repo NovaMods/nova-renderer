@@ -13,7 +13,7 @@ namespace nova::renderer {
 
     using namespace mem;
     using namespace ntl;
-    using namespace shaderpack;
+    using namespace renderpack;
 
     PipelineStorage::PipelineStorage(NovaRenderer& renderer, rx::memory::allocator* allocator)
         : renderer(renderer), device(renderer.get_engine()), allocator(allocator) {}

@@ -420,11 +420,11 @@ namespace nova::renderer {
         /*!
          * \brief All the color attachments that this pipeline writes to
          */
-        rx::vector<shaderpack::TextureAttachmentInfo> color_attachments{};
+        rx::vector<renderpack::TextureAttachmentInfo> color_attachments{};
 
         /*!
          * \brief The depth texture that this pipeline writes to, if it writes to a depth texture
          */
-        rx::optional<shaderpack::TextureAttachmentInfo> depth_texture{};
+        rx::optional<renderpack::TextureAttachmentInfo> depth_texture{};
     };
 } // namespace nova::renderer

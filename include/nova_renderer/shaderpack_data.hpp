@@ -8,20 +8,17 @@
 #include <vulkan/vulkan.h>
 
 #include "rx/core/json.h"
+#include "rhi/rhi_enums.hpp"
 
 namespace nova::renderer {
-    namespace rhi {
-        enum class PixelFormat;
-    }
-
     class Renderpass;
 } // namespace nova::renderer
 
-namespace nova::renderer::shaderpack {
+namespace nova::renderer::renderpack {
     /*!
      * \brief Controls the rasterizer's state
      */
-    enum class StateEnum {
+    enum class RasterizerState {
         /*!
          * \brief Enable blending for this material state
          */
@@ -73,14 +70,14 @@ namespace nova::renderer::shaderpack {
         DisableAlphaWrite,
     };
 
-    enum class TextureFilterEnum { TexelAA, Bilinear, Point };
+    enum class TextureFilter { TexelAA, Bilinear, Point };
 
-    enum class WrapModeEnum { Repeat, Clamp };
+    enum class WrapMode { Repeat, Clamp };
 
     /*!
      * \brief Where the texture comes from
      */
-    enum class TextureLocationEnum {
+    enum class TextureLocation {
         /*!
          * \brief The texture is written to by a shader
          */
@@ -97,15 +94,15 @@ namespace nova::renderer::shaderpack {
         InAppPackage
     };
 
-    enum class MsaaSupportEnum { MSAA, Both, None };
+    enum class MsaaSupport { MSAA, Both, None };
 
-    enum class StencilOpEnum { Keep, Zero, Replace, Increment, IncrementAndWrap, Decrement, DecrementAndWrap, Invert };
+    enum class RPStencilOp { Keep, Zero, Replace, Increment, IncrementAndWrap, Decrement, DecrementAndWrap, Invert };
 
-    enum class CompareOpEnum { Never, Less, LessEqual, Greater, GreaterEqual, Equal, NotEqual, Always };
+    enum class RPCompareOp { Never, Less, LessEqual, Greater, GreaterEqual, Equal, NotEqual, Always };
 
-    enum class PrimitiveTopologyEnum { Triangles, Lines };
+    enum class RPPrimitiveTopology { Triangles, Lines };
 
-    enum class BlendFactorEnum {
+    enum class RPBlendFactor {
         One,
         Zero,
         SrcColor,
@@ -118,7 +115,7 @@ namespace nova::renderer::shaderpack {
         OneMinusDstAlpha
     };
 
-    enum class RenderQueueEnum { Transparent, Opaque, Cutout };
+    enum class RenderQueue { Transparent, Opaque, Cutout };
 
     enum class ScissorTestMode {
         Off,
@@ -126,15 +123,7 @@ namespace nova::renderer::shaderpack {
         DynamicScissorRect,
     };
 
-    enum class PixelFormatEnum {
-        RGBA8,
-        RGBA16F,
-        RGBA32F,
-        Depth,
-        DepthStencil,
-    };
-
-    enum class TextureDimensionTypeEnum { ScreenRelative, Absolute };
+    enum class TextureDimensionType { ScreenRelative, Absolute };
 
     enum class ImageUsage {
         RenderTarget,
@@ -155,21 +144,21 @@ namespace nova::renderer::shaderpack {
          * texel_aa does something that I don't want to figure out right now. Bilinear is your regular bilinear filter,
          * and point is the point filter. Aniso isn't an option and I kinda hope it stays that way
          */
-        TextureFilterEnum filter{};
+        TextureFilter filter{};
 
         /*!
          * \brief How the texture should wrap at the edges
          */
-        WrapModeEnum wrap_mode{};
+        WrapMode wrap_mode{};
 
         static SamplerCreateInfo from_json(const rx::json& json);
     };
 
     struct StencilOpState {
-        StencilOpEnum fail_op;
-        StencilOpEnum pass_op;
-        StencilOpEnum depth_fail_op;
-        CompareOpEnum compare_op;
+        RPStencilOp fail_op;
+        RPStencilOp pass_op;
+        RPStencilOp depth_fail_op;
+        RPCompareOp compare_op;
         uint32_t compare_mask;
         uint32_t write_mask;
 
@@ -208,7 +197,7 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief Defines the rasterizer state that's active for this pipeline
          */
-        rx::vector<StateEnum> states{};
+        rx::vector<RasterizerState> states{};
 
         /*!
          * \brief The stencil buffer operations to perform on the front faces
@@ -253,44 +242,44 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief How to handle MSAA for this state
          */
-        MsaaSupportEnum msaa_support{};
+        MsaaSupport msaa_support{};
 
         /*!
          * \brief
          */
-        PrimitiveTopologyEnum primitive_mode{};
+        RPPrimitiveTopology primitive_mode{};
 
         /*!
          * \brief Where to get the blending factor for the source
          */
-        BlendFactorEnum source_color_blend_factor{};
+        RPBlendFactor source_color_blend_factor{};
 
         /*!
          * \brief Where to get the blending factor for the destination
          */
-        BlendFactorEnum destination_color_blend_factor{};
+        RPBlendFactor destination_color_blend_factor{};
 
         /*!
          * \brief How to get the source alpha in a blend
          */
-        BlendFactorEnum source_alpha_blend_factor{};
+        RPBlendFactor source_alpha_blend_factor{};
 
         /*!
          * \brief How to get the destination alpha in a blend
          */
-        BlendFactorEnum destination_alpha_blend_factor{};
+        RPBlendFactor destination_alpha_blend_factor{};
 
         /*!
          * \brief The function to use for the depth test
          */
-        CompareOpEnum depth_func{};
+        RPCompareOp depth_func{};
 
         /*!
          * \brief The render queue that this pass belongs to
          *
          * This may or may not be removed depending on what is actually needed by Nova
          */
-        RenderQueueEnum render_queue{};
+        RenderQueue render_queue{};
 
         ScissorTestMode scissor_mode = ScissorTestMode::Off;
 
@@ -308,12 +297,12 @@ namespace nova::renderer::shaderpack {
         /*!
          * \brief The format of the texture
          */
-        PixelFormatEnum pixel_format{};
+        rhi::PixelFormat pixel_format{};
 
         /*!
          * \brief How to interpret the dimensions of this texture
          */
-        TextureDimensionTypeEnum dimension_type{};
+        TextureDimensionType dimension_type{};
 
         /*!
          * \brief The width, in pixels, of the texture
@@ -383,11 +372,11 @@ namespace nova::renderer::shaderpack {
         static TextureCreateInfo from_json(const rx::json& json);
     };
 
-    struct ShaderpackResourcesData {
+    struct RenderpackResourcesData {
         rx::vector<TextureCreateInfo> render_targets;
         rx::vector<SamplerCreateInfo> samplers;
 
-        static ShaderpackResourcesData from_json(const rx::json& json);
+        static RenderpackResourcesData from_json(const rx::json& json);
     };
 
     /*!
@@ -399,7 +388,7 @@ namespace nova::renderer::shaderpack {
          */
         rx::string name{};
 
-        PixelFormatEnum pixel_format;
+        rhi::PixelFormat pixel_format;
 
         /*!
          * \brief Whether to clear it
@@ -532,52 +521,48 @@ namespace nova::renderer::shaderpack {
 
         rx::vector<MaterialData> materials;
 
-        ShaderpackResourcesData resources;
+        RenderpackResourcesData resources;
 
         rx::string name;
     };
 
-    [[nodiscard]] PixelFormatEnum pixel_format_enum_from_string(const rx::string& str);
-    [[nodiscard]] TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const rx::string& str);
-    [[nodiscard]] TextureFilterEnum texture_filter_enum_from_string(const rx::string& str);
-    [[nodiscard]] WrapModeEnum wrap_mode_enum_from_string(const rx::string& str);
-    [[nodiscard]] StencilOpEnum stencil_op_enum_from_string(const rx::string& str);
-    [[nodiscard]] CompareOpEnum compare_op_enum_from_string(const rx::string& str);
-    [[nodiscard]] MsaaSupportEnum msaa_support_enum_from_string(const rx::string& str);
-    [[nodiscard]] PrimitiveTopologyEnum primitive_topology_enum_from_string(const rx::string& str);
-    [[nodiscard]] BlendFactorEnum blend_factor_enum_from_string(const rx::string& str);
-    [[nodiscard]] RenderQueueEnum render_queue_enum_from_string(const rx::string& str);
+    [[nodiscard]] rhi::PixelFormat pixel_format_enum_from_string(const rx::string& str);
+    [[nodiscard]] TextureDimensionType texture_dimension_type_enum_from_string(const rx::string& str);
+    [[nodiscard]] TextureFilter texture_filter_enum_from_string(const rx::string& str);
+    [[nodiscard]] WrapMode wrap_mode_enum_from_string(const rx::string& str);
+    [[nodiscard]] RPStencilOp stencil_op_enum_from_string(const rx::string& str);
+    [[nodiscard]] RPCompareOp compare_op_enum_from_string(const rx::string& str);
+    [[nodiscard]] MsaaSupport msaa_support_enum_from_string(const rx::string& str);
+    [[nodiscard]] RPPrimitiveTopology primitive_topology_enum_from_string(const rx::string& str);
+    [[nodiscard]] RPBlendFactor blend_factor_enum_from_string(const rx::string& str);
+    [[nodiscard]] RenderQueue render_queue_enum_from_string(const rx::string& str);
     [[nodiscard]] ScissorTestMode scissor_test_mode_from_string(const rx::string& str);
-    [[nodiscard]] StateEnum state_enum_from_string(const rx::string& str);
+    [[nodiscard]] RasterizerState state_enum_from_string(const rx::string& str);
 
-    [[nodiscard]] PixelFormatEnum pixel_format_enum_from_json(const rx::json& j);
-    [[nodiscard]] TextureDimensionTypeEnum texture_dimension_type_enum_from_json(const rx::json& j);
-    [[nodiscard]] TextureFilterEnum texture_filter_enum_from_json(const rx::json& j);
-    [[nodiscard]] WrapModeEnum wrap_mode_enum_from_json(const rx::json& j);
-    [[nodiscard]] StencilOpEnum stencil_op_enum_from_json(const rx::json& j);
-    [[nodiscard]] CompareOpEnum compare_op_enum_from_json(const rx::json& j);
-    [[nodiscard]] MsaaSupportEnum msaa_support_enum_from_json(const rx::json& j);
-    [[nodiscard]] PrimitiveTopologyEnum primitive_topology_enum_from_json(const rx::json& j);
-    [[nodiscard]] BlendFactorEnum blend_factor_enum_from_json(const rx::json& j);
-    [[nodiscard]] RenderQueueEnum render_queue_enum_from_json(const rx::json& j);
+    [[nodiscard]] rhi::PixelFormat pixel_format_enum_from_json(const rx::json& j);
+    [[nodiscard]] TextureDimensionType texture_dimension_type_enum_from_json(const rx::json& j);
+    [[nodiscard]] TextureFilter texture_filter_enum_from_json(const rx::json& j);
+    [[nodiscard]] WrapMode wrap_mode_enum_from_json(const rx::json& j);
+    [[nodiscard]] RPStencilOp stencil_op_enum_from_json(const rx::json& j);
+    [[nodiscard]] RPCompareOp compare_op_enum_from_json(const rx::json& j);
+    [[nodiscard]] MsaaSupport msaa_support_enum_from_json(const rx::json& j);
+    [[nodiscard]] RPPrimitiveTopology primitive_topology_enum_from_json(const rx::json& j);
+    [[nodiscard]] RPBlendFactor blend_factor_enum_from_json(const rx::json& j);
+    [[nodiscard]] RenderQueue render_queue_enum_from_json(const rx::json& j);
     [[nodiscard]] ScissorTestMode scissor_test_mode_from_json(const rx::json& j);
-    [[nodiscard]] StateEnum state_enum_from_json(const rx::json& j);
+    [[nodiscard]] RasterizerState state_enum_from_json(const rx::json& j);
 
-    [[nodiscard]] rx::string to_string(PixelFormatEnum val);
-    [[nodiscard]] rx::string to_string(TextureDimensionTypeEnum val);
-    [[nodiscard]] rx::string to_string(TextureFilterEnum val);
-    [[nodiscard]] rx::string to_string(WrapModeEnum val);
-    [[nodiscard]] rx::string to_string(StencilOpEnum val);
-    [[nodiscard]] rx::string to_string(CompareOpEnum val);
-    [[nodiscard]] rx::string to_string(MsaaSupportEnum val);
-    [[nodiscard]] rx::string to_string(PrimitiveTopologyEnum val);
-    [[nodiscard]] rx::string to_string(BlendFactorEnum val);
-    [[nodiscard]] rx::string to_string(RenderQueueEnum val);
-    [[nodiscard]] rx::string to_string(StateEnum val);
+    [[nodiscard]] rx::string to_string(rhi::PixelFormat val);
+    [[nodiscard]] rx::string to_string(TextureDimensionType val);
+    [[nodiscard]] rx::string to_string(TextureFilter val);
+    [[nodiscard]] rx::string to_string(WrapMode val);
+    [[nodiscard]] rx::string to_string(RPStencilOp val);
+    [[nodiscard]] rx::string to_string(RPCompareOp val);
+    [[nodiscard]] rx::string to_string(MsaaSupport val);
+    [[nodiscard]] rx::string to_string(RPPrimitiveTopology val);
+    [[nodiscard]] rx::string to_string(RPBlendFactor val);
+    [[nodiscard]] rx::string to_string(RenderQueue val);
+    [[nodiscard]] rx::string to_string(RasterizerState val);
 
-    [[nodiscard]] uint32_t pixel_format_to_pixel_width(PixelFormatEnum format);
-
-    [[nodiscard]] PixelFormatEnum to_pixel_format_enum(rhi::PixelFormat format);
-
-    [[nodiscard]] rhi::PixelFormat to_rhi_pixel_format(PixelFormatEnum format);
+    [[nodiscard]] uint32_t pixel_format_to_pixel_width(rhi::PixelFormat format);
 } // namespace nova::renderer::shaderpack

@@ -17,7 +17,7 @@
 #include "render_graph_builder.hpp"
 #include "shaderpack_validator.hpp"
 
-namespace nova::renderer::shaderpack {
+namespace nova::renderer::renderpack {
     RX_LOG("ShaderpackLoading", logger);
 
     using namespace filesystem;
@@ -130,7 +130,7 @@ namespace nova::renderer::shaderpack {
             /* .generalConstantMatrixVectorIndexing = */ true,
         }};
 
-    rx::optional<ShaderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access);
+    rx::optional<RenderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access);
 
     ntl::Result<RendergraphData> load_rendergraph_file(FolderAccessorBase* folder_access);
 
@@ -155,7 +155,7 @@ namespace nova::renderer::shaderpack {
                     // TODO: Figure out how to tell the loader about all the builtin resources
                 }
 
-                rx::optional<PixelFormatEnum> pixel_format;
+                rx::optional<rhi::PixelFormat> pixel_format;
                 textures.each_fwd([&](const TextureCreateInfo& texture_info) {
                     if(texture_info.name == output.name) {
                         pixel_format = texture_info.format.pixel_format;
@@ -178,7 +178,7 @@ namespace nova::renderer::shaderpack {
             });
 
             if(pass.depth_texture) {
-                rx::optional<PixelFormatEnum> pixel_format;
+                rx::optional<rhi::PixelFormat> pixel_format;
                 textures.each_fwd([&](const TextureCreateInfo& texture_info) {
                     if(texture_info.name == pass.depth_texture->name) {
                         pixel_format = texture_info.format.pixel_format;
@@ -229,7 +229,7 @@ namespace nova::renderer::shaderpack {
         return data;
     }
 
-    rx::optional<ShaderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access) {
+    rx::optional<RenderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access) {
         MTR_SCOPE("load_dynamic_resource_file", "Self");
 
         const rx::string resources_string = folder_access->read_text_file(RESOURCES_FILE);
@@ -241,7 +241,7 @@ namespace nova::renderer::shaderpack {
             return rx::nullopt;
         }
 
-        return ShaderpackResourcesData::from_json(json_resources);
+        return RenderpackResourcesData::from_json(json_resources);
     }
 
     ntl::Result<RendergraphData> load_rendergraph_file(FolderAccessorBase* folder_access) {

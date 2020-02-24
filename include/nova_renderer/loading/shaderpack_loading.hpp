@@ -4,7 +4,7 @@
 #include "nova_renderer/rhi/rhi_enums.hpp"
 #include "nova_renderer/shaderpack_data.hpp"
 
-namespace nova::renderer::shaderpack {
+namespace nova::renderer::renderpack {
     /*!
      * \brief Loads all the data for a single shaderpack
      *

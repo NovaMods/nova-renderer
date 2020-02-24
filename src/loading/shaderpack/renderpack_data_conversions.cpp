@@ -12,7 +12,7 @@ namespace nova::renderer::renderpack {
 
     RX_LOG("RenderpackConvert", logger);
 
-    ShaderSource to_shader_source(const shaderpack::RenderpackShaderSource& rp_source) {
+    ShaderSource to_shader_source(const renderpack::RenderpackShaderSource& rp_source) {
         ShaderSource source{};
 
         source.filename = rp_source.filename;
@@ -109,12 +109,12 @@ namespace nova::renderer::renderpack {
         return vertex_fields;
     }
 
-    PrimitiveTopology to_primitive_topology(const shaderpack::PrimitiveTopologyEnum primitive_mode) {
+    PrimitiveTopology to_primitive_topology(const renderpack::RPPrimitiveTopology primitive_mode) {
         switch(primitive_mode) {
-            case shaderpack::PrimitiveTopologyEnum::Triangles:
+            case renderpack::RPPrimitiveTopology::Triangles:
                 return PrimitiveTopology::TriangleList;
 
-            case shaderpack::PrimitiveTopologyEnum::Lines:
+            case renderpack::RPPrimitiveTopology::Lines:
                 return PrimitiveTopology::LineList;
 
             default:
@@ -122,30 +122,30 @@ namespace nova::renderer::renderpack {
         }
     }
 
-    CompareOp to_compare_op(const shaderpack::CompareOpEnum compare_op) {
+    CompareOp to_compare_op(const renderpack::RPCompareOp compare_op) {
         switch(compare_op) {
-            case shaderpack::CompareOpEnum::Never:
+            case renderpack::RPCompareOp::Never:
                 return CompareOp::Never;
 
-            case shaderpack::CompareOpEnum::Less:
+            case renderpack::RPCompareOp::Less:
                 return CompareOp::Less;
 
-            case shaderpack::CompareOpEnum::LessEqual:
+            case renderpack::RPCompareOp::LessEqual:
                 return CompareOp::LessEqual;
 
-            case shaderpack::CompareOpEnum::Greater:
+            case renderpack::RPCompareOp::Greater:
                 return CompareOp::Greater;
 
-            case shaderpack::CompareOpEnum::GreaterEqual:
+            case renderpack::RPCompareOp::GreaterEqual:
                 return CompareOp::GreaterEqual;
 
-            case shaderpack::CompareOpEnum::Equal:
+            case renderpack::RPCompareOp::Equal:
                 return CompareOp::Equal;
 
-            case shaderpack::CompareOpEnum::NotEqual:
+            case renderpack::RPCompareOp::NotEqual:
                 return CompareOp::NotEqual;
 
-            case shaderpack::CompareOpEnum::Always:
+            case renderpack::RPCompareOp::Always:
                 return CompareOp::Always;
 
             default:
@@ -153,30 +153,30 @@ namespace nova::renderer::renderpack {
         }
     }
 
-    StencilOp to_stencil_op(const shaderpack::StencilOpEnum stencil_op) {
+    StencilOp to_stencil_op(const renderpack::RPStencilOp stencil_op) {
         switch(stencil_op) {
-            case shaderpack::StencilOpEnum::Keep:
+            case renderpack::RPStencilOp::Keep:
                 return StencilOp::Keep;
 
-            case shaderpack::StencilOpEnum::Zero:
+            case renderpack::RPStencilOp::Zero:
                 return StencilOp::Zero;
 
-            case shaderpack::StencilOpEnum::Replace:
+            case renderpack::RPStencilOp::Replace:
                 return StencilOp::Replace;
 
-            case shaderpack::StencilOpEnum::Increment:
+            case renderpack::RPStencilOp::Increment:
                 return StencilOp::Increment;
 
-            case shaderpack::StencilOpEnum::IncrementAndWrap:
+            case renderpack::RPStencilOp::IncrementAndWrap:
                 return StencilOp::IncrementAndWrap;
 
-            case shaderpack::StencilOpEnum::Decrement:
+            case renderpack::RPStencilOp::Decrement:
                 return StencilOp::Decrement;
 
-            case shaderpack::StencilOpEnum::DecrementAndWrap:
+            case renderpack::RPStencilOp::DecrementAndWrap:
                 return StencilOp::DecrementAndWrap;
 
-            case shaderpack::StencilOpEnum::Invert:
+            case renderpack::RPStencilOp::Invert:
                 return StencilOp::Invert;
 
             default:
@@ -184,36 +184,36 @@ namespace nova::renderer::renderpack {
         }
     }
 
-    BlendFactor to_blend_factor(const shaderpack::BlendFactorEnum blend_factor) {
+    BlendFactor to_blend_factor(const renderpack::RPBlendFactor blend_factor) {
         switch(blend_factor) {
-            case shaderpack::BlendFactorEnum::One:
+            case renderpack::RPBlendFactor::One:
                 return BlendFactor::One;
 
-            case shaderpack::BlendFactorEnum::Zero:
+            case renderpack::RPBlendFactor::Zero:
                 return BlendFactor::Zero;
 
-            case shaderpack::BlendFactorEnum::SrcColor:
+            case renderpack::RPBlendFactor::SrcColor:
                 return BlendFactor::SrcColor;
 
-            case shaderpack::BlendFactorEnum::DstColor:
+            case renderpack::RPBlendFactor::DstColor:
                 return BlendFactor::DstColor;
 
-            case shaderpack::BlendFactorEnum::OneMinusSrcColor:
+            case renderpack::RPBlendFactor::OneMinusSrcColor:
                 return BlendFactor::OneMinusSrcColor;
 
-            case shaderpack::BlendFactorEnum::OneMinusDstColor:
+            case renderpack::RPBlendFactor::OneMinusDstColor:
                 return BlendFactor::OneMinusDstColor;
 
-            case shaderpack::BlendFactorEnum::SrcAlpha:
+            case renderpack::RPBlendFactor::SrcAlpha:
                 return BlendFactor::SrcAlpha;
 
-            case shaderpack::BlendFactorEnum::DstAlpha:
+            case renderpack::RPBlendFactor::DstAlpha:
                 return BlendFactor::DstAlpha;
 
-            case shaderpack::BlendFactorEnum::OneMinusSrcAlpha:
+            case renderpack::RPBlendFactor::OneMinusSrcAlpha:
                 return BlendFactor::OneMinusSrcAlpha;
 
-            case shaderpack::BlendFactorEnum::OneMinusDstAlpha:
+            case renderpack::RPBlendFactor::OneMinusDstAlpha:
                 return BlendFactor::OneMinusDstAlpha;
 
             default:
@@ -221,9 +221,9 @@ namespace nova::renderer::renderpack {
         }
     }
 
-    rx::optional<PipelineStateCreateInfo> to_pipeline_state_create_info(const shaderpack::PipelineData& data,
+    rx::optional<PipelineStateCreateInfo> to_pipeline_state_create_info(const renderpack::PipelineData& data,
                                                                         const Rendergraph& rendergraph) {
-        constexpr auto npos = rx::vector<shaderpack::StateEnum>::k_npos;
+        constexpr auto npos = rx::vector<renderpack::RasterizerState>::k_npos;
 
         PipelineStateCreateInfo info{};
 
@@ -249,16 +249,16 @@ namespace nova::renderer::renderpack {
         }
         info.viewport_size = pass->framebuffer->size;
 
-        info.enable_scissor_test = data.scissor_mode == shaderpack::ScissorTestMode::DynamicScissorRect;
+        info.enable_scissor_test = data.scissor_mode == renderpack::ScissorTestMode::DynamicScissorRect;
 
         // Input assembly
         info.topology = to_primitive_topology(data.primitive_mode);
 
         // Rasterizer state
-        if(data.states.find(shaderpack::StateEnum::InvertCulling) != npos) {
+        if(data.states.find(renderpack::RasterizerState::InvertCulling) != npos) {
             info.rasterizer_state.cull_mode = PrimitiveCullingMode::FrontFace;
 
-        } else if(data.states.find(shaderpack::StateEnum::DisableCulling) != npos) {
+        } else if(data.states.find(renderpack::RasterizerState::DisableCulling) != npos) {
             info.rasterizer_state.cull_mode = PrimitiveCullingMode::None;
         }
 
@@ -266,11 +266,11 @@ namespace nova::renderer::renderpack {
         info.rasterizer_state.slope_scaled_depth_bias = data.slope_scaled_depth_bias;
 
         // Depth state
-        if(data.states.find(shaderpack::StateEnum::DisableDepthTest) != npos) {
+        if(data.states.find(renderpack::RasterizerState::DisableDepthTest) != npos) {
             info.depth_state = rx::nullopt;
 
         } else {
-            if(data.states.find(shaderpack::StateEnum::DisableDepthWrite) != npos) {
+            if(data.states.find(renderpack::RasterizerState::DisableDepthWrite) != npos) {
                 info.depth_state->enable_depth_write = false;
 
                 info.depth_state->compare_op = to_compare_op(data.depth_func);
@@ -278,7 +278,7 @@ namespace nova::renderer::renderpack {
         }
 
         // Stencil state
-        if(data.states.find(shaderpack::StateEnum::EnableStencilTest) != npos) {
+        if(data.states.find(renderpack::RasterizerState::EnableStencilTest) != npos) {
             info.stencil_state = StencilState{};
             if(data.front_face) {
                 info.stencil_state->front_face_op.fail_op = to_stencil_op(data.front_face->fail_op);
@@ -301,7 +301,7 @@ namespace nova::renderer::renderpack {
         }
 
         // Blend state
-        if(data.states.find(shaderpack::StateEnum::Blending) != npos) {
+        if(data.states.find(renderpack::RasterizerState::Blending) != npos) {
             info.blend_state = BlendState{};
             info.blend_state->render_target_states.resize(pass->framebuffer->num_attachments);
             info.blend_state->render_target_states.each_fwd([&](RenderTargetBlendState& target_blend) {
@@ -316,17 +316,19 @@ namespace nova::renderer::renderpack {
             });
         }
 
-        if(data.states.find(shaderpack::StateEnum::DisableColorWrite) != npos) {
+        if(data.states.find(renderpack::RasterizerState::DisableColorWrite) != npos) {
             info.enable_color_write = false;
         }
 
-        if(data.states.find(shaderpack::StateEnum::DisableAlphaWrite) != npos) {
+        if(data.states.find(renderpack::RasterizerState::DisableAlphaWrite) != npos) {
             info.enable_alpha_write = false;
         }
 
         const auto& pass_data = rendergraph.get_metadata_for_renderpass(data.pass);
         if(!pass_data) {
-            logger(rx::log::level::k_error, "Could not retrieve metadata for renderpass %s. Why can we retrieve the renderpass but not its metadata?", data.pass);
+            logger(rx::log::level::k_error,
+                   "Could not retrieve metadata for renderpass %s. Why can we retrieve the renderpass but not its metadata?",
+                   data.pass);
             return rx::nullopt;
         }
 

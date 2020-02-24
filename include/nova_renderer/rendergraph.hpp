@@ -19,7 +19,7 @@ namespace nova::renderer {
 
     class DeviceResources;
 
-    namespace shaderpack {
+    namespace renderpack {
         struct RenderPassCreateInfo;
     }
 
@@ -105,7 +105,7 @@ namespace nova::renderer {
     };
 
     struct MaterialPassMetadata {
-        shaderpack::MaterialPass data;
+        renderpack::MaterialPass data;
     };
 
     struct PipelineMetadata {
@@ -115,7 +115,7 @@ namespace nova::renderer {
     };
 
     struct RenderpassMetadata {
-        shaderpack::RenderPassCreateInfo data;
+        renderpack::RenderPassCreateInfo data;
     };
 #pragma endregion
 
@@ -262,7 +262,7 @@ namespace nova::renderer {
          */
         template <typename RenderpassType>
         [[nodiscard]] RenderpassType* add_renderpass(RenderpassType* renderpass,
-                                                     const shaderpack::RenderPassCreateInfo& create_info,
+                                                     const renderpack::RenderPassCreateInfo& create_info,
                                                      DeviceResources& resource_storage);
 
         void destroy_renderpass(const rx::string& name);
@@ -297,7 +297,7 @@ namespace nova::renderer {
 
     template <typename RenderpassType>
     RenderpassType* Rendergraph::add_renderpass(RenderpassType* renderpass,
-                                                const shaderpack::RenderPassCreateInfo& create_info,
+                                                const renderpack::RenderPassCreateInfo& create_info,
                                                 DeviceResources& resource_storage) {
         RenderpassMetadata metadata;
         metadata.data = create_info;
@@ -313,7 +313,7 @@ namespace nova::renderer {
         attachment_errors.reserve(num_attachments);
 
         bool missing_render_targets = false;
-        create_info.texture_outputs.each_fwd([&](const shaderpack::TextureAttachmentInfo& attachment_info) {
+        create_info.texture_outputs.each_fwd([&](const renderpack::TextureAttachmentInfo& attachment_info) {
             if(attachment_info.name == BACKBUFFER_NAME) {
                 if(create_info.texture_outputs.size() == 1) {
                     renderpass->writes_to_backbuffer = true;

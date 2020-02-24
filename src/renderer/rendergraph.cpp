@@ -6,7 +6,7 @@
 #include "../loading/shaderpack/render_graph_builder.hpp"
 
 namespace nova::renderer {
-    using namespace shaderpack;
+    using namespace renderpack;
 
     RX_LOG("Rendergraph", logger);
 

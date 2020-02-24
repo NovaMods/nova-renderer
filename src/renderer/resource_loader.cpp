@@ -8,7 +8,7 @@ namespace nova::renderer {
     RX_LOG("DeviceResources", logger);
 
     using namespace rhi;
-    using namespace shaderpack;
+    using namespace renderpack;
 
     constexpr size_t STAGING_BUFFER_ALIGNMENT = 2048;
     constexpr size_t STAGING_BUFFER_TOTAL_MEMORY_SIZE = 8388608;
@@ -73,11 +73,11 @@ namespace nova::renderer {
 
         const size_t pixel_size = size_in_bytes(pixel_format);
 
-        shaderpack::TextureCreateInfo info = {};
+        renderpack::TextureCreateInfo info = {};
         info.name = name;
         info.usage = ImageUsage::SampledImage;
-        info.format.pixel_format = to_pixel_format_enum(pixel_format);
-        info.format.dimension_type = TextureDimensionTypeEnum::Absolute;
+        info.format.pixel_format = pixel_format;
+        info.format.dimension_type = TextureDimensionType::Absolute;
         info.format.width = static_cast<float>(width);
         info.format.height = static_cast<float>(height);
 
@@ -159,11 +159,11 @@ namespace nova::renderer {
                                                                                 const PixelFormat pixel_format,
                                                                                 rx::memory::allocator* allocator,
                                                                                 const bool /* can_be_sampled // Not yet supported */) {
-        shaderpack::TextureCreateInfo create_info;
+        renderpack::TextureCreateInfo create_info;
         create_info.name = name;
         create_info.usage = ImageUsage::RenderTarget;
-        create_info.format.pixel_format = to_pixel_format_enum(pixel_format);
-        create_info.format.dimension_type = TextureDimensionTypeEnum::Absolute;
+        create_info.format.pixel_format = pixel_format;
+        create_info.format.dimension_type = TextureDimensionType::Absolute;
         create_info.format.width = static_cast<float>(width);
         create_info.format.height = static_cast<float>(height);
 

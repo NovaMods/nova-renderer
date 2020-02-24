@@ -6,7 +6,7 @@ namespace nova::renderer {
     public:
         explicit BackbufferOutputRenderpass(rhi::Resource* ui_output, rhi::Resource* scene_output);
 
-        static const shaderpack::RenderPassCreateInfo& get_create_info();
+        static const renderpack::RenderPassCreateInfo& get_create_info();
 
     protected:
         void record_post_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const override;

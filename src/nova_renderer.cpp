@@ -128,7 +128,7 @@ namespace nova::renderer {
 
                 return output;
             })"};
-        const auto& vertex_spirv = shaderpack::compile_shader(vertex_source, rhi::ShaderStage::Vertex, rhi::ShaderLanguage::Hlsl);
+        const auto& vertex_spirv = renderpack::compile_shader(vertex_source, rhi::ShaderStage::Vertex, rhi::ShaderLanguage::Hlsl);
         if(vertex_spirv.is_empty()) {
             logger(rx::log::level::k_error, "Could not compile builtin backbuffer output vertex shader");
         }
@@ -157,7 +157,7 @@ namespace nova::renderer {
 
                 return combined_color;
             })"};
-        const auto& pixel_spirv = shaderpack::compile_shader(pixel_source, rhi::ShaderStage::Fragment, rhi::ShaderLanguage::Hlsl);
+        const auto& pixel_spirv = renderpack::compile_shader(pixel_source, rhi::ShaderStage::Fragment, rhi::ShaderLanguage::Hlsl);
         if(pixel_spirv.is_empty()) {
             logger(rx::log::level::k_error, "Could not compile builtin backbuffer output pixel shader");
         }
@@ -166,7 +166,7 @@ namespace nova::renderer {
         vertex_fields.emplace_back("position", rhi::VertexFieldFormat::Float2);
 
         // TODO: Figure out how to make the input textures into input attachments
-        color_attachments.emplace_back(BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false);
+        color_attachments.emplace_back(BACKBUFFER_NAME, rhi::PixelFormat::Rgba8, false);
     }
 
     RX_GLOBAL<BackbufferOutputPipelineCreateInfo> backbuffer_output_pipeline_create_info{"Nova", "BackbufferOutputPipelineCreateInfo"};
@@ -427,7 +427,7 @@ namespace nova::renderer {
         MTR_SCOPE("ShaderpackLoading", "load_shaderpack");
         glslang::InitializeProcess();
 
-        const shaderpack::RenderpackData data = shaderpack::load_shaderpack_data(renderpack_name);
+        const renderpack::RenderpackData data = renderpack::load_shaderpack_data(renderpack_name);
 
         if(shaderpack_loaded) {
             destroy_dynamic_resources();
@@ -460,29 +460,29 @@ namespace nova::renderer {
         return rendergraph->get_metadata_for_renderpass(renderpass_name);
     }
 
-    void NovaRenderer::create_dynamic_textures(const rx::vector<shaderpack::TextureCreateInfo>& texture_create_infos) {
-        texture_create_infos.each_fwd([&](const shaderpack::TextureCreateInfo& create_info) {
+    void NovaRenderer::create_dynamic_textures(const rx::vector<renderpack::TextureCreateInfo>& texture_create_infos) {
+        texture_create_infos.each_fwd([&](const renderpack::TextureCreateInfo& create_info) {
             const auto size = create_info.format.get_size_in_pixels(device->get_swapchain()->get_size());
 
             const auto render_target = device_resources->create_render_target(create_info.name,
                                                                               size.x,
                                                                               size.y,
-                                                                              to_rhi_pixel_format(create_info.format.pixel_format),
+                                                                              create_info.format.pixel_format,
                                                                               renderpack_allocator);
 
             dynamic_texture_infos.insert(create_info.name, create_info);
         });
     }
 
-    void NovaRenderer::create_render_passes(const rx::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
-                                            const rx::vector<shaderpack::PipelineData>& pipelines) const {
+    void NovaRenderer::create_render_passes(const rx::vector<renderpack::RenderPassCreateInfo>& pass_create_infos,
+                                            const rx::vector<renderpack::PipelineData>& pipelines) const {
 
         device->set_num_renderpasses(static_cast<uint32_t>(pass_create_infos.size()));
 
-        pass_create_infos.each_fwd([&](const shaderpack::RenderPassCreateInfo& create_info) {
+        pass_create_infos.each_fwd([&](const renderpack::RenderPassCreateInfo& create_info) {
             auto* renderpass = global_allocator->create<Renderpass>(create_info.name);
             if(rendergraph->add_renderpass(renderpass, create_info, *device_resources) != nullptr) {
-                pipelines.each_fwd([&](const shaderpack::PipelineData& pipeline) {
+                pipelines.each_fwd([&](const renderpack::PipelineData& pipeline) {
                     if(pipeline.pass == create_info.name) {
                         renderpass->pipeline_names.emplace_back(pipeline.name);
                     }
@@ -493,9 +493,9 @@ namespace nova::renderer {
         });
     }
 
-    void NovaRenderer::create_pipelines_and_materials(const rx::vector<shaderpack::PipelineData>& pipeline_create_infos,
-                                                      const rx::vector<shaderpack::MaterialData>& materials) {
-        pipeline_create_infos.each_fwd([&](const shaderpack::PipelineData& pipeline_create_info) {
+    void NovaRenderer::create_pipelines_and_materials(const rx::vector<renderpack::PipelineData>& pipeline_create_infos,
+                                                      const rx::vector<renderpack::MaterialData>& materials) {
+        pipeline_create_infos.each_fwd([&](const renderpack::PipelineData& pipeline_create_info) {
             const auto pipeline_state_create_info = renderpack::to_pipeline_state_create_info(pipeline_create_info, *rendergraph);
             if(!pipeline_state_create_info) {
                 logger(rx ::log::level::k_error, "Could not create pipeline %s", pipeline_create_info.name);
@@ -509,7 +509,7 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_materials_for_pipeline(const Pipeline& pipeline,
-                                                     const rx::vector<shaderpack::MaterialData>& materials,
+                                                     const rx::vector<renderpack::MaterialData>& materials,
                                                      const rx::string& pipeline_name) {
 
         // Determine the pipeline layout so the material can create descriptors for the pipeline
@@ -521,8 +521,8 @@ namespace nova::renderer {
         rx::vector<MaterialPass> passes;
         passes.reserve(materials.size());
 
-        materials.each_fwd([&](const shaderpack::MaterialData& material_data) {
-            material_data.passes.each_fwd([&](const shaderpack::MaterialPass& pass_data) {
+        materials.each_fwd([&](const renderpack::MaterialData& material_data) {
+            material_data.passes.each_fwd([&](const renderpack::MaterialPass& pass_data) {
                 if(pass_data.pipeline == pipeline_name) {
                     MaterialPass pass = {};
                     pass.pipeline_interface = pipeline.pipeline_interface;
@@ -606,7 +606,7 @@ namespace nova::renderer {
 
     void NovaRenderer::destroy_dynamic_resources() {
         if(loaded_renderpack) {
-            loaded_renderpack->resources.render_targets.each_fwd([&](const shaderpack::TextureCreateInfo& tex_data) {
+            loaded_renderpack->resources.render_targets.each_fwd([&](const renderpack::TextureCreateInfo& tex_data) {
                 device_resources->destroy_render_target(tex_data.name, renderpack_allocator);
             });
 
@@ -616,7 +616,7 @@ namespace nova::renderer {
 
     void NovaRenderer::destroy_renderpasses() {
         loaded_renderpack->graph_data.passes.each_fwd(
-            [&](const shaderpack::RenderPassCreateInfo& renderpass) { rendergraph->destroy_renderpass(renderpass.name); });
+            [&](const renderpack::RenderPassCreateInfo& renderpass) { rendergraph->destroy_renderpass(renderpass.name); });
     }
 
     rhi::Sampler* NovaRenderer::get_point_sampler() const { return point_sampler; }
@@ -833,8 +833,8 @@ namespace nova::renderer {
                 dynamic_texture_infos
                     .insert(SCENE_OUTPUT_RT_NAME,
                             {SCENE_OUTPUT_RT_NAME,
-                             shaderpack::ImageUsage::RenderTarget,
-                             {shaderpack::PixelFormatEnum::RGBA8, shaderpack::TextureDimensionTypeEnum::ScreenRelative, 1, 1}});
+                             renderpack::ImageUsage::RenderTarget,
+                             {rhi::PixelFormat::Rgba8, renderpack::TextureDimensionType::ScreenRelative, 1, 1}});
             }
         }
 
@@ -853,8 +853,8 @@ namespace nova::renderer {
                 dynamic_texture_infos
                     .insert(UI_OUTPUT_RT_NAME,
                             {UI_OUTPUT_RT_NAME,
-                             shaderpack::ImageUsage::RenderTarget,
-                             {shaderpack::PixelFormatEnum::RGBA8, shaderpack::TextureDimensionTypeEnum::ScreenRelative, 1, 1}});
+                             renderpack::ImageUsage::RenderTarget,
+                             {rhi::PixelFormat::Rgba8, renderpack::TextureDimensionType::ScreenRelative, 1, 1}});
             }
         }
     }
@@ -907,9 +907,9 @@ namespace nova::renderer {
         } else {
             const auto pipeline = pipeline_storage->get_pipeline(backbuffer_output_pipeline_create_info->name);
 
-            const shaderpack::MaterialData material{BACKBUFFER_OUTPUT_MATERIAL_NAME,
+            const renderpack::MaterialData material{BACKBUFFER_OUTPUT_MATERIAL_NAME,
                                                     rx::array{
-                                                        shaderpack::MaterialPass{"main",
+                                                        renderpack::MaterialPass{"main",
                                                                                  BACKBUFFER_OUTPUT_MATERIAL_NAME,
                                                                                  BACKBUFFER_OUTPUT_PIPELINE_NAME,
                                                                                  rx::array{rx::pair{"ui_output", UI_OUTPUT_RT_NAME},
@@ -918,7 +918,7 @@ namespace nova::renderer {
                                                                                  {}}},
                                                     "block"};
 
-            const rx::vector<shaderpack::MaterialData> materials = rx::array{material};
+            const rx::vector<renderpack::MaterialData> materials = rx::array{material};
             create_materials_for_pipeline(*pipeline, materials, backbuffer_output_pipeline_create_info->name);
 
             const static FullMaterialPassName BACKBUFFER_OUTPUT_MATERIAL{BACKBUFFER_OUTPUT_MATERIAL_NAME, "main"};

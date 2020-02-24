@@ -280,7 +280,7 @@ namespace nova::renderer {
 
         rx::concurrency::mutex shaderpack_loading_mutex;
 
-        rx::optional<shaderpack::RenderpackData> loaded_renderpack;
+        rx::optional<renderpack::RenderpackData> loaded_renderpack;
 
         Rendergraph* rendergraph;
 #pragma endregion
@@ -289,12 +289,12 @@ namespace nova::renderer {
         rx::map<rx::string, rhi::Image*> builtin_images;
         rx::map<rx::string, renderer::Renderpass*> builtin_renderpasses;
 
-        rx::map<rx::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
+        rx::map<rx::string, renderpack::TextureCreateInfo> dynamic_texture_infos;
 
-        void create_dynamic_textures(const rx::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
+        void create_dynamic_textures(const rx::vector<renderpack::TextureCreateInfo>& texture_create_infos);
 
-        void create_render_passes(const rx::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
-                                  const rx::vector<shaderpack::PipelineData>& pipelines) const;
+        void create_render_passes(const rx::vector<renderpack::RenderPassCreateInfo>& pass_create_infos,
+                                  const rx::vector<renderpack::PipelineData>& pipelines) const;
 
         void destroy_dynamic_resources();
 
@@ -308,11 +308,11 @@ namespace nova::renderer {
 
         rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas;
 
-        void create_pipelines_and_materials(const rx::vector<shaderpack::PipelineData>& pipeline_create_infos,
-                                            const rx::vector<shaderpack::MaterialData>& materials);
+        void create_pipelines_and_materials(const rx::vector<renderpack::PipelineData>& pipeline_create_infos,
+                                            const rx::vector<renderpack::MaterialData>& materials);
 
         void create_materials_for_pipeline(const renderer::Pipeline& pipeline,
-                                           const rx::vector<shaderpack::MaterialData>& materials,
+                                           const rx::vector<renderpack::MaterialData>& materials,
                                            const rx::string& pipeline_name);
 
         void destroy_pipelines();

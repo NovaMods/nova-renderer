@@ -9,7 +9,7 @@
 
 #include "../json_utils.hpp"
 
-namespace nova::renderer::shaderpack {
+namespace nova::renderer::renderpack {
     RX_LOG("ShaderpackValidator", logger);
 
     constexpr uint32_t NUM_REQUIRED_FIELDS = 23;

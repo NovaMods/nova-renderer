@@ -93,7 +93,7 @@ namespace nova::renderer::rhi {
          *
          * \return The newly created renderpass
          */
-        [[nodiscard]] virtual ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data,
+        [[nodiscard]] virtual ntl::Result<Renderpass*> create_renderpass(const renderpack::RenderPassCreateInfo& data,
                                                                          const glm::uvec2& framebuffer_size,
                                                                          rx::memory::allocator* allocator) = 0;
 
@@ -105,8 +105,8 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] virtual ntl::Result<PipelineInterface*> create_pipeline_interface(
             const rx::map<rx::string, ResourceBindingDescription>& bindings,
-            const rx::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-            const rx::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
+            const rx::vector<renderpack::TextureAttachmentInfo>& color_attachments,
+            const rx::optional<renderpack::TextureAttachmentInfo>& depth_texture,
             rx::memory::allocator* allocator) = 0;
 
         [[nodiscard]] virtual DescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
@@ -157,7 +157,7 @@ namespace nova::renderer::rhi {
          *
          * The image will start out in the Undefined layout. You must transition it to whatever layout you want to use
          */
-        [[nodiscard]] virtual Image* create_image(const shaderpack::TextureCreateInfo& info,
+        [[nodiscard]] virtual Image* create_image(const renderpack::TextureCreateInfo& info,
                                                   rx::memory::allocator* allocator) = 0;
 
         [[nodiscard]] virtual Semaphore* create_semaphore(rx::memory::allocator* allocator) = 0;

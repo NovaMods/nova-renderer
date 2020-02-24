@@ -14,7 +14,7 @@
         }                                                                                                                                  \
     }();
 
-namespace nova::renderer::shaderpack {
+namespace nova::renderer::renderpack {
     RX_LOG("ShaderpackData", logger);
 
     bool TextureFormat::operator==(const TextureFormat& other) const {
@@ -27,10 +27,10 @@ namespace nova::renderer::shaderpack {
     TextureFormat TextureFormat::from_json(const rx::json& json) {
         TextureFormat format = {};
 
-        format.pixel_format = get_json_value(json, "pixelFormat", PixelFormatEnum::RGBA8, pixel_format_enum_from_json);
-        format.dimension_type = get_json_value<TextureDimensionTypeEnum>(json,
+        format.pixel_format = get_json_value(json, "pixelFormat", rhi::PixelFormat::Rgba8, pixel_format_enum_from_json);
+        format.dimension_type = get_json_value<TextureDimensionType>(json,
                                                                          "dimensionType",
-                                                                         TextureDimensionTypeEnum::ScreenRelative,
+                                                                         TextureDimensionType::ScreenRelative,
                                                                          texture_dimension_type_enum_from_json);
         format.width = get_json_value<float>(json, "width", 0);
         format.height = get_json_value<float>(json, "height", 0);
@@ -47,8 +47,8 @@ namespace nova::renderer::shaderpack {
         return info;
     }
 
-    ShaderpackResourcesData ShaderpackResourcesData::from_json(const rx::json& json) {
-        ShaderpackResourcesData data;
+    RenderpackResourcesData RenderpackResourcesData::from_json(const rx::json& json) {
+        RenderpackResourcesData data;
         data.render_targets = get_json_array<TextureCreateInfo>(json, "textures");
         data.samplers = get_json_array<SamplerCreateInfo>(json, "samplers");
 
@@ -96,8 +96,8 @@ namespace nova::renderer::shaderpack {
     SamplerCreateInfo SamplerCreateInfo::from_json(const rx::json& json) {
         SamplerCreateInfo info = {};
 
-        info.filter = get_json_value(json, "filter", TextureFilterEnum::Point, texture_filter_enum_from_json);
-        info.wrap_mode = get_json_value(json, "wrapMode", WrapModeEnum::Clamp, wrap_mode_enum_from_json);
+        info.filter = get_json_value(json, "filter", TextureFilter::Point, texture_filter_enum_from_json);
+        info.wrap_mode = get_json_value(json, "wrapMode", WrapMode::Clamp, wrap_mode_enum_from_json);
 
         return info;
     }
@@ -105,10 +105,10 @@ namespace nova::renderer::shaderpack {
     StencilOpState StencilOpState::from_json(const rx::json& json) {
         StencilOpState state = {};
 
-        FILL_REQUIRED_FIELD(state.fail_op, get_json_opt<StencilOpEnum>(json, "failOp", stencil_op_enum_from_json));
-        FILL_REQUIRED_FIELD(state.pass_op, get_json_opt<StencilOpEnum>(json, "passOp", stencil_op_enum_from_json));
-        FILL_REQUIRED_FIELD(state.depth_fail_op, get_json_opt<StencilOpEnum>(json, "depthFailOp", stencil_op_enum_from_json));
-        FILL_REQUIRED_FIELD(state.compare_op, get_json_opt<CompareOpEnum>(json, "compareOp", compare_op_enum_from_json));
+        FILL_REQUIRED_FIELD(state.fail_op, get_json_opt<RPStencilOp>(json, "failOp", stencil_op_enum_from_json));
+        FILL_REQUIRED_FIELD(state.pass_op, get_json_opt<RPStencilOp>(json, "passOp", stencil_op_enum_from_json));
+        FILL_REQUIRED_FIELD(state.depth_fail_op, get_json_opt<RPStencilOp>(json, "depthFailOp", stencil_op_enum_from_json));
+        FILL_REQUIRED_FIELD(state.compare_op, get_json_opt<RPCompareOp>(json, "compareOp", compare_op_enum_from_json));
         FILL_REQUIRED_FIELD(state.compare_mask, get_json_opt<uint32_t>(json, "compareMask"));
         FILL_REQUIRED_FIELD(state.write_mask, get_json_opt<uint32_t>(json, "writeMask"));
 
@@ -124,7 +124,7 @@ namespace nova::renderer::shaderpack {
 
         pipeline.defines = get_json_array<rx::string>(json, "defined");
 
-        pipeline.states = get_json_array<StateEnum>(json, "states", state_enum_from_json);
+        pipeline.states = get_json_array<RasterizerState>(json, "states", state_enum_from_json);
         pipeline.front_face = get_json_opt<StencilOpState>(json, "frontFace");
         pipeline.back_face = get_json_opt<StencilOpState>(json, "backFace");
         pipeline.fallback = get_json_value<rx::string>(json, "fallback", {});
@@ -133,29 +133,29 @@ namespace nova::renderer::shaderpack {
         pipeline.stencil_ref = get_json_value<uint32_t>(json, "stencilRef", 0);
         pipeline.stencil_read_mask = get_json_value<uint32_t>(json, "stencilReadMask", 0);
         pipeline.stencil_write_mask = get_json_value<uint32_t>(json, "stencilWriteMask", 0);
-        pipeline.msaa_support = get_json_value<MsaaSupportEnum>(json, "msaaSupport", MsaaSupportEnum::None, msaa_support_enum_from_json);
-        pipeline.primitive_mode = get_json_value<PrimitiveTopologyEnum>(json,
+        pipeline.msaa_support = get_json_value<MsaaSupport>(json, "msaaSupport", MsaaSupport::None, msaa_support_enum_from_json);
+        pipeline.primitive_mode = get_json_value<RPPrimitiveTopology>(json,
                                                                         "primitiveMode",
-                                                                        PrimitiveTopologyEnum::Triangles,
+                                                                      RPPrimitiveTopology::Triangles,
                                                                         primitive_topology_enum_from_json);
-        pipeline.source_color_blend_factor = get_json_value<BlendFactorEnum>(json,
+        pipeline.source_color_blend_factor = get_json_value<RPBlendFactor>(json,
                                                                              "sourceBlendFactor",
-                                                                             BlendFactorEnum::One,
+                                                                             RPBlendFactor::One,
                                                                              blend_factor_enum_from_json);
-        pipeline.destination_color_blend_factor = get_json_value<BlendFactorEnum>(json,
+        pipeline.destination_color_blend_factor = get_json_value<RPBlendFactor>(json,
                                                                                   "destBlendFactor",
-                                                                                  BlendFactorEnum::Zero,
+                                                                                  RPBlendFactor::Zero,
                                                                                   blend_factor_enum_from_json);
-        pipeline.source_alpha_blend_factor = get_json_value<BlendFactorEnum>(json,
+        pipeline.source_alpha_blend_factor = get_json_value<RPBlendFactor>(json,
                                                                              "alphaSrc",
-                                                                             BlendFactorEnum::One,
+                                                                             RPBlendFactor::One,
                                                                              blend_factor_enum_from_json);
-        pipeline.destination_alpha_blend_factor = get_json_value<BlendFactorEnum>(json,
+        pipeline.destination_alpha_blend_factor = get_json_value<RPBlendFactor>(json,
                                                                                   "alphaDest",
-                                                                                  BlendFactorEnum::Zero,
+                                                                                  RPBlendFactor::Zero,
                                                                                   blend_factor_enum_from_json);
-        pipeline.depth_func = get_json_value<CompareOpEnum>(json, "depthFunc", CompareOpEnum::Less, compare_op_enum_from_json);
-        pipeline.render_queue = get_json_value<RenderQueueEnum>(json, "renderQueue", RenderQueueEnum::Opaque, render_queue_enum_from_json);
+        pipeline.depth_func = get_json_value<RPCompareOp>(json, "depthFunc", RPCompareOp::Less, compare_op_enum_from_json);
+        pipeline.render_queue = get_json_value<RenderQueue>(json, "renderQueue", RenderQueue::Opaque, render_queue_enum_from_json);
 
         pipeline.scissor_mode = get_json_value<ScissorTestMode>(json, "scissorMode", ScissorTestMode::Off, scissor_test_mode_from_json);
 
@@ -192,7 +192,7 @@ namespace nova::renderer::shaderpack {
         float pixel_width = width;
         float pixel_height = height;
 
-        if(dimension_type == TextureDimensionTypeEnum::ScreenRelative) {
+        if(dimension_type == TextureDimensionType::ScreenRelative) {
             pixel_width *= static_cast<float>(screen_size.x);
             pixel_height *= static_cast<float>(screen_size.y);
         }
@@ -242,198 +242,198 @@ namespace nova::renderer::shaderpack {
         return data;
     }
 
-    PixelFormatEnum pixel_format_enum_from_string(const rx::string& str) {
+    rhi::PixelFormat pixel_format_enum_from_string(const rx::string& str) {
         if(str == "RGBA8") {
-            return PixelFormatEnum::RGBA8;
+            return rhi::PixelFormat::Rgba8;
         }
         if(str == "RGBA16F") {
-            return PixelFormatEnum::RGBA16F;
+            return rhi::PixelFormat::Rgba16F;
         }
         if(str == "RGBA32F") {
-            return PixelFormatEnum::RGBA32F;
+            return rhi::PixelFormat::Rgba32F;
         }
         if(str == "Depth") {
-            return PixelFormatEnum::Depth;
+            return rhi::PixelFormat::Depth32;
         }
         if(str == "DepthStencil") {
-            return PixelFormatEnum::DepthStencil;
+            return rhi::PixelFormat::Depth24Stencil8;
         }
 
         logger(rx::log::level::k_error, "Unsupported pixel format %s", str);
         return {};
     }
 
-    TextureDimensionTypeEnum texture_dimension_type_enum_from_string(const rx::string& str) {
+    TextureDimensionType texture_dimension_type_enum_from_string(const rx::string& str) {
         if(str == "ScreenRelative") {
-            return TextureDimensionTypeEnum ::ScreenRelative;
+            return TextureDimensionType ::ScreenRelative;
         }
         if(str == "Absolute") {
-            return TextureDimensionTypeEnum::Absolute;
+            return TextureDimensionType::Absolute;
         }
 
         logger(rx::log::level::k_error, "Unsupported texture dimension type %s", str);
         return {};
     }
 
-    TextureFilterEnum texture_filter_enum_from_string(const rx::string& str) {
+    TextureFilter texture_filter_enum_from_string(const rx::string& str) {
         if(str == "TexelAA") {
-            return TextureFilterEnum::TexelAA;
+            return TextureFilter::TexelAA;
         }
         if(str == "Bilinear") {
-            return TextureFilterEnum::Bilinear;
+            return TextureFilter::Bilinear;
         }
         if(str == "Point") {
-            return TextureFilterEnum::Point;
+            return TextureFilter::Point;
         }
 
         logger(rx::log::level::k_error, "Unsupported texture filter %s", str);
         return {};
     }
 
-    WrapModeEnum wrap_mode_enum_from_string(const rx::string& str) {
+    WrapMode wrap_mode_enum_from_string(const rx::string& str) {
         if(str == "Repeat") {
-            return WrapModeEnum::Repeat;
+            return WrapMode::Repeat;
         }
         if(str == "Clamp") {
-            return WrapModeEnum::Clamp;
+            return WrapMode::Clamp;
         }
 
         logger(rx::log::level::k_error, "Unsupported wrap mode %s", str);
         return {};
     }
 
-    StencilOpEnum stencil_op_enum_from_string(const rx::string& str) {
+    RPStencilOp stencil_op_enum_from_string(const rx::string& str) {
         if(str == "Keep") {
-            return StencilOpEnum::Keep;
+            return RPStencilOp::Keep;
         }
         if(str == "Zero") {
-            return StencilOpEnum::Zero;
+            return RPStencilOp::Zero;
         }
         if(str == "Replace") {
-            return StencilOpEnum::Replace;
+            return RPStencilOp::Replace;
         }
         if(str == "Incr") {
-            return StencilOpEnum::Increment;
+            return RPStencilOp::Increment;
         }
         if(str == "IncrWrap") {
-            return StencilOpEnum::IncrementAndWrap;
+            return RPStencilOp::IncrementAndWrap;
         }
         if(str == "Decr") {
-            return StencilOpEnum::Decrement;
+            return RPStencilOp::Decrement;
         }
         if(str == "DecrWrap") {
-            return StencilOpEnum::DecrementAndWrap;
+            return RPStencilOp::DecrementAndWrap;
         }
         if(str == "Invert") {
-            return StencilOpEnum::Invert;
+            return RPStencilOp::Invert;
         }
 
         logger(rx::log::level::k_error, "Unsupported stencil op %s", str);
         return {};
     }
 
-    CompareOpEnum compare_op_enum_from_string(const rx::string& str) {
+    RPCompareOp compare_op_enum_from_string(const rx::string& str) {
         if(str == "Never") {
-            return CompareOpEnum::Never;
+            return RPCompareOp::Never;
         }
         if(str == "Less") {
-            return CompareOpEnum::Less;
+            return RPCompareOp::Less;
         }
         if(str == "LessEqual") {
-            return CompareOpEnum::LessEqual;
+            return RPCompareOp::LessEqual;
         }
         if(str == "Greater") {
-            return CompareOpEnum::Greater;
+            return RPCompareOp::Greater;
         }
         if(str == "GreaterEqual") {
-            return CompareOpEnum::GreaterEqual;
+            return RPCompareOp::GreaterEqual;
         }
         if(str == "Equal") {
-            return CompareOpEnum::Equal;
+            return RPCompareOp::Equal;
         }
         if(str == "NotEqual") {
-            return CompareOpEnum::NotEqual;
+            return RPCompareOp::NotEqual;
         }
         if(str == "Always") {
-            return CompareOpEnum::Always;
+            return RPCompareOp::Always;
         }
 
         logger(rx::log::level::k_error, "Unsupported compare op ", str);
         return {};
     }
 
-    MsaaSupportEnum msaa_support_enum_from_string(const rx::string& str) {
+    MsaaSupport msaa_support_enum_from_string(const rx::string& str) {
         if(str == "MSAA") {
-            return MsaaSupportEnum::MSAA;
+            return MsaaSupport::MSAA;
         }
         if(str == "Both") {
-            return MsaaSupportEnum::Both;
+            return MsaaSupport::Both;
         }
         if(str == "None") {
-            return MsaaSupportEnum::None;
+            return MsaaSupport::None;
         }
 
         logger(rx::log::level::k_error, "Unsupported antialiasing mode %s", str);
         return {};
     }
 
-    PrimitiveTopologyEnum primitive_topology_enum_from_string(const rx::string& str) {
+    RPPrimitiveTopology primitive_topology_enum_from_string(const rx::string& str) {
         if(str == "Triangles") {
-            return PrimitiveTopologyEnum::Triangles;
+            return RPPrimitiveTopology::Triangles;
         }
         if(str == "Lines") {
-            return PrimitiveTopologyEnum::Lines;
+            return RPPrimitiveTopology::Lines;
         }
 
         logger(rx::log::level::k_error, "Unsupported primitive mode %s", str);
         return {};
     }
 
-    BlendFactorEnum blend_factor_enum_from_string(const rx::string& str) {
+    RPBlendFactor blend_factor_enum_from_string(const rx::string& str) {
         if(str == "One") {
-            return BlendFactorEnum::One;
+            return RPBlendFactor::One;
         }
         if(str == "Zero") {
-            return BlendFactorEnum::Zero;
+            return RPBlendFactor::Zero;
         }
         if(str == "SrcColor") {
-            return BlendFactorEnum::SrcColor;
+            return RPBlendFactor::SrcColor;
         }
         if(str == "DstColor") {
-            return BlendFactorEnum::DstColor;
+            return RPBlendFactor::DstColor;
         }
         if(str == "OneMinusSrcColor") {
-            return BlendFactorEnum::OneMinusSrcColor;
+            return RPBlendFactor::OneMinusSrcColor;
         }
         if(str == "OneMinusDstColor") {
-            return BlendFactorEnum::OneMinusDstColor;
+            return RPBlendFactor::OneMinusDstColor;
         }
         if(str == "SrcAlpha") {
-            return BlendFactorEnum::SrcAlpha;
+            return RPBlendFactor::SrcAlpha;
         }
         if(str == "DstAlpha") {
-            return BlendFactorEnum::DstAlpha;
+            return RPBlendFactor::DstAlpha;
         }
         if(str == "OneMinusSrcAlpha") {
-            return BlendFactorEnum::OneMinusSrcAlpha;
+            return RPBlendFactor::OneMinusSrcAlpha;
         }
         if(str == "OneMinusDstAlpha") {
-            return BlendFactorEnum::OneMinusDstAlpha;
+            return RPBlendFactor::OneMinusDstAlpha;
         }
 
         logger(rx::log::level::k_error, "Unsupported blend factor %s", str);
         return {};
     }
 
-    RenderQueueEnum render_queue_enum_from_string(const rx::string& str) {
+    RenderQueue render_queue_enum_from_string(const rx::string& str) {
         if(str == "Transparent") {
-            return RenderQueueEnum::Transparent;
+            return RenderQueue::Transparent;
         }
         if(str == "Opaque") {
-            return RenderQueueEnum::Opaque;
+            return RenderQueue::Opaque;
         }
         if(str == "Cutout") {
-            return RenderQueueEnum::Cutout;
+            return RenderQueue::Cutout;
         }
 
         logger(rx::log::level::k_error, "Unsupported render queue %s", str);
@@ -455,367 +455,323 @@ namespace nova::renderer::shaderpack {
         return {};
     }
 
-    StateEnum state_enum_from_string(const rx::string& str) {
+    RasterizerState state_enum_from_string(const rx::string& str) {
         if(str == "Blending") {
-            return StateEnum::Blending;
+            return RasterizerState::Blending;
         }
         if(str == "InvertCulling") {
-            return StateEnum::InvertCulling;
+            return RasterizerState::InvertCulling;
         }
         if(str == "DisableCulling") {
-            return StateEnum::DisableCulling;
+            return RasterizerState::DisableCulling;
         }
         if(str == "DisableDepthWrite") {
-            return StateEnum::DisableDepthWrite;
+            return RasterizerState::DisableDepthWrite;
         }
         if(str == "DisableDepthTest") {
-            return StateEnum::DisableDepthTest;
+            return RasterizerState::DisableDepthTest;
         }
         if(str == "EnableStencilTest") {
-            return StateEnum::EnableStencilTest;
+            return RasterizerState::EnableStencilTest;
         }
         if(str == "StencilWrite") {
-            return StateEnum::StencilWrite;
+            return RasterizerState::StencilWrite;
         }
         if(str == "DisableColorWrite") {
-            return StateEnum::DisableColorWrite;
+            return RasterizerState::DisableColorWrite;
         }
         if(str == "EnableAlphaToCoverage") {
-            return StateEnum::EnableAlphaToCoverage;
+            return RasterizerState::EnableAlphaToCoverage;
         }
         if(str == "DisableAlphaWrite") {
-            return StateEnum::DisableAlphaWrite;
+            return RasterizerState::DisableAlphaWrite;
         }
 
         logger(rx::log::level::k_error, "Unsupported state enum %s", str);
         return {};
     }
 
-    PixelFormatEnum pixel_format_enum_from_json(const rx::json& j) { return pixel_format_enum_from_string(j.as_string()); }
+    rhi::PixelFormat pixel_format_enum_from_json(const rx::json& j) { return pixel_format_enum_from_string(j.as_string()); }
 
-    TextureDimensionTypeEnum texture_dimension_type_enum_from_json(const rx::json& j) {
+    TextureDimensionType texture_dimension_type_enum_from_json(const rx::json& j) {
         return texture_dimension_type_enum_from_string(j.as_string());
     }
 
-    TextureFilterEnum texture_filter_enum_from_json(const rx::json& j) { return texture_filter_enum_from_string(j.as_string()); }
+    TextureFilter texture_filter_enum_from_json(const rx::json& j) { return texture_filter_enum_from_string(j.as_string()); }
 
-    WrapModeEnum wrap_mode_enum_from_json(const rx::json& j) { return wrap_mode_enum_from_string(j.as_string()); }
+    WrapMode wrap_mode_enum_from_json(const rx::json& j) { return wrap_mode_enum_from_string(j.as_string()); }
 
-    StencilOpEnum stencil_op_enum_from_json(const rx::json& j) { return stencil_op_enum_from_string(j.as_string()); }
+    RPStencilOp stencil_op_enum_from_json(const rx::json& j) { return stencil_op_enum_from_string(j.as_string()); }
 
-    CompareOpEnum compare_op_enum_from_json(const rx::json& j) { return compare_op_enum_from_string(j.as_string()); }
+    RPCompareOp compare_op_enum_from_json(const rx::json& j) { return compare_op_enum_from_string(j.as_string()); }
 
-    MsaaSupportEnum msaa_support_enum_from_json(const rx::json& j) { return msaa_support_enum_from_string(j.as_string()); }
+    MsaaSupport msaa_support_enum_from_json(const rx::json& j) { return msaa_support_enum_from_string(j.as_string()); }
 
-    PrimitiveTopologyEnum primitive_topology_enum_from_json(const rx::json& j) {
+    RPPrimitiveTopology primitive_topology_enum_from_json(const rx::json& j) {
         return primitive_topology_enum_from_string(j.as_string());
     }
 
-    BlendFactorEnum blend_factor_enum_from_json(const rx::json& j) { return blend_factor_enum_from_string(j.as_string()); }
+    RPBlendFactor blend_factor_enum_from_json(const rx::json& j) { return blend_factor_enum_from_string(j.as_string()); }
 
-    RenderQueueEnum render_queue_enum_from_json(const rx::json& j) { return render_queue_enum_from_string(j.as_string()); }
+    RenderQueue render_queue_enum_from_json(const rx::json& j) { return render_queue_enum_from_string(j.as_string()); }
 
     ScissorTestMode scissor_test_mode_from_json(const rx::json& j) { return scissor_test_mode_from_string(j.as_string()); }
 
-    StateEnum state_enum_from_json(const rx::json& j) { return state_enum_from_string(j.as_string()); }
+    RasterizerState state_enum_from_json(const rx::json& j) { return state_enum_from_string(j.as_string()); }
 
-    rx::string to_string(const PixelFormatEnum val) {
+    rx::string to_string(const rhi::PixelFormat val) {
         switch(val) {
-            case PixelFormatEnum::RGBA8:
+            case rhi::PixelFormat::Rgba8:
                 return "RGBA8";
 
-            case PixelFormatEnum::RGBA16F:
+            case rhi::PixelFormat::Rgba16F:
                 return "RGBA16F";
 
-            case PixelFormatEnum::RGBA32F:
+            case rhi::PixelFormat::Rgba32F:
                 return "RGBA32F";
 
-            case PixelFormatEnum::Depth:
+            case rhi::PixelFormat::Depth32:
                 return "Depth";
 
-            case PixelFormatEnum::DepthStencil:
+            case rhi::PixelFormat::Depth24Stencil8:
                 return "DepthStencil";
         }
 
         return "Unknown value";
     }
 
-    rx::string to_string(const TextureDimensionTypeEnum val) {
+    rx::string to_string(const TextureDimensionType val) {
         switch(val) {
-            case TextureDimensionTypeEnum::ScreenRelative:
+            case TextureDimensionType::ScreenRelative:
                 return "ScreenRelative";
 
-            case TextureDimensionTypeEnum::Absolute:
+            case TextureDimensionType::Absolute:
                 return "Absolute";
         }
 
         return "Unknown value";
     }
 
-    rx::string to_string(const TextureFilterEnum val) {
+    rx::string to_string(const TextureFilter val) {
         switch(val) {
-            case TextureFilterEnum::TexelAA:
+            case TextureFilter::TexelAA:
                 return "TexelAA";
 
-            case TextureFilterEnum::Bilinear:
+            case TextureFilter::Bilinear:
                 return "Bilinear";
 
-            case TextureFilterEnum::Point:
+            case TextureFilter::Point:
                 return "Point";
         }
 
         return "Unknown value";
     }
 
-    rx::string to_string(const WrapModeEnum val) {
+    rx::string to_string(const WrapMode val) {
         switch(val) {
-            case WrapModeEnum::Repeat:
+            case WrapMode::Repeat:
                 return "Repeat";
 
-            case WrapModeEnum::Clamp:
+            case WrapMode::Clamp:
                 return "Clamp";
         }
 
         return "Unknown value";
     }
 
-    rx::string to_string(const StencilOpEnum val) {
+    rx::string to_string(const RPStencilOp val) {
         switch(val) {
-            case StencilOpEnum::Keep:
+            case RPStencilOp::Keep:
                 return "Keep";
 
-            case StencilOpEnum::Zero:
+            case RPStencilOp::Zero:
                 return "Zero";
 
-            case StencilOpEnum::Replace:
+            case RPStencilOp::Replace:
                 return "Replace";
 
-            case StencilOpEnum::Increment:
+            case RPStencilOp::Increment:
                 return "Incr";
 
-            case StencilOpEnum::IncrementAndWrap:
+            case RPStencilOp::IncrementAndWrap:
                 return "IncrWrap";
 
-            case StencilOpEnum::Decrement:
+            case RPStencilOp::Decrement:
                 return "Decr";
 
-            case StencilOpEnum::DecrementAndWrap:
+            case RPStencilOp::DecrementAndWrap:
                 return "DecrWrap";
 
-            case StencilOpEnum::Invert:
+            case RPStencilOp::Invert:
                 return "Invert";
         }
 
         return "Unknown value";
     }
 
-    rx::string to_string(const CompareOpEnum val) {
+    rx::string to_string(const RPCompareOp val) {
         switch(val) {
-            case CompareOpEnum::Never:
+            case RPCompareOp::Never:
                 return "Never";
 
-            case CompareOpEnum::Less:
+            case RPCompareOp::Less:
                 return "Less";
 
-            case CompareOpEnum::LessEqual:
+            case RPCompareOp::LessEqual:
                 return "LessEqual";
 
-            case CompareOpEnum::Greater:
+            case RPCompareOp::Greater:
                 return "Greater";
 
-            case CompareOpEnum::GreaterEqual:
+            case RPCompareOp::GreaterEqual:
                 return "GreaterEqual";
 
-            case CompareOpEnum::Equal:
+            case RPCompareOp::Equal:
                 return "Equal";
 
-            case CompareOpEnum::NotEqual:
+            case RPCompareOp::NotEqual:
                 return "NotEqual";
 
-            case CompareOpEnum::Always:
+            case RPCompareOp::Always:
                 return "Always";
         }
 
         return "Unknown value";
     }
 
-    rx::string to_string(const MsaaSupportEnum val) {
+    rx::string to_string(const MsaaSupport val) {
         switch(val) {
-            case MsaaSupportEnum::MSAA:
+            case MsaaSupport::MSAA:
                 return "MSAA";
 
-            case MsaaSupportEnum::Both:
+            case MsaaSupport::Both:
                 return "Both";
 
-            case MsaaSupportEnum::None:
+            case MsaaSupport::None:
                 return "None";
         }
 
         return "Unknown value";
     }
 
-    rx::string to_string(const PrimitiveTopologyEnum val) {
+    rx::string to_string(const RPPrimitiveTopology val) {
         switch(val) {
-            case PrimitiveTopologyEnum::Triangles:
+            case RPPrimitiveTopology::Triangles:
                 return "Triangles";
 
-            case PrimitiveTopologyEnum::Lines:
+            case RPPrimitiveTopology::Lines:
                 return "Lines";
         }
 
         return "Unknown value";
     }
 
-    rx::string to_string(const BlendFactorEnum val) {
+    rx::string to_string(const RPBlendFactor val) {
         switch(val) {
-            case BlendFactorEnum::One:
+            case RPBlendFactor::One:
                 return "One";
 
-            case BlendFactorEnum::Zero:
+            case RPBlendFactor::Zero:
                 return "Zero";
 
-            case BlendFactorEnum::SrcColor:
+            case RPBlendFactor::SrcColor:
                 return "SrcColor";
 
-            case BlendFactorEnum::DstColor:
+            case RPBlendFactor::DstColor:
                 return "DstColor";
 
-            case BlendFactorEnum::OneMinusSrcColor:
+            case RPBlendFactor::OneMinusSrcColor:
                 return "OneMinusSrcColor";
 
-            case BlendFactorEnum::OneMinusDstColor:
+            case RPBlendFactor::OneMinusDstColor:
                 return "OneMinusDstColor";
 
-            case BlendFactorEnum::SrcAlpha:
+            case RPBlendFactor::SrcAlpha:
                 return "SrcAlpha";
 
-            case BlendFactorEnum::DstAlpha:
+            case RPBlendFactor::DstAlpha:
                 return "DstAlpha";
 
-            case BlendFactorEnum::OneMinusSrcAlpha:
+            case RPBlendFactor::OneMinusSrcAlpha:
                 return "OneMinusSrcAlpha";
 
-            case BlendFactorEnum::OneMinusDstAlpha:
+            case RPBlendFactor::OneMinusDstAlpha:
                 return "OneMinusDstAlpha";
         }
 
         return "Unknown value";
     }
 
-    rx::string to_string(const RenderQueueEnum val) {
+    rx::string to_string(const RenderQueue val) {
         switch(val) {
-            case RenderQueueEnum::Transparent:
+            case RenderQueue::Transparent:
                 return "Transparent";
 
-            case RenderQueueEnum::Opaque:
+            case RenderQueue::Opaque:
                 return "Opaque";
 
-            case RenderQueueEnum::Cutout:
+            case RenderQueue::Cutout:
                 return "Cutout";
         }
 
         return "Unknown value";
     }
 
-    rx::string to_string(const StateEnum val) {
+    rx::string to_string(const RasterizerState val) {
         switch(val) {
-            case StateEnum::Blending:
+            case RasterizerState::Blending:
                 return "Blending";
 
-            case StateEnum::InvertCulling:
+            case RasterizerState::InvertCulling:
                 return "InvertCulling";
 
-            case StateEnum::DisableCulling:
+            case RasterizerState::DisableCulling:
                 return "DisableCulling";
 
-            case StateEnum::DisableDepthWrite:
+            case RasterizerState::DisableDepthWrite:
                 return "DisableDepthWrite";
 
-            case StateEnum::DisableDepthTest:
+            case RasterizerState::DisableDepthTest:
                 return "DisableDepthTest";
 
-            case StateEnum::EnableStencilTest:
+            case RasterizerState::EnableStencilTest:
                 return "EnableStencilTest";
 
-            case StateEnum::StencilWrite:
+            case RasterizerState::StencilWrite:
                 return "StencilWrite";
 
-            case StateEnum::DisableColorWrite:
+            case RasterizerState::DisableColorWrite:
                 return "DisableColorWrite";
 
-            case StateEnum::EnableAlphaToCoverage:
+            case RasterizerState::EnableAlphaToCoverage:
                 return "EnableAlphaToCoverage";
 
-            case StateEnum::DisableAlphaWrite:
+            case RasterizerState::DisableAlphaWrite:
                 return "DisableAlphaWrite";
         }
 
         return "Unknown value";
     }
 
-    uint32_t pixel_format_to_pixel_width(const PixelFormatEnum format) {
-        switch(format) {
-            case PixelFormatEnum::RGBA8:
-                return 4 * 8;
-
-            case PixelFormatEnum::RGBA16F:
-                return 4 * 16;
-
-            case PixelFormatEnum::RGBA32F:
-                return 4 * 32;
-
-            case PixelFormatEnum::Depth:
-                return 32;
-
-            case PixelFormatEnum::DepthStencil:
-                return 32;
-
-            default:
-                return 32;
-        }
-    }
-
-    PixelFormatEnum to_pixel_format_enum(const rhi::PixelFormat format) {
+    uint32_t pixel_format_to_pixel_width(const rhi::PixelFormat format) {
         switch(format) {
             case rhi::PixelFormat::Rgba8:
-                return PixelFormatEnum::RGBA8;
+                return 4 * 8;
 
             case rhi::PixelFormat::Rgba16F:
-                return PixelFormatEnum::RGBA16F;
+                return 4 * 16;
 
             case rhi::PixelFormat::Rgba32F:
-                return PixelFormatEnum::RGBA32F;
+                return 4 * 32;
 
             case rhi::PixelFormat::Depth32:
-                return PixelFormatEnum::Depth;
+                return 32;
 
             case rhi::PixelFormat::Depth24Stencil8:
-                return PixelFormatEnum::DepthStencil;
+                return 32;
 
             default:
-                return PixelFormatEnum::RGBA8;
-        }
-    }
-
-    rhi::PixelFormat to_rhi_pixel_format(const PixelFormatEnum format) {
-        switch(format) {
-            case PixelFormatEnum::RGBA8:
-                return rhi::PixelFormat::Rgba8;
-
-            case PixelFormatEnum::RGBA16F:
-                return rhi::PixelFormat::Rgba16F;
-
-            case PixelFormatEnum::RGBA32F:
-                return rhi::PixelFormat::Rgba32F;
-
-            case PixelFormatEnum::Depth:
-                return rhi::PixelFormat::Depth32;
-
-            case PixelFormatEnum::DepthStencil:
-                return rhi::PixelFormat::Depth24Stencil8;
-
-            default:
-                return rhi::PixelFormat::Rgba8;
+                return 32;
         }
     }
 } // namespace nova::renderer::shaderpack

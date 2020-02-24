@@ -7,7 +7,7 @@
 
 #include "nova_renderer/constants.hpp"
 
-namespace nova::renderer::shaderpack {
+namespace nova::renderer::renderpack {
     RX_LOG("RenderGraphBuilder", logger);
 
     /*!

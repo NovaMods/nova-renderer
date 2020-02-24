@@ -129,7 +129,7 @@ namespace nova::renderer::rhi {
         return ntl::Result<DeviceMemory*>(memory);
     }
 
-    ntl::Result<Renderpass*> VulkanRenderDevice::create_renderpass(const shaderpack::RenderPassCreateInfo& data,
+    ntl::Result<Renderpass*> VulkanRenderDevice::create_renderpass(const renderpack::RenderPassCreateInfo& data,
                                                                    const glm::uvec2& framebuffer_size,
                                                                    rx::memory::allocator* allocator) {
         auto* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain);
@@ -173,7 +173,7 @@ namespace nova::renderer::rhi {
 
         bool writes_to_backbuffer = false;
         // Collect framebuffer size information from color output attachments
-        data.texture_outputs.each_fwd([&](const shaderpack::TextureAttachmentInfo& attachment) {
+        data.texture_outputs.each_fwd([&](const renderpack::TextureAttachmentInfo& attachment) {
             if(attachment.name == BACKBUFFER_NAME) {
                 // Handle backbuffer
                 // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip
@@ -341,8 +341,8 @@ namespace nova::renderer::rhi {
 
     ntl::Result<PipelineInterface*> VulkanRenderDevice::create_pipeline_interface(
         const rx::map<rx::string, ResourceBindingDescription>& bindings,
-        const rx::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-        const rx::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
+        const rx::vector<renderpack::TextureAttachmentInfo>& color_attachments,
+        const rx::optional<renderpack::TextureAttachmentInfo>& depth_texture,
         rx::memory::allocator* allocator) {
 
         auto* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain);
@@ -398,7 +398,7 @@ namespace nova::renderer::rhi {
         rx::vector<VkImageView> framebuffer_attachments{internal_allocator};
 
         // Collect framebuffer size information from color output attachments
-        color_attachments.each_fwd([&](const shaderpack::TextureAttachmentInfo& attachment) {
+        color_attachments.each_fwd([&](const renderpack::TextureAttachmentInfo& attachment) {
             if(attachment.name == BACKBUFFER_NAME) {
                 // Handle backbuffer
                 // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip
@@ -901,7 +901,7 @@ namespace nova::renderer::rhi {
         } else {
             attachment_states.reserve(data.color_attachments.size());
 
-            data.color_attachments.each_fwd([&](const shaderpack::TextureAttachmentInfo& /* attachment_info */) {
+            data.color_attachments.each_fwd([&](const renderpack::TextureAttachmentInfo& /* attachment_info */) {
                 VkPipelineColorBlendAttachmentState color_blend_attachment{};
                 color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
                                                         VK_COLOR_COMPONENT_A_BIT;
@@ -1060,7 +1060,7 @@ namespace nova::renderer::rhi {
         return sampler;
     }
 
-    Image* VulkanRenderDevice::create_image(const shaderpack::TextureCreateInfo& info, rx::memory::allocator* allocator) {
+    Image* VulkanRenderDevice::create_image(const renderpack::TextureCreateInfo& info, rx::memory::allocator* allocator) {
         auto* image = allocator->create<VulkanImage>();
 
         image->is_dynamic = true;
@@ -1090,7 +1090,7 @@ namespace nova::renderer::rhi {
             image->is_depth_tex = true;
         }
 
-        if(info.usage == shaderpack::ImageUsage::SampledImage) {
+        if(info.usage == renderpack::ImageUsage::SampledImage) {
             image_create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
         } else {

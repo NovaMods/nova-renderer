@@ -190,7 +190,7 @@ namespace nova::renderer::rhi {
 
     struct DescriptorImageInfo {
         Image* image;
-        shaderpack::TextureFormat format;
+        renderpack::TextureFormat format;
     };
 
     struct DescriptorBufferInfo {

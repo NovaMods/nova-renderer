@@ -16,11 +16,6 @@ namespace nova::renderer {
         enum class PixelFormat;
     }
 
-    namespace shaderpack {
-        // yolo
-        enum class PixelFormatEnum;
-    } // namespace shaderpack
-
     struct TextureResource {
         rx::string name;
 
