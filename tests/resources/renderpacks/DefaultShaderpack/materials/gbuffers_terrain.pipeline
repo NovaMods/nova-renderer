@@ -1,0 +1,47 @@
+{
+    "name": "gbuffers_terrain",
+    "pass": "Forward",
+    "states": [
+        "DisableAlphaWrite"
+    ],
+    "vertexShader": "shaders/gbuffers_terrain.vert",
+    "fragmentShader": "shaders/gbuffers_terrain.frag",
+    "vertexFields": [
+        {
+            "name": "position_in",
+            "field": "Position"
+        },
+        {
+            "name": "color_in",
+            "field": "Color"
+        },
+        {
+            "name": "uv_in",
+            "field": "UV0"
+        },
+        {
+            "name": "lightmap_uv_in",
+            "field": "UV1"
+        },
+        {
+            "name": "normal_in",
+            "field": "Normal"
+        },
+        {
+            "name": "tangent_in",
+            "field": "Tangent"
+        },
+        {
+            "name": "mix_tex_coord_in",
+            "field": "MidTexCoord"
+        },
+        {
+            "name": "virtual_texture_id_in",
+            "field": "VirtualTextureId"
+        },
+        {
+            "name": "mc_entity_id_in",
+            "field": "McEntityId"
+        }
+    ]
+}

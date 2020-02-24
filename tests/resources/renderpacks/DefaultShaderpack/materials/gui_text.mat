@@ -1,0 +1,16 @@
+{
+    "name": "gui_text",
+    "filter": "geometry_type::text",
+    "passes": [
+        {
+            "name": "main",
+            "pipeline": "gui",
+            "bindings": [
+                {
+                    "variable": "per_model_uniforms",
+                    "resource": "NovaModelMatrixBuffer"
+                }
+            ]
+        }
+    ]
+}

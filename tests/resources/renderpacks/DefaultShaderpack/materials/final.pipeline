@@ -1,0 +1,21 @@
+{
+    "name": "Final",
+    "pass": "Final",
+    "states": [
+        "DisableAlphaWrite",
+        "DisableDepthWrite",
+        "DisableDepthTest"
+    ],
+    "vertexShader": "shaders/textured_unlit.vert",
+    "fragmentShader": "shaders/image_passthrough.frag",
+    "vertexFields": [
+        {
+            "name": "position_in",
+            "field": "Position"
+        },
+        {
+            "name": "uv_in",
+            "field": "UV0"
+        }
+    ]
+}
