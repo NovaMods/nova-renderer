@@ -9,7 +9,7 @@ using namespace nova::mem::operators;
 
 namespace nova::renderer {
     struct DeviceMemoryAllocation {
-        rhi::DeviceMemory* memory = nullptr;
+        rhi::RhiDeviceMemory* memory = nullptr;
         mem::AllocationInfo allocation_info;
     };
 
@@ -18,12 +18,12 @@ namespace nova::renderer {
      * buffers, textures, etc
      */
     struct DeviceMemoryResource {
-        DeviceMemoryResource(rhi::DeviceMemory* memory, mem::AllocationStrategy* allocation_strategy);
+        DeviceMemoryResource(rhi::RhiDeviceMemory* memory, mem::AllocationStrategy* allocation_strategy);
 
         [[nodiscard]] DeviceMemoryAllocation allocate(mem::Bytes size) const;
 
         mem::AllocationStrategy* allocation_strategy;
 
-        rhi::DeviceMemory* memory;
+        rhi::RhiDeviceMemory* memory;
     };
 } // namespace nova::renderer

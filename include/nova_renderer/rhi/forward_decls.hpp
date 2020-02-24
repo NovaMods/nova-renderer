@@ -3,20 +3,20 @@
 //! Forward declarations for all the types in the RHI
 
 namespace nova::renderer::rhi {
-    struct DescriptorSet;
-    struct Pipeline;
-    struct Renderpass;
-    struct Framebuffer;
-    struct PipelineInterface;
-    struct Fence;
-    struct Semaphore;
-    struct Resource;
-    struct Buffer;
-    struct Image;
-    struct DeviceMemory;
-    struct Sampler;
-    struct PresentSemaphore;
-    struct DescriptorPool;
+    struct RhiDescriptorSet;
+    struct RhiPipeline;
+    struct RhiRenderpass;
+    struct RhiFramebuffer;
+    struct RhiPipelineInterface;
+    struct RhiFence;
+    struct RhiSemaphore;
+    struct RhiResource;
+    struct RhiBuffer;
+    struct RhiImage;
+    struct RhiDeviceMemory;
+    struct RhiSampler;
+    struct RhiPresentSemaphore;
+    struct RhiDescriptorPool;
 
     class Swapchain;
     class CommandList;

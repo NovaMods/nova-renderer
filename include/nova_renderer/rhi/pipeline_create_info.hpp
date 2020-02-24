@@ -368,7 +368,7 @@ namespace nova::renderer {
         /*!
          * \brief Description of the fields in the vertex data
          */
-        rx::vector<rhi::VertexField> vertex_fields{};
+        rx::vector<rhi::RhiVertexField> vertex_fields{};
 
         /*!
          * \brief Size of the viewport that this pipeline state renders to, measured in pixels

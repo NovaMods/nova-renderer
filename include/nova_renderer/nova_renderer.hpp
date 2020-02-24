@@ -52,8 +52,8 @@ namespace nova::renderer {
 
 #pragma region Runtime optimized data
     struct Mesh {
-        rhi::Buffer* vertex_buffer = nullptr;
-        rhi::Buffer* index_buffer = nullptr;
+        rhi::RhiBuffer* vertex_buffer = nullptr;
+        rhi::RhiBuffer* index_buffer = nullptr;
 
         uint32_t num_indices = 0;
         size_t num_vertex_attributes{};
@@ -114,7 +114,7 @@ namespace nova::renderer {
         template <typename RenderpassType, typename... Args>
         RenderpassType* create_ui_renderpass(Args&&... args);
 
-        [[nodiscard]] const rx::vector<MaterialPass>& get_material_passes_for_pipeline(rhi::Pipeline* const pipeline);
+        [[nodiscard]] const rx::vector<MaterialPass>& get_material_passes_for_pipeline(rhi::RhiPipeline* const pipeline);
 
         [[nodiscard]] rx::optional<RenderpassMetadata> get_renderpass_metadata(const rx::string& renderpass_name) const;
 
@@ -160,7 +160,7 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Resources
-        [[nodiscard]] rhi::Sampler* get_point_sampler() const;
+        [[nodiscard]] rhi::RhiSampler* get_point_sampler() const;
 #pragma endregion
 
         /*!
@@ -178,7 +178,7 @@ namespace nova::renderer {
          */
         void bind_data_to_material_descriptor_sets(const MaterialPass& material,
                                                    const rx::map<rx::string, rx::string>& bindings,
-                                                   const rx::map<rx::string, rhi::ResourceBindingDescription>& descriptor_descriptions);
+                                                   const rx::map<rx::string, rhi::RhiResourceBindingDescription>& descriptor_descriptions);
 
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
                                                                const StaticMeshRenderableData& renderable);
@@ -201,7 +201,7 @@ namespace nova::renderer {
         RENDERDOC_API_1_3_0* render_doc;
         rx::vector<rx::memory::bump_point_allocator*> frame_allocators;
 
-        rhi::Sampler* point_sampler;
+        rhi::RhiSampler* point_sampler;
 
         MeshId fullscreen_triangle_id;
 
@@ -228,7 +228,7 @@ namespace nova::renderer {
 
         DeviceMemoryResource* ubo_memory;
 
-        rhi::DescriptorPool* global_descriptor_pool;
+        rhi::RhiDescriptorPool* global_descriptor_pool;
 
         DeviceMemoryResource* staging_buffer_memory;
 
@@ -286,7 +286,7 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Rendergraph
-        rx::map<rx::string, rhi::Image*> builtin_images;
+        rx::map<rx::string, rhi::RhiImage*> builtin_images;
         rx::map<rx::string, renderer::Renderpass*> builtin_renderpasses;
 
         rx::map<rx::string, renderpack::TextureCreateInfo> dynamic_texture_infos;
@@ -304,7 +304,7 @@ namespace nova::renderer {
 #pragma region Rendering pipelines
         PipelineStorage* pipeline_storage;
 
-        rx::map<rhi::Pipeline*, rx::vector<MaterialPass>> passes_by_pipeline;
+        rx::map<rhi::RhiPipeline*, rx::vector<MaterialPass>> passes_by_pipeline;
 
         rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas;
 
@@ -334,7 +334,7 @@ namespace nova::renderer {
         rx::vector<rx::string> builtin_buffer_names;
         uint32_t cur_model_matrix_index = 0;
 
-        rx::array<rhi::Fence* [NUM_IN_FLIGHT_FRAMES]> frame_fences;
+        rx::array<rhi::RhiFence* [NUM_IN_FLIGHT_FRAMES]> frame_fences;
 
         rx::map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
 

@@ -7,9 +7,9 @@
 #include "nova_renderer/rhi/swapchain.hpp"
 
 namespace nova::renderer::rhi {
-    struct Fence;
-    struct Framebuffer;
-    struct Image;
+    struct RhiFence;
+    struct RhiFramebuffer;
+    struct RhiImage;
 
     class VulkanRenderDevice;
 

@@ -45,14 +45,14 @@ namespace nova::renderer::rhi {
 
     void VulkanCommandList::resource_barriers(const PipelineStage stages_before_barrier,
                                               const PipelineStage stages_after_barrier,
-                                              const rx::vector<ResourceBarrier>& barriers) {
+                                              const rx::vector<RhiResourceBarrier>& barriers) {
         rx::vector<VkBufferMemoryBarrier> buffer_barriers;
         buffer_barriers.reserve(barriers.size());
 
         rx::vector<VkImageMemoryBarrier> image_barriers;
         image_barriers.reserve(barriers.size());
 
-        barriers.each_fwd([&](const ResourceBarrier& barrier) {
+        barriers.each_fwd([&](const RhiResourceBarrier& barrier) {
             switch(barrier.resource_to_barrier->type) {
                 case ResourceType::Image: {
                     const auto* image = static_cast<VulkanImage*>(barrier.resource_to_barrier);
@@ -105,9 +105,9 @@ namespace nova::renderer::rhi {
                              image_barriers.data());
     }
 
-    void VulkanCommandList::copy_buffer(Buffer* destination_buffer,
+    void VulkanCommandList::copy_buffer(RhiBuffer* destination_buffer,
                                         const mem::Bytes destination_offset,
-                                        Buffer* source_buffer,
+                                        RhiBuffer* source_buffer,
                                         const mem::Bytes source_offset,
                                         const mem::Bytes num_bytes) {
         VkBufferCopy copy;
@@ -133,7 +133,7 @@ namespace nova::renderer::rhi {
         vkCmdExecuteCommands(cmds, static_cast<uint32_t>(buffers.size()), buffers.data());
     }
 
-    void VulkanCommandList::begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) {
+    void VulkanCommandList::begin_renderpass(RhiRenderpass* renderpass, RhiFramebuffer* framebuffer) {
         auto* vk_renderpass = static_cast<VulkanRenderpass*>(renderpass);
         auto* vk_framebuffer = static_cast<VulkanFramebuffer*>(framebuffer);
 
@@ -160,13 +160,13 @@ namespace nova::renderer::rhi {
 
     void VulkanCommandList::end_renderpass() { vkCmdEndRenderPass(cmds); }
 
-    void VulkanCommandList::bind_pipeline(const Pipeline* pipeline) {
+    void VulkanCommandList::bind_pipeline(const RhiPipeline* pipeline) {
         const auto* vk_pipeline = static_cast<const VulkanPipeline*>(pipeline);
         vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline->pipeline);
     }
 
-    void VulkanCommandList::bind_descriptor_sets(const rx::vector<DescriptorSet*>& descriptor_sets,
-                                                 const PipelineInterface* pipeline_interface) {
+    void VulkanCommandList::bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets,
+                                                 const RhiPipelineInterface* pipeline_interface) {
         const auto* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
 
         for(uint32_t i = 0; i < descriptor_sets.size(); i++) {
@@ -185,7 +185,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void VulkanCommandList::bind_vertex_buffers(const rx::vector<Buffer*>& buffers) {
+    void VulkanCommandList::bind_vertex_buffers(const rx::vector<RhiBuffer*>& buffers) {
         rx::vector<VkBuffer> vk_buffers;
         vk_buffers.reserve(buffers.size());
 
@@ -200,7 +200,7 @@ namespace nova::renderer::rhi {
         vkCmdBindVertexBuffers(cmds, 0, static_cast<uint32_t>(vk_buffers.size()), vk_buffers.data(), offsets.data());
     }
 
-    void VulkanCommandList::bind_index_buffer(const Buffer* buffer, const IndexType index_type) {
+    void VulkanCommandList::bind_index_buffer(const RhiBuffer* buffer, const IndexType index_type) {
         const auto* vk_buffer = static_cast<const VulkanBuffer*>(buffer);
 
         vkCmdBindIndexBuffer(cmds, vk_buffer->buffer, 0, to_vk_index_type(index_type));
@@ -216,7 +216,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanCommandList::upload_data_to_image(
-        Image* image, const size_t width, const size_t height, const size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) {
+        RhiImage* image, const size_t width, const size_t height, const size_t bytes_per_pixel, RhiBuffer* staging_buffer, const void* data) {
         auto* vk_image = static_cast<VulkanImage*>(image);
         auto* vk_buffer = static_cast<VulkanBuffer*>(staging_buffer);
 

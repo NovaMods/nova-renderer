@@ -19,7 +19,7 @@ namespace nova::renderer {
     struct TextureResource {
         rx::string name;
 
-        rhi::Image* image = nullptr;
+        rhi::RhiImage* image = nullptr;
 
         rx_size width;
 
@@ -31,7 +31,7 @@ namespace nova::renderer {
     struct BufferResource {
         rx::string name;
 
-        rhi::Buffer* buffer = nullptr;
+        rhi::RhiBuffer* buffer = nullptr;
 
         mem::Bytes size = 0;
     };
@@ -117,9 +117,9 @@ namespace nova::renderer {
          *
          * When you're done with the staging buffer, return it to the pool with `return_staging_buffer`
          */
-        rhi::Buffer* get_staging_buffer_with_size(mem::Bytes size);
+        rhi::RhiBuffer* get_staging_buffer_with_size(mem::Bytes size);
 
-        void return_staging_buffer(rhi::Buffer* buffer);
+        void return_staging_buffer(rhi::RhiBuffer* buffer);
 
     private:
         NovaRenderer& renderer;
@@ -134,7 +134,7 @@ namespace nova::renderer {
 
         DeviceMemoryResource* staging_buffer_memory;
 
-        rx::map<rx_size, rx::vector<rhi::Buffer*>> staging_buffers;
+        rx::map<rx_size, rx::vector<rhi::RhiBuffer*>> staging_buffers;
 
         DeviceMemoryResource* uniform_buffer_memory;
 

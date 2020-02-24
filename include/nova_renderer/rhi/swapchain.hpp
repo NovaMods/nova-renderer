@@ -5,10 +5,10 @@
 #include <rx/core/memory/allocator.h>
 
 namespace nova::renderer::rhi {
-    struct Fence;
-    struct Framebuffer;
-    struct Image;
-    struct Semaphore;
+    struct RhiFence;
+    struct RhiFramebuffer;
+    struct RhiImage;
+    struct RhiSemaphore;
 
     class Swapchain {
     public:
@@ -28,11 +28,11 @@ namespace nova::renderer::rhi {
          */
         virtual void present(uint32_t image_idx) = 0;
 
-        [[nodiscard]] Framebuffer* get_framebuffer(uint32_t frame_idx) const;
+        [[nodiscard]] RhiFramebuffer* get_framebuffer(uint32_t frame_idx) const;
 
-        [[nodiscard]] Image* get_image(uint32_t frame_idx) const;
+        [[nodiscard]] RhiImage* get_image(uint32_t frame_idx) const;
 
-        [[nodiscard]] Fence* get_fence(uint32_t frame_idx) const;
+        [[nodiscard]] RhiFence* get_fence(uint32_t frame_idx) const;
 
         [[nodiscard]] glm::uvec2 get_size() const;
 
@@ -43,8 +43,8 @@ namespace nova::renderer::rhi {
         // Arrays of the per-frame swapchain resources. Each swapchain implementation is responsible for filling these arrays with
         // API-specific objects
 
-        rx::vector<Framebuffer*> framebuffers;
-        rx::vector<Image*> swapchain_images;
-        rx::vector<Fence*> fences;
+        rx::vector<RhiFramebuffer*> framebuffers;
+        rx::vector<RhiImage*> swapchain_images;
+        rx::vector<RhiFence*> fences;
     };
 } // namespace nova::renderer::rhi

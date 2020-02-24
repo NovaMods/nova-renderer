@@ -29,7 +29,7 @@ namespace nova::renderer {
 
     bool PipelineStorage::create_pipeline(const PipelineStateCreateInfo& create_info) {
 
-        Result<rhi::PipelineInterface*> pipeline_interface = create_pipeline_interface(create_info);
+        Result<rhi::RhiPipelineInterface*> pipeline_interface = create_pipeline_interface(create_info);
         if(!pipeline_interface) {
             logger(rx::log::level::k_error,
                    "Pipeline %s has an invalid interface: %s",
@@ -53,14 +53,14 @@ namespace nova::renderer {
         }
     }
 
-    Result<PipelineReturn> PipelineStorage::create_graphics_pipeline(rhi::PipelineInterface* pipeline_interface,
+    Result<PipelineReturn> PipelineStorage::create_graphics_pipeline(rhi::RhiPipelineInterface* pipeline_interface,
                                                                      const PipelineStateCreateInfo& pipeline_create_info) const {
         Pipeline pipeline;
         PipelineMetadata metadata;
 
         metadata.data = pipeline_create_info;
 
-        Result<rhi::Pipeline*> rhi_pipeline = device.create_pipeline(pipeline_interface, pipeline_create_info, allocator);
+        Result<rhi::RhiPipeline*> rhi_pipeline = device.create_pipeline(pipeline_interface, pipeline_create_info, allocator);
         if(rhi_pipeline) {
             pipeline.pipeline = *rhi_pipeline;
             pipeline.pipeline_interface = pipeline_interface;
@@ -74,9 +74,9 @@ namespace nova::renderer {
         return Result(PipelineReturn{pipeline, metadata});
     }
 
-    Result<rhi::PipelineInterface*> PipelineStorage::create_pipeline_interface(const PipelineStateCreateInfo& pipeline_create_info) const {
+    Result<rhi::RhiPipelineInterface*> PipelineStorage::create_pipeline_interface(const PipelineStateCreateInfo& pipeline_create_info) const {
 
-        rx::map<rx::string, rhi::ResourceBindingDescription> bindings;
+        rx::map<rx::string, rhi::RhiResourceBindingDescription> bindings;
 
         get_shader_module_descriptors(pipeline_create_info.vertex_shader.source, rhi::ShaderStage::Vertex, bindings);
 
@@ -95,7 +95,7 @@ namespace nova::renderer {
 
     void PipelineStorage::get_shader_module_descriptors(const rx::vector<uint32_t>& spirv,
                                                         const rhi::ShaderStage shader_stage,
-                                                        rx::map<rx::string, rhi::ResourceBindingDescription>& bindings) {
+                                                        rx::map<rx::string, rhi::RhiResourceBindingDescription>& bindings) {
         const CompilerGLSL shader_compiler{spirv.data(), spirv.size()};
         const ShaderResources resources = shader_compiler.get_shader_resources();
 
@@ -120,7 +120,7 @@ namespace nova::renderer {
         }
     }
 
-    void PipelineStorage::add_resource_to_bindings(rx::map<rx::string, rhi::ResourceBindingDescription>& bindings,
+    void PipelineStorage::add_resource_to_bindings(rx::map<rx::string, rhi::RhiResourceBindingDescription>& bindings,
                                                    const rhi::ShaderStage shader_stage,
                                                    const CompilerGLSL& shader_compiler,
                                                    const spirv_cross::Resource& resource,
@@ -128,7 +128,7 @@ namespace nova::renderer {
         const uint32_t set_idx = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         const uint32_t binding_idx = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
 
-        rhi::ResourceBindingDescription new_binding = {};
+        rhi::RhiResourceBindingDescription new_binding = {};
         new_binding.set = set_idx;
         new_binding.binding = binding_idx;
         new_binding.type = type;
@@ -146,7 +146,7 @@ namespace nova::renderer {
 
         if(auto* binding = bindings.find(resource_name)) {
             // Existing binding. Is it the same as our binding?
-            rhi::ResourceBindingDescription& existing_binding = *binding;
+            rhi::RhiResourceBindingDescription& existing_binding = *binding;
             if(existing_binding != new_binding) {
                 // They have two different bindings with the same name. Not allowed
                 logger(rx::log::level::k_error,
