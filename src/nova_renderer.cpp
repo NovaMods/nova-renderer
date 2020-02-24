@@ -124,7 +124,7 @@ namespace nova::renderer {
             VsOutput main(VsInput input) {
                 VsOutput output;
                 output.position = float4(input.position * 2.0 - 1.0, 0, 1);
-                output.uv = input.position; // TODO: Figure out if I should flip the texture coordinates
+                output.uv = input.position;
 
                 return output;
             })"};
@@ -153,7 +153,7 @@ namespace nova::renderer {
                 float4 ui_color = ui_output.Sample(tex_sampler, input.uv);
                 float4 scene_color = scene_output.Sample(tex_sampler, input.uv);
 
-                float3 combined_color = lerp(ui_color.rgb, scene_color.rgb, ui_color.a);
+                float3 combined_color = lerp(scene_color.rgb, ui_color.rgb, ui_color.a);
 
                 return combined_color;
             })"};
