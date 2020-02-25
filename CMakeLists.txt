@@ -127,6 +127,7 @@ set(NOVA_SOURCE
         include/nova_renderer/ui_renderer.hpp
         include/nova_renderer/pipeline_storage.hpp
         include/nova_renderer/resource_loader.hpp
+        include/nova_renderer/camera.hpp
 
         src/nova_renderer.cpp
 
@@ -162,6 +163,7 @@ set(NOVA_SOURCE
         src/renderer/builtin/backbuffer_output_pass.cpp
         src/renderer/pipeline_storage.cpp
         src/renderer/resource_loader.cpp
+        src/renderer/camera.cpp
 
         src/util/utils.cpp
         src/util/result.cpp

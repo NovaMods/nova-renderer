@@ -13,6 +13,7 @@
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
+#include "camera.hpp"
 
 namespace rx {
     namespace memory {
@@ -182,6 +183,8 @@ namespace nova::renderer {
 
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
                                                                const StaticMeshRenderableData& renderable);
+
+        [[nodiscard]] rx::optional<Camera> create_camera(const CameraCreateInfo& create_info);
 
         [[nodiscard]] rhi::RenderDevice& get_engine() const;
 

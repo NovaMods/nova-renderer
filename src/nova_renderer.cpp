@@ -425,6 +425,7 @@ namespace nova::renderer {
 
     void NovaRenderer::load_renderpack(const rx::string& renderpack_name) {
         MTR_SCOPE("RenderpackLoading", "load_renderpack");
+
         glslang::InitializeProcess();
 
         const renderpack::RenderpackData data = renderpack::load_renderpack_data(renderpack_name);
@@ -461,7 +462,9 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_dynamic_textures(const rx::vector<renderpack::TextureCreateInfo>& texture_create_infos) {
+        MTR_SCOPE("create_dynamic_textures", "Self");
         texture_create_infos.each_fwd([&](const renderpack::TextureCreateInfo& create_info) {
+            MTR_SCOPE("create_dynamic_textures", create_info.name.data());
             const auto size = create_info.format.get_size_in_pixels(device->get_swapchain()->get_size());
 
             const auto render_target = device_resources->create_render_target(create_info.name,
@@ -476,10 +479,11 @@ namespace nova::renderer {
 
     void NovaRenderer::create_render_passes(const rx::vector<renderpack::RenderPassCreateInfo>& pass_create_infos,
                                             const rx::vector<renderpack::PipelineData>& pipelines) const {
-
+        MTR_SCOPE("create_render_passes", "Self");
         device->set_num_renderpasses(static_cast<uint32_t>(pass_create_infos.size()));
 
         pass_create_infos.each_fwd([&](const renderpack::RenderPassCreateInfo& create_info) {
+            MTR_SCOPE("create_render_passes", create_info.name.data());
             auto* renderpass = global_allocator->create<Renderpass>(create_info.name);
             if(rendergraph->add_renderpass(renderpass, create_info, *device_resources) != nullptr) {
                 pipelines.each_fwd([&](const renderpack::PipelineData& pipeline) {
@@ -495,7 +499,9 @@ namespace nova::renderer {
 
     void NovaRenderer::create_pipelines_and_materials(const rx::vector<renderpack::PipelineData>& pipeline_create_infos,
                                                       const rx::vector<renderpack::MaterialData>& materials) {
+        MTR_SCOPE("create_pipelines_and_materials", "Self");
         pipeline_create_infos.each_fwd([&](const renderpack::PipelineData& pipeline_create_info) {
+            MTR_SCOPE("create_pipelines_and_materials", pipeline_create_info.name.data());
             const auto pipeline_state_create_info = renderpack::to_pipeline_state_create_info(pipeline_create_info, *rendergraph);
             if(!pipeline_state_create_info) {
                 logger(rx ::log::level::k_error, "Could not create pipeline %s", pipeline_create_info.name);
@@ -511,7 +517,7 @@ namespace nova::renderer {
     void NovaRenderer::create_materials_for_pipeline(const Pipeline& pipeline,
                                                      const rx::vector<renderpack::MaterialData>& materials,
                                                      const rx::string& pipeline_name) {
-
+        MTR_SCOPE("create_materials_for_pipeline", "Self");
         // Determine the pipeline layout so the material can create descriptors for the pipeline
 
         MaterialPassKey template_key = {};
@@ -524,6 +530,7 @@ namespace nova::renderer {
         materials.each_fwd([&](const renderpack::MaterialData& material_data) {
             material_data.passes.each_fwd([&](const renderpack::MaterialPass& pass_data) {
                 if(pass_data.pipeline == pipeline_name) {
+                    MTR_SCOPE("create_materials_for_pipeline", rx::string::format("%s.%s", material_data.name, pass_data.name).data());
                     MaterialPass pass = {};
                     pass.pipeline_interface = pipeline.pipeline_interface;
 
@@ -605,6 +612,7 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::destroy_dynamic_resources() {
+        MTR_SCOPE("destroy_dynamic_resources", "Self");
         if(loaded_renderpack) {
             loaded_renderpack->resources.render_targets.each_fwd([&](const renderpack::TextureCreateInfo& tex_data) {
                 device_resources->destroy_render_target(tex_data.name, renderpack_allocator);
@@ -615,6 +623,7 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::destroy_renderpasses() {
+        MTR_SCOPE("destroy_renderpasses", "Self");
         loaded_renderpack->graph_data.passes.each_fwd(
             [&](const renderpack::RenderPassCreateInfo& renderpass) { rendergraph->destroy_renderpass(renderpass.name); });
     }
@@ -623,6 +632,7 @@ namespace nova::renderer {
 
     RenderableId NovaRenderer::add_renderable_for_material(const FullMaterialPassName& material_name,
                                                            const StaticMeshRenderableData& renderable) {
+        MTR_SCOPE("add_renderable_for_material", "Self");
         const RenderableId id = next_renderable_id.load();
         next_renderable_id.fetch_add(1);
 
@@ -700,6 +710,21 @@ namespace nova::renderer {
         }
 
         return id;
+    }
+
+    rx::optional<Camera> NovaRenderer::create_camera(const CameraCreateInfo& create_info) {
+        const auto& camera_buffer = device_resources->create_uniform_buffer(rx::string::format("%sMatrices", create_info.name),
+                                                                            sizeof(CameraUboData));
+
+        if(!camera_buffer) {
+            logger(rx::log::level::k_error, "Could not create buffer for camera %s", create_info.name);
+
+            return rx::nullopt;
+        }
+
+        Camera camera{create_info, *camera_buffer};
+
+        return camera;
     }
 
     rhi::RenderDevice& NovaRenderer::get_engine() const { return *device; }
