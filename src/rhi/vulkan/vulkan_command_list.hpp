@@ -12,13 +12,13 @@ namespace nova::renderer::rhi {
     /*!
      * \brief Vulkan implementation of `command_list`
      */
-    class VulkanCommandList final : public RhiRenderCommandList {
+    class VulkanRenderCommandList final : public RhiRenderCommandList {
     public:
         VkCommandBuffer cmds;
 
-        VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderDevice* render_device);
+        VulkanRenderCommandList(VkCommandBuffer cmds, const VulkanRenderDevice* render_device);
 
-        ~VulkanCommandList() override = default;
+        ~VulkanRenderCommandList() override = default;
 
         void set_debug_name(const rx::string& name) override;
 

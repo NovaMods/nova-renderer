@@ -1310,7 +1310,7 @@ namespace nova::renderer::rhi {
         VkCommandBuffer new_buffer;
         vkAllocateCommandBuffers(device, &create_info, &new_buffer);
 
-        auto* list = allocator->create<VulkanCommandList>(new_buffer, this);
+        auto* list = allocator->create<VulkanRenderCommandList>(new_buffer, this);
 
         return list;
     }
@@ -1320,7 +1320,7 @@ namespace nova::renderer::rhi {
                                                  RhiFence* fence_to_signal,
                                                  const rx::vector<RhiSemaphore*>& wait_semaphores,
                                                  const rx::vector<RhiSemaphore*>& signal_semaphores) {
-        auto* vk_list = static_cast<VulkanCommandList*>(cmds);
+        auto* vk_list = static_cast<VulkanRenderCommandList*>(cmds);
         vkEndCommandBuffer(vk_list->cmds);
 
         VkQueue queue_to_submit_to;
