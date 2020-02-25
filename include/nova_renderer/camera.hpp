@@ -82,8 +82,8 @@ namespace nova::renderer {
         Camera(const Camera& other) = delete;
         Camera& operator=(const Camera& other) = delete;
 
-        Camera(Camera&& old) noexcept;
-        Camera& operator=(Camera&& old) noexcept;
+        Camera(Camera&& old) noexcept = default;
+        Camera& operator=(Camera&& old) noexcept = default;
 
         ~Camera() = default;
 
@@ -92,7 +92,7 @@ namespace nova::renderer {
     private:
         rx::string name;
 
-        explicit Camera(const CameraCreateInfo& create_info, const BufferResourceAccessor& buffer_accessor);
+        explicit Camera(const CameraCreateInfo& create_info, BufferResourceAccessor buffer_accessor);
 
         BufferResourceAccessor matrices_buffer;
     };
