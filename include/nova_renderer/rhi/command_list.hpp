@@ -6,6 +6,12 @@
 #include "nova_renderer/rhi/rhi_enums.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 
+namespace nova {
+    namespace renderer {
+        class Camera;
+    }
+} // namespace nova
+
 namespace nova::renderer::rhi {
     enum class IndexType {
         Uint16,
@@ -106,6 +112,15 @@ namespace nova::renderer::rhi {
          * to be nice - the API-specific validation layers _will_ yell at you
          */
         virtual void execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) = 0;
+
+        /*!
+         * \brief Sets the camera that subsequent drawcalls will use to render
+         *
+         * May be called at any time
+         *
+         * \param camera The camera to render with
+         */
+        virtual void set_camera(const Camera& camera) = 0;
 
         /*!
          * \brief Begins a renderpass
