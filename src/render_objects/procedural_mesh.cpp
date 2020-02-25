@@ -184,7 +184,7 @@ namespace nova::renderer {
 #endif
     }
 
-    void ProceduralMesh::record_commands_to_upload_data(CommandList* cmds, const uint8_t frame_idx) const {
+    void ProceduralMesh::record_commands_to_upload_data(RhiRenderCommandList* cmds, const uint8_t frame_idx) const {
         const bool should_upload_vertex_buffer = num_vertex_bytes_to_upload > 0;
         const bool should_upload_index_buffer = num_index_bytes_to_upload > 0;
 

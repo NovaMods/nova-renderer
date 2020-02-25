@@ -9,7 +9,7 @@ namespace nova::renderer {
         static const renderpack::RenderPassCreateInfo& get_create_info();
 
     protected:
-        void record_post_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const override;
+        void record_post_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const override;
 
     private:
         rx::vector<rhi::RhiResourceBarrier> post_pass_barriers;

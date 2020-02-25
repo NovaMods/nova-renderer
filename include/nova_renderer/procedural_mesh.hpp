@@ -69,7 +69,7 @@ namespace nova::renderer {
          * \param cmds The command list to record commands into
          * \param frame_idx The index of the frame to write the data to
          */
-        void record_commands_to_upload_data(rhi::CommandList* cmds, uint8_t frame_idx) const;
+        void record_commands_to_upload_data(rhi::RhiRenderCommandList* cmds, uint8_t frame_idx) const;
 
         /*!
          * \brief Returns the vertex and index buffer for the provided frame

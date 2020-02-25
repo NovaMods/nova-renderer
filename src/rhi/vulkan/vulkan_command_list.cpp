@@ -121,11 +121,11 @@ namespace nova::renderer::rhi {
         vkCmdCopyBuffer(cmds, vk_source_buffer->buffer, vk_destination_buffer->buffer, 1, &copy);
     }
 
-    void VulkanCommandList::execute_command_lists(const rx::vector<CommandList*>& lists) {
+    void VulkanCommandList::execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) {
         rx::vector<VkCommandBuffer> buffers;
         buffers.reserve(lists.size());
 
-        lists.each_fwd([&](CommandList* list) {
+        lists.each_fwd([&](RhiRenderCommandList* list) {
             auto* vk_list = dynamic_cast<VulkanCommandList*>(list);
             buffers.push_back(vk_list->cmds);
         });

@@ -12,7 +12,7 @@ namespace nova::renderer::rhi {
     /*!
      * \brief Vulkan implementation of `command_list`
      */
-    class VulkanCommandList final : public CommandList {
+    class VulkanCommandList final : public RhiRenderCommandList {
     public:
         VkCommandBuffer cmds;
 
@@ -32,7 +32,7 @@ namespace nova::renderer::rhi {
                          mem::Bytes source_offset,
                          mem::Bytes num_bytes) override;
 
-        void execute_command_lists(const rx::vector<CommandList*>& lists) override;
+        void execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) override;
 
         void begin_renderpass(RhiRenderpass* renderpass, RhiFramebuffer* framebuffer) override;
 

@@ -27,20 +27,20 @@ namespace nova::renderer::rhi {
      *
      * Command lists are fully bound to ChaiScript
      */
-    class CommandList {
+    class RhiRenderCommandList {
     public:
         enum class Level {
             Primary,
             Secondary,
         };
 
-        CommandList() = default;
+        RhiRenderCommandList() = default;
 
-        CommandList(CommandList&& old) noexcept = default;
-        CommandList& operator=(CommandList&& old) noexcept = default;
+        RhiRenderCommandList(RhiRenderCommandList&& old) noexcept = default;
+        RhiRenderCommandList& operator=(RhiRenderCommandList&& old) noexcept = default;
 
-        CommandList(const CommandList& other) = delete;
-        CommandList& operator=(const CommandList& other) = delete;
+        RhiRenderCommandList(const RhiRenderCommandList& other) = delete;
+        RhiRenderCommandList& operator=(const RhiRenderCommandList& other) = delete;
 
         /*!
          * \brief Sets the debug name of this command list, so that API debugging tools can give you a nice name
@@ -105,7 +105,7 @@ namespace nova::renderer::rhi {
          * These command lists should be secondary command lists. Nova doesn't validate this because yolo but you need
          * to be nice - the API-specific validation layers _will_ yell at you
          */
-        virtual void execute_command_lists(const rx::vector<CommandList*>& lists) = 0;
+        virtual void execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) = 0;
 
         /*!
          * \brief Begins a renderpass
@@ -150,6 +150,6 @@ namespace nova::renderer::rhi {
 
         virtual void set_scissor_rect(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
 
-        virtual ~CommandList() = default;
+        virtual ~RhiRenderCommandList() = default;
     };
 } // namespace nova::renderer::rhi

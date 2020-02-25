@@ -12,7 +12,7 @@ namespace nova::renderer {
 
     Renderpass::Renderpass(rx::string name, const bool is_builtin) : name(std::move(name)), is_builtin(is_builtin) {}
 
-    void Renderpass::execute(rhi::CommandList& cmds, FrameContext& ctx) {
+    void Renderpass::execute(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
         // TODO: Figure if any of these barriers are implicit
         // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource instead of
         // using a robust default
@@ -32,7 +32,7 @@ namespace nova::renderer {
         record_post_renderpass_barriers(cmds, ctx);
     }
 
-    void Renderpass::record_pre_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const {
+    void Renderpass::record_pre_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         if(read_texture_barriers.size() > 0) {
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
@@ -64,7 +64,7 @@ namespace nova::renderer {
         }
     }
 
-    void Renderpass::record_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) {
+    void Renderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
         auto& pipeline_storage = ctx.nova->get_pipeline_storage();
 
         // TODO: I _actually_ want to get all the draw commands from NovaRenderer, instead of storing them in this struct
@@ -76,7 +76,7 @@ namespace nova::renderer {
         });
     }
 
-    void Renderpass::record_post_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const {
+    void Renderpass::record_post_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         if(writes_to_backbuffer) {
             rhi::RhiResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = ctx.swapchain_image;
@@ -164,9 +164,9 @@ namespace nova::renderer {
         }
     }
 
-    void Renderpass::setup_renderpass(rhi::CommandList& cmds, FrameContext& ctx) {}
+    void Renderpass::setup_renderpass(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {}
 
-    void renderer::MaterialPass::record(rhi::CommandList& cmds, FrameContext& ctx) const {
+    void renderer::MaterialPass::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         cmds.bind_descriptor_sets(descriptor_sets, pipeline_interface);
 
         static_mesh_draws.each_fwd(
@@ -177,7 +177,7 @@ namespace nova::renderer {
     }
 
     void renderer::MaterialPass::record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch,
-                                                                    rhi::CommandList& cmds,
+                                                                    rhi::RhiRenderCommandList& cmds,
                                                                     FrameContext& ctx) {
         const uint64_t start_index = ctx.cur_model_matrix_index;
 
@@ -207,7 +207,7 @@ namespace nova::renderer {
     }
 
     void renderer::MaterialPass::record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
-                                                                    rhi::CommandList& cmds,
+                                                                    rhi::RhiRenderCommandList& cmds,
                                                                     FrameContext& ctx) {
         const uint64_t start_index = ctx.cur_model_matrix_index;
 
@@ -235,7 +235,7 @@ namespace nova::renderer {
         }
     }
 
-    void Pipeline::record(rhi::CommandList& cmds, FrameContext& ctx) const {
+    void Pipeline::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         cmds.bind_pipeline(pipeline);
 
         const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline);

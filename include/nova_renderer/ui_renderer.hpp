@@ -17,7 +17,7 @@ namespace nova::renderer {
         static const renderpack::RenderPassCreateInfo& get_create_info();
 
     protected:
-        void record_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) override final;
+        void record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) override final;
 
         /*!
          * \brief Renders the host application's UI
@@ -25,7 +25,7 @@ namespace nova::renderer {
          * Clients of Nova must provide their own implementation of `UiRenderpass`. Nova will then use that implementation to render that
          * application's UI
          */
-        virtual void render_ui(rhi::CommandList& cmds, FrameContext& ctx) = 0;
+        virtual void render_ui(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) = 0;
     };
 
     class NullUiRenderpass final : public UiRenderpass {
@@ -33,6 +33,6 @@ namespace nova::renderer {
         ~NullUiRenderpass() override = default;
 
     protected:
-        void render_ui(rhi::CommandList& cmds, FrameContext& ctx) override;
+        void render_ui(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) override;
     };
 } // namespace nova::renderer

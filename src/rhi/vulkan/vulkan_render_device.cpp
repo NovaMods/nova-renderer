@@ -1294,9 +1294,9 @@ namespace nova::renderer::rhi {
         });
     }
 
-    CommandList* VulkanRenderDevice::create_command_list(const uint32_t thread_idx,
+    RhiRenderCommandList* VulkanRenderDevice::create_command_list(const uint32_t thread_idx,
                                                          const QueueType needed_queue_type,
-                                                         const CommandList::Level level,
+                                                         const RhiRenderCommandList::Level level,
                                                          rx::memory::allocator* allocator) {
         const uint32_t queue_family_index = get_queue_family_index(needed_queue_type);
         const VkCommandPool pool = *command_pools_by_thread_idx[thread_idx].find(queue_family_index);
@@ -1315,7 +1315,7 @@ namespace nova::renderer::rhi {
         return list;
     }
 
-    void VulkanRenderDevice::submit_command_list(CommandList* cmds,
+    void VulkanRenderDevice::submit_command_list(RhiRenderCommandList* cmds,
                                                  const QueueType queue,
                                                  RhiFence* fence_to_signal,
                                                  const rx::vector<RhiSemaphore*>& wait_semaphores,
@@ -1936,12 +1936,12 @@ namespace nova::renderer::rhi {
         return vk_image->image_view;
     }
 
-    VkCommandBufferLevel VulkanRenderDevice::to_vk_command_buffer_level(const CommandList::Level level) {
+    VkCommandBufferLevel VulkanRenderDevice::to_vk_command_buffer_level(const RhiRenderCommandList::Level level) {
         switch(level) {
-            case CommandList::Level::Primary:
+            case RhiRenderCommandList::Level::Primary:
                 return VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-            case CommandList::Level::Secondary:
+            case RhiRenderCommandList::Level::Secondary:
                 return VK_COMMAND_BUFFER_LEVEL_SECONDARY;
         }
 

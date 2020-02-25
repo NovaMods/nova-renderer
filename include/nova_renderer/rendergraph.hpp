@@ -71,13 +71,13 @@ namespace nova::renderer {
         rx::vector<rhi::RhiDescriptorSet*> descriptor_sets;
         const rhi::RhiPipelineInterface* pipeline_interface = nullptr;
 
-        void record(rhi::CommandList& cmds, FrameContext& ctx) const;
+        void record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;
 
         static void record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch,
-                                                       rhi::CommandList& cmds,
+                                                       rhi::RhiRenderCommandList& cmds,
                                                        FrameContext& ctx);
         static void record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
-                                                       rhi::CommandList& cmds,
+                                                       rhi::RhiRenderCommandList& cmds,
                                                        FrameContext& ctx);
     };
 
@@ -85,7 +85,7 @@ namespace nova::renderer {
         rhi::RhiPipeline* pipeline = nullptr;
         rhi::RhiPipelineInterface* pipeline_interface = nullptr;
 
-        void record(rhi::CommandList& cmds, FrameContext& ctx) const;
+        void record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;
     };
 #pragma endregion
 
@@ -170,7 +170,7 @@ namespace nova::renderer {
          * everything you should need to render. If there's something you need that isn't in the frame context, submit an issue on the Nova
          * GitHub
          */
-        virtual void execute(rhi::CommandList& cmds, FrameContext& ctx);
+        virtual void execute(rhi::RhiRenderCommandList& cmds, FrameContext& ctx);
 
         /*!
          * \brief Returns the framebuffer that this renderpass should render to
@@ -184,7 +184,7 @@ namespace nova::renderer {
          * By default `render` calls this method before calling `setup_renderpass`. If you override `render`, you'll need to call
          * this method yourself before using any of this renderpass's resources
          */
-        virtual void record_pre_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const;
+        virtual void record_pre_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;
 
         /*!
          * \brief Allows a renderpass to perform work before the recording of the actual renderpass
@@ -193,7 +193,7 @@ namespace nova::renderer {
          *
          * The default `render` method calls this after `record_pre_renderpass_barriers` and before `record_renderpass_contents`
          */
-        virtual void setup_renderpass(rhi::CommandList& cmds, FrameContext& ctx);
+        virtual void setup_renderpass(rhi::RhiRenderCommandList& cmds, FrameContext& ctx);
 
         /*!
          * \brief Renders the contents of this renderpass
@@ -209,7 +209,7 @@ namespace nova::renderer {
          * everything you should need to render. If there's something you need that isn't in the frame context, submit an issue on the Nova
          * GitHub
          */
-        virtual void record_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx);
+        virtual void record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx);
 
         /*!
          * \brief Records all the resource barriers that need to take place after this renderpass renders anything
@@ -217,7 +217,7 @@ namespace nova::renderer {
          * By default `render` calls this method after calling `render_renderpass_contents`. If you override `render`, you'll need to call
          * this method yourself near the end of your `render` method
          */
-        virtual void record_post_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const;
+        virtual void record_post_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;
     };
 
     /*!

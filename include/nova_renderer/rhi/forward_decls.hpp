@@ -19,6 +19,6 @@ namespace nova::renderer::rhi {
     struct RhiDescriptorPool;
 
     class Swapchain;
-    class CommandList;
+    class RhiRenderCommandList;
     class RenderDevice;
 } // namespace nova::renderer::rhi

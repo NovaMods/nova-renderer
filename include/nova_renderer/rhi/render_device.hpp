@@ -254,12 +254,12 @@ namespace nova::renderer::rhi {
          * Command lists allocated by this method are returned ready to record commands into - the caller doesn't need
          * to begin the command list
          */
-        virtual CommandList* create_command_list(uint32_t thread_idx,
+        virtual RhiRenderCommandList* create_command_list(uint32_t thread_idx,
                                                  QueueType needed_queue_type,
-                                                 CommandList::Level level,
+                                                 RhiRenderCommandList::Level level,
                                                  rx::memory::allocator* allocator) = 0;
 
-        virtual void submit_command_list(CommandList* cmds,
+        virtual void submit_command_list(RhiRenderCommandList* cmds,
                                          QueueType queue,
                                          RhiFence* fence_to_signal = nullptr,
                                          const rx::vector<RhiSemaphore*>& wait_semaphores = {},

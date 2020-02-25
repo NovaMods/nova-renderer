@@ -133,12 +133,12 @@ namespace nova::renderer::rhi {
 
         void destroy_fences(const rx::vector<RhiFence*>& fences, rx::memory::allocator* allocator) override;
 
-        CommandList* create_command_list(uint32_t thread_idx,
+        RhiRenderCommandList* create_command_list(uint32_t thread_idx,
                                          QueueType needed_queue_type,
-                                         CommandList::Level level,
+                                         RhiRenderCommandList::Level level,
                                          rx::memory::allocator* allocator) override;
 
-        void submit_command_list(CommandList* cmds,
+        void submit_command_list(RhiRenderCommandList* cmds,
                                  QueueType queue,
                                  RhiFence* fence_to_signal = nullptr,
                                  const rx::vector<RhiSemaphore*>& wait_semaphores = {},
@@ -237,7 +237,7 @@ namespace nova::renderer::rhi {
          */
         [[nodiscard]] static VkImageView image_view_for_image(const RhiImage* image);
 
-        [[nodiscard]] static VkCommandBufferLevel to_vk_command_buffer_level(CommandList::Level level);
+        [[nodiscard]] static VkCommandBufferLevel to_vk_command_buffer_level(RhiRenderCommandList::Level level);
 
         [[nodiscard]] static VulkanInputAssemblerLayout get_input_assembler_setup(const rx::vector<RhiVertexField>& vertex_fields);
 #pragma endregion

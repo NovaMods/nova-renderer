@@ -271,9 +271,9 @@ namespace nova::renderer {
         device->wait_for_fences(cur_frame_fences);
         device->reset_fences(cur_frame_fences);
 
-        rhi::CommandList* cmds = device->create_command_list(0,
+        rhi::RhiRenderCommandList* cmds = device->create_command_list(0,
                                                              rhi::QueueType::Graphics,
-                                                             rhi::CommandList::Level::Primary,
+                                                             rhi::RhiRenderCommandList::Level::Primary,
                                                              frame_allocator);
         cmds->set_debug_name("RendergraphCommands");
 
@@ -331,9 +331,9 @@ namespace nova::renderer {
                                                                           global_allocator);
             device->write_data_to_buffer(mesh_data.vertex_data_ptr, vertex_buffer_create_info.size, 0, staging_vertex_buffer);
 
-            rhi::CommandList* vertex_upload_cmds = device->create_command_list(0,
+            rhi::RhiRenderCommandList* vertex_upload_cmds = device->create_command_list(0,
                                                                                rhi::QueueType::Transfer,
-                                                                               rhi::CommandList::Level::Primary,
+                                                                               rhi::RhiRenderCommandList::Level::Primary,
                                                                                global_allocator);
             vertex_upload_cmds->set_debug_name("VertexDataUpload");
             vertex_upload_cmds->copy_buffer(vertex_buffer, 0, staging_vertex_buffer, 0, vertex_buffer_create_info.size);
@@ -372,9 +372,9 @@ namespace nova::renderer {
                                                                          global_allocator);
             device->write_data_to_buffer(mesh_data.index_data_ptr, index_buffer_create_info.size, 0, staging_index_buffer);
 
-            rhi::CommandList* indices_upload_cmds = device->create_command_list(0,
+            rhi::RhiRenderCommandList* indices_upload_cmds = device->create_command_list(0,
                                                                                 rhi::QueueType::Transfer,
-                                                                                rhi::CommandList::Level::Primary,
+                                                                                rhi::RhiRenderCommandList::Level::Primary,
                                                                                 global_allocator);
             indices_upload_cmds->set_debug_name("IndexDataUpload");
             indices_upload_cmds->copy_buffer(index_buffer, 0, staging_index_buffer, 0, index_buffer_create_info.size);

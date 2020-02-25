@@ -87,7 +87,7 @@ namespace nova::renderer {
         if(data != nullptr) {
             RhiBuffer* staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
 
-            CommandList* cmds = device.create_command_list(0, QueueType::Transfer, CommandList::Level::Primary, allocator);
+            RhiRenderCommandList* cmds = device.create_command_list(0, QueueType::Transfer, RhiRenderCommandList::Level::Primary, allocator);
             cmds->set_debug_name(rx::string::format("UploadTo%s", name));
 
             RhiResourceBarrier initial_texture_barrier = {};
@@ -181,7 +181,7 @@ namespace nova::renderer {
             resource.image = image;
 
             {
-                CommandList* cmds = device.create_command_list(0, QueueType::Graphics, CommandList::Level::Primary, allocator);
+                RhiRenderCommandList* cmds = device.create_command_list(0, QueueType::Graphics, RhiRenderCommandList::Level::Primary, allocator);
                 cmds->set_debug_name(rx::string::format("ChangeFormatOf%s", name));
 
                 RhiResourceBarrier initial_texture_barrier = {};

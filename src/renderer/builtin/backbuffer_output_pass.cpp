@@ -64,7 +64,7 @@ namespace nova::renderer {
 
     const renderpack::RenderPassCreateInfo& BackbufferOutputRenderpass::get_create_info() { return *backbuffer_output_create_info; }
 
-    void BackbufferOutputRenderpass::record_post_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const {
+    void BackbufferOutputRenderpass::record_post_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         Renderpass::record_post_renderpass_barriers(cmds, ctx);
 
         // TODO: Figure out how to make the backend deal with the barriers
