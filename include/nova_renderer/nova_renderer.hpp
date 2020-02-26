@@ -341,7 +341,7 @@ namespace nova::renderer {
 
         rx::map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
 
-        rx::concurrency::mutex ui_function_mutex;
+        
 #pragma endregion
     };
 
