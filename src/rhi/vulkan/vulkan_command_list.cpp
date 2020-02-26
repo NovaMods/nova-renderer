@@ -133,6 +133,10 @@ namespace nova::renderer::rhi {
         vkCmdExecuteCommands(cmds, static_cast<uint32_t>(buffers.size()), buffers.data());
     }
 
+    void VulkanRenderCommandList::set_camera(const Camera& camera) {
+        
+    }
+
     void VulkanRenderCommandList::begin_renderpass(RhiRenderpass* renderpass, RhiFramebuffer* framebuffer) {
         auto* vk_renderpass = static_cast<VulkanRenderpass*>(renderpass);
         auto* vk_framebuffer = static_cast<VulkanFramebuffer*>(framebuffer);

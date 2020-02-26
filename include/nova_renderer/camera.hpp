@@ -79,6 +79,11 @@ namespace nova::renderer {
          */
         float far_plane;
 
+        /*!
+         * \brief Index of this camera in the camera array
+         */
+        uint32_t index;
+
         Camera(const Camera& other) = delete;
         Camera& operator=(const Camera& other) = delete;
 

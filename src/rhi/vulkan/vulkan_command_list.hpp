@@ -34,6 +34,8 @@ namespace nova::renderer::rhi {
 
         void execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) override;
 
+        void set_camera(const Camera& camera) override;
+
         void begin_renderpass(RhiRenderpass* renderpass, RhiFramebuffer* framebuffer) override;
 
         void end_renderpass() override;
@@ -52,7 +54,7 @@ namespace nova::renderer::rhi {
 
         void upload_data_to_image(
             RhiImage* image, size_t width, size_t height, size_t bytes_per_pixel, RhiBuffer* staging_buffer, const void* data) override;
-
+        
     private:
         const VulkanRenderDevice& render_device;
     };
