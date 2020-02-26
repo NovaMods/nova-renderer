@@ -50,14 +50,14 @@ namespace nova::renderer::rhi {
     /*!
      * \brief Wraps a Rex allocator so the Vulkan driver can use it
      */
-    inline VkAllocationCallbacks wrap_allocator(rx::memory::allocator* allocator);
+    inline VkAllocationCallbacks wrap_allocator(rx::memory::allocator& allocator);
 
     bool operator&(const ShaderStage& lhs, const ShaderStage& rhs);
 
-    RX_HINT_FORCE_INLINE VkAllocationCallbacks wrap_allocator(rx::memory::allocator* allocator) {
+    RX_HINT_FORCE_INLINE VkAllocationCallbacks wrap_allocator(rx::memory::allocator& allocator) {
         VkAllocationCallbacks callbacks{};
 
-        callbacks.pUserData = allocator;
+        callbacks.pUserData = &allocator;
         callbacks.pfnAllocation =
             [](void* user_data, const size_t size, size_t /* alignment */, VkSystemAllocationScope /* allocation_scope */) -> void* {
             auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);

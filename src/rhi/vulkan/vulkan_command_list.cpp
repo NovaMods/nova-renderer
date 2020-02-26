@@ -134,7 +134,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderCommandList::set_camera(const Camera& camera) {
-        
+        vkCmdPushConstants(cmds, layout, flags, 0, sizeof(uint32_t), &camera.index);
     }
 
     void VulkanRenderCommandList::begin_renderpass(RhiRenderpass* renderpass, RhiFramebuffer* framebuffer) {
@@ -148,7 +148,7 @@ namespace nova::renderer::rhi {
         //
         // // TODO: Store this somewhere better
         // // TODO: Get max framebuffer attachments from GPU
-        rx::vector<VkClearValue> CLEAR_VALUES(vk_framebuffer->num_attachments);
+        rx::vector<VkClearValue> clear_values(vk_framebuffer->num_attachments);
 
         VkRenderPassBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -156,7 +156,7 @@ namespace nova::renderer::rhi {
         begin_info.framebuffer = vk_framebuffer->framebuffer;
         begin_info.renderArea = {{0, 0}, {static_cast<uint32_t>(framebuffer->size.x), static_cast<uint32_t>(framebuffer->size.y)}};
         begin_info.clearValueCount = vk_framebuffer->num_attachments;
-        begin_info.pClearValues = CLEAR_VALUES.data();
+        begin_info.pClearValues = clear_values.data();
 
         // Nova _always_ records command lists in parallel for each renderpass
         vkCmdBeginRenderPass(cmds, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
