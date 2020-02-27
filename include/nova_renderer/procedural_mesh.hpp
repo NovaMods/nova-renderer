@@ -6,8 +6,6 @@
 #include <stdint.h>
 
 #include "nova_renderer/constants.hpp"
-#include "nova_renderer/memory/block_allocation_strategy.hpp"
-#include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 
 namespace nova::renderer {
@@ -42,7 +40,7 @@ namespace nova::renderer {
         ProceduralMesh(ProceduralMesh&& old) noexcept;
         ProceduralMesh& operator=(ProceduralMesh&& old) noexcept;
 
-        ~ProceduralMesh();
+        ~ProceduralMesh() = default;
 
         /*!
          * \brief Sets the data to upload to the vertex buffer
@@ -91,11 +89,6 @@ namespace nova::renderer {
         uint64_t num_index_bytes_to_upload = 0;
 
         rx::memory::allocator* allocator;
-
-        mem::BlockAllocationStrategy* device_memory_allocation_strategy;
-        mem::BlockAllocationStrategy* host_memory_allocation_strategy;
-        DeviceMemoryResource* device_buffers_memory;
-        DeviceMemoryResource* cached_buffers_memory;
 
 #ifdef NOVA_DEBUG
         uint64_t vertex_buffer_size;

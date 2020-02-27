@@ -9,11 +9,12 @@
 #include "nova_renderer/renderdoc_app.h"
 #include "nova_renderer/rendergraph.hpp"
 #include "nova_renderer/resource_loader.hpp"
-#include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
+
 #include "camera.hpp"
+#include "per_frame_device_array.hpp"
 
 namespace rx {
     namespace memory {
@@ -126,7 +127,7 @@ namespace nova::renderer {
 
         [[nodiscard]] NovaSettingsAccessManager& get_settings();
 
-        [[nodiscard]] rx::memory::allocator* get_global_allocator() const;
+        [[nodiscard]] rx::memory::allocator& get_global_allocator() const;
 
 #pragma region Meshes
         /*!
@@ -184,7 +185,7 @@ namespace nova::renderer {
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
                                                                const StaticMeshRenderableData& renderable);
 
-        [[nodiscard]] rx::optional<Camera> create_camera(const CameraCreateInfo& create_info);
+        [[nodiscard]] CameraAccessor create_camera(const CameraCreateInfo& create_info);
 
         [[nodiscard]] rhi::RenderDevice& get_engine() const;
 
@@ -227,13 +228,7 @@ namespace nova::renderer {
 
         DeviceResources* device_resources;
 
-        DeviceMemoryResource* mesh_memory;
-
-        DeviceMemoryResource* ubo_memory;
-
         rhi::RhiDescriptorPool* global_descriptor_pool;
-
-        DeviceMemoryResource* staging_buffer_memory;
 
         void* staging_buffer_memory_ptr;
 
@@ -241,16 +236,6 @@ namespace nova::renderer {
         void create_global_allocators();
 
         static void initialize_virtual_filesystem();
-
-        /*!
-         * \brief Creates global GPU memory pools
-         *
-         * Creates pools for mesh data and for uniform buffers. The size of the mesh memory pool is a guess that might be true for some
-         * games, I'll get more accurate guesses when I have actual data. The size of the uniform buffer pool is the size of the builtin
-         * uniform buffers plus memory for the estimated number of renderables, which again will just be a guess and probably not a
-         * super good one
-         */
-        void create_global_gpu_pools();
 
         void create_global_sync_objects();
 
@@ -341,7 +326,8 @@ namespace nova::renderer {
 
         rx::map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
 
-        
+        rx::vector<Camera> cameras;
+        PerFrameDeviceArray<CameraUboData>* camera_data;
 #pragma endregion
     };
 

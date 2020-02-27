@@ -6,9 +6,9 @@
 #include "nova_renderer/frame_context.hpp"
 #include "nova_renderer/procedural_mesh.hpp"
 #include "nova_renderer/renderables.hpp"
+#include "nova_renderer/renderpack_data.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
-#include "nova_renderer/renderpack_data.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
 
 #include "resource_loader.hpp"
@@ -232,7 +232,7 @@ namespace nova::renderer {
          * \brief Constructs a Rendergraph which will allocate its internal memory from the provided allocator, and which will execute on
          * the provided device
          */
-        Rendergraph(rx::memory::allocator* allocator, rhi::RenderDevice& device);
+        Rendergraph(rx::memory::allocator& allocator, rhi::RenderDevice& device);
 
         /*!
          * \brief Creates a new renderpass of the specified type using it's own create info
@@ -276,7 +276,7 @@ namespace nova::renderer {
     private:
         bool is_dirty = false;
 
-        rx::memory::allocator* allocator;
+        rx::memory::allocator& allocator;
 
         rhi::RenderDevice& device;
 
@@ -289,7 +289,7 @@ namespace nova::renderer {
     template <typename RenderpassType, typename... Args>
     RenderpassType* Rendergraph::create_renderpass(DeviceResources& resource_storage, Args&&... args) {
 
-        auto* renderpass = allocator->create<RenderpassType>(rx::utility::forward<Args>(args)...);
+        auto* renderpass = allocator.create<RenderpassType>(rx::utility::forward<Args>(args)...);
         const auto& create_info = RenderpassType::get_create_info();
 
         return add_renderpass(renderpass, create_info, resource_storage);

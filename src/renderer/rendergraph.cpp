@@ -94,7 +94,7 @@ namespace nova::renderer {
         }
     }
 
-    Rendergraph::Rendergraph(rx::memory::allocator* allocator, rhi::RenderDevice& device) : allocator(allocator), device(device) {}
+    Rendergraph::Rendergraph(rx::memory::allocator& allocator, rhi::RenderDevice& device) : allocator(allocator), device(device) {}
 
     void Rendergraph::destroy_renderpass(const rx::string& name) {
         if(Renderpass** renderpass = renderpasses.find(name)) {
@@ -114,7 +114,7 @@ namespace nova::renderer {
     rx::vector<rx::string> Rendergraph::calculate_renderpass_execution_order() {
         if(is_dirty) {
             const auto create_infos = [&]() {
-                rx::vector<RenderPassCreateInfo> create_info_temp(allocator);
+                rx::vector<RenderPassCreateInfo> create_info_temp{&allocator};
                 create_info_temp.reserve(renderpass_metadatas.size());
 
                 renderpass_metadatas.each_value([&](const RenderpassMetadata& metadata) { create_info_temp.emplace_back(metadata.data); });

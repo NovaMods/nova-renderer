@@ -1,6 +1,5 @@
 #pragma once
 
-#include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
@@ -67,11 +66,11 @@ namespace nova::renderer {
          * \return The newly-created image, or nullptr if the image could not be created. Check the Nova logs to find out why
          */
         [[nodiscard]] rx::optional<TextureResourceAccessor> create_texture(const rx::string& name,
-                                                                            rx_size width,
-                                                                            rx_size height,
-                                                                            rhi::PixelFormat pixel_format,
-                                                                            const void* data,
-                                                                            rx::memory::allocator* allocator);
+                                                                           rx_size width,
+                                                                           rx_size height,
+                                                                           rhi::PixelFormat pixel_format,
+                                                                           const void* data,
+                                                                           rx::memory::allocator& allocator);
 
         /*!
          * \brief Retrieves the texture with the specified name
@@ -97,18 +96,18 @@ namespace nova::renderer {
          * \return The new render target if it could be created, or am empty optional if it could not
          */
         [[nodiscard]] rx::optional<TextureResourceAccessor> create_render_target(const rx::string& name,
-                                                                                  rx_size width,
-                                                                                  rx_size height,
-                                                                                  rhi::PixelFormat pixel_format,
-                                                                                  rx::memory::allocator* allocator,
-                                                                                  bool can_be_sampled = false);
+                                                                                 rx_size width,
+                                                                                 rx_size height,
+                                                                                 rhi::PixelFormat pixel_format,
+                                                                                 rx::memory::allocator& allocator,
+                                                                                 bool can_be_sampled = false);
 
         /*!
          * \brief Retrieves the render target with the specified name
          */
         [[nodiscard]] rx::optional<TextureResourceAccessor> get_render_target(const rx::string& name);
 
-        void destroy_render_target(const rx::string& texture_name, rx::memory::allocator* allocator);
+        void destroy_render_target(const rx::string& texture_name, rx::memory::allocator& allocator);
 
         /*!
          * \brief Retrieves a staging buffer at least the specified size
@@ -126,22 +125,14 @@ namespace nova::renderer {
 
         rhi::RenderDevice& device;
 
-        rx::memory::allocator* internal_allocator;
+        rx::memory::allocator& internal_allocator;
 
         rx::map<rx::string, TextureResource> textures;
 
         rx::map<rx::string, TextureResource> render_targets;
 
-        DeviceMemoryResource* staging_buffer_memory;
-
         rx::map<rx_size, rx::vector<rhi::RhiBuffer*>> staging_buffers;
 
-        DeviceMemoryResource* uniform_buffer_memory;
-
         rx::map<rx::string, BufferResource> uniform_buffers;
-
-        void allocate_staging_buffer_memory();
-
-        void allocate_uniform_buffer_memory();
     };
 } // namespace nova::renderer

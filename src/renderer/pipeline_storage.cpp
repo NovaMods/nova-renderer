@@ -15,7 +15,7 @@ namespace nova::renderer {
     using namespace ntl;
     using namespace renderpack;
 
-    PipelineStorage::PipelineStorage(NovaRenderer& renderer, rx::memory::allocator* allocator)
+    PipelineStorage::PipelineStorage(NovaRenderer& renderer, rx::memory::allocator& allocator)
         : renderer(renderer), device(renderer.get_engine()), allocator(allocator) {}
 
     rx::optional<renderer::Pipeline> PipelineStorage::get_pipeline(const rx::string& pipeline_name) const {
@@ -67,14 +67,15 @@ namespace nova::renderer {
 
         } else {
             NovaError error = NovaError{rx::string::format("Could not create pipeline %s", pipeline_create_info.name),
-                                        allocator->create<NovaError>(rhi_pipeline.error)};
+                                        allocator.create<NovaError>(rhi_pipeline.error)};
             return ntl::Result<PipelineReturn>(rx::utility::move(error));
         }
 
         return Result(PipelineReturn{pipeline, metadata});
     }
 
-    Result<rhi::RhiPipelineInterface*> PipelineStorage::create_pipeline_interface(const PipelineStateCreateInfo& pipeline_create_info) const {
+    Result<rhi::RhiPipelineInterface*> PipelineStorage::create_pipeline_interface(
+        const PipelineStateCreateInfo& pipeline_create_info) const {
 
         rx::map<rx::string, rhi::RhiResourceBindingDescription> bindings;
 

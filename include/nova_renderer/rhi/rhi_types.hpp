@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-#include "nova_renderer/memory/bytes.hpp"
+#include "nova_renderer/util/bytes.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"
 #include "nova_renderer/renderpack_data.hpp"

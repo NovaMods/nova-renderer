@@ -18,17 +18,17 @@ namespace nova::renderer {
         /*!
          * \brief Vertical field of view
          */
-        float field_of_view = 90;
+        float field_of_view = 90.0f;
 
         /*!
          * \brief Near plane of the camera. Corresponds to a value of 1 in the depth buffer
          */
-        float near_plane = 0.001;
+        float near_plane = 0.001f;
 
         /*!
          * \brief Far plane of the camera. Corresponds to a value of 0 in the depth buffer
          */
-        float far_plane = 1000.0;
+        float far_plane = 1000.0f;
     };
 
     /*!
@@ -60,6 +60,8 @@ namespace nova::renderer {
         friend class NovaRenderer;
 
     public:
+        bool is_active = false;
+
         /*!
          * \brief Vertical field of view
          */
@@ -84,11 +86,13 @@ namespace nova::renderer {
          */
         uint32_t index;
 
+        explicit Camera(const CameraCreateInfo& create_info);
+
         Camera(const Camera& other) = delete;
         Camera& operator=(const Camera& other) = delete;
 
-        Camera(Camera&& old) noexcept = default;
-        Camera& operator=(Camera&& old) noexcept = default;
+        Camera(Camera&& old) noexcept = delete;
+        Camera& operator=(Camera&& old) noexcept = delete;
 
         ~Camera() = default;
 
@@ -96,9 +100,7 @@ namespace nova::renderer {
 
     private:
         rx::string name;
-
-        explicit Camera(const CameraCreateInfo& create_info, BufferResourceAccessor buffer_accessor);
-
-        BufferResourceAccessor matrices_buffer;
     };
+
+    using CameraAccessor = VectorAccessor<Camera>;
 } // namespace nova::renderer

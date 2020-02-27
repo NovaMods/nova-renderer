@@ -23,7 +23,7 @@ namespace nova::renderer {
         /*!
          * \brief Creates a new pipeline cache which will create its pipeline on the provided render device
          */
-        PipelineStorage(NovaRenderer& renderer, rx::memory::allocator* allocator);
+        PipelineStorage(NovaRenderer& renderer, rx::memory::allocator& allocator);
 
         PipelineStorage(const PipelineStorage& other) = delete;
         PipelineStorage& operator=(const PipelineStorage& other) = delete;
@@ -42,7 +42,7 @@ namespace nova::renderer {
 
         rhi::RenderDevice& device;
 
-        rx::memory::allocator* allocator;
+        rx::memory::allocator& allocator;
 
         rx::map<rx::string, PipelineMetadata> pipeline_metadatas;
 

@@ -31,4 +31,30 @@ namespace nova::renderer {
         rx::map<KeyType, ValueType>* map;
         KeyType key;
     };
+
+    template <typename ValueType>
+    class VectorAccessor {
+    public:
+        VectorAccessor(rx::vector<ValueType>* vec, const size_t idx) : vec(vec), idx(idx) {}
+
+        VectorAccessor(const VectorAccessor& other) = default;
+        VectorAccessor& operator=(const VectorAccessor& other) = default;
+
+        VectorAccessor(VectorAccessor&& old) noexcept = default;
+        VectorAccessor& operator=(VectorAccessor&& old) noexcept = default;
+
+        ~VectorAccessor() = default;
+
+        [[nodiscard]] const ValueType* operator->() const { return &vec[idx]; }
+
+        [[nodiscard]] ValueType* operator->() { return &vec[idx]; }
+
+        [[nodiscard]] const ValueType& operator*() const { return vec[idx]; }
+
+        [[nodiscard]] const size_t& get_idx() const { return idx; }
+
+    private:
+        rx::vector<ValueType>* vec;
+        size_t idx;
+    };
 } // namespace nova::renderer

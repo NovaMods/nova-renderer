@@ -10,7 +10,6 @@
 #include <string.h>
 
 #include "nova_renderer/constants.hpp"
-#include "nova_renderer/memory/allocation_structs.hpp"
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/window.hpp"

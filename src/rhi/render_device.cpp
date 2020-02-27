@@ -3,9 +3,9 @@
 namespace nova::renderer::rhi {
     Swapchain* RenderDevice::get_swapchain() const { return swapchain; }
 
-    rx::memory::allocator* RenderDevice::get_allocator() const { return internal_allocator; }
+    rx::memory::allocator& RenderDevice::get_allocator() const { return internal_allocator; }
 
-    RenderDevice::RenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator* allocator)
+    RenderDevice::RenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator)
         : settings(settings),
           internal_allocator(allocator),
           window(window),

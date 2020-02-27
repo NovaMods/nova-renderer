@@ -45,7 +45,7 @@ namespace nova::renderer::rhi {
         transition_swapchain_images_into_color_attachment_layout(vk_images);
     }
 
-    uint8_t VulkanSwapchain::acquire_next_swapchain_image(rx::memory::allocator* allocator) {
+    uint8_t VulkanSwapchain::acquire_next_swapchain_image(rx::memory::allocator& allocator) {
         auto* fence = render_device->create_fence(false, allocator);
         auto* vk_fence = static_cast<VulkanFence*>(fence);
 

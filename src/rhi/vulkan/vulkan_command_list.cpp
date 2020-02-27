@@ -134,7 +134,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderCommandList::set_camera(const Camera& camera) {
-        vkCmdPushConstants(cmds, layout, flags, 0, sizeof(uint32_t), &camera.index);
+        // vkCmdPushConstants(cmds, layout, flags, 0, sizeof(uint32_t), &camera.index);
     }
 
     void VulkanRenderCommandList::begin_renderpass(RhiRenderpass* renderpass, RhiFramebuffer* framebuffer) {

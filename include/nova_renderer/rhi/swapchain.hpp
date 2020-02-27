@@ -21,7 +21,7 @@ namespace nova::renderer::rhi {
          *
          * \return The index of the swapchain image we just acquired
          */
-        virtual uint8_t acquire_next_swapchain_image(rx::memory::allocator* allocator = nullptr) = 0;
+        virtual uint8_t acquire_next_swapchain_image(rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Presents the specified swapchain image

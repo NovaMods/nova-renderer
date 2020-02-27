@@ -2,7 +2,6 @@
 
 #include <rx/core/log.h>
 
-#include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 
 #include "../util/memory_utils.hpp"
@@ -32,55 +31,25 @@ namespace nova::renderer {
 
         allocator = &rx::memory::g_system_allocator;
 
-        device_memory_allocation_strategy = allocator->create<BlockAllocationStrategy>(allocator, device_memory_size, 0_b);
-        host_memory_allocation_strategy = allocator->create<BlockAllocationStrategy>(allocator, host_memory_size, 0_b);
+        for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
+            vertex_buffers[i] = device->create_buffer({rx::string::format("%sVertices%d", name, i),
+                                                       vertex_buffer_size,
+                                                       BufferUsage::VertexBuffer},
+                                                      *allocator);
+            index_buffers[i] = device->create_buffer({rx::string::format("%sIndices%d", name, i),
+                                                      index_buffer_size,
+                                                      BufferUsage::IndexBuffer},
+                                                     *allocator);
+        }
 
-        // TODO: Don't allocate a separate DeviceMemory for each procedural mesh
-        device->allocate_device_memory(device_memory_size.b_count(), MemoryUsage::LowFrequencyUpload, ObjectType::Buffer, allocator)
-            .map([&](RhiDeviceMemory* memory) {
-                device_buffers_memory = allocator->create<DeviceMemoryResource>(memory, device_memory_allocation_strategy);
-
-                for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
-                    vertex_buffers[i] = device->create_buffer({rx::string::format("%sVertices%d", name, i),
-                                                               vertex_buffer_size,
-                                                               BufferUsage::VertexBuffer},
-                                                              *device_buffers_memory,
-                                                              allocator);
-                    index_buffers[i] = device->create_buffer({rx::string::format("%sIndices%d", name, i),
-                                                              index_buffer_size,
-                                                              BufferUsage::IndexBuffer},
-                                                             *device_buffers_memory,
-                                                             allocator);
-                }
-
-                return true;
-            })
-            .on_error([](const ntl::NovaError& error) {
-                logger(rx::log::level::k_error, "Could not allocate device memory for procedural mesh. Error: %s", error.to_string());
-                // TODO: Propagate the error
-            });
-
-        device->allocate_device_memory(host_memory_size.b_count(), MemoryUsage::StagingBuffer, ObjectType::Buffer, allocator)
-            .map([&](RhiDeviceMemory* memory) {
-                cached_buffers_memory = allocator->create<DeviceMemoryResource>(memory, host_memory_allocation_strategy);
-
-                cached_vertex_buffer = device->create_buffer({rx::string::format("%sStagingVertices", name),
-                                                              vertex_buffer_size,
-                                                              BufferUsage::StagingBuffer},
-                                                             *cached_buffers_memory,
-                                                             allocator);
-                cached_index_buffer = device->create_buffer({rx::string::format("%sStagingIndices", name),
-                                                             index_buffer_size,
-                                                             BufferUsage::StagingBuffer},
-                                                            *cached_buffers_memory,
-                                                            allocator);
-
-                return true;
-            })
-            .on_error([](const ntl::NovaError& error) {
-                logger(rx::log::level::k_error, "Could not allocate host memory for procedural mesh. Error: %s", error.to_string());
-                // TODO: Propagate the error
-            });
+        cached_vertex_buffer = device->create_buffer({rx::string::format("%sStagingVertices", name),
+                                                      vertex_buffer_size,
+                                                      BufferUsage::StagingBuffer},
+                                                     *allocator);
+        cached_index_buffer = device->create_buffer({rx::string::format("%sStagingIndices", name),
+                                                     index_buffer_size,
+                                                     BufferUsage::StagingBuffer},
+                                                    *allocator);
     }
 
     ProceduralMesh::ProceduralMesh(ProceduralMesh&& old) noexcept
@@ -91,13 +60,7 @@ namespace nova::renderer {
           cached_index_buffer{old.cached_index_buffer},
           num_vertex_bytes_to_upload{old.num_vertex_bytes_to_upload},
           num_index_bytes_to_upload{old.num_index_bytes_to_upload},
-          allocator{old.allocator},
-          device_memory_allocation_strategy{old.device_memory_allocation_strategy},
-          host_memory_allocation_strategy{old.host_memory_allocation_strategy},
-          device_buffers_memory{old.device_buffers_memory},
-          cached_buffers_memory {
-        old.cached_buffers_memory
-    }
+          allocator{old.allocator}
 #if NOVA_DEBUG
     , vertex_buffer_size{old.vertex_buffer_size}, index_buffer_size { old.index_buffer_size }
 #endif
@@ -112,10 +75,6 @@ namespace nova::renderer {
         num_vertex_bytes_to_upload = old.num_vertex_bytes_to_upload;
         num_index_bytes_to_upload = old.num_index_bytes_to_upload;
         allocator = old.allocator;
-        device_memory_allocation_strategy = old.device_memory_allocation_strategy;
-        host_memory_allocation_strategy = old.host_memory_allocation_strategy;
-        device_buffers_memory = old.device_buffers_memory;
-        cached_buffers_memory = old.cached_buffers_memory;
 
 #if NOVA_DEBUG
         vertex_buffer_size = old.vertex_buffer_size;
@@ -125,20 +84,6 @@ namespace nova::renderer {
         old.device = nullptr;
 
         return *this;
-    }
-
-    ProceduralMesh::~ProceduralMesh() {
-        if(device) {
-
-            // TODO: Free the device memory with the RenderDevice
-            // Requires support from the RHI
-
-            allocator->destroy<DeviceMemoryResource>(device_buffers_memory);
-            allocator->destroy<DeviceMemoryResource>(cached_buffers_memory);
-
-            allocator->destroy<BlockAllocationStrategy>(device_memory_allocation_strategy);
-            allocator->destroy<BlockAllocationStrategy>(host_memory_allocation_strategy);
-        }
     }
 
     void ProceduralMesh::set_vertex_data(const void* data, const uint64_t size) {

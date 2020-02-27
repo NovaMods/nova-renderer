@@ -90,6 +90,8 @@ set(NOVA_SOURCE
         include/nova_renderer/util/result.hpp
         include/nova_renderer/util/utils.hpp
         include/nova_renderer/util/container_accessor.hpp
+        include/nova_renderer/util/bytes.hpp
+        include/nova_renderer/util/auto_ptr.hpp
 
         include/nova_renderer/nova_renderer.hpp
         include/nova_renderer/nova_settings.hpp
@@ -107,12 +109,6 @@ set(NOVA_SOURCE
 
         include/nova_renderer/loading/renderpack_loading.hpp
 
-        include/nova_renderer/memory/bytes.hpp
-        include/nova_renderer/memory/allocation_strategy.hpp
-        include/nova_renderer/memory/allocation_structs.hpp
-        include/nova_renderer/memory/block_allocation_strategy.hpp
-        include/nova_renderer/memory/bump_point_allocation_strategy.hpp
-
         include/nova_renderer/rhi/forward_decls.hpp
         include/nova_renderer/rhi/command_list.hpp
         include/nova_renderer/rhi/swapchain.hpp
@@ -120,7 +116,6 @@ set(NOVA_SOURCE
         include/nova_renderer/rhi/rhi_types.hpp
         include/nova_renderer/rhi/pipeline_create_info.hpp
         include/nova_renderer/rhi/render_device.hpp
-        include/nova_renderer/rhi/device_memory_resource.hpp
 
         include/nova_renderer/procedural_mesh.hpp
         include/nova_renderer/rendergraph.hpp
@@ -128,7 +123,7 @@ set(NOVA_SOURCE
         include/nova_renderer/pipeline_storage.hpp
         include/nova_renderer/resource_loader.hpp
         include/nova_renderer/camera.hpp
-        include/nova_renderer/camera_matrix_buffer.hpp
+        include/nova_renderer/per_frame_device_array.hpp
 
         src/nova_renderer.cpp
 
@@ -165,10 +160,10 @@ set(NOVA_SOURCE
         src/renderer/pipeline_storage.cpp
         src/renderer/resource_loader.cpp
         src/renderer/camera.cpp
-        src/renderer/camera_matrix_buffer.cpp
 
         src/util/utils.cpp
         src/util/result.cpp
+        src/util/bytes.cpp
 
         src/loading/json_utils.hpp
         src/loading/renderpack/renderpack_loading.cpp
@@ -183,11 +178,6 @@ set(NOVA_SOURCE
         src/debugging/renderdoc.hpp
         
         src/windowing/window.cpp
-
-        src/memory/device_memory_resource.cpp
-        src/memory/block_allocation_strategy.cpp
-        src/memory/bump_point_allocation_strategy.cpp
-        src/memory/bytes.cpp
         )
 
 #################################################################
