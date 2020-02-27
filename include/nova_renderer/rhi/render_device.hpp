@@ -283,19 +283,5 @@ namespace nova::renderer::rhi {
         RenderDevice(NovaSettingsAccessManager& settings,
                      NovaWindow& window,
                      rx::memory::allocator& allocator = *rx::memory::g_system_allocator);
-
-        template <typename ObjectType, typename... Args>
-        ObjectType* allocate_object(rx::memory::allocator& local_allocator, Args... args);
     };
-
-    template <typename ObjectType, typename... Args>
-    ObjectType* RenderDevice::allocate_object(rx::memory::allocator& local_allocator, Args... args) {
-        return [&] {
-            if(local_allocator != nullptr) {
-                return local_allocator->create<ObjectType>(rx::utility::forward<Args>(args)...);
-            } else {
-                return internal_allocator->create<ObjectType>(rx::utility::forward<Args>(args)...);
-            }
-        }();
-    }
 } // namespace nova::renderer::rhi
