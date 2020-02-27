@@ -272,6 +272,8 @@ namespace nova::renderer {
         device->wait_for_fences(cur_frame_fences);
         device->reset_fences(cur_frame_fences);
 
+        update_camera_matrix_buffer(cur_frame_idx);
+
         rhi::RhiRenderCommandList* cmds = device->create_command_list(0,
                                                                       rhi::QueueType::Graphics,
                                                                       rhi::RhiRenderCommandList::Level::Primary,
@@ -499,7 +501,7 @@ namespace nova::renderer {
         MTR_SCOPE("create_pipelines_and_materials", "Self");
         pipeline_create_infos.each_fwd([&](const renderpack::PipelineData& pipeline_create_info) {
             MTR_SCOPE("create_pipelines_and_materials", pipeline_create_info.name.data());
-            const auto pipeline_state_create_info = renderpack::to_pipeline_state_create_info(pipeline_create_info, *rendergraph);
+            const auto pipeline_state_create_info = to_pipeline_state_create_info(pipeline_create_info, *rendergraph);
             if(!pipeline_state_create_info) {
                 logger(rx ::log::level::k_error, "Could not create pipeline %s", pipeline_create_info.name);
             }
@@ -556,6 +558,26 @@ namespace nova::renderer {
         });
 
         passes_by_pipeline.insert(pipeline.pipeline, passes);
+    }
+
+    void NovaRenderer::update_camera_matrix_buffer(const uint32_t frame_idx) {
+        for(uint32_t i = 0; i < camera_data->size(); i++) {
+            const auto& cam = cameras[i];
+            if(cam.is_active) {
+                auto& data = (*camera_data)[i];
+                data.previous_view = data.view;
+                data.previous_projection = data.projection;
+
+                data.view = translate({}, cam.position);
+                data.view = rotate(data.view, cam.rotation.x, {1, 0, 0});
+                data.view = rotate(data.view, cam.rotation.y, {0, 1, 0});
+                data.view = rotate(data.view, cam.rotation.z, {0, 0, 1});
+
+                data.projection = glm::perspective(cam.field_of_view, cam.aspect_ratio, cam.near_plane, cam.far_plane);
+            }
+        }
+
+        camera_data->upload_to_device(frame_idx);
     }
 
     void NovaRenderer::bind_data_to_material_descriptor_sets(

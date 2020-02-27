@@ -21,6 +21,11 @@ namespace nova::renderer {
         float field_of_view = 90.0f;
 
         /*!
+         * \brief Aspect ratio of the camera
+         */
+        float aspect_ratio = 16.0f / 9.0f;
+
+        /*!
          * \brief Near plane of the camera. Corresponds to a value of 1 in the depth buffer
          */
         float near_plane = 0.001f;
@@ -62,6 +67,8 @@ namespace nova::renderer {
     public:
         bool is_active = false;
 
+        float aspect_ratio;
+
         /*!
          * \brief Vertical field of view
          */
@@ -80,6 +87,10 @@ namespace nova::renderer {
          * Objects at this worldspace distance from the camera will have a value of 0 in the depth buffer
          */
         float far_plane;
+
+        glm::vec3 position;
+
+        glm::vec3 rotation;
 
         /*!
          * \brief Index of this camera in the camera array

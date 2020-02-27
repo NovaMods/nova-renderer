@@ -32,6 +32,8 @@ namespace nova::renderer {
 
         void free_slot(uint32_t idx);
 
+        [[nodiscard]] size_t size() const;
+
     private:
         rx::memory::allocator& internal_allocator;
 
@@ -39,6 +41,8 @@ namespace nova::renderer {
         rhi::RenderDevice& device;
 
         ElementType* data;
+        size_t num_elements;
+
         rx::queue<uint32_t> free_indices;
     };
 
@@ -49,6 +53,7 @@ namespace nova::renderer {
         : internal_allocator{internal_allocator},
           device{device},
           data{reinterpret_cast<ElementType*>(internal_allocator.allocate(num_elements * sizeof(ElementType)))},
+          num_elements{num_elements},
           free_indices{&internal_allocator} {
         rhi::RhiBufferCreateInfo create_info;
         create_info.size = sizeof(CameraUboData) * MAX_NUM_CAMERAS;
@@ -87,5 +92,10 @@ namespace nova::renderer {
     template <typename ElementType>
     void PerFrameDeviceArray<ElementType>::free_slot(const uint32_t idx) {
         free_indices.emplace(idx);
+    }
+
+    template <typename ElementType>
+    size_t PerFrameDeviceArray<ElementType>::size() const {
+        return num_elements;
     }
 } // namespace nova::renderer
