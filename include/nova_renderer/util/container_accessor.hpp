@@ -45,11 +45,11 @@ namespace nova::renderer {
 
         ~VectorAccessor() = default;
 
-        [[nodiscard]] const ValueType* operator->() const { return &vec[idx]; }
+        [[nodiscard]] const ValueType* operator->() const { return &(*vec)[idx]; }
 
-        [[nodiscard]] ValueType* operator->() { return &vec[idx]; }
+        [[nodiscard]] ValueType* operator->() { return &(*vec)[idx]; }
 
-        [[nodiscard]] const ValueType& operator*() const { return vec[idx]; }
+        [[nodiscard]] const ValueType& operator*() const { return (*vec)[idx]; }
 
         [[nodiscard]] const size_t& get_idx() const { return idx; }
 

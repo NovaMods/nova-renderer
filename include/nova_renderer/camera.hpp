@@ -99,11 +99,11 @@ namespace nova::renderer {
 
         explicit Camera(const CameraCreateInfo& create_info);
 
-        Camera(const Camera& other) = delete;
-        Camera& operator=(const Camera& other) = delete;
+        Camera(const Camera& other) = default;
+        Camera& operator=(const Camera& other) = default;
 
-        Camera(Camera&& old) noexcept = delete;
-        Camera& operator=(Camera&& old) noexcept = delete;
+        Camera(Camera&& old) noexcept = default;
+        Camera& operator=(Camera&& old) noexcept = default;
 
         ~Camera() = default;
 
