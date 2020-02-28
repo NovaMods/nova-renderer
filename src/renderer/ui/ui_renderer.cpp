@@ -3,21 +3,23 @@
 #include "nova_renderer/rhi/render_device.hpp"
 
 namespace nova::renderer {
+    struct RX_HINT_EMPTY_BASES UiRenderpassCreateInfo : shaderpack::RenderPassCreateInfo {
+        UiRenderpassCreateInfo();
+    };
+
+    UiRenderpassCreateInfo::UiRenderpassCreateInfo() {
+        name = UI_RENDER_PASS_NAME;
+        texture_outputs.emplace_back(UI_OUTPUT_RT_NAME, shaderpack::PixelFormatEnum::RGBA8, true);
+    }
+
+    RX_GLOBAL<UiRenderpassCreateInfo> ui_create_info{"Nova", "UiRenderpassCreateInfo"};
+
     UiRenderpass::UiRenderpass() : Renderpass(UI_RENDER_PASS_NAME, true) {}
 
-    void UiRenderpass::render_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) { render_ui(cmds, ctx); }
+    void UiRenderpass::record_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) { render_ui(cmds, ctx); }
 
-    shaderpack::RenderPassCreateInfo UiRenderpass::get_create_info() {
-        static auto create_info = [&] {
-            shaderpack::RenderPassCreateInfo new_create_info = {};
-            new_create_info.name = UI_RENDER_PASS_NAME;
-            new_create_info.texture_inputs.emplace_back(SCENE_OUTPUT_RT_NAME);
-            new_create_info.texture_outputs.emplace_back(BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false);
-
-            return new_create_info;
-        }();
-
-        return create_info;
+    const shaderpack::RenderPassCreateInfo& UiRenderpass::get_create_info() {
+        return *ui_create_info;
     }
 
     void NullUiRenderpass::render_ui(rhi::CommandList& /* cmds */, FrameContext& /* ctx */) {

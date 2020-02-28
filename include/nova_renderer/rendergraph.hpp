@@ -12,6 +12,7 @@
 #include "nova_renderer/util/container_accessor.hpp"
 
 #include "resource_loader.hpp"
+#include "rhi/pipeline_create_info.hpp"
 
 namespace nova::renderer {
     RX_LOG("rendergraph", rg_log);
@@ -25,6 +26,9 @@ namespace nova::renderer {
 #pragma region Structs for rendering
     template <typename RenderCommandType>
     struct MeshBatch {
+        size_t num_vertex_attributes{};
+        uint32_t num_indices{};
+
         rhi::Buffer* vertex_buffer = nullptr;
         rhi::Buffer* index_buffer = nullptr;
 
@@ -105,7 +109,7 @@ namespace nova::renderer {
     };
 
     struct PipelineMetadata {
-        shaderpack::PipelineCreateInfo data;
+        PipelineStateCreateInfo data;
 
         rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas{};
     };
@@ -166,7 +170,7 @@ namespace nova::renderer {
          * everything you should need to render. If there's something you need that isn't in the frame context, submit an issue on the Nova
          * GitHub
          */
-        virtual void render(rhi::CommandList& cmds, FrameContext& ctx);
+        virtual void execute(rhi::CommandList& cmds, FrameContext& ctx);
 
         /*!
          * \brief Returns the framebuffer that this renderpass should render to
@@ -177,10 +181,19 @@ namespace nova::renderer {
         /*!
          * \brief Records all the resource barriers that need to take place before this renderpass renders anything
          *
-         * By default `render` calls this method before calling `render_renderpass_contents`. If you override `render`, you'll need to call
+         * By default `render` calls this method before calling `setup_renderpass`. If you override `render`, you'll need to call
          * this method yourself before using any of this renderpass's resources
          */
-        void record_pre_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const;
+        virtual void record_pre_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const;
+
+        /*!
+         * \brief Allows a renderpass to perform work before the recording of the actual renderpass
+         *
+         * This is useful for e.g. uploading streamed in vertex data
+         *
+         * The default `render` method calls this after `record_pre_renderpass_barriers` and before `record_renderpass_contents`
+         */
+        virtual void setup_renderpass(rhi::CommandList& cmds, FrameContext& ctx);
 
         /*!
          * \brief Renders the contents of this renderpass
@@ -196,7 +209,7 @@ namespace nova::renderer {
          * everything you should need to render. If there's something you need that isn't in the frame context, submit an issue on the Nova
          * GitHub
          */
-        virtual void render_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx);
+        virtual void record_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx);
 
         /*!
          * \brief Records all the resource barriers that need to take place after this renderpass renders anything
@@ -204,7 +217,7 @@ namespace nova::renderer {
          * By default `render` calls this method after calling `render_renderpass_contents`. If you override `render`, you'll need to call
          * this method yourself near the end of your `render` method
          */
-        void record_post_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const;
+        virtual void record_post_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const;
     };
 
     /*!
@@ -221,10 +234,36 @@ namespace nova::renderer {
          */
         Rendergraph(rx::memory::allocator* allocator, rhi::RenderDevice& device);
 
+        /*!
+         * \brief Creates a new renderpass of the specified type using it's own create info
+         *
+         * This method calls a static method `RenderpassType::get_create_info` to get the renderpass's create info, and it allocates the new
+         * renderpass from the rendergraph's internal allocator. Intended usage is adding renderpasses from C++ code - this method makes it
+         * easy to define all your renderpass data in your C++ renderpass class
+         *
+         * This method creates all the GPU resources needed for the renderpass and it's framebuffer. It does not create any pipelines or
+         * materials that may be rendered as part of this renderpass. You may create them through the rendergraph's JSON files, or through
+         * the renderpass's constructor
+         *
+         * This method returns a pointer to the newly-created renderpass if everything went according to plan, or `nullptr` if it didn't
+         *
+         * Exact name and usage are still under revision, this is the alpha version of this method
+         */
+        template <typename RenderpassType, typename... Args>
+        [[nodiscard]] RenderpassType* create_renderpass(DeviceResources& resource_storage, Args&&... args);
+
+        /*!
+         * \brief Adds an already-created renderpass with a specific create info
+         *
+         * This method initializes all the GPU resources needed for this renderpass and the framebuffer it renders to. It then adds the
+         * renderpass to the appropriate places, returning a pointer to the renderpass you provided
+         *
+         * This method returns `nullptr` if the renderpass's GPU resources can't be initialized
+         */
         template <typename RenderpassType>
         [[nodiscard]] RenderpassType* add_renderpass(RenderpassType* renderpass,
                                                      const shaderpack::RenderPassCreateInfo& create_info,
-                                                     const DeviceResources& resource_storage);
+                                                     DeviceResources& resource_storage);
 
         void destroy_renderpass(const rx::string& name);
 
@@ -247,10 +286,19 @@ namespace nova::renderer {
         rx::map<rx::string, RenderpassMetadata> renderpass_metadatas;
     };
 
+    template <typename RenderpassType, typename... Args>
+    RenderpassType* Rendergraph::create_renderpass(DeviceResources& resource_storage, Args&&... args) {
+
+        auto* renderpass = allocator->create<RenderpassType>(rx::utility::forward<Args>(args)...);
+        const auto& create_info = RenderpassType::get_create_info();
+
+        return add_renderpass(renderpass, create_info, resource_storage);
+    }
+
     template <typename RenderpassType>
     RenderpassType* Rendergraph::add_renderpass(RenderpassType* renderpass,
                                                 const shaderpack::RenderPassCreateInfo& create_info,
-                                                const DeviceResources& resource_storage) {
+                                                DeviceResources& resource_storage) {
         RenderpassMetadata metadata;
         metadata.data = create_info;
 
@@ -303,6 +351,7 @@ namespace nova::renderer {
                     } else {
                         framebuffer_size = attachment_size;
                     }
+
                 } else {
                     rg_log(rx::log::level::k_error, "No render target named %s", attachment_info.name);
                     missing_render_targets = true;
@@ -357,9 +406,9 @@ namespace nova::renderer {
         renderpass->pipeline_names = create_info.pipeline_names;
         renderpass->id = static_cast<uint32_t>(renderpass_metadatas.size());
 
-        renderpasses.erase(create_info.name);
+        destroy_renderpass(create_info.name);
 
-        renderpasses.insert(create_info.name, rx::utility::move(renderpass));
+        renderpasses.insert(create_info.name, renderpass);
         renderpass_metadatas.insert(create_info.name, metadata);
 
         is_dirty = true;

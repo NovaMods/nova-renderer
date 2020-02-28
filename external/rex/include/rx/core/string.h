@@ -18,13 +18,13 @@ struct string {
   static constexpr const rx_size k_npos{-1_z};
   static constexpr const rx_size k_small_string{16};
 
-  string(memory::allocator* _allocator);
+  constexpr string(memory::allocator* _allocator);
   string(memory::allocator* _allocator, const string& _contents);
   string(memory::allocator* _allocator, const char* _contents);
   string(memory::allocator* _allocator, const char* _contents, rx_size _size);
   string(memory::allocator* _allocator, const char* _first, const char* _last);
 
-  string();
+  constexpr string();
   string(const string& _contents);
   string(string&& contents_);
   string(const char* _contents);
@@ -129,7 +129,7 @@ private:
   char* m_data;
   char* m_last;
   char* m_capacity;
-  char m_buffer[k_small_string] = {0};
+  char m_buffer[k_small_string];
 };
 
 // utf-16, Windows compatible "wide-string"
@@ -203,7 +203,18 @@ inline string::string(memory::allocator* _allocator, const string& _contents)
 {
 }
 
-inline string::string()
+inline constexpr string::string(memory::allocator* _allocator)
+  : m_allocator{_allocator}
+  , m_data{m_buffer}
+  , m_last{m_buffer}
+  , m_capacity{m_buffer + k_small_string}
+  , m_buffer{}
+{
+  RX_ASSERT(m_allocator, "null allocator");
+  m_buffer[0] = '\0';
+}
+
+inline constexpr string::string()
   : string{&memory::g_system_allocator}
 {
 }
@@ -236,15 +247,15 @@ inline rx_size string::find_last_of(const string& _contents) const {
   return find_last_of(_contents.data());
 }
 
-inline rx_size string::size() const {
+RX_HINT_FORCE_INLINE rx_size string::size() const {
   return m_last - m_data;
 }
 
-inline rx_size string::capacity() const {
+RX_HINT_FORCE_INLINE rx_size string::capacity() const {
   return m_capacity - m_data;
 }
 
-inline bool string::is_empty() const {
+RX_HINT_FORCE_INLINE bool string::is_empty() const {
   return m_last - m_data == 0;
 }
 
@@ -273,38 +284,38 @@ inline vector<string> string::split(int _ch, rx_size _count) const {
 }
 
 inline char& string::operator[](rx_size index) {
-  // NOTE(dweiler): <= is not a bug, indexing the null-terminator is allowed
+  // NOTE(dweiler): The <= is not a bug, indexing the null-terminator is allowed.
   RX_ASSERT(index <= size(), "out of bounds");
   return m_data[index];
 }
 
 inline const char& string::operator[](rx_size index) const {
-  // NOTE(dweiler): <= is not a bug, indexing the null-terminator is allowed
+  // NOTE(dweiler): The <= is not a bug, indexing the null-terminator is allowed.
   RX_ASSERT(index <= size(), "out of bounds");
   return m_data[index];
 }
 
-inline char& string::first() {
+RX_HINT_FORCE_INLINE char& string::first() {
   return m_data[0];
 }
 
-inline const char& string::first() const {
+RX_HINT_FORCE_INLINE const char& string::first() const {
   return m_data[0];
 }
 
-inline char& string::last() {
+RX_HINT_FORCE_INLINE char& string::last() {
   return m_data[size() - 1];
 }
 
-inline const char& string::last() const {
+RX_HINT_FORCE_INLINE const char& string::last() const {
   return m_data[size() - 1];
 }
 
-inline char* string::data() {
+RX_HINT_FORCE_INLINE char* string::data() {
   return m_data;
 }
 
-inline const char* string::data() const {
+RX_HINT_FORCE_INLINE const char* string::data() const {
   return m_data;
 }
 
@@ -341,7 +352,7 @@ bool operator!=(const string& lhs, const string& rhs);
 bool operator<(const string& lhs, const string& rhs);
 bool operator>(const string& lhs, const string& rhs);
 
-inline memory::allocator* string::allocator() const {
+RX_HINT_FORCE_INLINE memory::allocator* string::allocator() const {
   return m_allocator;
 }
 
@@ -366,11 +377,11 @@ inline wide_string::wide_string(const wide_string& _other)
 {
 }
 
-inline rx_size wide_string::size() const {
+RX_HINT_FORCE_INLINE rx_size wide_string::size() const {
   return m_size;
 }
 
-inline bool wide_string::is_empty() const {
+RX_HINT_FORCE_INLINE bool wide_string::is_empty() const {
   return m_size == 0;
 }
 
@@ -384,15 +395,15 @@ inline const rx_u16& wide_string::operator[](rx_size _index) const {
   return m_data[_index];
 }
 
-inline rx_u16* wide_string::data() {
+RX_HINT_FORCE_INLINE rx_u16* wide_string::data() {
   return m_data;
 }
 
-inline const rx_u16* wide_string::data() const {
+RX_HINT_FORCE_INLINE const rx_u16* wide_string::data() const {
   return m_data;
 }
 
-inline memory::allocator* wide_string::allocator() const {
+RX_HINT_FORCE_INLINE memory::allocator* wide_string::allocator() const {
   return m_allocator;
 }
 
@@ -401,6 +412,10 @@ rx_size utf16_to_utf8(const rx_u16* _utf16_contents, rx_size _length,
 
 rx_size utf8_to_utf16(const char* _utf8_contents, rx_size _length,
   rx_u16* utf16_contents_);
+
+RX_HINT_FORCE_INLINE rx::string operator""_s(const char* _contents, rx_size _length) {
+  return {_contents, _length};
+}
 
 } // namespace rx
 

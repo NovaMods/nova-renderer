@@ -7,14 +7,18 @@ namespace rx::filesystem {
 struct mmap
   : stream
 {
+  static constexpr rx_u32 k_stream_flags = stream::k_tell & stream::k_seek;
+  static constexpr rx_u32 k_read_flags = k_stream_flags & stream::k_read;
+  static constexpr rx_u32 k_write_flags = k_stream_flags & stream::k_write;
+
   constexpr mmap(rx_byte* _data, rx_size _size);
   constexpr mmap(const rx_byte* _data, rx_size _size);
 
-  virtual rx_u64 read(rx_byte* _data, rx_u64 _size);
-  virtual rx_u64 write(const rx_byte* _data, rx_u64 _size);
-  virtual bool seek(rx_s64 _where, whence _whence);
-  virtual bool flush();
-  virtual optional<rx_u64> size();
+  virtual rx_u64 on_read(rx_byte* _data, rx_u64 _size);
+  virtual rx_u64 on_write(const rx_byte* _data, rx_u64 _size);
+  virtual bool on_seek(rx_s64 _where, whence _whence);
+  virtual bool on_flush();
+  virtual rx_u64 on_tell();
 
 private:
   rx_u64 readable_bytes() const;
@@ -28,7 +32,8 @@ private:
 };
 
 inline constexpr mmap::mmap(rx_byte* _data, rx_size _size)
-  : m_data{_data}
+  : stream{k_write_flags}
+  , m_data{_data}
   , m_size{_size}
   , m_rd{nullptr}
   , m_wr{_data}
@@ -36,7 +41,8 @@ inline constexpr mmap::mmap(rx_byte* _data, rx_size _size)
 }
 
 inline constexpr mmap::mmap(const rx_byte* _data, rx_size _size)
-  : m_data{const_cast<rx_byte*>(_data)}
+  : stream{k_read_flags}
+  , m_data{const_cast<rx_byte*>(_data)}
   , m_size{_size}
   , m_rd{_data}
   , m_wr{nullptr}

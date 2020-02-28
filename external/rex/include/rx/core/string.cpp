@@ -1,10 +1,12 @@
-#include <string.h> // strcmp, memcpy
+#include <string.h> // strcmp, memcpy, memmove
 #include <stdarg.h> // va_{list, start, end, copy}
 #include <stdio.h> // vsnprintf
 
 #include "rx/core/string.h" // string
 
 #include "rx/core/utility/swap.h"
+
+#include "rx/core/hints/unreachable.h"
 
 namespace rx {
 
@@ -124,16 +126,6 @@ string string::formatter(memory::allocator* _allocator,
   format_va(contents, _format, va);
   va_end(va);
   return contents;
-}
-
-string::string(memory::allocator* _allocator)
-  : m_allocator{_allocator}
-  , m_data{m_buffer}
-  , m_last{m_buffer}
-  , m_capacity{m_buffer + k_small_string}
-{
-  RX_ASSERT(m_allocator, "null allocator");
-  resize(0);
 }
 
 string::string(memory::allocator* _allocator, const char* _contents)
@@ -407,7 +399,7 @@ string string::substring(rx_size _offset, rx_size _length) const {
   if (_length == 0) {
     return {m_allocator, begin};
   }
-  // NOTE(dweiler): you can substring the whole string.
+  // NOTE(dweiler): You can substring the whole string.
   RX_ASSERT(begin + _length <= m_data + size(), "out of bounds");
   return {m_allocator, begin, _length};
 }
@@ -510,12 +502,32 @@ bool string::contains(const string& _needle) const {
 }
 
 rx_size string::hash() const {
-  // djb2
-  rx_size value{5381};
-  for (const char *ch{m_data}; *ch; ch++) {
-    value = ((value << 5) + value) + *ch;
+  // The following is an implementation of FNV1a. The difference here matters
+  // because rx_size is the hash type which may be 4-byte or 8-byte depending
+  // on architecture.
+  //
+  // The previous hash function was just DJB2 X=33 which left most of the
+  // rx_size empty on 64-bit for short keys.
+  if constexpr (sizeof(rx_size) == 8) {
+    static constexpr const rx_u64 k_prime = 0x100000001b3_u64;
+    rx_u64 hash = 0xcbf29ce484222325_u64;
+    for (const char *ch = m_data; *ch; ch++) {
+      const rx_byte value = *ch;
+      hash = hash ^ value;
+      hash *= k_prime;
+    }
+    return static_cast<rx_size>(hash);
+  } else {
+    static constexpr const rx_u32 k_prime = 0x1000193_u32;
+    rx_u32 hash = 0x811c9dc5_u32;
+    for (const char *ch = m_data; *ch; ch++) {
+      const rx_byte value = *ch;
+      hash = hash ^ value;
+      hash &= k_prime;
+    }
+    return static_cast<rx_size>(hash);
   }
-  return value;
+  RX_HINT_UNREACHABLE();
 }
 
 memory::view string::disown() {
@@ -637,11 +649,8 @@ bool operator>(const string& _lhs, const string& _rhs) {
 }
 
 void wide_string::resize(rx_size _size) {
-  const rx_size previous_size{m_size};
   m_data = reinterpret_cast<rx_u16*>(m_allocator->reallocate(reinterpret_cast<rx_byte*>(m_data), (_size + 1) * sizeof *m_data));
-  for (rx_size i{previous_size}; i < _size; i++) {
-    m_data[i] = 0;
-  }
+  m_data[_size] = 0;
   m_size = _size;
 }
 

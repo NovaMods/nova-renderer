@@ -24,8 +24,6 @@ namespace nova::renderer {
     RX_LOG("EndToEndRunner", logger);
 
     int main() {
-        init_rex();
-
 #ifdef __linux__
         atexit(at_exit_handler);
 #endif
@@ -53,8 +51,7 @@ namespace nova::renderer {
 
         NovaWindow& window = renderer->get_window();
 
-        MeshData cube = {};
-        cube.vertex_data = {
+        const static rx::array CUBE_VERTICES{
             FullVertex{{-1, -1, -1}, {}, {}, {}, {}, {}, {}},
             FullVertex{{-1, -1, 1}, {}, {}, {}, {}, {}, {}},
             FullVertex{{-1, 1, -1}, {}, {}, {}, {}, {}, {}},
@@ -64,7 +61,16 @@ namespace nova::renderer {
             FullVertex{{1, 1, -1}, {}, {}, {}, {}, {}, {}},
             FullVertex{{1, 1, 1}, {}, {}, {}, {}, {}, {}},
         };
-        cube.indices = {0, 1, 3, 6, 0, 2, 5, 0, 4, 6, 4, 0, 0, 3, 2, 5, 1, 0, 3, 1, 5, 7, 4, 6, 4, 7, 5, 7, 6, 2, 7, 2, 3, 7, 3, 5};
+
+        const static rx::array CUBE_INDICES{0, 1, 3, 6, 0, 2, 5, 0, 4, 6, 4, 0, 0, 3, 2, 5, 1, 0,
+                                            3, 1, 5, 7, 4, 6, 4, 7, 5, 7, 6, 2, 7, 2, 3, 7, 3, 5};
+
+        const MeshData cube = {7,
+                               static_cast<uint32_t>(CUBE_INDICES.size()),
+                               CUBE_VERTICES.data(),
+                               CUBE_VERTICES.size() * sizeof(FullVertex),
+                               CUBE_INDICES.data(),
+                               CUBE_INDICES.size() * sizeof(uint32_t)};
 
         const MeshId mesh_id = renderer->create_mesh(cube);
 
@@ -80,13 +86,21 @@ namespace nova::renderer {
 
         while(!window.should_close()) {
             renderer->execute_frame();
+            window.poll_input();
         }
 
         rx::memory::g_system_allocator->destroy<NovaRenderer>(renderer);
 
-        rex_fini();
-
         return 0;
+    }
+
+    // This is for scoping purposes so that things used in main
+    // don't get destructed after rex_fini has been called
+    int rex_main() {
+        init_rex();
+        auto ret = main();
+        rex_fini();
+        return ret;
     }
 } // namespace nova::renderer
 
@@ -95,7 +109,9 @@ int main() {
     signal(SIGSEGV, sigsegv_handler);
     signal(SIGABRT, sigabrt_handler);
 #endif
-    return nova::renderer::main();
+    // Don't use nova::renderer::main(), see
+    // rex_main() for more info
+    return nova::renderer::rex_main();
 }
 
 #ifdef __linux__

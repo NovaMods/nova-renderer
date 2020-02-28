@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vk_mem_alloc.h>
+
 #include "nova_renderer/rhi/render_device.hpp"
 
 #include "vk_structs.hpp"
@@ -24,6 +26,8 @@ namespace nova::renderer::rhi {
      */
     class VulkanRenderDevice final : public RenderDevice {
     public:
+        VkAllocationCallbacks vk_internal_allocator;
+
         // Global Vulkan objects
         VkInstance instance;
 
@@ -80,9 +84,7 @@ namespace nova::renderer::rhi {
                                                                   const rx::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
                                                                   rx::memory::allocator* allocator) override;
 
-        DescriptorPool* create_descriptor_pool(uint32_t num_sampled_images,
-                                               uint32_t num_samplers,
-                                               uint32_t num_uniform_buffers,
+        DescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
                                                rx::memory::allocator* allocator) override;
 
         rx::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
@@ -91,13 +93,17 @@ namespace nova::renderer::rhi {
 
         void update_descriptor_sets(rx::vector<DescriptorSetWrite>& writes) override;
 
+        void reset_descriptor_pool(DescriptorPool* pool) override;
+
         ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
-                                               const shaderpack::PipelineCreateInfo& data,
+                                               const PipelineStateCreateInfo& data,
                                                rx::memory::allocator* allocator) override;
 
         Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory, rx::memory::allocator* allocator) override;
 
         void write_data_to_buffer(const void* data, mem::Bytes num_bytes, mem::Bytes offset, const Buffer* buffer) override;
+
+        Sampler* create_sampler(const SamplerCreateInfo& create_info, rx::memory::allocator* allocator) override;
 
         Image* create_image(const shaderpack::TextureCreateInfo& info, rx::memory::allocator* allocator) override;
 
@@ -147,6 +153,8 @@ namespace nova::renderer::rhi {
     private:
         VulkanDeviceInfo vk_info;
 
+        VmaAllocator vma;
+
         /*!
          * The index in the vector is the thread index, the key in the map is the queue family index
          */
@@ -181,6 +189,8 @@ namespace nova::renderer::rhi {
          */
         void save_device_info();
 
+        void initialize_vma();
+
         void create_device_and_queues();
 
         bool does_device_support_extensions(VkPhysicalDevice device, const rx::vector<char*>& required_device_extensions);
@@ -205,12 +215,15 @@ namespace nova::renderer::rhi {
          *
          * \return The index of the memory type with the desired flags, or VK_MAX_MEMORY_TYPES if no memory types match the given flags
          */
-        [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags, MemorySearchMode search_mode = MemorySearchMode::Fuzzy);
+        [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags,
+                                                           MemorySearchMode search_mode = MemorySearchMode::Fuzzy) const;
 
         [[nodiscard]] rx::optional<VkShaderModule> create_shader_module(const rx::vector<uint32_t>& spirv) const;
 
         [[nodiscard]] rx::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
-            const rx::map<rx::string, ResourceBindingDescription>& all_bindings, rx::memory::allocator* allocator) const;
+            const rx::map<rx::string, ResourceBindingDescription>& all_bindings,
+            rx::vector<uint32_t>& variable_descriptor_counts,
+            rx::memory::allocator* allocator) const;
 
         /*!
          * \brief Gets the image view associated with the given image

@@ -11,6 +11,8 @@ namespace nova::renderer::rhi {
 
 #pragma region Structs
     struct BufferCreateInfo {
+        rx::string name;
+
         mem::Bytes size = 0;
 
         BufferUsage buffer_usage{};
@@ -27,6 +29,23 @@ namespace nova::renderer::rhi {
     struct Resource {
         ResourceType type = {};
         bool is_dynamic = true;
+    };
+
+    struct SamplerCreateInfo {
+        TextureFilter min_filter = TextureFilter::Point;
+        TextureFilter mag_filter = TextureFilter::Point;
+
+        TextureCoordWrapMode x_wrap_mode = TextureCoordWrapMode::ClampToEdge;
+        TextureCoordWrapMode y_wrap_mode = TextureCoordWrapMode::ClampToEdge;
+        TextureCoordWrapMode z_wrap_mode = TextureCoordWrapMode::ClampToEdge;
+
+        float mip_bias = 0;
+
+        bool enable_anisotropy = false;
+        float max_anisotropy = 1;
+
+        float min_lod = 0;
+        float max_lod = 0;
     };
 
     struct Sampler {};
@@ -103,7 +122,7 @@ namespace nova::renderer::rhi {
     struct PipelineInterface {
         rx::map<rx::string, ResourceBindingDescription> bindings;
 
-        rx::vector<VertexField> vertex_fields;
+        [[nodiscard]] uint32_t get_num_descriptors_of_type(DescriptorType type) const;
     };
 
     struct Pipeline {};
@@ -172,11 +191,14 @@ namespace nova::renderer::rhi {
     struct DescriptorImageInfo {
         Image* image;
         shaderpack::TextureFormat format;
-        Sampler* sampler;
     };
 
     struct DescriptorBufferInfo {
         Buffer* buffer;
+    };
+
+    struct DescriptorSamplerInfo {
+        Sampler* sampler;
     };
 
     union DescriptorResourceInfo {
@@ -191,6 +213,8 @@ namespace nova::renderer::rhi {
          * \brief Information to update a buffer descriptor
          */
         DescriptorBufferInfo buffer_info{};
+
+        DescriptorSamplerInfo sampler_info;
     };
 
     struct DescriptorSetWrite {

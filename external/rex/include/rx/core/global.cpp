@@ -14,139 +14,129 @@ static concurrency::spin_lock g_lock;
 
 // global_node
 void global_node::init_global() {
-  if (m_enabled) {
-    RX_ASSERT(!m_initialized, "already initialized");
-    logger(log::level::k_verbose, "%p init: %s/%s", this, m_group, m_name);
-    m_init_global(m_global_store, m_argument_store);
-    m_initialized = true;
+  if (!(m_flags & k_enabled)) {
+    return;
   }
+
+  RX_ASSERT(!(m_flags & k_initialized), "already initialized");
+  logger(log::level::k_verbose, "%p init: %s/%s", this, m_group, m_name);
+  m_init_global(data(), m_argument_store);
+  m_flags |= k_initialized;
 }
 
 void global_node::fini_global() {
-  if (m_enabled) {
-    RX_ASSERT(m_initialized, "not initialized");
-    logger(log::level::k_verbose, "%p fini: %s/%s", this, m_group, m_name);
-    m_fini_global(m_global_store);
-    if (m_fini_arguments) {
-      m_fini_arguments(m_argument_store);
-    }
-    m_initialized = false;
+  if (!(m_flags & k_enabled)) {
+    return;
   }
-}
 
-void global_node::init() {
-  RX_ASSERT(!m_initialized, "already initialized");
-  m_init_global(m_global_store, m_argument_store);
-  m_enabled = false;
-  m_initialized = true;
-}
+  RX_ASSERT(m_flags & k_initialized, "not initialized");
+  logger(log::level::k_verbose, "%p fini: %s/%s", this, m_group, m_name);
 
-void global_node::fini() {
-  RX_ASSERT(m_initialized, "not initialized");
-  m_fini_global(m_global_store);
+  m_shared->finalizer(data());
   if (m_fini_arguments) {
     m_fini_arguments(m_argument_store);
   }
-  m_enabled = false;
-  m_initialized = false;
+  m_flags &= ~k_initialized;
+}
+
+void global_node::init() {
+  RX_ASSERT(!(m_flags & k_initialized), "already initialized");
+
+  m_init_global(data(), m_argument_store);
+  m_flags &= ~k_enabled;
+  m_flags |= k_initialized;
+}
+
+void global_node::fini() {
+  RX_ASSERT(m_flags & k_initialized, "not initialized");
+
+  m_shared->finalizer(data());
+  if (m_fini_arguments) {
+    m_fini_arguments(m_argument_store);
+  }
+  m_flags &= ~k_enabled;
+  m_flags |= k_initialized;
 }
 
 // global_group
 global_node* global_group::find(const char* _name) {
-  for (global_node* node{m_head}; node; node = node->m_next_grouped) {
-    if (!strcmp(node->m_name, _name)) {
-      return node;
+  for (auto node = m_list.enumerate_head(&global_node::m_grouped); node; node.next()) {
+    if (!strcmp(node->name(), _name)) {
+      return node.data();
     }
   }
   return nullptr;
 }
 
 void global_group::init() {
-  for (global_node* node{m_head}; node; node = node->m_next_grouped) {
+  for (auto node = m_list.enumerate_head(&global_node::m_grouped); node; node.next()) {
     node->init();
   }
 }
 
 void global_group::fini() {
-  for (global_node* node{m_tail}; node; node = node->m_prev_grouped) {
+  for (auto node = m_list.enumerate_tail(&global_node::m_grouped); node; node.prev()) {
     node->fini();
   }
 }
 
 void global_group::init_global() {
-  for (global_node* node{m_head}; node; node = node->m_next_grouped) {
+  for (auto node = m_list.enumerate_head(&global_node::m_grouped); node; node.next()) {
     node->init_global();
   }
 }
 
 void global_group::fini_global() {
-  for (global_node* node{m_tail}; node; node = node->m_prev_grouped) {
+  for (auto node = m_list.enumerate_tail(&global_node::m_grouped); node; node.prev()) {
     node->fini_global();
   }
 }
 
 // globals
 global_group* globals::find(const char* _name) {
-  for (global_group* group{s_group_head}; group; group = group->m_next) {
-    if (!strcmp(group->m_name, _name)) {
-      return group;
+  for (auto group = s_group_list.enumerate_head(&global_group::m_link); group; group.next()) {
+    if (!strcmp(group->name(), _name)) {
+      return group.data();
     }
   }
   return nullptr;
 }
 
 void globals::link() {
+  // Link ungrouped globals from |s_node_list| managed by |global_node::m_ungrouped|
+  // with the appropriate group given by |global_group::m_list|, which is managed
+  // by |global_node::m_grouped| when the given global shares the same group
+  // name as the group.
   concurrency::scope_lock lock{g_lock};
-  for (global_group* group{s_group_head}; group; group = group->m_next) {
-    for (global_node* node{s_node_head}; node; node = node->m_next_ungrouped) {
-      if (!strcmp(node->m_group, group->m_name)) {
-        if (!group->m_head) {
-          group->m_head = node;
-        }
-        if (group->m_tail) {
-          node->m_prev_grouped = group->m_tail;
-          node->m_prev_grouped->m_next_grouped = node;
-        }
-        group->m_tail = node;
+  for (auto group = s_group_list.enumerate_head(&global_group::m_link); group; group.next()) {
+    for (auto node = s_node_list.enumerate_head(&global_node::m_ungrouped); node; node.next()) {
+      if (!strcmp(node->m_group, group->name())) {
+        group->m_list.push(&node->m_grouped);
       }
     }
   }
 }
 
 void globals::init() {
-  for (global_group* group{s_group_head}; group; group = group->m_next) {
+  for (auto group = s_group_list.enumerate_head(&global_group::m_link); group; group.next()) {
     group->init_global();
   }
 }
 
 void globals::fini() {
-  for (global_group* group{s_group_tail}; group; group = group->m_prev) {
+  for (auto group = s_group_list.enumerate_tail(&global_group::m_link); group; group.prev()) {
     group->fini_global();
   }
 }
 
 void globals::link(global_node* _node) {
   concurrency::scope_lock lock{g_lock};
-  if (!s_node_head) {
-    s_node_head = _node;
-  }
-  if (s_node_tail) {
-    _node->m_prev_ungrouped = s_node_tail;
-    _node->m_prev_ungrouped->m_next_ungrouped = _node;
-  }
-  s_node_tail = _node;
+  s_node_list.push(&_node->m_ungrouped);
 }
 
 void globals::link(global_group* _group) {
   concurrency::scope_lock lock{g_lock};
-  if (!s_group_head) {
-    s_group_head = _group;
-  }
-  if (s_group_tail) {
-    _group->m_prev = s_group_tail;
-    _group->m_prev->m_next = _group;
-  }
-  s_group_tail = _group;
+  s_group_list.push(&_group->m_link);
 }
 
 static RX_GLOBAL_GROUP("system", g_group_system);

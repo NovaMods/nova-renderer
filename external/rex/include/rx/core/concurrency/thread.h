@@ -1,24 +1,13 @@
 #ifndef RX_CORE_CONCURRENCY_THREAD_H
 #define RX_CORE_CONCURRENCY_THREAD_H
-#include "rx/core/config.h" // RX_PLATFORM_*
 #include "rx/core/function.h"
 
-#if defined(RX_PLATFORM_POSIX)
-#include <pthread.h> // pthread_t
-#elif defined(RX_PLATFORM_WINDOWS)
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#define VC_EXTRALEAN
-#include <windows.h> // HANDLE
-#undef interface
-#else
-#error "missing thread implementation"
-#endif
+#include "rx/core/hints/empty_bases.h"
 
 namespace rx::concurrency {
 
-// NOTE: thread names must be static strings
-struct thread
+// Thread names must have static-storage which lives as long as the thread.
+struct RX_HINT_EMPTY_BASES thread
   : concepts::no_copy
 {
   constexpr thread();
@@ -28,22 +17,26 @@ struct thread
   thread(thread&& thread_);
   ~thread();
 
+  thread& operator=(thread&& thread_) = delete;
+
   void join();
+
+  memory::allocator* allocator() const;
 
 private:
   struct state {
     static void* wrap(void* data);
 
-    state();
+    constexpr state();
     state(const char* _name, function<void(int)>&& function_);
 
     void join();
 
-#if defined(RX_PLATFORM_POSIX)
-    pthread_t m_thread;
-#elif defined(RX_PLATFORM_WINDOWS)
-    HANDLE m_thread;
-#endif
+    // Fixed-capacity storage for any OS thread type, adjust if necessary.
+    union {
+      utility::nat m_nat;
+      alignas(16) rx_byte m_thread[16];
+    };
 
     function<void(int)> m_function;
     bool m_joined;
@@ -53,6 +46,13 @@ private:
   memory::allocator* m_allocator;
   state* m_state;
 };
+
+inline constexpr thread::state::state()
+  : m_nat{}
+  , m_joined{false}
+  , m_name{nullptr}
+{
+}
 
 inline constexpr thread::thread()
   : m_allocator{nullptr}
@@ -71,6 +71,10 @@ inline thread::thread(thread&& thread_)
 {
   thread_.m_allocator = nullptr;
   thread_.m_state = nullptr;
+}
+
+inline memory::allocator* thread::allocator() const {
+  return m_allocator;
 }
 
 } // namespace rx::concurrency

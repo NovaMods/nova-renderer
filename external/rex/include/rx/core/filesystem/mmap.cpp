@@ -5,21 +5,21 @@
 
 namespace rx::filesystem {
 
-rx_u64 mmap::read(rx_byte* _data, rx_u64 _size) {
+rx_u64 mmap::on_read(rx_byte* _data, rx_u64 _size) {
   const rx_u64 bytes = algorithm::min(_size, readable_bytes());
   memcpy(_data, m_rd, bytes);
   m_rd += bytes;
   return bytes;
 }
 
-rx_u64 mmap::write(const rx_byte* _data, rx_u64 _size) {
+rx_u64 mmap::on_write(const rx_byte* _data, rx_u64 _size) {
   const rx_u64 bytes = algorithm::min(_size, writable_bytes());
   memcpy(m_wr, _data, bytes);
   m_wr += bytes;
   return bytes;
 }
 
-bool mmap::seek(rx_s64 _where, whence _whence) {
+bool mmap::on_seek(rx_s64 _where, whence _whence) {
   auto cursor = reinterpret_cast<rx_uintptr>(m_rd ? m_rd : m_wr);
 
   switch (_whence) {
@@ -47,12 +47,12 @@ bool mmap::seek(rx_s64 _where, whence _whence) {
   return false;
 }
 
-bool mmap::flush() {
+bool mmap::on_flush() {
   return true;
 }
 
-optional<rx_u64> mmap::size() {
-  return m_size;
+rx_u64 mmap::on_tell() {
+  return m_rd ? m_rd - m_data : m_wr - m_data;
 }
 
 } // namespace rx::filesystem

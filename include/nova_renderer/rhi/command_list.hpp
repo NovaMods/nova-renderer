@@ -7,6 +7,10 @@
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
+    enum class IndexType {
+        Uint16,
+        Uint32,
+    };
 
     /*!
      * \brief An API-agnostic command list
@@ -37,6 +41,11 @@ namespace nova::renderer::rhi {
 
         CommandList(const CommandList& other) = delete;
         CommandList& operator=(const CommandList& other) = delete;
+
+        /*!
+         * \brief Sets the debug name of this command list, so that API debugging tools can give you a nice name
+         */
+        virtual void set_debug_name(const rx::string& name) = 0;
 
         /*!
          * \brief Inserts a barrier so that all access to a resource before the barrier is resolved before any access
@@ -84,6 +93,8 @@ namespace nova::renderer::rhi {
          * \param staging_buffer The buffer to use to upload the data to the image. This buffer must be host writable, and must be in the
          * CopySource state
          * \param data A pointer to the data to upload to the image
+         *
+         * \note The image must be in the Common layout prior to uploading data to it
          */
         virtual void upload_data_to_image(
             Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) = 0;
@@ -126,7 +137,7 @@ namespace nova::renderer::rhi {
          *
          * The index buffer must use 32-bit indices. This will likely change in the future but for now it's a thing
          */
-        virtual void bind_index_buffer(const Buffer* buffer) = 0;
+        virtual void bind_index_buffer(const Buffer* buffer, IndexType index_size) = 0;
 
         /*!
          * \brief Records rendering instances of an indexed mesh

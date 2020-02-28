@@ -14,6 +14,12 @@
 #include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
 
+namespace rx {
+    namespace memory {
+        struct bump_point_allocator;
+    }
+} // namespace rx
+
 void init_rex();
 void rex_fini();
 
@@ -50,6 +56,7 @@ namespace nova::renderer {
         rhi::Buffer* index_buffer = nullptr;
 
         uint32_t num_indices = 0;
+        size_t num_vertex_attributes{};
     };
 #pragma endregion
 
@@ -102,13 +109,10 @@ namespace nova::renderer {
          * depth/stencil attachment. After calling this function, Nova records commands to end that same renderpass. This allows the host
          * application to only care about rendering the UI, instead of worrying about any pass scheduling concerns
          *
-         * \param ui_renderpass The renderpass to use for UI
-         * \param create_info The create info for the renderpass
-         *
-         * \return The renderpass you added, but you no longer have ownership
+         * \return A pointer to the newly created renderpass
          */
-        template <typename RenderpassType>
-        [[nodiscard]] RenderpassType* set_ui_renderpass(RenderpassType* ui_renderpass, const shaderpack::RenderPassCreateInfo& create_info);
+        template <typename RenderpassType, typename... Args>
+        RenderpassType* create_ui_renderpass(Args&&... args);
 
         [[nodiscard]] const rx::vector<MaterialPass>& get_material_passes_for_pipeline(rhi::Pipeline* const pipeline);
 
@@ -195,9 +199,13 @@ namespace nova::renderer {
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
-        rx::vector<rx::memory::allocator*> frame_allocators;
+        rx::vector<rx::memory::bump_point_allocator*> frame_allocators;
 
         rhi::Sampler* point_sampler;
+
+        MeshId fullscreen_triangle_id;
+
+        RenderableId backbuffer_output_renderable;
 
         /*!
          * \brief The allocator that all of Nova's memory will be allocated through
@@ -223,6 +231,7 @@ namespace nova::renderer {
         rhi::DescriptorPool* global_descriptor_pool;
 
         DeviceMemoryResource* staging_buffer_memory;
+
         void* staging_buffer_memory_ptr;
 
 #pragma region Initialization
@@ -242,15 +251,23 @@ namespace nova::renderer {
 
         void create_global_sync_objects();
 
+        void create_global_samplers();
+
         void create_resource_storage();
 
-        void create_builtin_render_targets() const;
+        void create_builtin_render_targets();
 
-        void create_uniform_buffers();
+        void create_builtin_uniform_buffers();
+
+        void create_builtin_meshes();
 
         void create_renderpass_manager();
 
-        void create_builtin_renderpasses() const;
+        void create_builtin_renderpasses();
+
+        void initialize_descriptor_pool();
+
+        void create_builtin_pipelines();
 #pragma endregion
 
 #pragma region Renderpack
@@ -277,7 +294,7 @@ namespace nova::renderer {
         void create_dynamic_textures(const rx::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
 
         void create_render_passes(const rx::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
-                                  const rx::vector<shaderpack::PipelineCreateInfo>& pipelines) const;
+                                  const rx::vector<shaderpack::PipelineData>& pipelines) const;
 
         void destroy_dynamic_resources();
 
@@ -291,7 +308,7 @@ namespace nova::renderer {
 
         rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas;
 
-        void create_pipelines_and_materials(const rx::vector<shaderpack::PipelineCreateInfo>& pipeline_create_infos,
+        void create_pipelines_and_materials(const rx::vector<shaderpack::PipelineData>& pipeline_create_infos,
                                             const rx::vector<shaderpack::MaterialData>& materials);
 
         void create_materials_for_pipeline(const renderer::Pipeline& pipeline,
@@ -338,9 +355,8 @@ namespace nova::renderer {
         return *log_handles;
     }
 
-    template <typename RenderpassType>
-    RenderpassType* NovaRenderer::set_ui_renderpass(RenderpassType* ui_renderpass, const shaderpack::RenderPassCreateInfo& create_info) {
-        RenderpassType* renderpass = rendergraph->add_renderpass(rx::utility::move(ui_renderpass), create_info, *device_resources);
-        return renderpass;
+    template <typename RenderpassType, typename... Args>
+    RenderpassType* NovaRenderer::create_ui_renderpass(Args&&... args) {
+        return rendergraph->create_renderpass<RenderpassType>(*device_resources, rx::utility::forward<Args>(args)...);
     }
 } // namespace nova::renderer

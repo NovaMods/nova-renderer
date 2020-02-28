@@ -3,6 +3,7 @@
 #include <rx/core/log.h>
 
 #include "nova_renderer/renderables.hpp"
+#include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 
 namespace nova::renderer::rhi {
@@ -125,57 +126,79 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkBlendFactor to_blend_factor(shaderpack::BlendFactorEnum factor) {
+    VkBlendFactor to_blend_factor(const BlendFactor factor) {
         switch(factor) {
-            case shaderpack::BlendFactorEnum::DstAlpha:
+            case BlendFactor::DstAlpha:
                 return VK_BLEND_FACTOR_DST_ALPHA;
-            case shaderpack::BlendFactorEnum::DstColor:
+            case BlendFactor::DstColor:
                 return VK_BLEND_FACTOR_DST_COLOR;
-            case shaderpack::BlendFactorEnum::One:
+            case BlendFactor::One:
                 return VK_BLEND_FACTOR_ONE;
-            case shaderpack::BlendFactorEnum::OneMinusDstAlpha:
+            case BlendFactor::OneMinusDstAlpha:
                 return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
-            case shaderpack::BlendFactorEnum::OneMinusDstColor:
+            case BlendFactor::OneMinusDstColor:
                 return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
-            case shaderpack::BlendFactorEnum::OneMinusSrcAlpha:
+            case BlendFactor::OneMinusSrcAlpha:
                 return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-            case shaderpack::BlendFactorEnum::OneMinusSrcColor:
+            case BlendFactor::OneMinusSrcColor:
                 return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
-            case shaderpack::BlendFactorEnum::SrcAlpha:
+            case BlendFactor::SrcAlpha:
                 return VK_BLEND_FACTOR_SRC_ALPHA;
-            case shaderpack::BlendFactorEnum::SrcColor:
+            case BlendFactor::SrcColor:
                 return VK_BLEND_FACTOR_SRC_COLOR;
-            case shaderpack::BlendFactorEnum::Zero:
+            case BlendFactor::Zero:
                 return VK_BLEND_FACTOR_ZERO;
             default:
                 return VK_BLEND_FACTOR_ZERO;
         }
     }
 
-    VkCompareOp to_compare_op(const shaderpack::CompareOpEnum compare_op) {
+    VkBlendOp to_blend_op(const BlendOp blend_op) {
+        switch(blend_op) {
+            case BlendOp::Add:
+                return VK_BLEND_OP_ADD;
+
+            case BlendOp::Subtract:
+                return VK_BLEND_OP_SUBTRACT;
+
+            case BlendOp::ReverseSubtract:
+                return VK_BLEND_OP_REVERSE_SUBTRACT;
+
+            case BlendOp::Min:
+                return VK_BLEND_OP_MIN;
+
+            case BlendOp::Max:
+                return VK_BLEND_OP_MAX;
+
+            default:
+                return VK_BLEND_OP_ADD;
+        }
+    }
+
+    VkCompareOp to_compare_op(const CompareOp compare_op) {
         switch(compare_op) {
-            case shaderpack::CompareOpEnum::Never:
+            case CompareOp::Never:
                 return VK_COMPARE_OP_NEVER;
 
-            case shaderpack::CompareOpEnum::Less:
+            case CompareOp::Less:
                 return VK_COMPARE_OP_LESS;
 
-            case shaderpack::CompareOpEnum::LessEqual:
+            case CompareOp::LessEqual:
                 return VK_COMPARE_OP_LESS_OR_EQUAL;
 
-            case shaderpack::CompareOpEnum::Greater:
+            case CompareOp::Greater:
                 return VK_COMPARE_OP_GREATER;
 
-            case shaderpack::CompareOpEnum::GreaterEqual:
+            case CompareOp::GreaterEqual:
                 return VK_COMPARE_OP_GREATER_OR_EQUAL;
 
-            case shaderpack::CompareOpEnum::Equal:
+            case CompareOp::Equal:
                 return VK_COMPARE_OP_EQUAL;
 
-            case shaderpack::CompareOpEnum::NotEqual:
+            case CompareOp::NotEqual:
                 return VK_COMPARE_OP_NOT_EQUAL;
 
-            case shaderpack::CompareOpEnum::Always:
+            case CompareOp::Always:
                 return VK_COMPARE_OP_ALWAYS;
 
             default:
@@ -183,30 +206,30 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkStencilOp to_stencil_op(shaderpack::StencilOpEnum stencil_op) {
+    VkStencilOp to_stencil_op(const StencilOp stencil_op) {
         switch(stencil_op) {
-            case shaderpack::StencilOpEnum::Keep:
+            case StencilOp::Keep:
                 return VK_STENCIL_OP_KEEP;
 
-            case shaderpack::StencilOpEnum::Zero:
+            case StencilOp::Zero:
                 return VK_STENCIL_OP_ZERO;
 
-            case shaderpack::StencilOpEnum::Replace:
+            case StencilOp::Replace:
                 return VK_STENCIL_OP_REPLACE;
 
-            case shaderpack::StencilOpEnum::Increment:
+            case StencilOp::Increment:
                 return VK_STENCIL_OP_INCREMENT_AND_CLAMP;
 
-            case shaderpack::StencilOpEnum::IncrementAndWrap:
+            case StencilOp::IncrementAndWrap:
                 return VK_STENCIL_OP_INCREMENT_AND_WRAP;
 
-            case shaderpack::StencilOpEnum::Decrement:
+            case StencilOp::Decrement:
                 return VK_STENCIL_OP_DECREMENT_AND_CLAMP;
 
-            case shaderpack::StencilOpEnum::DecrementAndWrap:
+            case StencilOp::DecrementAndWrap:
                 return VK_STENCIL_OP_DECREMENT_AND_WRAP;
 
-            case shaderpack::StencilOpEnum::Invert:
+            case StencilOp::Invert:
                 return VK_STENCIL_OP_INVERT;
 
             default:
@@ -234,6 +257,44 @@ namespace nova::renderer::rhi {
             default:
                 logger(rx::log::level::k_error, "Unknown pixel format, returning RGBA8");
                 return VK_FORMAT_R8G8B8A8_UNORM;
+        }
+    }
+
+    VkFilter to_vk_filter(const TextureFilter filter) {
+        switch(filter) {
+            case TextureFilter::Point:
+                return VK_FILTER_NEAREST;
+
+            case TextureFilter::Bilinear:
+                return VK_FILTER_LINEAR;
+
+            case TextureFilter::Trilinear:
+                return VK_FILTER_CUBIC_IMG;
+
+            default:
+                return VK_FILTER_NEAREST;
+        }
+    }
+
+    VkSamplerAddressMode to_vk_address_mode(const TextureCoordWrapMode wrap_mode) {
+        switch(wrap_mode) {
+            case TextureCoordWrapMode::Repeat:
+                return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+            case TextureCoordWrapMode::MirroredRepeat:
+                return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+
+            case TextureCoordWrapMode::ClampToEdge:
+                return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+
+            case TextureCoordWrapMode::ClampToBorder:
+                return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+
+            case TextureCoordWrapMode::MirrorClampToEdge:
+                return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
+
+            default:
+                return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         }
     }
 
@@ -305,7 +366,7 @@ namespace nova::renderer::rhi {
         return vk_flags;
     }
 
-    std::string to_string(VkResult result) {
+    rx::string to_string(VkResult result) {
         switch(result) {
             case VK_SUCCESS:
                 return "VK_SUCCESS";
@@ -376,7 +437,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    std::string to_string(VkObjectType obj_type) {
+    rx::string to_string(VkObjectType obj_type) {
         switch(obj_type) {
             case VK_OBJECT_TYPE_UNKNOWN:
                 return "Unknown";

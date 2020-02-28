@@ -43,27 +43,31 @@ rx_byte* bump_point_allocator::allocate(rx_size _size) {
 }
 
 rx_byte* bump_point_allocator::reallocate(rx_byte* _data, rx_size _size) {
-  concurrency::scope_lock locked{m_lock};
+  if (RX_HINT_LIKELY(_data)) {
+    concurrency::scope_lock locked{m_lock};
 
-  // Round |_size| to a multiple of k_alignment to keep all pointers
-  // aligned by k_alignment.
-  _size = allocator::round_to_alignment(_size);
+    // Round |_size| to a multiple of k_alignment to keep all pointers
+    // aligned by k_alignment.
+    _size = allocator::round_to_alignment(_size);
 
-  // Can only reallocate in-place provided |_data| is the address of |m_last_point|,
-  // i.e it's the most recently allocated.
-  if (RX_HINT_LIKELY(_data == m_last_point)) {
-    // Check for available space for the allocation.
-    if (RX_HINT_UNLIKELY(m_last_point + _size >= m_data + m_size)) {
-      return nullptr;
+    // Can only reallocate in-place provided |_data| is the address of |m_last_point|,
+    // i.e it's the most recently allocated.
+    if (RX_HINT_LIKELY(_data == m_last_point)) {
+      // Check for available space for the allocation.
+      if (RX_HINT_UNLIKELY(m_last_point + _size >= m_data + m_size)) {
+        return nullptr;
+      }
+
+      // Bump the pointer along by the last point and new size.
+      m_this_point = m_last_point + _size;
+
+      return _data;
     }
 
-    // Bump the pointer along by the last point and new size.
-    m_this_point = m_last_point + _size;
-
-    return _data;
+    return nullptr;
   }
 
-  return nullptr;
+  return allocate(_size);
 }
 
 void bump_point_allocator::deallocate(rx_byte* _data) {

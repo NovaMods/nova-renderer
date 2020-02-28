@@ -10,6 +10,9 @@ namespace spirv_cross {
 } // namespace spirv_cross
 
 namespace nova::renderer {
+    struct ShaderSource;
+    struct PipelineStateCreateInfo;
+
     struct PipelineReturn {
         Pipeline pipeline;
         PipelineMetadata metadata;
@@ -32,7 +35,7 @@ namespace nova::renderer {
 
         [[nodiscard]] rx::optional<Pipeline> get_pipeline(const rx::string& pipeline_name) const;
 
-        [[nodiscard]] bool create_pipeline(const shaderpack::PipelineCreateInfo& create_info);
+        [[nodiscard]] bool create_pipeline(const PipelineStateCreateInfo& create_info);
 
     private:
         NovaRenderer& renderer;
@@ -47,15 +50,11 @@ namespace nova::renderer {
 
         rx::map<rx::string, Pipeline> pipelines;
 
-        [[nodiscard]] ntl::Result<PipelineReturn> create_graphics_pipeline(
-            rhi::PipelineInterface* pipeline_interface, const shaderpack::PipelineCreateInfo& pipeline_create_info) const;
+        [[nodiscard]] ntl::Result<PipelineReturn> create_graphics_pipeline(rhi::PipelineInterface* pipeline_interface,
+                                                                           const PipelineStateCreateInfo& pipeline_create_info) const;
 
         [[nodiscard]] ntl::Result<rhi::PipelineInterface*> create_pipeline_interface(
-            const shaderpack::PipelineCreateInfo& pipeline_create_info,
-            const rx::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-            const rx::optional<shaderpack::TextureAttachmentInfo>& depth_texture) const;
-
-        [[nodiscard]] rx::vector<rhi::VertexField> get_vertex_fields(const shaderpack::ShaderSource& vertex_shader) const;
+            const PipelineStateCreateInfo& pipeline_create_info) const;
 
         static void get_shader_module_descriptors(const rx::vector<uint32_t>& spirv,
                                                   rhi::ShaderStage shader_stage,

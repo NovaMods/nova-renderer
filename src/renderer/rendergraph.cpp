@@ -8,20 +8,24 @@
 namespace nova::renderer {
     using namespace shaderpack;
 
+    RX_LOG("Rendergraph", logger);
+
     Renderpass::Renderpass(rx::string name, const bool is_builtin) : name(std::move(name)), is_builtin(is_builtin) {}
 
-    void Renderpass::render(rhi::CommandList& cmds, FrameContext& ctx) {
+    void Renderpass::execute(rhi::CommandList& cmds, FrameContext& ctx) {
         // TODO: Figure if any of these barriers are implicit
         // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource instead of
         // using a robust default
 
         record_pre_renderpass_barriers(cmds, ctx);
 
+        setup_renderpass(cmds, ctx);
+
         const auto framebuffer = get_framebuffer(ctx);
 
         cmds.begin_renderpass(renderpass, framebuffer);
 
-        render_renderpass_contents(cmds, ctx);
+        record_renderpass_contents(cmds, ctx);
 
         cmds.end_renderpass();
 
@@ -60,7 +64,7 @@ namespace nova::renderer {
         }
     }
 
-    void Renderpass::render_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) {
+    void Renderpass::record_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) {
         auto& pipeline_storage = ctx.nova->get_pipeline_storage();
 
         // TODO: I _actually_ want to get all the draw commands from NovaRenderer, instead of storing them in this struct
@@ -94,7 +98,9 @@ namespace nova::renderer {
 
     void Rendergraph::destroy_renderpass(const rx::string& name) {
         if(Renderpass** renderpass = renderpasses.find(name)) {
-            device.destroy_framebuffer((*renderpass)->framebuffer, allocator);
+            if((*renderpass)->framebuffer) {
+                device.destroy_framebuffer((*renderpass)->framebuffer, allocator);
+            }
 
             device.destroy_renderpass((*renderpass)->renderpass, allocator);
 
@@ -107,7 +113,6 @@ namespace nova::renderer {
 
     rx::vector<rx::string> Rendergraph::calculate_renderpass_execution_order() {
         if(is_dirty) {
-            // Oh look some bullshit I have to do because C++ doesn't have an API as cool as Java Streams
             const auto create_infos = [&]() {
                 rx::vector<RenderPassCreateInfo> create_info_temp(allocator);
                 create_info_temp.reserve(renderpass_metadatas.size());
@@ -159,6 +164,8 @@ namespace nova::renderer {
         }
     }
 
+    void Renderpass::setup_renderpass(rhi::CommandList& cmds, FrameContext& ctx) {}
+
     void renderer::MaterialPass::record(rhi::CommandList& cmds, FrameContext& ctx) const {
         cmds.bind_descriptor_sets(descriptor_sets, pipeline_interface);
 
@@ -188,14 +195,14 @@ namespace nova::renderer {
         if(start_index != ctx.cur_model_matrix_index) {
             // TODO: There's probably a better way to do this
             rx::vector<rhi::Buffer*> vertex_buffers;
-            for(uint32_t i = 0; i < 7; i++) {
+            vertex_buffers.reserve(batch.num_vertex_attributes);
+            for(uint32_t i = 0; i < batch.num_vertex_attributes; i++) {
                 vertex_buffers.push_back(batch.vertex_buffer);
             }
             cmds.bind_vertex_buffers(vertex_buffers);
-            cmds.bind_index_buffer(batch.index_buffer);
+            cmds.bind_index_buffer(batch.index_buffer, rhi::IndexType::Uint32);
 
-            cmds.draw_indexed_mesh(static_cast<uint32_t>(batch.index_buffer->size.b_count() / sizeof(uint32_t)),
-                                   static_cast<uint32_t>(ctx.cur_model_matrix_index - start_index));
+            cmds.draw_indexed_mesh(batch.num_indices);
         }
     }
 
@@ -224,7 +231,7 @@ namespace nova::renderer {
                 vertex_buffers.push_back(vertex_buffer);
             }
             cmds.bind_vertex_buffers(vertex_buffers);
-            cmds.bind_index_buffer(index_buffer);
+            cmds.bind_index_buffer(index_buffer, rhi::IndexType::Uint32);
         }
     }
 

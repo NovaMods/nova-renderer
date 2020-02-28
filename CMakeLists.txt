@@ -99,6 +99,7 @@ set(NOVA_SOURCE
         include/nova_renderer/window.hpp
         include/nova_renderer/constants.hpp
         include/nova_renderer/frame_context.hpp
+        include/nova_renderer/renderpack_data_conversions.hpp
 
         include/nova_renderer/filesystem/filesystem_helpers.hpp
         include/nova_renderer/filesystem/folder_accessor.hpp
@@ -117,6 +118,7 @@ set(NOVA_SOURCE
         include/nova_renderer/rhi/swapchain.hpp
         include/nova_renderer/rhi/rhi_enums.hpp
         include/nova_renderer/rhi/rhi_types.hpp
+        include/nova_renderer/rhi/pipeline_create_info.hpp
         include/nova_renderer/rhi/render_device.hpp
         include/nova_renderer/rhi/device_memory_resource.hpp
 
@@ -156,6 +158,8 @@ set(NOVA_SOURCE
         src/render_objects/renderables.cpp
         src/renderer/rendergraph.cpp
         src/renderer/ui/ui_renderer.cpp
+        src/renderer/builtin/backbuffer_output_pass.hpp
+        src/renderer/builtin/backbuffer_output_pass.cpp
         src/renderer/pipeline_storage.cpp
         src/renderer/resource_loader.cpp
 
@@ -169,6 +173,7 @@ set(NOVA_SOURCE
         src/loading/shaderpack/shaderpack_validator.hpp
         src/loading/shaderpack/render_graph_builder.cpp
         src/loading/shaderpack/render_graph_builder.hpp
+        src/loading/shaderpack/renderpack_data_conversions.cpp
 
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
@@ -289,7 +294,6 @@ message(STATUS "Miniz headers: ${INSTALL_HEADERS}")
 
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
-target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
 
 if(NOVA_FORCE_DEBUGGING) 
     target_compile_definitions(nova-renderer PUBLIC NOVA_DEBUG)
@@ -401,6 +405,10 @@ else()
     # GCC and Clang complain loudly about the #pragma region stuff. This shuts them up.
     target_compile_options_if_supported(nova-renderer PRIVATE -Wno-unknown-pragmas)
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs X11)
+endif()
+
+if(MSVC)
+    target_sources(nova-renderer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/tools/vs-visualizers/RexCore.natvis)
 endif()
 
 ###############################

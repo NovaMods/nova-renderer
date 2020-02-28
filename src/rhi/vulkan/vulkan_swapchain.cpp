@@ -62,13 +62,15 @@ namespace nova::renderer::rhi {
             return 0;
         }
         if(acquire_result != VK_SUCCESS) {
-            logger(rx::log::level::k_error, "%s:%u=>%s", __FILE__, __LINE__, std::to_string(acquire_result));
+            logger(rx::log::level::k_error, "%s:%u=>%s", __FILE__, __LINE__, to_string(acquire_result));
         }
 
         // Block until we have the swapchain image in order to mimic D3D12. TODO: Reevaluate this decision
         rx::vector<Fence*> fences;
         fences.push_back(vk_fence);
         render_device->wait_for_fences(fences);
+
+        render_device->destroy_fences(fences, allocator);
 
         return static_cast<uint8_t>(acquired_image_idx);
     }
@@ -85,7 +87,15 @@ namespace nova::renderer::rhi {
         present_info.pImageIndices = &image_idx;
         present_info.pResults = &swapchain_result;
 
-        vkQueuePresentKHR(render_device->graphics_queue, &present_info);
+        const auto result = vkQueuePresentKHR(render_device->graphics_queue, &present_info);
+
+        if(result != VK_SUCCESS) {
+            logger(rx::log::level::k_error, "Could not present swapchain images: vkQueuePresentKHR failed: %s", to_string(result));
+        }
+
+        if(swapchain_result != VK_SUCCESS) {
+            logger(rx::log::level::k_error, "Could not present swapchain image %u: Presenting failed: %s", image_idx, to_string(result));
+        }
     }
 
     void VulkanSwapchain::transition_swapchain_images_into_color_attachment_layout(const rx::vector<VkImage>& images) const {

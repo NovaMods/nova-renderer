@@ -126,6 +126,12 @@ namespace nova::renderer::rhi {
         FragmentDensityProcess = 0x00800000,
     };
 
+    enum class ShaderLanguage {
+        Hlsl,
+        Glsl,
+        Spirv,
+    };
+
     enum class ShaderStage {
         Vertex = 0x0001,
         TessellationControl = 0x0002,
@@ -159,7 +165,23 @@ namespace nova::renderer::rhi {
         Image,
     };
 
+    enum class TextureFilter {
+        Point,
+        Bilinear,
+        Trilinear,
+    };
+
+    enum class TextureCoordWrapMode {
+        Repeat,
+        MirroredRepeat,
+        ClampToEdge,
+        ClampToBorder,
+        MirrorClampToEdge,
+    };
+
     bool is_depth_format(PixelFormat format);
 
     uint32_t get_byte_size(VertexFieldFormat format);
+
+    rx::string descriptor_type_to_string(DescriptorType type);
 } // namespace nova::renderer::rhi

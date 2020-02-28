@@ -1,21 +1,20 @@
 #pragma once
 
 #include <atomic>
-#include <memory_resource>
-#include <string>
-#include <vector>
 
 #include <glm/glm.hpp>
+#include <rx/core/string.h>
+#include <rx/core/vector.h>
 
 namespace nova::renderer {
     struct FullVertex {
         glm::vec3 position;          // 12 bytes
         glm::vec3 normal;            // 12 bytes
         glm::vec3 tangent;           // 12 bytes
-        glm::u16vec2 main_uv;        // 4 bytes
-        glm::u8vec2 secondary_uv;    // 2 bytes
+        uint32_t main_uv;            // 4 bytes
+        uint32_t secondary_uv;       // 4 bytes
         uint32_t virtual_texture_id; // 4 bytes
-        glm::vec4 additional_stuff;  // 16 bytes
+        glm::vec4 additional_stuff;  // 12 bytes
     };
 
     static_assert(sizeof(FullVertex) % 16 == 0, "full_vertex struct is not aligned to 16 bytes!");
@@ -28,20 +27,40 @@ namespace nova::renderer {
      * making them use special vertex formats
      */
     struct MeshData {
-        std::pmr::vector<FullVertex> vertex_data;
-        std::pmr::vector<uint32_t> indices;
+        size_t num_vertex_attributes{};
+        uint32_t num_indices{};
+
+        /*!
+         * \brief Pointer to the vertex data of this mesh
+         */
+        const void* vertex_data_ptr{};
+
+        /*!
+         * \brief Number of bytes of vertex data
+         */
+        size_t vertex_data_size{};
+
+        /*!
+         * \brief Pointer to the index data of this mesh
+         */
+        const void* index_data_ptr{};
+
+        /*!
+         * \brief Number of bytes of index data
+         */
+        size_t index_data_size{};
     };
 
     using MeshId = uint64_t;
 
     struct StaticMeshRenderableUpdateData {
-        MeshId mesh;
+        MeshId mesh{};
     };
 
     struct StaticMeshRenderableData : StaticMeshRenderableUpdateData {
-        glm::vec3 initial_position = {};
-        glm::vec3 initial_rotation = {};
-        glm::vec3 initial_scale = glm::vec3(1);
+        glm::vec3 initial_position{};
+        glm::vec3 initial_rotation{};
+        glm::vec3 initial_scale{1};
 
         bool is_static = true;
     };
@@ -53,15 +72,15 @@ namespace nova::renderer {
     struct RenderableMetadata {
         RenderableId id = 0;
 
-        std::pmr::vector<std::string> passes;
+        rx::vector<rx::string> passes{};
     };
 
     struct RenderCommand {
-        RenderableId id = 0;
+        RenderableId id{};
 
         bool is_visible = true;
 
-        glm::mat4 model_matrix = glm::mat4(1);
+        glm::mat4 model_matrix{1};
     };
 
     struct StaticMeshRenderCommand : RenderCommand {};

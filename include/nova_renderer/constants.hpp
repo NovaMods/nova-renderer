@@ -22,6 +22,7 @@ namespace nova::renderer {
     constexpr const char* MATERIALS_DIRECTORY = "materials";
     constexpr const char* SHADERS_DIRECTORY = "shaders";
     constexpr const char* RENDERPACK_DESCRIPTOR_FILE = "renderpack.json";
+    constexpr const char* RESOURCES_FILE = "resources.json";
     constexpr const char* MATERIAL_FILE_EXTENSION = ".mat";
 
     /*!
@@ -53,14 +54,26 @@ namespace nova::renderer {
      */
     constexpr const char* UI_RENDER_PASS_NAME = "NovaUI";
 
-    constexpr const char* UI_MATERIAL_NAME = "BestFriendGUI";
+    /*!
+     * \brief Name of the renderpass that outputs to the backbuffer
+     */
+    constexpr const char* BACKBUFFER_OUTPUT_RENDER_PASS_NAME = "BackbufferOutput";
 
-    constexpr const char* UI_MATERIAL_PASS_NAME = "BestFriendGUI";
+    constexpr const char* BACKBUFFER_OUTPUT_PIPELINE_NAME = "BackbufferOutput";
+
+    constexpr const char* BACKBUFFER_OUTPUT_MATERIAL_NAME = "BackbufferOutput";
 
     /*!
      * \brief Name of the render target that renderpacks must render to
      */
     constexpr const char* SCENE_OUTPUT_RT_NAME = "NovaSceneOutput";
+
+    /*!
+     * \brief Name of the UI render target
+     *
+     * All UI renderpasses MUST will render to this render target
+     */
+    constexpr const char* UI_OUTPUT_RT_NAME = "NovaUiOutput";
 
     /*!
      * \brief Name of the backbuffer
@@ -69,4 +82,6 @@ namespace nova::renderer {
      * the rendergraph has finished
      */
     constexpr const char* BACKBUFFER_NAME = "NovaBackbuffer";
+
+    constexpr const char* POINT_SAMPLER_NAME = "NovaPointSampler";
 } // namespace nova::renderer

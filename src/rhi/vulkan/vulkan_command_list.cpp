@@ -1,10 +1,27 @@
 #include "vulkan_command_list.hpp"
 
+#include <rx/core/log.h>
+#include <string.h>
+#include <vk_mem_alloc.h>
+
 #include "vk_structs.hpp"
 #include "vulkan_render_device.hpp"
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer::rhi {
+    RX_LOG("VkCmdLst", logger);
+    VkIndexType to_vk_index_type(const IndexType index_type) {
+        switch(index_type) {
+            case IndexType::Uint16:
+                return VK_INDEX_TYPE_UINT16;
+
+            case IndexType::Uint32:
+                [[fallthrough]];
+            default:
+                return VK_INDEX_TYPE_UINT32;
+        }
+    }
+
     VulkanCommandList::VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderDevice* render_device)
         : cmds(cmds), render_device(*render_device) {
 
@@ -14,6 +31,16 @@ namespace nova::renderer::rhi {
         begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
         vkBeginCommandBuffer(cmds, &begin_info);
+    }
+
+    void VulkanCommandList::set_debug_name(const rx::string& name) {
+        VkDebugUtilsObjectNameInfoEXT vk_name{};
+        vk_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        vk_name.objectType = VK_OBJECT_TYPE_COMMAND_BUFFER;
+        vk_name.objectHandle = reinterpret_cast<uint64_t>(cmds);
+        vk_name.pObjectName = name.data();
+
+        render_device.vkSetDebugUtilsObjectNameEXT(render_device.device, &vk_name);
     }
 
     void VulkanCommandList::resource_barriers(const PipelineStage stages_before_barrier,
@@ -107,12 +134,17 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanCommandList::begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) {
-        // TODO: Store this somewhere better
-        // TODO: Get max framebuffer attachments from GPU
-        const static rx::vector<VkClearValue> CLEAR_VALUES(9);
-
         auto* vk_renderpass = static_cast<VulkanRenderpass*>(renderpass);
         auto* vk_framebuffer = static_cast<VulkanFramebuffer*>(framebuffer);
+
+        // FIXME: @dethraid this has been changed by @janrupf to fix a SIGSEGV
+        //       and to match the number of clear values as used below in the
+        //      VkRenderPassBeginInfo, however, there was another comment about
+        //      required changes here before:
+        //
+        // // TODO: Store this somewhere better
+        // // TODO: Get max framebuffer attachments from GPU
+        rx::vector<VkClearValue> CLEAR_VALUES(vk_framebuffer->num_attachments);
 
         VkRenderPassBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -139,6 +171,9 @@ namespace nova::renderer::rhi {
 
         for(uint32_t i = 0; i < descriptor_sets.size(); i++) {
             const auto* vk_set = static_cast<const VulkanDescriptorSet*>(descriptor_sets[i]);
+
+            // logger(rx::log::level::k_verbose, "Binding descriptor set %x", vk_set->descriptor_set);
+
             vkCmdBindDescriptorSets(cmds,
                                     VK_PIPELINE_BIND_POINT_GRAPHICS,
                                     vk_interface->pipeline_layout,
@@ -165,10 +200,10 @@ namespace nova::renderer::rhi {
         vkCmdBindVertexBuffers(cmds, 0, static_cast<uint32_t>(vk_buffers.size()), vk_buffers.data(), offsets.data());
     }
 
-    void VulkanCommandList::bind_index_buffer(const Buffer* buffer) {
+    void VulkanCommandList::bind_index_buffer(const Buffer* buffer, const IndexType index_type) {
         const auto* vk_buffer = static_cast<const VulkanBuffer*>(buffer);
 
-        vkCmdBindIndexBuffer(cmds, vk_buffer->buffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindIndexBuffer(cmds, vk_buffer->buffer, 0, to_vk_index_type(index_type));
     }
 
     void VulkanCommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t offset, const uint32_t num_instances) {
@@ -181,7 +216,21 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanCommandList::upload_data_to_image(
-        Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) {
-        // TODO
+        Image* image, const size_t width, const size_t height, const size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) {
+        auto* vk_image = static_cast<VulkanImage*>(image);
+        auto* vk_buffer = static_cast<VulkanBuffer*>(staging_buffer);
+
+        memcpy(vk_buffer->allocation_info.pMappedData, data, width * height * bytes_per_pixel);
+
+        VkBufferImageCopy image_copy{};
+        if(!vk_image->is_depth_tex) {
+            image_copy.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        } else {
+            logger(rx::log::level::k_error, "Can not upload data to depth images");
+        }
+        image_copy.imageSubresource.layerCount = 1;
+        image_copy.imageExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1};
+
+        vkCmdCopyBufferToImage(cmds, vk_buffer->buffer, vk_image->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &image_copy);
     }
 } // namespace nova::renderer::rhi

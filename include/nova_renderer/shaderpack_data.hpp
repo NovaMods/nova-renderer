@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 #include <glm/glm.hpp>
 #include <rx/core/map.h>
 #include <rx/core/optional.h>
@@ -178,7 +176,7 @@ namespace nova::renderer::shaderpack {
         static StencilOpState from_json(const rx::json& json);
     };
 
-    struct ShaderSource {
+    struct RenderpackShaderSource {
         rx::string filename;
         rx::vector<uint32_t> source;
     };
@@ -186,7 +184,7 @@ namespace nova::renderer::shaderpack {
     /*!
      * \brief All the data that Nova uses to build a pipeline
      */
-    struct PipelineCreateInfo {
+    struct PipelineData {
         /*!
          * \brief The name of this pipeline
          */
@@ -296,14 +294,14 @@ namespace nova::renderer::shaderpack {
 
         ScissorTestMode scissor_mode = ScissorTestMode::Off;
 
-        ShaderSource vertex_shader{};
+        RenderpackShaderSource vertex_shader{};
 
-        rx::optional<ShaderSource> geometry_shader;
-        rx::optional<ShaderSource> tessellation_control_shader;
-        rx::optional<ShaderSource> tessellation_evaluation_shader;
-        rx::optional<ShaderSource> fragment_shader;
+        rx::optional<RenderpackShaderSource> geometry_shader;
+        rx::optional<RenderpackShaderSource> tessellation_control_shader;
+        rx::optional<RenderpackShaderSource> tessellation_evaluation_shader;
+        rx::optional<RenderpackShaderSource> fragment_shader;
 
-        static PipelineCreateInfo from_json(const rx::json& json);
+        static PipelineData from_json(const rx::json& json);
     };
 
     struct TextureFormat {
@@ -510,8 +508,6 @@ namespace nova::renderer::shaderpack {
          */
         rx::vector<VkDescriptorSet> descriptor_sets;
 
-        VkPipelineLayout layout = VK_NULL_HANDLE;
-
         static MaterialPass from_json(const rx::json& json);
     };
 
@@ -527,7 +523,7 @@ namespace nova::renderer::shaderpack {
      * \brief All the data that can be in a shaderpack
      */
     struct RenderpackData {
-        rx::vector<PipelineCreateInfo> pipelines;
+        rx::vector<PipelineData> pipelines;
 
         /*!
          * \brief All the renderpasses that this shaderpack needs, in submission order
@@ -551,6 +547,7 @@ namespace nova::renderer::shaderpack {
     [[nodiscard]] PrimitiveTopologyEnum primitive_topology_enum_from_string(const rx::string& str);
     [[nodiscard]] BlendFactorEnum blend_factor_enum_from_string(const rx::string& str);
     [[nodiscard]] RenderQueueEnum render_queue_enum_from_string(const rx::string& str);
+    [[nodiscard]] ScissorTestMode scissor_test_mode_from_string(const rx::string& str);
     [[nodiscard]] StateEnum state_enum_from_string(const rx::string& str);
 
     [[nodiscard]] PixelFormatEnum pixel_format_enum_from_json(const rx::json& j);
@@ -563,6 +560,7 @@ namespace nova::renderer::shaderpack {
     [[nodiscard]] PrimitiveTopologyEnum primitive_topology_enum_from_json(const rx::json& j);
     [[nodiscard]] BlendFactorEnum blend_factor_enum_from_json(const rx::json& j);
     [[nodiscard]] RenderQueueEnum render_queue_enum_from_json(const rx::json& j);
+    [[nodiscard]] ScissorTestMode scissor_test_mode_from_json(const rx::json& j);
     [[nodiscard]] StateEnum state_enum_from_json(const rx::json& j);
 
     [[nodiscard]] rx::string to_string(PixelFormatEnum val);

@@ -2,11 +2,14 @@
 #define RX_CORE_FILESYSTEM_DIRECTORY_H
 #include "rx/core/string.h"
 #include "rx/core/function.h"
+
 #include "rx/core/concepts/no_copy.h"
+
+#include "rx/core/hints/empty_bases.h"
 
 namespace rx::filesystem {
 
-struct directory
+struct RX_HINT_EMPTY_BASES directory
   : concepts::no_copy
 {
   directory(memory::allocator* _allocator, const char* _path);

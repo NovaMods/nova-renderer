@@ -115,8 +115,8 @@ namespace nova::renderer::shaderpack {
         return state;
     }
 
-    PipelineCreateInfo PipelineCreateInfo::from_json(const rx::json& json) {
-        PipelineCreateInfo pipeline = {};
+    PipelineData PipelineData::from_json(const rx::json& json) {
+        PipelineData pipeline = {};
 
         FILL_REQUIRED_FIELD(pipeline.name, get_json_opt<rx::string>(json, "name"));
         FILL_REQUIRED_FIELD(pipeline.pass, get_json_opt<rx::string>(json, "pass"));
@@ -157,29 +157,31 @@ namespace nova::renderer::shaderpack {
         pipeline.depth_func = get_json_value<CompareOpEnum>(json, "depthFunc", CompareOpEnum::Less, compare_op_enum_from_json);
         pipeline.render_queue = get_json_value<RenderQueueEnum>(json, "renderQueue", RenderQueueEnum::Opaque, render_queue_enum_from_json);
 
+        pipeline.scissor_mode = get_json_value<ScissorTestMode>(json, "scissorMode", ScissorTestMode::Off, scissor_test_mode_from_json);
+
         pipeline.vertex_shader.filename = get_json_value<rx::string>(json, "vertexShader", "<NAME_MISSING>");
 
         const auto geometry_shader_name = get_json_opt<rx::string>(json, "geometryShader");
         if(geometry_shader_name) {
-            pipeline.geometry_shader = ShaderSource{};
+            pipeline.geometry_shader = RenderpackShaderSource{};
             pipeline.geometry_shader->filename = *geometry_shader_name;
         }
 
         const auto tess_control_shader_name = get_json_opt<rx::string>(json, "tessellationControlShader");
         if(tess_control_shader_name) {
-            pipeline.tessellation_control_shader = ShaderSource{};
+            pipeline.tessellation_control_shader = RenderpackShaderSource{};
             pipeline.tessellation_control_shader->filename = *tess_control_shader_name;
         }
 
         const auto tess_eval_shader_name = get_json_opt<rx::string>(json, "tessellationEvalShader");
         if(tess_eval_shader_name) {
-            pipeline.tessellation_evaluation_shader = ShaderSource{};
+            pipeline.tessellation_evaluation_shader = RenderpackShaderSource{};
             pipeline.tessellation_evaluation_shader->filename = *tess_eval_shader_name;
         }
 
         const auto fragment_shader_name = get_json_opt<rx::string>(json, "fragmentShader");
         if(fragment_shader_name) {
-            pipeline.fragment_shader = ShaderSource{};
+            pipeline.fragment_shader = RenderpackShaderSource{};
             pipeline.fragment_shader->filename = *fragment_shader_name;
         }
 
@@ -438,6 +440,21 @@ namespace nova::renderer::shaderpack {
         return {};
     }
 
+    ScissorTestMode scissor_test_mode_from_string(const rx::string& str) {
+        if(str == "Off") {
+            return ScissorTestMode::Off;
+
+        } else if(str == "StaticScissorRect") {
+            return ScissorTestMode::StaticScissorRect;
+
+        } else if(str == "DynamicScissorRect") {
+            return ScissorTestMode::DynamicScissorRect;
+        }
+
+        logger(rx::log::level::k_error, "Unsupported scissor mode %s", str);
+        return {};
+    }
+
     StateEnum state_enum_from_string(const rx::string& str) {
         if(str == "Blending") {
             return StateEnum::Blending;
@@ -497,6 +514,8 @@ namespace nova::renderer::shaderpack {
     BlendFactorEnum blend_factor_enum_from_json(const rx::json& j) { return blend_factor_enum_from_string(j.as_string()); }
 
     RenderQueueEnum render_queue_enum_from_json(const rx::json& j) { return render_queue_enum_from_string(j.as_string()); }
+
+    ScissorTestMode scissor_test_mode_from_json(const rx::json& j) { return scissor_test_mode_from_string(j.as_string()); }
 
     StateEnum state_enum_from_json(const rx::json& j) { return state_enum_from_string(j.as_string()); }
 

@@ -31,6 +31,8 @@ struct optional {
 
   operator bool() const;
 
+  bool has_value() const;
+
   T& operator*();
   const T& operator*() const;
   T* operator->();
@@ -163,6 +165,11 @@ inline optional<T>::~optional() {
 
 template<typename T>
 inline optional<T>::operator bool() const {
+  return m_init;
+}
+
+template<typename T>
+inline bool optional<T>::has_value() const {
   return m_init;
 }
 

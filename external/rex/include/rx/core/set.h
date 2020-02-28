@@ -18,6 +18,9 @@ namespace rx {
 // 64-bit: 56 bytes
 template<typename K>
 struct set {
+  template<typename Kt, rx_size E>
+  using initializers = array<Kt[E]>;
+
   static constexpr rx_size k_initial_size{256};
   static constexpr rx_size k_load_factor{90};
 
@@ -25,6 +28,13 @@ struct set {
   set(memory::allocator* _allocator);
   set(set&& set_);
   set(const set& _set);
+
+  template<typename Kt, rx_size E>
+  set(memory::allocator* _allocator, initializers<Kt, E>&& initializers_);
+
+  template<typename Kt, rx_size E>
+  set(initializers<Kt, E>&& initializers_);
+
   ~set();
 
   set& operator=(set&& set_);
@@ -122,6 +132,23 @@ inline set<K>::set(const set& _set)
 }
 
 template<typename K>
+template<typename Kt, rx_size E>
+inline set<K>::set(memory::allocator* _allocator, initializers<Kt, E>&& initializers_)
+  : set{_allocator}
+{
+  for (rx_size i = 0; i < E; i++) {
+    insert(utility::move(initializers_[i]));
+  }
+}
+
+template<typename K>
+template<typename Kt, rx_size E>
+inline set<K>::set(initializers<Kt, E>&& initializers_)
+  : set{&memory::g_system_allocator, utility::move(initializers_)}
+{
+}
+
+template<typename K>
 inline set<K>::~set() {
   clear_and_deallocate();
 }
@@ -202,11 +229,11 @@ inline constexpr void set<K>::initialize(memory::allocator* _allocator, rx_size 
 }
 
 template<typename K>
-inline void set<K>::insert(K&& _key) {
+inline void set<K>::insert(K&& key_) {
   if (++m_size >= m_resize_threshold) {
     grow();
   }
-  inserter(hash_key(_key), utility::move(_key));
+  inserter(hash_key(key_), utility::forward<K>(key_));
 }
 
 template<typename K>
@@ -260,9 +287,9 @@ inline rx_size set<K>::hash_key(const K& _key) {
 
   // MSB is used to indicate deleted elements
   if constexpr(sizeof hash_value == 8) {
-    hash_value &= 0x7FFFFFFFFFFFFFFF;
+    hash_value &= 0x7FFFFFFFFFFFFFFF_z;
   } else {
-    hash_value &= 0x7FFFFFFF;
+    hash_value &= 0x7FFFFFFF_z;
   }
 
   // don't ever hash to zero since zero is used to indicate unused slots
@@ -336,7 +363,7 @@ inline void set<K>::grow() {
 
 template<typename K>
 inline void set<K>::construct(rx_size _index, rx_size _hash, K&& key_) {
-  utility::construct<K>(m_keys + _index, utility::move(key_));
+  utility::construct<K>(m_keys + _index, utility::forward<K>(key_));
   element_hash(_index) = _hash;
 }
 
@@ -346,14 +373,14 @@ inline void set<K>::inserter(rx_size _hash, K&& key_) {
   rx_size distance{0};
   for (;;) {
     if (element_hash(position) == 0) {
-      construct(position, _hash, utility::move(key_));
+      construct(position, _hash, utility::forward<K>(key_));
       return;
     }
 
     const rx_size existing_element_probe_distance{probe_distance(element_hash(position), position)};
     if (existing_element_probe_distance < distance) {
       if (is_deleted(element_hash(position))) {
-        construct(position, _hash, utility::move(key_));
+        construct(position, _hash, utility::forward<K>(key_));
         return;
       }
 
@@ -383,7 +410,7 @@ inline bool set<K>::lookup_index(const K& _key, rx_size& _index) const {
   rx_size distance{0};
   for (;;) {
     const rx_size hash_element{element_hash(position)};
-    if (hash_element == 0 || is_deleted(hash_element)) {
+    if (hash_element == 0) {
       return false;
     } else if (distance > probe_distance(hash_element, position)) {
       return false;

@@ -7,9 +7,20 @@ namespace nova::renderer::rhi {
 
     bool ResourceBindingDescription::operator!=(const ResourceBindingDescription& other) { return !(*this == other); }
 
-    ResourceBarrier::ResourceBarrier() {}
+    ResourceBarrier::ResourceBarrier() : buffer_memory_barrier{0, 0} {};
 
-    DescriptorResourceInfo::DescriptorResourceInfo() {}
+    DescriptorResourceInfo::DescriptorResourceInfo() : image_info{} {};
+
+    uint32_t PipelineInterface::get_num_descriptors_of_type(const DescriptorType type) const {
+        uint32_t num_descriptors = 0;
+        bindings.each_value([&](const ResourceBindingDescription& description) {
+            if(description.type == type) {
+                num_descriptors++;
+            }
+        });
+
+        return num_descriptors;
+    }
 
     ShaderStage operator|=(const ShaderStage lhs, const ShaderStage rhs) {
         return static_cast<ShaderStage>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
@@ -50,6 +61,28 @@ namespace nova::renderer::rhi {
 
             default:
                 return 16;
+        }
+    }
+
+    rx::string descriptor_type_to_string(DescriptorType type) {
+        switch(type) {
+            case DescriptorType::CombinedImageSampler:
+                return "CombinedImageSampler";
+
+            case DescriptorType::UniformBuffer:
+                return "UniformBuffer";
+
+            case DescriptorType::StorageBuffer:
+                return "StorageBuffer";
+
+            case DescriptorType::Texture:
+                return "Texture";
+
+            case DescriptorType::Sampler:
+                return "Sampler";
+
+            default:
+                return "Unknown";
         }
     }
 } // namespace nova::renderer::rhi

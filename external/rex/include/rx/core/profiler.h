@@ -145,7 +145,6 @@ inline void profiler::end_gpu_sample() {
   }
 }
 
-
 } // namespace rx
 
-#endif // RX_PROFILE_H
+#endif // RX_PROFILER_H

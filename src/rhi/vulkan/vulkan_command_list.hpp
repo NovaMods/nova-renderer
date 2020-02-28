@@ -18,6 +18,10 @@ namespace nova::renderer::rhi {
 
         VulkanCommandList(VkCommandBuffer cmds, const VulkanRenderDevice* render_device);
 
+        ~VulkanCommandList() override = default;
+
+        void set_debug_name(const rx::string& name) override;
+
         void resource_barriers(PipelineStage stages_before_barrier,
                                PipelineStage stages_after_barrier,
                                const rx::vector<ResourceBarrier>& barriers) override;
@@ -40,7 +44,7 @@ namespace nova::renderer::rhi {
 
         void bind_vertex_buffers(const rx::vector<Buffer*>& buffers) override;
 
-        void bind_index_buffer(const Buffer* buffer) override;
+        void bind_index_buffer(const Buffer* buffer, IndexType index_type) override;
 
         void draw_indexed_mesh(uint32_t num_indices, uint32_t offset, uint32_t num_instances) override;
 

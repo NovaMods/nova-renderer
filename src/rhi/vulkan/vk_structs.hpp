@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "nova_renderer/rhi/device_memory_resource.hpp"
+#include <vk_mem_alloc.h>
+
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 #include "vulkan.hpp"
@@ -21,12 +22,13 @@ namespace nova::renderer::rhi {
     struct VulkanImage : Image {
         VkImage image = VK_NULL_HANDLE;
         VkImageView image_view = VK_NULL_HANDLE;
-        VulkanDeviceMemory* memory = nullptr;
+        VmaAllocation allocation{};
     };
 
     struct VulkanBuffer : Buffer {
         VkBuffer buffer = VK_NULL_HANDLE;
-        DeviceMemoryAllocation memory{};
+        VmaAllocation allocation{};
+        VmaAllocationInfo allocation_info{};
     };
 
     struct VulkanRenderpass : Renderpass {
@@ -53,6 +55,8 @@ namespace nova::renderer::rhi {
          * The index in the vector is the index of the set
          */
         rx::vector<VkDescriptorSetLayout> layouts_by_set;
+
+        rx::vector<uint32_t> variable_descriptor_set_counts;
     };
 
     struct VulkanPipeline : Pipeline {

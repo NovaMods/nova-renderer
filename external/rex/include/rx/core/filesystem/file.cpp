@@ -15,50 +15,78 @@ RX_LOG("filesystem/file", logger);
 
 namespace rx::filesystem {
 
-file::file(void* _impl, const char* _file_name, const char* _mode)
-  : m_impl{_impl}
-  , m_file_name{_file_name}
+rx_u32 file::flags_from_mode(const char* _mode) {
+  rx_u32 flags = 0;
+
+  // These few flags are true regardless of the mode.
+  flags |= stream::k_tell;
+  flags |= stream::k_seek;
+
+  for (const char* ch = _mode; *ch; ch++) {
+    switch (*ch) {
+    case 'r':
+      flags |= stream::k_read;
+      break;
+    case 'w':
+      [[fallthrough]];
+    case '+':
+      flags |= stream::k_write;
+      flags |= stream::k_flush;
+      break;
+    }
+  }
+
+  return flags;
+}
+
+#if defined(RX_PLATFORM_WINDOWS)
+file::file(memory::allocator* _allocator, const char* _file_name, const char* _mode)
+  : stream{flags_from_mode(_mode)}
+  , m_allocator{_allocator}
+  , m_impl{nullptr}
+  , m_name{m_allocator, _file_name}
+  , m_mode{_mode}
+{
+  // Convert |_file_name| to UTF-16.
+  const wide_string file_name = string(_file_name).to_utf16();
+
+  // Convert the mode string to a wide char version. The mode string is in ascii
+  // so there's no conversion necessary other than extending the type size.
+  wchar_t mode_buffer[8];
+  wchar_t *mode = mode_buffer;
+  for (const char* ch = _mode; *ch; ch++) {
+    *mode++ = static_cast<wchar_t>(*ch);
+  }
+  // Null-terminate mode.
+  *mode++ = L'\0';
+
+  // Utilize _wfopen on Windows so we can open files with UNICODE names.
+  m_impl = static_cast<void*>(
+    _wfopen(reinterpret_cast<const wchar_t*>(file_name.data()), mode_buffer));
+}
+#else
+file::file(memory::allocator* _allocator, const char* _file_name, const char* _mode)
+  : stream{flags_from_mode(_mode)}
+  , m_allocator{_allocator}
+  , m_impl{static_cast<void*>(fopen(_file_name, _mode))}
+  , m_name{m_allocator, _file_name}
   , m_mode{_mode}
 {
 }
+#endif
 
-file::file(const char* _file_name, const char* _mode)
-  : m_impl{static_cast<void*>(fopen(_file_name, _mode))}
-  , m_file_name{_file_name}
-  , m_mode{_mode}
-{
-}
-
-file::file(file&& other_)
-  : m_impl{other_.m_impl}
-  , m_file_name{other_.m_file_name}
-  , m_mode{other_.m_mode}
-{
-  other_.m_impl = nullptr;
-  other_.m_file_name = nullptr;
-  other_.m_mode = nullptr;
-}
-
-file::~file() {
-  close();
-}
-
-rx_u64 file::read(rx_byte* _data, rx_u64 _size) {
+rx_u64 file::on_read(rx_byte* _data, rx_u64 _size) {
   RX_ASSERT(m_impl, "invalid");
-  RX_ASSERT(strcmp(m_mode, "rb") == 0 || strcmp(m_mode, "r") == 0,
-    "cannot read with mode '%s'", m_mode);
   return fread(_data, 1, _size, static_cast<FILE*>(m_impl));
 }
 
-rx_u64 file::write(const rx_byte* _data, rx_u64 _size) {
+rx_u64 file::on_write(const rx_byte* _data, rx_u64 _size) {
   RX_ASSERT(m_impl, "invalid");
-  RX_ASSERT(strcmp(m_mode, "wb")  == 0, "cannot write with mode '%s'", m_mode);
   return fwrite(_data, 1, _size, static_cast<FILE*>(m_impl));
 }
 
-bool file::seek(rx_s64 _where, whence _whence) {
+bool file::on_seek(rx_s64 _where, whence _whence) {
   RX_ASSERT(m_impl, "invalid");
-  RX_ASSERT(strcmp(m_mode, "rb") == 0, "cannot seek with mode '%s'", m_mode);
 
   const auto fp = static_cast<FILE*>(m_impl);
   const auto where = static_cast<long>(_where);
@@ -75,32 +103,15 @@ bool file::seek(rx_s64 _where, whence _whence) {
   RX_HINT_UNREACHABLE();
 }
 
-bool file::flush() {
+rx_u64 file::on_tell() {
   RX_ASSERT(m_impl, "invalid");
-  RX_ASSERT(strcmp(m_mode, "w") == 0 || strcmp(m_mode, "wb") == 0,
-    "cannot flush with mode '%s'", m_mode);
-  return fflush(static_cast<FILE*>(m_impl)) == 0;
+  const auto fp = static_cast<FILE*>(m_impl);
+  return ftell(fp);
 }
 
-optional<rx_u64> file::size() {
+bool file::on_flush() {
   RX_ASSERT(m_impl, "invalid");
-  RX_ASSERT(strcmp(m_mode, "rb") == 0, "cannot get size with mode '%s'", m_mode);
-
-  const auto fp = static_cast<FILE*>(m_impl);
-
-  if (RX_HINT_UNLIKELY(fseek(fp, 0, SEEK_END) != 0)) {
-    return nullopt;
-  }
-
-  const auto result = ftell(fp);
-
-  if (RX_HINT_UNLIKELY(result == -1L)) {
-    fseek(fp, 0, SEEK_SET);
-    return nullopt;
-  }
-
-  fseek(fp, 0, SEEK_SET);
-  return result;
+  return fflush(static_cast<FILE*>(m_impl)) == 0;
 }
 
 bool file::close() {
@@ -165,95 +176,33 @@ bool file::is_valid() const {
   return m_impl != nullptr;
 }
 
+inline const string& file::name() const & {
+  return m_name;
+}
+
+inline memory::allocator* file::allocator() const {
+  return m_allocator;
+}
+
 optional<vector<rx_byte>> read_binary_file(memory::allocator* _allocator, const char* _file_name) {
-  file open_file{_file_name, "rb"};
-  if (!open_file) {
-    logger(log::level::k_error, "failed to open file '%s' [%s]", _file_name,
-      strerror(errno));
-    return nullopt;
+  if (file open_file{_file_name, "rb"}) {
+    return read_binary_stream(_allocator, &open_file);
   }
 
-  const auto size{open_file.size()};
-  if (size) {
-    vector<rx_byte> data{_allocator, *size};
-    if (!open_file.read(data.data(), data.size())) {
-      logger(log::level::k_error, "failed to read file '%s' [%s]", _file_name,
-        strerror(errno));
-      return nullopt;
-    }
-    return data;
-  } else {
-    // NOTE: taking advantage of stdio buffering here to make this reasonable
-    vector<rx_byte> data{_allocator, 1};
-    for(rx_byte* cursor{data.data()}; open_file.read(cursor, 1); cursor++) {
-      data.resize(data.size() + 1);
-    }
-    return data;
-  }
+  logger(log::level::k_error, "failed to open file '%s' [%s]", _file_name,
+    strerror(errno));
 
   return nullopt;
 }
 
-static vector<rx_byte> convert_text_encoding(vector<rx_byte>&& data_) {
-  // Ensure the data contains a null-terminator.
-  if (data_.last() != 0) {
-    data_.push_back(0);
-  }
-
-  const bool utf16_le{data_.size() >= 2 && data_[0] == 0xFF && data_[1] == 0xFE};
-  const bool utf16_be{data_.size() >= 2 && data_[0] == 0xFE && data_[1] == 0xFF};
-  // UTF-16.
-  if (utf16_le || utf16_be) {
-    // Remove the BOM.
-    data_.erase(0, 2);
-
-    rx_u16* contents{reinterpret_cast<rx_u16*>(data_.data())};
-    const rx_size chars{data_.size() / 2};
-    if (utf16_be) {
-      // Swap the bytes around in the contents to convert BE to LE.
-      for (rx_size i{0}; i < chars; i++) {
-        contents[i] = (contents[i] >> 8) | (contents[i] << 8);
-      }
-    }
-
-    // Determine how many bytes are needed to convert the encoding.
-    const rx_size length{utf16_to_utf8(contents, chars, nullptr)};
-
-    // Convert UTF-16 to UTF-8.
-    vector<rx_byte> result{data_.allocator(), length};
-    utf16_to_utf8(contents, chars, reinterpret_cast<char*>(result.data()));
-    return result;
-  } else if (data_.size() >= 3 && data_[0] == 0xEF && data_[1] == 0xBB && data_[2] == 0xBF) {
-    // Remove the BOM.
-    data_.erase(0, 3);
-  }
-
-  return utility::move(data_);
-}
-
 optional<vector<rx_byte>> read_text_file(memory::allocator* _allocator, const char* _file_name) {
- if (auto result{read_binary_file(_allocator, _file_name)}) {
-    // Convert the given byte stream into a compatible UTF-8 encoding. This will
-    // introduce a null-terminator, strip Unicode BOMs and convert UTF-16
-    // encodings to UTF-8.
-    auto data{convert_text_encoding(utility::move(*result))};
-
-#if defined(RX_PLATFORM_WINDOWS)
-    // Only Windows has the odd choice of using CRLF for text files.
-
-    // Remove all instances of CR from the byte stream.
-    auto next{reinterpret_cast<rx_byte*>(memchr(data.data(), '\r', data.size()))};
-
-    // Leverage the use of optimized memchr to skip through large swaths of
-    // binary data quickly, rather than the more obvious per-byte approach here.
-    while (next) {
-      const rx_ptrdiff index{next - data.data()};
-      data.erase(index, index + 1);
-      next = reinterpret_cast<rx_byte*>(memchr(next + 1, '\r', data.size() - index));
-    }
-#endif
-    return data;
+  if (file open_file{_file_name, "rb"}) {
+    return read_text_stream(_allocator, &open_file);
   }
+
+  logger(log::level::k_error, "failed to open file '%s' [%s]", _file_name,
+    strerror(errno));
+
   return nullopt;
 }
 
