@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rx/core/queue.h>
+#include <rx/core/vector.h>
 
 #include "nova_renderer/camera.hpp"
 #include "nova_renderer/constants.hpp"
@@ -43,7 +43,7 @@ namespace nova::renderer {
         ElementType* data;
         size_t num_elements;
 
-        rx::queue<uint32_t> free_indices;
+        rx::vector<uint32_t> free_indices;
     };
 
     template <typename ElementType>
@@ -67,7 +67,7 @@ namespace nova::renderer {
 
         // All camera indices are free at program startup
         for(uint32_t i = 0; i < MAX_NUM_CAMERAS; i++) {
-            free_indices.emplace(i);
+            free_indices.emplace_back(i);
         }
     }
 
@@ -86,12 +86,17 @@ namespace nova::renderer {
 
     template <typename ElementType>
     uint32_t PerFrameDeviceArray<ElementType>::get_next_free_slot() {
-        return free_indices.pop();
+        const auto val = free_indices.last();
+
+        const auto erase_idx = free_indices.size() - 1;
+        free_indices.erase(erase_idx, erase_idx);
+
+        return val;
     }
 
     template <typename ElementType>
     void PerFrameDeviceArray<ElementType>::free_slot(const uint32_t idx) {
-        free_indices.emplace(idx);
+        free_indices.emplace_back(idx);
     }
 
     template <typename ElementType>
