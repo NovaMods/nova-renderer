@@ -34,7 +34,7 @@ namespace nova {
     template <typename ValueType>
     template <typename... Args>
     RaiiPtr<ValueType>::RaiiPtr(rx::memory::allocator& allocator, Args... args)
-        : allocator{&allocator}, val{allocator->create<ValueType>(rx::utility::forward<Args>(args)...)} {}
+        : allocator{&allocator}, val{allocator.create<ValueType>(rx::utility::forward<Args>(args)...)} {}
 
     template <typename ValueType>
     RaiiPtr<ValueType>::RaiiPtr(RaiiPtr&& old) noexcept : allocator{old.allocator}, val{old.val} {
