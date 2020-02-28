@@ -6,6 +6,8 @@
 namespace nova::renderer {
     class NovaRenderer;
 
+    using CameraIndex = uint32_t;
+
     /*!
      * \brief Create info to initialize a camera
      */
@@ -88,14 +90,14 @@ namespace nova::renderer {
          */
         float far_plane;
 
-        glm::vec3 position;
+        glm::vec3 position{};
 
-        glm::vec3 rotation;
+        glm::vec3 rotation{};
 
         /*!
          * \brief Index of this camera in the camera array
          */
-        uint32_t index;
+        CameraIndex index{};
 
         explicit Camera(const CameraCreateInfo& create_info);
 

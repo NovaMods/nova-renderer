@@ -160,6 +160,8 @@ set(NOVA_SOURCE
         src/renderer/pipeline_storage.cpp
         src/renderer/resource_loader.cpp
         src/renderer/camera.cpp
+        src/renderer/visibility_cache.hpp
+        src/renderer/visibility_cache.cpp
 
         src/util/utils.cpp
         src/util/result.cpp
