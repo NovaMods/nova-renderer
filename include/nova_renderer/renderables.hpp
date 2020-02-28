@@ -54,15 +54,17 @@ namespace nova::renderer {
     using MeshId = uint64_t;
 
     struct StaticMeshRenderableUpdateData {
-        MeshId mesh{};
+        glm::vec3 position{};
+        glm::vec3 rotation{};
+        glm::vec3 scale{1};
+
+        bool visible = true;
     };
 
-    struct StaticMeshRenderableData : StaticMeshRenderableUpdateData {
-        glm::vec3 initial_position{};
-        glm::vec3 initial_rotation{};
-        glm::vec3 initial_scale{1};
-
+    struct StaticMeshRenderableCreateInfo : StaticMeshRenderableUpdateData {
         bool is_static = true;
+
+        MeshId mesh{};
     };
 
     using RenderableId = uint64_t;
@@ -85,5 +87,5 @@ namespace nova::renderer {
 
     struct StaticMeshRenderCommand : RenderCommand {};
 
-    StaticMeshRenderCommand make_render_command(const StaticMeshRenderableData& data, RenderableId id);
+    StaticMeshRenderCommand make_render_command(const StaticMeshRenderableCreateInfo& data, RenderableId id);
 } // namespace nova::renderer

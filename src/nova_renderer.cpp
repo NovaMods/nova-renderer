@@ -650,7 +650,7 @@ namespace nova::renderer {
     rhi::RhiSampler* NovaRenderer::get_point_sampler() const { return point_sampler; }
 
     RenderableId NovaRenderer::add_renderable_for_material(const FullMaterialPassName& material_name,
-                                                           const StaticMeshRenderableData& renderable) {
+                                                           const StaticMeshRenderableCreateInfo& renderable) {
         MTR_SCOPE("add_renderable_for_material", "Self");
         const RenderableId id = next_renderable_id.load();
         next_renderable_id.fetch_add(1);
@@ -898,7 +898,7 @@ namespace nova::renderer {
             create_materials_for_pipeline(*pipeline, materials, backbuffer_output_pipeline_create_info->name);
 
             const static FullMaterialPassName BACKBUFFER_OUTPUT_MATERIAL{BACKBUFFER_OUTPUT_MATERIAL_NAME, "main"};
-            const static StaticMeshRenderableData FULLSCREEN_TRIANGLE_RENDERABLE{{fullscreen_triangle_id}};
+            const static StaticMeshRenderableCreateInfo FULLSCREEN_TRIANGLE_RENDERABLE{{fullscreen_triangle_id}};
 
             backbuffer_output_renderable = add_renderable_for_material(BACKBUFFER_OUTPUT_MATERIAL, FULLSCREEN_TRIANGLE_RENDERABLE);
         }

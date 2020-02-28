@@ -183,7 +183,15 @@ namespace nova::renderer {
                                                    const rx::map<rx::string, rhi::RhiResourceBindingDescription>& descriptor_descriptions);
 
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
-                                                               const StaticMeshRenderableData& renderable);
+                                                               const StaticMeshRenderableCreateInfo& renderable);
+
+        /*!
+         * \brief Updates a renderable's information
+         *
+         * \param renderable The renderable to update
+         * \param update_data The new data for the renderable
+         */
+        void update_renderable(RenderableId renderable, const StaticMeshRenderableUpdateData& update_data);
 
         [[nodiscard]] CameraAccessor create_camera(const CameraCreateInfo& create_info);
 
