@@ -52,8 +52,8 @@ namespace nova::renderer {
 
 #pragma region Runtime optimized data
     struct Mesh {
-        rhi::Buffer* vertex_buffer = nullptr;
-        rhi::Buffer* index_buffer = nullptr;
+        rhi::RhiBuffer* vertex_buffer = nullptr;
+        rhi::RhiBuffer* index_buffer = nullptr;
 
         uint32_t num_indices = 0;
         size_t num_vertex_attributes{};
@@ -82,17 +82,17 @@ namespace nova::renderer {
         ~NovaRenderer();
 
         /*!
-         * \brief Loads the shaderpack with the given name
+         * \brief Loads the renderpack with the given name
          *
-         * This method will first try to load from the `shaderpacks/` folder (mimicking Optifine shaders). If the
-         * shaderpack isn't found there, it'll try to load it from the `resourcepacks/` directory (mimicking Bedrock
-         * shaders). If the shader can't be found at either place, a `nova::resource_not_found` exception will be thrown
+         * This method will first try to load from the `renderpacks/` folder. If Nova can't find the renderpack there, it will try to load
+         * it from the `shaderpacks/` directory (mimicking Optifine shaders). If the renderpack isn't found there, it'll try to load it from
+         * the `resourcepacks/` directory (mimicking Bedrock shaders)
          *
-         * Loading a shaderpack will cause a stall in the GPU. Nova will have to wait for all in-flight frames to finish, then replace the
-         * current shaderpack with the new one, then start rendering. Replacing the shaderpack might also require reloading all chunks, if
-         * the new shaderpack has different geometry filters then the current one
+         * Loading a renderpack will cause a stall in the GPU. Nova will have to wait for all in-flight frames to finish, then replace the
+         * current renderpack with the new one, then start rendering. Replacing the renderpack might also require reloading all chunks, if
+         * the new renderpack has different geometry filters then the current one
          *
-         * \param renderpack_name The name of the shaderpack to load
+         * \param renderpack_name The name of the renderpack to load
          */
         void load_renderpack(const rx::string& renderpack_name);
 
@@ -114,7 +114,7 @@ namespace nova::renderer {
         template <typename RenderpassType, typename... Args>
         RenderpassType* create_ui_renderpass(Args&&... args);
 
-        [[nodiscard]] const rx::vector<MaterialPass>& get_material_passes_for_pipeline(rhi::Pipeline* const pipeline);
+        [[nodiscard]] const rx::vector<MaterialPass>& get_material_passes_for_pipeline(rhi::RhiPipeline* const pipeline);
 
         [[nodiscard]] rx::optional<RenderpassMetadata> get_renderpass_metadata(const rx::string& renderpass_name) const;
 
@@ -160,7 +160,7 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Resources
-        [[nodiscard]] rhi::Sampler* get_point_sampler() const;
+        [[nodiscard]] rhi::RhiSampler* get_point_sampler() const;
 #pragma endregion
 
         /*!
@@ -178,7 +178,7 @@ namespace nova::renderer {
          */
         void bind_data_to_material_descriptor_sets(const MaterialPass& material,
                                                    const rx::map<rx::string, rx::string>& bindings,
-                                                   const rx::map<rx::string, rhi::ResourceBindingDescription>& descriptor_descriptions);
+                                                   const rx::map<rx::string, rhi::RhiResourceBindingDescription>& descriptor_descriptions);
 
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
                                                                const StaticMeshRenderableData& renderable);
@@ -201,7 +201,7 @@ namespace nova::renderer {
         RENDERDOC_API_1_3_0* render_doc;
         rx::vector<rx::memory::bump_point_allocator*> frame_allocators;
 
-        rhi::Sampler* point_sampler;
+        rhi::RhiSampler* point_sampler;
 
         MeshId fullscreen_triangle_id;
 
@@ -218,7 +218,7 @@ namespace nova::renderer {
         rx::memory::allocator* global_allocator;
 
         /*!
-         * \brief Holds all the object loaded by the current rendergraph
+         * \brief Holds all the object loaded by the current renderpacks
          */
         rx::memory::allocator* renderpack_allocator;
 
@@ -228,7 +228,7 @@ namespace nova::renderer {
 
         DeviceMemoryResource* ubo_memory;
 
-        rhi::DescriptorPool* global_descriptor_pool;
+        rhi::RhiDescriptorPool* global_descriptor_pool;
 
         DeviceMemoryResource* staging_buffer_memory;
 
@@ -276,25 +276,25 @@ namespace nova::renderer {
             PipelineMetadata metadata;
         };
 
-        bool shaderpack_loaded = false;
+        bool renderpacks_loaded = false;
 
-        rx::concurrency::mutex shaderpack_loading_mutex;
+        rx::concurrency::mutex renderpacks_loading_mutex;
 
-        rx::optional<shaderpack::RenderpackData> loaded_renderpack;
+        rx::optional<renderpack::RenderpackData> loaded_renderpack;
 
         Rendergraph* rendergraph;
 #pragma endregion
 
 #pragma region Rendergraph
-        rx::map<rx::string, rhi::Image*> builtin_images;
+        rx::map<rx::string, rhi::RhiImage*> builtin_images;
         rx::map<rx::string, renderer::Renderpass*> builtin_renderpasses;
 
-        rx::map<rx::string, shaderpack::TextureCreateInfo> dynamic_texture_infos;
+        rx::map<rx::string, renderpack::TextureCreateInfo> dynamic_texture_infos;
 
-        void create_dynamic_textures(const rx::vector<shaderpack::TextureCreateInfo>& texture_create_infos);
+        void create_dynamic_textures(const rx::vector<renderpack::TextureCreateInfo>& texture_create_infos);
 
-        void create_render_passes(const rx::vector<shaderpack::RenderPassCreateInfo>& pass_create_infos,
-                                  const rx::vector<shaderpack::PipelineData>& pipelines) const;
+        void create_render_passes(const rx::vector<renderpack::RenderPassCreateInfo>& pass_create_infos,
+                                  const rx::vector<renderpack::PipelineData>& pipelines) const;
 
         void destroy_dynamic_resources();
 
@@ -304,15 +304,15 @@ namespace nova::renderer {
 #pragma region Rendering pipelines
         PipelineStorage* pipeline_storage;
 
-        rx::map<rhi::Pipeline*, rx::vector<MaterialPass>> passes_by_pipeline;
+        rx::map<rhi::RhiPipeline*, rx::vector<MaterialPass>> passes_by_pipeline;
 
         rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas;
 
-        void create_pipelines_and_materials(const rx::vector<shaderpack::PipelineData>& pipeline_create_infos,
-                                            const rx::vector<shaderpack::MaterialData>& materials);
+        void create_pipelines_and_materials(const rx::vector<renderpack::PipelineData>& pipeline_create_infos,
+                                            const rx::vector<renderpack::MaterialData>& materials);
 
         void create_materials_for_pipeline(const renderer::Pipeline& pipeline,
-                                           const rx::vector<shaderpack::MaterialData>& materials,
+                                           const rx::vector<renderpack::MaterialData>& materials,
                                            const rx::string& pipeline_name);
 
         void destroy_pipelines();
@@ -334,7 +334,7 @@ namespace nova::renderer {
         rx::vector<rx::string> builtin_buffer_names;
         uint32_t cur_model_matrix_index = 0;
 
-        rx::array<rhi::Fence* [NUM_IN_FLIGHT_FRAMES]> frame_fences;
+        rx::array<rhi::RhiFence* [NUM_IN_FLIGHT_FRAMES]> frame_fences;
 
         rx::map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
 

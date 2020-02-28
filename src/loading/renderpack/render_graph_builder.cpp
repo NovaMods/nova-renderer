@@ -7,7 +7,7 @@
 
 #include "nova_renderer/constants.hpp"
 
-namespace nova::renderer::shaderpack {
+namespace nova::renderer::renderpack {
     RX_LOG("RenderGraphBuilder", logger);
 
     /*!
@@ -106,8 +106,7 @@ namespace nova::renderer::shaderpack {
                 write_pass_list->push_back(pass.name);
             });
 
-            pass.output_buffers.each_fwd(
-                [&](const rx::string& buffer_name) {
+            pass.output_buffers.each_fwd([&](const rx::string& buffer_name) {
                 auto* write_pass_list = resource_to_write_pass.find(buffer_name);
                 if(!write_pass_list) {
                     write_pass_list = resource_to_write_pass.insert(buffer_name, {});
@@ -124,7 +123,7 @@ namespace nova::renderer::shaderpack {
         // The passes, in simple dependency order
         if(resource_to_write_pass.find(BACKBUFFER_NAME) == nullptr) {
             logger(rx::log::level::k_error,
-                   "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything");
+                   "This render graph does not write to the backbuffer. Unable to load this renderpack because it can't render anything");
             return ntl::Result<rx::vector<RenderPassCreateInfo>>(ntl::NovaError("Failed to order passes because no backbuffer was found"));
         }
 
@@ -277,4 +276,4 @@ namespace nova::renderer::shaderpack {
         return aliases;
     }
 
-} // namespace nova::renderer::shaderpack
+} // namespace nova::renderer::renderpack

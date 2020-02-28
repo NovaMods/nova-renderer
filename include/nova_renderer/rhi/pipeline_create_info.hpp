@@ -368,7 +368,7 @@ namespace nova::renderer {
         /*!
          * \brief Description of the fields in the vertex data
          */
-        rx::vector<rhi::VertexField> vertex_fields{};
+        rx::vector<rhi::RhiVertexField> vertex_fields{};
 
         /*!
          * \brief Size of the viewport that this pipeline state renders to, measured in pixels
@@ -420,11 +420,11 @@ namespace nova::renderer {
         /*!
          * \brief All the color attachments that this pipeline writes to
          */
-        rx::vector<shaderpack::TextureAttachmentInfo> color_attachments{};
+        rx::vector<renderpack::TextureAttachmentInfo> color_attachments{};
 
         /*!
          * \brief The depth texture that this pipeline writes to, if it writes to a depth texture
          */
-        rx::optional<shaderpack::TextureAttachmentInfo> depth_texture{};
+        rx::optional<renderpack::TextureAttachmentInfo> depth_texture{};
     };
 } // namespace nova::renderer

@@ -1,12 +1,12 @@
 #include "backbuffer_output_pass.hpp"
 
-#include "nova_renderer/loading/shaderpack_loading.hpp"
+#include "nova_renderer/loading/renderpack_loading.hpp"
 #include "nova_renderer/nova_renderer.hpp"
 
 namespace nova::renderer {
     RX_LOG("BackbufferOut", logger);
 
-    struct RX_HINT_EMPTY_BASES BackbufferOutputRenderpassCreateInfo : shaderpack::RenderPassCreateInfo {
+    struct RX_HINT_EMPTY_BASES BackbufferOutputRenderpassCreateInfo : renderpack::RenderPassCreateInfo {
         BackbufferOutputRenderpassCreateInfo();
     };
 
@@ -17,7 +17,7 @@ namespace nova::renderer {
         texture_inputs.emplace_back(SCENE_OUTPUT_RT_NAME);
 
         texture_outputs.reserve(1);
-        texture_outputs.emplace_back(BACKBUFFER_NAME, shaderpack::PixelFormatEnum::RGBA8, false);
+        texture_outputs.emplace_back(BACKBUFFER_NAME, rhi::PixelFormat::Rgba8, false);
 
         pipeline_names.reserve(1);
         pipeline_names.emplace_back(BACKBUFFER_OUTPUT_PIPELINE_NAME);
@@ -25,9 +25,9 @@ namespace nova::renderer {
 
     RX_GLOBAL<BackbufferOutputRenderpassCreateInfo> backbuffer_output_create_info{"Nova", "BackbufferOutputCreateInfo"};
 
-    BackbufferOutputRenderpass::BackbufferOutputRenderpass(rhi::Resource* ui_output, rhi::Resource* scene_output)
+    BackbufferOutputRenderpass::BackbufferOutputRenderpass(rhi::RhiResource* ui_output, rhi::RhiResource* scene_output)
         : Renderpass(BACKBUFFER_OUTPUT_RENDER_PASS_NAME, true) {
-        rhi::ResourceBarrier pre_pass_barrier;
+        rhi::RhiResourceBarrier pre_pass_barrier;
         pre_pass_barrier.access_before_barrier = rhi::ResourceAccess::ColorAttachmentWrite;
         pre_pass_barrier.access_after_barrier = rhi::ResourceAccess::ShaderRead;
         pre_pass_barrier.old_state = rhi::ResourceState::RenderTarget;
@@ -44,7 +44,7 @@ namespace nova::renderer {
         pre_pass_barrier.resource_to_barrier = scene_output;
         read_texture_barriers.push_back(pre_pass_barrier);
 
-        rhi::ResourceBarrier post_pass_barrier;
+        rhi::RhiResourceBarrier post_pass_barrier;
         post_pass_barrier.access_before_barrier = rhi::ResourceAccess::ShaderRead;        
         post_pass_barrier.access_after_barrier = rhi::ResourceAccess::ColorAttachmentWrite;
         post_pass_barrier.old_state = rhi::ResourceState::ShaderRead;
@@ -62,7 +62,7 @@ namespace nova::renderer {
         post_pass_barriers.push_back(post_pass_barrier);
     }
 
-    const shaderpack::RenderPassCreateInfo& BackbufferOutputRenderpass::get_create_info() { return *backbuffer_output_create_info; }
+    const renderpack::RenderPassCreateInfo& BackbufferOutputRenderpass::get_create_info() { return *backbuffer_output_create_info; }
 
     void BackbufferOutputRenderpass::record_post_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const {
         Renderpass::record_post_renderpass_barriers(cmds, ctx);

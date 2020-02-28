@@ -11,36 +11,36 @@
 #include "vulkan.hpp"
 
 namespace nova::renderer::rhi {
-    struct VulkanDeviceMemory : DeviceMemory {
+    struct VulkanDeviceMemory : RhiDeviceMemory {
         VkDeviceMemory memory;
     };
 
-    struct VulkanSampler : Sampler {
+    struct VulkanSampler : RhiSampler {
         VkSampler sampler;
     };
 
-    struct VulkanImage : Image {
+    struct VulkanImage : RhiImage {
         VkImage image = VK_NULL_HANDLE;
         VkImageView image_view = VK_NULL_HANDLE;
         VmaAllocation allocation{};
     };
 
-    struct VulkanBuffer : Buffer {
+    struct VulkanBuffer : RhiBuffer {
         VkBuffer buffer = VK_NULL_HANDLE;
         VmaAllocation allocation{};
         VmaAllocationInfo allocation_info{};
     };
 
-    struct VulkanRenderpass : Renderpass {
+    struct VulkanRenderpass : RhiRenderpass {
         VkRenderPass pass = VK_NULL_HANDLE;
         VkRect2D render_area{};
     };
 
-    struct VulkanFramebuffer : Framebuffer {
+    struct VulkanFramebuffer : RhiFramebuffer {
         VkFramebuffer framebuffer = VK_NULL_HANDLE;
     };
 
-    struct VulkanPipelineInterface : PipelineInterface {
+    struct VulkanPipelineInterface : RhiPipelineInterface {
         /*!
          * \brief Renderpass for the pipeline's output layouts because why _wouldn't_ that be married to the
          * renderpass itself?
@@ -59,23 +59,23 @@ namespace nova::renderer::rhi {
         rx::vector<uint32_t> variable_descriptor_set_counts;
     };
 
-    struct VulkanPipeline : Pipeline {
+    struct VulkanPipeline : RhiPipeline {
         VkPipeline pipeline = VK_NULL_HANDLE;
     };
 
-    struct VulkanDescriptorPool : DescriptorPool {
+    struct VulkanDescriptorPool : RhiDescriptorPool {
         VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
     };
 
-    struct VulkanDescriptorSet : DescriptorSet {
+    struct VulkanDescriptorSet : RhiDescriptorSet {
         VkDescriptorSet descriptor_set;
     };
 
-    struct VulkanSemaphore : Semaphore {
+    struct VulkanSemaphore : RhiSemaphore {
         VkSemaphore semaphore;
     };
 
-    struct VulkanFence : Fence {
+    struct VulkanFence : RhiFence {
         VkFence fence;
     };
 

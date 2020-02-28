@@ -26,12 +26,12 @@ namespace nova::renderer {
         /*!
          * \brief Swapchain image that this frame renders to
          */
-        rhi::Image* swapchain_image;
+        rhi::RhiImage* swapchain_image;
 
         /*!
          * \brief Swapchain framebuffer that this frame renders to
          */
-        rhi::Framebuffer* swapchain_framebuffer;
+        rhi::RhiFramebuffer* swapchain_framebuffer;
 
         size_t cur_model_matrix_index = 0;
 

@@ -50,17 +50,17 @@ namespace nova::renderer {
 
         rx::map<rx::string, Pipeline> pipelines;
 
-        [[nodiscard]] ntl::Result<PipelineReturn> create_graphics_pipeline(rhi::PipelineInterface* pipeline_interface,
+        [[nodiscard]] ntl::Result<PipelineReturn> create_graphics_pipeline(rhi::RhiPipelineInterface* pipeline_interface,
                                                                            const PipelineStateCreateInfo& pipeline_create_info) const;
 
-        [[nodiscard]] ntl::Result<rhi::PipelineInterface*> create_pipeline_interface(
+        [[nodiscard]] ntl::Result<rhi::RhiPipelineInterface*> create_pipeline_interface(
             const PipelineStateCreateInfo& pipeline_create_info) const;
 
         static void get_shader_module_descriptors(const rx::vector<uint32_t>& spirv,
                                                   rhi::ShaderStage shader_stage,
-                                                  rx::map<rx::string, rhi::ResourceBindingDescription>& bindings);
+                                                  rx::map<rx::string, rhi::RhiResourceBindingDescription>& bindings);
 
-        static void add_resource_to_bindings(rx::map<rx::string, rhi::ResourceBindingDescription>& bindings,
+        static void add_resource_to_bindings(rx::map<rx::string, rhi::RhiResourceBindingDescription>& bindings,
                                              rhi::ShaderStage shader_stage,
                                              const spirv_cross::CompilerGLSL& shader_compiler,
                                              const spirv_cross::Resource& resource,

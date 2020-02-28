@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nova_renderer/rhi/command_list.hpp"
-#include "nova_renderer/shaderpack_data.hpp"
+#include "nova_renderer/renderpack_data.hpp"
 
 // idk maybe this header is included in places that already include Vulkan? Either way I want this include here and not anywhere else
 // ReSharper disable once CppUnusedIncludeDirective
@@ -21,7 +21,7 @@ namespace nova::renderer::rhi {
 
     VkAccessFlags to_vk_access_flags(ResourceAccess access);
 
-    VkPrimitiveTopology to_primitive_topology(shaderpack::PrimitiveTopologyEnum topology);
+    VkPrimitiveTopology to_primitive_topology(renderpack::RPPrimitiveTopology topology);
 
     VkBlendFactor to_blend_factor(BlendFactor factor);
     
@@ -31,7 +31,7 @@ namespace nova::renderer::rhi {
 
     VkStencilOp to_stencil_op(StencilOp stencil_op);
 
-    VkFormat to_vk_format(shaderpack::PixelFormatEnum format);
+    VkFormat to_vk_format(PixelFormat format);
 
     VkFilter to_vk_filter(TextureFilter filter);
 

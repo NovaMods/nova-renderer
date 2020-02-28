@@ -57,7 +57,7 @@ namespace nova::renderer::rhi {
          */
         virtual void resource_barriers(PipelineStage stages_before_barrier,
                                        PipelineStage stages_after_barrier,
-                                       const rx::vector<ResourceBarrier>& barriers) = 0;
+                                       const rx::vector<RhiResourceBarrier>& barriers) = 0;
 
         /*!
          * \brief Records a command to copy one region of a buffer to another buffer
@@ -77,9 +77,9 @@ namespace nova::renderer::rhi {
          * \pre destination_offset plus num_bytes is less than the size of destination_buffer
          * \pre destination_offset plus num_bytes is less than the size of source_buffer
          */
-        virtual void copy_buffer(Buffer* destination_buffer,
+        virtual void copy_buffer(RhiBuffer* destination_buffer,
                                  mem::Bytes destination_offset,
-                                 Buffer* source_buffer,
+                                 RhiBuffer* source_buffer,
                                  mem::Bytes source_offset,
                                  mem::Bytes num_bytes) = 0;
 
@@ -97,7 +97,7 @@ namespace nova::renderer::rhi {
          * \note The image must be in the Common layout prior to uploading data to it
          */
         virtual void upload_data_to_image(
-            Image* image, size_t width, size_t height, size_t bytes_per_pixel, Buffer* staging_buffer, const void* data) = 0;
+            RhiImage* image, size_t width, size_t height, size_t bytes_per_pixel, RhiBuffer* staging_buffer, const void* data) = 0;
 
         /*!
          * \brief Executed a number of command lists
@@ -113,14 +113,14 @@ namespace nova::renderer::rhi {
          * \param renderpass The renderpass to begin
          * \param framebuffer The framebuffer to render to
          */
-        virtual void begin_renderpass(Renderpass* renderpass, Framebuffer* framebuffer) = 0;
+        virtual void begin_renderpass(RhiRenderpass* renderpass, RhiFramebuffer* framebuffer) = 0;
 
         virtual void end_renderpass() = 0;
 
-        virtual void bind_pipeline(const Pipeline* pipeline) = 0;
+        virtual void bind_pipeline(const RhiPipeline* pipeline) = 0;
 
-        virtual void bind_descriptor_sets(const rx::vector<DescriptorSet*>& descriptor_sets,
-                                          const PipelineInterface* pipeline_interface) = 0;
+        virtual void bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets,
+                                          const RhiPipelineInterface* pipeline_interface) = 0;
 
         /*!
          * \brief Binds the provided vertex buffers to the command list
@@ -130,14 +130,14 @@ namespace nova::renderer::rhi {
          *
          * \param buffers The buffers to bind
          */
-        virtual void bind_vertex_buffers(const rx::vector<Buffer*>& buffers) = 0;
+        virtual void bind_vertex_buffers(const rx::vector<RhiBuffer*>& buffers) = 0;
 
         /*!
          * \brief Binds the provided index buffer to the command list
          *
          * The index buffer must use 32-bit indices. This will likely change in the future but for now it's a thing
          */
-        virtual void bind_index_buffer(const Buffer* buffer, IndexType index_size) = 0;
+        virtual void bind_index_buffer(const RhiBuffer* buffer, IndexType index_size) = 0;
 
         /*!
          * \brief Records rendering instances of an indexed mesh

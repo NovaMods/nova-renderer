@@ -5,12 +5,12 @@
 #include "nova_renderer/memory/bytes.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"
-#include "nova_renderer/shaderpack_data.hpp"
+#include "nova_renderer/renderpack_data.hpp"
 
 namespace nova::renderer::rhi {
 
 #pragma region Structs
-    struct BufferCreateInfo {
+    struct RhiBufferCreateInfo {
         rx::string name;
 
         mem::Bytes size = 0;
@@ -18,7 +18,7 @@ namespace nova::renderer::rhi {
         BufferUsage buffer_usage{};
     };
 
-    struct DeviceMemory {};
+    struct RhiDeviceMemory {};
 
     /*!
      * \brief A resource
@@ -26,12 +26,12 @@ namespace nova::renderer::rhi {
      * Resources may by dynamic of static. Dynamic resources are updated after they are created, possibly by a shader,
      * while static resources are loaded once and that's that
      */
-    struct Resource {
+    struct RhiResource {
         ResourceType type = {};
         bool is_dynamic = true;
     };
 
-    struct SamplerCreateInfo {
+    struct RhiSamplerCreateInfo {
         TextureFilter min_filter = TextureFilter::Point;
         TextureFilter mag_filter = TextureFilter::Point;
 
@@ -48,29 +48,29 @@ namespace nova::renderer::rhi {
         float max_lod = 0;
     };
 
-    struct Sampler {};
+    struct RhiSampler {};
 
-    struct TextureCreateInfo {
+    struct RhiTextureCreateInfo {
         TextureUsage usage;
     };
 
-    struct Image : Resource {
+    struct RhiImage : RhiResource {
         bool is_depth_tex = false;
     };
 
-    struct Buffer : Resource {
+    struct RhiBuffer : RhiResource {
         mem::Bytes size = 0;
     };
 
-    struct Framebuffer {
+    struct RhiFramebuffer {
         glm::uvec2 size;
 
         uint32_t num_attachments;
     };
 
-    struct Renderpass {};
+    struct RhiRenderpass {};
 
-    struct ResourceBindingDescription {
+    struct RhiResourceBindingDescription {
         /*!
          * \brief Descriptor set that this binding belongs to
          */
@@ -105,12 +105,12 @@ namespace nova::renderer::rhi {
          */
         ShaderStage stages;
 
-        bool operator==(const ResourceBindingDescription& other);
+        bool operator==(const RhiResourceBindingDescription& other);
 
-        bool operator!=(const ResourceBindingDescription& other);
+        bool operator!=(const RhiResourceBindingDescription& other);
     };
 
-    struct VertexField {
+    struct RhiVertexField {
         rx::string name;
 
         VertexFieldFormat format;
@@ -119,27 +119,27 @@ namespace nova::renderer::rhi {
     /*!
      * \brief The interface for a pipeline. Includes both inputs (descriptors) and outputs (framebuffers)
      */
-    struct PipelineInterface {
-        rx::map<rx::string, ResourceBindingDescription> bindings;
+    struct RhiPipelineInterface {
+        rx::map<rx::string, RhiResourceBindingDescription> bindings;
 
         [[nodiscard]] uint32_t get_num_descriptors_of_type(DescriptorType type) const;
     };
 
-    struct Pipeline {};
+    struct RhiPipeline {};
 
-    struct Semaphore {};
+    struct RhiSemaphore {};
 
-    struct PresentSemaphore {};
+    struct RhiPresentSemaphore {};
 
-    struct Fence {};
+    struct RhiFence {};
 
-    struct DescriptorPool {};
+    struct RhiDescriptorPool {};
 
-    struct DescriptorSet {};
+    struct RhiDescriptorSet {};
 
     // TODO: Resource state tracking in the command list so we don't need all this bullshit
-    struct ResourceBarrier {
-        Resource* resource_to_barrier;
+    struct RhiResourceBarrier {
+        RhiResource* resource_to_barrier;
 
         /*!
          * \brief The resource access that much finish before this barrier executed
@@ -185,43 +185,43 @@ namespace nova::renderer::rhi {
             BufferMemoryBarrier buffer_memory_barrier;
         };
 
-        ResourceBarrier();
+        RhiResourceBarrier();
     };
 
-    struct DescriptorImageInfo {
-        Image* image;
-        shaderpack::TextureFormat format;
+    struct RhiDescriptorImageInfo {
+        RhiImage* image;
+        renderpack::TextureFormat format;
     };
 
-    struct DescriptorBufferInfo {
-        Buffer* buffer;
+    struct RhiDescriptorBufferInfo {
+        RhiBuffer* buffer;
     };
 
-    struct DescriptorSamplerInfo {
-        Sampler* sampler;
+    struct RhiDescriptorSamplerInfo {
+        RhiSampler* sampler;
     };
 
-    union DescriptorResourceInfo {
-        DescriptorResourceInfo();
+    union RhiDescriptorResourceInfo {
+        RhiDescriptorResourceInfo();
 
         /*!
          * \brief Information to update an image descriptor
          */
-        DescriptorImageInfo image_info;
+        RhiDescriptorImageInfo image_info;
 
         /*!
          * \brief Information to update a buffer descriptor
          */
-        DescriptorBufferInfo buffer_info{};
+        RhiDescriptorBufferInfo buffer_info{};
 
-        DescriptorSamplerInfo sampler_info;
+        RhiDescriptorSamplerInfo sampler_info;
     };
 
-    struct DescriptorSetWrite {
+    struct RhiDescriptorSetWrite {
         /*!
          * \brief Pointer to the descriptor set to write to
          */
-        DescriptorSet* set;
+        RhiDescriptorSet* set;
 
         /*!
          * \brief The specific binding in the set that you want to write to
@@ -239,7 +239,7 @@ namespace nova::renderer::rhi {
          * You may only bind multiple resources if the descriptor is an array descriptor. Knowing whether you're binding to an array
          * descriptor or not is your responsibility
          */
-        rx::vector<DescriptorResourceInfo> resources;
+        rx::vector<RhiDescriptorResourceInfo> resources;
     };
 #pragma endregion
 

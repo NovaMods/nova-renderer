@@ -23,7 +23,7 @@ nova_format(nova-test-end-to-end)
 set(NOVA_UNIT_TEST_SOURCES 
 	unit_tests/loading/filesystem_test.cpp 
 	src/general_test_setup.hpp 
-	unit_tests/loading/shaderpack/shaderpack_validator_tests.cpp
+	unit_tests/loading/renderpack/renderpack_validator_tests.cpp
     unit_tests/main.cpp
 	)
 

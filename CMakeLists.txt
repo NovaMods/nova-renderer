@@ -95,7 +95,7 @@ set(NOVA_SOURCE
         include/nova_renderer/nova_settings.hpp
         include/nova_renderer/renderables.hpp
         include/nova_renderer/renderdoc_app.h
-        include/nova_renderer/shaderpack_data.hpp
+        include/nova_renderer/renderpack_data.hpp
         include/nova_renderer/window.hpp
         include/nova_renderer/constants.hpp
         include/nova_renderer/frame_context.hpp
@@ -105,7 +105,7 @@ set(NOVA_SOURCE
         include/nova_renderer/filesystem/folder_accessor.hpp
         include/nova_renderer/filesystem/virtual_filesystem.hpp
 
-        include/nova_renderer/loading/shaderpack_loading.hpp
+        include/nova_renderer/loading/renderpack_loading.hpp
 
         include/nova_renderer/memory/bytes.hpp
         include/nova_renderer/memory/allocation_strategy.hpp
@@ -167,13 +167,13 @@ set(NOVA_SOURCE
         src/util/result.cpp
 
         src/loading/json_utils.hpp
-        src/loading/shaderpack/shaderpack_loading.cpp
-        src/loading/shaderpack/shaderpack_data.cpp
-        src/loading/shaderpack/shaderpack_validator.cpp
-        src/loading/shaderpack/shaderpack_validator.hpp
-        src/loading/shaderpack/render_graph_builder.cpp
-        src/loading/shaderpack/render_graph_builder.hpp
-        src/loading/shaderpack/renderpack_data_conversions.cpp
+        src/loading/renderpack/renderpack_loading.cpp
+        src/loading/renderpack/renderpack_data.cpp
+        src/loading/renderpack/renderpack_validator.cpp
+        src/loading/renderpack/renderpack_validator.hpp
+        src/loading/renderpack/render_graph_builder.cpp
+        src/loading/renderpack/render_graph_builder.hpp
+        src/loading/renderpack/renderpack_data_conversions.cpp
 
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
@@ -197,7 +197,7 @@ set(NOVA_SOURCE ${NOVA_SOURCE} ${NTL_SOURCE})
 set(NOVA_HEADERS
         include/nova_renderer/util/platform.hpp
         include/nova_renderer/nova_renderer.hpp
-        include/nova_renderer/shaderpack_data.hpp
+        include/nova_renderer/renderpack_data.hpp
         include/nova_renderer/nova_settings.hpp
         include/nova_renderer/rhi/render_device.hpp
         include/nova_renderer/window.hpp

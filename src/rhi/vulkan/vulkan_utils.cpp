@@ -116,11 +116,11 @@ namespace nova::renderer::rhi {
         return {};
     }
 
-    VkPrimitiveTopology to_primitive_topology(const shaderpack::PrimitiveTopologyEnum topology) {
+    VkPrimitiveTopology to_primitive_topology(const renderpack::RPPrimitiveTopology topology) {
         switch(topology) {
-            case shaderpack::PrimitiveTopologyEnum::Lines:
+            case renderpack::RPPrimitiveTopology::Lines:
                 return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-            case shaderpack::PrimitiveTopologyEnum::Triangles:
+            case renderpack::RPPrimitiveTopology::Triangles:
             default: // else the compiler complains
                 return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         }
@@ -237,21 +237,21 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkFormat to_vk_format(const shaderpack::PixelFormatEnum format) {
+    VkFormat to_vk_format(const PixelFormat format) {
         switch(format) {
-            case shaderpack::PixelFormatEnum::RGBA8:
+            case PixelFormat::Rgba8:
                 return VK_FORMAT_R8G8B8A8_UNORM;
 
-            case shaderpack::PixelFormatEnum::RGBA16F:
+            case PixelFormat::Rgba16F:
                 return VK_FORMAT_R16G16B16A16_SFLOAT;
 
-            case shaderpack::PixelFormatEnum::RGBA32F:
+            case PixelFormat::Rgba32F:
                 return VK_FORMAT_R32G32B32A32_SFLOAT;
 
-            case shaderpack::PixelFormatEnum::Depth:
+            case PixelFormat::Depth32:
                 return VK_FORMAT_D32_SFLOAT;
 
-            case shaderpack::PixelFormatEnum::DepthStencil:
+            case PixelFormat::Depth24Stencil8:
                 return VK_FORMAT_D24_UNORM_S8_UINT;
 
             default:

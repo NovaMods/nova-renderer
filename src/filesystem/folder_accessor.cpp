@@ -14,13 +14,13 @@ namespace nova::filesystem {
     FolderAccessorBase* FolderAccessorBase::create(const rx::string& path) {
         rx::memory::allocator* allocator = &rx::memory::g_system_allocator;
 
-        // Where is the shaderpack, and what kind of folder is it in ?
+        // Where is the renderpack, and what kind of folder is it in ?
         if(is_zip_folder(path)) {
-            // zip folder in shaderpacks folder
+            // zip folder in renderpacks folder
             return allocator->create<ZipFolderAccessor>(path);
 
         } else if(const rx::filesystem::directory directory(path); directory) {
-            // regular folder in shaderpacks folder
+            // regular folder in renderpacks folder
             return allocator->create<RegularFolderAccessor>(path);
         }
 

@@ -31,7 +31,7 @@ namespace nova::renderer {
          * \brief Tells the listeners that there has been a change in the configuration
          *
          * This method is called throughout Nova's lifetime whenever a configuration value changes. This method should
-         * handle changing configuration values such as the size of the window and what shaderpack the user has loaded
+         * handle changing configuration values such as the size of the window and what renderpack the user has loaded
          *
          * Note that this method only receives the read-write config values (the 'settings' node)
          *
@@ -101,9 +101,9 @@ namespace nova::renderer {
             /*!
              * \breif Controls if the API-specific validation layers are enabled
              *
-             * This should be enabled most of the time for Nova developers and almost never for shaderpack authors.
-             * Nova developers need it on to debug their Vulkan or DX12 usage, while Nova should be robust enough that
-             * errors that the validation layers would catch never happen in a shipping build
+             * This should be enabled most of the time for Nova developers and almost never for renderpack authors. Nova developers need it
+             * on to debug their Vulkan usage, while Nova should be robust enough that errors that the validation layers would catch never
+             * happen in a shipping build
              */
             bool enable_validation_layers = false;
 
@@ -125,7 +125,7 @@ namespace nova::renderer {
             struct {
                 /*!
                  * \brief If true, Nova will look for RenderDoc on your computer and will try to load it, letting you
-                 * debug your shaderpack without leaving Nova
+                 * debug your renderpack without leaving Nova
                  */
                 bool enabled = false;
 
@@ -147,11 +147,11 @@ namespace nova::renderer {
          */
         struct CacheOptions {
             /*!
-             * \brief The shaderpack that was most recently loaded
+             * \brief The renderpack that was most recently loaded
              *
-             * Nova requires a shaderpack to render anything, so we need to know which one to load on application start
+             * Nova requires a renderpack to render anything, so we need to know which one to load on application start
              */
-            const char* loaded_shaderpack = "DefaultShaderpack";
+            const char* loaded_renderpack = "DefaultShaderpack";
         } cache;
 
         /*!
@@ -212,7 +212,7 @@ namespace nova::renderer {
         BlockAllocatorSettings index_memory_settings;
     };
 
-class NovaSettingsAccessManager { // Classes named Manager are an antipattern so yes
+    class NovaSettingsAccessManager { // Classes named Manager are an antipattern so yes
     public:
         NovaSettings settings;
 

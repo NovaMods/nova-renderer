@@ -4,14 +4,14 @@
 namespace nova::renderer {
     class BackbufferOutputRenderpass final : public Renderpass {
     public:
-        explicit BackbufferOutputRenderpass(rhi::Resource* ui_output, rhi::Resource* scene_output);
+        explicit BackbufferOutputRenderpass(rhi::RhiResource* ui_output, rhi::RhiResource* scene_output);
 
-        static const shaderpack::RenderPassCreateInfo& get_create_info();
+        static const renderpack::RenderPassCreateInfo& get_create_info();
 
     protected:
         void record_post_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const override;
 
     private:
-        rx::vector<rhi::ResourceBarrier> post_pass_barriers;
+        rx::vector<rhi::RhiResourceBarrier> post_pass_barriers;
     };
 } // namespace nova::renderer

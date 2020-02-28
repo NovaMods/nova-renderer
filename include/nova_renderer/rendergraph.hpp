@@ -8,7 +8,7 @@
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
-#include "nova_renderer/shaderpack_data.hpp"
+#include "nova_renderer/renderpack_data.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
 
 #include "resource_loader.hpp"
@@ -19,7 +19,7 @@ namespace nova::renderer {
 
     class DeviceResources;
 
-    namespace shaderpack {
+    namespace renderpack {
         struct RenderPassCreateInfo;
     }
 
@@ -29,8 +29,8 @@ namespace nova::renderer {
         size_t num_vertex_attributes{};
         uint32_t num_indices{};
 
-        rhi::Buffer* vertex_buffer = nullptr;
-        rhi::Buffer* index_buffer = nullptr;
+        rhi::RhiBuffer* vertex_buffer = nullptr;
+        rhi::RhiBuffer* index_buffer = nullptr;
 
         /*!
          * \brief A buffer to hold all the per-draw data
@@ -40,7 +40,7 @@ namespace nova::renderer {
          * This buffer gets re-written to every frame, since the number of renderables in this mesh batch might have changed. If there's
          * more renderables than the buffer can hold, it gets reallocated from the RHI
          */
-        rhi::Buffer* per_renderable_data = nullptr;
+        rhi::RhiBuffer* per_renderable_data = nullptr;
 
         rx::vector<RenderCommandType> commands;
     };
@@ -57,7 +57,7 @@ namespace nova::renderer {
          * This buffer gets re-written to every frame, since the number of renderables in this mesh batch might have changed. If there's
          * more renderables than the buffer can hold, it gets reallocated from the RHI
          */
-        rhi::Buffer* per_renderable_data = nullptr;
+        rhi::RhiBuffer* per_renderable_data = nullptr;
 
         rx::vector<RenderCommandType> commands;
 
@@ -68,8 +68,8 @@ namespace nova::renderer {
         rx::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
         rx::vector<ProceduralMeshBatch<StaticMeshRenderCommand>> static_procedural_mesh_draws;
 
-        rx::vector<rhi::DescriptorSet*> descriptor_sets;
-        const rhi::PipelineInterface* pipeline_interface = nullptr;
+        rx::vector<rhi::RhiDescriptorSet*> descriptor_sets;
+        const rhi::RhiPipelineInterface* pipeline_interface = nullptr;
 
         void record(rhi::CommandList& cmds, FrameContext& ctx) const;
 
@@ -82,8 +82,8 @@ namespace nova::renderer {
     };
 
     struct Pipeline {
-        rhi::Pipeline* pipeline = nullptr;
-        rhi::PipelineInterface* pipeline_interface = nullptr;
+        rhi::RhiPipeline* pipeline = nullptr;
+        rhi::RhiPipelineInterface* pipeline_interface = nullptr;
 
         void record(rhi::CommandList& cmds, FrameContext& ctx) const;
     };
@@ -105,7 +105,7 @@ namespace nova::renderer {
     };
 
     struct MaterialPassMetadata {
-        shaderpack::MaterialPass data;
+        renderpack::MaterialPass data;
     };
 
     struct PipelineMetadata {
@@ -115,7 +115,7 @@ namespace nova::renderer {
     };
 
     struct RenderpassMetadata {
-        shaderpack::RenderPassCreateInfo data;
+        renderpack::RenderPassCreateInfo data;
     };
 #pragma endregion
 
@@ -143,8 +143,8 @@ namespace nova::renderer {
 
         bool is_builtin = false;
 
-        rhi::Renderpass* renderpass = nullptr;
-        rhi::Framebuffer* framebuffer = nullptr;
+        rhi::RhiRenderpass* renderpass = nullptr;
+        rhi::RhiFramebuffer* framebuffer = nullptr;
 
         /*!
          * \brief Names of all the pipelines which are in this renderpass
@@ -153,8 +153,8 @@ namespace nova::renderer {
 
         bool writes_to_backbuffer = false;
 
-        rx::vector<rhi::ResourceBarrier> read_texture_barriers;
-        rx::vector<rhi::ResourceBarrier> write_texture_barriers;
+        rx::vector<rhi::RhiResourceBarrier> read_texture_barriers;
+        rx::vector<rhi::RhiResourceBarrier> write_texture_barriers;
 
         /*!
          * \brief Performs the rendering work of this renderpass
@@ -175,7 +175,7 @@ namespace nova::renderer {
         /*!
          * \brief Returns the framebuffer that this renderpass should render to
          */
-        [[nodiscard]] rhi::Framebuffer* get_framebuffer(const FrameContext& ctx) const;
+        [[nodiscard]] rhi::RhiFramebuffer* get_framebuffer(const FrameContext& ctx) const;
 
     protected:
         /*!
@@ -262,7 +262,7 @@ namespace nova::renderer {
          */
         template <typename RenderpassType>
         [[nodiscard]] RenderpassType* add_renderpass(RenderpassType* renderpass,
-                                                     const shaderpack::RenderPassCreateInfo& create_info,
+                                                     const renderpack::RenderPassCreateInfo& create_info,
                                                      DeviceResources& resource_storage);
 
         void destroy_renderpass(const rx::string& name);
@@ -297,12 +297,12 @@ namespace nova::renderer {
 
     template <typename RenderpassType>
     RenderpassType* Rendergraph::add_renderpass(RenderpassType* renderpass,
-                                                const shaderpack::RenderPassCreateInfo& create_info,
+                                                const renderpack::RenderPassCreateInfo& create_info,
                                                 DeviceResources& resource_storage) {
         RenderpassMetadata metadata;
         metadata.data = create_info;
 
-        rx::vector<rhi::Image*> color_attachments;
+        rx::vector<rhi::RhiImage*> color_attachments;
         color_attachments.reserve(create_info.texture_outputs.size());
 
         glm::uvec2 framebuffer_size(0);
@@ -313,7 +313,7 @@ namespace nova::renderer {
         attachment_errors.reserve(num_attachments);
 
         bool missing_render_targets = false;
-        create_info.texture_outputs.each_fwd([&](const shaderpack::TextureAttachmentInfo& attachment_info) {
+        create_info.texture_outputs.each_fwd([&](const renderpack::TextureAttachmentInfo& attachment_info) {
             if(attachment_info.name == BACKBUFFER_NAME) {
                 if(create_info.texture_outputs.size() == 1) {
                     renderpass->writes_to_backbuffer = true;
@@ -364,7 +364,7 @@ namespace nova::renderer {
         }
 
         // Can't combine these if statements and I don't want to `.find` twice
-        const auto depth_attachment = [&]() -> rx::optional<rhi::Image*> {
+        const auto depth_attachment = [&]() -> rx::optional<rhi::RhiImage*> {
             if(create_info.depth_texture) {
                 if(const auto depth_tex = resource_storage.get_render_target(create_info.depth_texture->name); depth_tex) {
                     return (*depth_tex)->image;
@@ -384,7 +384,7 @@ namespace nova::renderer {
             return nullptr;
         }
 
-        ntl::Result<rhi::Renderpass*> renderpass_result = device.create_renderpass(create_info, framebuffer_size, allocator);
+        ntl::Result<rhi::RhiRenderpass*> renderpass_result = device.create_renderpass(create_info, framebuffer_size, allocator);
         if(renderpass_result) {
             renderpass->renderpass = renderpass_result.value;
 

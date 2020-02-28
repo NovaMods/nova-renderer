@@ -66,7 +66,7 @@ namespace nova::renderer::rhi {
         }
 
         // Block until we have the swapchain image in order to mimic D3D12. TODO: Reevaluate this decision
-        rx::vector<Fence*> fences;
+        rx::vector<RhiFence*> fences;
         fences.push_back(vk_fence);
         render_device->wait_for_fences(fences);
 
@@ -175,7 +175,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanSwapchain::deinit() {
-        swapchain_images.each_fwd([&](const Image* i) {
+        swapchain_images.each_fwd([&](const RhiImage* i) {
             const VulkanImage* vk_image = static_cast<const VulkanImage*>(i);
             vkDestroyImage(render_device->device, vk_image->image, nullptr);
             delete i;
@@ -185,7 +185,7 @@ namespace nova::renderer::rhi {
         swapchain_image_views.each_fwd([&](const VkImageView& iv) { vkDestroyImageView(render_device->device, iv, nullptr); });
         swapchain_image_views.clear();
 
-        fences.each_fwd([&](const Fence* f) {
+        fences.each_fwd([&](const RhiFence* f) {
             const VulkanFence* vk_fence = static_cast<const VulkanFence*>(f);
             vkDestroyFence(render_device->device, vk_fence->fence, nullptr);
             delete f;

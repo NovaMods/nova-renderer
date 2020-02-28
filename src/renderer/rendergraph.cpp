@@ -3,10 +3,10 @@
 #include "nova_renderer/nova_renderer.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 
-#include "../loading/shaderpack/render_graph_builder.hpp"
+#include "../loading/renderpack/render_graph_builder.hpp"
 
 namespace nova::renderer {
-    using namespace shaderpack;
+    using namespace renderpack;
 
     RX_LOG("Rendergraph", logger);
 
@@ -46,7 +46,7 @@ namespace nova::renderer {
         }
 
         if(writes_to_backbuffer) {
-            rhi::ResourceBarrier backbuffer_barrier{};
+            rhi::RhiResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = ctx.swapchain_image;
             backbuffer_barrier.access_before_barrier = rhi::ResourceAccess::MemoryRead;
             backbuffer_barrier.access_after_barrier = rhi::ResourceAccess::ColorAttachmentWrite;
@@ -58,7 +58,7 @@ namespace nova::renderer {
 
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
-            rx::vector<rhi::ResourceBarrier> barriers{&rx::memory::g_system_allocator};
+            rx::vector<rhi::RhiResourceBarrier> barriers{&rx::memory::g_system_allocator};
             barriers.push_back(backbuffer_barrier);
             cmds.resource_barriers(rhi::PipelineStage::TopOfPipe, rhi::PipelineStage::ColorAttachmentOutput, barriers);
         }
@@ -78,7 +78,7 @@ namespace nova::renderer {
 
     void Renderpass::record_post_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const {
         if(writes_to_backbuffer) {
-            rhi::ResourceBarrier backbuffer_barrier{};
+            rhi::RhiResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = ctx.swapchain_image;
             backbuffer_barrier.access_before_barrier = rhi::ResourceAccess::ColorAttachmentWrite;
             backbuffer_barrier.access_after_barrier = rhi::ResourceAccess::MemoryRead;
@@ -88,7 +88,7 @@ namespace nova::renderer {
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspect::Color;
 
-            rx::vector<rhi::ResourceBarrier> barriers{&rx::memory::g_system_allocator};
+            rx::vector<rhi::RhiResourceBarrier> barriers{&rx::memory::g_system_allocator};
             barriers.push_back(backbuffer_barrier);
             cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::BottomOfPipe, barriers);
         }
@@ -156,7 +156,7 @@ namespace nova::renderer {
         return rx::nullopt;
     }
 
-    rhi::Framebuffer* Renderpass::get_framebuffer(const FrameContext& ctx) const {
+    rhi::RhiFramebuffer* Renderpass::get_framebuffer(const FrameContext& ctx) const {
         if(!writes_to_backbuffer) {
             return framebuffer;
         } else {
@@ -194,7 +194,7 @@ namespace nova::renderer {
 
         if(start_index != ctx.cur_model_matrix_index) {
             // TODO: There's probably a better way to do this
-            rx::vector<rhi::Buffer*> vertex_buffers;
+            rx::vector<rhi::RhiBuffer*> vertex_buffers;
             vertex_buffers.reserve(batch.num_vertex_attributes);
             for(uint32_t i = 0; i < batch.num_vertex_attributes; i++) {
                 vertex_buffers.push_back(batch.vertex_buffer);
@@ -225,7 +225,7 @@ namespace nova::renderer {
         if(start_index != ctx.cur_model_matrix_index) {
             const auto& [vertex_buffer, index_buffer] = batch.mesh->get_buffers_for_frame(ctx.frame_count % NUM_IN_FLIGHT_FRAMES);
             // TODO: There's probably a better way to do this
-            rx::vector<rhi::Buffer*> vertex_buffers;
+            rx::vector<rhi::RhiBuffer*> vertex_buffers;
             vertex_buffers.reserve(7);
             for(uint32_t i = 0; i < 7; i++) {
                 vertex_buffers.push_back(vertex_buffer);

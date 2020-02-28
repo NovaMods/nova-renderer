@@ -1,4 +1,4 @@
-#include "shaderpack_validator.hpp"
+#include "renderpack_validator.hpp"
 
 #include <array>
 
@@ -9,8 +9,8 @@
 
 #include "../json_utils.hpp"
 
-namespace nova::renderer::shaderpack {
-    RX_LOG("ShaderpackValidator", logger);
+namespace nova::renderer::renderpack {
+    RX_LOG("RenderpackValidator", logger);
 
     constexpr uint32_t NUM_REQUIRED_FIELDS = 23;
 
@@ -84,7 +84,7 @@ namespace nova::renderer::shaderpack {
 
     static rx::string resources_msg(const rx::string& msg) { return rx::string::format("Resources file: %s", msg); }
 
-    ValidationReport validate_shaderpack_resources_data(rx::json& resources_json) {
+    ValidationReport validate_renderpack_resources_data(rx::json& resources_json) {
         ValidationReport report;
         bool missing_textures = false;
 
@@ -104,7 +104,7 @@ namespace nova::renderer::shaderpack {
 
         if(missing_textures) {
             report.warnings.emplace_back(
-                resources_msg("Missing dynamic resources. If you ONLY use the backbuffer in your shaderpack, you can ignore this message"));
+                resources_msg("Missing dynamic resources. If you ONLY use the backbuffer in your renderpack, you can ignore this message"));
         }
 
         const rx::json samplers_itr = resources_json["samplers"];
@@ -280,4 +280,4 @@ namespace nova::renderer::shaderpack {
         errors += other.errors;
         warnings += other.warnings;
     }
-} // namespace nova::renderer::shaderpack
+} // namespace nova::renderer::renderpack

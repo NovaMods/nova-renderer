@@ -1,19 +1,19 @@
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
-    bool ResourceBindingDescription::operator==(const ResourceBindingDescription& other) {
+    bool RhiResourceBindingDescription::operator==(const RhiResourceBindingDescription& other) {
         return set == other.set && binding == other.binding && count == other.count && type == other.type;
     }
 
-    bool ResourceBindingDescription::operator!=(const ResourceBindingDescription& other) { return !(*this == other); }
+    bool RhiResourceBindingDescription::operator!=(const RhiResourceBindingDescription& other) { return !(*this == other); }
 
-    ResourceBarrier::ResourceBarrier() : buffer_memory_barrier{0, 0} {};
+    RhiResourceBarrier::RhiResourceBarrier() : buffer_memory_barrier{0, 0} {};
 
-    DescriptorResourceInfo::DescriptorResourceInfo() : image_info{} {};
+    RhiDescriptorResourceInfo::RhiDescriptorResourceInfo() : image_info{} {};
 
-    uint32_t PipelineInterface::get_num_descriptors_of_type(const DescriptorType type) const {
+    uint32_t RhiPipelineInterface::get_num_descriptors_of_type(const DescriptorType type) const {
         uint32_t num_descriptors = 0;
-        bindings.each_value([&](const ResourceBindingDescription& description) {
+        bindings.each_value([&](const RhiResourceBindingDescription& description) {
             if(description.type == type) {
                 num_descriptors++;
             }

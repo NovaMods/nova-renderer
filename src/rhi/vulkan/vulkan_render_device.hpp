@@ -64,74 +64,74 @@ namespace nova::renderer::rhi {
 #pragma region Render engine interface
         void set_num_renderpasses(uint32_t num_renderpasses) override;
 
-        ntl::Result<DeviceMemory*> allocate_device_memory(mem::Bytes size,
+        ntl::Result<RhiDeviceMemory*> allocate_device_memory(mem::Bytes size,
                                                           MemoryUsage usage,
                                                           ObjectType allowed_objects,
                                                           rx::memory::allocator* allocator) override;
 
-        ntl::Result<Renderpass*> create_renderpass(const shaderpack::RenderPassCreateInfo& data,
+        ntl::Result<RhiRenderpass*> create_renderpass(const renderpack::RenderPassCreateInfo& data,
                                                    const glm::uvec2& framebuffer_size,
                                                    rx::memory::allocator* allocator) override;
 
-        Framebuffer* create_framebuffer(const Renderpass* renderpass,
-                                        const rx::vector<Image*>& color_attachments,
-                                        const rx::optional<Image*> depth_attachment,
+        RhiFramebuffer* create_framebuffer(const RhiRenderpass* renderpass,
+                                        const rx::vector<RhiImage*>& color_attachments,
+                                        const rx::optional<RhiImage*> depth_attachment,
                                         const glm::uvec2& framebuffer_size,
                                         rx::memory::allocator* allocator) override;
 
-        ntl::Result<PipelineInterface*> create_pipeline_interface(const rx::map<rx::string, ResourceBindingDescription>& bindings,
-                                                                  const rx::vector<shaderpack::TextureAttachmentInfo>& color_attachments,
-                                                                  const rx::optional<shaderpack::TextureAttachmentInfo>& depth_texture,
+        ntl::Result<RhiPipelineInterface*> create_pipeline_interface(const rx::map<rx::string, RhiResourceBindingDescription>& bindings,
+                                                                  const rx::vector<renderpack::TextureAttachmentInfo>& color_attachments,
+                                                                  const rx::optional<renderpack::TextureAttachmentInfo>& depth_texture,
                                                                   rx::memory::allocator* allocator) override;
 
-        DescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
+        RhiDescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
                                                rx::memory::allocator* allocator) override;
 
-        rx::vector<DescriptorSet*> create_descriptor_sets(const PipelineInterface* pipeline_interface,
-                                                          DescriptorPool* pool,
+        rx::vector<RhiDescriptorSet*> create_descriptor_sets(const RhiPipelineInterface* pipeline_interface,
+                                                          RhiDescriptorPool* pool,
                                                           rx::memory::allocator* allocator) override;
 
-        void update_descriptor_sets(rx::vector<DescriptorSetWrite>& writes) override;
+        void update_descriptor_sets(rx::vector<RhiDescriptorSetWrite>& writes) override;
 
-        void reset_descriptor_pool(DescriptorPool* pool) override;
+        void reset_descriptor_pool(RhiDescriptorPool* pool) override;
 
-        ntl::Result<Pipeline*> create_pipeline(PipelineInterface* pipeline_interface,
+        ntl::Result<RhiPipeline*> create_pipeline(RhiPipelineInterface* pipeline_interface,
                                                const PipelineStateCreateInfo& data,
                                                rx::memory::allocator* allocator) override;
 
-        Buffer* create_buffer(const BufferCreateInfo& info, DeviceMemoryResource& memory, rx::memory::allocator* allocator) override;
+        RhiBuffer* create_buffer(const RhiBufferCreateInfo& info, DeviceMemoryResource& memory, rx::memory::allocator* allocator) override;
 
-        void write_data_to_buffer(const void* data, mem::Bytes num_bytes, mem::Bytes offset, const Buffer* buffer) override;
+        void write_data_to_buffer(const void* data, mem::Bytes num_bytes, mem::Bytes offset, const RhiBuffer* buffer) override;
 
-        Sampler* create_sampler(const SamplerCreateInfo& create_info, rx::memory::allocator* allocator) override;
+        RhiSampler* create_sampler(const RhiSamplerCreateInfo& create_info, rx::memory::allocator* allocator) override;
 
-        Image* create_image(const shaderpack::TextureCreateInfo& info, rx::memory::allocator* allocator) override;
+        RhiImage* create_image(const renderpack::TextureCreateInfo& info, rx::memory::allocator* allocator) override;
 
-        Semaphore* create_semaphore(rx::memory::allocator* allocator) override;
+        RhiSemaphore* create_semaphore(rx::memory::allocator* allocator) override;
 
-        rx::vector<Semaphore*> create_semaphores(uint32_t num_semaphores, rx::memory::allocator* allocator) override;
+        rx::vector<RhiSemaphore*> create_semaphores(uint32_t num_semaphores, rx::memory::allocator* allocator) override;
 
-        Fence* create_fence(bool signaled, rx::memory::allocator* allocator) override;
+        RhiFence* create_fence(bool signaled, rx::memory::allocator* allocator) override;
 
-        rx::vector<Fence*> create_fences(uint32_t num_fences, bool signaled, rx::memory::allocator* allocator) override;
+        rx::vector<RhiFence*> create_fences(uint32_t num_fences, bool signaled, rx::memory::allocator* allocator) override;
 
-        void wait_for_fences(rx::vector<Fence*> fences) override;
+        void wait_for_fences(rx::vector<RhiFence*> fences) override;
 
-        void reset_fences(const rx::vector<Fence*>& fences) override;
+        void reset_fences(const rx::vector<RhiFence*>& fences) override;
 
-        void destroy_renderpass(Renderpass* pass, rx::memory::allocator* allocator) override;
+        void destroy_renderpass(RhiRenderpass* pass, rx::memory::allocator* allocator) override;
 
-        void destroy_framebuffer(Framebuffer* framebuffer, rx::memory::allocator* allocator) override;
+        void destroy_framebuffer(RhiFramebuffer* framebuffer, rx::memory::allocator* allocator) override;
 
-        void destroy_pipeline_interface(PipelineInterface* pipeline_interface, rx::memory::allocator* allocator) override;
+        void destroy_pipeline_interface(RhiPipelineInterface* pipeline_interface, rx::memory::allocator* allocator) override;
 
-        void destroy_pipeline(Pipeline* pipeline, rx::memory::allocator* allocator) override;
+        void destroy_pipeline(RhiPipeline* pipeline, rx::memory::allocator* allocator) override;
 
-        void destroy_texture(Image* resource, rx::memory::allocator* allocator) override;
+        void destroy_texture(RhiImage* resource, rx::memory::allocator* allocator) override;
 
-        void destroy_semaphores(rx::vector<Semaphore*>& semaphores, rx::memory::allocator* allocator) override;
+        void destroy_semaphores(rx::vector<RhiSemaphore*>& semaphores, rx::memory::allocator* allocator) override;
 
-        void destroy_fences(const rx::vector<Fence*>& fences, rx::memory::allocator* allocator) override;
+        void destroy_fences(const rx::vector<RhiFence*>& fences, rx::memory::allocator* allocator) override;
 
         CommandList* create_command_list(uint32_t thread_idx,
                                          QueueType needed_queue_type,
@@ -140,9 +140,9 @@ namespace nova::renderer::rhi {
 
         void submit_command_list(CommandList* cmds,
                                  QueueType queue,
-                                 Fence* fence_to_signal = nullptr,
-                                 const rx::vector<Semaphore*>& wait_semaphores = {},
-                                 const rx::vector<Semaphore*>& signal_semaphores = {}) override;
+                                 RhiFence* fence_to_signal = nullptr,
+                                 const rx::vector<RhiSemaphore*>& wait_semaphores = {},
+                                 const rx::vector<RhiSemaphore*>& signal_semaphores = {}) override;
 #pragma endregion
 
         [[nodiscard]] uint32_t get_queue_family_index(QueueType type) const;
@@ -221,7 +221,7 @@ namespace nova::renderer::rhi {
         [[nodiscard]] rx::optional<VkShaderModule> create_shader_module(const rx::vector<uint32_t>& spirv) const;
 
         [[nodiscard]] rx::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
-            const rx::map<rx::string, ResourceBindingDescription>& all_bindings,
+            const rx::map<rx::string, RhiResourceBindingDescription>& all_bindings,
             rx::vector<uint32_t>& variable_descriptor_counts,
             rx::memory::allocator* allocator) const;
 
@@ -235,11 +235,11 @@ namespace nova::renderer::rhi {
          * The method checks an internal hash map. If there's already an image view for the given image then great,
          * otherwise one is created on-demand
          */
-        [[nodiscard]] static VkImageView image_view_for_image(const Image* image);
+        [[nodiscard]] static VkImageView image_view_for_image(const RhiImage* image);
 
         [[nodiscard]] static VkCommandBufferLevel to_vk_command_buffer_level(CommandList::Level level);
 
-        [[nodiscard]] static VulkanInputAssemblerLayout get_input_assembler_setup(const rx::vector<VertexField>& vertex_fields);
+        [[nodiscard]] static VulkanInputAssemblerLayout get_input_assembler_setup(const rx::vector<RhiVertexField>& vertex_fields);
 #pragma endregion
 
 #pragma region Debugging

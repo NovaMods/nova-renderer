@@ -4,7 +4,7 @@
 #include <rx/core/string.h>
 #include <rx/core/vector.h>
 
-namespace nova::renderer::shaderpack {
+namespace nova::renderer::renderpack {
     struct ValidationReport {
         rx::vector<rx::string> warnings;
         rx::vector<rx::string> errors;
@@ -31,7 +31,7 @@ namespace nova::renderer::shaderpack {
      *
      * \param resources_json The JSON dynamic resources to validate
      */
-    ValidationReport validate_shaderpack_resources_data(rx::json& resources_json);
+    ValidationReport validate_renderpack_resources_data(rx::json& resources_json);
 
     /*!
      * \brief Validates a single texture's JSON, printing warnings to the warning logger and throwing an exception with
@@ -66,4 +66,4 @@ namespace nova::renderer::shaderpack {
      * \return A list of all errors encountered when validating this material
      */
     ValidationReport validate_material(const rx::json& material_json);
-} // namespace nova::renderer::shaderpack
+} // namespace nova::renderer::renderpack

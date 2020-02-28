@@ -8,7 +8,7 @@ namespace nova {
     namespace renderer {
         class Rendergraph;
 
-        namespace shaderpack {
+        namespace renderpack {
             struct PipelineData;
         }
     } // namespace renderer
@@ -16,6 +16,6 @@ namespace nova {
 
 namespace nova::renderer::renderpack {
 
-    rx::optional<PipelineStateCreateInfo> to_pipeline_state_create_info(const shaderpack::PipelineData& data,
+    rx::optional<PipelineStateCreateInfo> to_pipeline_state_create_info(const renderpack::PipelineData& data,
                                                                         const Rendergraph& rendergraph);
 };

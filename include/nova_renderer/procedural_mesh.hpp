@@ -20,8 +20,8 @@ namespace nova::renderer {
     class ProceduralMesh : rx::concepts::no_copy {
     public:
         struct Buffers {
-            rhi::Buffer* vertex_buffer;
-            rhi::Buffer* index_buffer;
+            rhi::RhiBuffer* vertex_buffer;
+            rhi::RhiBuffer* index_buffer;
         };
 
         ProceduralMesh() = default;
@@ -81,11 +81,11 @@ namespace nova::renderer {
 
         rx::string name;
 
-        rx::array<rhi::Buffer* [NUM_IN_FLIGHT_FRAMES]> vertex_buffers;
-        rx::array<rhi::Buffer* [NUM_IN_FLIGHT_FRAMES]> index_buffers;
+        rx::array<rhi::RhiBuffer* [NUM_IN_FLIGHT_FRAMES]> vertex_buffers;
+        rx::array<rhi::RhiBuffer* [NUM_IN_FLIGHT_FRAMES]> index_buffers;
 
-        rhi::Buffer* cached_vertex_buffer;
-        rhi::Buffer* cached_index_buffer;
+        rhi::RhiBuffer* cached_vertex_buffer;
+        rhi::RhiBuffer* cached_index_buffer;
 
         uint64_t num_vertex_bytes_to_upload = 0;
         uint64_t num_index_bytes_to_upload = 0;
