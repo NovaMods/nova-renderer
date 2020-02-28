@@ -393,7 +393,7 @@ namespace nova::renderer {
         rx::optional<MultisamplingState> multisampling_state{};
 
         /*!
-         * What depth operations to perform
+         * \brief What depth operations to perform
          *
          * If this optional has a value, the depth test is enabled. If false, the depth test is disabled
          */
