@@ -1,6 +1,6 @@
 #include "nova_renderer/util/utils.hpp"
 
-#include "../../../../src/loading/shaderpack/shaderpack_validator.hpp"
+#include "../../../../src/loading/renderpack/renderpack_validator.hpp"
 #include "../../../src/general_test_setup.hpp"
 #undef TEST
 #include <gtest/gtest.h>
@@ -10,7 +10,7 @@
  *      Pipeline validator tests        *
  ****************************************/
 
-RX_LOG("ShaderpackValidatorTests", logger);
+RX_LOG("renderpackValidatorTests", logger);
 
 TEST(GraphicsPipelineValidator, NoWarningsOrErrors) {
     rx::json pipeline_json{R"({
@@ -72,8 +72,8 @@ TEST(GraphicsPipelineValidator, NoWarningsOrErrors) {
         logger(rx::log::level::k_error, "Could not create JSON resource: %s", *err);
     }
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline_json);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline_json);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
@@ -133,8 +133,8 @@ TEST(GraphicsPipelineValidator, MissingName) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -196,8 +196,8 @@ TEST(GraphicsPipelineValidator, MissingPass) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -259,8 +259,8 @@ TEST(GraphicsPipelineValidator, MissingVertexShader) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -322,8 +322,8 @@ TEST(GraphicsPipelineValidator, MissingParentName) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -381,8 +381,8 @@ TEST(GraphicsPipelineValidator, MissingDefines) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -441,8 +441,8 @@ TEST(GraphicsPipelineValidator, MissingStates) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -496,8 +496,8 @@ TEST(GraphicsPipelineValidator, MissingFrontFace) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -551,8 +551,8 @@ TEST(GraphicsPipelineValidator, MissingBackFace) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -613,8 +613,8 @@ TEST(GraphicsPipelineValidator, MissingDepthBias) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -675,8 +675,8 @@ TEST(GraphicsPipelineValidator, MissingSlopeScaledDepthBias) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -737,8 +737,8 @@ TEST(GraphicsPipelineValidator, MissingStencilRef) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -799,8 +799,8 @@ TEST(GraphicsPipelineValidator, MissingStencilReadMask) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -861,8 +861,8 @@ TEST(GraphicsPipelineValidator, MissingStencilWriteMask) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -923,8 +923,8 @@ TEST(GraphicsPipelineValidator, MissingMsaaSupport) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -985,8 +985,8 @@ TEST(GraphicsPipelineValidator, MissingSourceBlendFactor) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1047,8 +1047,8 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1109,8 +1109,8 @@ TEST(GraphicsPipelineValidator, MissingAlphaSrc) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1171,8 +1171,8 @@ TEST(GraphicsPipelineValidator, MissingAlphaDst) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1233,8 +1233,8 @@ TEST(GraphicsPipelineValidator, MissingDepthFunc) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1295,8 +1295,8 @@ TEST(GraphicsPipelineValidator, MissingTessellationControlShader) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1357,8 +1357,8 @@ TEST(GraphicsPipelineValidator, MissingTessellationEvaluationShader) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1419,8 +1419,8 @@ TEST(GraphicsPipelineValidator, MissingGeometryShader) {
         "fragmentShader": "TestFragmentShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1481,8 +1481,8 @@ TEST(GraphicsPipelineValidator, MissingFragmentShader) {
         "tessellationEvaluationShader": "TestTessellationEvaluationShader"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_graphics_pipeline(pipeline);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1515,8 +1515,8 @@ TEST(ResourcesValidator, NoErrorsOrWarnings) {
         ]
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_shaderpack_resources_data(resources);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_renderpack_resources_data(resources);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
@@ -1533,8 +1533,8 @@ TEST(ResourcesValidator, TextureMissing) {
         ]
     })"};
 
-    nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_shaderpack_resources_data(resources);
-    nova::renderer::shaderpack::print(report);
+    nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_renderpack_resources_data(resources);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1562,8 +1562,8 @@ TEST(ResourcesValidator, TextureWarningsPropagate) {
         ]
     })"};
 
-    nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_shaderpack_resources_data(resources);
-    nova::renderer::shaderpack::print(report);
+    nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_renderpack_resources_data(resources);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1591,8 +1591,8 @@ TEST(ResourcesValidator, SamplerErrorsPropagate) {
         ]
     })"};
 
-    nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_shaderpack_resources_data(resources);
-    nova::renderer::shaderpack::print(report);
+    nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_renderpack_resources_data(resources);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1619,8 +1619,8 @@ TEST(TextureValidator, NoErrorsOrWarnings) {
         logger(rx::log::level::k_error, "%s", *err);
     }
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_data(texture);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_texture_data(texture);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
@@ -1636,8 +1636,8 @@ TEST(TextureValidator, NameMissing) {
         }
     })"};
 
-    nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_data(texture);
-    nova::renderer::shaderpack::print(report);
+    nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_texture_data(texture);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1649,8 +1649,8 @@ TEST(TextureValidator, FormatMissing) {
         "name": "TestTexture"
     })"};
 
-    nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_data(texture);
-    nova::renderer::shaderpack::print(report);
+    nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_texture_data(texture);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1667,8 +1667,8 @@ TEST(TextureValidator, TextureFormatWarningsPropagate) {
         }
     })"};
 
-    nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_data(texture);
-    nova::renderer::shaderpack::print(report);
+    nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_texture_data(texture);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1687,9 +1687,9 @@ TEST(TextureFormatValidator, NoErrorsOrWarnings) {
         "height": 1080
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_texture_format(texture_format,
                                                                                                                     "TestTexture");
-    nova::renderer::shaderpack::print(report);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
@@ -1702,9 +1702,9 @@ TEST(TextureFormatValidator, PixelFormatMissing) {
         "height": 1080
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_texture_format(texture_format,
                                                                                                                     "TestTexture");
-    nova::renderer::shaderpack::print(report);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1718,9 +1718,9 @@ TEST(TextureFormatValidator, DimensionTypeMissing) {
         "height": 1080
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_texture_format(texture_format,
                                                                                                                     "TestTexture");
-    nova::renderer::shaderpack::print(report);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1734,9 +1734,9 @@ TEST(TextureFormatValidator, WidthMissing) {
         "height": 1080
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_texture_format(texture_format,
                                                                                                                     "TestTexture");
-    nova::renderer::shaderpack::print(report);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1754,9 +1754,9 @@ TEST(TextureFormatValidator, HeightMissing) {
         logger(rx::log::level::k_error, "%s", *err);
     }
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_texture_format(texture_format,
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_texture_format(texture_format,
                                                                                                                     "TestTexture");
-    nova::renderer::shaderpack::print(report);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1774,8 +1774,8 @@ TEST(SamplerValidator, NoErrorsOrWarnings) {
         "wrapMode": "Clamp"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_sampler_data(sampler);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_sampler_data(sampler);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
@@ -1787,8 +1787,8 @@ TEST(SamplerValidator, MissingName) {
         "wrapMode": "Clamp"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_sampler_data(sampler);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_sampler_data(sampler);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1801,8 +1801,8 @@ TEST(SamplerValidator, MissingFilter) {
         "wrapMode": "Clamp"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_sampler_data(sampler);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_sampler_data(sampler);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1815,8 +1815,8 @@ TEST(SamplerValidator, MissingWrapMode) {
         "filter": "Bilinear"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_sampler_data(sampler);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_sampler_data(sampler);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1845,8 +1845,8 @@ TEST(MaterialValidator, NoErrorsOrWarnings) {
         "filter": "geometry_type::block"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_material(material);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
@@ -1864,8 +1864,8 @@ TEST(MaterialValidator, BindingsMissing) {
         "filter": "geometry_type::block"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_material(material);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
     ASSERT_EQ(report.warnings.size(), 1);
@@ -1884,8 +1884,8 @@ TEST(MaterialValidator, BindingsEmpty) {
         "filter": "geometry_type::block"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_material(material);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
     ASSERT_EQ(report.warnings.size(), 1);
@@ -1908,8 +1908,8 @@ TEST(MaterialValidator, FilterMissing) {
         ]
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_material(material);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1933,8 +1933,8 @@ TEST(MaterialValidator, NameMissing) {
         "filter": "geometry_type::block"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_material(material);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1947,8 +1947,8 @@ TEST(MaterialValidator, PassesMissing) {
         "filter": "geometry_type::block"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_material(material);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1962,8 +1962,8 @@ TEST(MaterialValidator, PassesWrongType) {
         "filter": "geometry_type::block"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_material(material);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1977,8 +1977,8 @@ TEST(MaterialValidator, PassesEmptyArray) {
         "filter": "geometry_type::block"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_material(material);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2002,8 +2002,8 @@ TEST(MaterialValidator, PassNoPipeline) {
         "filter": "geometry_type::block"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_material(material);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2027,8 +2027,8 @@ TEST(MaterialValidator, PassNoName) {
         "filter": "geometry_type::block"
     })"};
 
-    const nova::renderer::shaderpack::ValidationReport report = nova::renderer::shaderpack::validate_material(material);
-    nova::renderer::shaderpack::print(report);
+    const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_material(material);
+    nova::renderer::renderpack::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
