@@ -545,6 +545,8 @@ namespace nova::renderer {
 
                     const FullMaterialPassName full_pass_name{pass_data.material_name, pass_data.name};
 
+                    pass.name = full_pass_name;
+
                     MaterialPassMetadata pass_metadata{};
                     pass_metadata.data = pass_data;
                     material_metadatas.insert(full_pass_name, pass_metadata);
@@ -652,7 +654,7 @@ namespace nova::renderer {
     rhi::RhiSampler* NovaRenderer::get_point_sampler() const { return point_sampler; }
 
     RenderableId NovaRenderer::add_renderable_for_material(const FullMaterialPassName& material_name,
-                                                           const StaticMeshRenderableCreateInfo& renderable) {
+                                                           const StaticMeshRenderableCreateInfo& create_info) {
         MTR_SCOPE("add_renderable_for_material", "Self");
         const RenderableId id = next_renderable_id.load();
         next_renderable_id.fetch_add(1);
@@ -663,21 +665,48 @@ namespace nova::renderer {
             return std::numeric_limits<uint64_t>::max();
         }
 
-        MaterialPass material = {};
+        RenderableKey key;
+        key.pipeline_name = pass_key->pipeline_name;
+        key.material_pass_idx = pass_key->material_pass_index;
 
-        StaticMeshRenderCommand command = make_render_command(renderable, id);
+        // Figure out where to put the renderable
+        rx::vector<MaterialPass>* materials = [&]() -> rx::vector<MaterialPass>* {
+            const auto pipeline = pipeline_storage->get_pipeline(pass_key->pipeline_name);
+            if(pipeline) {
+                return passes_by_pipeline.find(pipeline->pipeline);
 
-        if(const auto* mesh = meshes.find(renderable.mesh)) {
-            if(renderable.is_static) {
+            } else {
+                logger(rx::log::level::k_error, "Could not get place the new renderable in the appropriate draw command list");
+                return nullptr;
+            }
+        }();
+
+        if(!materials) {
+            return std::numeric_limits<uint64_t>::max();
+        }
+
+        auto& material = (*materials)[pass_key->material_pass_index];
+
+        StaticMeshRenderCommand command = make_render_command(create_info, id);
+
+        if(const auto* mesh = meshes.find(create_info.mesh)) {
+            if(create_info.is_static) {
+                key.type = RenderableType::StaticMesh;
                 bool need_to_add_batch = true;
 
+                uint32_t batch_idx = 0;
                 material.static_mesh_draws.each_fwd([&](MeshBatch<StaticMeshRenderCommand>& batch) {
                     if(batch.vertex_buffer == mesh->vertex_buffer) {
+                        key.batch_idx = batch_idx;
+                        key.renderable_idx = batch.commands.size();
+
                         batch.commands.emplace_back(command);
 
                         need_to_add_batch = false;
                         return false;
                     }
+
+                    batch_idx++;
                     return true;
                 });
 
@@ -689,52 +718,101 @@ namespace nova::renderer {
                     batch.index_buffer = mesh->index_buffer;
                     batch.commands.emplace_back(command);
 
+                    key.batch_idx = material.static_mesh_draws.size();
+                    key.renderable_idx = 0;
+
                     material.static_mesh_draws.emplace_back(batch);
                 }
             }
 
-        } else if(const auto* proc_mesh = proc_meshes.find(renderable.mesh)) {
-            // TODO: Look at this when you're less frazzled
-            if(renderable.is_static) {
+        } else if(const auto* proc_mesh = proc_meshes.find(create_info.mesh)) {
+            if(create_info.is_static) {
+                key.type = RenderableType::ProceduralMesh;
                 bool need_to_add_batch = false;
 
+                uint32_t batch_idx = 0;
                 material.static_procedural_mesh_draws.each_fwd([&](ProceduralMeshBatch<StaticMeshRenderCommand>& batch) {
-                    if(batch.mesh.get_key() == renderable.mesh) {
+                    if(batch.mesh.get_key() == create_info.mesh) {
+                        key.batch_idx = batch_idx;
+                        key.renderable_idx = batch.commands.size();
+
                         batch.commands.emplace_back(command);
 
                         need_to_add_batch = false;
                         return false;
                     }
 
+                    batch_idx++;
                     return true;
                 });
 
                 if(need_to_add_batch) {
-                    ProceduralMeshBatch<StaticMeshRenderCommand> batch(&proc_meshes, renderable.mesh);
+                    ProceduralMeshBatch<StaticMeshRenderCommand> batch{&proc_meshes, create_info.mesh};
                     batch.commands.emplace_back(command);
+
+                    key.batch_idx = material.static_mesh_draws.size();
+                    key.renderable_idx = 0;
 
                     material.static_procedural_mesh_draws.emplace_back(batch);
                 }
             }
         } else {
-            logger(rx::log::level::k_error, "Could not find a mesh with ID %u", renderable.mesh);
+            logger(rx::log::level::k_error, "Could not find a mesh with ID %u", create_info.mesh);
+            return std::numeric_limits<uint64_t>::max();
         }
 
-        // Figure out where to put the renderable
-        const auto pipeline = pipeline_storage->get_pipeline(pass_key->pipeline_name);
-        if(pipeline) {
-            auto* passes = passes_by_pipeline.find(pipeline->pipeline);
-            passes->emplace_back(material);
-
-        } else {
-            logger(rx::log::level::k_error, "Could not get place the new renderable in the appropriate draw command list");
-        }
+        renderable_keys.insert(id, key);
 
         return id;
     }
 
     void NovaRenderer::update_renderable(RenderableId renderable, const StaticMeshRenderableUpdateData& update_data) {
-        // Find and update all commands for this renderable
+        MTR_SCOPE("update_renderable", rx::string::format("Update Renderable %u", renderable).data());
+        const auto* key = renderable_keys.find(renderable);
+        if(key == nullptr) {
+            logger(rx::log::level::k_error, "Could not update renderable %u", renderable);
+            return;
+        }
+
+        const auto pipeline = pipeline_storage->get_pipeline(key->pipeline_name);
+        if(!pipeline) {
+            logger(rx::log::level::k_error, "Could not find pipeline %s, as requested by renderable %u", key->pipeline_name, renderable);
+            return;
+        }
+
+        auto* passes = passes_by_pipeline.find(pipeline->pipeline);
+        if(passes == nullptr) {
+            logger(rx::log::level::k_error,
+                   "Could not find draws for pipeline %s, as requested by renderable %u",
+                   key->pipeline_name,
+                   renderable);
+            return;
+        }
+
+        auto& material_pass = (*passes)[key->material_pass_idx];
+
+        auto& command = [&] {
+            switch(key->type) {
+                case RenderableType::StaticMesh: {
+                    auto& batch = material_pass.static_mesh_draws[key->batch_idx];
+                    return batch.commands[key->renderable_idx];
+                }
+
+                case RenderableType::ProceduralMesh: {
+                    auto& batch = material_pass.static_procedural_mesh_draws[key->batch_idx];
+                    return batch.commands[key->renderable_idx];
+                }
+            }
+        }();
+
+        command.is_visible = update_data.visible;
+
+        // TODO: Make sure my matrix math is correct
+        command.model_matrix = glm::translate(glm::mat4{1}, update_data.position);
+        command.model_matrix = glm::scale(command.model_matrix, update_data.scale);
+        command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.x, {1, 0, 0});
+        command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.y, {0, 1, 0});
+        command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.z, {0, 0, 1});
     }
 
     CameraAccessor NovaRenderer::create_camera(const CameraCreateInfo& create_info) {

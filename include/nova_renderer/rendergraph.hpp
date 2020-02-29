@@ -1,7 +1,8 @@
 #pragma once
 
-#include <nova_renderer/rhi/swapchain.hpp>
 #include <rx/core/log.h>
+#include <rx/core/map.h>
+#include <rx/core/optional.h>
 
 #include "nova_renderer/frame_context.hpp"
 #include "nova_renderer/procedural_mesh.hpp"
@@ -9,6 +10,7 @@
 #include "nova_renderer/renderpack_data.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
+#include "nova_renderer/rhi/swapchain.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
 
 #include "resource_loader.hpp"
@@ -22,6 +24,36 @@ namespace nova::renderer {
     namespace renderpack {
         struct RenderPassCreateInfo;
     }
+
+#pragma region Metadata structs
+    struct FullMaterialPassName {
+        rx::string material_name;
+        rx::string pass_name;
+
+        bool operator==(const FullMaterialPassName& other) const;
+
+        rx_size hash() const;
+    };
+
+    struct MaterialPassKey {
+        rx::string pipeline_name;
+        uint32_t material_pass_index;
+    };
+
+    struct MaterialPassMetadata {
+        renderpack::MaterialPass data;
+    };
+
+    struct PipelineMetadata {
+        PipelineStateCreateInfo data;
+
+        rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas{};
+    };
+
+    struct RenderpassMetadata {
+        renderpack::RenderPassCreateInfo data;
+    };
+#pragma endregion
 
 #pragma region Structs for rendering
     template <typename RenderCommandType>
@@ -65,6 +97,8 @@ namespace nova::renderer {
     };
 
     struct MaterialPass {
+        FullMaterialPassName name;
+
         rx::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
         rx::vector<ProceduralMeshBatch<StaticMeshRenderCommand>> static_procedural_mesh_draws;
 
@@ -86,36 +120,6 @@ namespace nova::renderer {
         rhi::RhiPipelineInterface* pipeline_interface = nullptr;
 
         void record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;
-    };
-#pragma endregion
-
-#pragma region Metadata structs
-    struct FullMaterialPassName {
-        rx::string material_name;
-        rx::string pass_name;
-
-        bool operator==(const FullMaterialPassName& other) const;
-
-        rx_size hash() const;
-    };
-
-    struct MaterialPassKey {
-        rx::string pipeline_name;
-        uint32_t material_pass_index;
-    };
-
-    struct MaterialPassMetadata {
-        renderpack::MaterialPass data;
-    };
-
-    struct PipelineMetadata {
-        PipelineStateCreateInfo data;
-
-        rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas{};
-    };
-
-    struct RenderpassMetadata {
-        renderpack::RenderPassCreateInfo data;
     };
 #pragma endregion
 

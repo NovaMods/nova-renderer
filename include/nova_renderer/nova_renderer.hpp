@@ -187,7 +187,7 @@ namespace nova::renderer {
                                                    const rx::map<rx::string, rhi::RhiResourceBindingDescription>& descriptor_descriptions);
 
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
-                                                               const StaticMeshRenderableCreateInfo& renderable);
+                                                               const StaticMeshRenderableCreateInfo& create_info);
 
         /*!
          * \brief Updates a renderable's information
@@ -337,6 +337,15 @@ namespace nova::renderer {
         rx::array<rhi::RhiFence* [NUM_IN_FLIGHT_FRAMES]> frame_fences;
 
         rx::map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
+
+        struct RenderableKey {
+            rx::string pipeline_name{};
+            uint32_t material_pass_idx{};
+            uint32_t batch_idx{};
+            uint32_t renderable_idx{};
+        };
+
+        rx::map<RenderableId, RenderableKey> renderable_keys;
 
         rx::vector<Camera> cameras;
         PerFrameDeviceArray<CameraUboData>* camera_data;
