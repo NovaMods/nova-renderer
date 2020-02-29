@@ -69,6 +69,11 @@ namespace nova::renderer {
 
     using RenderableId = uint64_t;
 
+    enum class RenderableType {
+        StaticMesh,
+        ProceduralMesh,
+    };
+
     static std::atomic<RenderableId> next_renderable_id;
 
     struct RenderableMetadata {

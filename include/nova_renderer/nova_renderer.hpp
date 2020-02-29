@@ -341,6 +341,7 @@ namespace nova::renderer {
         struct RenderableKey {
             rx::string pipeline_name{};
             uint32_t material_pass_idx{};
+            RenderableType type {};
             uint32_t batch_idx{};
             uint32_t renderable_idx{};
         };
