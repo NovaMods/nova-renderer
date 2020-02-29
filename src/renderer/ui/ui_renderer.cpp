@@ -12,7 +12,7 @@ namespace nova::renderer {
         texture_outputs.emplace_back(UI_OUTPUT_RT_NAME, rhi::PixelFormat::Rgba8, true);
     }
 
-    RX_GLOBAL<UiRenderpassCreateInfo> ui_create_info{"Nova", "UiRenderpassCreateInfo"};
+    rx::global<UiRenderpassCreateInfo> ui_create_info{"Nova", "UiRenderpassCreateInfo"};
 
     UiRenderpass::UiRenderpass() : Renderpass(UI_RENDER_PASS_NAME, true) {}
 

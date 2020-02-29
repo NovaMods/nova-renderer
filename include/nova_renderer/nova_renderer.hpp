@@ -1,5 +1,9 @@
 #pragma once
 
+#include <rx/core/log.h>
+#include <rx/core/map.h>
+#include <rx/core/optional.h>
+
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
 #include "nova_renderer/nova_settings.hpp"

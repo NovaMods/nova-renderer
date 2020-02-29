@@ -13,7 +13,9 @@
 #include <glslang/MachineIndependent/Initialize.h>
 #include <rx/core/array.h>
 #include <rx/core/global.h>
+#include <rx/core/hash.h>
 #include <rx/core/log.h>
+#include <rx/core/map.h>
 #include <rx/core/memory/bump_point_allocator.h>
 
 #include "nova_renderer/constants.hpp"
@@ -35,14 +37,14 @@
 using namespace nova::mem;
 using namespace operators;
 
-RX_GLOBAL_GROUP("Nova", g_nova_globals);
+rx::global_group g_nova_globals{"Nova"};
 
 RX_LOG("nova", logger);
 
 // TODO: Use this somehow
 const Bytes GLOBAL_MEMORY_POOL_SIZE = 1_gb;
 
-RX_GLOBAL<nova::renderer::LogHandles> logging_event_handles{"system", "log_handles", &rx::memory::g_system_allocator};
+rx::global<nova::renderer::LogHandles> logging_event_handles{"system", "log_handles", &rx::memory::g_system_allocator};
 
 void init_rex() {
     static bool initialized = false;
@@ -168,7 +170,7 @@ namespace nova::renderer {
         color_attachments.emplace_back(BACKBUFFER_NAME, rhi::PixelFormat::Rgba8, false);
     }
 
-    RX_GLOBAL<BackbufferOutputPipelineCreateInfo> backbuffer_output_pipeline_create_info{"Nova", "BackbufferOutputPipelineCreateInfo"};
+    rx::global<BackbufferOutputPipelineCreateInfo> backbuffer_output_pipeline_create_info{"Nova", "BackbufferOutputPipelineCreateInfo"};
 
     bool FullMaterialPassName::operator==(const FullMaterialPassName& other) const {
         return material_name == other.material_name && pass_name == other.pass_name;
@@ -215,11 +217,11 @@ namespace nova::renderer {
                     render_doc->SetCaptureOptionU32(eRENDERDOC_Option_SaveAllInitials, 1U);
                     render_doc->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, 1U);
 
-                    rg_log(rx::log::level::k_info, "Loaded RenderDoc successfully");
+                    logger(rx::log::level::k_info, "Loaded RenderDoc successfully");
 
                     return 0;
                 })
-                .on_error([](const ntl::NovaError& error) { rg_log(rx::log::level::k_error, "%s", error.to_string()); });
+                .on_error([](const ntl::NovaError& error) { logger(rx::log::level::k_error, "%s", error.to_string()); });
         }
 
         {
@@ -433,23 +435,23 @@ namespace nova::renderer {
             destroy_dynamic_resources();
 
             destroy_renderpasses();
-            rg_log(rx::log::level::k_verbose, "Resources from old renderpack destroyed");
+            logger(rx::log::level::k_verbose, "Resources from old renderpack destroyed");
         }
 
         create_dynamic_textures(data.resources.render_targets);
-        rg_log(rx::log::level::k_verbose, "Dynamic textures created");
+        logger(rx::log::level::k_verbose, "Dynamic textures created");
 
         create_render_passes(data.graph_data.passes, data.pipelines);
 
-        rg_log(rx::log::level::k_verbose, "Created render passes");
+        logger(rx::log::level::k_verbose, "Created render passes");
 
         create_pipelines_and_materials(data.pipelines, data.materials);
 
-        rg_log(rx::log::level::k_verbose, "Created pipelines and materials");
+        logger(rx::log::level::k_verbose, "Created pipelines and materials");
 
         renderpacks_loaded = true;
 
-        rg_log(rx::log::level::k_verbose, "Renderpack %s loaded successfully", renderpack_name);
+        logger(rx::log::level::k_verbose, "Renderpack %s loaded successfully", renderpack_name);
     }
 
     const rx::vector<MaterialPass>& NovaRenderer::get_material_passes_for_pipeline(rhi::RhiPipeline* const pipeline) {
@@ -491,7 +493,7 @@ namespace nova::renderer {
                     }
                 });
             } else {
-                rg_log(rx::log::level::k_error, "Could not create renderpass %s", create_info.name);
+                logger(rx::log::level::k_error, "Could not create renderpass %s", create_info.name);
             }
         });
     }
@@ -623,7 +625,7 @@ namespace nova::renderer {
                 writes.push_back(write);
 
             } else {
-                rg_log(rx::log::level::k_error, "Resource %s is not known to Nova", resource_name);
+                logger(rx::log::level::k_error, "Resource %s is not known to Nova", resource_name);
             }
         });
 
@@ -637,7 +639,7 @@ namespace nova::renderer {
                 device_resources->destroy_render_target(tex_data.name, *renderpack_allocator);
             });
 
-            rg_log(rx::log::level::k_verbose, "Deleted all dynamic textures from renderpack %s", loaded_renderpack->name);
+            logger(rx::log::level::k_verbose, "Deleted all dynamic textures from renderpack %s", loaded_renderpack->name);
         }
     }
 
@@ -657,7 +659,7 @@ namespace nova::renderer {
 
         const auto* pass_key = material_pass_keys.find(material_name);
         if(pass_key == nullptr) {
-            rg_log(rx::log::level::k_error, "No material named %s for pass %s", material_name.material_name, material_name.pass_name);
+            logger(rx::log::level::k_error, "No material named %s for pass %s", material_name.material_name, material_name.pass_name);
             return std::numeric_limits<uint64_t>::max();
         }
 
@@ -729,6 +731,10 @@ namespace nova::renderer {
         }
 
         return id;
+    }
+
+    void NovaRenderer::update_renderable(RenderableId renderable, const StaticMeshRenderableUpdateData& update_data) {
+        // Find and update all commands for this renderable
     }
 
     CameraAccessor NovaRenderer::create_camera(const CameraCreateInfo& create_info) {
@@ -898,7 +904,7 @@ namespace nova::renderer {
             create_materials_for_pipeline(*pipeline, materials, backbuffer_output_pipeline_create_info->name);
 
             const static FullMaterialPassName BACKBUFFER_OUTPUT_MATERIAL{BACKBUFFER_OUTPUT_MATERIAL_NAME, "main"};
-            const static StaticMeshRenderableCreateInfo FULLSCREEN_TRIANGLE_RENDERABLE{{fullscreen_triangle_id}};
+            const static StaticMeshRenderableCreateInfo FULLSCREEN_TRIANGLE_RENDERABLE{{}, true, fullscreen_triangle_id};
 
             backbuffer_output_renderable = add_renderable_for_material(BACKBUFFER_OUTPUT_MATERIAL, FULLSCREEN_TRIANGLE_RENDERABLE);
         }

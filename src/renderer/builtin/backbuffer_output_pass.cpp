@@ -23,7 +23,7 @@ namespace nova::renderer {
         pipeline_names.emplace_back(BACKBUFFER_OUTPUT_PIPELINE_NAME);
     }
 
-    RX_GLOBAL<BackbufferOutputRenderpassCreateInfo> backbuffer_output_create_info{"Nova", "BackbufferOutputCreateInfo"};
+    rx::global<BackbufferOutputRenderpassCreateInfo> backbuffer_output_create_info{"Nova", "BackbufferOutputCreateInfo"};
 
     BackbufferOutputRenderpass::BackbufferOutputRenderpass(rhi::RhiResource* ui_output, rhi::RhiResource* scene_output)
         : Renderpass(BACKBUFFER_OUTPUT_RENDER_PASS_NAME, true) {
