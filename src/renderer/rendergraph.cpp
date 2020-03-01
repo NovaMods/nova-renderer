@@ -4,6 +4,7 @@
 #include "nova_renderer/rhi/command_list.hpp"
 
 #include "../loading/renderpack/render_graph_builder.hpp"
+#include "minitrace.h"
 
 namespace nova::renderer {
     using namespace renderpack;
@@ -13,6 +14,8 @@ namespace nova::renderer {
     Renderpass::Renderpass(rx::string name, const bool is_builtin) : name(std::move(name)), is_builtin(is_builtin) {}
 
     void Renderpass::execute(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
+        const auto& profiling_event_name = rx::string::format("Execute %s", name);
+        MTR_SCOPE("Renderpass", profiling_event_name.data());
         // TODO: Figure if any of these barriers are implicit
         // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource instead of
         // using a robust default
@@ -112,6 +115,7 @@ namespace nova::renderer {
     }
 
     rx::vector<rx::string> Rendergraph::calculate_renderpass_execution_order() {
+        MTR_SCOPE("Rendergraph", "calculate_renderpass_execution_order");
         if(is_dirty) {
             const auto create_infos = [&]() {
                 rx::vector<RenderPassCreateInfo> create_info_temp{&allocator};

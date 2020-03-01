@@ -349,7 +349,7 @@ namespace nova::renderer {
         rx::map<RenderableId, RenderableKey> renderable_keys;
 
         rx::vector<Camera> cameras;
-        PerFrameDeviceArray<CameraUboData>* camera_data;
+        rx::ptr<PerFrameDeviceArray<CameraUboData>> camera_data;
 
         void update_camera_matrix_buffer(uint32_t frame_idx);
 #pragma endregion

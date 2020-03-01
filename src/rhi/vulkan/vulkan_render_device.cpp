@@ -4,6 +4,8 @@
 
 #include <sstream>
 
+#include <minitrace.h>
+#include <rx/core/algorithm/max.h>
 #include <rx/core/log.h>
 #include <rx/core/set.h>
 #include <signal.h>
@@ -14,10 +16,10 @@
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/window.hpp"
 
-#include "rx/core/algorithm/max.h"
 #include "vk_structs.hpp"
 #include "vulkan_command_list.hpp"
 #include "vulkan_utils.hpp"
+
 // TODO: Move window creation out of the RHI
 #ifdef NOVA_LINUX
 #define NOVA_VK_XLIB
@@ -49,6 +51,8 @@ namespace nova::renderer::rhi {
         : RenderDevice{settings, window, allocator},
           vk_internal_allocator{wrap_allocator(internal_allocator)},
           command_pools_by_thread_idx{&internal_allocator} {
+        MTR_SCOPE("VulkanRenderDevice", "VulkanRenderDevice");
+
         create_instance();
 
         if(settings.settings.debug.enabled) {
@@ -131,6 +135,7 @@ namespace nova::renderer::rhi {
     ntl::Result<RhiRenderpass*> VulkanRenderDevice::create_renderpass(const renderpack::RenderPassCreateInfo& data,
                                                                       const glm::uvec2& framebuffer_size,
                                                                       rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "create_renderpass");
         auto* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain);
         VkExtent2D swapchain_extent = {swapchain_size.x, swapchain_size.y};
 
@@ -303,6 +308,7 @@ namespace nova::renderer::rhi {
                                                            const rx::optional<RhiImage*> depth_attachment,
                                                            const glm::uvec2& framebuffer_size,
                                                            rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "create_framebuffer");
         const auto* vk_renderpass = static_cast<const VulkanRenderpass*>(renderpass);
 
         rx::vector<VkImageView> attachment_views{&allocator};
@@ -343,6 +349,7 @@ namespace nova::renderer::rhi {
         const rx::vector<renderpack::TextureAttachmentInfo>& color_attachments,
         const rx::optional<renderpack::TextureAttachmentInfo>& depth_texture,
         rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "create_pipeline_interface");
 
         auto* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain);
         auto* pipeline_interface = allocator.create<VulkanPipelineInterface>();
@@ -484,6 +491,7 @@ namespace nova::renderer::rhi {
 
     RhiDescriptorPool* VulkanRenderDevice::create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
                                                                   rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "create_descriptor_pool");
         rx::vector<VkDescriptorPoolSize> pool_sizes{&internal_allocator};
 
         uint32_t max_sets = 0;
@@ -507,6 +515,7 @@ namespace nova::renderer::rhi {
     rx::vector<RhiDescriptorSet*> VulkanRenderDevice::create_descriptor_sets(const RhiPipelineInterface* pipeline_interface,
                                                                              RhiDescriptorPool* pool,
                                                                              rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "create_descriptor_sets");
         const auto* vk_pipeline_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
         const auto* vk_pool = static_cast<const VulkanDescriptorPool*>(pool);
 
@@ -542,6 +551,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::update_descriptor_sets(rx::vector<RhiDescriptorSetWrite>& writes) {
+        MTR_SCOPE("VulkanRenderDevice", "update_descriptor_sets");
         rx::vector<VkWriteDescriptorSet> vk_writes{&internal_allocator};
         vk_writes.reserve(writes.size());
 
@@ -683,6 +693,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::reset_descriptor_pool(RhiDescriptorPool* pool) {
+        MTR_SCOPE("VulkanRenderDevice", "reset_descriptor_pool");
         auto* vk_pool = static_cast<VulkanDescriptorPool*>(pool);
         vkResetDescriptorPool(device, vk_pool->descriptor_pool, 0);
     }
@@ -690,6 +701,7 @@ namespace nova::renderer::rhi {
     ntl::Result<RhiPipeline*> VulkanRenderDevice::create_pipeline(RhiPipelineInterface* pipeline_interface,
                                                                   const PipelineStateCreateInfo& data,
                                                                   rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "create_pipeline");
         logger(rx::log::level::k_verbose, "Creating a VkPipeline for pipeline %s", data.name);
 
         const auto* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
@@ -963,6 +975,7 @@ namespace nova::renderer::rhi {
     }
 
     RhiBuffer* VulkanRenderDevice::create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "create_buffer");
         auto* buffer = allocator.create<VulkanBuffer>();
 
         VkBufferCreateInfo vk_create_info = {};
@@ -1030,12 +1043,14 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::write_data_to_buffer(const void* data, const Bytes num_bytes, const Bytes offset, const RhiBuffer* buffer) {
+        MTR_SCOPE("VulkanRenderDevice", "write_data_to_buffer");
         const auto* vulkan_buffer = static_cast<const VulkanBuffer*>(buffer);
 
         memcpy(vulkan_buffer->allocation_info.pMappedData, data, num_bytes.b_count());
     }
 
     RhiSampler* VulkanRenderDevice::create_sampler(const RhiSamplerCreateInfo& create_info, rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "create_sampler");
         auto* sampler = allocator.create<VulkanSampler>();
 
         VkSamplerCreateInfo vk_create_info = {};
@@ -1058,6 +1073,7 @@ namespace nova::renderer::rhi {
     }
 
     RhiImage* VulkanRenderDevice::create_image(const renderpack::TextureCreateInfo& info, rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "create_image");
         auto* image = allocator.create<VulkanImage>();
 
         image->is_dynamic = true;
@@ -1147,6 +1163,7 @@ namespace nova::renderer::rhi {
     }
 
     RhiSemaphore* VulkanRenderDevice::create_semaphore(rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "create_semaphore");
         auto* semaphore = allocator.create<VulkanSemaphore>();
 
         VkSemaphoreCreateInfo create_info = {};
@@ -1159,6 +1176,7 @@ namespace nova::renderer::rhi {
     }
 
     rx::vector<RhiSemaphore*> VulkanRenderDevice::create_semaphores(const uint32_t num_semaphores, rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "create_semaphores");
         auto semaphores = rx::vector<RhiSemaphore*>{&allocator};
         semaphores.reserve(num_semaphores);
 
@@ -1170,6 +1188,7 @@ namespace nova::renderer::rhi {
     }
 
     RhiFence* VulkanRenderDevice::create_fence(const bool signaled, rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "create_fence");
         auto* fence = allocator.create<VulkanFence>();
 
         VkFenceCreateInfo fence_create_info = {};
@@ -1187,6 +1206,7 @@ namespace nova::renderer::rhi {
     rx::vector<RhiFence*> VulkanRenderDevice::create_fences(const uint32_t num_fences,
                                                             const bool signaled,
                                                             rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "create_fences");
         rx::vector<RhiFence*> fences{&allocator};
         fences.reserve(num_fences);
 
@@ -1208,6 +1228,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::wait_for_fences(const rx::vector<RhiFence*> fences) {
+        MTR_SCOPE("VulkanRenderDevice", "wait_for_fences");
         rx::vector<VkFence> vk_fences{&internal_allocator};
         vk_fences.reserve(fences.size());
         fences.each_fwd([&](const RhiFence* fence) {
@@ -1230,6 +1251,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::reset_fences(const rx::vector<RhiFence*>& fences) {
+        MTR_SCOPE("VulkanRenderDevice", "reset_fences");
         rx::vector<VkFence> vk_fences{&internal_allocator};
         vk_fences.reserve(fences.size());
         fences.each_fwd([&](const RhiFence* fence) {
@@ -1241,12 +1263,14 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::destroy_renderpass(RhiRenderpass* pass, rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "destroy_renderpasses");
         auto* vk_renderpass = static_cast<VulkanRenderpass*>(pass);
         vkDestroyRenderPass(device, vk_renderpass->pass, nullptr);
         allocator.deallocate(reinterpret_cast<rx_byte*>(pass));
     }
 
     void VulkanRenderDevice::destroy_framebuffer(RhiFramebuffer* framebuffer, rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "destroy_framebuffer");
         const auto* vk_framebuffer = static_cast<const VulkanFramebuffer*>(framebuffer);
         vkDestroyFramebuffer(device, vk_framebuffer->framebuffer, nullptr);
 
@@ -1254,6 +1278,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::destroy_pipeline_interface(RhiPipelineInterface* pipeline_interface, rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "destroy_pipeline_interface");
         auto* vk_interface = static_cast<VulkanPipelineInterface*>(pipeline_interface);
         vkDestroyRenderPass(device, vk_interface->pass, nullptr);
         vkDestroyPipelineLayout(device, vk_interface->pipeline_layout, nullptr);
@@ -1262,6 +1287,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::destroy_pipeline(RhiPipeline* pipeline, rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "destroy_pipeline");
         auto* vk_pipeline = static_cast<VulkanPipeline*>(pipeline);
         vkDestroyPipeline(device, vk_pipeline->pipeline, nullptr);
 
@@ -1269,6 +1295,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::destroy_texture(RhiImage* resource, rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "destroy_texture");
         auto* vk_image = static_cast<VulkanImage*>(resource);
         vmaDestroyImage(vma, vk_image->image, vk_image->allocation);
 
@@ -1276,6 +1303,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::destroy_semaphores(rx::vector<RhiSemaphore*>& semaphores, rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "destroy_semaphores");
         semaphores.each_fwd([&](RhiSemaphore* semaphore) {
             auto* vk_semaphore = static_cast<VulkanSemaphore*>(semaphore);
             vkDestroySemaphore(device, vk_semaphore->semaphore, nullptr);
@@ -1284,6 +1312,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::destroy_fences(const rx::vector<RhiFence*>& fences, rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "destroy_fences");
         fences.each_fwd([&](RhiFence* fence) {
             auto* vk_fence = static_cast<VulkanFence*>(fence);
             auto vk_alloc = wrap_allocator(allocator);
@@ -1297,6 +1326,7 @@ namespace nova::renderer::rhi {
                                                                   const QueueType needed_queue_type,
                                                                   const RhiRenderCommandList::Level level,
                                                                   rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "create_command_list");
         const uint32_t queue_family_index = get_queue_family_index(needed_queue_type);
         const VkCommandPool pool = *command_pools_by_thread_idx[thread_idx].find(queue_family_index);
 
@@ -1319,6 +1349,7 @@ namespace nova::renderer::rhi {
                                                  RhiFence* fence_to_signal,
                                                  const rx::vector<RhiSemaphore*>& wait_semaphores,
                                                  const rx::vector<RhiSemaphore*>& signal_semaphores) {
+        MTR_SCOPE("VulkanRenderDevice", "submit_command_list");
         auto* vk_list = static_cast<VulkanRenderCommandList*>(cmds);
         vkEndCommandBuffer(vk_list->cmds);
 
@@ -1401,6 +1432,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::create_surface() {
+        MTR_SCOPE("VulkanRenderDevice", "create_surface");
 #ifdef NOVA_LINUX
         VkXlibSurfaceCreateInfoKHR x_surface_create_info;
         x_surface_create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
@@ -1427,6 +1459,8 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::create_instance() {
+        MTR_SCOPE("VulkanRenderDevice", "create_instance");
+
         const auto& version = settings.settings.vulkan.application_version;
 
         VkApplicationInfo application_info;
@@ -1485,10 +1519,15 @@ namespace nova::renderer::rhi {
         create_info.pNext = &validation_features;
 
         auto vk_alloc = wrap_allocator(internal_allocator);
-        NOVA_CHECK_RESULT(vkCreateInstance(&create_info, &vk_alloc, &instance));
+        {
+            MTR_SCOPE("VulkanRenderDevice", "vkCreateInstance");
+            NOVA_CHECK_RESULT(vkCreateInstance(&create_info, &vk_alloc, &instance));
+        }
     }
 
     void VulkanRenderDevice::enable_debug_output() {
+        MTR_SCOPE("VulkanRenderDevice", "enable_debug_output");
+
         vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
             vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
         vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
@@ -1509,6 +1548,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::save_device_info() {
+        MTR_SCOPE("VulkanRenderDevice", "save_device_info");
         switch(gpu.props.vendorID) {
             case AMD_PCI_VENDOR_ID:
                 info.architecture = DeviceArchitecture::Amd;
@@ -1551,6 +1591,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::initialize_vma() {
+        MTR_SCOPE("VulkanRenderDevice", "initialize_vma");
         VmaAllocatorCreateInfo create_info{};
         create_info.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
         create_info.physicalDevice = gpu.phys_device;
@@ -1566,6 +1607,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::create_device_and_queues() {
+        MTR_SCOPE("VulkanRenderDevice", "create_device_and_queues");
         rx::vector<char*> device_extensions{&internal_allocator};
         device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
         device_extensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
@@ -1731,6 +1773,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::create_swapchain() {
+        MTR_SCOPE("VulkanRenderDevice", "create_swapchain");
         // Check what formats our rendering supports, and create a swapchain with one of those formats
 
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.phys_device, surface, &gpu.surface_capabilities);
@@ -1751,6 +1794,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::create_per_thread_command_pools() {
+        MTR_SCOPE("VulkanRenderDevice", "create_per_thread_command_pools");
         const uint32_t num_threads = 1; // TODO: Make this real
         command_pools_by_thread_idx.reserve(num_threads);
 
@@ -1760,6 +1804,7 @@ namespace nova::renderer::rhi {
     }
 
     rx::map<uint32_t, VkCommandPool> VulkanRenderDevice::make_new_command_pools() const {
+        MTR_SCOPE("VulkanRenderDevice", "make_new_command_pools");
         rx::vector<uint32_t> queue_indices{&internal_allocator};
         queue_indices.push_back(graphics_family_index);
         queue_indices.push_back(transfer_family_index);
@@ -1808,6 +1853,7 @@ namespace nova::renderer::rhi {
         const rx::map<rx::string, RhiResourceBindingDescription>& all_bindings,
         rx::vector<uint32_t>& variable_descriptor_counts,
         rx::memory::allocator& allocator) const {
+        MTR_SCOPE("VulkanRenderDevice", "create_descriptor_set_layouts");
 
         /*
          * A few tasks to accomplish:
@@ -1974,6 +2020,7 @@ namespace nova::renderer::rhi {
     }
 
     rx::optional<VkShaderModule> VulkanRenderDevice::create_shader_module(const rx::vector<uint32_t>& spirv) const {
+        MTR_SCOPE("VulkanRenderDevice", "create_shader_module");
         VkShaderModuleCreateInfo shader_module_create_info = {};
         shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         shader_module_create_info.pCode = spirv.data();

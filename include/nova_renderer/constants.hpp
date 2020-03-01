@@ -16,7 +16,7 @@ namespace nova::renderer {
 
     constexpr uint32_t NUM_IN_FLIGHT_FRAMES = 3;
 
-    constexpr uint32_t MAX_NUM_CAMERAS = 65536;
+    constexpr uint32_t MAX_NUM_CAMERAS = 256;
 
     constexpr mem::Bytes PER_FRAME_MEMORY_SIZE = 2_mb;
 

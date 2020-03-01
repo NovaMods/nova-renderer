@@ -4,7 +4,7 @@
 
 #include "vulkan_render_device.hpp"
 #include "vulkan_utils.hpp"
-
+#include "minitrace.h"
 #ifdef ERROR
 #undef ERROR
 #endif
@@ -46,6 +46,7 @@ namespace nova::renderer::rhi {
     }
 
     uint8_t VulkanSwapchain::acquire_next_swapchain_image(rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanSwapchain", "acquire_next_swapchain_image");
         auto* fence = render_device->create_fence(false, allocator);
         auto* vk_fence = static_cast<VulkanFence*>(fence);
 

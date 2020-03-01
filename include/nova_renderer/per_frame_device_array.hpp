@@ -1,5 +1,6 @@
 #pragma once
 
+#include <minitrace.h>
 #include <rx/core/vector.h>
 
 #include "nova_renderer/camera.hpp"
@@ -22,7 +23,7 @@ namespace nova::renderer {
          */
         explicit PerFrameDeviceArray(size_t num_elements, rhi::RenderDevice& device, rx::memory::allocator& internal_allocator);
 
-        ~PerFrameDeviceArray();
+        ~PerFrameDeviceArray() = default;
 
         ElementType& operator[](uint32_t idx);
 
@@ -72,15 +73,13 @@ namespace nova::renderer {
     }
 
     template <typename ElementType>
-    PerFrameDeviceArray<ElementType>::~PerFrameDeviceArray() {}
-
-    template <typename ElementType>
     ElementType& PerFrameDeviceArray<ElementType>::operator[](const uint32_t idx) {
         return data[idx];
     }
 
     template <typename ElementType>
     void PerFrameDeviceArray<ElementType>::upload_to_device(const uint32_t frame_idx) {
+        MTR_SCOPE("PerFrameDeviceArray", "upload_to_device");
         device.write_data_to_buffer(data, sizeof(data), 0, per_frame_buffers[frame_idx]);
     }
 

@@ -250,7 +250,7 @@ namespace nova::renderer {
         create_builtin_renderpasses();
 
         cameras.reserve(MAX_NUM_CAMERAS);
-        camera_data = global_allocator->create<PerFrameDeviceArray<CameraUboData>>(MAX_NUM_CAMERAS, *device, *global_allocator);
+        camera_data = rx::make_ptr<PerFrameDeviceArray<CameraUboData>>(global_allocator, MAX_NUM_CAMERAS, *device, *global_allocator);
     }
 
     NovaRenderer::~NovaRenderer() { mtr_shutdown(); }
@@ -260,7 +260,7 @@ namespace nova::renderer {
     rx::memory::allocator& NovaRenderer::get_global_allocator() const { return *global_allocator; }
 
     void NovaRenderer::execute_frame() {
-        MTR_SCOPE("RenderLoop", "execute_frame");
+        MTR_SCOPE("NovaRenderer", "execute_frame");
         frame_count++;
 
         rx::memory::bump_point_allocator& frame_allocator = *frame_allocators[frame_count % NUM_IN_FLIGHT_FRAMES];
@@ -531,7 +531,8 @@ namespace nova::renderer {
         materials.each_fwd([&](const renderpack::MaterialData& material_data) {
             material_data.passes.each_fwd([&](const renderpack::MaterialPass& pass_data) {
                 if(pass_data.pipeline == pipeline_name) {
-                    MTR_SCOPE("create_materials_for_pipeline", rx::string::format("%s.%s", material_data.name, pass_data.name).data());
+                    const auto& event_name = rx::string::format("%s.%s", material_data.name, pass_data.name);
+                    MTR_SCOPE("create_materials_for_pipeline", event_name.data());
                     MaterialPass pass = {};
                     pass.pipeline_interface = pipeline.pipeline_interface;
 
@@ -565,8 +566,9 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::update_camera_matrix_buffer(const uint32_t frame_idx) {
-        for(uint32_t i = 0; i < camera_data->size(); i++) {
-            const auto& cam = cameras[i];
+        MTR_SCOPE("NovaRenderer", "update_camera_matrix_buffer");
+        uint32_t i = 0;
+        cameras.each_fwd([&](const Camera& cam) {
             if(cam.is_active) {
                 auto& data = (*camera_data)[i];
                 data.previous_view = data.view;
@@ -579,8 +581,9 @@ namespace nova::renderer {
 
                 data.projection = glm::perspective(cam.field_of_view, cam.aspect_ratio, cam.near_plane, cam.far_plane);
             }
-        }
-
+            i++;
+        });
+        
         camera_data->upload_to_device(frame_idx);
     }
 
