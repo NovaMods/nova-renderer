@@ -196,7 +196,7 @@ namespace nova::renderer {
 
         MTR_SCOPE("Init", "nova_renderer::nova_renderer");
 
-        window = std::make_unique<NovaWindow>(settings);
+        window = rx::make_ptr<NovaWindow>(global_allocator, settings);
 
         if(settings.debug.renderdoc.enabled) {
             MTR_SCOPE("Init", "LoadRenderdoc");
@@ -226,7 +226,7 @@ namespace nova::renderer {
 
         {
             MTR_SCOPE("Init", "InitVulkanRenderDevice");
-            device = std::make_unique<rhi::VulkanRenderDevice>(render_settings, *window, *global_allocator);
+            device = rx::make_ptr<rhi::VulkanRenderDevice>(global_allocator, render_settings, *window, *global_allocator);
         }
 
         swapchain = device->get_swapchain();
@@ -872,9 +872,9 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_resource_storage() {
-        device_resources = global_allocator->create<DeviceResources>(*this);
+        device_resources = rx::make_ptr<DeviceResources>(global_allocator, *this);
 
-        pipeline_storage = global_allocator->create<PipelineStorage>(*this, *global_allocator);
+        pipeline_storage = rx::make_ptr<PipelineStorage>(global_allocator, *this, *global_allocator);
     }
 
     void NovaRenderer::create_builtin_render_targets() {

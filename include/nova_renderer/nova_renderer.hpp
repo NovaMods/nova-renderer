@@ -3,10 +3,13 @@
 #include <rx/core/log.h>
 #include <rx/core/map.h>
 #include <rx/core/optional.h>
+#include <rx/core/ptr.h>
 
+#include "nova_renderer/camera.hpp"
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
 #include "nova_renderer/nova_settings.hpp"
+#include "nova_renderer/per_frame_device_array.hpp"
 #include "nova_renderer/pipeline_storage.hpp"
 #include "nova_renderer/procedural_mesh.hpp"
 #include "nova_renderer/renderables.hpp"
@@ -16,9 +19,6 @@
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
-
-#include "camera.hpp"
-#include "per_frame_device_array.hpp"
 
 namespace rx {
     namespace memory {
@@ -210,8 +210,8 @@ namespace nova::renderer {
     private:
         NovaSettingsAccessManager render_settings;
 
-        std::unique_ptr<rhi::RenderDevice> device;
-        std::unique_ptr<NovaWindow> window;
+        rx::ptr<rhi::RenderDevice> device;
+        rx::ptr<NovaWindow> window;
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
@@ -238,7 +238,7 @@ namespace nova::renderer {
          */
         rx::memory::allocator* renderpack_allocator;
 
-        DeviceResources* device_resources;
+        rx::ptr<DeviceResources> device_resources;
 
         rhi::RhiDescriptorPool* global_descriptor_pool;
 
@@ -302,7 +302,7 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Rendering pipelines
-        PipelineStorage* pipeline_storage;
+        rx::ptr<PipelineStorage> pipeline_storage;
 
         rx::map<rhi::RhiPipeline*, rx::vector<MaterialPass>> passes_by_pipeline;
 
@@ -341,7 +341,7 @@ namespace nova::renderer {
         struct RenderableKey {
             rx::string pipeline_name{};
             uint32_t material_pass_idx{};
-            RenderableType type {};
+            RenderableType type{};
             uint32_t batch_idx{};
             uint32_t renderable_idx{};
         };

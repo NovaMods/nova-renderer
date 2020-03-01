@@ -91,7 +91,6 @@ set(NOVA_SOURCE
         include/nova_renderer/util/utils.hpp
         include/nova_renderer/util/container_accessor.hpp
         include/nova_renderer/util/bytes.hpp
-        include/nova_renderer/util/auto_ptr.hpp
 
         include/nova_renderer/nova_renderer.hpp
         include/nova_renderer/nova_settings.hpp

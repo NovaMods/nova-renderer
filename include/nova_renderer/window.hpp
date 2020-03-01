@@ -4,11 +4,11 @@
 #include <functional>
 
 #include <glm/vec2.hpp>
+#include <rx/core/vector.h>
 
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/util/platform.hpp"
 #include "nova_renderer/window.hpp"
-
 #if NOVA_WINDOWS
 #include "nova_renderer/util/windows.hpp"
 
