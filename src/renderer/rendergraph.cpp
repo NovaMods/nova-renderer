@@ -175,6 +175,8 @@ namespace nova::renderer {
 
     void renderer::MaterialPass::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         MTR_SCOPE("MaterialPass", "record");
+   // TODO:
+     //   Something about how I've made this method is incredibly slow'
         cmds.bind_descriptor_sets(descriptor_sets, pipeline_interface);
 
         static_mesh_draws.each_fwd(
@@ -204,7 +206,7 @@ namespace nova::renderer {
 
         if(start_index != ctx.cur_model_matrix_index) {
             // TODO: There's probably a better way to do this
-            rx::vector<rhi::RhiBuffer*> vertex_buffers;
+            rx::vector<rhi::RhiBuffer*> vertex_buffers{ctx.allocator};
             vertex_buffers.reserve(batch.num_vertex_attributes);
             for(uint32_t i = 0; i < batch.num_vertex_attributes; i++) {
                 vertex_buffers.push_back(batch.vertex_buffer);

@@ -253,7 +253,10 @@ namespace nova::renderer {
         camera_data = rx::make_ptr<PerFrameDeviceArray<CameraUboData>>(global_allocator, MAX_NUM_CAMERAS, *device, *global_allocator);
     }
 
-    NovaRenderer::~NovaRenderer() { mtr_shutdown(); }
+    NovaRenderer::~NovaRenderer() {
+        mtr_flush();
+        mtr_shutdown();
+    }
 
     NovaSettingsAccessManager& NovaRenderer::get_settings() { return render_settings; }
 
@@ -304,7 +307,7 @@ namespace nova::renderer {
 
         device->get_swapchain()->present(cur_frame_idx);
 
-        mtr_flush();
+        //mtr_flush();
     }
 
     void NovaRenderer::set_num_meshes(const uint32_t /* num_meshes */) { /* TODO? */
