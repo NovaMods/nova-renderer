@@ -770,7 +770,7 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::update_renderable(RenderableId renderable, const StaticMeshRenderableUpdateData& update_data) {
-        MTR_SCOPE("update_renderable", rx::string::format("Update Renderable %u", renderable).data());
+        MTR_SCOPE("NovaRenderer", "update_renderable");
         const auto* key = renderable_keys.find(renderable);
         if(key == nullptr) {
             logger(rx::log::level::k_error, "Could not update renderable %u", renderable);

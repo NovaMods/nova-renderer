@@ -36,6 +36,7 @@ namespace nova::renderer {
     }
 
     void Renderpass::record_pre_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
+        MTR_SCOPE("Renderpass", "record_pre_renderpass_barriers");
         if(read_texture_barriers.size() > 0) {
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
@@ -68,6 +69,7 @@ namespace nova::renderer {
     }
 
     void Renderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
+        MTR_SCOPE("Renderpass", "record_renderpass_contents");
         auto& pipeline_storage = ctx.nova->get_pipeline_storage();
 
         // TODO: I _actually_ want to get all the draw commands from NovaRenderer, instead of storing them in this struct
@@ -80,6 +82,7 @@ namespace nova::renderer {
     }
 
     void Renderpass::record_post_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
+        MTR_SCOPE("Renderpass", "record_post_renderpass_barriers");
         if(writes_to_backbuffer) {
             rhi::RhiResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = ctx.swapchain_image;
@@ -171,6 +174,7 @@ namespace nova::renderer {
     void Renderpass::setup_renderpass(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {}
 
     void renderer::MaterialPass::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
+        MTR_SCOPE("MaterialPass", "record");
         cmds.bind_descriptor_sets(descriptor_sets, pipeline_interface);
 
         static_mesh_draws.each_fwd(
@@ -183,11 +187,13 @@ namespace nova::renderer {
     void renderer::MaterialPass::record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch,
                                                                     rhi::RhiRenderCommandList& cmds,
                                                                     FrameContext& ctx) {
+        MTR_SCOPE("MaterialPass", "record_rendering_static_mesh_batch");
         const uint64_t start_index = ctx.cur_model_matrix_index;
+
+        auto model_matrix_buffer = ctx.nova->get_resource_manager().get_uniform_buffer(MODEL_MATRIX_BUFFER_NAME);
 
         batch.commands.each_fwd([&](const StaticMeshRenderCommand& command) {
             if(command.is_visible) {
-                auto model_matrix_buffer = ctx.nova->get_resource_manager().get_uniform_buffer(MODEL_MATRIX_BUFFER_NAME);
                 ctx.nova->get_engine().write_data_to_buffer(&command.model_matrix,
                                                             sizeof(glm::mat4),
                                                             ctx.cur_model_matrix_index * sizeof(glm::mat4),
@@ -213,11 +219,13 @@ namespace nova::renderer {
     void renderer::MaterialPass::record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
                                                                     rhi::RhiRenderCommandList& cmds,
                                                                     FrameContext& ctx) {
+        MTR_SCOPE("MaterialPass", "record_rendering_static_mesh_batch (ProceduralMesh)");
         const uint64_t start_index = ctx.cur_model_matrix_index;
+
+        auto model_matrix_buffer = ctx.nova->get_resource_manager().get_uniform_buffer(MODEL_MATRIX_BUFFER_NAME);
 
         batch.commands.each_fwd([&](const StaticMeshRenderCommand& command) {
             if(command.is_visible) {
-                auto model_matrix_buffer = ctx.nova->get_resource_manager().get_uniform_buffer(MODEL_MATRIX_BUFFER_NAME);
                 ctx.nova->get_engine().write_data_to_buffer(&command.model_matrix,
                                                             sizeof(glm::mat4),
                                                             ctx.cur_model_matrix_index * sizeof(glm::mat4),
@@ -240,6 +248,7 @@ namespace nova::renderer {
     }
 
     void Pipeline::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
+        MTR_SCOPE("Pipeline", "record");
         cmds.bind_pipeline(pipeline);
 
         const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline);
