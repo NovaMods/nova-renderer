@@ -10,9 +10,6 @@
 [submodule "external/miniz"]
 	path = external/miniz
 	url = https://github.com/richgel999/miniz.git
-[submodule "external/glslang"]
-	path = external/glslang
-	url = https://github.com/KhronosGroup/glslang.git
 [submodule "external/SPIRV-Cross"]
 	path = external/SPIRV-Cross
 	url = https://github.com/NovaMods/SPIRV-Cross.git
