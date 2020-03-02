@@ -1,10 +1,3 @@
-function(target_includes_system target)
-	get_target_property(INTERFACE_INCLUDES ${target} INTERFACE_INCLUDE_DIRECTORIES)
-	get_target_property(PUBLIC_INCLUDES ${target} PUBLIC_INCLUDE_DIRECTORIES)
-	if(INTERFACE_INCLUDES)
-		target_include_directories(${target} SYSTEM BEFORE INTERFACE ${INTERFACE_INCLUDES})
-	endif()
-	if(PUBLIC_INCLUDES)
-		target_include_directories(${target} SYSTEM BEFORE PUBLIC ${PUBLIC_INCLUDES})
-	endif()
-endfunction()
+version https://git-lfs.github.com/spec/v1
+oid sha256:ec7edaae29b2c26bcfe9ffb48f69823da32fe8f2fe5cb4247d5b41ca9d7e7c00
+size 439

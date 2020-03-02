@@ -1,12 +1,3 @@
-# How to contribute
-Here's some guidelines for contributing to the Nova Renderer
-
-## Making Changes
-The procedure for actually contributing is fairly simple:
-* Fork the Nova Renderer
-* Create a feature branch for whatever feature you want to change or bug you want to fix
-* Make your changes. Test them to make sure that they work as intended
-* Make sure that you adhere to our [style guide](https://github.com/DethRaid/nova-renderer/wiki/Code-Style-Guidelines)
-* Create a pull request merging your feature branch into master
-  * If you're fixing a bug, reference the issue that the bug was first reported in somewhere in your pull request
-* I'll either approve your changes or let you know if there's any problems.
+version https://git-lfs.github.com/spec/v1
+oid sha256:8e89a2c73e4e732e3f7b7dacd783a60d657af18f24b2665a5652a27d7462cd3e
+size 716

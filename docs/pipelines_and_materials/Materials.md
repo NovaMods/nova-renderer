@@ -1,6 +1,3 @@
-# Materials
-
-Materials in Nova are a bit lower-level than materials in other engines. In something like Unity you don't really need
-to worry about animated meshes, since Unity abstracts that away. In Nova, however, your pipelines must care if they're
-going to be used with an animated or a static mesh. You must explicitly bind the animation data UBO in your material's
-bindings, although Nova provides some helper functions to deform the mesh
+version https://git-lfs.github.com/spec/v1
+oid sha256:484a02cf07ecdf78c850ca3e0b1a08dff3d909ec55eb7ed0fcfefdd4343c6a97
+size 443

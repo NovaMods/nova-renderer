@@ -1,16 +1,3 @@
-{
-    "name": "gbuffers_terrain",
-    "filter": "geometry_type::block AND not_transparent",
-    "passes": [
-        {
-            "name": "main",
-            "pipeline": "gbuffers_terrain",
-            "bindings": [
-                {
-                    "variable": "per_model_uniforms",
-                    "resource": "NovaModelMatrixBuffer"
-                }
-            ]
-        }
-    ]
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:3e8001516d15ddd9eeae0542fb329ab331618ad3756fa7487e3771c74941c2dc
+size 394

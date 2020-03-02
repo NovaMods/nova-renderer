@@ -1,13 +1,3 @@
-#!/usr/bin/env bash
-
-set -e
-
-if [[ -f ".git/hooks/.changed" ]]; then
-    git_rev=$(git rev-parse HEAD)
-    rm .git/hooks/.changed
-    echo "${git_rev}" > .git/hooks/hooks-revision
-    echo "${git_rev}" > tools/git-hooks/hooks-revision
-    git add tools/git-hooks/hooks-revision > /dev/null
-    git commit --amend --no-edit --no-verify > /dev/null
-    echo -e "\e[32;1mUpdated git hooks revision to \e[33;1m${git_rev}\e[0m"
-fi
+version https://git-lfs.github.com/spec/v1
+oid sha256:7e24174c25b5017bcc02be7e6fde1a5f57a249daf63cdebf4cc4ed6b97ccbd63
+size 426
