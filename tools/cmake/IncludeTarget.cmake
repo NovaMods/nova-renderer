@@ -1,7 +1,3 @@
-function(include_target target_name)
-    list(SUBLIST ARGV 1 -1 directories)
-    add_library(${target_name} INTERFACE IMPORTED)
-    set_property(TARGET ${target_name}
-        PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${directories}
-    )
-endfunction()
+version https://git-lfs.github.com/spec/v1
+oid sha256:44b0ae4f52e153c50f89044bbaacd33f271730d0fcc386a76a975588f8758c01
+size 249

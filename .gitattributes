@@ -3,7 +3,6 @@
 
 # Explicitly declare text files you want to always be normalized and converted
 # to native line endings on checkout.
-
 # C++ code
 *.c text
 *.cpp text
@@ -11,10 +10,8 @@
 *.h text
 *.hpp text
 *.hxx text
-
 # Java code
 *.java text
-
 # Shader code
 *.glsl text
 *.hlsl text
@@ -33,36 +30,52 @@
 *.fsh text
 *.frag text
 *.fragment text
-
 *.spirv binary
-
 *.mat text
 *.material text
-
 # Patches
 *.patch text
-
 # Config files
 *.json text
 *.conf text
 *.xml text
-
 # Scripts
 *.gradle text
 *.yml text
 *.cmake text
-
 # Documentation
 *.md text
 *.txt text
-
 # Declare files that will always have CRLF line endings on checkout.
 *.sln text eol=crlf
-
 # Denote all files that are truly binary and should not be modified.
 *.png binary
 *.jpg binary
 gradlew text
 gradlew.bat text
 =======
-* text=auto eol=lf
+*.clang-format filter=lfs diff=lfs merge=lfs -text
+*.clang-tidy filter=lfs diff=lfs merge=lfs -text
+*.txt filter=lfs diff=lfs merge=lfs -text
+*.yml filter=lfs diff=lfs merge=lfs -text
+*.gitignore filter=lfs diff=lfs merge=lfs -text
+*.gitmodules filter=lfs diff=lfs merge=lfs -text
+*.md filter=lfs diff=lfs merge=lfs -text
+*.material filter=lfs diff=lfs merge=lfs -text
+*.png filter=lfs diff=lfs merge=lfs -text
+*.json filter=lfs diff=lfs merge=lfs -text
+*.cmake filter=lfs diff=lfs merge=lfs -text
+*.py filter=lfs diff=lfs merge=lfs -text
+*.hpp filter=lfs diff=lfs merge=lfs -text
+*.h filter=lfs diff=lfs merge=lfs -text
+*.cpp filter=lfs diff=lfs merge=lfs -text
+*.mat filter=lfs diff=lfs merge=lfs -text
+*.pipeline filter=lfs diff=lfs merge=lfs -text
+*.frag filter=lfs diff=lfs merge=lfs -text
+*.vert filter=lfs diff=lfs merge=lfs -text
+*.in filter=lfs diff=lfs merge=lfs -text
+*.natvis filter=lfs diff=lfs merge=lfs -text
+*.h text !filter !merge !diff
+*.hpp text !filter !merge !diff
+*.cpp text !filter !merge !diff
+*.txt text !filter !merge !diff
