@@ -559,7 +559,7 @@ namespace nova::renderer::renderpack {
         std::vector<uint32_t> spirv_std;
         GlslangToSpv(*program.getIntermediate(glslang_stage), spirv_std);
 
-        rx::vector<uint32_t> spirv_rx(spirv_std.size());
+        rx::vector<uint32_t> spirv_rx{spirv_std.size()};
         memcpy(spirv_rx.data(), spirv_std.data(), spirv_std.size() * sizeof(uint32_t));
         return spirv_rx;
     }

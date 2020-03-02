@@ -6,8 +6,6 @@
 
 #include "spirv_glsl.hpp"
 
-using namespace spirv_cross;
-
 namespace nova::renderer {
     RX_LOG("PipelineStorage", logger);
 
@@ -97,8 +95,8 @@ namespace nova::renderer {
     void PipelineStorage::get_shader_module_descriptors(const rx::vector<uint32_t>& spirv,
                                                         const rhi::ShaderStage shader_stage,
                                                         rx::map<rx::string, rhi::RhiResourceBindingDescription>& bindings) {
-        const CompilerGLSL shader_compiler{spirv.data(), spirv.size()};
-        const ShaderResources resources = shader_compiler.get_shader_resources();
+        const spirv_cross::CompilerGLSL shader_compiler{spirv.data(), spirv.size()};
+        const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
 
         for(const auto& resource : resources.separate_images) {
             add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::Texture);
@@ -119,11 +117,15 @@ namespace nova::renderer {
         for(const auto& resource : resources.storage_buffers) {
             add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, rhi::DescriptorType::StorageBuffer);
         }
+
+        for(const auto& resource : resources.push_constant_buffers) {
+            logger(rx::log::level::k_verbose, "Found a push constant %s", resource.name.c_str());
+        }
     }
 
     void PipelineStorage::add_resource_to_bindings(rx::map<rx::string, rhi::RhiResourceBindingDescription>& bindings,
                                                    const rhi::ShaderStage shader_stage,
-                                                   const CompilerGLSL& shader_compiler,
+                                                   const spirv_cross::CompilerGLSL& shader_compiler,
                                                    const spirv_cross::Resource& resource,
                                                    const rhi::DescriptorType type) {
         const uint32_t set_idx = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
@@ -136,7 +138,7 @@ namespace nova::renderer {
         new_binding.count = 1;
         new_binding.stages = shader_stage;
 
-        const SPIRType& type_information = shader_compiler.get_type(resource.type_id);
+        const spirv_cross::SPIRType& type_information = shader_compiler.get_type(resource.type_id);
         if(!type_information.array.empty()) {
             new_binding.count = type_information.array[0];
             // All arrays are unbounded until I figure out how to use SPIRV-Cross to detect unbounded arrays

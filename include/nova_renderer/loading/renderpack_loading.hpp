@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rx/core/vector.h>
+
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 #include "nova_renderer/renderpack_data.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"
