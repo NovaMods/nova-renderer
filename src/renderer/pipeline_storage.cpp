@@ -16,7 +16,7 @@ namespace nova::renderer {
     using namespace renderpack;
 
     PipelineStorage::PipelineStorage(NovaRenderer& renderer, rx::memory::allocator& allocator)
-        : renderer(renderer), device(renderer.get_engine()), allocator(allocator) {}
+        : renderer(renderer), device(renderer.get_device()), allocator(allocator) {}
 
     rx::optional<renderer::Pipeline> PipelineStorage::get_pipeline(const rx::string& pipeline_name) const {
         if(const auto* pipeline = pipelines.find(pipeline_name)) {

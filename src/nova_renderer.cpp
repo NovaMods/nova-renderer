@@ -306,8 +306,6 @@ namespace nova::renderer {
         device->wait_for_fences(cur_frame_fences);
 
         device->get_swapchain()->present(cur_frame_idx);
-
-        //mtr_flush();
     }
 
     void NovaRenderer::set_num_meshes(const uint32_t /* num_meshes */) { /* TODO? */
@@ -832,7 +830,7 @@ namespace nova::renderer {
         return camera;
     }
 
-    rhi::RenderDevice& NovaRenderer::get_engine() const { return *device; }
+    rhi::RenderDevice& NovaRenderer::get_device() const { return *device; }
 
     NovaWindow& NovaRenderer::get_window() const { return *window; }
 

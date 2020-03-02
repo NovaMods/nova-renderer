@@ -199,7 +199,7 @@ namespace nova::renderer {
 
         [[nodiscard]] CameraAccessor create_camera(const CameraCreateInfo& create_info);
 
-        [[nodiscard]] rhi::RenderDevice& get_engine() const;
+        [[nodiscard]] rhi::RenderDevice& get_device() const;
 
         [[nodiscard]] NovaWindow& get_window() const;
 

@@ -196,7 +196,7 @@ namespace nova::renderer {
 
         batch.commands.each_fwd([&](const StaticMeshRenderCommand& command) {
             if(command.is_visible) {
-                ctx.nova->get_engine().write_data_to_buffer(&command.model_matrix,
+                ctx.nova->get_device().write_data_to_buffer(&command.model_matrix,
                                                             sizeof(glm::mat4),
                                                             ctx.cur_model_matrix_index * sizeof(glm::mat4),
                                                             (*model_matrix_buffer)->buffer);
@@ -228,7 +228,7 @@ namespace nova::renderer {
 
         batch.commands.each_fwd([&](const StaticMeshRenderCommand& command) {
             if(command.is_visible) {
-                ctx.nova->get_engine().write_data_to_buffer(&command.model_matrix,
+                ctx.nova->get_device().write_data_to_buffer(&command.model_matrix,
                                                             sizeof(glm::mat4),
                                                             ctx.cur_model_matrix_index * sizeof(glm::mat4),
                                                             (*model_matrix_buffer)->buffer);

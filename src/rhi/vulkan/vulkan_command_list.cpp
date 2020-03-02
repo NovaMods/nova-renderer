@@ -146,13 +146,6 @@ namespace nova::renderer::rhi {
         auto* vk_renderpass = static_cast<VulkanRenderpass*>(renderpass);
         auto* vk_framebuffer = static_cast<VulkanFramebuffer*>(framebuffer);
 
-        // FIXME: @dethraid this has been changed by @janrupf to fix a SIGSEGV
-        //       and to match the number of clear values as used below in the
-        //      VkRenderPassBeginInfo, however, there was another comment about
-        //      required changes here before:
-        //
-        // // TODO: Store this somewhere better
-        // // TODO: Get max framebuffer attachments from GPU
         rx::vector<VkClearValue> clear_values{vk_framebuffer->num_attachments};
 
         VkRenderPassBeginInfo begin_info = {};
@@ -163,7 +156,6 @@ namespace nova::renderer::rhi {
         begin_info.clearValueCount = vk_framebuffer->num_attachments;
         begin_info.pClearValues = clear_values.data();
 
-        // Nova _always_ records command lists in parallel for each renderpass
         vkCmdBeginRenderPass(cmds, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
     }
 
@@ -185,8 +177,6 @@ namespace nova::renderer::rhi {
 
         for(uint32_t i = 0; i < descriptor_sets.size(); i++) {
             const auto* vk_set = static_cast<const VulkanDescriptorSet*>(descriptor_sets[i]);
-
-            // logger(rx::log::level::k_verbose, "Binding descriptor set %x", vk_set->descriptor_set);
 
             vkCmdBindDescriptorSets(cmds,
                                     VK_PIPELINE_BIND_POINT_GRAPHICS,

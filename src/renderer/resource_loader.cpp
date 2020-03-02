@@ -19,7 +19,7 @@ namespace nova::renderer {
     size_t size_in_bytes(PixelFormat pixel_format);
 
     DeviceResources::DeviceResources(NovaRenderer& renderer)
-        : renderer(renderer), device(renderer.get_engine()), internal_allocator(renderer.get_global_allocator()) {}
+        : renderer(renderer), device(renderer.get_device()), internal_allocator(renderer.get_global_allocator()) {}
 
     rx::optional<BufferResourceAccessor> DeviceResources::create_uniform_buffer(const rx::string& name, const Bytes size) {
         BufferResource resource = {};
