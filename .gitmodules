@@ -1,3 +1,30 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:99c78d5148ebe34b6fbbb567dca1c11cae0d35a0a6e69491674851a5e3a8edc6
-size 1118
+[submodule "external/glm"]
+	path = external/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "external/VulkanMemoryAllocator"]
+	path = external/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+[submodule "external/minitrace"]
+	path = external/minitrace
+	url = https://github.com/hrydgard/minitrace.git
+[submodule "external/miniz"]
+	path = external/miniz
+	url = https://github.com/richgel999/miniz.git
+[submodule "external/SPIRV-Cross"]
+	path = external/SPIRV-Cross
+	url = https://github.com/NovaMods/SPIRV-Cross.git
+[submodule "external/SPIRV-Tools"]
+	path = external/SPIRV-Tools
+	url = https://github.com/KhronosGroup/SPIRV-Tools.git
+[submodule "external/SPIRV-Headers"]
+	path = external/SPIRV-Headers
+	url = https://github.com/KhronosGroup/SPIRV-Headers.git
+[submodule "external/googletest"]
+	path = external/googletest
+	url = https://github.com/google/googletest.git
+[submodule "external/glfw"]
+	path = external/glfw
+	url = https://github.com/glfw/glfw
+[submodule "external/rex_core"]
+	path = external/rex_core
+	url = https://github.com/NovaMods/rex_core.git
