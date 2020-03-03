@@ -290,6 +290,9 @@ message(STATUS "Miniz headers: ${INSTALL_HEADERS}")
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 
+target_include_directories(nova-renderer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/external/dxc/include)
+target_link_directories(nova-renderer PRIVATE ${CMAKE_CURRENT_LIST_DIR}/external/dxc/lib)
+
 if(NOVA_FORCE_DEBUGGING) 
     target_compile_definitions(nova-renderer PUBLIC NOVA_DEBUG)
 else()
@@ -326,10 +329,7 @@ add_coverage(nova-renderer)
 set(COMMON_LINK_LIBS
         ${CMAKE_DL_LIBS}
         glm::glm
-        glslang
-        OGLCompiler
-        OSDependent
-        SPIRV
+        dxcompiler
         minitrace
         miniz
         vma::vma
@@ -356,22 +356,6 @@ else()
 endif()
 set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} ${GLFW_TARGET_NAME})
 include_directories(SYSTEM ${CMAKE_CURRENT_LIST_DIR}/external/glfw/include)
-
-
-##############################
-# Find C++ filesystem header #
-##############################
-# On some toolchains its still <experimental/filesystem> while on others its already <filesystem>
-check_include_file_cxx("filesystem" CXX_STD_FILESYSTEM)
-if(NOT CXX_STD_FILESYSTEM)
-    check_include_file_cxx("experimental/filesystem" CXX_STD_FILESYSTEM_EXPERIMENTAL)
-    if(NOT CXX_STD_FILESYSTEM_EXPERIMENTAL)
-        message(FATAL_ERROR "Failed to find a filesystem header for C++")
-    endif()
-    target_compile_definitions(nova-renderer PUBLIC NOVA_STD_FILESYSTEM_EXPERIMENTAL=1)
-else()
-    target_compile_definitions(nova-renderer PUBLIC NOVA_STD_FILESYSTEM=1)
-endif()
 
 ############################
 # Platform dependent fixes #

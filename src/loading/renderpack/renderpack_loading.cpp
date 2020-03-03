@@ -1,17 +1,17 @@
 #include "nova_renderer/loading/renderpack_loading.hpp"
 
-#define ENABLE_HLSL
-#include <SPIRV/GlslangToSpv.h>
-#include <glslang/Include/ResourceLimits.h>
-#include <glslang/Public/ShaderLang.h>
 #include <rx/core/json.h>
 #include <rx/core/log.h>
+
+// yolo
+#include <wrl/client.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/filesystem_helpers.hpp"
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
 
+#include "../external/dxc/include/dxc/dxcapi.h"
 #include "../json_utils.hpp"
 #include "minitrace.h"
 #include "render_graph_builder.hpp"
@@ -21,114 +21,6 @@ namespace nova::renderer::renderpack {
     RX_LOG("RenderpackLoading", logger);
 
     using namespace filesystem;
-
-    // Removed from the GLSLang version we're using
-    // TODO: Copy and fill in with values from the RHI so we don't accidentally limit a shader
-    const TBuiltInResource DEFAULT_BUILT_IN_RESOURCE = {
-        /* .MaxLights = */ 32,
-        /* .MaxClipPlanes = */ 6,
-        /* .MaxTextureUnits = */ 32,
-        /* .MaxTextureCoords = */ 32,
-        /* .MaxVertexAttribs = */ 64,
-        /* .MaxVertexUniformComponents = */ 4096,
-        /* .MaxVaryingFloats = */ 64,
-        /* .MaxVertexTextureImageUnits = */ 32,
-        /* .MaxCombinedTextureImageUnits = */ 80,
-        /* .MaxTextureImageUnits = */ 32,
-        /* .MaxFragmentUniformComponents = */ 4096,
-        /* .MaxDrawBuffers = */ 32,
-        /* .MaxVertexUniformVectors = */ 128,
-        /* .MaxVaryingVectors = */ 8,
-        /* .MaxFragmentUniformVectors = */ 16,
-        /* .MaxVertexOutputVectors = */ 16,
-        /* .MaxFragmentInputVectors = */ 15,
-        /* .MinProgramTexelOffset = */ -8,
-        /* .MaxProgramTexelOffset = */ 7,
-        /* .MaxClipDistances = */ 8,
-        /* .MaxComputeWorkGroupCountX = */ 65535,
-        /* .MaxComputeWorkGroupCountY = */ 65535,
-        /* .MaxComputeWorkGroupCountZ = */ 65535,
-        /* .MaxComputeWorkGroupSizeX = */ 1024,
-        /* .MaxComputeWorkGroupSizeY = */ 1024,
-        /* .MaxComputeWorkGroupSizeZ = */ 64,
-        /* .MaxComputeUniformComponents = */ 1024,
-        /* .MaxComputeTextureImageUnits = */ 16,
-        /* .MaxComputeImageUniforms = */ 8,
-        /* .MaxComputeAtomicCounters = */ 8,
-        /* .MaxComputeAtomicCounterBuffers = */ 1,
-        /* .MaxVaryingComponents = */ 60,
-        /* .MaxVertexOutputComponents = */ 64,
-        /* .MaxGeometryInputComponents = */ 64,
-        /* .MaxGeometryOutputComponents = */ 128,
-        /* .MaxFragmentInputComponents = */ 128,
-        /* .MaxImageUnits = */ 8,
-        /* .MaxCombinedImageUnitsAndFragmentOutputs = */ 8,
-        /* .MaxCombinedShaderOutputResources = */ 8,
-        /* .MaxImageSamples = */ 0,
-        /* .MaxVertexImageUniforms = */ 0,
-        /* .MaxTessControlImageUniforms = */ 0,
-        /* .MaxTessEvaluationImageUniforms = */ 0,
-        /* .MaxGeometryImageUniforms = */ 0,
-        /* .MaxFragmentImageUniforms = */ 8,
-        /* .MaxCombinedImageUniforms = */ 8,
-        /* .MaxGeometryTextureImageUnits = */ 16,
-        /* .MaxGeometryOutputVertices = */ 256,
-        /* .MaxGeometryTotalOutputComponents = */ 1024,
-        /* .MaxGeometryUniformComponents = */ 1024,
-        /* .MaxGeometryVaryingComponents = */ 64,
-        /* .MaxTessControlInputComponents = */ 128,
-        /* .MaxTessControlOutputComponents = */ 128,
-        /* .MaxTessControlTextureImageUnits = */ 16,
-        /* .MaxTessControlUniformComponents = */ 1024,
-        /* .MaxTessControlTotalOutputComponents = */ 4096,
-        /* .MaxTessEvaluationInputComponents = */ 128,
-        /* .MaxTessEvaluationOutputComponents = */ 128,
-        /* .MaxTessEvaluationTextureImageUnits = */ 16,
-        /* .MaxTessEvaluationUniformComponents = */ 1024,
-        /* .MaxTessPatchComponents = */ 120,
-        /* .MaxPatchVertices = */ 32,
-        /* .MaxTessGenLevel = */ 64,
-        /* .MaxViewports = */ 16,
-        /* .MaxVertexAtomicCounters = */ 0,
-        /* .MaxTessControlAtomicCounters = */ 0,
-        /* .MaxTessEvaluationAtomicCounters = */ 0,
-        /* .MaxGeometryAtomicCounters = */ 0,
-        /* .MaxFragmentAtomicCounters = */ 8,
-        /* .MaxCombinedAtomicCounters = */ 8,
-        /* .MaxAtomicCounterBindings = */ 1,
-        /* .MaxVertexAtomicCounterBuffers = */ 0,
-        /* .MaxTessControlAtomicCounterBuffers = */ 0,
-        /* .MaxTessEvaluationAtomicCounterBuffers = */ 0,
-        /* .MaxGeometryAtomicCounterBuffers = */ 0,
-        /* .MaxFragmentAtomicCounterBuffers = */ 1,
-        /* .MaxCombinedAtomicCounterBuffers = */ 1,
-        /* .MaxAtomicCounterBufferSize = */ 16384,
-        /* .MaxTransformFeedbackBuffers = */ 4,
-        /* .MaxTransformFeedbackInterleavedComponents = */ 64,
-        /* .MaxCullDistances = */ 8,
-        /* .MaxCombinedClipAndCullDistances = */ 8,
-        /* .MaxSamples = */ 4,
-        /* .MaxMeshOutputVerticesNV */ 1024,
-        /* .MaxMeshOutputPrimitivesNV */ 1024,
-        /* .MaxMeshWorkGroupSizeX_NV */ 1024,
-        /* .MaxMeshWorkGroupSizeY_NV */ 1024,
-        /* .MaxMeshWorkGroupSizeZ_NV */ 1024,
-        /* .MaxTaskWorkGroupSizeX_NV */ 1024,
-        /* .MaxTaskWorkGroupSizeY_NV */ 1024,
-        /* .MaxTaskWorkGroupSizeZ_NV */ 1024,
-        /* .MaxMeshViewCountNV */ 1024,
-        /* .limits = */
-        {
-            /* .nonInductiveForLoops = */ true,
-            /* .whileLoops = */ true,
-            /* .doWhileLoops = */ true,
-            /* .generalUniformIndexing = */ true,
-            /* .generalAttributeMatrixVectorIndexing = */ true,
-            /* .generalVaryingIndexing = */ true,
-            /* .generalSamplerIndexing = */ true,
-            /* .generalVariableIndexing = */ true,
-            /* .generalConstantMatrixVectorIndexing = */ true,
-        }};
 
     rx::optional<RenderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access);
 
@@ -359,7 +251,7 @@ namespace nova::renderer::renderpack {
         return new_pipeline;
     }
 
-    EShLanguage to_glslang_shader_stage(rhi::ShaderStage stage);
+    // EShLanguage to_glslang_shader_stage(rhi::ShaderStage stage);
 
     rx::vector<uint32_t> load_shader_file(const rx::string& filename,
                                           FolderAccessorBase* folder_access,
@@ -449,7 +341,7 @@ namespace nova::renderer::renderpack {
             });
         });
     }
-
+    /*
     EShLanguage to_glslang_shader_stage(const rhi::ShaderStage stage) {
         switch(stage) {
             case rhi::ShaderStage::Vertex:
@@ -494,10 +386,60 @@ namespace nova::renderer::renderpack {
                 return EShLangCount;
         }
     }
-
+*/
     rx::vector<uint32_t> compile_shader(const rx::string& source, const rhi::ShaderStage stage, const rhi::ShaderLanguage source_language) {
         MTR_SCOPE("compile_shader", "Self");
 
+        // TODO: Our own equivalent for ComPtr
+
+        Microsoft::WRL::ComPtr<IDxcUtils> dxc_utils;
+        auto hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxc_utils));
+        if(FAILED(hr)) {
+            logger(rx::log::level::k_error, "Could not create DXC Utils instance");
+            return {};
+        }
+
+        Microsoft::WRL::ComPtr<IDxcCompiler3> dxc;
+        hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxc));
+        if(FAILED(hr)) {
+            logger(rx::log::level::k_error, "Could not create DXC instance");
+            return nullptr;
+        }
+
+        Microsoft::WRL::ComPtr<IDxcBlobEncoding> shader_blob;
+        hr = dxc_utils->CreateBlob(source.data(), source.size() * sizeof(char), 0, &shader_blob);
+        if(FAILED(hr)) {
+            logger(rx::log::level::k_error, "Could not create blob from shader");
+        }
+
+        Microsoft::WRL::ComPtr<IDxcResult> result;
+        DxcBuffer buffer{};
+        buffer.Ptr = shader_blob->GetBufferPointer();
+        buffer.Size = shader_blob->GetBufferSize();
+        BOOL data;
+        shader_blob->GetEncoding(&data, &buffer.Encoding);
+        hr = dxc->Compile(&buffer, nullptr, 0, nullptr, IID_PPV_ARGS(&result));
+        if(FAILED(hr)) {
+            logger(rx::log::level::k_error, "Could not compile shader");
+            Microsoft::WRL::ComPtr<IDxcBlobEncoding> error_blob;
+            hr = result->GetErrorBuffer(&error_blob);
+            if(FAILED(hr) || !error_blob) {
+                logger(rx::log::level::k_error, "Couldn't even get the error message lmfao");
+            } else {
+                logger(rx::log::level::k_error, "Compilation failed with error: %s", error_blob->GetBufferPointer());
+            }
+
+            return {};
+        }
+
+        Microsoft::WRL::ComPtr<IDxcBlob> code;
+        result->GetResult(&code);
+        
+        rx::vector<uint32_t> spirv_rx{code->GetBufferSize()};
+        memcpy(spirv_rx.data(), code->GetBufferPointer(), code->GetBufferSize());
+        return spirv_rx;
+
+        /*
         const auto glslang_stage = to_glslang_shader_stage(stage);
 
         // Be sure that we have glslang when we need to compile shaders
@@ -562,5 +504,6 @@ namespace nova::renderer::renderpack {
         rx::vector<uint32_t> spirv_rx{spirv_std.size()};
         memcpy(spirv_rx.data(), spirv_std.data(), spirv_std.size() * sizeof(uint32_t));
         return spirv_rx;
+        */
     }
 } // namespace nova::renderer::renderpack
