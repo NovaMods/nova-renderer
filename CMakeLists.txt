@@ -329,7 +329,7 @@ add_coverage(nova-renderer)
 set(COMMON_LINK_LIBS
         ${CMAKE_DL_LIBS}
         glm::glm
-        dxcompiler
+        ${CMAKE_CURRENT_LIST_DIR}/external/dxc/lib/dxcompiler.lib
         minitrace
         miniz
         vma::vma

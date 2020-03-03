@@ -403,13 +403,14 @@ namespace nova::renderer::renderpack {
         hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxc));
         if(FAILED(hr)) {
             logger(rx::log::level::k_error, "Could not create DXC instance");
-            return nullptr;
+            return {};
         }
 
         Microsoft::WRL::ComPtr<IDxcBlobEncoding> shader_blob;
         hr = dxc_utils->CreateBlob(source.data(), source.size() * sizeof(char), 0, &shader_blob);
         if(FAILED(hr)) {
             logger(rx::log::level::k_error, "Could not create blob from shader");
+            return {};
         }
 
         Microsoft::WRL::ComPtr<IDxcResult> result;
@@ -418,7 +419,10 @@ namespace nova::renderer::renderpack {
         buffer.Size = shader_blob->GetBufferSize();
         BOOL data;
         shader_blob->GetEncoding(&data, &buffer.Encoding);
-        hr = dxc->Compile(&buffer, nullptr, 0, nullptr, IID_PPV_ARGS(&result));
+
+       LPCWSTR args[] = {L"spirv", L"fspv-reflect" L"Tvertex"};
+
+        hr = dxc->Compile(&buffer, args, 3, nullptr, IID_PPV_ARGS(&result));
         if(FAILED(hr)) {
             logger(rx::log::level::k_error, "Could not compile shader");
             Microsoft::WRL::ComPtr<IDxcBlobEncoding> error_blob;
