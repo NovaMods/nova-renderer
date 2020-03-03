@@ -251,8 +251,6 @@ namespace nova::renderer::renderpack {
         return new_pipeline;
     }
 
-    // EShLanguage to_glslang_shader_stage(rhi::ShaderStage stage);
-
     rx::vector<uint32_t> load_shader_file(const rx::string& filename,
                                           FolderAccessorBase* folder_access,
                                           const rhi::ShaderStage stage,
@@ -341,52 +339,7 @@ namespace nova::renderer::renderpack {
             });
         });
     }
-    /*
-    EShLanguage to_glslang_shader_stage(const rhi::ShaderStage stage) {
-        switch(stage) {
-            case rhi::ShaderStage::Vertex:
-                return EShLangVertex;
 
-            case rhi::ShaderStage::TessellationControl:
-                return EShLangTessControl;
-            case rhi::ShaderStage::TessellationEvaluation:
-                return EShLangTessEvaluation;
-
-            case rhi::ShaderStage::Geometry:
-                return EShLangGeometry;
-
-            case rhi::ShaderStage::Fragment:
-                return EShLangFragment;
-
-            case rhi::ShaderStage::Compute:
-                return EShLangCompute;
-
-            case rhi::ShaderStage::Raygen:
-                return EShLangRayGenNV;
-
-            case rhi::ShaderStage::AnyHit:
-                return EShLangAnyHitNV;
-
-            case rhi::ShaderStage::ClosestHit:
-                return EShLangClosestHitNV;
-
-            case rhi::ShaderStage::Miss:
-                return EShLangMissNV;
-
-            case rhi::ShaderStage::Intersection:
-                return EShLangIntersectNV;
-
-            case rhi::ShaderStage::Task:
-                return EShLangTaskNV;
-
-            case rhi::ShaderStage::Mesh:
-                return EShLangMeshNV;
-
-            default:
-                return EShLangCount;
-        }
-    }
-*/
     rx::vector<uint32_t> compile_shader(const rx::string& source, const rhi::ShaderStage stage, const rhi::ShaderLanguage source_language) {
         MTR_SCOPE("compile_shader", "Self");
 
@@ -413,15 +366,17 @@ namespace nova::renderer::renderpack {
             return {};
         }
 
-        Microsoft::WRL::ComPtr<IDxcResult> result;
         DxcBuffer buffer{};
         buffer.Ptr = shader_blob->GetBufferPointer();
         buffer.Size = shader_blob->GetBufferSize();
         BOOL data;
         shader_blob->GetEncoding(&data, &buffer.Encoding);
 
-       LPCWSTR args[] = {L"spirv", L"fspv-reflect" L"Tvertex"};
+        LPCWSTR args[3] = {L"spirv",
+                           L"fspv-reflect"
+                           L"Tvertex"};
 
+        Microsoft::WRL::ComPtr<IDxcResult> result;
         hr = dxc->Compile(&buffer, args, 3, nullptr, IID_PPV_ARGS(&result));
         if(FAILED(hr)) {
             logger(rx::log::level::k_error, "Could not compile shader");
@@ -438,7 +393,7 @@ namespace nova::renderer::renderpack {
 
         Microsoft::WRL::ComPtr<IDxcBlob> code;
         result->GetResult(&code);
-        
+
         rx::vector<uint32_t> spirv_rx{code->GetBufferSize()};
         memcpy(spirv_rx.data(), code->GetBufferPointer(), code->GetBufferSize());
         return spirv_rx;
