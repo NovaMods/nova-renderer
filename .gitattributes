@@ -54,31 +54,4 @@ gradlew text
 gradlew.bat text
 =======
 *.lib filter=lfs diff=lfs merge=lfs -text
-*.clang-format filter=lfs diff=lfs merge=lfs -text
-*.clang-tidy filter=lfs diff=lfs merge=lfs -text
-*.txt filter=lfs diff=lfs merge=lfs -text
-*.yml filter=lfs diff=lfs merge=lfs -text
-*.gitignore filter=lfs diff=lfs merge=lfs -text
-*.gitmodules filter=lfs diff=lfs merge=lfs -text
-*.md filter=lfs diff=lfs merge=lfs -text
-*.material filter=lfs diff=lfs merge=lfs -text
 *.png filter=lfs diff=lfs merge=lfs -text
-*.json filter=lfs diff=lfs merge=lfs -text
-*.cmake filter=lfs diff=lfs merge=lfs -text
-*.py filter=lfs diff=lfs merge=lfs -text
-*.hpp filter=lfs diff=lfs merge=lfs -text
-*.h filter=lfs diff=lfs merge=lfs -text
-*.cpp filter=lfs diff=lfs merge=lfs -text
-*.mat filter=lfs diff=lfs merge=lfs -text
-*.pipeline filter=lfs diff=lfs merge=lfs -text
-*.frag filter=lfs diff=lfs merge=lfs -text
-*.vert filter=lfs diff=lfs merge=lfs -text
-*.in filter=lfs diff=lfs merge=lfs -text
-*.natvis filter=lfs diff=lfs merge=lfs -text
-*.inl filter=lfs diff=lfs merge=lfs -text
-*.td filter=lfs diff=lfs merge=lfs -text
-*.man filter=lfs diff=lfs merge=lfs -text
-*.h text !filter !merge !diff
-*.hpp text !filter !merge !diff
-*.cpp text !filter !merge !diff
-*.txt text !filter !merge !diff
