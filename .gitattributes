@@ -1,6 +1,5 @@
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto eol=lf
-
 # Explicitly declare text files you want to always be normalized and converted
 # to native line endings on checkout.
 # C++ code
@@ -54,6 +53,7 @@
 gradlew text
 gradlew.bat text
 =======
+*.lib filter=lfs diff=lfs merge=lfs -text
 *.clang-format filter=lfs diff=lfs merge=lfs -text
 *.clang-tidy filter=lfs diff=lfs merge=lfs -text
 *.txt filter=lfs diff=lfs merge=lfs -text
@@ -75,6 +75,9 @@ gradlew.bat text
 *.vert filter=lfs diff=lfs merge=lfs -text
 *.in filter=lfs diff=lfs merge=lfs -text
 *.natvis filter=lfs diff=lfs merge=lfs -text
+*.inl filter=lfs diff=lfs merge=lfs -text
+*.td filter=lfs diff=lfs merge=lfs -text
+*.man filter=lfs diff=lfs merge=lfs -text
 *.h text !filter !merge !diff
 *.hpp text !filter !merge !diff
 *.cpp text !filter !merge !diff
