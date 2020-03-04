@@ -4,8 +4,8 @@
 #include <rx/core/log.h>
 
 // yolo
-#include <wrl/client.h>
 #include <comdef.h>
+#include <wrl/client.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/filesystem_helpers.hpp"
@@ -341,6 +341,48 @@ namespace nova::renderer::renderpack {
         });
     }
 
+    LPCWSTR to_hlsl_profile(const rhi::ShaderStage stage) {
+        switch(stage) {
+            case rhi::ShaderStage::Vertex:
+                return L"/Tvs_6_0";
+
+            case rhi::ShaderStage::TessellationControl:
+                return L"/Ths_6_0";
+
+            case rhi::ShaderStage::TessellationEvaluation:
+                return L"/Tds_6_0";
+
+            case rhi::ShaderStage::Geometry:
+                return L"/Tgs_6_0";
+
+            case rhi::ShaderStage::Fragment:
+                return L"/Tps_6_0";
+
+            case rhi::ShaderStage::Compute:
+                return L"/Tcs_6_0";
+
+            case rhi::ShaderStage::Task:
+                return L"/Tas_6_0";
+
+            case rhi::ShaderStage::Mesh:
+                return L"/Tms_6_0";
+
+            case rhi::ShaderStage::Raygen:
+                [[fallthrough]];
+            case rhi::ShaderStage::AnyHit:
+                [[fallthrough]];
+            case rhi::ShaderStage::ClosestHit:
+                [[fallthrough]];
+            case rhi::ShaderStage::Miss:
+                [[fallthrough]];
+            case rhi::ShaderStage::Intersection:
+                [[fallthrough]];
+            default:;
+                logger(rx::log::level::k_error, "Unsupported shader stage %u", stage);
+                return {};
+        }
+    }
+
     rx::vector<uint32_t> compile_shader(const rx::string& source, const rhi::ShaderStage stage, const rhi::ShaderLanguage source_language) {
         MTR_SCOPE("compile_shader", "Self");
 
@@ -373,7 +415,9 @@ namespace nova::renderer::renderpack {
         BOOL data;
         shader_blob->GetEncoding(&data, &buffer.Encoding);
 
-        LPCWSTR args[3] = {L"/spirv", L"/fspv-reflect", L"/Tvs_6_0"};
+        const auto profile = to_hlsl_profile(stage);
+
+        LPCWSTR args[3] = {L"/spirv", L"/fspv-reflect", profile};
 
         Microsoft::WRL::ComPtr<IDxcResult> result;
         hr = dxc->Compile(&buffer, args, 3, nullptr, IID_PPV_ARGS(&result));
@@ -405,8 +449,12 @@ namespace nova::renderer::renderpack {
                 return {};
             }
 
-            _com_error err {status};
-            logger(rx::log::level::k_error, "Compilation status: %s (%u) Error buffer: %s",err.ErrorMessage(), status, error_buffer->GetBufferPointer());
+            const _com_error err{status};
+            logger(rx::log::level::k_error,
+                   "Compilation failed: %s (Error code %u: %s) ",
+                   error_buffer->GetBufferPointer(),
+                   status,
+                   err.ErrorMessage());
             return {};
         }
 
