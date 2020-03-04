@@ -5,8 +5,8 @@
 #include "nova_renderer/util/result.hpp"
 
 namespace spirv_cross {
+    class Compiler;
     struct Resource;
-    class CompilerGLSL;
 } // namespace spirv_cross
 
 namespace nova::renderer {
@@ -62,7 +62,7 @@ namespace nova::renderer {
 
         static void add_resource_to_bindings(rx::map<rx::string, rhi::RhiResourceBindingDescription>& bindings,
                                              rhi::ShaderStage shader_stage,
-                                             const spirv_cross::CompilerGLSL& shader_compiler,
+                                             const spirv_cross::Compiler& shader_compiler,
                                              const spirv_cross::Resource& resource,
                                              rhi::DescriptorType type);
     };

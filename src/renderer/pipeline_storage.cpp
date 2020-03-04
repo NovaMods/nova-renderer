@@ -95,7 +95,7 @@ namespace nova::renderer {
     void PipelineStorage::get_shader_module_descriptors(const rx::vector<uint32_t>& spirv,
                                                         const rhi::ShaderStage shader_stage,
                                                         rx::map<rx::string, rhi::RhiResourceBindingDescription>& bindings) {
-        const spirv_cross::CompilerGLSL shader_compiler{spirv.data(), spirv.size()};
+        const spirv_cross::Compiler shader_compiler{spirv.data(), spirv.size()};
         const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
 
         for(const auto& resource : resources.separate_images) {
@@ -125,7 +125,7 @@ namespace nova::renderer {
 
     void PipelineStorage::add_resource_to_bindings(rx::map<rx::string, rhi::RhiResourceBindingDescription>& bindings,
                                                    const rhi::ShaderStage shader_stage,
-                                                   const spirv_cross::CompilerGLSL& shader_compiler,
+                                                   const spirv_cross::Compiler& shader_compiler,
                                                    const spirv_cross::Resource& resource,
                                                    const rhi::DescriptorType type) {
         const uint32_t set_idx = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
