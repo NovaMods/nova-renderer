@@ -344,28 +344,28 @@ namespace nova::renderer::renderpack {
     LPCWSTR to_hlsl_profile(const rhi::ShaderStage stage) {
         switch(stage) {
             case rhi::ShaderStage::Vertex:
-                return L"/Tvs_6_0";
+                return L"-Tvs_6_0";
 
             case rhi::ShaderStage::TessellationControl:
-                return L"/Ths_6_0";
+                return L"-Ths_6_0";
 
             case rhi::ShaderStage::TessellationEvaluation:
-                return L"/Tds_6_0";
+                return L"-Tds_6_0";
 
             case rhi::ShaderStage::Geometry:
-                return L"/Tgs_6_0";
+                return L"-Tgs_6_0";
 
             case rhi::ShaderStage::Fragment:
-                return L"/Tps_6_0";
+                return L"-Tps_6_0";
 
             case rhi::ShaderStage::Compute:
-                return L"/Tcs_6_0";
+                return L"-Tcs_6_0";
 
             case rhi::ShaderStage::Task:
-                return L"/Tas_6_0";
+                return L"-Tas_6_0";
 
             case rhi::ShaderStage::Mesh:
-                return L"/Tms_6_0";
+                return L"-Tms_6_0";
 
             case rhi::ShaderStage::Raygen:
                 [[fallthrough]];
@@ -417,7 +417,7 @@ namespace nova::renderer::renderpack {
 
         const auto profile = to_hlsl_profile(stage);
 
-        LPCWSTR args[3] = {L"/spirv", L"/fspv-reflect", profile};
+        LPCWSTR args[3] = {L"-spirv", L"-fspv-reflect", profile};
 
         Microsoft::WRL::ComPtr<IDxcResult> result;
         hr = dxc->Compile(&buffer, args, 3, nullptr, IID_PPV_ARGS(&result));
@@ -437,18 +437,18 @@ namespace nova::renderer::renderpack {
         HRESULT status;
         hr = result->GetStatus(&status);
         if(FAILED(hr)) {
-            logger(rx::log::level::k_error, "Could nor check compilation status");
+            logger(rx::log::level::k_error, "Could not check compilation status");
+            return {};
+        }
+
+        Microsoft::WRL::ComPtr<IDxcBlobEncoding> error_buffer;
+        hr = result->GetErrorBuffer(&error_buffer);
+        if(FAILED(hr)) {
+            logger(rx::log::level::k_error, "Could not get error buffer");
             return {};
         }
 
         if(FAILED(status)) {
-            Microsoft::WRL::ComPtr<IDxcBlobEncoding> error_buffer;
-            hr = result->GetErrorBuffer(&error_buffer);
-            if(FAILED(hr)) {
-                logger(rx::log::level::k_error, "Could not get error buffer");
-                return {};
-            }
-
             const _com_error err{status};
             logger(rx::log::level::k_error,
                    "Compilation failed: %s (Error code %u: %s) ",
@@ -456,6 +456,50 @@ namespace nova::renderer::renderpack {
                    status,
                    err.ErrorMessage());
             return {};
+
+        } else if(error_buffer->GetBufferSize() > 0) {
+            logger(rx::log::level::k_warning, "Compilation warnings: %s", error_buffer->GetBufferPointer());
+        }
+
+        const auto num_outputs = result->GetNumOutputs();
+        const auto has_object = result->HasOutput(DXC_OUT_OBJECT);
+        const auto has_errors = result->HasOutput(DXC_OUT_ERRORS);
+        const auto has_pdb = result->HasOutput(DXC_OUT_PDB);
+        const auto has_shader_hash = result->HasOutput(DXC_OUT_SHADER_HASH);
+        const auto has_disassembly = result->HasOutput(DXC_OUT_DISASSEMBLY);
+        const auto has_hlsl = result->HasOutput(DXC_OUT_HLSL);
+        const auto has_test = result->HasOutput(DXC_OUT_TEXT);
+        const auto has_reflection = result->HasOutput(DXC_OUT_REFLECTION);
+        const auto has_root_signature = result->HasOutput(DXC_OUT_ROOT_SIGNATURE);
+        logger(
+            rx::log::level::k_verbose,
+            "We have %u outputs! has_object=%u has_error=%u has_pdb=%u has_shader_hash=%u has_disassembly=%u has_hlsl=%u has_test=%u has_reflection=%u has_root_signature=%u",
+            num_outputs,
+            has_object,
+            has_errors,
+            has_pdb,
+            has_shader_hash,
+            has_disassembly,
+            has_hlsl,
+            has_test,
+            has_reflection,
+            has_root_signature);
+
+        if(has_errors) {
+            Microsoft::WRL::ComPtr<IDxcBlobEncoding> error_blob;
+            Microsoft::WRL::ComPtr<IDxcBlobUtf16> output_name;
+            hr = result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&error_blob), &output_name);
+            if(FAILED(hr)) {
+                logger(rx::log::level::k_error, "Could not retrieve errors, even through DXC said we have some");
+            }
+
+            if(error_blob->GetBufferSize() > 0) {
+                logger(rx::log::level::k_error, "%s: %s", output_name->GetStringPointer(), error_blob->GetBufferPointer());
+
+            } else {
+                logger(rx::log::level::k_error,
+                       "Retrieving the error buffer gave a zero-length buffer - even though DXC said we have errors");
+            }
         }
 
         Microsoft::WRL::ComPtr<IDxcBlob> code;
