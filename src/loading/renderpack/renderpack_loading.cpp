@@ -372,9 +372,9 @@ namespace nova::renderer::renderpack {
         BOOL data;
         shader_blob->GetEncoding(&data, &buffer.Encoding);
 
-        LPCWSTR args[3] = {L"spirv",
-                           L"fspv-reflect"
-                           L"Tvertex"};
+        LPCWSTR args[3] = {L"/spirv",
+                           L"/fspv-reflect",
+                           L"/Tvertex"};
 
         Microsoft::WRL::ComPtr<IDxcResult> result;
         hr = dxc->Compile(&buffer, args, 3, nullptr, IID_PPV_ARGS(&result));
@@ -392,7 +392,11 @@ namespace nova::renderer::renderpack {
         }
 
         Microsoft::WRL::ComPtr<IDxcBlob> code;
-        result->GetResult(&code);
+        hr = result->GetResult(&code);
+        if(FAILED(hr)) {
+            logger(rx::log::level::k_error, "Could not retrieve compiled code");
+            return {};
+        }
 
         rx::vector<uint32_t> spirv_rx{code->GetBufferSize()};
         memcpy(spirv_rx.data(), code->GetBufferPointer(), code->GetBufferSize());
