@@ -5,6 +5,7 @@
 
 // yolo
 #include <wrl/client.h>
+#include <comdef.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/filesystem_helpers.hpp"
@@ -372,7 +373,7 @@ namespace nova::renderer::renderpack {
         BOOL data;
         shader_blob->GetEncoding(&data, &buffer.Encoding);
 
-        LPCWSTR args[3] = {L"/spirv", L"/fspv-reflect", L"/Tvertex"};
+        LPCWSTR args[3] = {L"/spirv", L"/fspv-reflect", L"/Tvs_6_0"};
 
         Microsoft::WRL::ComPtr<IDxcResult> result;
         hr = dxc->Compile(&buffer, args, 3, nullptr, IID_PPV_ARGS(&result));
@@ -404,7 +405,8 @@ namespace nova::renderer::renderpack {
                 return {};
             }
 
-            logger(rx::log::level::k_error, "Compilation status: %u Error buffer: %s", status, error_buffer->GetBufferPointer());
+            _com_error err {status};
+            logger(rx::log::level::k_error, "Compilation status: %s (%u) Error buffer: %s",err.ErrorMessage(), status, error_buffer->GetBufferPointer());
             return {};
         }
 
