@@ -372,9 +372,7 @@ namespace nova::renderer::renderpack {
         BOOL data;
         shader_blob->GetEncoding(&data, &buffer.Encoding);
 
-        LPCWSTR args[3] = {L"/spirv",
-                           L"/fspv-reflect",
-                           L"/Tvertex"};
+        LPCWSTR args[3] = {L"/spirv", L"/fspv-reflect", L"/Tvertex"};
 
         Microsoft::WRL::ComPtr<IDxcResult> result;
         hr = dxc->Compile(&buffer, args, 3, nullptr, IID_PPV_ARGS(&result));
@@ -388,6 +386,25 @@ namespace nova::renderer::renderpack {
                 logger(rx::log::level::k_error, "Compilation failed with error: %s", error_blob->GetBufferPointer());
             }
 
+            return {};
+        }
+
+        HRESULT status;
+        hr = result->GetStatus(&status);
+        if(FAILED(hr)) {
+            logger(rx::log::level::k_error, "Could nor check compilation status");
+            return {};
+        }
+
+        if(FAILED(status)) {
+            Microsoft::WRL::ComPtr<IDxcBlobEncoding> error_buffer;
+            hr = result->GetErrorBuffer(&error_buffer);
+            if(FAILED(hr)) {
+                logger(rx::log::level::k_error, "Could not get error buffer");
+                return {};
+            }
+
+            logger(rx::log::level::k_error, "Compilation status: %u Error buffer: %s", status, error_buffer->GetBufferPointer());
             return {};
         }
 
