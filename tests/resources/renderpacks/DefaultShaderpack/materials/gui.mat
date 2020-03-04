@@ -1,3 +1,16 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:49a48caadc8867d59480d3051cbd6e2b11a921368efd24c5dd794ea8a5ce2e64
-size 346
+{
+    "name": "gui",
+    "filter": "geometry_type::gui",
+    "passes": [
+        {
+            "name": "main",
+            "pipeline": "gui",
+            "bindings": [
+                {
+                    "variable": "per_model_uniforms",
+                    "resource": "NovaModelMatrixBuffer"
+                }
+            ]
+        }
+    ]
+}

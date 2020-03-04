@@ -1,3 +1,2 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:27467fa5662419ba3e273de46ba0583a5599ca4f5791d1227d139f6307a9b1d0
-size 328
+#!/bin/bash
+@Python3_EXECUTABLE@ "@CMAKE_CURRENT_SOURCE_DIR@/3rdparty/run-clang-tidy/run-clang-tidy.py" `find "@CMAKE_SOURCE_DIR@"/{src,tests} -type f -iname '*.cpp'` -p "@CMAKE_BINARY_DIR@" "--header-filter=`echo '@CMAKE_SOURCE_DIR@/(include|src|tests)/.*' | sed 's/\\//\\\\\//g'`" --clang-tidy-binary @CLANG_TIDY_PROGRAM@ "$@"

@@ -1,3 +1,4 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:febbdf0fca44d0bfc1f34d250d852b2dff8b0d13e39576beaea4346a2bfb289b
-size 276
+Holds all files relating to loading resources (shaders or otherwise) from the filesystem
+
+The code in this folder shouldn't have any calls to API-specific thing. We should massage all input code into SPIR-V.
+The rendering backends can transpile from that to whatever they need

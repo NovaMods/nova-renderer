@@ -1,3 +1,21 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:2a0e40f40772542af3d46034179356b6ae6fa85543f9cc5e2de6c7bf29414443
-size 453
+{
+    "name": "Final",
+    "pass": "Final",
+    "states": [
+        "DisableAlphaWrite",
+        "DisableDepthWrite",
+        "DisableDepthTest"
+    ],
+    "vertexShader": "shaders/textured_unlit.vert",
+    "fragmentShader": "shaders/image_passthrough.frag",
+    "vertexFields": [
+        {
+            "name": "position_in",
+            "field": "Position"
+        },
+        {
+            "name": "uv_in",
+            "field": "UV0"
+        }
+    ]
+}

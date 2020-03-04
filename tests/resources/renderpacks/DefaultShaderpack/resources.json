@@ -1,3 +1,29 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:acb8fba1231af64377efddd15e5e44e520754051471decce5c5a2a256cd3f88d
-size 643
+{
+    "textures": [
+        {
+            "name": "LitWorld",
+            "format": {
+                "pixelFormat": "RGBA8",
+                "dimensionType": "ScreenRelative",
+                "width": 1,
+                "height": 1
+            }
+        },
+        {
+            "name": "DepthBuffer",
+            "format": {
+                "pixelFormat": "Depth",
+                "dimensionType": "ScreenRelative",
+                "width": 1,
+                "height": 1
+            }
+        }
+    ],
+    "samplers": [
+        {
+            "name": "Point",
+            "filter": "Point",
+            "wrapMode": "Clamp"
+        }
+    ]
+}

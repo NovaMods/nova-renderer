@@ -1,3 +1,49 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:1d6c26de0b63b6e6ced097ad66a82da5bc2bff7c1eb926d850112ffe036ab5a4
-size 2343
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <Type Name="rx::vector&lt;*&gt;">
+        <DisplayString Condition="m_size == 0">empty</DisplayString>
+        <DisplayString>{{ size={m_size} }}</DisplayString>
+        <Expand>
+            <Item Name="[size]" ExcludeView="simple">m_size</Item>
+            <ArrayItems>
+                <Size>m_size</Size>
+                <ValuePointer>m_data</ValuePointer>
+            </ArrayItems>
+            <Item Name="[capacity]" ExcludeView="simple">m_capacity</Item>
+            <Item Name="[allocator]" ExcludeView="simple">m_allocator</Item>
+        </Expand>
+    </Type>
+    <Type Name="rx::string">
+        <DisplayString Condition="m_data == m_buffer">{{ {m_data} }}(Small String)</DisplayString>
+        <DisplayString>{{ {m_data} }}</DisplayString>
+        <Expand>
+            <Item Name="[size]" ExcludeView="simple">m_last - m_data</Item>
+            <Item Name="[contents]" ExcludeView="simple">m_data</Item>
+            <Item Name="[capacity]" ExcludeView="simple">m_capacity</Item>
+            <Item Name="[allocator]" ExcludeView="simple">m_allocator</Item>
+        </Expand>
+    </Type>
+    <Type Name="rx::map&lt;*&gt;">
+        <DisplayString Condition="m_size==0">empty</DisplayString>
+        <DisplayString>{{ size={m_size} }}</DisplayString>
+        <Expand>
+            <Item Name="[size]" ExcludeView="simple">m_size</Item>
+            <ArrayItems>
+                <Size>m_capacity</Size>
+                <ValuePointer>m_values</ValuePointer>
+            </ArrayItems>
+            <Item Name="[capacity]" ExcludeView="simple">m_capacity</Item>
+            <Item Name="[resize threshold]" ExcludeView="simple">m_resize_threshold</Item>
+        </Expand>
+    </Type>
+    <Type Name="rx::directory">
+        <DisplayString Condition="m_impl != nullptr">{{ {m_path} }}</DisplayString>
+        <DisplayString Condition="m_impl == nullptr">{{ {m_path} (Invalid Directory) }}</DisplayString>
+        <Expand>
+            <Item Name="[path]" ExcludeView="simple">m_path</Item>
+            <Item Name="[impl]" ExcludeView="simple">m_impl</Item>
+            <Item Name="[allocator]" ExcludeView="simple">m_allocator</Item>
+        </Expand>
+    </Type>
+    <!-- TODO: set, function, file --> 
+</AutoVisualizer>
