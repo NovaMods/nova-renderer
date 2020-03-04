@@ -1,3 +1,211 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:74020e2342023bc8a208c4591b6efe343acce45b3fea684582c475582e05202a
-size 6818
+name: Commit
+on: [push]
+
+jobs:
+  build-linux:
+    # Even tho we run the real build in an arch linux docker
+    # container, we need to specify a HostOS
+    runs-on: ubuntu-latest
+
+    # Run the real build on an arch linux docker container
+    # Ubuntu has out of date tools and sometimes system updates
+    # require manual interaction so its unusable for CI
+    container: archlinux/base
+
+    # Use a build matrix so GCC and Clang don't have to have different
+    # jobs in this yaml file
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [gcc, clang]
+        include:
+          - cc: gcc
+            cxx: g++
+          - cc: clang
+            cxx: clang++
+
+    # Environment variables
+    env:
+      VULKAN_SDK: /usr
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+
+    name: build-linux-${{ matrix.cc }}
+
+    steps:
+      # 1. Update the system
+      #    Arch linux updates NEVER require manual interaction
+      #    when using --noconfirm, so this is totally safe
+      - name: Update System
+        run: pacman --noconfirm -Syu
+      # 2. Install the required dependencies
+      - name: Install dependencies
+        run: pacman --noconfirm -S cmake binutils gcc python3 git vulkan-devel ninja tar unzip which libxinerama ${{ matrix.cc }}
+      # 3. Checkout the repository, this is done via a github action
+      # Don't use the latest master cause GitHub updated it to v2 and apparently v2 doesn't support submodules
+      # Thanks for breaking my CI you assholes
+      - name: Checkout repository
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+      # 4. Configure with CMake
+      - name: Configure with CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. -G"Ninja"         \
+            -DNOVA_TEST=ON           \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -Wno-dev
+      # 5. Build with CMake
+      - name: Build with CMake
+        working-directory: build
+        run: cmake --build .
+      # 6. Run the unit tests
+      - name: Run unit tests
+        working-directory: build
+        run: ./nova-test-unit --gtest_color=yes
+      # 7. Prepare artifacts for uploading
+      - name: Prepare artifacts
+        run: |
+          # Binary artifacts
+          mkdir artifacts
+          cp LICENSE artifacts
+          cp build/nova-test-unit artifacts
+          cp build/nova-test-end-to-end artifacts
+          cp build/libnova-renderer.a artifacts
+      # 8. Upload binary artifacts
+      - name: Upload binary artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: binary-linux-${{ matrix.cc }}
+          path: artifacts
+
+  build-windows:
+    # Running on Windows Server 2019 or whatever the latest version is,
+    # lets hope this goes well...
+    runs-on: windows-latest
+
+    # Used for supplying the vulkan version
+    strategy:
+      matrix:
+        vulkan: [1.2.131.2]
+
+    name: build-windows-msvc
+
+    steps:
+      # 1. Download the VulkanSDK
+      - name: Download VulkanSDK
+        shell: bash
+        run: |
+          curl -L \
+          'https://sdk.lunarg.com/sdk/download/${{ matrix.vulkan }}/windows/VulkanSDK-${{ matrix.vulkan }}-Installer.exe?Human=true' \
+          -o VulkanSDK-Installer.exe
+      # 2. Install the VulkanSDK
+      - name: Install VulkanSDK
+        shell: powershell
+        run: |
+          Start-Process .\VulkanSDK-Installer.exe /S -Wait
+      # Download the Vulkan Runtime
+      - name: Download Vulkan Runtime
+        shell: bash
+        run: |
+          curl -L \
+           'https://sdk.lunarg.com/sdk/download/${{ matrix.vulkan }}/windows/vulkan-${{ matrix.vulkan }}-runtime.exe' -o VulkanRuntime-Installer.exe
+          ls 
+      # 2. Install the Vulkan Runtime
+      - name: Install Vulkan Runtime
+        shell: powershell
+        run: |
+          ls
+          Start-Process .\VulkanRuntime-Installer.exe /S -Wait
+      
+      # 3. Checkout the repository, this is done via a github action
+      # Don't use the latest master cause GitHub updated it to v2 and apparently v2 doesn't support submodules
+      # Thanks for breaking my CI you assholes
+      - name: Checkout repository
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+      # 4. Configure with CMake
+      - name: Configure with CMake
+        shell: bash
+        env:
+          VULKAN_SDK: C:\\VulkanSDK\\${{ matrix.vulkan }}
+        run: |
+          mkdir build
+          cd build
+          echo $VULKAN_SDK
+          cmake .. -G "Visual Studio 16 2019" -A x64            \
+            -DNOVA_TEST=ON                                      \
+            -DCMAKE_BUILD_TYPE=Debug                            \
+            -Wno-dev
+      # 5. Build with CMake
+      - name: Build with CMake
+        working-directory: build
+        shell: bash
+        run: cmake --build .
+      # 6. Run the unit tests
+      - name: Run unit tests
+        working-directory: build/Debug
+        shell: bash
+        run: ./nova-test-unit.exe --gtest_color=yes
+      # 7. Prepare artifacts for uploading
+      - name: Prepare artifacts
+        shell: bash
+        run: |
+          # Binary artifacts
+          mkdir artifacts
+          cp LICENSE artifacts
+          cp build/Debug/nova-test-unit.exe artifacts
+          cp build/Debug/nova-test-end-to-end.exe artifacts
+          cp build/Debug/nova-renderer.lib artifacts
+      # 8. Upload binary artifacts
+      - name: Upload binary artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: binary-windows-msvc
+          path: artifacts
+      # Cache dependendies
+      #- name: Cache dependencies
+      #  uses: actions/cache@v1
+      #  with:
+      #    path: 
+
+  build-simple-artifacts:
+    # Let's use linux for packaging up our artifacts which don't
+    # require building
+    # We could also use Windows or OSX, but Linux seems to be most fitting
+    runs-on: ubuntu-latest
+
+    steps:
+      # Of course we need a copy of the repository
+      - name: Checkout repository
+        uses: actions/checkout@v1
+      # Preparation of the artifacts, for example adding LICENSE
+      - name: Prepare artifacts
+        run: |
+          mkdir artifacts
+
+          # Docs
+          mkdir artifacts/docs
+          cp -r docs/* artifacts/docs
+          cp LICENSE artifacts/docs
+          cp README.md artifacts/docs
+
+          # Headers
+          mkdir artifacts/headers
+          cp -r include/* artifacts/headers
+          cp LICENSE artifacts/headers
+      # Upload the docs artifact
+      - name: Upload docs
+        uses: actions/upload-artifact@master
+        with:
+          name: docs
+          path: artifacts/docs
+      # Upload the headers artifact
+      - name: Upload headers
+        uses: actions/upload-artifact@master
+        with:
+          name: headers
+          path: artifacts/headers

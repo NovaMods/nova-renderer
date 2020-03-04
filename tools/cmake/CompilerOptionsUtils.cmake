@@ -1,3 +1,21 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:b31ecdd6fab0824adcaef0133a00c70d1e6e6fc7da4c6716c8c5fe1721f287b5
-size 803
+include(CheckCXXCompilerFlag)
+
+macro(target_compile_options_if_supported target private_or_public)
+    foreach(option ${ARGN})
+        set(${CMAKE_CXX_COMPILER_ID}_SUPPORTS_${option})
+        check_cxx_compiler_flag(${option} ${CMAKE_CXX_COMPILER_ID}_SUPPORTS_${option})
+        if(${CMAKE_CXX_COMPILER_ID}_SUPPORTS_${option})
+            target_compile_options(${target} ${private_or_public} ${option})
+        endif()
+    endforeach()
+endmacro()
+
+macro(add_compile_options_if_supported)
+    foreach(option ${ARGN})
+        set(${CMAKE_CXX_COMPILER_ID}_SUPPORTS_${option})
+        check_cxx_compiler_flag(${option} ${CMAKE_CXX_COMPILER_ID}_SUPPORTS_${option})
+        if(${CMAKE_CXX_COMPILER_ID}_SUPPORTS_${option})
+            add_compile_options(${option})
+        endif()
+    endforeach()
+endmacro()

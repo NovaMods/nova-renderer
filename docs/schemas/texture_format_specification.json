@@ -1,3 +1,27 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:3148dbf9bf310cef70726a053a36b0c1a0dca19caa36239b0ca9c9159a44e4af
-size 1029
+{
+  "textureData": {
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the data in this texture data slot. Common examples could be `normals`, `specularColor`, or `albedo"
+        },
+        "fileSuffix": {
+          "type": "string",
+          "description": "The suffix for the texture that holds this texture data. This can be the empty string , `_s`, `_n`, or anything else you want to use"
+        },
+        "channels": {
+          "type": "array",
+          "description": "Tells Nova which channels of your texture this data is in",
+          "items": {
+            "type": "string",
+            "enum": ["R", "G", "B", "A"],
+            "description": "The channels of the texture to pull from. For example, if the `channels` array is [\"R\", \"G\"] then this texture data will be taken from the red and green channels and will be used as a two-channel texture"
+          }
+        }
+      }
+    }
+  }
+}
