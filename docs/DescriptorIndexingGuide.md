@@ -32,7 +32,7 @@ descriptor_indexing_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTO
 
 // Enable non-uniform indexing
 descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
-descriptor_indexing_features.runtimeDescriptorArray = true;
+descriptor_indexing_features.runtimeDescriptorArray = VK_TRUE;
 descriptor_indexing_features.descriptorBindingVariableDescriptorCount = VK_TRUE;
 descriptor_indexing_features.descriptorBindingPartiallyBound = VK_TRUE;
 
