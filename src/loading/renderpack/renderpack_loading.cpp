@@ -3,6 +3,7 @@
 #include <rx/core/json.h>
 #include <rx/core/log.h>
 
+#include "nova_renderer/util/platform.hpp"
 #ifdef NOVA_WINDOWS
 #include <comdef.h>
 #endif
