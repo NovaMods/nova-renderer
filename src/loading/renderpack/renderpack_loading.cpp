@@ -3,8 +3,9 @@
 #include <rx/core/json.h>
 #include <rx/core/log.h>
 
-// TODO: Replace this with our own COM macros
-// #include <comdef.h> // TODO(janrupf): Was this really required?
+#ifdef NOVA_WINDOWS
+#include <comdef.h>
+#endif
 #include <dxc/dxcapi.h>
 
 #include "nova_renderer/constants.hpp"
