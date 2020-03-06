@@ -28,6 +28,3 @@
 [submodule "external/rex_core"]
 	path = external/rex_core
 	url = https://github.com/NovaMods/rex_core.git
-[submodule "external/dxc-wrapper"]
-	path = external/dxc-wrapper
-	url = https://github.com/project-arcana/dxc-wrapper.git
