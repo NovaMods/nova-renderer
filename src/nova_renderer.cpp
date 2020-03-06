@@ -792,7 +792,7 @@ namespace nova::renderer {
 
         auto& material_pass = (*passes)[key->material_pass_idx];
 
-        auto& command = [&] {
+        auto command = [&] {
             switch(key->type) {
                 case RenderableType::StaticMesh: {
                     auto& batch = material_pass.static_mesh_draws[key->batch_idx];
