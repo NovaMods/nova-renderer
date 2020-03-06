@@ -12,7 +12,7 @@
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
 
-#include "../external/dxc/include/dxc/dxcapi.h"
+#include <dxc/dxcapi.h>
 #include "../json_utils.hpp"
 #include "minitrace.h"
 #include "render_graph_builder.hpp"
@@ -344,28 +344,28 @@ namespace nova::renderer::renderpack {
     LPCWSTR to_hlsl_profile(const rhi::ShaderStage stage) {
         switch(stage) {
             case rhi::ShaderStage::Vertex:
-                return L"-Tvs_6_0";
+                return L"vs_6_4";
 
             case rhi::ShaderStage::TessellationControl:
-                return L"-Ths_6_0";
+                return L"hs_6_4";
 
             case rhi::ShaderStage::TessellationEvaluation:
-                return L"-Tds_6_0";
+                return L"ds_6_4";
 
             case rhi::ShaderStage::Geometry:
-                return L"-Tgs_6_0";
+                return L"gs_6_4";
 
             case rhi::ShaderStage::Fragment:
-                return L"-Tps_6_0";
+                return L"ps_6_4";
 
             case rhi::ShaderStage::Compute:
-                return L"-Tcs_6_0";
+                return L"cs_6_4";
 
             case rhi::ShaderStage::Task:
-                return L"-Tas_6_0";
+                return L"as_6_4";
 
             case rhi::ShaderStage::Mesh:
-                return L"-Tms_6_0";
+                return L"ms_6_4";
 
             case rhi::ShaderStage::Raygen:
                 [[fallthrough]];
@@ -388,21 +388,21 @@ namespace nova::renderer::renderpack {
 
         // TODO: Our own equivalent for ComPtr
 
-        Microsoft::WRL::ComPtr<IDxcUtils> dxc_utils;
+        IDxcUtils* dxc_utils;
         auto hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxc_utils));
         if(FAILED(hr)) {
             logger(rx::log::level::k_error, "Could not create DXC Utils instance");
             return {};
         }
 
-        Microsoft::WRL::ComPtr<IDxcCompiler3> dxc;
+        IDxcCompiler3* dxc;
         hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxc));
         if(FAILED(hr)) {
             logger(rx::log::level::k_error, "Could not create DXC instance");
             return {};
         }
 
-        Microsoft::WRL::ComPtr<IDxcBlobEncoding> shader_blob;
+        IDxcBlobEncoding* shader_blob;
         hr = dxc_utils->CreateBlob(source.data(), static_cast<UINT>(source.size() * sizeof(char)), 0, &shader_blob);
         if(FAILED(hr)) {
             logger(rx::log::level::k_error, "Could not create blob from shader");

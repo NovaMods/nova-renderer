@@ -290,9 +290,6 @@ message(STATUS "Miniz headers: ${INSTALL_HEADERS}")
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 
-target_include_directories(nova-renderer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/external/dxc/include)
-target_link_directories(nova-renderer PRIVATE ${CMAKE_CURRENT_LIST_DIR}/external/dxc/lib)
-
 if(NOVA_FORCE_DEBUGGING) 
     target_compile_definitions(nova-renderer PUBLIC NOVA_DEBUG)
 else()
@@ -329,7 +326,7 @@ add_coverage(nova-renderer)
 set(COMMON_LINK_LIBS
         ${CMAKE_DL_LIBS}
         glm::glm
-        ${CMAKE_CURRENT_LIST_DIR}/external/dxc/lib/dxcompiler.lib
+        dxc-wrap 
         minitrace
         miniz
         vma::vma
