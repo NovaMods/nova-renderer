@@ -3,16 +3,15 @@
 #include <rx/core/json.h>
 #include <rx/core/log.h>
 
-// yolo
+// TODO: Replace this with our own COM macros
 #include <comdef.h>
-#include <wrl/client.h>
+#include <dxc/dxcapi.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/filesystem_helpers.hpp"
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
 
-#include <dxc/dxcapi.h>
 #include "../json_utils.hpp"
 #include "minitrace.h"
 #include "render_graph_builder.hpp"
@@ -384,144 +383,70 @@ namespace nova::renderer::renderpack {
     }
 
     rx::vector<uint32_t> compile_shader(const rx::string& source, const rhi::ShaderStage stage, const rhi::ShaderLanguage source_language) {
-        MTR_SCOPE("compile_shader", "Self");
+        /*
+         * Compile HLSL -> SPIR-V, using delicious DXC
+         *
+         * We use the old interface IDxcCompiler instead of IDxcCompiler3 because IDxcCompiler3 does not work, at all. It tells me that it
+         * has a result, then it won't give me that result. I asked on the DirectX server and many other places, but apparently not even
+         * Microsoft knows how to the new API for their compiler. Thus, I'm using the old and deprecated API - because it actually works
+         */
 
-        // TODO: Our own equivalent for ComPtr
-
-        IDxcUtils* dxc_utils;
-        auto hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxc_utils));
+        IDxcLibrary* lib;
+        auto hr = DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&lib));
         if(FAILED(hr)) {
-            logger(rx::log::level::k_error, "Could not create DXC Utils instance");
+            logger(rx::log::level::k_error, "Could not create DXC Library instance");
             return {};
         }
 
-        IDxcCompiler3* dxc;
-        hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxc));
+        IDxcCompiler* compiler;
+        hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler));
         if(FAILED(hr)) {
             logger(rx::log::level::k_error, "Could not create DXC instance");
             return {};
         }
 
-        IDxcBlobEncoding* shader_blob;
-        hr = dxc_utils->CreateBlob(source.data(), static_cast<UINT>(source.size() * sizeof(char)), 0, &shader_blob);
+        IDxcBlobEncoding* encoding;
+        hr = lib->CreateBlobWithEncodingFromPinned(source.data(), static_cast<UINT32>(source.size()), CP_UTF8, &encoding);
         if(FAILED(hr)) {
             logger(rx::log::level::k_error, "Could not create blob from shader");
             return {};
         }
 
-        DxcBuffer buffer{};
-        buffer.Ptr = shader_blob->GetBufferPointer();
-        buffer.Size = shader_blob->GetBufferSize();
-        BOOL data;
-        shader_blob->GetEncoding(&data, &buffer.Encoding);
-
         const auto profile = to_hlsl_profile(stage);
 
-        LPCWSTR args[3] = {L"-spirv", L"-fspv-reflect", profile};
+        rx::vector<LPCWSTR> args = rx::array{L"-spirv", L"-fspv-target-env=vulkan1.1", L"-fspv-reflect"};
 
-        Microsoft::WRL::ComPtr<IDxcResult> result;
-        hr = dxc->Compile(&buffer, args, 3, nullptr, IID_PPV_ARGS(&result));
+        IDxcOperationResult* compile_result;
+        hr = compiler->Compile(encoding,
+                               L"unknown", // File name, for error messages
+                               L"main",    // Entry point
+                               profile,
+                               args.data(),
+                               static_cast<UINT32>(args.size()),
+                               nullptr,
+                               0,
+                               nullptr,
+                               &compile_result);
         if(FAILED(hr)) {
             logger(rx::log::level::k_error, "Could not compile shader");
-            Microsoft::WRL::ComPtr<IDxcBlobEncoding> error_blob;
-            hr = result->GetErrorBuffer(&error_blob);
-            if(FAILED(hr) || !error_blob) {
-                logger(rx::log::level::k_error, "Couldn't even get the error message lmfao");
-            } else {
-                logger(rx::log::level::k_error, "Compilation failed with error: %s", error_blob->GetBufferPointer());
-            }
-
             return {};
         }
 
-        HRESULT status;
-        hr = result->GetStatus(&status);
-        if(FAILED(hr)) {
-            logger(rx::log::level::k_error, "Could not check compilation status");
+        compile_result->GetStatus(&hr);
+        if(SUCCEEDED(hr)) {
+            IDxcBlob* result_blob;
+            hr = compile_result->GetResult(&result_blob);
+            rx::vector<uint32_t> spirv{result_blob->GetBufferSize() / sizeof(uint32_t)};
+            memcpy(spirv.data(), result_blob->GetBufferPointer(), result_blob->GetBufferSize());
+            return spirv;
+
+        } else {
+            IDxcBlobEncoding* error_buffer;
+            compile_result->GetErrorBuffer(&error_buffer);
+            logger(rx::log::level::k_error, "Error compiling shader:\n%s\n", static_cast<char const*>(error_buffer->GetBufferPointer()));
+            error_buffer->Release();
+
             return {};
         }
-
-        Microsoft::WRL::ComPtr<IDxcBlobEncoding> error_buffer;
-        hr = result->GetErrorBuffer(&error_buffer);
-        if(FAILED(hr)) {
-            logger(rx::log::level::k_error, "Could not get error buffer");
-            return {};
-        }
-
-        if(FAILED(status)) {
-            const _com_error err{status};
-            logger(rx::log::level::k_error,
-                   "Compilation failed: %s (Error code %u: %s) ",
-                   error_buffer->GetBufferPointer(),
-                   status,
-                   err.ErrorMessage());
-            return {};
-
-        } else if(error_buffer->GetBufferSize() > 0) {
-            logger(rx::log::level::k_warning, "Compilation warnings: %s", error_buffer->GetBufferPointer());
-        }
-
-        const auto num_outputs = result->GetNumOutputs();
-        const auto has_object = result->HasOutput(DXC_OUT_OBJECT);
-        const auto has_errors = result->HasOutput(DXC_OUT_ERRORS);
-        const auto has_pdb = result->HasOutput(DXC_OUT_PDB);
-        const auto has_shader_hash = result->HasOutput(DXC_OUT_SHADER_HASH);
-        const auto has_disassembly = result->HasOutput(DXC_OUT_DISASSEMBLY);
-        const auto has_hlsl = result->HasOutput(DXC_OUT_HLSL);
-        const auto has_test = result->HasOutput(DXC_OUT_TEXT);
-        const auto has_reflection = result->HasOutput(DXC_OUT_REFLECTION);
-        const auto has_root_signature = result->HasOutput(DXC_OUT_ROOT_SIGNATURE);
-        logger(
-            rx::log::level::k_verbose,
-            "We have %u outputs! has_object=%u has_error=%u has_pdb=%u has_shader_hash=%u has_disassembly=%u has_hlsl=%u has_test=%u has_reflection=%u has_root_signature=%u",
-            num_outputs,
-            has_object,
-            has_errors,
-            has_pdb,
-            has_shader_hash,
-            has_disassembly,
-            has_hlsl,
-            has_test,
-            has_reflection,
-            has_root_signature);
-
-        if(has_errors) {
-            Microsoft::WRL::ComPtr<IDxcBlobEncoding> error_blob;
-            hr = result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&error_blob), nullptr);
-            if(FAILED(hr)) {
-                logger(rx::log::level::k_error, "Could not retrieve errors, even through DXC said we have some");
-            }
-
-            if(error_blob->GetBufferSize() > 0) {
-                logger(rx::log::level::k_error, "Compilation errors: %s", error_blob->GetBufferPointer());
-
-            } else {
-                logger(rx::log::level::k_error,
-                       "Retrieving the error buffer gave a zero-length buffer - even though DXC said we have errors");
-            }
-        }
-
-        if(has_object) {
-            Microsoft::WRL::ComPtr<IDxcBlobEncoding> object_blob;
-            hr = result->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&object_blob), nullptr);
-            if(FAILED(hr)) {
-                logger(rx::log::level::k_error, "Could not retrieve output, even through DXC said we have some");
-            
-            } else if(object_blob->GetBufferSize() == 0) {
-                logger(rx::log::level::k_error,
-                       "Retrieving the object buffer gave a zero-length buffer - even though DXC said we have objects");
-            }
-        }
-
-        Microsoft::WRL::ComPtr<IDxcBlob> code;
-        hr = result->GetResult(&code);
-        if(FAILED(hr)) {
-            logger(rx::log::level::k_error, "Could not retrieve compiled code");
-            return {};
-        }
-
-        rx::vector<uint32_t> spirv_rx{code->GetBufferSize()};
-        memcpy(spirv_rx.data(), code->GetBufferPointer(), code->GetBufferSize());
-        return spirv_rx;
     }
 } // namespace nova::renderer::renderpack
