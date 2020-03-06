@@ -47,7 +47,7 @@ namespace nova::renderer {
 
         auto* renderer = rx::memory::g_system_allocator->create<NovaRenderer>(settings);
 
-        renderer->load_renderpack("shaderpacks/DefaultShaderpack");
+        renderer->load_renderpack("renderpacks/DefaultShaderpack");
 
         NovaWindow& window = renderer->get_window();
 
@@ -77,6 +77,7 @@ namespace nova::renderer {
         // Render one frame to upload mesh data
         renderer->execute_frame();
 
+        // TODO: Fix this
         // StaticMeshRenderableUpdateData data = {};
         // data.mesh = mesh_id;
         // data.initial_position = glm::vec3(0, 0, -5);
