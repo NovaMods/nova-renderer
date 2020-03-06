@@ -371,6 +371,7 @@ if(WIN32)
     target_include_directories(nova-renderer PRIVATE ${WinSDK_DIRS})
     target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING NOMINMAX)
     target_compile_definitions(nova-renderer PRIVATE NOVA_EXPORT)
+    target_compile_definitions(nova-renderer PRIVATE ENABLE_SPIRV_CODEGEN)
 
     # Visual Studio is stupid. Is it really that hard to use filesystem directories to organize code like literally
     # everyone else?

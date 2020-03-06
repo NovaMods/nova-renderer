@@ -403,7 +403,7 @@ namespace nova::renderer::renderpack {
         }
 
         Microsoft::WRL::ComPtr<IDxcBlobEncoding> shader_blob;
-        hr = dxc_utils->CreateBlob(source.data(), source.size() * sizeof(char), 0, &shader_blob);
+        hr = dxc_utils->CreateBlob(source.data(), static_cast<UINT>(source.size() * sizeof(char)), 0, &shader_blob);
         if(FAILED(hr)) {
             logger(rx::log::level::k_error, "Could not create blob from shader");
             return {};
@@ -487,18 +487,29 @@ namespace nova::renderer::renderpack {
 
         if(has_errors) {
             Microsoft::WRL::ComPtr<IDxcBlobEncoding> error_blob;
-            Microsoft::WRL::ComPtr<IDxcBlobUtf16> output_name;
-            hr = result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&error_blob), &output_name);
+            hr = result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&error_blob), nullptr);
             if(FAILED(hr)) {
                 logger(rx::log::level::k_error, "Could not retrieve errors, even through DXC said we have some");
             }
 
             if(error_blob->GetBufferSize() > 0) {
-                logger(rx::log::level::k_error, "%s: %s", output_name->GetStringPointer(), error_blob->GetBufferPointer());
+                logger(rx::log::level::k_error, "Compilation errors: %s", error_blob->GetBufferPointer());
 
             } else {
                 logger(rx::log::level::k_error,
                        "Retrieving the error buffer gave a zero-length buffer - even though DXC said we have errors");
+            }
+        }
+
+        if(has_object) {
+            Microsoft::WRL::ComPtr<IDxcBlobEncoding> object_blob;
+            hr = result->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&object_blob), nullptr);
+            if(FAILED(hr)) {
+                logger(rx::log::level::k_error, "Could not retrieve output, even through DXC said we have some");
+            
+            } else if(object_blob->GetBufferSize() == 0) {
+                logger(rx::log::level::k_error,
+                       "Retrieving the object buffer gave a zero-length buffer - even though DXC said we have objects");
             }
         }
 
