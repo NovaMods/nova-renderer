@@ -73,7 +73,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/rex_core)
 include_directories(${CMAKE_CURRENT_LIST_DIR}/VulkanMemoryAllocator/src)
 
 # DXC
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/dxc)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/dxc-wrapper/extern/dxc)
 
 # Hide unnecessary targets from all
 
