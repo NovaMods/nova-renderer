@@ -330,6 +330,7 @@ set(COMMON_LINK_LIBS
         minitrace
         miniz
         vma::vma
+        vk-bootstrap
         rex
         SPIRV-Tools
         spirv-cross-core

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <VkBootstrap.h>
 #include <vk_mem_alloc.h>
 
 #include "nova_renderer/rhi/render_device.hpp"
@@ -29,7 +30,7 @@ namespace nova::renderer::rhi {
         VkAllocationCallbacks vk_internal_allocator;
 
         // Global Vulkan objects
-        VkInstance instance;
+        vkb::Instance instance;
 
         VkDevice device;
 

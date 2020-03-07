@@ -75,6 +75,9 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/VulkanMemoryAllocator/src)
 # DXC
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/dxc)
 
+# VK BS
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/vk-bootstrap)
+
 # Hide unnecessary targets from all
 
 set_property(TARGET spirv-tools-build-version PROPERTY EXCLUDE_FROM_ALL True)

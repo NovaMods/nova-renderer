@@ -16,6 +16,7 @@
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/window.hpp"
 
+#include "VkBootstrap.h"
 #include "vk_structs.hpp"
 #include "vulkan_command_list.hpp"
 #include "vulkan_utils.hpp"
@@ -1451,7 +1452,7 @@ namespace nova::renderer::rhi {
         win32_surface_create.hwnd = window.get_window_handle();
 
         auto vk_alloc = wrap_allocator(internal_allocator);
-        NOVA_CHECK_RESULT(vkCreateWin32SurfaceKHR(instance, &win32_surface_create, &vk_alloc, &surface));
+        NOVA_CHECK_RESULT(vkCreateWin32SurfaceKHR(instance.instance, &win32_surface_create, &vk_alloc, &surface));
 
 #else
 #error Unsuported window system
@@ -1463,88 +1464,47 @@ namespace nova::renderer::rhi {
 
         const auto& version = settings.settings.vulkan.application_version;
 
-        VkApplicationInfo application_info;
-        application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        application_info.pNext = nullptr;
-        application_info.pApplicationName = settings.settings.vulkan.application_name;
-        application_info.applicationVersion = VK_MAKE_VERSION(version.major, version.minor, version.patch);
-        application_info.pEngineName = "Nova Renderer 0.9";
-        application_info.apiVersion = VK_API_VERSION_1_2;
-
-        VkInstanceCreateInfo create_info;
-        create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-        create_info.pNext = nullptr;
-        create_info.flags = 0;
-        create_info.pApplicationInfo = &application_info;
-
-        if(settings.settings.debug.enabled && settings.settings.debug.enable_validation_layers) {
-            enabled_layer_names.push_back("VK_LAYER_LUNARG_standard_validation");
-        }
-        create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layer_names.size());
-        create_info.ppEnabledLayerNames = enabled_layer_names.data();
-
-        rx::vector<const char*> enabled_extension_names{&internal_allocator};
-        enabled_extension_names.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-        enabled_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        vkb::InstanceBuilder builder{};
+        builder.set_app_name(settings.settings.vulkan.application_name)
+            .set_engine_name("Nova Renderer")
+            .set_api_version(version.major, version.minor, version.patch)
+            .set_api_version(1, 2, 0)
+            .must_enable_extension(VK_KHR_SURFACE_EXTENSION_NAME)
+            .must_enable_extension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)
 #ifdef NOVA_LINUX
-        enabled_extension_names.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
+            .must_enable_extension(VK_KHR_XLIB_SURFACE_EXTENSION_NAME)
 #elif defined(NOVA_WINDOWS)
-        enabled_extension_names.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+            .must_enable_extension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME)
 #else
 #error Unsupported Operating system
 #endif
+            ;
 
-        rx::vector<VkValidationFeatureEnableEXT> enabled_validation_features;
+        if(settings->debug.enabled) {
+            builder.set_debug_callback(debug_report_callback);
+            builder.add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT);
 
-        if(settings.settings.debug.enabled) {
-            enabled_extension_names.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-            enabled_extension_names.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-
-            enabled_validation_features.push_back(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT);
+            if(settings.settings.debug.enable_validation_layers) {
+                builder.must_enable_validation_layers();
+            }
 
             if(settings.settings.debug.enable_gpu_based_validation) {
-                enabled_validation_features.push_back(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT);
-                enabled_validation_features.push_back(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT);
+                builder.add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT);
+                builder.add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT);
             }
         }
-
-        create_info.enabledExtensionCount = static_cast<uint32_t>(enabled_extension_names.size());
-        create_info.ppEnabledExtensionNames = enabled_extension_names.data();
-
-        VkValidationFeaturesEXT validation_features = {};
-        validation_features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-        validation_features.enabledValidationFeatureCount = static_cast<uint32_t>(enabled_validation_features.size());
-        validation_features.pEnabledValidationFeatures = enabled_validation_features.data();
-
-        create_info.pNext = &validation_features;
 
         auto vk_alloc = wrap_allocator(internal_allocator);
         {
             MTR_SCOPE("VulkanRenderDevice", "vkCreateInstance");
-            NOVA_CHECK_RESULT(vkCreateInstance(&create_info, &vk_alloc, &instance));
+            auto result = builder.build();
+            if(result) {
+                instance = result.value();
+
+            } else {
+                logger(rx::log::level::k_error, "Could not create Vulkan instance: %u", result.error().type);
+            }
         }
-    }
-
-    void VulkanRenderDevice::enable_debug_output() {
-        MTR_SCOPE("VulkanRenderDevice", "enable_debug_output");
-
-        vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
-            vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
-        vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
-            vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT"));
-
-        VkDebugUtilsMessengerCreateInfoEXT debug_create_info = {};
-        debug_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        debug_create_info.pNext = nullptr;
-        debug_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-                                            VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        debug_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                                        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-        debug_create_info.pfnUserCallback = reinterpret_cast<PFN_vkDebugUtilsMessengerCallbackEXT>(&debug_report_callback);
-        debug_create_info.pUserData = this;
-
-        auto vk_alloc = wrap_allocator(internal_allocator);
-        NOVA_CHECK_RESULT(vkCreateDebugUtilsMessengerEXT(instance, &debug_create_info, &vk_alloc, &debug_callback));
     }
 
     void VulkanRenderDevice::save_device_info() {
@@ -1597,7 +1557,7 @@ namespace nova::renderer::rhi {
         create_info.physicalDevice = gpu.phys_device;
         create_info.device = device;
         create_info.pAllocationCallbacks = &vk_internal_allocator;
-        create_info.instance = instance;
+        create_info.instance = instance.instance;
 
         const auto result = vmaCreateAllocator(&create_info, &vma);
 
@@ -1613,9 +1573,9 @@ namespace nova::renderer::rhi {
         device_extensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
 
         uint32_t device_count;
-        NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
+        NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance.instance, &device_count, nullptr));
         auto physical_devices = rx::vector<VkPhysicalDevice>{&internal_allocator, device_count};
-        NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, physical_devices.data()));
+        NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance.instance, &device_count, physical_devices.data()));
 
         uint32_t graphics_family_idx = 0xFFFFFFFF;
         uint32_t compute_family_idx = 0xFFFFFFFF;
