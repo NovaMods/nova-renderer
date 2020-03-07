@@ -181,8 +181,6 @@ namespace nova::renderer::rhi {
 
         void create_instance();
 
-        void enable_debug_output();
-
         /*!
          * \brief Copies device information, such as hardware limits and memory architecture, to the API-agnostic DeviceInfo struct
          *

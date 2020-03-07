@@ -16,7 +16,6 @@
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/window.hpp"
 
-#include "VkBootstrap.h"
 #include "vk_structs.hpp"
 #include "vulkan_command_list.hpp"
 #include "vulkan_utils.hpp"
@@ -55,10 +54,6 @@ namespace nova::renderer::rhi {
         MTR_SCOPE("VulkanRenderDevice", "VulkanRenderDevice");
 
         create_instance();
-
-        if(settings.settings.debug.enabled) {
-            enable_debug_output();
-        }
 
         create_surface();
 
