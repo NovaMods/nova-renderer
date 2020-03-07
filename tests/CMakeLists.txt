@@ -6,17 +6,6 @@ include(CompilerOptionsUtils)
 # We need threads
 find_package(Threads REQUIRED)
 
-###################
-# End-to-end test #
-###################
-set(NOVA_E2E_TEST_SOURCES src/end_to_end_runner.cpp src/general_test_setup.hpp)
-add_executable(nova-test-end-to-end ${NOVA_E2E_TEST_SOURCES})
-target_compile_definitions(nova-test-end-to-end PRIVATE CMAKE_DEFINED_RESOURCES_PREFIX="${CMAKE_CURRENT_LIST_DIR}/resources")
-target_compile_options_if_supported(nova-test-end-to-end PRIVATE -Wno-unknown-pragmas -g)
-target_link_libraries(nova-test-end-to-end PRIVATE nova-renderer Threads::Threads)
-remove_permissive(nova-test-end-to-end)
-nova_format(nova-test-end-to-end)
-
 ##############
 # Unit tests #
 ##############
