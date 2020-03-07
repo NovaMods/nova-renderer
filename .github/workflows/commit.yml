@@ -50,7 +50,9 @@ jobs:
           submodules: true
       # 4. Checkout LFS
       - name: LFS checkout
-        run: git lfs checkout
+        run: |
+          git lfs install
+          git lfs checkout
       # 5. Configure with CMake
       - name: Configure with CMake
         run: |
@@ -132,7 +134,9 @@ jobs:
           submodules: true
       # 4. Checkout LFS
       - name: LFS checkout
-        run: git lfs checkout
+        run: |
+          git lfs install
+          git lfs checkout
       # 5. Configure with CMake
       - name: Configure with CMake
         shell: bash
