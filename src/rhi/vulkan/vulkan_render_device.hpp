@@ -32,13 +32,14 @@ namespace nova::renderer::rhi {
         // Global Vulkan objects
         vkb::Instance instance;
 
+        vkb::Device vkb_device;
         VkDevice device;
 
         VkSurfaceKHR surface{};
 
-        uint32_t graphics_family_index;
-        uint32_t compute_family_index;
-        uint32_t transfer_family_index;
+        uint32_t graphics_family_index = 0xFFFFFFFF;
+        uint32_t compute_family_index = 0xFFFFFFFF;
+        uint32_t transfer_family_index = 0xFFFFFFFF;
 
         VkQueue graphics_queue;
         VkQueue compute_queue;

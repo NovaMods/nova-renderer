@@ -1529,9 +1529,9 @@ namespace nova::renderer::rhi {
         info.is_uma = info.architecture == DeviceArchitecture::Intel;
 
         uint32_t extension_count;
-        vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, nullptr);
+        vkEnumerateDeviceExtensionProperties(gpu.phys_device.phys_device, nullptr, &extension_count, nullptr);
         rx::vector<VkExtensionProperties> available_extensions{&internal_allocator, extension_count};
-        vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, available_extensions.data());
+        vkEnumerateDeviceExtensionProperties(gpu.phys_device.phys_device, nullptr, &extension_count, available_extensions.data());
 
         const auto extension_name_matcher = [](const char* ext_name) {
             return [=](const VkExtensionProperties& ext_props) -> bool { return strcmp(ext_name, ext_props.extensionName) == 0; };
@@ -1582,45 +1582,6 @@ namespace nova::renderer::rhi {
 
         vkGetPhysicalDeviceMemoryProperties(gpu.phys_device.phys_device, &gpu.memory_properties);
 
-        const float priority = 1.0;
-
-        VkDeviceQueueCreateInfo graphics_queue_create_info{};
-        graphics_queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        graphics_queue_create_info.pNext = nullptr;
-        graphics_queue_create_info.flags = 0;
-        graphics_queue_create_info.queueCount = 1;
-        graphics_queue_create_info.queueFamilyIndex = graphics_family_idx;
-        graphics_queue_create_info.pQueuePriorities = &priority;
-
-        rx::vector<VkDeviceQueueCreateInfo> queue_create_infos{&internal_allocator};
-        queue_create_infos.push_back(graphics_queue_create_info);
-
-        VkPhysicalDeviceFeatures physical_device_features{};
-        physical_device_features.geometryShader = VK_TRUE;
-        physical_device_features.tessellationShader = VK_TRUE;
-        physical_device_features.samplerAnisotropy = VK_TRUE;
-        physical_device_features.shaderSampledImageArrayDynamicIndexing = VK_TRUE;
-
-        if(settings->debug.enable_gpu_based_validation) {
-            physical_device_features.fragmentStoresAndAtomics = VK_TRUE;
-            physical_device_features.vertexPipelineStoresAndAtomics = VK_TRUE;
-        }
-
-        VkDeviceCreateInfo device_create_info{};
-        device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        device_create_info.pNext = nullptr;
-        device_create_info.flags = 0;
-        device_create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
-        device_create_info.pQueueCreateInfos = queue_create_infos.data();
-        device_create_info.pEnabledFeatures = &physical_device_features;
-
-        device_create_info.enabledExtensionCount = static_cast<uint32_t>(device_extensions.size());
-        device_create_info.ppEnabledExtensionNames = device_extensions.data();
-        device_create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layer_names.size());
-        if(!enabled_layer_names.is_empty()) {
-            device_create_info.ppEnabledLayerNames = enabled_layer_names.data();
-        }
-
         // Set up descriptor indexing
         // Currently Nova only cares about indexing for texture descriptors
         VkPhysicalDeviceDescriptorIndexingFeatures descriptor_indexing_features = {};
@@ -1629,17 +1590,26 @@ namespace nova::renderer::rhi {
         descriptor_indexing_features.runtimeDescriptorArray = true;
         descriptor_indexing_features.descriptorBindingVariableDescriptorCount = VK_TRUE;
         descriptor_indexing_features.descriptorBindingPartiallyBound = VK_TRUE;
-        device_create_info.pNext = &descriptor_indexing_features;
 
-        auto vk_alloc = wrap_allocator(internal_allocator);
-        NOVA_CHECK_RESULT(vkCreateDevice(gpu.phys_device, &device_create_info, &vk_alloc, &device));
+        vkb::DeviceBuilder builder{gpu.phys_device};
+        builder.add_pNext(&descriptor_indexing_features);
 
-        graphics_family_index = graphics_family_idx;
-        vkGetDeviceQueue(device, graphics_family_idx, 0, &graphics_queue);
-        compute_family_index = compute_family_idx;
-        vkGetDeviceQueue(device, compute_family_idx, 0, &compute_queue);
-        transfer_family_index = copy_family_idx;
-        vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
+        const auto device_result = builder.build();
+        if(device_result) {
+            vkb_device = device_result.value();
+            device = vkb_device.device;
+        } else {
+            logger(rx::log::level::k_error, "Could not create VkDevice");
+            return;
+        }
+
+        graphics_family_index = vkb::get_graphics_queue_index(vkb_device).value();
+        compute_family_index = vkb::get_compute_queue_index(vkb_device).value();
+        transfer_family_index = vkb::get_transfer_queue_index(vkb_device).value();
+
+        graphics_queue = vkb::get_graphics_queue(vkb_device).value();
+        compute_queue = vkb::get_compute_queue(vkb_device).value();
+        copy_queue = vkb::get_transfer_queue(vkb_device).value();
     }
 
     bool VulkanRenderDevice::does_device_support_extensions(VkPhysicalDevice device, const rx::vector<char*>& required_device_extensions) {
@@ -1669,17 +1639,17 @@ namespace nova::renderer::rhi {
         MTR_SCOPE("VulkanRenderDevice", "create_swapchain");
         // Check what formats our rendering supports, and create a swapchain with one of those formats
 
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.phys_device, surface, &gpu.surface_capabilities);
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.phys_device.phys_device, surface, &gpu.surface_capabilities);
 
         uint32_t num_surface_formats;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, nullptr);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device.phys_device, surface, &num_surface_formats, nullptr);
         gpu.surface_formats.resize(num_surface_formats);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, gpu.surface_formats.data());
+        vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device.phys_device, surface, &num_surface_formats, gpu.surface_formats.data());
 
         uint32_t num_surface_present_modes;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, nullptr);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device.phys_device, surface, &num_surface_present_modes, nullptr);
         rx::vector<VkPresentModeKHR> present_modes{&internal_allocator, num_surface_present_modes};
-        vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, present_modes.data());
+        vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device.phys_device, surface, &num_surface_present_modes, present_modes.data());
 
         swapchain = internal_allocator.create<VulkanSwapchain>(NUM_IN_FLIGHT_FRAMES, this, window.get_framebuffer_size(), present_modes);
 
