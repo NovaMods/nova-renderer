@@ -48,7 +48,10 @@ jobs:
         uses: actions/checkout@v1
         with:
           submodules: true
-      # 4. Configure with CMake
+      # 4. Checkout LFS
+      - name: LFS checkout
+        run: git lfs checkout
+      # 5. Configure with CMake
       - name: Configure with CMake
         run: |
           mkdir build
@@ -57,15 +60,15 @@ jobs:
             -DNOVA_TEST=ON           \
             -DCMAKE_BUILD_TYPE=Debug \
             -Wno-dev
-      # 5. Build with CMake
+      # 6. Build with CMake
       - name: Build with CMake
         working-directory: build
         run: cmake --build .
-      # 6. Run the unit tests
+      # 7. Run the unit tests
       - name: Run unit tests
         working-directory: build
         run: ./nova-test-unit --gtest_color=yes
-      # 7. Prepare artifacts for uploading
+      # 8. Prepare artifacts for uploading
       - name: Prepare artifacts
         run: |
           # Binary artifacts
@@ -74,7 +77,7 @@ jobs:
           cp build/nova-test-unit artifacts
           cp build/nova-test-end-to-end artifacts
           cp build/libnova-renderer.a artifacts
-      # 8. Upload binary artifacts
+      # 9. Upload binary artifacts
       - name: Upload binary artifacts
         uses: actions/upload-artifact@master
         with:
@@ -127,7 +130,10 @@ jobs:
         uses: actions/checkout@v1
         with:
           submodules: true
-      # 4. Configure with CMake
+      # 4. Checkout LFS
+      - name: LFS checkout
+        run: git lfs checkout
+      # 5. Configure with CMake
       - name: Configure with CMake
         shell: bash
         env:
@@ -140,17 +146,17 @@ jobs:
             -DNOVA_TEST=ON                                      \
             -DCMAKE_BUILD_TYPE=Debug                            \
             -Wno-dev
-      # 5. Build with CMake
+      # 6. Build with CMake
       - name: Build with CMake
         working-directory: build
         shell: bash
         run: cmake --build .
-      # 6. Run the unit tests
+      # 7. Run the unit tests
       - name: Run unit tests
         working-directory: build/Debug
         shell: bash
         run: ./nova-test-unit.exe --gtest_color=yes
-      # 7. Prepare artifacts for uploading
+      # 8. Prepare artifacts for uploading
       - name: Prepare artifacts
         shell: bash
         run: |
@@ -160,17 +166,12 @@ jobs:
           cp build/Debug/nova-test-unit.exe artifacts
           cp build/Debug/nova-test-end-to-end.exe artifacts
           cp build/Debug/nova-renderer.lib artifacts
-      # 8. Upload binary artifacts
+      # 9. Upload binary artifacts
       - name: Upload binary artifacts
         uses: actions/upload-artifact@master
         with:
           name: binary-windows-msvc
           path: artifacts
-      # Cache dependendies
-      #- name: Cache dependencies
-      #  uses: actions/cache@v1
-      #  with:
-      #    path: 
 
   build-simple-artifacts:
     # Let's use linux for packaging up our artifacts which don't
@@ -186,13 +187,11 @@ jobs:
       - name: Prepare artifacts
         run: |
           mkdir artifacts
-
           # Docs
           mkdir artifacts/docs
           cp -r docs/* artifacts/docs
           cp LICENSE artifacts/docs
           cp README.md artifacts/docs
-
           # Headers
           mkdir artifacts/headers
           cp -r include/* artifacts/headers
