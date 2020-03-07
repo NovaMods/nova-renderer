@@ -5,7 +5,7 @@
 
 `dxc::main`
 * Inits their malloc
-* Inits th arguments table
+* Inits the arguments table
 * Creates a `dxc::MainArgs` object
 ** Which in turn just copies the command-line arguments to an internal buffer
 * Parses the options into a `dxc::DxcOpts` struct, using `ReadDxcOpts`
@@ -18,4 +18,4 @@
 * Checks for and prints compilation errors
 
 `dxc::DxcContext::Compile`
-* Of lawdy
+* Oh lawdy
