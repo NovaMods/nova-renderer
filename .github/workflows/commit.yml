@@ -33,15 +33,15 @@ jobs:
     name: build-linux-${{ matrix.cc }}
 
     steps:
-      # 1. Update the system
+      # Update the system
       #    Arch linux updates NEVER require manual interaction
       #    when using --noconfirm, so this is totally safe
       - name: Update System
         run: pacman --noconfirm -Syu
-      # 2. Install the required dependencies
+      # Install the required dependencies
       - name: Install dependencies
         run: pacman --noconfirm -S cmake binutils gcc python3 git vulkan-devel ninja tar unzip which libxinerama ${{ matrix.cc }}
-      # 3. Checkout the repository, this is done via a github action
+      # Checkout the repository, this is done via a github action
       # Don't use the latest master cause GitHub updated it to v2 and apparently v2 doesn't support submodules
       # Thanks for breaking my CI you assholes
       - name: Checkout repository
@@ -49,7 +49,7 @@ jobs:
         with:
           submodules: true
           lfs: true
-      # 5. Configure with CMake
+      # Configure with CMake
       - name: Configure with CMake
         run: |
           mkdir build
@@ -58,15 +58,15 @@ jobs:
             -DNOVA_TEST=ON           \
             -DCMAKE_BUILD_TYPE=Debug \
             -Wno-dev
-      # 6. Build with CMake
+      # Build with CMake
       - name: Build with CMake
         working-directory: build
         run: cmake --build .
-      # 7. Run the unit tests
+      # Run the unit tests
       - name: Run unit tests
         working-directory: build
         run: ./nova-test-unit --gtest_color=yes
-      # 8. Prepare artifacts for uploading
+      # Prepare artifacts for uploading
       - name: Prepare artifacts
         run: |
           # Binary artifacts
@@ -75,7 +75,7 @@ jobs:
           cp build/nova-test-unit artifacts
           cp build/nova-test-end-to-end artifacts
           cp build/libnova-renderer.a artifacts
-      # 9. Upload binary artifacts
+      # Upload binary artifacts
       - name: Upload binary artifacts
         uses: actions/upload-artifact@master
         with:
@@ -95,14 +95,14 @@ jobs:
     name: build-windows-msvc
 
     steps:
-      # 1. Download the VulkanSDK
+      # Download the VulkanSDK
       - name: Download VulkanSDK
         shell: bash
         run: |
           curl -L \
           'https://sdk.lunarg.com/sdk/download/${{ matrix.vulkan }}/windows/VulkanSDK-${{ matrix.vulkan }}-Installer.exe?Human=true' \
           -o VulkanSDK-Installer.exe
-      # 2. Install the VulkanSDK
+      # Install the VulkanSDK
       - name: Install VulkanSDK
         shell: powershell
         run: |
@@ -114,14 +114,14 @@ jobs:
           curl -L \
            'https://sdk.lunarg.com/sdk/download/${{ matrix.vulkan }}/windows/vulkan-${{ matrix.vulkan }}-runtime.exe' -o VulkanRuntime-Installer.exe
           ls 
-      # 2. Install the Vulkan Runtime
+      # Install the Vulkan Runtime
       - name: Install Vulkan Runtime
         shell: powershell
         run: |
           ls
           Start-Process .\VulkanRuntime-Installer.exe /S -Wait
       
-      # 3. Checkout the repository, this is done via a github action
+      # Checkout the repository, this is done via a github action
       # Don't use the latest master cause GitHub updated it to v2 and apparently v2 doesn't support submodules
       # Thanks for breaking my CI you assholes
       - name: Checkout repository
@@ -129,7 +129,7 @@ jobs:
         with:
           submodules: true
           lfs: true
-      # 5. Configure with CMake
+      # Configure with CMake
       - name: Configure with CMake
         shell: bash
         env:
@@ -142,17 +142,17 @@ jobs:
             -DNOVA_TEST=ON                                      \
             -DCMAKE_BUILD_TYPE=Debug                            \
             -Wno-dev
-      # 6. Build with CMake
+      # Build with CMake
       - name: Build with CMake
         working-directory: build
         shell: bash
         run: cmake --build .
-      # 7. Run the unit tests
+      # Run the unit tests
       - name: Run unit tests
         working-directory: build/Debug
         shell: bash
         run: ./nova-test-unit.exe --gtest_color=yes
-      # 8. Prepare artifacts for uploading
+      # Prepare artifacts for uploading
       - name: Prepare artifacts
         shell: bash
         run: |
@@ -162,7 +162,7 @@ jobs:
           cp build/Debug/nova-test-unit.exe artifacts
           cp build/Debug/nova-test-end-to-end.exe artifacts
           cp build/Debug/nova-renderer.lib artifacts
-      # 9. Upload binary artifacts
+      # Upload binary artifacts
       - name: Upload binary artifacts
         uses: actions/upload-artifact@master
         with:
