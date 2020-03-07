@@ -48,11 +48,7 @@ jobs:
         uses: actions/checkout@v1
         with:
           submodules: true
-      # 4. Checkout LFS
-      - name: LFS checkout
-        run: |
-          git lfs install
-          git lfs checkout
+          lfs: true
       # 5. Configure with CMake
       - name: Configure with CMake
         run: |
@@ -132,11 +128,7 @@ jobs:
         uses: actions/checkout@v1
         with:
           submodules: true
-      # 4. Checkout LFS
-      - name: LFS checkout
-        run: |
-          git lfs install
-          git lfs checkout
+          lfs: true
       # 5. Configure with CMake
       - name: Configure with CMake
         shell: bash
