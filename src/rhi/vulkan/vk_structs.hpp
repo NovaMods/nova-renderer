@@ -7,7 +7,7 @@
 #include <vk_mem_alloc.h>
 
 #include "nova_renderer/rhi/rhi_types.hpp"
-
+#include "VkBootstrap.h"
 #include "vulkan.hpp"
 
 namespace nova::renderer::rhi {
@@ -80,7 +80,7 @@ namespace nova::renderer::rhi {
     };
 
     struct VulkanGpuInfo {
-        VkPhysicalDevice phys_device{};
+        vkb::PhysicalDevice phys_device{};
         rx::vector<VkQueueFamilyProperties> queue_family_props;
         rx::vector<VkExtensionProperties> available_extensions;
         VkSurfaceCapabilitiesKHR surface_capabilities{};

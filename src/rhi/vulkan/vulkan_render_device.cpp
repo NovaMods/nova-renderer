@@ -1549,7 +1549,7 @@ namespace nova::renderer::rhi {
         MTR_SCOPE("VulkanRenderDevice", "initialize_vma");
         VmaAllocatorCreateInfo create_info{};
         create_info.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
-        create_info.physicalDevice = gpu.phys_device;
+        create_info.physicalDevice = gpu.phys_device.phys_device;
         create_info.device = device;
         create_info.pAllocationCallbacks = &vk_internal_allocator;
         create_info.instance = instance.instance;
@@ -1563,86 +1563,24 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderDevice::create_device_and_queues() {
         MTR_SCOPE("VulkanRenderDevice", "create_device_and_queues");
-        rx::vector<char*> device_extensions{&internal_allocator};
-        device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-        device_extensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
 
-        uint32_t device_count;
-        NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance.instance, &device_count, nullptr));
-        auto physical_devices = rx::vector<VkPhysicalDevice>{&internal_allocator, device_count};
-        NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance.instance, &device_count, physical_devices.data()));
+        vkb::PhysicalDeviceSelector selector{instance};
+        selector.add_required_extension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+            .add_required_extension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME)
+            .set_desired_version(1, 2);
 
-        uint32_t graphics_family_idx = 0xFFFFFFFF;
-        uint32_t compute_family_idx = 0xFFFFFFFF;
-        uint32_t copy_family_idx = 0xFFFFFFFF;
+        const auto selection_result = selector.select();
+        if(selection_result) {
+            gpu.phys_device = selection_result.value();
 
-        for(uint32_t device_idx = 0; device_idx < device_count; device_idx++) {
-            graphics_family_idx = 0xFFFFFFFF;
-            VkPhysicalDevice current_device = physical_devices[device_idx];
-            vkGetPhysicalDeviceProperties(current_device, &gpu.props);
-
-            const bool is_intel_gpu = gpu.props.vendorID == INTEL_PCI_VENDOR_ID;
-            const bool more_gpus_available = device_count - 1 > device_idx;
-            if(is_intel_gpu && more_gpus_available) {
-                // Intel GPU _probably_ isn't as powerful as a discreet GPU, and if there's more than one GPU then the other one(s) are
-                // _probably_ discreet GPUs, so let's not use the Intel GPU and instead use the discreet GPU
-                // TODO: Make a local device for the integrated GPU when we figure out multi-GPU
-                // TODO: Rework this code when Intel releases discreet GPUs
-                continue;
-            }
-
-            const auto supports_extensions = does_device_support_extensions(current_device, device_extensions);
-            if(!supports_extensions) {
-                continue;
-            }
-
-            uint32_t queue_family_count;
-            vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, nullptr);
-            gpu.queue_family_props.resize(queue_family_count);
-            vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, gpu.queue_family_props.data());
-
-            for(uint32_t queue_idx = 0; queue_idx < queue_family_count; queue_idx++) {
-                const VkQueueFamilyProperties current_properties = gpu.queue_family_props[queue_idx];
-                if(current_properties.queueCount < 1) {
-                    continue;
-                }
-
-                VkBool32 supports_present = VK_FALSE;
-                NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(current_device, queue_idx, surface, &supports_present));
-                const VkQueueFlags supports_graphics = current_properties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
-                if((supports_graphics != 0U) && supports_present == VK_TRUE && graphics_family_idx == 0xFFFFFFFF) {
-                    graphics_family_idx = queue_idx;
-                }
-
-                const VkQueueFlags supports_compute = current_properties.queueFlags & VK_QUEUE_COMPUTE_BIT;
-                if((supports_compute != 0U) && compute_family_idx == 0xFFFFFFFF) {
-                    compute_family_idx = queue_idx;
-                }
-
-                const VkQueueFlags supports_copy = current_properties.queueFlags & VK_QUEUE_TRANSFER_BIT;
-                if((supports_copy != 0U) && copy_family_idx == 0xFFFFFFFF) {
-                    copy_family_idx = queue_idx;
-                }
-            }
-
-            if(graphics_family_idx != 0xFFFFFFFF) {
-                logger(rx::log::level::k_info, "Selected GPU %s", gpu.props.deviceName);
-                gpu.phys_device = current_device;
-                break;
-            }
-        }
-
-        if(gpu.phys_device == nullptr) {
-            logger(rx::log::level::k_error, "Failed to find good GPU");
-
-            // TODO: Message the user that GPU selection failed
-
+        } else {
+            logger(rx::log::level::k_error, "Your system does not have an appropriate GPU");
             return;
         }
 
-        vkGetPhysicalDeviceFeatures(gpu.phys_device, &gpu.supported_features);
+        vkGetPhysicalDeviceFeatures(gpu.phys_device.phys_device, &gpu.supported_features);
 
-        vkGetPhysicalDeviceMemoryProperties(gpu.phys_device, &gpu.memory_properties);
+        vkGetPhysicalDeviceMemoryProperties(gpu.phys_device.phys_device, &gpu.memory_properties);
 
         const float priority = 1.0;
 
