@@ -149,7 +149,9 @@ jobs:
       - name: Run unit tests
         working-directory: build/Debug
         shell: bash
-        run: ./nova-test-unit.exe --gtest_color=yes
+        run: |
+          cp ../../external/dxc-wrapper/extern/dxc/bin/dxcompiler.dll ./
+          ./nova-test-unit.exe --gtest_color=yes
       # Prepare artifacts for uploading
       - name: Prepare artifacts
         shell: bash
