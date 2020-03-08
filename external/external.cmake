@@ -44,11 +44,6 @@ set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
 set(SPIRV_WERROR OFF CACHE BOOL "Enable error on warning SPIRV-Tools" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools)
 
-# GLSLang has a circular dependency and I don't even care what I did wrong, it has to be a static lib
-set(ENABLE_HLSL ON CACHE BOOL "Enable GLSLang's HLSL backend" FORCE)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glslang)
-target_includes_system(glslang)
-
 set(GLM_TEST_ENABLE_CXX_17 ON)
 set(GLM_TEST_ENABLE OFF)
 set(GLM_TEST_ENABLE_SIMD_AVX2 ON)	# TODO: determine minimum CPU for Nova and use the right instruction set
@@ -77,17 +72,10 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/rex_core)
 # Apparently they don't have an `include/` directory, you just include the src folder? Thanks AMD :|
 include_directories(${CMAKE_CURRENT_LIST_DIR}/VulkanMemoryAllocator/src)
 
-# Hide unnecessary targets from all
+# DXC
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/dxc-wrapper/extern/dxc)
 
-set_property(TARGET glslang PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET glslang-default-resource-limits PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET OGLCompiler PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET OSDependent PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET SPIRV PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET SPVRemapper PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET HLSL PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET glslangValidator PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-remap PROPERTY EXCLUDE_FROM_ALL True)
+# Hide unnecessary targets from all
 
 set_property(TARGET spirv-tools-build-version PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-tools-header-DebugInfo PROPERTY EXCLUDE_FROM_ALL True)

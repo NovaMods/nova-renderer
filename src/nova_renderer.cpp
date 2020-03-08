@@ -10,7 +10,6 @@
 #include <spirv_glsl.hpp>
 #pragma warning(pop)
 
-#include <glslang/MachineIndependent/Initialize.h>
 #include <rx/core/array.h>
 #include <rx/core/global.h>
 #include <rx/core/hash.h>
@@ -428,8 +427,6 @@ namespace nova::renderer {
     void NovaRenderer::load_renderpack(const rx::string& renderpack_name) {
         MTR_SCOPE("RenderpackLoading", "load_renderpack");
 
-        glslang::InitializeProcess();
-
         const renderpack::RenderpackData data = renderpack::load_renderpack_data(renderpack_name);
 
         if(renderpacks_loaded) {
@@ -795,7 +792,7 @@ namespace nova::renderer {
 
         auto& material_pass = (*passes)[key->material_pass_idx];
 
-        auto& command = [&] {
+        auto command = [&] {
             switch(key->type) {
                 case RenderableType::StaticMesh: {
                     auto& batch = material_pass.static_mesh_draws[key->batch_idx];

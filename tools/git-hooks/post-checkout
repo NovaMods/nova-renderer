@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -e
+
+if ! command -v git-lfs > /dev/null; then
+  echo -e "\e[31;1mGit LFS is not installed!:\e[0m"
+  echo -e "\e[31;1mSee \e[33;1mhttps://git-lfs.github.com/\e[0m\e[31;1m for more info \e[0m"
+  exit 1
+fi
+
+git lfs post-checkout "$@"
