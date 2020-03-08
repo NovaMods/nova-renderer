@@ -25,48 +25,39 @@ Nova also stores all the textures in an unbounded descriptor array. When a mater
 [[vk::push_constant]]
 struct StandardPushConstants {
     /*!
-     * \brief Index of the camera that the current drawcall is rendering to
-     */
-    uint camera_index;
-
-    /*!
-     * \brief Index of the material buffer that holds the material data for this shader
+     * \brief Index of the material data for the current draw
      */
     uint material_index;
-
-    /*!
-     * \brief Index of the material instance that holds the material parameters for this shader
-     */
-    uint material_instance_index;
 } constants;
+
+
+/*!
+ * \brief Array of all the materials 
+ */
+[[vk::binding(0, 0)]]
+ConstantBuffer material_buffer;
 
 /*!
  * \brief Point sampler you can use to sample any texture
  */
-[[vk::binding(0, 0)]]
+[[vk::binding(1, 0)]]
 SamplerState point_sampler;
 
 /*!
  * \brief Bilinear sampler you can use to sample any texture
  */
-[[vk::binding(1, 0)]]
+[[vk::binding(2, 0)]]
 SamplerState bilinear_filter;
 
 /*!
  * \brief Trilinear sampler you can use to sample any texture
  */
-[[vk::binding(2, 0)]]
+[[vk::binding(3, 0)]]
 SamplerState trilinear_filter;
 
 /*!
  * \brief Array of all the textures that are available for a shader to sample from
  */
-[[vk::binding(0, 1)]]
+[[vk::binding(4, 0)]]
 Texture2D textures[];
-
-/*!
- * \brief Array of all the buffers for all of Nova's materials
- */
-[[vk::binding(0, 2)]]
-ConstantBuffer material_buffers;
 ```

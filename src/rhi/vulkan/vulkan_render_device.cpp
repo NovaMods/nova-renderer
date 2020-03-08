@@ -50,9 +50,6 @@ namespace nova::renderer::rhi {
     VulkanRenderDevice::VulkanRenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator)
         : RenderDevice{settings, window, allocator},
           vk_internal_allocator{wrap_allocator(internal_allocator)},
-          standard_push_constants{rx::array{VkPushConstantRange{/* .stageFlags = */ VK_SHADER_STAGE_ALL,
-                                                                /* .offset = */ 0,
-                                                                /* .size = */ sizeof(uint32_t)}}},
           command_pools_by_thread_idx{&internal_allocator} {
         MTR_SCOPE("VulkanRenderDevice", "VulkanRenderDevice");
 
@@ -263,10 +260,9 @@ namespace nova::renderer::rhi {
                                                            const rx::optional<RhiImage*> depth_attachment,
                                                            const glm::uvec2& framebuffer_size,
                                                            rx::memory::allocator& allocator) {
-        MTR_SCOPE("VulkanRenderDevice", "create_framebuffer");
         const auto* vk_renderpass = static_cast<const VulkanRenderpass*>(renderpass);
 
-        rx::vector<VkImageView> attachment_views{&allocator};
+        rx::vector<VkImageView> attachment_views(&allocator);
         attachment_views.reserve(color_attachments.size() + 1);
 
         color_attachments.each_fwd([&](const RhiImage* attachment) {
@@ -297,151 +293,6 @@ namespace nova::renderer::rhi {
         NOVA_CHECK_RESULT(vkCreateFramebuffer(device, &framebuffer_create_info, &vk_alloc, &framebuffer->framebuffer));
 
         return framebuffer;
-    }
-
-    ntl::Result<RhiPipelineInterface*> VulkanRenderDevice::create_pipeline_interface(
-        const rx::map<rx::string, RhiResourceBindingDescription>& bindings,
-        const rx::vector<renderpack::TextureAttachmentInfo>& color_attachments,
-        const rx::optional<renderpack::TextureAttachmentInfo>& depth_texture,
-        rx::memory::allocator& allocator) {
-        MTR_SCOPE("VulkanRenderDevice", "create_pipeline_interface");
-
-        auto* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain);
-        auto* pipeline_interface = allocator.create<VulkanPipelineInterface>();
-        pipeline_interface->bindings = bindings;
-
-        pipeline_interface->layouts_by_set = create_descriptor_set_layouts(bindings,
-                                                                           pipeline_interface->variable_descriptor_set_counts,
-                                                                           allocator);
-
-        VkPipelineLayoutCreateInfo pipeline_layout_create_info;
-        pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipeline_layout_create_info.pNext = nullptr;
-        pipeline_layout_create_info.flags = 0;
-        pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(pipeline_interface->layouts_by_set.size());
-        pipeline_layout_create_info.pSetLayouts = pipeline_interface->layouts_by_set.data();
-        pipeline_layout_create_info.pushConstantRangeCount = standard_push_constants.size();
-        pipeline_layout_create_info.pPushConstantRanges = standard_push_constants.data();
-
-        auto vk_alloc = wrap_allocator(allocator);
-        NOVA_CHECK_RESULT(vkCreatePipelineLayout(device, &pipeline_layout_create_info, &vk_alloc, &pipeline_interface->pipeline_layout));
-
-        VkSubpassDescription subpass_description;
-        subpass_description.flags = 0;
-        subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass_description.inputAttachmentCount = 0;
-        subpass_description.pInputAttachments = nullptr;
-        subpass_description.preserveAttachmentCount = 0;
-        subpass_description.pPreserveAttachments = nullptr;
-        subpass_description.pResolveAttachments = nullptr;
-        subpass_description.pDepthStencilAttachment = nullptr;
-
-        VkSubpassDependency image_available_dependency;
-        image_available_dependency.dependencyFlags = 0;
-        image_available_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        image_available_dependency.dstSubpass = 0;
-        image_available_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        image_available_dependency.srcAccessMask = 0;
-        image_available_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        image_available_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-        VkRenderPassCreateInfo render_pass_create_info;
-        render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        render_pass_create_info.pNext = nullptr;
-        render_pass_create_info.flags = 0;
-        render_pass_create_info.subpassCount = 1;
-        render_pass_create_info.pSubpasses = &subpass_description;
-        render_pass_create_info.dependencyCount = 1;
-        render_pass_create_info.pDependencies = &image_available_dependency;
-
-        rx::vector<VkAttachmentReference> attachment_references{&internal_allocator};
-        rx::vector<VkAttachmentDescription> attachment_descriptions{&internal_allocator};
-        rx::vector<VkImageView> framebuffer_attachments{&internal_allocator};
-
-        // Collect framebuffer size information from color output attachments
-        color_attachments.each_fwd([&](const renderpack::TextureAttachmentInfo& attachment) {
-            if(attachment.name == BACKBUFFER_NAME) {
-                // Handle backbuffer
-                // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip
-                // everything
-
-                VkAttachmentDescription desc;
-                desc.flags = 0;
-                desc.format = vk_swapchain->get_swapchain_format();
-                desc.samples = VK_SAMPLE_COUNT_1_BIT;
-                desc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-                desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-                desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-                desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                desc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-                attachment_descriptions.push_back(desc);
-
-                VkAttachmentReference ref;
-
-                ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                ref.attachment = static_cast<uint32_t>(attachment_descriptions.size()) - 1;
-
-                attachment_references.push_back(ref);
-
-                return false;
-            }
-
-            VkAttachmentDescription desc;
-            desc.flags = 0;
-            desc.format = to_vk_format(attachment.pixel_format);
-            desc.samples = VK_SAMPLE_COUNT_1_BIT;
-            desc.loadOp = attachment.clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
-            desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            desc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            attachment_descriptions.push_back(desc);
-
-            VkAttachmentReference ref;
-
-            ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            ref.attachment = static_cast<uint32_t>(attachment_descriptions.size()) - 1;
-
-            attachment_references.push_back(ref);
-
-            return true;
-        });
-
-        VkAttachmentReference depth_reference = {};
-        // Collect framebuffer size information from the depth attachment
-        if(depth_texture) {
-            VkAttachmentDescription desc = {};
-            desc.flags = 0;
-            desc.format = to_vk_format(depth_texture->pixel_format);
-            desc.samples = VK_SAMPLE_COUNT_1_BIT;
-            desc.loadOp = depth_texture->clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
-            desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            desc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            desc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-            attachment_descriptions.push_back(desc);
-
-            depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            depth_reference.attachment = static_cast<uint32_t>(attachment_descriptions.size()) - 1;
-
-            subpass_description.pDepthStencilAttachment = &depth_reference;
-        }
-
-        subpass_description.colorAttachmentCount = static_cast<uint32_t>(attachment_references.size());
-        subpass_description.pColorAttachments = attachment_references.data();
-
-        render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachment_descriptions.size());
-        render_pass_create_info.pAttachments = attachment_descriptions.data();
-
-        NOVA_CHECK_RESULT(vkCreateRenderPass(device, &render_pass_create_info, &vk_alloc, &pipeline_interface->pass));
-
-        return ntl::Result(static_cast<RhiPipelineInterface*>(pipeline_interface));
     }
 
     RhiDescriptorPool* VulkanRenderDevice::create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
@@ -1549,11 +1400,14 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderDevice::initialize_vma() {
         MTR_SCOPE("VulkanRenderDevice", "initialize_vma");
+
+        VkAllocationCallbacks callbacks = vk_internal_allocator;
+
         VmaAllocatorCreateInfo create_info{};
         create_info.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
         create_info.physicalDevice = gpu.phys_device;
         create_info.device = device;
-        create_info.pAllocationCallbacks = &vk_internal_allocator;
+        create_info.pAllocationCallbacks = &callbacks;
         create_info.instance = instance;
 
         const auto result = vmaCreateAllocator(&create_info, &vma);
@@ -1696,7 +1550,9 @@ namespace nova::renderer::rhi {
         device_create_info.pNext = &descriptor_indexing_features;
 
         auto vk_alloc = wrap_allocator(internal_allocator);
-        NOVA_CHECK_RESULT(vkCreateDevice(gpu.phys_device, &device_create_info, &vk_alloc, &device));
+        VkDevice vk_device;
+        NOVA_CHECK_RESULT(vkCreateDevice(gpu.phys_device, &device_create_info, &vk_alloc, &vk_device));
+        device = vk_device;
 
         graphics_family_index = graphics_family_idx;
         vkGetDeviceQueue(device, graphics_family_idx, 0, &graphics_queue);
@@ -1761,41 +1617,55 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::create_standard_pipeline_layout() {
+        standard_push_constants = rx::array{
+            // Material index
+            vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eAll).setOffset(0).setSize(sizeof(uint32_t))};
+
         // Binding for the array of material parameter buffers. Nova uses a variable-length, partially-bound
-        const VkDescriptorSetLayoutBinding material_buffers_binding =
-            {/* .binding = */ 0,
-             /* .descriptorType = */ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-             /* .descriptorCount = */ 1,
-             /* .stageFlags = */ VK_SHADER_STAGE_ALL, // Be sure it's all visible to everything
-             /* .pImmutableSamplers = */ nullptr};
+        const rx::vector<vk::DescriptorSetLayoutBinding> bindings = rx::array{// Material data buffer
+                                                                              vk::DescriptorSetLayoutBinding()
+                                                                                  .setBinding(0)
+                                                                                  .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                                                                                  .setDescriptorCount(1)
+                                                                                  .setStageFlags(vk::ShaderStageFlagBits::eAll),
+                                                                              // Point sampler
+                                                                              vk::DescriptorSetLayoutBinding()
+                                                                                  .setBinding(1)
+                                                                                  .setDescriptorType(vk::DescriptorType::eSampler)
+                                                                                  .setDescriptorCount(1)
+                                                                                  .setStageFlags(vk::ShaderStageFlagBits::eAll),
+                                                                              // Bilinear sampler
+                                                                              vk::DescriptorSetLayoutBinding()
+                                                                                  .setBinding(2)
+                                                                                  .setDescriptorType(vk::DescriptorType::eSampler)
+                                                                                  .setDescriptorCount(1)
+                                                                                  .setStageFlags(vk::ShaderStageFlagBits::eAll),
+                                                                              // Trilinear sampler
+                                                                              vk::DescriptorSetLayoutBinding()
+                                                                                  .setBinding(3)
+                                                                                  .setDescriptorType(vk::DescriptorType::eSampler)
+                                                                                  .setDescriptorCount(1)
+                                                                                  .setStageFlags(vk::ShaderStageFlagBits::eAll),
+                                                                              // Textures array
+                                                                              vk::DescriptorSetLayoutBinding()
+                                                                                  .setBinding(4)
+                                                                                  .setDescriptorType(vk::DescriptorType::eSampledImage)
+                                                                                  .setDescriptorCount(MAX_NUM_TEXTURES)
+                                                                                  .setStageFlags(vk::ShaderStageFlagBits::eAll)};
 
-        // Bindings for the standard samplers
-        const VkDescriptorSetLayoutBinding point_samplers_binding =
-            {/* .binding = */ 0,
-             /* .descriptorType = */ VK_DESCRIPTOR_TYPE_SAMPLER,
-             /* .descriptorCount = */ 1,
-             /* .stageFlags = */ VK_SHADER_STAGE_ALL, // Be sure it's all visible to everything
-             /* .pImmutableSamplers = */ nullptr};
-        const VkDescriptorSetLayoutBinding bilinear_samplers_binding =
-            {/* .binding = */ 1,
-             /* .descriptorType = */ VK_DESCRIPTOR_TYPE_SAMPLER,
-             /* .descriptorCount = */ 1,
-             /* .stageFlags = */ VK_SHADER_STAGE_ALL, // Be sure it's all visible to everything
-             /* .pImmutableSamplers = */ nullptr};
-        const VkDescriptorSetLayoutBinding trilinear_samplers_binding =
-            {/* .binding = */ 2,
-             /* .descriptorType = */ VK_DESCRIPTOR_TYPE_SAMPLER,
-             /* .descriptorCount = */ 1,
-             /* .stageFlags = */ VK_SHADER_STAGE_ALL, // Be sure it's all visible to everything
-             /* .pImmutableSamplers = */ nullptr};
+        const auto dsl_layout_create = vk::DescriptorSetLayoutCreateInfo().setBindingCount(bindings.size()).setPBindings(bindings.data());
 
-        // Binding for the textures array
-        const VkDescriptorSetLayoutBinding textures_array_binding =
-            {/* .binding = */ 3,
-             /* .descriptorType = */ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-             /* .descriptorCount = */ MAX_NUM_TEXTURES,
-             /* .stageFlags = */ VK_SHADER_STAGE_ALL, // Be sure it's all visible to everything
-             /* .pImmutableSamplers = */ nullptr};
+        vk::DescriptorSetLayout layout;
+
+        device.createDescriptorSetLayout(&dsl_layout_create, &vk_internal_allocator, &layout);
+
+        const auto pipeline_layout_create = vk::PipelineLayoutCreateInfo()
+                                                .setSetLayoutCount(1)
+                                                .setPSetLayouts(&layout)
+                                                .setPushConstantRangeCount(standard_push_constants.size())
+                                                .setPPushConstantRanges(standard_push_constants.data());
+
+        device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &standard_pipeline_layout);
     }
 
     rx::map<uint32_t, VkCommandPool> VulkanRenderDevice::make_new_command_pools() const {

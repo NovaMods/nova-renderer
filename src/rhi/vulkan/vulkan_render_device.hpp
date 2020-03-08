@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vk_mem_alloc.h>
+#include <vulkan/vulkan.hpp>
 
 #include "nova_renderer/rhi/render_device.hpp"
 
@@ -26,12 +27,12 @@ namespace nova::renderer::rhi {
      */
     class VulkanRenderDevice final : public RenderDevice {
     public:
-        VkAllocationCallbacks vk_internal_allocator;
+        vk::AllocationCallbacks vk_internal_allocator;
 
         // Global Vulkan objects
         VkInstance instance;
 
-        VkDevice device;
+        vk::Device device;
 
         VkSurfaceKHR surface{};
 
@@ -49,7 +50,12 @@ namespace nova::renderer::rhi {
         /*!
          * \brief All the push constants in the standard pipeline layout
          */
-        rx::vector<VkPushConstantRange> standard_push_constants;
+        rx::vector<vk::PushConstantRange> standard_push_constants;
+
+        /*!
+         * \brief The pipeline layout that all pipelines use
+         */
+        vk::PipelineLayout standard_pipeline_layout;
 
         // Debugging things
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
@@ -78,11 +84,6 @@ namespace nova::renderer::rhi {
                                            const rx::optional<RhiImage*> depth_attachment,
                                            const glm::uvec2& framebuffer_size,
                                            rx::memory::allocator& allocator) override;
-
-        ntl::Result<RhiPipelineInterface*> create_pipeline_interface(const rx::map<rx::string, RhiResourceBindingDescription>& bindings,
-                                                                     const rx::vector<renderpack::TextureAttachmentInfo>& color_attachments,
-                                                                     const rx::optional<renderpack::TextureAttachmentInfo>& depth_texture,
-                                                                     rx::memory::allocator& allocator) override;
 
         RhiDescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
                                                   rx::memory::allocator& allocator) override;
