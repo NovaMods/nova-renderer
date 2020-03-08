@@ -76,11 +76,6 @@ namespace nova::renderer::rhi {
 
         virtual void set_num_renderpasses(uint32_t num_renderpasses) = 0;
 
-        [[nodiscard]] virtual ntl::Result<RhiDeviceMemory*> allocate_device_memory(mem::Bytes size,
-                                                                                   MemoryUsage type,
-                                                                                   ObjectType allowed_objects,
-                                                                                   rx::memory::allocator& allocator) = 0;
-
         /*!
          * \brief Creates a renderpass from the provided data
          *

@@ -50,7 +50,10 @@ namespace nova::renderer::rhi {
     VulkanRenderDevice::VulkanRenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator)
         : RenderDevice{settings, window, allocator},
           vk_internal_allocator{wrap_allocator(internal_allocator)},
-          command_pools_by_thread_idx{&internal_allocator} {
+          command_pools_by_thread_idx{&internal_allocator},
+          standard_push_constants{rx::array{VkPushConstantRange{/* .stageFlags = */ VK_SHADER_STAGE_ALL,
+                                                                /* .offset = */ 0,
+                                                                /* .size = */ sizeof(uint32_t)}}} {
         MTR_SCOPE("VulkanRenderDevice", "VulkanRenderDevice");
 
         create_instance();
@@ -82,56 +85,6 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderDevice::set_num_renderpasses(uint32_t /* num_renderpasses */) {
         // Pretty sure Vulkan doesn't need to do anything here
-    }
-
-    ntl::Result<RhiDeviceMemory*> VulkanRenderDevice::allocate_device_memory(const Bytes size,
-                                                                             const MemoryUsage usage,
-                                                                             const ObjectType /* allowed_objects */,
-                                                                             rx::memory::allocator& allocator) {
-        auto* memory = allocator.create<VulkanDeviceMemory>();
-
-        VkMemoryAllocateInfo alloc_info = {};
-        alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        alloc_info.allocationSize = size.b_count();
-        alloc_info.memoryTypeIndex = VK_MAX_MEMORY_TYPES;
-
-        // Find the memory type that we want
-        switch(usage) {
-            case MemoryUsage::DeviceOnly:
-                // Find a memory type that only has the device local bit set
-                // If none have only the device local bit set, find one with the device local but and maybe other things
-                alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, MemorySearchMode::Exact);
-                if(alloc_info.memoryTypeIndex == VK_MAX_MEMORY_TYPES) {
-                    alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-                }
-                break;
-
-            case MemoryUsage::LowFrequencyUpload:
-                // Find a memory type that's visible to both the device and the host. Memory that's both device local and host visible would
-                // be amazing, otherwise HOST_CACHED will work I guess
-                alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT |
-                                                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-                if(alloc_info.memoryTypeIndex == VK_MAX_MEMORY_TYPES) {
-                    alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_HOST_CACHED_BIT);
-                }
-                break;
-
-            case MemoryUsage::StagingBuffer:
-                alloc_info.memoryTypeIndex = find_memory_type_with_flags(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                                                         VK_MEMORY_PROPERTY_HOST_CACHED_BIT);
-                break;
-        }
-
-        auto vk_alloc = wrap_allocator(allocator);
-        vkAllocateMemory(device, &alloc_info, &vk_alloc, &memory->memory);
-
-        if(usage == MemoryUsage::StagingBuffer) {
-            void* mapped_memory;
-            vkMapMemory(device, memory->memory, 0, VK_WHOLE_SIZE, 0, &mapped_memory);
-            heap_mappings.insert(memory->memory, mapped_memory);
-        }
-
-        return ntl::Result<RhiDeviceMemory*>(memory);
     }
 
     ntl::Result<RhiRenderpass*> VulkanRenderDevice::create_renderpass(const renderpack::RenderPassCreateInfo& data,

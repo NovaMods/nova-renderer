@@ -64,11 +64,6 @@ namespace nova::renderer::rhi {
 #pragma region Render engine interface
         void set_num_renderpasses(uint32_t num_renderpasses) override;
 
-        ntl::Result<RhiDeviceMemory*> allocate_device_memory(mem::Bytes size,
-                                                             MemoryUsage usage,
-                                                             ObjectType allowed_objects,
-                                                             rx::memory::allocator& allocator) override;
-
         ntl::Result<RhiRenderpass*> create_renderpass(const renderpack::RenderPassCreateInfo& data,
                                                       const glm::uvec2& framebuffer_size,
                                                       rx::memory::allocator& allocator) override;
@@ -161,19 +156,9 @@ namespace nova::renderer::rhi {
         rx::vector<rx::map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
 
         /*!
-         * \brief Keeps track of how much has been allocated from each heap
-         *
-         * In the same order as VulkanGpuInfo::memory_properties::memoryHeaps
+         * \brief All the push constants in the standard pipeline layout
          */
-        rx::vector<uint32_t> heap_usages;
-
-        /*!
-         * \brief Map from HOST_VISIBLE memory allocations to the memory address they're mapped to
-         *
-         * The Vulkan render engine maps memory when it's allocated, if the memory is for a uniform or a staging
-         * buffer.
-         */
-        rx::map<VkDeviceMemory, void*> heap_mappings;
+        rx::vector<VkPushConstantRange> standard_push_constants;
 
 #pragma region Initialization
         rx::vector<const char*> enabled_layer_names;
