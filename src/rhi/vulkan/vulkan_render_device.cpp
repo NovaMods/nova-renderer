@@ -76,6 +76,8 @@ namespace nova::renderer::rhi {
         create_swapchain();
 
         create_per_thread_command_pools();
+
+        create_standard_pipeline_layout();
     }
 
     void VulkanRenderDevice::set_num_renderpasses(uint32_t /* num_renderpasses */) {
@@ -1801,6 +1803,44 @@ namespace nova::renderer::rhi {
         for(uint32_t i = 0; i < num_threads; i++) {
             command_pools_by_thread_idx.push_back(make_new_command_pools());
         }
+    }
+
+    void VulkanRenderDevice::create_standard_pipeline_layout() {
+        // Binding for the array of material parameter buffers. Nova uses a variable-length, partially-bound
+        const VkDescriptorSetLayoutBinding material_buffers_binding =
+            {/* .binding = */ 0,
+             /* .descriptorType = */ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+             /* .descriptorCount = */ 1,
+             /* .stageFlags = */ VK_SHADER_STAGE_ALL, // Be sure it's all visible to everything
+             /* .pImmutableSamplers = */ nullptr};
+
+        // Bindings for the standard samplers
+        const VkDescriptorSetLayoutBinding point_samplers_binding =
+            {/* .binding = */ 0,
+             /* .descriptorType = */ VK_DESCRIPTOR_TYPE_SAMPLER,
+             /* .descriptorCount = */ 1,
+             /* .stageFlags = */ VK_SHADER_STAGE_ALL, // Be sure it's all visible to everything
+             /* .pImmutableSamplers = */ nullptr};
+        const VkDescriptorSetLayoutBinding bilinear_samplers_binding =
+            {/* .binding = */ 1,
+             /* .descriptorType = */ VK_DESCRIPTOR_TYPE_SAMPLER,
+             /* .descriptorCount = */ 1,
+             /* .stageFlags = */ VK_SHADER_STAGE_ALL, // Be sure it's all visible to everything
+             /* .pImmutableSamplers = */ nullptr};
+        const VkDescriptorSetLayoutBinding trilinear_samplers_binding =
+            {/* .binding = */ 2,
+             /* .descriptorType = */ VK_DESCRIPTOR_TYPE_SAMPLER,
+             /* .descriptorCount = */ 1,
+             /* .stageFlags = */ VK_SHADER_STAGE_ALL, // Be sure it's all visible to everything
+             /* .pImmutableSamplers = */ nullptr};
+
+        // Binding for the textures array
+        const VkDescriptorSetLayoutBinding textures_array_binding =
+            {/* .binding = */ 3,
+             /* .descriptorType = */ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+             /* .descriptorCount = */ MAX_NUM_TEXTURES,
+             /* .stageFlags = */ VK_SHADER_STAGE_ALL, // Be sure it's all visible to everything
+             /* .pImmutableSamplers = */ nullptr};
     }
 
     rx::map<uint32_t, VkCommandPool> VulkanRenderDevice::make_new_command_pools() const {

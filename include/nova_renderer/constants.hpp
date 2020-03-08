@@ -18,6 +18,11 @@ namespace nova::renderer {
 
     constexpr uint32_t MAX_NUM_CAMERAS = 256;
 
+    /*!
+     * \brief Maximum number of textures that Nova can handle
+     */
+    constexpr uint32_t MAX_NUM_TEXTURES = 1024;
+
     constexpr mem::Bytes PER_FRAME_MEMORY_SIZE = 2_mb;
 
     constexpr const char* RENDERPACK_DIRECTORY = "renderpacks";

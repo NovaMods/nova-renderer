@@ -199,6 +199,8 @@ namespace nova::renderer::rhi {
 
         void create_per_thread_command_pools();
 
+        void create_standard_pipeline_layout();
+
         [[nodiscard]] rx::map<uint32_t, VkCommandPool> make_new_command_pools() const;
 #pragma endregion
 
