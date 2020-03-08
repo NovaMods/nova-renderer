@@ -16,6 +16,6 @@ namespace nova {
 
 namespace nova::renderer::renderpack {
 
-    rx::optional<PipelineStateCreateInfo> to_pipeline_state_create_info(const renderpack::PipelineData& data,
+    rx::optional<RhiPipelineState> to_pipeline_state_create_info(const renderpack::PipelineData& data,
                                                                         const Rendergraph& rendergraph);
 };

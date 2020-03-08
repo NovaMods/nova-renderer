@@ -9,10 +9,6 @@
 #include "vulkan_swapchain.hpp"
 
 namespace nova::renderer::rhi {
-    struct VulkanMemoryHeap : VkMemoryHeap {
-        VkDeviceSize amount_allocated = 0;
-    };
-
     struct VulkanDeviceInfo {
         uint64_t max_uniform_buffer_size = 0;
     };
@@ -85,6 +81,11 @@ namespace nova::renderer::rhi {
                                            const glm::uvec2& framebuffer_size,
                                            rx::memory::allocator& allocator) override;
 
+        ntl::Result<RhiPipelineInterface*> create_pipeline_interface(const rx::map<rx::string, RhiResourceBindingDescription>& bindings,
+                                                                     const rx::vector<renderpack::TextureAttachmentInfo>& color_attachments,
+                                                                     const rx::optional<renderpack::TextureAttachmentInfo>& depth_texture,
+                                                                     rx::memory::allocator& allocator) override;
+
         RhiDescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
                                                   rx::memory::allocator& allocator) override;
 
@@ -95,10 +96,6 @@ namespace nova::renderer::rhi {
         void update_descriptor_sets(rx::vector<RhiDescriptorSetWrite>& writes) override;
 
         void reset_descriptor_pool(RhiDescriptorPool* pool) override;
-
-        ntl::Result<RhiPipeline*> create_pipeline(RhiPipelineInterface* pipeline_interface,
-                                                  const PipelineStateCreateInfo& data,
-                                                  rx::memory::allocator& allocator) override;
 
         RhiBuffer* create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) override;
 
@@ -147,6 +144,20 @@ namespace nova::renderer::rhi {
 #pragma endregion
 
         [[nodiscard]] uint32_t get_queue_family_index(QueueType type) const;
+
+    public:
+        /*!
+         * \brief Creates a new PSO
+         *
+         * \param state Pipeline state to bake into the PSO
+         * \param renderpass The render pas that this pipeline will be used with
+         * \param allocator Allocator to use for any needed memory
+         *
+         * \return The new PSO
+         */
+        ntl::Result<VulkanPipeline> create_pipeline(const RhiPipelineState& state,
+                                                  vk::RenderPass renderpass,
+                                                  rx::memory::allocator& allocator);
 
     protected:
         void create_surface();

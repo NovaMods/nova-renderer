@@ -8,6 +8,7 @@
 
 namespace nova {
     namespace renderer {
+        struct RhiPipelineState;
         class Camera;
     }
 } // namespace nova
@@ -132,7 +133,7 @@ namespace nova::renderer::rhi {
 
         virtual void end_renderpass() = 0;
 
-        virtual void bind_pipeline(const RhiPipeline* pipeline) = 0;
+        virtual void set_pipeline_state(const RhiPipelineState& pipeline) = 0;
 
         virtual void bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets,
                                           const RhiPipelineInterface* pipeline_interface) = 0;

@@ -295,6 +295,140 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
+    ntl::Result<RhiPipelineInterface*> VulkanRenderDevice::create_pipeline_interface(
+        const rx::map<rx::string, RhiResourceBindingDescription>& bindings,
+        const rx::vector<renderpack::TextureAttachmentInfo>& color_attachments,
+        const rx::optional<renderpack::TextureAttachmentInfo>& depth_texture,
+        rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanRenderDevice", "create_pipeline_interface");
+
+        auto* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain);
+        auto* pipeline_interface = allocator.create<VulkanPipelineInterface>();
+        pipeline_interface->bindings = bindings;
+
+        auto vk_alloc = wrap_allocator(allocator);
+
+        VkSubpassDescription subpass_description;
+        subpass_description.flags = 0;
+        subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass_description.inputAttachmentCount = 0;
+        subpass_description.pInputAttachments = nullptr;
+        subpass_description.preserveAttachmentCount = 0;
+        subpass_description.pPreserveAttachments = nullptr;
+        subpass_description.pResolveAttachments = nullptr;
+        subpass_description.pDepthStencilAttachment = nullptr;
+
+        VkSubpassDependency image_available_dependency;
+        image_available_dependency.dependencyFlags = 0;
+        image_available_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+        image_available_dependency.dstSubpass = 0;
+        image_available_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        image_available_dependency.srcAccessMask = 0;
+        image_available_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        image_available_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+        VkRenderPassCreateInfo render_pass_create_info;
+        render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        render_pass_create_info.pNext = nullptr;
+        render_pass_create_info.flags = 0;
+        render_pass_create_info.subpassCount = 1;
+        render_pass_create_info.pSubpasses = &subpass_description;
+        render_pass_create_info.dependencyCount = 1;
+        render_pass_create_info.pDependencies = &image_available_dependency;
+
+        rx::vector<VkAttachmentReference> attachment_references{&internal_allocator};
+        rx::vector<VkAttachmentDescription> attachment_descriptions{&internal_allocator};
+        rx::vector<VkImageView> framebuffer_attachments{&internal_allocator};
+
+        // Collect framebuffer size information from color output attachments
+        color_attachments.each_fwd([&](const renderpack::TextureAttachmentInfo& attachment) {
+            if(attachment.name == BACKBUFFER_NAME) {
+                // Handle backbuffer
+                // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip
+                // everything
+
+                VkAttachmentDescription desc;
+                desc.flags = 0;
+                desc.format = vk_swapchain->get_swapchain_format();
+                desc.samples = VK_SAMPLE_COUNT_1_BIT;
+                desc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+                desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                desc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+                attachment_descriptions.push_back(desc);
+
+                VkAttachmentReference ref;
+
+                ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                ref.attachment = static_cast<uint32_t>(attachment_descriptions.size()) - 1;
+
+                attachment_references.push_back(ref);
+
+                return false;
+            }
+
+            VkAttachmentDescription desc;
+            desc.flags = 0;
+            desc.format = to_vk_format(attachment.pixel_format);
+            desc.samples = VK_SAMPLE_COUNT_1_BIT;
+            desc.loadOp = attachment.clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+            desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            desc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+            attachment_descriptions.push_back(desc);
+
+            VkAttachmentReference ref;
+
+            ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            ref.attachment = static_cast<uint32_t>(attachment_descriptions.size()) - 1;
+
+            attachment_references.push_back(ref);
+
+            return true;
+        });
+
+        VkAttachmentReference depth_reference = {};
+        // Collect framebuffer size information from the depth attachment
+        if(depth_texture) {
+            VkAttachmentDescription desc = {};
+            desc.flags = 0;
+            desc.format = to_vk_format(depth_texture->pixel_format);
+            desc.samples = VK_SAMPLE_COUNT_1_BIT;
+            desc.loadOp = depth_texture->clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+            desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            desc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            desc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            attachment_descriptions.push_back(desc);
+
+            depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            depth_reference.attachment = static_cast<uint32_t>(attachment_descriptions.size()) - 1;
+
+            subpass_description.pDepthStencilAttachment = &depth_reference;
+        }
+
+        subpass_description.colorAttachmentCount = static_cast<uint32_t>(attachment_references.size());
+        subpass_description.pColorAttachments = attachment_references.data();
+
+        render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachment_descriptions.size());
+        render_pass_create_info.pAttachments = attachment_descriptions.data();
+
+        {
+            MTR_SCOPE("VulkanRenderDevice", "CreateDummyRenderpass");
+            NOVA_CHECK_RESULT(vkCreateRenderPass(device, &render_pass_create_info, &vk_alloc, &pipeline_interface->pass));
+        }
+
+        return ntl::Result(static_cast<RhiPipelineInterface*>(pipeline_interface));
+    }
+
     RhiDescriptorPool* VulkanRenderDevice::create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
                                                                   rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_descriptor_pool");
@@ -504,44 +638,44 @@ namespace nova::renderer::rhi {
         vkResetDescriptorPool(device, vk_pool->descriptor_pool, 0);
     }
 
-    ntl::Result<RhiPipeline*> VulkanRenderDevice::create_pipeline(RhiPipelineInterface* pipeline_interface,
-                                                                  const PipelineStateCreateInfo& data,
-                                                                  rx::memory::allocator& allocator) {
+    ntl::Result<VulkanPipeline> VulkanRenderDevice::create_pipeline(const RhiPipelineState& state,
+                                                                    vk::RenderPass renderpass,
+                                                                    rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_pipeline");
-        logger(rx::log::level::k_verbose, "Creating a VkPipeline for pipeline %s", data.name);
+        logger(rx::log::level::k_verbose, "Creating a VkPipeline for pipeline %s", state.name);
 
-        const auto* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
-        auto* vk_pipeline = allocator.create<VulkanPipeline>();
+        VulkanPipeline vk_pipeline{};
 
         rx::vector<VkPipelineShaderStageCreateInfo> shader_stages{&internal_allocator};
         rx::map<VkShaderStageFlags, VkShaderModule> shader_modules{&internal_allocator};
 
         logger(rx::log::level::k_verbose, "Compiling vertex module");
-        const auto vertex_module = create_shader_module(data.vertex_shader.source);
+        const auto vertex_module = create_shader_module(state.vertex_shader.source);
         if(vertex_module) {
             shader_modules.insert(VK_SHADER_STAGE_VERTEX_BIT, *vertex_module);
         } else {
-            return ntl::Result<RhiPipeline*>(ntl::NovaError("Could not create vertex module"));
+            return ntl::Result{ntl::NovaError("Could not create vertex module")};
         }
 
-        if(data.geometry_shader) {
+        if(state.geometry_shader) {
             logger(rx::log::level::k_verbose, "Compiling geometry module");
-            const auto geometry_module = create_shader_module(data.geometry_shader->source);
+            const auto geometry_module = create_shader_module(state.geometry_shader->source);
             if(geometry_module) {
                 shader_modules.insert(VK_SHADER_STAGE_GEOMETRY_BIT, *geometry_module);
             } else {
-                return ntl::Result<RhiPipeline*>(ntl::NovaError("Could not geometry module"));
+                return ntl::Result{ntl::NovaError("Could not geometry module")};
             }
         }
 
-        if(data.pixel_shader) {
+        if(state.pixel_shader) {
             logger(rx::log::level::k_verbose, "Compiling fragment module");
-            const auto fragment_module = create_shader_module(data.pixel_shader->source);
+            const auto fragment_module = create_shader_module(state.pixel_shader->source);
             if(fragment_module) {
                 shader_modules.insert(VK_SHADER_STAGE_FRAGMENT_BIT, *fragment_module);
             } else {
-                return ntl::Result<RhiPipeline*>(ntl::NovaError("Could not pixel module"));
+                return ntl::Result{ntl::NovaError("Could not pixel module")};
             }
+
         } // namespace nova::renderer::rhi
 
         shader_modules.each_pair([&](const VkShaderStageFlags stage, const VkShaderModule shader_module) {
@@ -557,7 +691,7 @@ namespace nova::renderer::rhi {
             shader_stages.push_back(shader_stage_create_info);
         });
 
-        const auto& [vertex_attribute_descriptions, vertex_binding_descriptions] = get_input_assembler_setup(data.vertex_fields);
+        const auto& [vertex_attribute_descriptions, vertex_binding_descriptions] = get_input_assembler_setup(state.vertex_fields);
 
         VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info;
         vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -573,7 +707,7 @@ namespace nova::renderer::rhi {
         input_assembly_create_info.pNext = nullptr;
         input_assembly_create_info.flags = 0;
         input_assembly_create_info.primitiveRestartEnable = VK_FALSE;
-        switch(data.topology) {
+        switch(state.topology) {
             case PrimitiveTopology::TriangleList:
                 input_assembly_create_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
                 break;
@@ -590,14 +724,14 @@ namespace nova::renderer::rhi {
         VkViewport viewport;
         viewport.x = 0;
         viewport.y = 0;
-        viewport.width = data.viewport_size.x;
-        viewport.height = data.viewport_size.y;
+        viewport.width = state.viewport_size.x;
+        viewport.height = state.viewport_size.y;
         viewport.minDepth = 0.0F;
         viewport.maxDepth = 1.0F;
 
         VkRect2D scissor;
         scissor.offset = {0, 0};
-        scissor.extent = {static_cast<uint32_t>(data.viewport_size.x), static_cast<uint32_t>(data.viewport_size.y)};
+        scissor.extent = {static_cast<uint32_t>(state.viewport_size.x), static_cast<uint32_t>(state.viewport_size.y)};
 
         VkPipelineViewportStateCreateInfo viewport_state_create_info;
         viewport_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -619,9 +753,9 @@ namespace nova::renderer::rhi {
         rasterizer_create_info.cullMode = VK_CULL_MODE_BACK_BIT;
         rasterizer_create_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
         rasterizer_create_info.depthClampEnable = VK_FALSE;
-        rasterizer_create_info.depthBiasConstantFactor = data.rasterizer_state.depth_bias;
-        rasterizer_create_info.depthBiasSlopeFactor = data.rasterizer_state.slope_scaled_depth_bias;
-        rasterizer_create_info.depthBiasClamp = data.rasterizer_state.maximum_depth_bias;
+        rasterizer_create_info.depthBiasConstantFactor = state.rasterizer_state.depth_bias;
+        rasterizer_create_info.depthBiasSlopeFactor = state.rasterizer_state.slope_scaled_depth_bias;
+        rasterizer_create_info.depthBiasClamp = state.rasterizer_state.maximum_depth_bias;
 
         if(rasterizer_create_info.depthBiasConstantFactor != 0 || rasterizer_create_info.depthBiasSlopeFactor != 0) {
             rasterizer_create_info.depthBiasEnable = VK_TRUE;
@@ -644,8 +778,8 @@ namespace nova::renderer::rhi {
         VkPipelineDepthStencilStateCreateInfo depth_stencil_create_info = {};
         depth_stencil_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 
-        if(data.depth_state) {
-            const auto& depth_state = *data.depth_state;
+        if(state.depth_state) {
+            const auto& depth_state = *state.depth_state;
 
             depth_stencil_create_info.depthTestEnable = VK_TRUE;
             depth_stencil_create_info.depthWriteEnable = static_cast<VkBool32>(depth_state.enable_depth_write);
@@ -660,8 +794,8 @@ namespace nova::renderer::rhi {
             }
         }
 
-        if(data.stencil_state) {
-            const auto stencil_state = *data.stencil_state;
+        if(state.stencil_state) {
+            const auto stencil_state = *state.stencil_state;
 
             depth_stencil_create_info.stencilTestEnable = VK_TRUE;
 
@@ -688,8 +822,8 @@ namespace nova::renderer::rhi {
         color_blend_create_info.logicOp = VK_LOGIC_OP_COPY;
 
         rx::vector<VkPipelineColorBlendAttachmentState> attachment_states{&allocator};
-        if(data.blend_state) {
-            const auto& blend_state = *data.blend_state;
+        if(state.blend_state) {
+            const auto& blend_state = *state.blend_state;
 
             attachment_states.reserve(blend_state.render_target_states.size());
 
@@ -716,9 +850,9 @@ namespace nova::renderer::rhi {
             color_blend_create_info.blendConstants[3] = blend_state.blend_constants.a;
 
         } else {
-            attachment_states.reserve(data.color_attachments.size());
+            attachment_states.reserve(state.color_attachments.size());
 
-            data.color_attachments.each_fwd([&](const renderpack::TextureAttachmentInfo& /* attachment_info */) {
+            state.color_attachments.each_fwd([&](const renderpack::TextureAttachmentInfo& /* attachment_info */) {
                 VkPipelineColorBlendAttachmentState color_blend_attachment{};
                 color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
                                                         VK_COLOR_COMPONENT_A_BIT;
@@ -733,7 +867,7 @@ namespace nova::renderer::rhi {
 
         rx::vector<VkDynamicState> dynamic_states;
 
-        if(data.enable_scissor_test) {
+        if(state.enable_scissor_test) {
             dynamic_states.emplace_back(VK_DYNAMIC_STATE_SCISSOR);
         }
 
@@ -756,30 +890,31 @@ namespace nova::renderer::rhi {
         pipeline_create_info.pDepthStencilState = &depth_stencil_create_info;
         pipeline_create_info.pColorBlendState = &color_blend_create_info;
         pipeline_create_info.pDynamicState = &dynamic_state_create_info;
-        pipeline_create_info.layout = vk_interface->pipeline_layout;
+        pipeline_create_info.layout = standard_pipeline_layout;
 
-        pipeline_create_info.renderPass = vk_interface->pass;
+        pipeline_create_info.renderPass = renderpass;
         pipeline_create_info.subpass = 0;
         pipeline_create_info.basePipelineIndex = -1;
 
         auto vk_alloc = wrap_allocator(allocator);
-        VkResult result = vkCreateGraphicsPipelines(device, nullptr, 1, &pipeline_create_info, &vk_alloc, &vk_pipeline->pipeline);
+        const auto result = vkCreateGraphicsPipelines(device, nullptr, 1, &pipeline_create_info, &vk_alloc, &vk_pipeline.pipeline);
         if(result != VK_SUCCESS) {
-            return ntl::Result<RhiPipeline*>(MAKE_ERROR("Could not compile pipeline %s", data.name));
+            return ntl::Result{MAKE_ERROR("Could not compile pipeline %s", state.name)};
         }
 
-        vk_pipeline->layout = vk_interface->pipeline_layout;
+        // TODO: Figure out how to have bespoke pipeline layouts for things like post-processing
+        vk_pipeline.layout = standard_pipeline_layout;
 
         if(settings.settings.debug.enabled) {
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             object_name.objectType = VK_OBJECT_TYPE_PIPELINE;
-            object_name.objectHandle = reinterpret_cast<uint64_t>(vk_pipeline->pipeline);
-            object_name.pObjectName = data.name.data();
+            object_name.objectHandle = reinterpret_cast<uint64_t>(vk_pipeline.pipeline);
+            object_name.pObjectName = state.name.data();
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
         }
 
-        return ntl::Result(static_cast<RhiPipeline*>(vk_pipeline));
+        return ntl::Result{vk_pipeline};
     }
 
     RhiBuffer* VulkanRenderDevice::create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) {
@@ -1089,7 +1224,6 @@ namespace nova::renderer::rhi {
         MTR_SCOPE("VulkanRenderDevice", "destroy_pipeline_interface");
         auto* vk_interface = static_cast<VulkanPipelineInterface*>(pipeline_interface);
         vkDestroyRenderPass(device, vk_interface->pass, nullptr);
-        vkDestroyPipelineLayout(device, vk_interface->pipeline_layout, nullptr);
 
         allocator.deallocate(reinterpret_cast<rx_byte*>(pipeline_interface));
     }

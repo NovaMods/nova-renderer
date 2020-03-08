@@ -11,7 +11,7 @@ namespace spirv_cross {
 
 namespace nova::renderer {
     struct ShaderSource;
-    struct PipelineStateCreateInfo;
+    struct RhiPipelineState;
 
     struct PipelineReturn {
         Pipeline pipeline;
@@ -35,7 +35,7 @@ namespace nova::renderer {
 
         [[nodiscard]] rx::optional<Pipeline> get_pipeline(const rx::string& pipeline_name) const;
 
-        [[nodiscard]] bool create_pipeline(const PipelineStateCreateInfo& create_info);
+        [[nodiscard]] bool create_pipeline(const RhiPipelineState& create_info);
 
     private:
         NovaRenderer& renderer;
@@ -51,10 +51,10 @@ namespace nova::renderer {
         rx::map<rx::string, Pipeline> pipelines;
 
         [[nodiscard]] ntl::Result<PipelineReturn> create_graphics_pipeline(rhi::RhiPipelineInterface* pipeline_interface,
-                                                                           const PipelineStateCreateInfo& pipeline_create_info) const;
+                                                                           const RhiPipelineState& pipeline_create_info) const;
 
         [[nodiscard]] ntl::Result<rhi::RhiPipelineInterface*> create_pipeline_interface(
-            const PipelineStateCreateInfo& pipeline_create_info) const;
+            const RhiPipelineState& pipeline_create_info) const;
 
         static void get_shader_module_descriptors(const rx::vector<uint32_t>& spirv,
                                                   rhi::ShaderStage shader_stage,

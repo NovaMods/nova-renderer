@@ -104,7 +104,7 @@ void rex_fini() {
 }
 
 namespace nova::renderer {
-    struct RX_HINT_EMPTY_BASES BackbufferOutputPipelineCreateInfo : PipelineStateCreateInfo {
+    struct RX_HINT_EMPTY_BASES BackbufferOutputPipelineCreateInfo : RhiPipelineState {
         BackbufferOutputPipelineCreateInfo();
     };
 

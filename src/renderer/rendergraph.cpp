@@ -267,7 +267,7 @@ namespace nova::renderer {
 
     void Pipeline::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         MTR_SCOPE("Pipeline", "record");
-        cmds.bind_pipeline(pipeline);
+        cmds.set_pipeline_state(pipeline);
 
         const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline);
 

@@ -6,6 +6,7 @@
 #include <vk_mem_alloc.h>
 
 #include "nova_renderer/camera.hpp"
+#include "nova_renderer/rhi/pipeline_create_info.hpp"
 
 #include "vk_structs.hpp"
 #include "vulkan_render_device.hpp"
@@ -25,8 +26,10 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VulkanRenderCommandList::VulkanRenderCommandList(VkCommandBuffer cmds, const VulkanRenderDevice* render_device)
-        : cmds(cmds), render_device(*render_device) {
+    VulkanRenderCommandList::VulkanRenderCommandList(VkCommandBuffer cmds,
+                                                     VulkanRenderDevice& render_device,
+                                                     rx::memory::allocator& allocator)
+        : cmds(cmds), device(render_device), allocator(allocator) {
         MTR_SCOPE("VulkanRenderCommandList", "VulkanRenderCommandList");
         // TODO: Put this begin info in the constructor parameters
         VkCommandBufferBeginInfo begin_info = {};
@@ -43,17 +46,17 @@ namespace nova::renderer::rhi {
         vk_name.objectHandle = reinterpret_cast<uint64_t>(cmds);
         vk_name.pObjectName = name.data();
 
-        render_device.vkSetDebugUtilsObjectNameEXT(render_device.device, &vk_name);
+        device.vkSetDebugUtilsObjectNameEXT(device.device, &vk_name);
     }
 
     void VulkanRenderCommandList::resource_barriers(const PipelineStage stages_before_barrier,
                                                     const PipelineStage stages_after_barrier,
                                                     const rx::vector<RhiResourceBarrier>& barriers) {
         MTR_SCOPE("VulkanRenderCommandList", "resource_barriers");
-        rx::vector<VkBufferMemoryBarrier> buffer_barriers;
+        rx::vector<VkBufferMemoryBarrier> buffer_barriers{&allocator};
         buffer_barriers.reserve(barriers.size());
 
-        rx::vector<VkImageMemoryBarrier> image_barriers;
+        rx::vector<VkImageMemoryBarrier> image_barriers{&allocator};
         image_barriers.reserve(barriers.size());
 
         barriers.each_fwd([&](const RhiResourceBarrier& barrier) {
@@ -67,8 +70,8 @@ namespace nova::renderer::rhi {
                     image_barrier.dstAccessMask = to_vk_access_flags(barrier.access_after_barrier);
                     image_barrier.oldLayout = to_vk_image_layout(barrier.old_state);
                     image_barrier.newLayout = to_vk_image_layout(barrier.new_state);
-                    image_barrier.srcQueueFamilyIndex = render_device.get_queue_family_index(barrier.source_queue);
-                    image_barrier.dstQueueFamilyIndex = render_device.get_queue_family_index(barrier.destination_queue);
+                    image_barrier.srcQueueFamilyIndex = device.get_queue_family_index(barrier.source_queue);
+                    image_barrier.dstQueueFamilyIndex = device.get_queue_family_index(barrier.destination_queue);
                     image_barrier.image = image->image;
                     image_barrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(barrier.image_memory_barrier.aspect);
                     image_barrier.subresourceRange.baseMipLevel = 0; // TODO: Something smarter with mips
@@ -86,8 +89,8 @@ namespace nova::renderer::rhi {
                     buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
                     buffer_barrier.srcAccessMask = to_vk_access_flags(barrier.access_before_barrier);
                     buffer_barrier.dstAccessMask = to_vk_access_flags(barrier.access_after_barrier);
-                    buffer_barrier.srcQueueFamilyIndex = render_device.get_queue_family_index(barrier.source_queue);
-                    buffer_barrier.dstQueueFamilyIndex = render_device.get_queue_family_index(barrier.destination_queue);
+                    buffer_barrier.srcQueueFamilyIndex = device.get_queue_family_index(barrier.source_queue);
+                    buffer_barrier.dstQueueFamilyIndex = device.get_queue_family_index(barrier.destination_queue);
                     buffer_barrier.buffer = buffer->buffer;
                     buffer_barrier.offset = barrier.buffer_memory_barrier.offset.b_count();
                     buffer_barrier.size = barrier.buffer_memory_barrier.size.b_count();
@@ -128,7 +131,7 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderCommandList::execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) {
         MTR_SCOPE("VulkanRenderCommandList", "execute_command_lists");
-        rx::vector<VkCommandBuffer> buffers;
+        rx::vector<VkCommandBuffer> buffers{&allocator};
         buffers.reserve(lists.size());
 
         lists.each_fwd([&](RhiRenderCommandList* list) {
@@ -153,7 +156,9 @@ namespace nova::renderer::rhi {
         auto* vk_renderpass = static_cast<VulkanRenderpass*>(renderpass);
         auto* vk_framebuffer = static_cast<VulkanFramebuffer*>(framebuffer);
 
-        rx::vector<VkClearValue> clear_values{vk_framebuffer->num_attachments};
+        current_render_pass = vk_renderpass;
+
+        rx::vector<VkClearValue> clear_values{&allocator, vk_framebuffer->num_attachments};
 
         VkRenderPassBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -169,16 +174,30 @@ namespace nova::renderer::rhi {
     void VulkanRenderCommandList::end_renderpass() {
         MTR_SCOPE("VulkanRenderCommandList", "end_renderpass");
         vkCmdEndRenderPass(cmds);
+
+        current_render_pass = nullptr;
     }
 
-    void VulkanRenderCommandList::bind_pipeline(const RhiPipeline* pipeline) {
+    void VulkanRenderCommandList::set_pipeline_state(const RhiPipelineState& state) {
         MTR_SCOPE("VulkanRenderCommandList", "bind_pipeline");
-        const auto* vk_pipeline = static_cast<const VulkanPipeline*>(pipeline);
-        vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline->pipeline);
 
-        if(current_layout != vk_pipeline->layout) {
-            current_layout = vk_pipeline->layout;
-            vkCmdPushConstants(cmds, current_layout, VK_SHADER_STAGE_ALL, 0, sizeof(uint32_t), &camera_index);
+        if(current_render_pass != nullptr) {
+            auto* pipeline = current_render_pass->cached_pipelines.find(state.name);
+            if(pipeline == nullptr) {
+                const auto pipeline_result = device.create_pipeline(state, current_render_pass->pass, allocator);
+                if(pipeline_result) {
+                    *pipeline = *pipeline_result;
+
+                } else {
+                    logger(rx::log::level::k_error, "Could not compile pipeline %s", state.name);
+                    return;
+                }
+            }
+
+            vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
+
+        } else {
+            logger(rx::log::level::k_error, "Cannot use a pipeline state when not in a renderpass");
         }
     }
 
@@ -203,10 +222,10 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderCommandList::bind_vertex_buffers(const rx::vector<RhiBuffer*>& buffers) {
         MTR_SCOPE("VulkanRenderCommandList", "bind_vertex_buffers");
-        rx::vector<VkBuffer> vk_buffers;
+        rx::vector<VkBuffer> vk_buffers{&allocator};
         vk_buffers.reserve(buffers.size());
 
-        rx::vector<VkDeviceSize> offsets;
+        rx::vector<VkDeviceSize> offsets{&allocator};
         offsets.reserve(buffers.size());
         for(uint32_t i = 0; i < buffers.size(); i++) {
             offsets.push_back(i);

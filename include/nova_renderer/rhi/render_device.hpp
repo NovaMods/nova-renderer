@@ -10,7 +10,7 @@
 #include "nova_renderer/window.hpp"
 
 namespace nova::renderer {
-    struct PipelineStateCreateInfo;
+    struct RhiPipelineState;
     struct DeviceMemoryResource;
 } // namespace nova::renderer
 
@@ -114,10 +114,6 @@ namespace nova::renderer::rhi {
         virtual void update_descriptor_sets(rx::vector<RhiDescriptorSetWrite>& writes) = 0;
 
         virtual void reset_descriptor_pool(RhiDescriptorPool* pool) = 0;
-
-        [[nodiscard]] virtual ntl::Result<RhiPipeline*> create_pipeline(RhiPipelineInterface* pipeline_interface,
-                                                                        const PipelineStateCreateInfo& data,
-                                                                        rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Creates a buffer with undefined contents

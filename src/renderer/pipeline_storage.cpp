@@ -25,7 +25,7 @@ namespace nova::renderer {
         }
     }
 
-    bool PipelineStorage::create_pipeline(const PipelineStateCreateInfo& create_info) {
+    bool PipelineStorage::create_pipeline(const RhiPipelineState& create_info) {
 
         Result<rhi::RhiPipelineInterface*> pipeline_interface = create_pipeline_interface(create_info);
         if(!pipeline_interface) {
@@ -52,7 +52,7 @@ namespace nova::renderer {
     }
 
     Result<PipelineReturn> PipelineStorage::create_graphics_pipeline(rhi::RhiPipelineInterface* pipeline_interface,
-                                                                     const PipelineStateCreateInfo& pipeline_create_info) const {
+                                                                     const RhiPipelineState& pipeline_create_info) const {
         Pipeline pipeline;
         PipelineMetadata metadata;
 
@@ -73,7 +73,7 @@ namespace nova::renderer {
     }
 
     Result<rhi::RhiPipelineInterface*> PipelineStorage::create_pipeline_interface(
-        const PipelineStateCreateInfo& pipeline_create_info) const {
+        const RhiPipelineState& pipeline_create_info) const {
 
         rx::map<rx::string, rhi::RhiResourceBindingDescription> bindings;
 

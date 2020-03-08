@@ -6,6 +6,8 @@
 #include "nova_renderer/rhi/rhi_enums.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 
+#include "vk_structs.hpp"
+
 namespace nova::renderer::rhi {
     class VulkanRenderDevice;
 
@@ -16,8 +18,7 @@ namespace nova::renderer::rhi {
     public:
         VkCommandBuffer cmds;
 
-        VulkanRenderCommandList(VkCommandBuffer cmds, const VulkanRenderDevice* render_device);
-
+        VulkanRenderCommandList(VkCommandBuffer cmds, VulkanRenderDevice& render_device, rx::memory::allocator& allocator);
         ~VulkanRenderCommandList() override = default;
 
         void set_debug_name(const rx::string& name) override;
@@ -40,9 +41,10 @@ namespace nova::renderer::rhi {
 
         void end_renderpass() override;
 
-        void bind_pipeline(const RhiPipeline* pipeline) override;
+        void set_pipeline_state(const RhiPipelineState& state) override;
 
-        void bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets, const RhiPipelineInterface* pipeline_interface) override;
+        void bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets,
+                                  const RhiPipelineInterface* pipeline_interface) override;
 
         void bind_vertex_buffers(const rx::vector<RhiBuffer*>& buffers) override;
 
@@ -54,11 +56,15 @@ namespace nova::renderer::rhi {
 
         void upload_data_to_image(
             RhiImage* image, size_t width, size_t height, size_t bytes_per_pixel, RhiBuffer* staging_buffer, const void* data) override;
-        
+
     private:
-        const VulkanRenderDevice& render_device;
+        VulkanRenderDevice& device;
+
+        rx::memory::allocator& allocator;
 
         uint32_t camera_index = 0;
+
+        VulkanRenderpass* current_render_pass = nullptr;
 
         VkPipelineLayout current_layout = VK_NULL_HANDLE;
     };

@@ -45,7 +45,7 @@ namespace nova::renderer {
     };
 
     struct PipelineMetadata {
-        PipelineStateCreateInfo data;
+        RhiPipelineState data;
 
         rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas{};
     };

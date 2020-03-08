@@ -5,10 +5,9 @@
 #pragma once
 
 #include <vk_mem_alloc.h>
+#include <vulkan/vulkan.hpp>
 
 #include "nova_renderer/rhi/rhi_types.hpp"
-
-#include "vulkan.hpp"
 
 namespace nova::renderer::rhi {
     struct VulkanDeviceMemory : RhiDeviceMemory {
@@ -31,9 +30,22 @@ namespace nova::renderer::rhi {
         VmaAllocationInfo allocation_info{};
     };
 
+    struct VulkanPipeline : RhiPipeline {
+        VkPipeline pipeline = VK_NULL_HANDLE;
+        VkPipelineLayout layout = VK_NULL_HANDLE;
+    };
+
     struct VulkanRenderpass : RhiRenderpass {
         VkRenderPass pass = VK_NULL_HANDLE;
         VkRect2D render_area{};
+
+        /*!
+         * \brief Cache of pipelines that get used in this renderpass
+         *
+         * We keep a cache of PSOs that are used by this renderpass, using the frontend name of the pipeline state as a key. If we've
+         * already used a pipeline state with this renderpass we just get the caches PSO, otherwise we have to create it
+         */
+        rx::map<rx::string, VulkanPipeline> cached_pipelines;
     };
 
     struct VulkanFramebuffer : RhiFramebuffer {
@@ -46,22 +58,6 @@ namespace nova::renderer::rhi {
          * renderpass itself?
          */
         VkRenderPass pass = VK_NULL_HANDLE;
-
-        VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
-
-        /*!
-         * \brief All the descriptor set layouts that this pipeline interface needs to create descriptor sets
-         *
-         * The index in the vector is the index of the set
-         */
-        rx::vector<VkDescriptorSetLayout> layouts_by_set;
-
-        rx::vector<uint32_t> variable_descriptor_set_counts;
-    };
-
-    struct VulkanPipeline : RhiPipeline {
-        VkPipeline pipeline = VK_NULL_HANDLE;
-        VkPipelineLayout layout = VK_NULL_HANDLE;
     };
 
     struct VulkanDescriptorPool : RhiDescriptorPool {
