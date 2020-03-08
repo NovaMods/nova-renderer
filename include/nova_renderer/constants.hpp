@@ -9,6 +9,7 @@ using namespace nova::mem::operators;
 namespace nova::renderer {
     constexpr const char* MODEL_MATRIX_BUFFER_NAME = "NovaModelMatrixUBO";
     constexpr const char* PER_FRAME_DATA_NAME = "NovaPerFrameUBO";
+    constexpr const char* CAMERA_MATRIX_BUFFER_NAME = "NovaCameraMatrixBuffer";
 
     constexpr uint32_t AMD_PCI_VENDOR_ID = 0x1022;
     constexpr uint32_t INTEL_PCI_VENDOR_ID = 8086;

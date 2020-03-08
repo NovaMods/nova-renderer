@@ -33,6 +33,11 @@ namespace nova::renderer {
          */
         rhi::RhiFramebuffer* swapchain_framebuffer;
 
+        /*!
+         * \brief Buffer with all the camera matrices to use when rendering this frame
+         */
+        rhi::RhiBuffer* camera_matrix_buffer;
+
         size_t cur_model_matrix_index = 0;
 
         rx::memory::allocator* allocator = nullptr;

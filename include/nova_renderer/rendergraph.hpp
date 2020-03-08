@@ -102,6 +102,8 @@ namespace nova::renderer {
         rx::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
         rx::vector<ProceduralMeshBatch<StaticMeshRenderCommand>> static_procedural_mesh_draws;
 
+        rx::optional<rhi::RhiResourceBindingDescription> camera_buffer_binding;
+
         rx::vector<rhi::RhiDescriptorSet*> descriptor_sets;
         const rhi::RhiPipelineInterface* pipeline_interface = nullptr;
 

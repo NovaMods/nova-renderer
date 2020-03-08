@@ -175,8 +175,24 @@ namespace nova::renderer {
 
     void renderer::MaterialPass::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         MTR_SCOPE("MaterialPass", "record");
-   // TODO:
-     //   Something about how I've made this method is incredibly slow'
+
+        // Find the camera matrix buffer and update the correct descriptor set with it
+        // A future version of this code will rely more on globally-bound resources, eliminating the need to bind the camera matrix buffer
+        // here
+        if(camera_buffer_binding) {
+            auto& device = ctx.nova->get_device();
+            rhi::RhiDescriptorSetWrite camera_buffer_write;
+            auto* descriptor_set = descriptor_sets[camera_buffer_binding->set];
+
+            rhi::RhiDescriptorResourceInfo camera_info{};
+            camera_info.buffer_info.buffer = ctx.camera_matrix_buffer;
+            const rx::vector<rhi::RhiDescriptorResourceInfo> resource_infos = rx::array{camera_info};
+
+            rx::vector<rhi::RhiDescriptorSetWrite> writes = rx::array{
+                rhi::RhiDescriptorSetWrite{descriptor_set, camera_buffer_binding->binding, camera_buffer_binding->type, resource_infos}};
+            device.update_descriptor_sets(writes);
+        }
+
         cmds.bind_descriptor_sets(descriptor_sets, pipeline_interface);
 
         static_mesh_draws.each_fwd(
