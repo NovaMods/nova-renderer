@@ -57,5 +57,9 @@ namespace nova::renderer::rhi {
         
     private:
         const VulkanRenderDevice& render_device;
+
+        uint32_t camera_index = 0;
+
+        VkPipelineLayout current_layout = VK_NULL_HANDLE;
     };
 } // namespace nova::renderer::rhi

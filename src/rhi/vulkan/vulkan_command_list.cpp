@@ -1,10 +1,12 @@
 #include "vulkan_command_list.hpp"
 
+#include <minitrace.h>
 #include <rx/core/log.h>
 #include <string.h>
 #include <vk_mem_alloc.h>
 
-#include "minitrace.h"
+#include "nova_renderer/camera.hpp"
+
 #include "vk_structs.hpp"
 #include "vulkan_render_device.hpp"
 #include "vulkan_utils.hpp"
@@ -138,7 +140,12 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderCommandList::set_camera(const Camera& camera) {
-        // vkCmdPushConstants(cmds, layout, flags, 0, sizeof(uint32_t), &camera.index);
+        MTR_SCOPE("VulkanRenderCommandList", "set_camera");
+        camera_index = camera.index;
+
+        if(current_layout != VK_NULL_HANDLE) {
+            vkCmdPushConstants(cmds, current_layout, VK_SHADER_STAGE_ALL, 0, sizeof(uint32_t), &camera_index);
+        }
     }
 
     void VulkanRenderCommandList::begin_renderpass(RhiRenderpass* renderpass, RhiFramebuffer* framebuffer) {
@@ -168,6 +175,11 @@ namespace nova::renderer::rhi {
         MTR_SCOPE("VulkanRenderCommandList", "bind_pipeline");
         const auto* vk_pipeline = static_cast<const VulkanPipeline*>(pipeline);
         vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline->pipeline);
+
+        if(current_layout != vk_pipeline->layout) {
+            current_layout = vk_pipeline->layout;
+            vkCmdPushConstants(cmds, current_layout, VK_SHADER_STAGE_ALL, 0, sizeof(uint32_t), &camera_index);
+        }
     }
 
     void VulkanRenderCommandList::bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets,

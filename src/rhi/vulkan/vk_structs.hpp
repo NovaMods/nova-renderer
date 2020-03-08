@@ -61,6 +61,7 @@ namespace nova::renderer::rhi {
 
     struct VulkanPipeline : RhiPipeline {
         VkPipeline pipeline = VK_NULL_HANDLE;
+        VkPipelineLayout layout = VK_NULL_HANDLE;
     };
 
     struct VulkanDescriptorPool : RhiDescriptorPool {

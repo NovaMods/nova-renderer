@@ -46,6 +46,11 @@ namespace nova::renderer::rhi {
         // Info about the hardware
         VulkanGpuInfo gpu;
 
+        /*!
+         * \brief All the push constants in the standard pipeline layout
+         */
+        rx::vector<VkPushConstantRange> standard_push_constants;
+
         // Debugging things
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
@@ -154,11 +159,6 @@ namespace nova::renderer::rhi {
          * The index in the vector is the thread index, the key in the map is the queue family index
          */
         rx::vector<rx::map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
-
-        /*!
-         * \brief All the push constants in the standard pipeline layout
-         */
-        rx::vector<VkPushConstantRange> standard_push_constants;
 
 #pragma region Initialization
         rx::vector<const char*> enabled_layer_names;

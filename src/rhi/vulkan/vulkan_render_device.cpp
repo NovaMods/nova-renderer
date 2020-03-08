@@ -50,10 +50,10 @@ namespace nova::renderer::rhi {
     VulkanRenderDevice::VulkanRenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator)
         : RenderDevice{settings, window, allocator},
           vk_internal_allocator{wrap_allocator(internal_allocator)},
-          command_pools_by_thread_idx{&internal_allocator},
           standard_push_constants{rx::array{VkPushConstantRange{/* .stageFlags = */ VK_SHADER_STAGE_ALL,
                                                                 /* .offset = */ 0,
-                                                                /* .size = */ sizeof(uint32_t)}}} {
+                                                                /* .size = */ sizeof(uint32_t)}}},
+          command_pools_by_thread_idx{&internal_allocator} {
         MTR_SCOPE("VulkanRenderDevice", "VulkanRenderDevice");
 
         create_instance();
@@ -320,8 +320,8 @@ namespace nova::renderer::rhi {
         pipeline_layout_create_info.flags = 0;
         pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(pipeline_interface->layouts_by_set.size());
         pipeline_layout_create_info.pSetLayouts = pipeline_interface->layouts_by_set.data();
-        pipeline_layout_create_info.pushConstantRangeCount = 0;
-        pipeline_layout_create_info.pPushConstantRanges = nullptr;
+        pipeline_layout_create_info.pushConstantRangeCount = standard_push_constants.size();
+        pipeline_layout_create_info.pPushConstantRanges = standard_push_constants.data();
 
         auto vk_alloc = wrap_allocator(allocator);
         NOVA_CHECK_RESULT(vkCreatePipelineLayout(device, &pipeline_layout_create_info, &vk_alloc, &pipeline_interface->pipeline_layout));
@@ -916,6 +916,8 @@ namespace nova::renderer::rhi {
         if(result != VK_SUCCESS) {
             return ntl::Result<RhiPipeline*>(MAKE_ERROR("Could not compile pipeline %s", data.name));
         }
+
+        vk_pipeline->layout = vk_interface->pipeline_layout;
 
         if(settings.settings.debug.enabled) {
             VkDebugUtilsObjectNameInfoEXT object_name = {};
