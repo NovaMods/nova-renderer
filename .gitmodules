@@ -30,4 +30,4 @@
 	url = https://github.com/KhronosGroup/SPIRV-Cross.git
 [submodule "external/dxc-wrapper"]
 	path = external/dxc-wrapper
-	url = https://github.com/project-arcana/dxc-wrapper.git
+	url = https://github.com/NovaMods/dxc-wrapper.git
