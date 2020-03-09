@@ -70,11 +70,9 @@ namespace nova::renderer {
 
     void Renderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
         MTR_SCOPE("Renderpass", "record_renderpass_contents");
-        auto& pipeline_storage = ctx.nova->get_pipeline_storage();
 
-        // TODO: I _actually_ want to get all the draw commands from NovaRenderer, instead of storing them in this struct
         pipeline_names.each_fwd([&](const rx::string& pipeline_name) {
-            const auto pipeline = pipeline_storage.get_pipeline(pipeline_name);
+            const auto* pipeline = ctx.nova->find_pipeline(pipeline_name);
             if(pipeline) {
                 pipeline->record(cmds, ctx);
             }
@@ -269,7 +267,7 @@ namespace nova::renderer {
         MTR_SCOPE("Pipeline", "record");
         cmds.set_pipeline_state(pipeline);
 
-        const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline);
+        const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline.name);
 
         passes.each_fwd([&](const renderer::MaterialPass& pass) { pass.record(cmds, ctx); });
     }

@@ -168,6 +168,16 @@ namespace nova::renderer {
         [[nodiscard]] rhi::RhiSampler* get_point_sampler() const;
 #pragma endregion
 
+#pragma region Materials
+        /*!
+         * \brief Gets the pipeline with the provided name
+         *
+         * \param pipeline_name Name of the pipeline to find
+         *
+         * \return The pipeline if it exists, or nullptr if it does not
+         */
+        [[nodiscard]] Pipeline* find_pipeline(const rx::string& pipeline_name);
+
         /*!
          * \brief Binds the resources for one material to that material's descriptor sets
          *
@@ -184,6 +194,7 @@ namespace nova::renderer {
         void bind_data_to_material_descriptor_sets(const MaterialPass& material,
                                                    const rx::map<rx::string, rx::string>& bindings,
                                                    const rx::map<rx::string, rhi::RhiResourceBindingDescription>& descriptor_descriptions);
+#pragma endregion
 
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
                                                                const StaticMeshRenderableCreateInfo& create_info);
