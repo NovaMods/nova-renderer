@@ -855,9 +855,7 @@ namespace nova::renderer {
         }
     }
 
-    void NovaRenderer::create_resource_storage() {
-        device_resources = rx::make_ptr<DeviceResources>(global_allocator, *this);
-    }
+    void NovaRenderer::create_resource_storage() { device_resources = rx::make_ptr<DeviceResources>(global_allocator, *this); }
 
     void NovaRenderer::create_builtin_render_targets() {
         const auto& swapchain_size = device->get_swapchain()->get_size();
@@ -943,33 +941,28 @@ namespace nova::renderer {
         }
 
         backbuffer_output_pipeline_create_info->viewport_size = device->get_swapchain()->get_size();
-        if(!pipeline_storage->create_pipeline(*backbuffer_output_pipeline_create_info)) {
-            logger(rx::log::level::k_error, "Could not create builtin pipeline %s", backbuffer_output_pipeline_create_info->name);
 
-        } else {
-            const auto pipeline_state = renderpack::to_pipeline_state_create_info(*backbuffer_output_pipeline_create_info, *rendergraph);
+        const auto pipeline_state = *backbuffer_output_pipeline_create_info;
 
-            const auto pipeline = pipeline_storage->get_pipeline(backbuffer_output_pipeline_create_info->name);
+        const auto pipeline = Pipeline{pipeline_state, nullptr};
 
-            const renderpack::MaterialData material{BACKBUFFER_OUTPUT_MATERIAL_NAME,
-                                                    rx::array{
-                                                        renderpack::MaterialPass{"main",
-                                                                                 BACKBUFFER_OUTPUT_MATERIAL_NAME,
-                                                                                 BACKBUFFER_OUTPUT_PIPELINE_NAME,
-                                                                                 rx::array{rx::pair{"ui_output", UI_OUTPUT_RT_NAME},
-                                                                                           rx::pair{"scene_output", SCENE_OUTPUT_RT_NAME},
-                                                                                           rx::pair{"tex_sampler", POINT_SAMPLER_NAME}},
-                                                                                 {}}},
-                                                    "block"};
+        const renderpack::MaterialData material{BACKBUFFER_OUTPUT_MATERIAL_NAME,
+                                                rx::array{renderpack::MaterialPass{"main",
+                                                                                   BACKBUFFER_OUTPUT_MATERIAL_NAME,
+                                                                                   BACKBUFFER_OUTPUT_PIPELINE_NAME,
+                                                                                   rx::array{rx::pair{"ui_output", UI_OUTPUT_RT_NAME},
+                                                                                             rx::pair{"scene_output", SCENE_OUTPUT_RT_NAME},
+                                                                                             rx::pair{"tex_sampler", POINT_SAMPLER_NAME}},
+                                                                                   {}}},
+                                                "block"};
 
-            const rx::vector<renderpack::MaterialData> materials = rx::array{material};
-            create_materials_for_pipeline(*pipeline, materials, backbuffer_output_pipeline_create_info->name);
+        const rx::vector<renderpack::MaterialData> materials = rx::array{material};
+        create_materials_for_pipeline(*pipeline, materials, backbuffer_output_pipeline_create_info->name);
 
-            const static FullMaterialPassName BACKBUFFER_OUTPUT_MATERIAL{BACKBUFFER_OUTPUT_MATERIAL_NAME, "main"};
-            const static StaticMeshRenderableCreateInfo FULLSCREEN_TRIANGLE_RENDERABLE{{}, true, fullscreen_triangle_id};
+        const static FullMaterialPassName BACKBUFFER_OUTPUT_MATERIAL{BACKBUFFER_OUTPUT_MATERIAL_NAME, "main"};
+        const static StaticMeshRenderableCreateInfo FULLSCREEN_TRIANGLE_RENDERABLE{{}, true, fullscreen_triangle_id};
 
-            backbuffer_output_renderable = add_renderable_for_material(BACKBUFFER_OUTPUT_MATERIAL, FULLSCREEN_TRIANGLE_RENDERABLE);
-        }
+        backbuffer_output_renderable = add_renderable_for_material(BACKBUFFER_OUTPUT_MATERIAL, FULLSCREEN_TRIANGLE_RENDERABLE);
     }
 
     void NovaRenderer::initialize_descriptor_pool() {

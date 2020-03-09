@@ -260,6 +260,7 @@ namespace nova::renderer {
 
         void create_renderpass_manager();
 
+        // MUST be called when the swapchain size changes
         void create_builtin_renderpasses();
 
         void initialize_descriptor_pool();
