@@ -125,8 +125,6 @@ namespace nova::renderer::rhi {
         [[nodiscard]] uint32_t get_num_descriptors_of_type(DescriptorType type) const;
     };
 
-    struct RhiPipeline {};
-
     struct RhiSemaphore {};
 
     struct RhiPresentSemaphore {};

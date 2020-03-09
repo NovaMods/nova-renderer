@@ -8,13 +8,13 @@
 #include "nova_renderer/procedural_mesh.hpp"
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/renderpack_data.hpp"
+#include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 #include "nova_renderer/rhi/swapchain.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
 
 #include "resource_loader.hpp"
-#include "rhi/pipeline_create_info.hpp"
 
 namespace nova::renderer {
     RX_LOG("rendergraph", rg_log);
@@ -118,7 +118,7 @@ namespace nova::renderer {
     };
 
     struct Pipeline {
-        rhi::RhiPipeline* pipeline = nullptr;
+        RhiPipelineState pipeline{};
         rhi::RhiPipelineInterface* pipeline_interface = nullptr;
 
         void record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;

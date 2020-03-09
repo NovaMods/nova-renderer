@@ -211,7 +211,7 @@ namespace nova::renderer::rhi {
 
             vkCmdBindDescriptorSets(cmds,
                                     VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                    vk_interface->pipeline_layout,
+                                    device.standard_pipeline_layout,
                                     i,
                                     1,
                                     &vk_set->descriptor_set,

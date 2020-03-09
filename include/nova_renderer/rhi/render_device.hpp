@@ -192,14 +192,6 @@ namespace nova::renderer::rhi {
         virtual void destroy_pipeline_interface(RhiPipelineInterface* pipeline_interface, rx::memory::allocator& allocator) = 0;
 
         /*!
-         * \brief Clean up any GPU objects a Pipeline may own
-         *
-         * While Pipelines are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
-         * need to clean up their GPU objects
-         */
-        virtual void destroy_pipeline(RhiPipeline* pipeline, rx::memory::allocator& allocator) = 0;
-
-        /*!
          * \brief Clean up any GPU objects an Image may own
          *
          * While Images are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still need

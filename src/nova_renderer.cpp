@@ -452,7 +452,7 @@ namespace nova::renderer {
         logger(rx::log::level::k_verbose, "Renderpack %s loaded successfully", renderpack_name);
     }
 
-    const rx::vector<MaterialPass>& NovaRenderer::get_material_passes_for_pipeline(rhi::RhiPipeline* const pipeline) {
+    const rx::vector<MaterialPass>& NovaRenderer::get_material_passes_for_pipeline(const rx::string& pipeline) {
         return *passes_by_pipeline.find(pipeline);
     }
 
@@ -499,17 +499,17 @@ namespace nova::renderer {
     void NovaRenderer::create_pipelines_and_materials(const rx::vector<renderpack::PipelineData>& pipeline_create_infos,
                                                       const rx::vector<renderpack::MaterialData>& materials) {
         MTR_SCOPE("create_pipelines_and_materials", "Self");
-        pipeline_create_infos.each_fwd([&](const renderpack::PipelineData& pipeline_create_info) {
-            MTR_SCOPE("create_pipelines_and_materials", pipeline_create_info.name.data());
-            const auto pipeline_state_create_info = to_pipeline_state_create_info(pipeline_create_info, *rendergraph);
-            if(!pipeline_state_create_info) {
-                logger(rx ::log::level::k_error, "Could not create pipeline %s", pipeline_create_info.name);
+        pipeline_create_infos.each_fwd([&](const renderpack::PipelineData& rp_pipeline_state) {
+            MTR_SCOPE("create_pipelines_and_materials", rp_pipeline_state.name.data());
+            const auto pipeline_state = to_pipeline_state_create_info(rp_pipeline_state, *rendergraph);
+            if(!pipeline_state) {
+                logger(rx ::log::level::k_error, "Could not create pipeline %s", rp_pipeline_state.name);
             }
 
-            if(pipeline_storage->create_pipeline(*pipeline_state_create_info)) {
-                auto pipeline = pipeline_storage->get_pipeline(pipeline_state_create_info->name);
-                create_materials_for_pipeline(*pipeline, materials, pipeline_create_info.name);
-            }
+            Pipeline pipeline;
+            pipeline.pipeline = *pipeline_state;
+
+            create_materials_for_pipeline(pipeline, materials, rp_pipeline_state.name);
         });
     }
 
@@ -560,7 +560,7 @@ namespace nova::renderer {
             });
         });
 
-        passes_by_pipeline.insert(pipeline.pipeline, passes);
+        passes_by_pipeline.insert(pipeline.pipeline.name, passes);
     }
 
     void NovaRenderer::update_camera_matrix_buffer(const uint32_t frame_idx) {
@@ -581,7 +581,7 @@ namespace nova::renderer {
             }
             i++;
         });
-        
+
         camera_data->upload_to_device(frame_idx);
     }
 
@@ -671,16 +671,7 @@ namespace nova::renderer {
         key.material_pass_idx = pass_key->material_pass_index;
 
         // Figure out where to put the renderable
-        rx::vector<MaterialPass>* materials = [&]() -> rx::vector<MaterialPass>* {
-            const auto pipeline = pipeline_storage->get_pipeline(pass_key->pipeline_name);
-            if(pipeline) {
-                return passes_by_pipeline.find(pipeline->pipeline);
-
-            } else {
-                logger(rx::log::level::k_error, "Could not get place the new renderable in the appropriate draw command list");
-                return nullptr;
-            }
-        }();
+        auto* materials = passes_by_pipeline.find(pass_key->pipeline_name);
 
         if(!materials) {
             return std::numeric_limits<uint64_t>::max();
@@ -699,7 +690,7 @@ namespace nova::renderer {
                 material.static_mesh_draws.each_fwd([&](MeshBatch<StaticMeshRenderCommand>& batch) {
                     if(batch.vertex_buffer == mesh->vertex_buffer) {
                         key.batch_idx = batch_idx;
-                        key.renderable_idx = batch.commands.size();
+                        key.renderable_idx = static_cast<uint32_t>(batch.commands.size());
 
                         batch.commands.emplace_back(command);
 
@@ -719,7 +710,7 @@ namespace nova::renderer {
                     batch.index_buffer = mesh->index_buffer;
                     batch.commands.emplace_back(command);
 
-                    key.batch_idx = material.static_mesh_draws.size();
+                    key.batch_idx = static_cast<uint32_t>(material.static_mesh_draws.size());
                     key.renderable_idx = 0;
 
                     material.static_mesh_draws.emplace_back(batch);
@@ -735,7 +726,7 @@ namespace nova::renderer {
                 material.static_procedural_mesh_draws.each_fwd([&](ProceduralMeshBatch<StaticMeshRenderCommand>& batch) {
                     if(batch.mesh.get_key() == create_info.mesh) {
                         key.batch_idx = batch_idx;
-                        key.renderable_idx = batch.commands.size();
+                        key.renderable_idx = static_cast<uint32_t>(batch.commands.size());
 
                         batch.commands.emplace_back(command);
 
@@ -751,7 +742,7 @@ namespace nova::renderer {
                     ProceduralMeshBatch<StaticMeshRenderCommand> batch{&proc_meshes, create_info.mesh};
                     batch.commands.emplace_back(command);
 
-                    key.batch_idx = material.static_mesh_draws.size();
+                    key.batch_idx = static_cast<uint32_t>(material.static_mesh_draws.size());
                     key.renderable_idx = 0;
 
                     material.static_procedural_mesh_draws.emplace_back(batch);
@@ -775,13 +766,7 @@ namespace nova::renderer {
             return;
         }
 
-        const auto pipeline = pipeline_storage->get_pipeline(key->pipeline_name);
-        if(!pipeline) {
-            logger(rx::log::level::k_error, "Could not find pipeline %s, as requested by renderable %u", key->pipeline_name, renderable);
-            return;
-        }
-
-        auto* passes = passes_by_pipeline.find(pipeline->pipeline);
+        auto* passes = passes_by_pipeline.find(key->pipeline_name);
         if(passes == nullptr) {
             logger(rx::log::level::k_error,
                    "Could not find draws for pipeline %s, as requested by renderable %u",
@@ -833,8 +818,6 @@ namespace nova::renderer {
 
     DeviceResources& NovaRenderer::get_resource_manager() const { return *device_resources; }
 
-    PipelineStorage& NovaRenderer::get_pipeline_storage() const { return *pipeline_storage; }
-
     void NovaRenderer::create_global_allocators() {
 
         // TODO: Make good
@@ -874,8 +857,6 @@ namespace nova::renderer {
 
     void NovaRenderer::create_resource_storage() {
         device_resources = rx::make_ptr<DeviceResources>(global_allocator, *this);
-
-        pipeline_storage = rx::make_ptr<PipelineStorage>(global_allocator, *this, *global_allocator);
     }
 
     void NovaRenderer::create_builtin_render_targets() {
@@ -966,6 +947,8 @@ namespace nova::renderer {
             logger(rx::log::level::k_error, "Could not create builtin pipeline %s", backbuffer_output_pipeline_create_info->name);
 
         } else {
+            const auto pipeline_state = renderpack::to_pipeline_state_create_info(*backbuffer_output_pipeline_create_info, *rendergraph);
+
             const auto pipeline = pipeline_storage->get_pipeline(backbuffer_output_pipeline_create_info->name);
 
             const renderpack::MaterialData material{BACKBUFFER_OUTPUT_MATERIAL_NAME,

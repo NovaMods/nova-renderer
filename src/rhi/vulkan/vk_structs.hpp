@@ -30,7 +30,7 @@ namespace nova::renderer::rhi {
         VmaAllocationInfo allocation_info{};
     };
 
-    struct VulkanPipeline : RhiPipeline {
+    struct VulkanPipeline {
         VkPipeline pipeline = VK_NULL_HANDLE;
         VkPipelineLayout layout = VK_NULL_HANDLE;
     };

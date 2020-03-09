@@ -10,7 +10,6 @@
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/per_frame_device_array.hpp"
-#include "nova_renderer/pipeline_storage.hpp"
 #include "nova_renderer/procedural_mesh.hpp"
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/renderdoc_app.h"
@@ -120,7 +119,7 @@ namespace nova::renderer {
         template <typename RenderpassType, typename... Args>
         RenderpassType* create_ui_renderpass(Args&&... args);
 
-        [[nodiscard]] const rx::vector<MaterialPass>& get_material_passes_for_pipeline(rhi::RhiPipeline* const pipeline);
+        [[nodiscard]] const rx::vector<MaterialPass>& get_material_passes_for_pipeline(const rx::string& pipeline);
 
         [[nodiscard]] rx::optional<RenderpassMetadata> get_renderpass_metadata(const rx::string& renderpass_name) const;
 
@@ -204,8 +203,6 @@ namespace nova::renderer {
         [[nodiscard]] NovaWindow& get_window() const;
 
         [[nodiscard]] DeviceResources& get_resource_manager() const;
-
-        [[nodiscard]] PipelineStorage& get_pipeline_storage() const;
 
     private:
         NovaSettingsAccessManager render_settings;
@@ -302,9 +299,10 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Rendering pipelines
-        rx::ptr<PipelineStorage> pipeline_storage;
-
-        rx::map<rhi::RhiPipeline*, rx::vector<MaterialPass>> passes_by_pipeline;
+        /*!
+         * \brief Map from pipeline name to all the material passes that use that pipeline
+         */
+        rx::map<rx::string, rx::vector<MaterialPass>> passes_by_pipeline;
 
         rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas;
 
@@ -337,6 +335,7 @@ namespace nova::renderer {
         rx::array<rhi::RhiFence* [NUM_IN_FLIGHT_FRAMES]> frame_fences;
 
         rx::map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
+        rx::map<rx::string, Pipeline> pipelines;
 
         struct RenderableKey {
             rx::string pipeline_name{};

@@ -899,7 +899,7 @@ namespace nova::renderer::rhi {
         auto vk_alloc = wrap_allocator(allocator);
         const auto result = vkCreateGraphicsPipelines(device, nullptr, 1, &pipeline_create_info, &vk_alloc, &vk_pipeline.pipeline);
         if(result != VK_SUCCESS) {
-            return ntl::Result{MAKE_ERROR("Could not compile pipeline %s", state.name)};
+            return ntl::Result<VulkanPipeline>{MAKE_ERROR("Could not compile pipeline %s", state.name)};
         }
 
         // TODO: Figure out how to have bespoke pipeline layouts for things like post-processing
@@ -1228,10 +1228,9 @@ namespace nova::renderer::rhi {
         allocator.deallocate(reinterpret_cast<rx_byte*>(pipeline_interface));
     }
 
-    void VulkanRenderDevice::destroy_pipeline(RhiPipeline* pipeline, rx::memory::allocator& allocator) {
+    void VulkanRenderDevice::destroy_pipeline(VulkanPipeline* pipeline, rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "destroy_pipeline");
-        auto* vk_pipeline = static_cast<VulkanPipeline*>(pipeline);
-        vkDestroyPipeline(device, vk_pipeline->pipeline, nullptr);
+        vkDestroyPipeline(device, pipeline->pipeline, nullptr);
 
         allocator.deallocate(reinterpret_cast<rx_byte*>(pipeline));
     }
@@ -1281,7 +1280,7 @@ namespace nova::renderer::rhi {
         VkCommandBuffer new_buffer;
         vkAllocateCommandBuffers(device, &create_info, &new_buffer);
 
-        auto* list = allocator.create<VulkanRenderCommandList>(new_buffer, this);
+        auto* list = allocator.create<VulkanRenderCommandList>(new_buffer, *this, allocator);
 
         return list;
     }

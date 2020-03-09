@@ -123,7 +123,7 @@ namespace nova::renderer::rhi {
 
         void destroy_pipeline_interface(RhiPipelineInterface* pipeline_interface, rx::memory::allocator& allocator) override;
 
-        void destroy_pipeline(RhiPipeline* pipeline, rx::memory::allocator& allocator) override;
+        void destroy_pipeline(VulkanPipeline* pipeline, rx::memory::allocator& allocator);
 
         void destroy_texture(RhiImage* resource, rx::memory::allocator& allocator) override;
 
