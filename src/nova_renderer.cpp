@@ -902,11 +902,27 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_builtin_uniform_buffers() {
+        auto* material_data_memory = global_allocator->allocate(MATERIAL_BUFFER_SIZE.b_count());
+        material_buffer = rx::make_ptr<MaterialDataBuffer>(global_allocator,
+                                                           rx::memory::view{global_allocator,
+                                                                            material_data_memory,
+                                                                            MATERIAL_BUFFER_SIZE.b_count()});
+        for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
+            const auto buffer_name = rx::string::format("%s_%d", MATERIAL_DATA_BUFFER_NAME, i);
+            if(auto buffer = device_resources->create_uniform_buffer(buffer_name, MATERIAL_BUFFER_SIZE); buffer) {
+                builtin_buffer_names.emplace_back(buffer_name);
+                material_device_buffers.emplace_back(buffer);
+
+            } else {
+                logger(rx::log::level::k_error, "Could not create builtin buffer %s", buffer_name);
+            }
+        }
+
         if(device_resources->create_uniform_buffer(PER_FRAME_DATA_NAME, sizeof(PerFrameUniforms))) {
             builtin_buffer_names.emplace_back(PER_FRAME_DATA_NAME);
 
         } else {
-            logger(rx::log::level::k_error, "Could not create builtin buffer ", PER_FRAME_DATA_NAME);
+            logger(rx::log::level::k_error, "Could not create builtin buffer %s", PER_FRAME_DATA_NAME);
         }
 
         if(device_resources->create_uniform_buffer(MODEL_MATRIX_BUFFER_NAME, sizeof(glm::mat4) * 0xFFFF)) {

@@ -5,6 +5,7 @@
 #include <rx/core/optional.h>
 #include <rx/core/ptr.h>
 
+#include "../../src/renderer/material_data_buffer.hpp"
 #include "nova_renderer/camera.hpp"
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
@@ -169,6 +170,14 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Materials
+        /*!
+         * \brief Creates a new material of the specified type
+         *
+         * \return A pointer to the new material, or nullptr if the material can't be created for whatever reason
+         */
+        template <typename MaterialType>
+        [[nodiscard]] MaterialType* create_material();
+
         /*!
          * \brief Gets the pipeline with the provided name
          *
@@ -348,6 +357,9 @@ namespace nova::renderer {
 
         rx::map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
         rx::map<rx::string, Pipeline> pipelines;
+
+        rx::ptr<MaterialDataBuffer> material_buffer;
+        rx::array<BufferResourceAccessor[NUM_IN_FLIGHT_FRAMES]> material_device_buffers;
 
         struct RenderableKey {
             rx::string pipeline_name{};

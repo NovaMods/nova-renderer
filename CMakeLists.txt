@@ -151,6 +151,7 @@ set(NOVA_SOURCE
         src/render_objects/procedural_mesh.cpp
         src/render_objects/uniform_structs.hpp
         src/render_objects/renderables.cpp
+
         src/renderer/rendergraph.cpp
         src/renderer/ui/ui_renderer.cpp
         src/renderer/builtin/backbuffer_output_pass.hpp
@@ -159,6 +160,8 @@ set(NOVA_SOURCE
         src/renderer/camera.cpp
         src/renderer/visibility_cache.hpp
         src/renderer/visibility_cache.cpp
+        src/renderer/material_data_buffer.cpp
+        src/renderer/material_data_buffer.hpp
 
         src/util/utils.cpp
         src/util/result.cpp
