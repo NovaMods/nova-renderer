@@ -122,6 +122,7 @@ set(NOVA_SOURCE
         include/nova_renderer/resource_loader.hpp
         include/nova_renderer/camera.hpp
         include/nova_renderer/per_frame_device_array.hpp
+        include/nova_renderer/material.hpp
 
         src/nova_renderer.cpp
 
@@ -162,6 +163,7 @@ set(NOVA_SOURCE
         src/renderer/visibility_cache.cpp
         src/renderer/material_data_buffer.cpp
         src/renderer/material_data_buffer.hpp
+        src/renderer/material.cpp
 
         src/util/utils.cpp
         src/util/result.cpp

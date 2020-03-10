@@ -176,7 +176,7 @@ namespace nova::renderer {
          * \return A pointer to the new material, or nullptr if the material can't be created for whatever reason
          */
         template <typename MaterialType>
-        [[nodiscard]] MaterialType* create_material();
+        [[nodiscard]] rx::pair<uint32_t, MaterialType*> create_material();
 
         /*!
          * \brief Gets the pipeline with the provided name
@@ -359,7 +359,7 @@ namespace nova::renderer {
         rx::map<rx::string, Pipeline> pipelines;
 
         rx::ptr<MaterialDataBuffer> material_buffer;
-        rx::array<BufferResourceAccessor[NUM_IN_FLIGHT_FRAMES]> material_device_buffers;
+        rx::vector<BufferResourceAccessor> material_device_buffers;
 
         struct RenderableKey {
             rx::string pipeline_name{};
@@ -394,5 +394,11 @@ namespace nova::renderer {
     template <typename RenderpassType, typename... Args>
     RenderpassType* NovaRenderer::create_ui_renderpass(Args&&... args) {
         return rendergraph->create_renderpass<RenderpassType>(*device_resources, rx::utility::forward<Args>(args)...);
+    }
+
+    template <typename MaterialType>
+    rx::pair<uint32_t, MaterialType*> NovaRenderer::create_material() {
+        const auto idx = material_buffer->get_next_free_index<MaterialType>();
+        return {idx, &material_buffer[idx]};
     }
 } // namespace nova::renderer
