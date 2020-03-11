@@ -71,7 +71,7 @@ set(BUILD_EXAMPLES OFF CACHE BOOL "Disable Miniz examples" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/miniz)
 
 # Rex Core lib
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/rex)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/rex_core)
 
 # VMA
 # Apparently they don't have an `include/` directory, you just include the src folder? Thanks AMD :|
