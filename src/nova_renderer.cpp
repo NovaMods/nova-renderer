@@ -284,6 +284,7 @@ namespace nova::renderer {
 
         FrameContext ctx = {};
         ctx.frame_count = frame_count;
+        ctx.frame_idx = cur_frame_idx;
         ctx.nova = this;
         ctx.allocator = &frame_allocator;
         ctx.swapchain_framebuffer = swapchain->get_framebuffer(cur_frame_idx);
@@ -417,7 +418,7 @@ namespace nova::renderer {
         const MeshId our_id = next_mesh_id;
         next_mesh_id++;
 
-        proc_meshes.insert(our_id, ProceduralMesh{vertex_size, index_size, device.get()});
+        proc_meshes.insert(our_id, ProceduralMesh{vertex_size, index_size, settings->max_in_flight_frames, device.get()});
 
         return ProceduralMeshAccessor{&proc_meshes, our_id};
     }
