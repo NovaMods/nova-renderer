@@ -187,22 +187,6 @@ namespace nova::renderer {
          */
         [[nodiscard]] Pipeline* find_pipeline(const rx::string& pipeline_name);
 
-        /*!
-         * \brief Binds the resources for one material to that material's descriptor sets
-         *
-         * This method does not perform any validation. It assumes that descriptor_descriptions has a description for
-         * every descriptor that the material wants to bind to, and it assumes that material has all the needed
-         * descriptors
-         *
-         * \param material The material to bind resources to
-         * \param bindings What resources should be bound to what descriptor. The key is the descriptor name and the
-         * value is the resource name
-         * \param descriptor_descriptions A map from descriptor name to all the information you need to update that
-         * descriptor
-         */
-        void bind_data_to_material_descriptor_sets(const MaterialPass& material,
-                                                   const rx::map<rx::string, rx::string>& bindings,
-                                                   const rx::map<rx::string, rhi::RhiResourceBindingDescription>& descriptor_descriptions);
 #pragma endregion
 
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
@@ -282,8 +266,6 @@ namespace nova::renderer {
 
         // MUST be called when the swapchain size changes
         void create_builtin_renderpasses();
-
-        void initialize_descriptor_pool();
 
         void create_builtin_pipelines();
 #pragma endregion

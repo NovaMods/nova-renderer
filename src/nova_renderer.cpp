@@ -534,14 +534,6 @@ namespace nova::renderer {
                     MaterialPass pass = {};
                     pass.pipeline_interface = pipeline.pipeline_interface;
 
-                    if(!pipeline.pipeline_interface->bindings.is_empty()) {
-                        pass.descriptor_sets = device->create_descriptor_sets(pipeline.pipeline_interface,
-                                                                              global_descriptor_pool,
-                                                                              *renderpack_allocator);
-                    }
-
-                    bind_data_to_material_descriptor_sets(pass, pass_data.bindings, pipeline.pipeline_interface->bindings);
-
                     const FullMaterialPassName full_pass_name{pass_data.material_name, pass_data.name};
 
                     pass.name = full_pass_name;
@@ -583,56 +575,6 @@ namespace nova::renderer {
         });
 
         camera_data->upload_to_device(frame_idx);
-    }
-
-    void NovaRenderer::bind_data_to_material_descriptor_sets(
-        const MaterialPass& material,
-        const rx::map<rx::string, rx::string>& bindings,
-        const rx::map<rx::string, rhi::RhiResourceBindingDescription>& descriptor_descriptions) {
-
-        rx::vector<rhi::RhiDescriptorSetWrite> writes;
-        writes.reserve(bindings.size());
-
-        bindings.each_pair([&](const rx::string& descriptor_name, const rx::string& resource_name) {
-            const rhi::RhiResourceBindingDescription& binding_desc = *descriptor_descriptions.find(descriptor_name);
-            rhi::RhiDescriptorSet* descriptor_set = material.descriptor_sets[binding_desc.set];
-
-            rhi::RhiDescriptorSetWrite write = {};
-            write.set = descriptor_set;
-            write.binding = binding_desc.binding;
-            write.resources.emplace_back();
-            rhi::RhiDescriptorResourceInfo& resource_info = write.resources[0];
-
-            if(const auto dyn_tex = device_resources->get_render_target(resource_name); dyn_tex) {
-                rhi::RhiImage* image = (*dyn_tex)->image;
-
-                resource_info.image_info.image = image;
-                resource_info.image_info.format = dynamic_texture_infos.find(resource_name)->format;
-
-                write.type = rhi::DescriptorType::Texture;
-
-                writes.push_back(write);
-
-            } else if(const auto buffer_access = device_resources->get_uniform_buffer(resource_name); buffer_access) {
-                rhi::RhiBuffer* buffer = (*buffer_access)->buffer;
-
-                resource_info.buffer_info.buffer = buffer;
-                write.type = rhi::DescriptorType::UniformBuffer;
-
-                writes.push_back(write);
-
-            } else if(resource_name == POINT_SAMPLER_NAME) {
-                resource_info.sampler_info.sampler = point_sampler;
-                write.type = rhi::DescriptorType::Sampler;
-
-                writes.push_back(write);
-
-            } else {
-                logger(rx::log::level::k_error, "Resource %s is not known to Nova", resource_name);
-            }
-        });
-
-        device->update_descriptor_sets(writes);
     }
 
     void NovaRenderer::destroy_dynamic_resources() {
@@ -981,13 +923,6 @@ namespace nova::renderer {
         const static StaticMeshRenderableCreateInfo FULLSCREEN_TRIANGLE_RENDERABLE{{}, true, fullscreen_triangle_id};
 
         backbuffer_output_renderable = add_renderable_for_material(BACKBUFFER_OUTPUT_MATERIAL, FULLSCREEN_TRIANGLE_RENDERABLE);
-    }
-
-    void NovaRenderer::initialize_descriptor_pool() {
-        global_descriptor_pool = device->create_descriptor_pool(rx::array{rx::pair{rhi::DescriptorType::UniformBuffer, 4096},
-                                                                          rx::pair{rhi::DescriptorType::CombinedImageSampler, 4096},
-                                                                          rx::pair{rhi::DescriptorType::Sampler, 5}},
-                                                                *global_allocator);
     }
 
     void NovaRenderer::create_builtin_pipelines() {}
