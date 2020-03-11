@@ -234,7 +234,7 @@ namespace nova::renderer {
         });
 
         if(start_index != ctx.cur_model_matrix_index) {
-            const auto& [vertex_buffer, index_buffer] = batch.mesh->get_buffers_for_frame(ctx.frame_count % NUM_IN_FLIGHT_FRAMES);
+            const auto& [vertex_buffer, index_buffer] = batch.mesh->get_buffers_for_frame(ctx.frame_idx);
             // TODO: There's probably a better way to do this
             rx::vector<rhi::RhiBuffer*> vertex_buffers;
             vertex_buffers.reserve(7);

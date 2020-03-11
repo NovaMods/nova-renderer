@@ -183,7 +183,7 @@ namespace nova::renderer {
     }
 
     NovaRenderer::NovaRenderer(const NovaSettings& settings)
-        : render_settings{settings}, global_allocator{&rx::memory::g_system_allocator}, cameras{global_allocator} {
+        : settings{settings}, global_allocator{&rx::memory::g_system_allocator}, cameras{global_allocator} {
         create_global_allocators();
 
         initialize_virtual_filesystem();
@@ -225,7 +225,7 @@ namespace nova::renderer {
 
         {
             MTR_SCOPE("Init", "InitVulkanRenderDevice");
-            device = rx::make_ptr<rhi::VulkanRenderDevice>(global_allocator, render_settings, *window, *global_allocator);
+            device = rx::make_ptr<rhi::VulkanRenderDevice>(global_allocator, settings, *window, *global_allocator);
         }
 
         swapchain = device->get_swapchain();
@@ -255,7 +255,7 @@ namespace nova::renderer {
         mtr_shutdown();
     }
 
-    NovaSettingsAccessManager& NovaRenderer::get_settings() { return render_settings; }
+    NovaSettingsAccessManager& NovaRenderer::get_settings() { return settings; }
 
     rx::memory::allocator& NovaRenderer::get_global_allocator() const { return *global_allocator; }
 
@@ -263,7 +263,7 @@ namespace nova::renderer {
         MTR_SCOPE("NovaRenderer", "execute_frame");
         frame_count++;
 
-        rx::memory::bump_point_allocator& frame_allocator = *frame_allocators[frame_count % NUM_IN_FLIGHT_FRAMES];
+        rx::memory::bump_point_allocator& frame_allocator = *frame_allocators[frame_count % settings->max_in_flight_frames];
         frame_allocator.reset();
 
         cur_frame_idx = device->get_swapchain()->acquire_next_swapchain_image(frame_allocator);
@@ -765,8 +765,8 @@ namespace nova::renderer {
         // TODO: Make good
         renderpack_allocator = global_allocator;
 
-        frame_allocators.reserve(NUM_IN_FLIGHT_FRAMES);
-        for(size_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
+        frame_allocators.reserve(settings->max_in_flight_frames);
+        for(size_t i = 0; i < settings->max_in_flight_frames; i++) {
             rx_byte* ptr = global_allocator->allocate(PER_FRAME_MEMORY_SIZE.b_count());
             auto* mem = global_allocator->create<rx::memory::bump_point_allocator>(ptr, PER_FRAME_MEMORY_SIZE.b_count());
             frame_allocators.emplace_back(mem);
@@ -784,10 +784,7 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_global_sync_objects() {
-        const rx::vector<rhi::RhiFence*>& fences = device->create_fences(NUM_IN_FLIGHT_FRAMES, true, *global_allocator);
-        for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
-            frame_fences[i] = fences[i];
-        }
+        frame_fences = device->create_fences(settings->max_in_flight_frames, true, *global_allocator);
     }
 
     void NovaRenderer::create_global_samplers() {
@@ -847,7 +844,7 @@ namespace nova::renderer {
                                                            rx::memory::view{global_allocator,
                                                                             material_data_memory,
                                                                             MATERIAL_BUFFER_SIZE.b_count()});
-        for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
+        for(uint32_t i = 0; i < settings->max_in_flight_frames; i++) {
             const auto buffer_name = rx::string::format("%s_%d", MATERIAL_DATA_BUFFER_NAME, i);
             if(auto buffer = device_resources->create_uniform_buffer(buffer_name, MATERIAL_BUFFER_SIZE); buffer) {
                 builtin_buffer_names.emplace_back(buffer_name);

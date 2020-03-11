@@ -1548,7 +1548,7 @@ namespace nova::renderer::rhi {
         rx::vector<VkPresentModeKHR> present_modes{&internal_allocator, num_surface_present_modes};
         vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, present_modes.data());
 
-        swapchain = internal_allocator.create<VulkanSwapchain>(NUM_IN_FLIGHT_FRAMES, this, window.get_framebuffer_size(), present_modes);
+        swapchain = internal_allocator.create<VulkanSwapchain>(settings->max_in_flight_frames, this, window.get_framebuffer_size(), present_modes);
 
         swapchain_size = window.get_framebuffer_size();
     }

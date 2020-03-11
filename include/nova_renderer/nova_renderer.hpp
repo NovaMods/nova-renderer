@@ -209,7 +209,7 @@ namespace nova::renderer {
         [[nodiscard]] DeviceResources& get_resource_manager() const;
 
     private:
-        NovaSettingsAccessManager render_settings;
+        NovaSettingsAccessManager settings;
 
         rx::ptr<rhi::RenderDevice> device;
         rx::ptr<NovaWindow> window;
@@ -335,7 +335,7 @@ namespace nova::renderer {
         rx::vector<rx::string> builtin_buffer_names;
         uint32_t cur_model_matrix_index = 0;
 
-        rx::array<rhi::RhiFence* [NUM_IN_FLIGHT_FRAMES]> frame_fences;
+        rx::vector<rhi::RhiFence*> frame_fences;
 
         rx::map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
         rx::map<rx::string, Pipeline> pipelines;

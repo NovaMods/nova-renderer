@@ -24,6 +24,11 @@ namespace nova::renderer {
         size_t frame_count;
 
         /*!
+         * \brief Index of the frame currently being rendered
+         */
+        size_t frame_idx;
+
+        /*!
          * \brief Swapchain image that this frame renders to
          */
         rhi::RhiImage* swapchain_image;

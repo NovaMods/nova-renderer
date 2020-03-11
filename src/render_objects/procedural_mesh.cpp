@@ -14,6 +14,7 @@ namespace nova::renderer {
 
     ProceduralMesh::ProceduralMesh(const uint64_t vertex_buffer_size,
                                    const uint64_t index_buffer_size,
+                                   const uint32_t num_in_flight_frames,
                                    RenderDevice* device,
                                    const rx::string& name)
         : device(device),
@@ -31,7 +32,9 @@ namespace nova::renderer {
 
         allocator = &rx::memory::g_system_allocator;
 
-        for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
+        vertex_buffers.reserve(num_in_flight_frames);
+        index_buffers.reserve(num_in_flight_frames);
+        for(uint32_t i = 0; i < num_in_flight_frames; i++) {
             vertex_buffers[i] = device->create_buffer({rx::string::format("%sVertices%d", name, i),
                                                        vertex_buffer_size,
                                                        BufferUsage::VertexBuffer},

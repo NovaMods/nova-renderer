@@ -18,8 +18,6 @@ namespace nova::renderer {
     constexpr uint32_t INTEL_PCI_VENDOR_ID = 8086;
     constexpr uint32_t NVIDIA_PCI_VENDOR_ID = 0x10DE;
 
-    constexpr uint32_t NUM_IN_FLIGHT_FRAMES = 3;
-
     constexpr uint32_t MAX_NUM_CAMERAS = 256;
 
     /*!

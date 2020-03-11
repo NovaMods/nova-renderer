@@ -18,10 +18,14 @@ namespace nova::renderer {
          * \brief Initializes a PerFrameDeviceArray, creating GPU resources with the provided render device
          *
          * \param num_elements The number of elements in the array
+         * \param num_in_flight_frames NThe number of in-flight frames that we'll support
          * \param device The device to create the buffers on
          * \param internal_allocator The allocator to use for internal allocations
          */
-        explicit PerFrameDeviceArray(size_t num_elements, rhi::RenderDevice& device, rx::memory::allocator& internal_allocator);
+        explicit PerFrameDeviceArray(size_t num_elements,
+                                     uint32_t num_in_flight_frames,
+                                     rhi::RenderDevice& device,
+                                     rx::memory::allocator& internal_allocator);
 
         ~PerFrameDeviceArray() = default;
 
@@ -38,7 +42,7 @@ namespace nova::renderer {
     private:
         rx::memory::allocator& internal_allocator;
 
-        rx::array<rhi::RhiBuffer* [NUM_IN_FLIGHT_FRAMES]> per_frame_buffers;
+        rx::vector<rhi::RhiBuffer*> per_frame_buffers;
         rhi::RenderDevice& device;
 
         ElementType* data;
@@ -49,6 +53,7 @@ namespace nova::renderer {
 
     template <typename ElementType>
     PerFrameDeviceArray<ElementType>::PerFrameDeviceArray(const size_t num_elements,
+                                                          const uint32_t num_in_flight_frames,
                                                           rhi::RenderDevice& device,
                                                           rx::memory::allocator& internal_allocator)
         : internal_allocator{internal_allocator},
@@ -60,10 +65,11 @@ namespace nova::renderer {
         create_info.size = sizeof(CameraUboData) * MAX_NUM_CAMERAS;
         create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
-        for(uint32_t i = 0; i < NUM_IN_FLIGHT_FRAMES; i++) {
+        per_frame_buffers.reserve(num_in_flight_frames);
+        for(uint32_t i = 0; i < num_in_flight_frames; i++) {
             create_info.name = rx::string::format("CameraBuffer%u", i);
 
-            per_frame_buffers[i] = device.create_buffer(create_info, internal_allocator);
+            per_frame_buffers.emplace_back(device.create_buffer(create_info, internal_allocator));
         }
 
         // All camera indices are free at program startup

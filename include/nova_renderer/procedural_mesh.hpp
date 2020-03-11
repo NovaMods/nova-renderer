@@ -29,11 +29,13 @@ namespace nova::renderer {
          *
          * \param vertex_buffer_size The number of bytes the vertex buffer needs
          * \param index_buffer_size The number of bytes that the index buffer needs
+         * \param num_in_flight_frames Number of in-flight frames that this proc mesh supports
          * \param device The device to create the buffers on
          * \param name Name of this procedural mesh
          */
         ProceduralMesh(uint64_t vertex_buffer_size,
                        uint64_t index_buffer_size,
+                       uint32_t num_in_flight_frames,
                        rhi::RenderDevice* device,
                        const rx::string& name = "ProceduralMesh");
 
@@ -79,8 +81,8 @@ namespace nova::renderer {
 
         rx::string name;
 
-        rx::array<rhi::RhiBuffer* [NUM_IN_FLIGHT_FRAMES]> vertex_buffers;
-        rx::array<rhi::RhiBuffer* [NUM_IN_FLIGHT_FRAMES]> index_buffers;
+        rx::vector<rhi::RhiBuffer*> vertex_buffers;
+        rx::vector<rhi::RhiBuffer*> index_buffers;
 
         rhi::RhiBuffer* cached_vertex_buffer;
         rhi::RhiBuffer* cached_index_buffer;
