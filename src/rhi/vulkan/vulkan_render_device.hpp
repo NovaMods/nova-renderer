@@ -53,6 +53,11 @@ namespace nova::renderer::rhi {
          */
         vk::PipelineLayout standard_pipeline_layout;
 
+        /*!
+         * \brief The descriptor set that binds to the standard pipeline layout, duplicated once for each in flight frame
+         */
+        rx::vector<vk::DescriptorSet> standard_descriptor_sets;
+
         // Debugging things
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
@@ -85,17 +90,6 @@ namespace nova::renderer::rhi {
                                                                      const rx::vector<renderpack::TextureAttachmentInfo>& color_attachments,
                                                                      const rx::optional<renderpack::TextureAttachmentInfo>& depth_texture,
                                                                      rx::memory::allocator& allocator) override;
-
-        RhiDescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
-                                                  rx::memory::allocator& allocator) override;
-
-        rx::vector<RhiDescriptorSet*> create_descriptor_sets(const RhiPipelineInterface* pipeline_interface,
-                                                             RhiDescriptorPool* pool,
-                                                             rx::memory::allocator& allocator) override;
-
-        void update_descriptor_sets(rx::vector<RhiDescriptorSetWrite>& writes) override;
-
-        void reset_descriptor_pool(RhiDescriptorPool* pool) override;
 
         RhiBuffer* create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) override;
 
@@ -156,7 +150,11 @@ namespace nova::renderer::rhi {
          * \return The new PSO
          */
         ntl::Result<VulkanPipeline> create_pipeline(const RhiPipelineState& state,
-                                                  vk::RenderPass renderpass,
+                                                    vk::RenderPass renderpass,
+                                                    rx::memory::allocator& allocator);
+
+        
+        RhiDescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
                                                   rx::memory::allocator& allocator);
 
     protected:

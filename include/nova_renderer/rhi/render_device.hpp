@@ -104,17 +104,6 @@ namespace nova::renderer::rhi {
             const rx::optional<renderpack::TextureAttachmentInfo>& depth_texture,
             rx::memory::allocator& allocator) = 0;
 
-        [[nodiscard]] virtual RhiDescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
-                                                                        rx::memory::allocator& allocator) = 0;
-
-        [[nodiscard]] virtual rx::vector<RhiDescriptorSet*> create_descriptor_sets(const RhiPipelineInterface* pipeline_interface,
-                                                                                   RhiDescriptorPool* pool,
-                                                                                   rx::memory::allocator& allocator) = 0;
-
-        virtual void update_descriptor_sets(rx::vector<RhiDescriptorSetWrite>& writes) = 0;
-
-        virtual void reset_descriptor_pool(RhiDescriptorPool* pool) = 0;
-
         /*!
          * \brief Creates a buffer with undefined contents
          */

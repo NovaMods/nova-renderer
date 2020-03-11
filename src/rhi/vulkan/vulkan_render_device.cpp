@@ -452,192 +452,6 @@ namespace nova::renderer::rhi {
         return pool;
     }
 
-    rx::vector<RhiDescriptorSet*> VulkanRenderDevice::create_descriptor_sets(const RhiPipelineInterface* pipeline_interface,
-                                                                             RhiDescriptorPool* pool,
-                                                                             rx::memory::allocator& allocator) {
-        MTR_SCOPE("VulkanRenderDevice", "create_descriptor_sets");
-        const auto* vk_pipeline_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
-        const auto* vk_pool = static_cast<const VulkanDescriptorPool*>(pool);
-
-        VkDescriptorSetAllocateInfo alloc_info;
-        alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        alloc_info.descriptorPool = vk_pool->descriptor_pool;
-        alloc_info.descriptorSetCount = static_cast<uint32_t>(vk_pipeline_interface->layouts_by_set.size());
-        alloc_info.pSetLayouts = vk_pipeline_interface->layouts_by_set.data();
-
-        rx::vector<uint32_t> counts{&allocator};
-        counts.reserve(vk_pipeline_interface->layouts_by_set.size());
-
-        VkDescriptorSetVariableDescriptorCountAllocateInfo set_counts = {};
-        set_counts.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
-        set_counts.descriptorSetCount = vk_pipeline_interface->variable_descriptor_set_counts.size();
-        set_counts.pDescriptorCounts = vk_pipeline_interface->variable_descriptor_set_counts.data();
-
-        alloc_info.pNext = &set_counts;
-
-        rx::vector<VkDescriptorSet> sets{&allocator};
-        sets.resize(vk_pipeline_interface->layouts_by_set.size());
-        vkAllocateDescriptorSets(device, &alloc_info, sets.data());
-
-        rx::vector<RhiDescriptorSet*> final_sets{&allocator};
-        final_sets.reserve(sets.size());
-        sets.each_fwd([&](const VkDescriptorSet set) {
-            auto* vk_set = allocator.create<VulkanDescriptorSet>();
-            vk_set->descriptor_set = set;
-            final_sets.push_back(vk_set);
-        });
-
-        return final_sets;
-    }
-
-    void VulkanRenderDevice::update_descriptor_sets(rx::vector<RhiDescriptorSetWrite>& writes) {
-        MTR_SCOPE("VulkanRenderDevice", "update_descriptor_sets");
-        rx::vector<VkWriteDescriptorSet> vk_writes{&internal_allocator};
-        vk_writes.reserve(writes.size());
-
-        rx::vector<VkDescriptorImageInfo> image_infos{&internal_allocator};
-        image_infos.reserve(writes.size());
-
-        rx::vector<VkDescriptorBufferInfo> buffer_infos{&internal_allocator};
-        buffer_infos.reserve(writes.size());
-
-        writes.each_fwd([&](const RhiDescriptorSetWrite& write) {
-            VkWriteDescriptorSet vk_write = {};
-            vk_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            vk_write.dstSet = static_cast<const VulkanDescriptorSet*>(write.set)->descriptor_set;
-            vk_write.dstBinding = write.binding;
-            vk_write.descriptorCount = static_cast<uint32_t>(write.resources.size());
-            vk_write.dstArrayElement = 0;
-
-            switch(write.type) {
-                case DescriptorType::CombinedImageSampler: {
-                    // We have a single array for all the image infos, so we need to save the index of the image info for this descriptor
-                    // update
-                    const auto first_image_info_idx = image_infos.size();
-
-                    write.resources.each_fwd([&](const RhiDescriptorResourceInfo& info) {
-                        VkDescriptorImageInfo vk_image_info{};
-                        vk_image_info.imageView = image_view_for_image(info.image_info.image);
-                        vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-                        image_infos.emplace_back(vk_image_info);
-                    });
-
-                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    vk_write.pImageInfo = &image_infos[first_image_info_idx];
-
-                    // logger(rx::log::level::k_verbose, "Updating CombinedImageSampler descriptor set %x", vk_write.dstSet);
-
-                    vk_writes.push_back(vk_write);
-                } break;
-
-                case DescriptorType::UniformBuffer: {
-                    // We have a single array for all the buffer infos, so we need to save the index of the buffer info for this descriptor
-                    // update
-                    const auto first_buffer_info_idx = buffer_infos.size();
-
-                    write.resources.each_fwd([&](const RhiDescriptorResourceInfo& info) {
-                        const auto* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
-
-                        VkDescriptorBufferInfo vk_buffer_info;
-                        vk_buffer_info.buffer = vk_buffer->buffer;
-                        vk_buffer_info.offset = 0;
-                        vk_buffer_info.range = vk_buffer->size.b_count();
-
-                        buffer_infos.emplace_back(vk_buffer_info);
-                    });
-
-                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                    vk_write.pBufferInfo = &buffer_infos[first_buffer_info_idx];
-
-                    // logger(rx::log::level::k_verbose, "Updating UniformBuffer descriptor set %x", vk_write.dstSet);
-
-                    vk_writes.push_back(vk_write);
-                } break;
-
-                case DescriptorType::StorageBuffer: {
-                    // We have a single array for all the buffer infos, so we need to save the index of the buffer info for this descriptor
-                    // update
-                    const auto first_buffer_info_idx = buffer_infos.size();
-                    write.resources.each_fwd([&](const RhiDescriptorResourceInfo& info) {
-                        const auto* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
-
-                        VkDescriptorBufferInfo vk_buffer_info;
-                        vk_buffer_info.buffer = vk_buffer->buffer;
-                        vk_buffer_info.offset = 0;
-                        vk_buffer_info.range = vk_buffer->size.b_count();
-
-                        buffer_infos.emplace_back(vk_buffer_info);
-                    });
-
-                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                    vk_write.pBufferInfo = &buffer_infos[first_buffer_info_idx];
-
-                    // logger(rx::log::level::k_verbose, "Updating StorageBuffer descriptor set %x", vk_write.dstSet);
-
-                    vk_writes.push_back(vk_write);
-                } break;
-
-                case DescriptorType::Texture: {
-                    // We have a single array for all the image infos, so we need to save the index of the image info for this descriptor
-                    // update
-                    const auto first_image_info_idx = image_infos.size();
-
-                    write.resources.each_fwd([&](const RhiDescriptorResourceInfo& info) {
-                        VkDescriptorImageInfo vk_image_info = {};
-                        vk_image_info.imageView = image_view_for_image(info.image_info.image);
-                        vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-                        image_infos.emplace_back(vk_image_info);
-                    });
-
-                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-                    vk_write.pImageInfo = &image_infos[first_image_info_idx];
-
-                    // logger(rx::log::level::k_verbose, "Updating Texture descriptor set %x", vk_write.dstSet);
-
-                    vk_writes.push_back(vk_write);
-                } break;
-
-                case DescriptorType::Sampler: {
-                    // We have a single array for all the image infos, so we need to save the index of the image info for this descriptor
-                    // update
-                    // Also we store the sampler infos in the same array as the image infos and it's weird
-                    const auto first_image_info_idx = image_infos.size();
-
-                    write.resources.each_fwd([&](const RhiDescriptorResourceInfo& info) {
-                        VkDescriptorImageInfo vk_image_info = {};
-                        vk_image_info.sampler = static_cast<VulkanSampler*>(info.sampler_info.sampler)->sampler;
-
-                        image_infos.emplace_back(vk_image_info);
-                    });
-
-                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-                    vk_write.pImageInfo = &image_infos[first_image_info_idx];
-
-                    // logger(rx::log::level::k_verbose, "Updating Sampler descriptor set %x", vk_write.dstSet);
-
-                    vk_writes.push_back(vk_write);
-
-                } break;
-
-                default:
-                    logger(rx::log::level::k_error,
-                           "Don't know how to update %s descriptor set %x",
-                           descriptor_type_to_string(write.type),
-                           vk_write.dstSet);
-            }
-        });
-
-        vkUpdateDescriptorSets(device, static_cast<uint32_t>(vk_writes.size()), vk_writes.data(), 0, nullptr);
-    }
-
-    void VulkanRenderDevice::reset_descriptor_pool(RhiDescriptorPool* pool) {
-        MTR_SCOPE("VulkanRenderDevice", "reset_descriptor_pool");
-        auto* vk_pool = static_cast<VulkanDescriptorPool*>(pool);
-        vkResetDescriptorPool(device, vk_pool->descriptor_pool, 0);
-    }
-
     ntl::Result<VulkanPipeline> VulkanRenderDevice::create_pipeline(const RhiPipelineState& state,
                                                                     vk::RenderPass renderpass,
                                                                     rx::memory::allocator& allocator) {
@@ -1755,33 +1569,39 @@ namespace nova::renderer::rhi {
             vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eAll).setOffset(0).setSize(sizeof(uint32_t))};
 
         // Binding for the array of material parameter buffers. Nova uses a variable-length, partially-bound
-        const rx::vector<vk::DescriptorSetLayoutBinding> bindings = rx::array{// Material data buffer
+        const rx::vector<vk::DescriptorSetLayoutBinding> bindings = rx::array{// Camera data buffer
                                                                               vk::DescriptorSetLayoutBinding()
                                                                                   .setBinding(0)
                                                                                   .setDescriptorType(vk::DescriptorType::eUniformBuffer)
                                                                                   .setDescriptorCount(1)
                                                                                   .setStageFlags(vk::ShaderStageFlagBits::eAll),
-                                                                              // Point sampler
+                                                                              // Material data buffer
                                                                               vk::DescriptorSetLayoutBinding()
                                                                                   .setBinding(1)
-                                                                                  .setDescriptorType(vk::DescriptorType::eSampler)
+                                                                                  .setDescriptorType(vk::DescriptorType::eUniformBuffer)
                                                                                   .setDescriptorCount(1)
                                                                                   .setStageFlags(vk::ShaderStageFlagBits::eAll),
-                                                                              // Bilinear sampler
+                                                                              // Point sampler
                                                                               vk::DescriptorSetLayoutBinding()
                                                                                   .setBinding(2)
                                                                                   .setDescriptorType(vk::DescriptorType::eSampler)
                                                                                   .setDescriptorCount(1)
                                                                                   .setStageFlags(vk::ShaderStageFlagBits::eAll),
-                                                                              // Trilinear sampler
+                                                                              // Bilinear sampler
                                                                               vk::DescriptorSetLayoutBinding()
                                                                                   .setBinding(3)
                                                                                   .setDescriptorType(vk::DescriptorType::eSampler)
                                                                                   .setDescriptorCount(1)
                                                                                   .setStageFlags(vk::ShaderStageFlagBits::eAll),
-                                                                              // Textures array
+                                                                              // Trilinear sampler
                                                                               vk::DescriptorSetLayoutBinding()
                                                                                   .setBinding(4)
+                                                                                  .setDescriptorType(vk::DescriptorType::eSampler)
+                                                                                  .setDescriptorCount(1)
+                                                                                  .setStageFlags(vk::ShaderStageFlagBits::eAll),
+                                                                              // Textures array
+                                                                              vk::DescriptorSetLayoutBinding()
+                                                                                  .setBinding(5)
                                                                                   .setDescriptorType(vk::DescriptorType::eSampledImage)
                                                                                   .setDescriptorCount(MAX_NUM_TEXTURES)
                                                                                   .setStageFlags(vk::ShaderStageFlagBits::eAll)};
@@ -1799,6 +1619,24 @@ namespace nova::renderer::rhi {
                                                 .setPPushConstantRanges(standard_push_constants.data());
 
         device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &standard_pipeline_layout);
+
+        auto* pool = create_descriptor_pool(rx::array{rx::pair<DescriptorType, uint32_t>{DescriptorType::UniformBuffer, 5},
+                                                      rx::pair<DescriptorType, uint32_t>{DescriptorType::Texture, MAX_NUM_TEXTURES},
+                                                      rx::pair<DescriptorType, uint32_t>{DescriptorType::Sampler, 3}},
+                                            internal_allocator);
+        auto* vk_pool = static_cast<VulkanDescriptorPool*>(pool);
+
+        standard_descriptor_sets.reserve(settings->max_in_flight_frames);
+        for(uint32_t i = 0; i < settings->max_in_flight_frames; i++) {
+            vk::DescriptorSet new_set;
+            const auto ds_alloc_info = vk::DescriptorSetAllocateInfo()
+                                           .setDescriptorPool(vk_pool->descriptor_pool)
+                                           .setDescriptorSetCount(1)
+                                           .setPSetLayouts(&layout);
+            device.allocateDescriptorSets(&ds_alloc_info, &new_set);
+
+            standard_descriptor_sets.emplace_back(new_set);
+        }
     }
 
     rx::map<uint32_t, VkCommandPool> VulkanRenderDevice::make_new_command_pools() const {
