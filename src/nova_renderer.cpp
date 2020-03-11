@@ -247,7 +247,7 @@ namespace nova::renderer {
         create_builtin_renderpasses();
 
         cameras.reserve(MAX_NUM_CAMERAS);
-        camera_data = rx::make_ptr<PerFrameDeviceArray<CameraUboData>>(global_allocator, MAX_NUM_CAMERAS, *device, *global_allocator);
+        camera_data = rx::make_ptr<PerFrameDeviceArray<CameraUboData>>(global_allocator, MAX_NUM_CAMERAS, settings.max_in_flight_frames, *device, *global_allocator);
     }
 
     NovaRenderer::~NovaRenderer() {
