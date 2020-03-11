@@ -244,8 +244,6 @@ namespace nova::renderer {
 
         create_renderpass_manager();
 
-        initialize_descriptor_pool();
-
         create_builtin_renderpasses();
 
         cameras.reserve(MAX_NUM_CAMERAS);
