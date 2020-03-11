@@ -468,7 +468,7 @@ namespace nova::renderer::rhi {
         if(vertex_module) {
             shader_modules.insert(VK_SHADER_STAGE_VERTEX_BIT, *vertex_module);
         } else {
-            return ntl::Result{ntl::NovaError("Could not create vertex module")};
+            return ntl::Result<VulkanPipeline>{ntl::NovaError("Could not create vertex module")};
         }
 
         if(state.geometry_shader) {
@@ -477,7 +477,7 @@ namespace nova::renderer::rhi {
             if(geometry_module) {
                 shader_modules.insert(VK_SHADER_STAGE_GEOMETRY_BIT, *geometry_module);
             } else {
-                return ntl::Result{ntl::NovaError("Could not geometry module")};
+                return ntl::Result<VulkanPipeline>{ntl::NovaError("Could not geometry module")};
             }
         }
 
@@ -487,7 +487,7 @@ namespace nova::renderer::rhi {
             if(fragment_module) {
                 shader_modules.insert(VK_SHADER_STAGE_FRAGMENT_BIT, *fragment_module);
             } else {
-                return ntl::Result{ntl::NovaError("Could not pixel module")};
+                return ntl::Result<VulkanPipeline>{ntl::NovaError("Could not pixel module")};
             }
 
         } // namespace nova::renderer::rhi
@@ -656,7 +656,7 @@ namespace nova::renderer::rhi {
                 attachment_states.emplace_back(color_blend_attachment);
             });
 
-            color_blend_create_info.attachmentCount = attachment_states.size();
+            color_blend_create_info.attachmentCount = static_cast<uint32_t>(attachment_states.size());
             color_blend_create_info.pAttachments = attachment_states.data();
             color_blend_create_info.blendConstants[0] = blend_state.blend_constants.r;
             color_blend_create_info.blendConstants[1] = blend_state.blend_constants.g;
@@ -675,7 +675,7 @@ namespace nova::renderer::rhi {
                 attachment_states.emplace_back(color_blend_attachment);
             });
 
-            color_blend_create_info.attachmentCount = attachment_states.size();
+            color_blend_create_info.attachmentCount = static_cast<uint32_t>(attachment_states.size());
             color_blend_create_info.pAttachments = attachment_states.data();
         }
 
@@ -1606,7 +1606,9 @@ namespace nova::renderer::rhi {
                                                                                   .setDescriptorCount(MAX_NUM_TEXTURES)
                                                                                   .setStageFlags(vk::ShaderStageFlagBits::eAll)};
 
-        const auto dsl_layout_create = vk::DescriptorSetLayoutCreateInfo().setBindingCount(bindings.size()).setPBindings(bindings.data());
+        const auto dsl_layout_create = vk::DescriptorSetLayoutCreateInfo()
+                                           .setBindingCount(static_cast<uint32_t>(bindings.size()))
+                                           .setPBindings(bindings.data());
 
         vk::DescriptorSetLayout layout;
 
@@ -1615,14 +1617,14 @@ namespace nova::renderer::rhi {
         const auto pipeline_layout_create = vk::PipelineLayoutCreateInfo()
                                                 .setSetLayoutCount(1)
                                                 .setPSetLayouts(&layout)
-                                                .setPushConstantRangeCount(standard_push_constants.size())
+                                                .setPushConstantRangeCount(static_cast<uint32_t>(standard_push_constants.size()))
                                                 .setPPushConstantRanges(standard_push_constants.data());
 
         device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &standard_pipeline_layout);
 
-        auto* pool = create_descriptor_pool(rx::array{rx::pair<DescriptorType, uint32_t>{DescriptorType::UniformBuffer, 5},
+        auto* pool = create_descriptor_pool(rx::array{rx::pair<DescriptorType, uint32_t>{DescriptorType::UniformBuffer, static_cast<uint32_t>(5)},
                                                       rx::pair<DescriptorType, uint32_t>{DescriptorType::Texture, MAX_NUM_TEXTURES},
-                                                      rx::pair<DescriptorType, uint32_t>{DescriptorType::Sampler, 3}},
+                                                      rx::pair<DescriptorType, uint32_t>{DescriptorType::Sampler, static_cast<uint32_t>(3)}},
                                             internal_allocator);
         auto* vk_pool = static_cast<VulkanDescriptorPool*>(pool);
 

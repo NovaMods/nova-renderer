@@ -851,7 +851,7 @@ namespace nova::renderer {
             const auto buffer_name = rx::string::format("%s_%d", MATERIAL_DATA_BUFFER_NAME, i);
             if(auto buffer = device_resources->create_uniform_buffer(buffer_name, MATERIAL_BUFFER_SIZE); buffer) {
                 builtin_buffer_names.emplace_back(buffer_name);
-                material_device_buffers.emplace_back(buffer);
+                material_device_buffers.emplace_back(*buffer);
 
             } else {
                 logger(rx::log::level::k_error, "Could not create builtin buffer %s", buffer_name);
