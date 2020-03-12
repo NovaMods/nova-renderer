@@ -9,6 +9,8 @@
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/window.hpp"
 
+#include "rx/core/ptr.h"
+
 namespace nova::renderer {
     struct RhiPipelineState;
     struct DeviceMemoryResource;
@@ -256,4 +258,12 @@ namespace nova::renderer::rhi {
                      NovaWindow& window,
                      rx::memory::allocator& allocator = *rx::memory::g_system_allocator);
     };
+
+    /*!
+     * \brief Creates a new API-agnostic render device
+     *
+     * Right now we only support creating Vulkan render devices, but in the future we might support devices for different APIs, or different
+     * types of hardware
+     */
+    rx::ptr<RenderDevice> create_render_device(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator);
 } // namespace nova::renderer::rhi

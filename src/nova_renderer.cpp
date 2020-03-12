@@ -184,16 +184,16 @@ namespace nova::renderer {
 
     NovaRenderer::NovaRenderer(const NovaSettings& settings)
         : settings{settings}, global_allocator{&rx::memory::g_system_allocator}, cameras{global_allocator} {
-        create_global_allocators();
-
-        initialize_virtual_filesystem();
-
         mtr_init("trace.json");
 
         MTR_META_PROCESS_NAME("NovaRenderer");
         MTR_META_THREAD_NAME("Main");
 
         MTR_SCOPE("Init", "nova_renderer::nova_renderer");
+
+        create_global_allocators();
+
+        initialize_virtual_filesystem();
 
         window = rx::make_ptr<NovaWindow>(global_allocator, settings);
 
@@ -224,8 +224,8 @@ namespace nova::renderer {
         }
 
         {
-            MTR_SCOPE("Init", "InitVulkanRenderDevice");
-            device = rx::make_ptr<rhi::VulkanRenderDevice>(global_allocator, settings, *window, *global_allocator);
+            MTR_SCOPE("Init", "InitRenderDevice");
+            device = rhi::create_render_device(this->settings, *window, *global_allocator);
         }
 
         swapchain = device->get_swapchain();
