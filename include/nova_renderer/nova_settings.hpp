@@ -199,7 +199,7 @@ namespace nova::renderer {
             bool is_uma = false;
         } system_info;
 
-        uint32_t max_in_flight_frames = 1;
+        uint32_t max_in_flight_frames = 3;
 
         /*!
          * \brief Settings for how Nova should allocate vertex memory

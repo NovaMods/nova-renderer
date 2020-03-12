@@ -247,7 +247,11 @@ namespace nova::renderer {
         create_builtin_renderpasses();
 
         cameras.reserve(MAX_NUM_CAMERAS);
-        camera_data = rx::make_ptr<PerFrameDeviceArray<CameraUboData>>(global_allocator, MAX_NUM_CAMERAS, settings.max_in_flight_frames, *device, *global_allocator);
+        camera_data = rx::make_ptr<PerFrameDeviceArray<CameraUboData>>(global_allocator,
+                                                                       MAX_NUM_CAMERAS,
+                                                                       settings.max_in_flight_frames,
+                                                                       *device,
+                                                                       *global_allocator);
     }
 
     NovaRenderer::~NovaRenderer() {
@@ -260,50 +264,53 @@ namespace nova::renderer {
     rx::memory::allocator& NovaRenderer::get_global_allocator() const { return *global_allocator; }
 
     void NovaRenderer::execute_frame() {
-        MTR_SCOPE("NovaRenderer", "execute_frame");
-        frame_count++;
+        {
+            MTR_SCOPE("NovaRenderer", "execute_frame");
+            frame_count++;
 
-        rx::memory::bump_point_allocator& frame_allocator = *frame_allocators[frame_count % settings->max_in_flight_frames];
-        frame_allocator.reset();
+            rx::memory::bump_point_allocator& frame_allocator = *frame_allocators[frame_count % settings->max_in_flight_frames];
+            frame_allocator.reset();
 
-        cur_frame_idx = device->get_swapchain()->acquire_next_swapchain_image(frame_allocator);
+            cur_frame_idx = device->get_swapchain()->acquire_next_swapchain_image(frame_allocator);
 
-        rx::vector<rhi::RhiFence*> cur_frame_fences{global_allocator};
-        cur_frame_fences.push_back(frame_fences[cur_frame_idx]);
+            rx::vector<rhi::RhiFence*> cur_frame_fences{global_allocator};
+            cur_frame_fences.push_back(frame_fences[cur_frame_idx]);
 
-        device->wait_for_fences(cur_frame_fences);
-        device->reset_fences(cur_frame_fences);
+            device->wait_for_fences(cur_frame_fences);
+            device->reset_fences(cur_frame_fences);
 
-        update_camera_matrix_buffer(cur_frame_idx);
+            update_camera_matrix_buffer(cur_frame_idx);
 
-        rhi::RhiRenderCommandList* cmds = device->create_command_list(0,
-                                                                      rhi::QueueType::Graphics,
-                                                                      rhi::RhiRenderCommandList::Level::Primary,
-                                                                      frame_allocator);
-        cmds->set_debug_name("RendergraphCommands");
+            rhi::RhiRenderCommandList* cmds = device->create_command_list(0,
+                                                                          rhi::QueueType::Graphics,
+                                                                          rhi::RhiRenderCommandList::Level::Primary,
+                                                                          frame_allocator);
+            cmds->set_debug_name("RendergraphCommands");
 
-        FrameContext ctx = {};
-        ctx.frame_count = frame_count;
-        ctx.frame_idx = cur_frame_idx;
-        ctx.nova = this;
-        ctx.allocator = &frame_allocator;
-        ctx.swapchain_framebuffer = swapchain->get_framebuffer(cur_frame_idx);
-        ctx.swapchain_image = swapchain->get_image(cur_frame_idx);
+            FrameContext ctx = {};
+            ctx.frame_count = frame_count;
+            ctx.frame_idx = cur_frame_idx;
+            ctx.nova = this;
+            ctx.allocator = &frame_allocator;
+            ctx.swapchain_framebuffer = swapchain->get_framebuffer(cur_frame_idx);
+            ctx.swapchain_image = swapchain->get_image(cur_frame_idx);
 
-        const auto& renderpass_order = rendergraph->calculate_renderpass_execution_order();
+            const auto& renderpass_order = rendergraph->calculate_renderpass_execution_order();
 
-        renderpass_order.each_fwd([&](const rx::string& renderpass_name) {
-            auto* renderpass = rendergraph->get_renderpass(renderpass_name);
-            renderpass->execute(*cmds, ctx);
-        });
+            renderpass_order.each_fwd([&](const rx::string& renderpass_name) {
+                auto* renderpass = rendergraph->get_renderpass(renderpass_name);
+                renderpass->execute(*cmds, ctx);
+            });
 
-        device->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences[cur_frame_idx]);
+            device->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences[cur_frame_idx]);
 
-        // Wait for the GPU to finish before presenting. This destroys pipelining and throughput, however at this time I'm not sure how
-        // best to say "when GPU finishes this task, CPU should do something"
-        device->wait_for_fences(cur_frame_fences);
+            // Wait for the GPU to finish before presenting. This destroys pipelining and throughput, however at this time I'm not sure how
+            // best to say "when GPU finishes this task, CPU should do something"
+            device->wait_for_fences(cur_frame_fences);
 
-        device->get_swapchain()->present(cur_frame_idx);
+            device->get_swapchain()->present(cur_frame_idx);
+        }
+        mtr_flush();
     }
 
     void NovaRenderer::set_num_meshes(const uint32_t /* num_meshes */) { /* TODO? */

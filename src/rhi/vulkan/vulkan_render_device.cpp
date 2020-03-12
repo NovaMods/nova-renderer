@@ -1378,60 +1378,62 @@ namespace nova::renderer::rhi {
         uint32_t graphics_family_idx = 0xFFFFFFFF;
         uint32_t compute_family_idx = 0xFFFFFFFF;
         uint32_t copy_family_idx = 0xFFFFFFFF;
+        {
+            MTR_SCOPE("VulkanNovaRenderer", "Select Physical Device");
+            for(uint32_t device_idx = 0; device_idx < device_count; device_idx++) {
+                graphics_family_idx = 0xFFFFFFFF;
+                VkPhysicalDevice current_device = physical_devices[device_idx];
+                vkGetPhysicalDeviceProperties(current_device, &gpu.props);
 
-        for(uint32_t device_idx = 0; device_idx < device_count; device_idx++) {
-            graphics_family_idx = 0xFFFFFFFF;
-            VkPhysicalDevice current_device = physical_devices[device_idx];
-            vkGetPhysicalDeviceProperties(current_device, &gpu.props);
-
-            const bool is_intel_gpu = gpu.props.vendorID == INTEL_PCI_VENDOR_ID;
-            const bool more_gpus_available = device_count - 1 > device_idx;
-            if(is_intel_gpu && more_gpus_available) {
-                // Intel GPU _probably_ isn't as powerful as a discreet GPU, and if there's more than one GPU then the other one(s) are
-                // _probably_ discreet GPUs, so let's not use the Intel GPU and instead use the discreet GPU
-                // TODO: Make a local device for the integrated GPU when we figure out multi-GPU
-                // TODO: Rework this code when Intel releases discreet GPUs
-                continue;
-            }
-
-            const auto supports_extensions = does_device_support_extensions(current_device, device_extensions);
-            if(!supports_extensions) {
-                continue;
-            }
-
-            uint32_t queue_family_count;
-            vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, nullptr);
-            gpu.queue_family_props.resize(queue_family_count);
-            vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, gpu.queue_family_props.data());
-
-            for(uint32_t queue_idx = 0; queue_idx < queue_family_count; queue_idx++) {
-                const VkQueueFamilyProperties current_properties = gpu.queue_family_props[queue_idx];
-                if(current_properties.queueCount < 1) {
+                const bool is_intel_gpu = gpu.props.vendorID == INTEL_PCI_VENDOR_ID;
+                const bool more_gpus_available = device_count - 1 > device_idx;
+                if(is_intel_gpu && more_gpus_available) {
+                    // Intel GPU _probably_ isn't as powerful as a discreet GPU, and if there's more than one GPU then the other one(s) are
+                    // _probably_ discreet GPUs, so let's not use the Intel GPU and instead use the discreet GPU
+                    // TODO: Make a local device for the integrated GPU when we figure out multi-GPU
+                    // TODO: Rework this code when Intel releases discreet GPUs
                     continue;
                 }
 
-                VkBool32 supports_present = VK_FALSE;
-                NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(current_device, queue_idx, surface, &supports_present));
-                const VkQueueFlags supports_graphics = current_properties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
-                if((supports_graphics != 0U) && supports_present == VK_TRUE && graphics_family_idx == 0xFFFFFFFF) {
-                    graphics_family_idx = queue_idx;
+                const auto supports_extensions = does_device_support_extensions(current_device, device_extensions);
+                if(!supports_extensions) {
+                    continue;
                 }
 
-                const VkQueueFlags supports_compute = current_properties.queueFlags & VK_QUEUE_COMPUTE_BIT;
-                if((supports_compute != 0U) && compute_family_idx == 0xFFFFFFFF) {
-                    compute_family_idx = queue_idx;
+                uint32_t queue_family_count;
+                vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, nullptr);
+                gpu.queue_family_props.resize(queue_family_count);
+                vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, gpu.queue_family_props.data());
+
+                for(uint32_t queue_idx = 0; queue_idx < queue_family_count; queue_idx++) {
+                    const VkQueueFamilyProperties current_properties = gpu.queue_family_props[queue_idx];
+                    if(current_properties.queueCount < 1) {
+                        continue;
+                    }
+
+                    VkBool32 supports_present = VK_FALSE;
+                    NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(current_device, queue_idx, surface, &supports_present));
+                    const VkQueueFlags supports_graphics = current_properties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
+                    if((supports_graphics != 0U) && supports_present == VK_TRUE && graphics_family_idx == 0xFFFFFFFF) {
+                        graphics_family_idx = queue_idx;
+                    }
+
+                    const VkQueueFlags supports_compute = current_properties.queueFlags & VK_QUEUE_COMPUTE_BIT;
+                    if((supports_compute != 0U) && compute_family_idx == 0xFFFFFFFF) {
+                        compute_family_idx = queue_idx;
+                    }
+
+                    const VkQueueFlags supports_copy = current_properties.queueFlags & VK_QUEUE_TRANSFER_BIT;
+                    if((supports_copy != 0U) && copy_family_idx == 0xFFFFFFFF) {
+                        copy_family_idx = queue_idx;
+                    }
                 }
 
-                const VkQueueFlags supports_copy = current_properties.queueFlags & VK_QUEUE_TRANSFER_BIT;
-                if((supports_copy != 0U) && copy_family_idx == 0xFFFFFFFF) {
-                    copy_family_idx = queue_idx;
+                if(graphics_family_idx != 0xFFFFFFFF) {
+                    logger(rx::log::level::k_info, "Selected GPU %s", gpu.props.deviceName);
+                    gpu.phys_device = current_device;
+                    break;
                 }
-            }
-
-            if(graphics_family_idx != 0xFFFFFFFF) {
-                logger(rx::log::level::k_info, "Selected GPU %s", gpu.props.deviceName);
-                gpu.phys_device = current_device;
-                break;
             }
         }
 
@@ -1443,9 +1445,13 @@ namespace nova::renderer::rhi {
             return;
         }
 
-        vkGetPhysicalDeviceFeatures(gpu.phys_device, &gpu.supported_features);
+        PROFILE_VOID_EXPR(vkGetPhysicalDeviceFeatures(gpu.phys_device, &gpu.supported_features),
+                          VulkanRenderDevice,
+                          vkGetPhysicalDeviceFeatures);
 
-        vkGetPhysicalDeviceMemoryProperties(gpu.phys_device, &gpu.memory_properties);
+        PROFILE_VOID_EXPR(vkGetPhysicalDeviceMemoryProperties(gpu.phys_device, &gpu.memory_properties),
+                          VulkanRenderDevice,
+                          vkGetPhysicalDeviceMemoryProperties);
 
         const float priority = 1.0;
 
@@ -1498,7 +1504,7 @@ namespace nova::renderer::rhi {
 
         auto vk_alloc = wrap_allocator(internal_allocator);
         VkDevice vk_device;
-        NOVA_CHECK_RESULT(vkCreateDevice(gpu.phys_device, &device_create_info, &vk_alloc, &vk_device));
+        PROFILE_VOID_EXPR(vkCreateDevice(gpu.phys_device, &device_create_info, &vk_alloc, &vk_device), VulkanRenderEngine, vkCreateDevice);
         device = vk_device;
 
         graphics_family_index = graphics_family_idx;
@@ -1548,7 +1554,10 @@ namespace nova::renderer::rhi {
         rx::vector<VkPresentModeKHR> present_modes{&internal_allocator, num_surface_present_modes};
         vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, present_modes.data());
 
-        swapchain = internal_allocator.create<VulkanSwapchain>(settings->max_in_flight_frames, this, window.get_framebuffer_size(), present_modes);
+        swapchain = internal_allocator.create<VulkanSwapchain>(settings->max_in_flight_frames,
+                                                               this,
+                                                               window.get_framebuffer_size(),
+                                                               present_modes);
 
         swapchain_size = window.get_framebuffer_size();
     }
@@ -1622,9 +1631,11 @@ namespace nova::renderer::rhi {
 
         device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &standard_pipeline_layout);
 
-        auto* pool = create_descriptor_pool(rx::array{rx::pair<DescriptorType, uint32_t>{DescriptorType::UniformBuffer, static_cast<uint32_t>(5)},
+        auto* pool = create_descriptor_pool(rx::array{rx::pair<DescriptorType, uint32_t>{DescriptorType::UniformBuffer,
+                                                                                         static_cast<uint32_t>(5)},
                                                       rx::pair<DescriptorType, uint32_t>{DescriptorType::Texture, MAX_NUM_TEXTURES},
-                                                      rx::pair<DescriptorType, uint32_t>{DescriptorType::Sampler, static_cast<uint32_t>(3)}},
+                                                      rx::pair<DescriptorType, uint32_t>{DescriptorType::Sampler,
+                                                                                         static_cast<uint32_t>(3)}},
                                             internal_allocator);
         auto* vk_pool = static_cast<VulkanDescriptorPool*>(pool);
 
