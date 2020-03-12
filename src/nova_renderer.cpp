@@ -31,7 +31,6 @@
 #include "loading/renderpack/render_graph_builder.hpp"
 #include "render_objects/uniform_structs.hpp"
 #include "renderer/builtin/backbuffer_output_pass.hpp"
-#include "rhi/vulkan/vulkan_render_device.hpp"
 
 using namespace nova::mem;
 using namespace operators;

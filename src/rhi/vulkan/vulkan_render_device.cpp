@@ -1508,7 +1508,7 @@ namespace nova::renderer::rhi {
                                           VulkanRenderEngine,
                                           vkCreateDevice);
         if(res != VK_SUCCESS) {
-            //logger();
+            // logger();
         }
         device = vk_device;
 
@@ -1635,6 +1635,15 @@ namespace nova::renderer::rhi {
                                                 .setPPushConstantRanges(standard_push_constants.data());
 
         device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &standard_pipeline_layout);
+
+        if(settings->debug.enabled) {
+            VkDebugUtilsObjectNameInfoEXT object_name = {};
+            object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+            object_name.objectType = VK_OBJECT_TYPE_PIPELINE_LAYOUT;
+            object_name.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkPipelineLayout>(standard_pipeline_layout));
+            object_name.pObjectName = "Standard Pipeline Layout";
+            NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
+        }
 
         auto* pool = create_descriptor_pool(rx::array{rx::pair<DescriptorType, uint32_t>{DescriptorType::UniformBuffer,
                                                                                          static_cast<uint32_t>(5)},
