@@ -28,7 +28,7 @@ namespace nova::renderer {
          * get from `get_next_free_index` with the same type as what you're requesting
          */
         template <typename MaterialDataStruct>
-        [[nodiscard]] MaterialDataStruct& operator[](uint32_t idx);
+        [[nodiscard]] MaterialDataStruct& at(uint32_t idx);
 
         /*!
          * \brief Provides access to an element in this array
@@ -37,7 +37,7 @@ namespace nova::renderer {
          * get from `get_next_free_index` with the same type as what you're requesting
          */
         template <typename MaterialDataStruct>
-        [[nodiscard]] const MaterialDataStruct& operator[](uint32_t idx) const;
+        [[nodiscard]] const MaterialDataStruct& at(uint32_t idx) const;
 
         /*!
          * \brief Gets the index of the next free element of the requested type
@@ -52,13 +52,13 @@ namespace nova::renderer {
     };
 
     template <typename MaterialDataStruct>
-    MaterialDataStruct& MaterialDataBuffer::operator[](uint32_t idx) {
-        return *reinterpret_cast<MaterialDataStruct*>(buffer.data)[idx];
+    MaterialDataStruct& MaterialDataBuffer::at(uint32_t idx) {
+        return reinterpret_cast<MaterialDataStruct*>(buffer.data)[idx];
     }
 
     template <typename MaterialDataStruct>
-    const MaterialDataStruct& MaterialDataBuffer::operator[](uint32_t idx) const {
-        return *reinterpret_cast<MaterialDataStruct*>(buffer.data)[idx];
+    const MaterialDataStruct& MaterialDataBuffer::at(uint32_t idx) const {
+        return reinterpret_cast<MaterialDataStruct*>(buffer.data)[idx];
     }
 
     template <typename MaterialDataStruct>

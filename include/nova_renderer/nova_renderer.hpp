@@ -381,6 +381,6 @@ namespace nova::renderer {
     template <typename MaterialType>
     rx::pair<uint32_t, MaterialType*> NovaRenderer::create_material() {
         const auto idx = material_buffer->get_next_free_index<MaterialType>();
-        return {idx, &material_buffer[idx]};
+        return {idx, &material_buffer->at<MaterialType>(idx)};
     }
 } // namespace nova::renderer
