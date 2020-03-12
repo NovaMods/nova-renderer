@@ -76,6 +76,8 @@ namespace nova::renderer::rhi {
          */
         virtual ~RenderDevice() = default;
 
+        virtual void set_current_frame_index(uint32_t frame_idx) = 0;
+
         virtual void set_num_renderpasses(uint32_t num_renderpasses) = 0;
 
         /*!

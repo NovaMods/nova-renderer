@@ -43,6 +43,8 @@ namespace nova::renderer::rhi {
         // Info about the hardware
         VulkanGpuInfo gpu;
 
+        uint32_t cur_frame_idx;
+
         /*!
          * \brief All the push constants in the standard pipeline layout
          */
@@ -74,6 +76,8 @@ namespace nova::renderer::rhi {
         ~VulkanRenderDevice() = default;
 
 #pragma region Render engine interface
+        void set_current_frame_index(uint32_t frame_idx) override;
+
         void set_num_renderpasses(uint32_t num_renderpasses) override;
 
         ntl::Result<RhiRenderpass*> create_renderpass(const renderpack::RenderPassCreateInfo& data,

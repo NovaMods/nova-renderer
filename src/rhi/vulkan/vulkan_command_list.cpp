@@ -199,6 +199,13 @@ namespace nova::renderer::rhi {
                 vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
             }
 
+            if(!has_bound_descriptor_set) {
+                // Lazily bind our descriptor set so we don't end up with extra commands in transfer-only command lists
+                const auto set = static_cast<VkDescriptorSet>(device.standard_descriptor_sets[device.cur_frame_idx]);
+                vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, device.standard_pipeline_layout, 0, 1, &set, 0, nullptr);
+                has_bound_descriptor_set = true;
+            }
+
         } else {
             logger(rx::log::level::k_error, "Cannot use a pipeline state when not in a renderpass");
         }

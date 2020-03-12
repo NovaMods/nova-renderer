@@ -80,6 +80,10 @@ namespace nova::renderer::rhi {
         create_standard_pipeline_layout();
     }
 
+    void VulkanRenderDevice::set_current_frame_index(const uint32_t frame_idx) {
+        cur_frame_idx = frame_idx;
+    }
+
     void VulkanRenderDevice::set_num_renderpasses(uint32_t /* num_renderpasses */) {
         // Pretty sure Vulkan doesn't need to do anything here
     }
