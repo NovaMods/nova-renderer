@@ -186,7 +186,8 @@ namespace nova::renderer::rhi {
             if(pipeline == nullptr) {
                 const auto pipeline_result = device.create_pipeline(state, current_render_pass->pass, allocator);
                 if(pipeline_result) {
-                    *pipeline = *pipeline_result;
+                    current_render_pass->cached_pipelines.insert(state.name, *pipeline_result);
+                    pipeline = current_render_pass->cached_pipelines.find(state.name);
 
                 } else {
                     logger(rx::log::level::k_error, "Could not compile pipeline %s", state.name);
@@ -194,7 +195,9 @@ namespace nova::renderer::rhi {
                 }
             }
 
-            vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
+            if(pipeline != nullptr) {
+                vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
+            }
 
         } else {
             logger(rx::log::level::k_error, "Cannot use a pipeline state when not in a renderpass");

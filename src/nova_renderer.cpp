@@ -516,6 +516,8 @@ namespace nova::renderer {
             pipeline.pipeline = *pipeline_state;
 
             create_materials_for_pipeline(pipeline, materials, rp_pipeline_state.name);
+
+            pipelines.insert(rp_pipeline_state.name, pipeline);
         });
     }
 

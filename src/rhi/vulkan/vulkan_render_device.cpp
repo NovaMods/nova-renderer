@@ -1504,7 +1504,12 @@ namespace nova::renderer::rhi {
 
         auto vk_alloc = wrap_allocator(internal_allocator);
         VkDevice vk_device;
-        PROFILE_VOID_EXPR(vkCreateDevice(gpu.phys_device, &device_create_info, &vk_alloc, &vk_device), VulkanRenderEngine, vkCreateDevice);
+        const auto res = PROFILE_RET_EXPR(vkCreateDevice(gpu.phys_device, &device_create_info, &vk_alloc, &vk_device),
+                                          VulkanRenderEngine,
+                                          vkCreateDevice);
+        if(res != VK_SUCCESS) {
+            //logger();
+        }
         device = vk_device;
 
         graphics_family_index = graphics_family_idx;
