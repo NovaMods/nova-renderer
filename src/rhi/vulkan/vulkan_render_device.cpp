@@ -452,6 +452,26 @@ namespace nova::renderer::rhi {
         return pool;
     }
 
+    vk::DescriptorSet VulkanRenderDevice::get_next_standard_descriptor_set() {
+        if(standard_descriptor_sets.is_empty()) {
+            const auto allocate_info = vk::DescriptorSetAllocateInfo()
+                                           .setDescriptorPool(standard_descriptor_set_pool->descriptor_pool)
+                                           .setDescriptorSetCount(1)
+                                           .setPSetLayouts(&standard_set_layout);
+
+            vk::DescriptorSet set;
+            device.allocateDescriptorSets(&allocate_info, &set);
+
+            return set;
+
+        } else {
+            const auto set = standard_descriptor_sets.last();
+            standard_descriptor_sets.pop_back();
+
+            return set;
+        }
+    }
+
     ntl::Result<VulkanPipeline> VulkanRenderDevice::create_pipeline(const RhiGraphicsPipelineState& state,
                                                                     vk::RenderPass renderpass,
                                                                     rx::memory::allocator& allocator) {
@@ -1634,9 +1654,9 @@ namespace nova::renderer::rhi {
 
         device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &standard_pipeline_layout);
 
-        auto* pool = create_descriptor_pool(rx::array{rx::pair{DescriptorType::UniformBuffer, 5_u32 * settings->max_in_flight_frames},
-                                                      rx::pair{DescriptorType::Texture, MAX_NUM_TEXTURES * settings->max_in_flight_frames},
-                                                      rx::pair{DescriptorType::Sampler, 3_u32 * settings->max_in_flight_frames}},
+        auto* pool = create_descriptor_pool(rx::array{rx::pair{DescriptorType::UniformBuffer, 5_u32 * 1024},
+                                                      rx::pair{DescriptorType::Texture, MAX_NUM_TEXTURES * 1024},
+                                                      rx::pair{DescriptorType::Sampler, 3_u32 * 1024}},
                                             internal_allocator);
 
         standard_descriptor_set_pool = rx::ptr<VulkanDescriptorPool>{&internal_allocator, static_cast<VulkanDescriptorPool*>(pool)};

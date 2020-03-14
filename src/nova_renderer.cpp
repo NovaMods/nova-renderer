@@ -278,8 +278,6 @@ namespace nova::renderer {
             device->wait_for_fences(cur_frame_fences);
             device->reset_fences(cur_frame_fences);
 
-            device->setup_frame(cur_frame_idx);
-
             update_camera_matrix_buffer(cur_frame_idx);
 
             rhi::RhiRenderCommandList* cmds = device->create_command_list(0,

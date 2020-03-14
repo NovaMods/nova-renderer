@@ -63,7 +63,7 @@ namespace nova::renderer::rhi {
         rx::ptr<VulkanDescriptorPool> standard_descriptor_set_pool;
 
         /*!
-         * \brief The descriptor set that binds to the standard pipeline layout, duplicated once for each in flight frame
+         * \brief The descriptor set that binds to the standard pipeline layout
          */
         rx::vector<vk::DescriptorSet> standard_descriptor_sets;
 

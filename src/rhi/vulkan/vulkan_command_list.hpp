@@ -74,7 +74,5 @@ namespace nova::renderer::rhi {
         VulkanRenderpass* current_render_pass = nullptr;
 
         VkPipelineLayout current_layout = VK_NULL_HANDLE;
-
-        bool has_bound_descriptor_set = false;
     };
 } // namespace nova::renderer::rhi
