@@ -19,6 +19,15 @@ namespace nova::renderer::rhi {
     };
 
     /*!
+     * \brief Task that should be executed when a fence has been signaled
+     */
+    struct FencedTask {
+        vk::Fence fence;
+
+        std::function<void()> task;
+    };
+
+    /*!
      * \brief Vulkan implementation of a render engine
      */
     class VulkanRenderDevice final : public RenderDevice {
@@ -83,8 +92,6 @@ namespace nova::renderer::rhi {
         ~VulkanRenderDevice() = default;
 
 #pragma region Render engine interface
-        rx::ptr<RhiMaterialResources> create_material_resources(rx::memory::allocator& allocator) override;
-
         void set_num_renderpasses(uint32_t num_renderpasses) override;
 
         ntl::Result<RhiRenderpass*> create_renderpass(const renderpack::RenderPassCreateInfo& data,
@@ -161,11 +168,11 @@ namespace nova::renderer::rhi {
          * \return The new PSO
          */
         [[nodiscard]] ntl::Result<VulkanPipeline> create_pipeline(const RhiGraphicsPipelineState& state,
-                                                    vk::RenderPass renderpass,
-                                                    rx::memory::allocator& allocator);
+                                                                  vk::RenderPass renderpass,
+                                                                  rx::memory::allocator& allocator);
 
         [[nodiscard]] RhiDescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
-                                                  rx::memory::allocator& allocator);
+                                                                rx::memory::allocator& allocator);
 
         /*!
          * \brief Gets the next available descriptor set for the standard pipeline layout

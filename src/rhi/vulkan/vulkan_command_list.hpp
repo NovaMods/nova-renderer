@@ -63,6 +63,14 @@ namespace nova::renderer::rhi {
 
         void upload_data_to_image(
             RhiImage* image, size_t width, size_t height, size_t bytes_per_pixel, RhiBuffer* staging_buffer, const void* data) override;
+
+    public:
+        /*!
+         * \brief Called by VulkanRenderDevice when this command list has finished execution on the GPU
+         *
+         * This method should free any transient resources that the command lists uses
+         */
+        void cleanup_resources();
         
     private:
         VulkanRenderDevice& device;
@@ -74,5 +82,7 @@ namespace nova::renderer::rhi {
         VulkanRenderpass* current_render_pass = nullptr;
 
         VkPipelineLayout current_layout = VK_NULL_HANDLE;
+
+        rx::vector<vk::DescriptorSet> descriptor_sets;
     };
 } // namespace nova::renderer::rhi

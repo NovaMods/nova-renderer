@@ -130,6 +130,8 @@ namespace nova::renderer::rhi {
                                 reinterpret_cast<const VkDescriptorSet*>(&set),
                                 0,
                                 nullptr);
+
+        descriptor_sets.emplace_back(set);
     }
 
     void VulkanRenderCommandList::resource_barriers(const PipelineStage stages_before_barrier,

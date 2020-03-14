@@ -76,8 +76,6 @@ namespace nova::renderer::rhi {
          */
         virtual ~RenderDevice() = default;
 
-        virtual rx::ptr<RhiMaterialResources> create_material_resources(rx::memory::allocator& allocator) = 0;
-
         virtual void set_num_renderpasses(uint32_t num_renderpasses) = 0;
 
         /*!
