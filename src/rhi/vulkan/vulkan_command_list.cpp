@@ -6,6 +6,7 @@
 #include <vk_mem_alloc.h>
 
 #include "nova_renderer/camera.hpp"
+#include "nova_renderer/constants.hpp"
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 
 #include "vk_structs.hpp"
@@ -47,6 +48,88 @@ namespace nova::renderer::rhi {
         vk_name.pObjectName = name.data();
 
         device.vkSetDebugUtilsObjectNameEXT(device.device, &vk_name);
+    }
+
+    void VulkanRenderCommandList::bind_resources(RhiBuffer* material_buffer,
+                                                 RhiSampler* point_sampler,
+                                                 RhiSampler* bilinear_sampler,
+                                                 RhiSampler* trilinear_sampler,
+                                                 const rx::vector<RhiImage*>& textures,
+                                                 rx::memory::allocator& allocator) {
+        const auto set = device.get_next_standard_descriptor_set();
+
+        const auto* vk_buffer = static_cast<VulkanBuffer*>(material_buffer);
+        const auto material_buffer_write = vk::DescriptorBufferInfo()
+                                               .setOffset(0)
+                                               .setRange(MATERIAL_BUFFER_SIZE.b_count())
+                                               .setBuffer(vk_buffer->buffer);
+
+        const auto* vk_point_sampler = static_cast<VulkanSampler*>(point_sampler);
+        const auto point_sampler_write = vk::DescriptorImageInfo().setSampler(vk_point_sampler->sampler);
+
+        const auto* vk_bilinear_sampler = static_cast<VulkanSampler*>(bilinear_sampler);
+        const auto bilinear_sampler_write = vk::DescriptorImageInfo().setSampler(vk_bilinear_sampler->sampler);
+
+        const auto* vk_trilinear_sampler = static_cast<VulkanSampler*>(trilinear_sampler);
+        const auto trilinear_sampler_write = vk::DescriptorImageInfo().setSampler(vk_trilinear_sampler->sampler);
+
+        rx::vector<vk::DescriptorImageInfo> vk_textures{&allocator};
+        vk_textures.reserve(textures.size());
+
+        textures.each_fwd([&](const RhiImage* image) {
+            const auto* vk_image = static_cast<const VulkanImage*>(image);
+            vk_textures.emplace_back(
+                vk::DescriptorImageInfo().setImageView(vk_image->image_view).setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal));
+        });
+
+        const auto writes = rx::array{
+            vk::WriteDescriptorSet()
+                .setDstSet(set)
+                .setDstBinding(0)
+                .setDstArrayElement(0)
+                .setDescriptorCount(1)
+                .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                .setPBufferInfo(&material_buffer_write),
+            vk::WriteDescriptorSet()
+                .setDstSet(set)
+                .setDstBinding(1)
+                .setDstArrayElement(0)
+                .setDescriptorCount(1)
+                .setDescriptorType(vk::DescriptorType::eSampler)
+                .setPImageInfo(&point_sampler_write),
+            vk::WriteDescriptorSet()
+                .setDstSet(set)
+                .setDstBinding(2)
+                .setDstArrayElement(0)
+                .setDescriptorCount(1)
+                .setDescriptorType(vk::DescriptorType::eSampler)
+                .setPImageInfo(&bilinear_sampler_write),
+            vk::WriteDescriptorSet()
+                .setDstSet(set)
+                .setDstBinding(3)
+                .setDstArrayElement(0)
+                .setDescriptorCount(1)
+                .setDescriptorType(vk::DescriptorType::eSampler)
+                .setPImageInfo(&trilinear_sampler_write),
+            vk::WriteDescriptorSet()
+                .setDstSet(set)
+                .setDstBinding(4)
+                .setDstArrayElement(0)
+                .setDescriptorCount(vk_textures.size())
+                .setDescriptorType(vk::DescriptorType::eSampledImage)
+                .setPImageInfo(vk_textures.data()),
+        };
+
+        device.device.updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
+
+        vkCmdBindDescriptorSets(cmds,
+                                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                device.standard_pipeline_layout,
+                                0,
+                                1,
+                                reinterpret_cast<const VkDescriptorSet*>(&set),
+                                0,
+                                nullptr);
     }
 
     void VulkanRenderCommandList::resource_barriers(const PipelineStage stages_before_barrier,
@@ -178,7 +261,7 @@ namespace nova::renderer::rhi {
         current_render_pass = nullptr;
     }
 
-    void VulkanRenderCommandList::set_pipeline_state(const RhiPipelineState& state) {
+    void VulkanRenderCommandList::set_pipeline_state(const RhiGraphicsPipelineState& state) {
         MTR_SCOPE("VulkanRenderCommandList", "bind_pipeline");
 
         if(current_render_pass != nullptr) {

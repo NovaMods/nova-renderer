@@ -80,10 +80,6 @@ namespace nova::renderer::rhi {
         create_standard_pipeline_layout();
     }
 
-    void VulkanRenderDevice::set_current_frame_index(const uint32_t frame_idx) {
-        cur_frame_idx = frame_idx;
-    }
-
     void VulkanRenderDevice::set_num_renderpasses(uint32_t /* num_renderpasses */) {
         // Pretty sure Vulkan doesn't need to do anything here
     }
@@ -456,7 +452,7 @@ namespace nova::renderer::rhi {
         return pool;
     }
 
-    ntl::Result<VulkanPipeline> VulkanRenderDevice::create_pipeline(const RhiPipelineState& state,
+    ntl::Result<VulkanPipeline> VulkanRenderDevice::create_pipeline(const RhiGraphicsPipelineState& state,
                                                                     vk::RenderPass renderpass,
                                                                     rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_pipeline");
@@ -1628,45 +1624,38 @@ namespace nova::renderer::rhi {
                                            .setBindingCount(static_cast<uint32_t>(bindings.size()))
                                            .setPBindings(bindings.data());
 
-        vk::DescriptorSetLayout layout;
-
-        device.createDescriptorSetLayout(&dsl_layout_create, &vk_internal_allocator, &layout);
+        device.createDescriptorSetLayout(&dsl_layout_create, &vk_internal_allocator, &standard_set_layout);
 
         const auto pipeline_layout_create = vk::PipelineLayoutCreateInfo()
                                                 .setSetLayoutCount(1)
-                                                .setPSetLayouts(&layout)
+                                                .setPSetLayouts(&standard_set_layout)
                                                 .setPushConstantRangeCount(static_cast<uint32_t>(standard_push_constants.size()))
                                                 .setPPushConstantRanges(standard_push_constants.data());
 
         device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &standard_pipeline_layout);
 
-        if(settings->debug.enabled) {
-            VkDebugUtilsObjectNameInfoEXT object_name = {};
-            object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-            object_name.objectType = VK_OBJECT_TYPE_PIPELINE_LAYOUT;
-            object_name.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkPipelineLayout>(standard_pipeline_layout));
-            object_name.pObjectName = "Standard Pipeline Layout";
-            NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
-        }
-
-        auto* pool = create_descriptor_pool(rx::array{rx::pair<DescriptorType, uint32_t>{DescriptorType::UniformBuffer,
-                                                                                         static_cast<uint32_t>(5)},
-                                                      rx::pair<DescriptorType, uint32_t>{DescriptorType::Texture, MAX_NUM_TEXTURES},
-                                                      rx::pair<DescriptorType, uint32_t>{DescriptorType::Sampler,
-                                                                                         static_cast<uint32_t>(3)}},
+        auto* pool = create_descriptor_pool(rx::array{rx::pair{DescriptorType::UniformBuffer, 5_u32 * settings->max_in_flight_frames},
+                                                      rx::pair{DescriptorType::Texture, MAX_NUM_TEXTURES * settings->max_in_flight_frames},
+                                                      rx::pair{DescriptorType::Sampler, 3_u32 * settings->max_in_flight_frames}},
                                             internal_allocator);
-        auto* vk_pool = static_cast<VulkanDescriptorPool*>(pool);
 
-        standard_descriptor_sets.reserve(settings->max_in_flight_frames);
-        for(uint32_t i = 0; i < settings->max_in_flight_frames; i++) {
-            vk::DescriptorSet new_set;
-            const auto ds_alloc_info = vk::DescriptorSetAllocateInfo()
-                                           .setDescriptorPool(vk_pool->descriptor_pool)
-                                           .setDescriptorSetCount(1)
-                                           .setPSetLayouts(&layout);
-            device.allocateDescriptorSets(&ds_alloc_info, &new_set);
+        standard_descriptor_set_pool = rx::ptr<VulkanDescriptorPool>{&internal_allocator, static_cast<VulkanDescriptorPool*>(pool)};
 
-            standard_descriptor_sets.emplace_back(new_set);
+        if(settings->debug.enabled) {
+            VkDebugUtilsObjectNameInfoEXT pipeline_layout_name = {};
+            pipeline_layout_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+            pipeline_layout_name.objectType = VK_OBJECT_TYPE_PIPELINE_LAYOUT;
+            pipeline_layout_name.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkPipelineLayout>(standard_pipeline_layout));
+            pipeline_layout_name.pObjectName = "Standard Pipeline Layout";
+            NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &pipeline_layout_name));
+
+            VkDebugUtilsObjectNameInfoEXT descriptor_pool_name = {};
+            descriptor_pool_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+            descriptor_pool_name.objectType = VK_OBJECT_TYPE_DESCRIPTOR_POOL;
+            descriptor_pool_name.objectHandle = reinterpret_cast<uint64_t>(
+                static_cast<VkDescriptorPool>(standard_descriptor_set_pool->descriptor_pool));
+            descriptor_pool_name.pObjectName = "Standard Descriptor Set Pool";
+            NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &descriptor_pool_name));
         }
     }
 

@@ -23,6 +23,13 @@ namespace nova::renderer::rhi {
 
         void set_debug_name(const rx::string& name) override;
 
+        void bind_resources(RhiBuffer* material_buffer,
+                            RhiSampler* point_sampler,
+                            RhiSampler* bilinear_sampler,
+                            RhiSampler* trilinear_sampler,
+                            const rx::vector<RhiImage*>& textures,
+                            rx::memory::allocator& allocator) override;
+
         void resource_barriers(PipelineStage stages_before_barrier,
                                PipelineStage stages_after_barrier,
                                const rx::vector<RhiResourceBarrier>& barriers) override;
@@ -41,7 +48,7 @@ namespace nova::renderer::rhi {
 
         void end_renderpass() override;
 
-        void set_pipeline_state(const RhiPipelineState& state) override;
+        void set_pipeline_state(const RhiGraphicsPipelineState& state) override;
 
         void bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets,
                                   const RhiPipelineInterface* pipeline_interface) override;
@@ -56,7 +63,7 @@ namespace nova::renderer::rhi {
 
         void upload_data_to_image(
             RhiImage* image, size_t width, size_t height, size_t bytes_per_pixel, RhiBuffer* staging_buffer, const void* data) override;
-
+        
     private:
         VulkanRenderDevice& device;
 

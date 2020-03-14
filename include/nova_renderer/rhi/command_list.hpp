@@ -8,9 +8,9 @@
 
 namespace nova {
     namespace renderer {
-        struct RhiPipelineState;
+        struct RhiGraphicsPipelineState;
         class Camera;
-    }
+    } // namespace renderer
 } // namespace nova
 
 namespace nova::renderer::rhi {
@@ -53,6 +53,16 @@ namespace nova::renderer::rhi {
          * \brief Sets the debug name of this command list, so that API debugging tools can give you a nice name
          */
         virtual void set_debug_name(const rx::string& name) = 0;
+
+        /*!
+         * \brief
+         */
+        virtual void bind_resources(RhiBuffer* rhi_buffer,
+                                    RhiSampler* rhi_sampler,
+                                    RhiSampler* bilinear_sampler,
+                                    RhiSampler* trilinear_sampler,
+                                    const rx::vector<RhiImage*>& vector,
+                                    rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Inserts a barrier so that all access to a resource before the barrier is resolved before any access
@@ -133,7 +143,7 @@ namespace nova::renderer::rhi {
 
         virtual void end_renderpass() = 0;
 
-        virtual void set_pipeline_state(const RhiPipelineState& pipeline) = 0;
+        virtual void set_pipeline_state(const RhiGraphicsPipelineState& pipeline) = 0;
 
         virtual void bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets,
                                           const RhiPipelineInterface* pipeline_interface) = 0;

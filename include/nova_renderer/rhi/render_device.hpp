@@ -12,7 +12,7 @@
 #include "rx/core/ptr.h"
 
 namespace nova::renderer {
-    struct RhiPipelineState;
+    struct RhiGraphicsPipelineState;
     struct DeviceMemoryResource;
 } // namespace nova::renderer
 
@@ -76,7 +76,7 @@ namespace nova::renderer::rhi {
          */
         virtual ~RenderDevice() = default;
 
-        virtual void set_current_frame_index(uint32_t frame_idx) = 0;
+        virtual rx::ptr<RhiMaterialResources> create_material_resources(rx::memory::allocator& allocator) = 0;
 
         virtual void set_num_renderpasses(uint32_t num_renderpasses) = 0;
 

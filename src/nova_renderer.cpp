@@ -103,7 +103,7 @@ void rex_fini() {
 }
 
 namespace nova::renderer {
-    struct RX_HINT_EMPTY_BASES BackbufferOutputPipelineCreateInfo : RhiPipelineState {
+    struct RX_HINT_EMPTY_BASES BackbufferOutputPipelineCreateInfo : RhiGraphicsPipelineState {
         BackbufferOutputPipelineCreateInfo();
     };
 
@@ -278,7 +278,7 @@ namespace nova::renderer {
             device->wait_for_fences(cur_frame_fences);
             device->reset_fences(cur_frame_fences);
 
-            device->set_current_frame_index(cur_frame_idx);
+            device->setup_frame(cur_frame_idx);
 
             update_camera_matrix_buffer(cur_frame_idx);
 

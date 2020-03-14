@@ -45,7 +45,7 @@ namespace nova::renderer {
     };
 
     struct PipelineMetadata {
-        RhiPipelineState data;
+        RhiGraphicsPipelineState data;
 
         rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas{};
     };
@@ -116,7 +116,7 @@ namespace nova::renderer {
     };
 
     struct Pipeline {
-        RhiPipelineState pipeline{};
+        RhiGraphicsPipelineState pipeline{};
         rhi::RhiPipelineInterface* pipeline_interface = nullptr;
 
         void record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;

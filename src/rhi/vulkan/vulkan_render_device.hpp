@@ -51,9 +51,16 @@ namespace nova::renderer::rhi {
         rx::vector<vk::PushConstantRange> standard_push_constants;
 
         /*!
+         * \brief Layout for the standard descriptor set
+         */
+        vk::DescriptorSetLayout standard_set_layout;
+
+        /*!
          * \brief The pipeline layout that all pipelines use
          */
         vk::PipelineLayout standard_pipeline_layout;
+
+        rx::ptr<VulkanDescriptorPool> standard_descriptor_set_pool;
 
         /*!
          * \brief The descriptor set that binds to the standard pipeline layout, duplicated once for each in flight frame
@@ -76,7 +83,7 @@ namespace nova::renderer::rhi {
         ~VulkanRenderDevice() = default;
 
 #pragma region Render engine interface
-        void set_current_frame_index(uint32_t frame_idx) override;
+        rx::ptr<RhiMaterialResources> create_material_resources(rx::memory::allocator& allocator) override;
 
         void set_num_renderpasses(uint32_t num_renderpasses) override;
 
@@ -141,9 +148,9 @@ namespace nova::renderer::rhi {
                                  const rx::vector<RhiSemaphore*>& signal_semaphores = {}) override;
 #pragma endregion
 
+    public:
         [[nodiscard]] uint32_t get_queue_family_index(QueueType type) const;
 
-    public:
         /*!
          * \brief Creates a new PSO
          *
@@ -153,13 +160,19 @@ namespace nova::renderer::rhi {
          *
          * \return The new PSO
          */
-        ntl::Result<VulkanPipeline> create_pipeline(const RhiPipelineState& state,
+        [[nodiscard]] ntl::Result<VulkanPipeline> create_pipeline(const RhiGraphicsPipelineState& state,
                                                     vk::RenderPass renderpass,
                                                     rx::memory::allocator& allocator);
 
-        
-        RhiDescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
+        [[nodiscard]] RhiDescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
                                                   rx::memory::allocator& allocator);
+
+        /*!
+         * \brief Gets the next available descriptor set for the standard pipeline layout
+         *
+         * If there are no free descriptor sets for the standard pipeline layout, this method creates a new one
+         */
+        [[nodiscard]] vk::DescriptorSet get_next_standard_descriptor_set();
 
     protected:
         void create_surface();
