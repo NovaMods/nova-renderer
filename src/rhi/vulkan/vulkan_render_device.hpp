@@ -24,7 +24,9 @@ namespace nova::renderer::rhi {
     struct FencedTask {
         vk::Fence fence;
 
-        std::function<void()> task;
+        std::function<void()> work_to_perform;
+
+        void operator()() const;
     };
 
     /*!
@@ -153,6 +155,8 @@ namespace nova::renderer::rhi {
                                  RhiFence* fence_to_signal = nullptr,
                                  const rx::vector<RhiSemaphore*>& wait_semaphores = {},
                                  const rx::vector<RhiSemaphore*>& signal_semaphores = {}) override;
+
+        void end_frame(FrameContext& ctx) override;
 #pragma endregion
 
     public:
@@ -193,6 +197,8 @@ namespace nova::renderer::rhi {
          * The index in the vector is the thread index, the key in the map is the queue family index
          */
         rx::vector<rx::map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
+
+        rx::vector<FencedTask> tasks;
 
 #pragma region Initialization
         rx::vector<const char*> enabled_layer_names;

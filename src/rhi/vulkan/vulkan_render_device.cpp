@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "nova_renderer/constants.hpp"
+#include "nova_renderer/frame_context.hpp"
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/window.hpp"
@@ -34,12 +35,12 @@ using namespace nova::mem;
 
 #if defined(NOVA_WINDOWS)
 #define BREAK_ON_DEVICE_LOST(result)                                                                                                       \
-    if(result == VK_ERROR_DEVICE_LOST) {                                                                                                   \
+    if((result) == VK_ERROR_DEVICE_LOST) {                                                                                                 \
         DebugBreak();                                                                                                                      \
     }
 #elif defined(NOVA_LINUX)
 #define BREAK_ON_DEVICE_LOST(result)                                                                                                       \
-    if(result == VK_ERROR_DEVICE_LOST) {                                                                                                   \
+    if((result) == VK_ERROR_DEVICE_LOST) {                                                                                                 \
         raise(SIGINT);                                                                                                                     \
     }
 #endif
@@ -47,10 +48,13 @@ using namespace nova::mem;
 namespace nova::renderer::rhi {
     RX_LOG("VulkanRenderDevice", logger);
 
+    void FencedTask::operator()() const { work_to_perform(); }
+
     VulkanRenderDevice::VulkanRenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator)
         : RenderDevice{settings, window, allocator},
           vk_internal_allocator{wrap_allocator(internal_allocator)},
-          command_pools_by_thread_idx{&internal_allocator} {
+          command_pools_by_thread_idx{&internal_allocator},
+          tasks{&internal_allocator} {
         MTR_SCOPE("VulkanRenderDevice", "VulkanRenderDevice");
 
         create_instance();
@@ -1183,10 +1187,29 @@ namespace nova::renderer::rhi {
 
         if(settings->debug.enabled) {
             if(result != VK_SUCCESS) {
-                logger(rx::log::level::k_error, "Could submit command list: %s", to_string(result));
+                logger(rx::log::level::k_error, "Could not submit command list: %s", to_string(result));
                 BREAK_ON_DEVICE_LOST(result);
             }
         }
+    }
+
+    void VulkanRenderDevice::end_frame(FrameContext& /* ctx */) {
+        MTR_SCOPE("VulkanRenderEngine", "end_frame");
+        // Intentionally copying the vector
+        auto cur_tasks = tasks;
+
+        // Clear out the list of tasks. We've copied the tasks to the new vector so it's fine, and we'll add back in the tasks that aren't
+        // ready to run
+        tasks.clear();
+
+        cur_tasks.each_fwd([&](const FencedTask& task) {
+            if(device.getFenceStatus(task.fence) == vk::Result::eSuccess) {
+                task();
+
+            } else {
+                tasks.push_back(task);
+            }
+        });
     }
 
     uint32_t VulkanRenderDevice::get_queue_family_index(const QueueType type) const {

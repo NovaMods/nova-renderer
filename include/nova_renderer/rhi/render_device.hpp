@@ -12,6 +12,7 @@
 #include "rx/core/ptr.h"
 
 namespace nova::renderer {
+    struct FrameContext;
     struct RhiGraphicsPipelineState;
     struct DeviceMemoryResource;
 } // namespace nova::renderer
@@ -232,6 +233,11 @@ namespace nova::renderer::rhi {
                                          RhiFence* fence_to_signal = nullptr,
                                          const rx::vector<RhiSemaphore*>& wait_semaphores = {},
                                          const rx::vector<RhiSemaphore*>& signal_semaphores = {}) = 0;
+
+        /*!
+         * \brief Performs any work that's needed to end the provided frame
+         */
+        virtual void end_frame(FrameContext& ctx) = 0;
 
         [[nodiscard]] rx::memory::allocator& get_allocator() const;
 
