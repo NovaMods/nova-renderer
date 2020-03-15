@@ -380,6 +380,8 @@ namespace nova::renderer {
 
     template <typename MaterialType>
     rx::pair<uint32_t, MaterialType*> NovaRenderer::create_material() {
+        // We need to return the index so that we can send the index to the shader
+        // WE NEED TO RETURN THE INDEX, NOT JUST A POINTER TO THE MATERIAL
         const auto idx = material_buffer->get_next_free_index<MaterialType>();
         return {idx, &material_buffer->at<MaterialType>(idx)};
     }
