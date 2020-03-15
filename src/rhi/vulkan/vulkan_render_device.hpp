@@ -185,6 +185,13 @@ namespace nova::renderer::rhi {
          */
         [[nodiscard]] vk::DescriptorSet get_next_standard_descriptor_set();
 
+        /*!
+         * \brief Lets the render device know that all the provided descriptor sets are no longer in use by the GPU and can be used for whatever
+         */
+        void return_standard_descriptor_sets(const rx::vector<vk::DescriptorSet>& sets);
+
+        [[nodiscard]] vk::Fence get_next_submission_fence();
+
     protected:
         void create_surface();
 
@@ -198,7 +205,9 @@ namespace nova::renderer::rhi {
          */
         rx::vector<rx::map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
 
-        rx::vector<FencedTask> tasks;
+        rx::vector<FencedTask> fenced_tasks;
+
+        rx::vector<vk::Fence> submission_fences;
 
 #pragma region Initialization
         rx::vector<const char*> enabled_layer_names;

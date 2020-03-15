@@ -54,7 +54,7 @@ namespace nova::renderer::rhi {
         : RenderDevice{settings, window, allocator},
           vk_internal_allocator{wrap_allocator(internal_allocator)},
           command_pools_by_thread_idx{&internal_allocator},
-          tasks{&internal_allocator} {
+          fenced_tasks{&internal_allocator} {
         MTR_SCOPE("VulkanRenderDevice", "VulkanRenderDevice");
 
         create_instance();
@@ -473,6 +473,26 @@ namespace nova::renderer::rhi {
             standard_descriptor_sets.pop_back();
 
             return set;
+        }
+    }
+
+    void VulkanRenderDevice::return_standard_descriptor_sets(const rx::vector<vk::DescriptorSet>& sets) {
+        standard_descriptor_sets += sets;
+    }
+
+    vk::Fence VulkanRenderDevice::get_next_submission_fence() {
+        if(submission_fences.is_empty()) {
+            const auto fence_create_info = vk::FenceCreateInfo();
+            vk::Fence fence;
+            device.createFence(&fence_create_info, &vk_internal_allocator, &fence);
+
+            return fence;
+
+        } else {
+            const auto fence = submission_fences.last();
+            submission_fences.pop_back();
+
+            return fence;
         }
     }
 
@@ -1174,16 +1194,21 @@ namespace nova::renderer::rhi {
         submit_info.signalSemaphoreCount = static_cast<uint32_t>(vk_signal_semaphores.size());
         submit_info.pSignalSemaphores = vk_signal_semaphores.data();
 
-        const auto vk_signal_fence = [&] {
+        const auto vk_signal_fence = [&]() -> vk::Fence {
             if(fence_to_signal) {
                 return static_cast<const VulkanFence*>(fence_to_signal)->fence;
 
             } else {
-                return VkFence{};
+                return get_next_submission_fence();
             }
         }();
 
         const auto result = vkQueueSubmit(queue_to_submit_to, 1, &submit_info, vk_signal_fence);
+
+        fenced_tasks.emplace_back(vk_signal_fence, [&] {
+            vk_list->cleanup_resources();
+            submission_fences.emplace_back(vk_signal_fence);
+        });
 
         if(settings->debug.enabled) {
             if(result != VK_SUCCESS) {
@@ -1196,18 +1221,18 @@ namespace nova::renderer::rhi {
     void VulkanRenderDevice::end_frame(FrameContext& /* ctx */) {
         MTR_SCOPE("VulkanRenderEngine", "end_frame");
         // Intentionally copying the vector
-        auto cur_tasks = tasks;
+        auto cur_tasks = fenced_tasks;
 
         // Clear out the list of tasks. We've copied the tasks to the new vector so it's fine, and we'll add back in the tasks that aren't
         // ready to run
-        tasks.clear();
+        fenced_tasks.clear();
 
         cur_tasks.each_fwd([&](const FencedTask& task) {
             if(device.getFenceStatus(task.fence) == vk::Result::eSuccess) {
                 task();
 
             } else {
-                tasks.push_back(task);
+                fenced_tasks.push_back(task);
             }
         });
     }

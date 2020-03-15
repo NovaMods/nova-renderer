@@ -30,7 +30,7 @@ namespace nova::renderer::rhi {
     VulkanRenderCommandList::VulkanRenderCommandList(VkCommandBuffer cmds,
                                                      VulkanRenderDevice& render_device,
                                                      rx::memory::allocator& allocator)
-        : cmds(cmds), device(render_device), allocator(allocator) {
+        : cmds(cmds), device(render_device), allocator(allocator), descriptor_sets{&allocator} {
         MTR_SCOPE("VulkanRenderCommandList", "VulkanRenderCommandList");
         // TODO: Put this begin info in the constructor parameters
         VkCommandBufferBeginInfo begin_info = {};
@@ -364,5 +364,13 @@ namespace nova::renderer::rhi {
         image_copy.imageExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1};
 
         vkCmdCopyBufferToImage(cmds, vk_buffer->buffer, vk_image->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &image_copy);
+    }
+
+    void VulkanRenderCommandList::cleanup_resources() {
+        MTR_SCOPE("VulkanCommandList", "cleanup_resources");
+
+        device.return_standard_descriptor_sets(descriptor_sets);
+
+        descriptor_sets.clear();
     }
 } // namespace nova::renderer::rhi
