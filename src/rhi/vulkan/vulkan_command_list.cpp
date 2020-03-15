@@ -50,7 +50,8 @@ namespace nova::renderer::rhi {
         device.vkSetDebugUtilsObjectNameEXT(device.device, &vk_name);
     }
 
-    void VulkanRenderCommandList::bind_material_resources(RhiBuffer* material_buffer,
+    void VulkanRenderCommandList::bind_material_resources(RhiBuffer* camera_buffer,
+                                                          RhiBuffer* material_buffer,
                                                           RhiSampler* point_sampler,
                                                           RhiSampler* bilinear_sampler,
                                                           RhiSampler* trilinear_sampler,
@@ -58,11 +59,23 @@ namespace nova::renderer::rhi {
                                                           rx::memory::allocator& allocator) {
         const auto set = device.get_next_standard_descriptor_set();
 
-        const auto* vk_buffer = static_cast<VulkanBuffer*>(material_buffer);
+        const auto* vk_camera_buffer = static_cast<VulkanBuffer*>(camera_buffer);
+        const auto camera_buffer_write = vk::DescriptorBufferInfo()
+                                             .setOffset(0)
+                                             .setRange(vk_camera_buffer->size.b_count())
+                                             .setBuffer(vk_camera_buffer->buffer);
+        const auto camera_buffer_descriptor_type = vk_camera_buffer->size < device.gpu.props.limits.maxUniformBufferRange ?
+                                                       vk::DescriptorType::eUniformBuffer :
+                                                       vk::DescriptorType::eStorageBuffer;
+
+        const auto* vk_material_buffer = static_cast<VulkanBuffer*>(material_buffer);
         const auto material_buffer_write = vk::DescriptorBufferInfo()
                                                .setOffset(0)
-                                               .setRange(MATERIAL_BUFFER_SIZE.b_count())
-                                               .setBuffer(vk_buffer->buffer);
+                                               .setRange(material_buffer->size.b_count())
+                                               .setBuffer(vk_material_buffer->buffer);
+        const auto material_buffer_descriptor_type = material_buffer->size < device.gpu.props.limits.maxUniformBufferRange ?
+                                                         vk::DescriptorType::eUniformBuffer :
+                                                         vk::DescriptorType::eStorageBuffer;
 
         const auto* vk_point_sampler = static_cast<VulkanSampler*>(point_sampler);
         const auto point_sampler_write = vk::DescriptorImageInfo().setSampler(vk_point_sampler->sampler);
@@ -88,34 +101,39 @@ namespace nova::renderer::rhi {
                 .setDstBinding(0)
                 .setDstArrayElement(0)
                 .setDescriptorCount(1)
-                .setDescriptorType(material_buffer->size > device.gpu.props.limits.maxUniformBufferRange ?
-                                       vk::DescriptorType::eStorageBuffer :
-                                       vk::DescriptorType::eUniformBuffer)
-                .setPBufferInfo(&material_buffer_write),
+                .setDescriptorType(camera_buffer_descriptor_type)
+                .setPBufferInfo(&camera_buffer_write),
             vk::WriteDescriptorSet()
                 .setDstSet(set)
                 .setDstBinding(1)
                 .setDstArrayElement(0)
                 .setDescriptorCount(1)
-                .setDescriptorType(vk::DescriptorType::eSampler)
-                .setPImageInfo(&point_sampler_write),
+                .setDescriptorType(material_buffer_descriptor_type)
+                .setPBufferInfo(&material_buffer_write),
             vk::WriteDescriptorSet()
                 .setDstSet(set)
                 .setDstBinding(2)
                 .setDstArrayElement(0)
                 .setDescriptorCount(1)
                 .setDescriptorType(vk::DescriptorType::eSampler)
-                .setPImageInfo(&bilinear_sampler_write),
+                .setPImageInfo(&point_sampler_write),
             vk::WriteDescriptorSet()
                 .setDstSet(set)
                 .setDstBinding(3)
                 .setDstArrayElement(0)
                 .setDescriptorCount(1)
                 .setDescriptorType(vk::DescriptorType::eSampler)
-                .setPImageInfo(&trilinear_sampler_write),
+                .setPImageInfo(&bilinear_sampler_write),
             vk::WriteDescriptorSet()
                 .setDstSet(set)
                 .setDstBinding(4)
+                .setDstArrayElement(0)
+                .setDescriptorCount(1)
+                .setDescriptorType(vk::DescriptorType::eSampler)
+                .setPImageInfo(&trilinear_sampler_write),
+            vk::WriteDescriptorSet()
+                .setDstSet(set)
+                .setDstBinding(5)
                 .setDstArrayElement(0)
                 .setDescriptorCount(vk_textures.size())
                 .setDescriptorType(vk::DescriptorType::eSampledImage)

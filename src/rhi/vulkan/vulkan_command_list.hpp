@@ -23,12 +23,13 @@ namespace nova::renderer::rhi {
 
         void set_debug_name(const rx::string& name) override;
 
-        void bind_material_resources(RhiBuffer* material_buffer,
-                            RhiSampler* point_sampler,
-                            RhiSampler* bilinear_sampler,
-                            RhiSampler* trilinear_sampler,
-                            const rx::vector<RhiImage*>& textures,
-                            rx::memory::allocator& allocator) override;
+        void bind_material_resources(RhiBuffer* camera_buffer,
+                                     RhiBuffer* material_buffer,
+                                     RhiSampler* point_sampler,
+                                     RhiSampler* bilinear_sampler,
+                                     RhiSampler* trilinear_sampler,
+                                     const rx::vector<RhiImage*>& textures,
+                                     rx::memory::allocator& allocator) override;
 
         void resource_barriers(PipelineStage stages_before_barrier,
                                PipelineStage stages_after_barrier,
@@ -71,7 +72,7 @@ namespace nova::renderer::rhi {
          * This method should free any transient resources that the command lists uses
          */
         void cleanup_resources();
-        
+
     private:
         VulkanRenderDevice& device;
 

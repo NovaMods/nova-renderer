@@ -57,12 +57,13 @@ namespace nova::renderer::rhi {
         /*!
          * \brief
          */
-        virtual void bind_material_resources(RhiBuffer* material_buffer,
-                                    RhiSampler* point_sampler,
-                                    RhiSampler* bilinear_sampler,
-                                    RhiSampler* trilinear_sampler,
-                                    const rx::vector<RhiImage*>& vector,
-                                    rx::memory::allocator& allocator) = 0;
+        virtual void bind_material_resources(RhiBuffer* camera_buffer,
+                                             RhiBuffer* material_buffer,
+                                             RhiSampler* point_sampler,
+                                             RhiSampler* bilinear_sampler,
+                                             RhiSampler* trilinear_sampler,
+                                             const rx::vector<RhiImage*>& vector,
+                                             rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Inserts a barrier so that all access to a resource before the barrier is resolved before any access

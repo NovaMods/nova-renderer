@@ -39,6 +39,8 @@ namespace nova::renderer {
 
         [[nodiscard]] size_t size() const;
 
+        [[nodiscard]] rhi::RhiBuffer* get_buffer_for_frame(uint32_t frame_idx) const;
+
     private:
         rx::memory::allocator& internal_allocator;
 
@@ -107,5 +109,10 @@ namespace nova::renderer {
     template <typename ElementType>
     size_t PerFrameDeviceArray<ElementType>::size() const {
         return num_elements;
+    }
+
+    template <typename ElementType>
+    rhi::RhiBuffer* PerFrameDeviceArray<ElementType>::get_buffer_for_frame(const uint32_t frame_idx) const {
+        return per_frame_buffers[frame_idx];
     }
 } // namespace nova::renderer

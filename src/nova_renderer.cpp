@@ -292,7 +292,13 @@ namespace nova::renderer {
 
             const auto images = get_all_images(frame_allocator);
 
-            cmds->bind_material_resources(material_buffer->buffer, point_sampler, point_sampler, point_sampler, images, frame_allocator);
+            cmds->bind_material_resources(camera_data->get_buffer_for_frame(cur_frame_idx),
+                                          material_buffer->buffer,
+                                          point_sampler,
+                                          point_sampler,
+                                          point_sampler,
+                                          images,
+                                          frame_allocator);
 
             FrameContext ctx = {};
             ctx.frame_count = frame_count;

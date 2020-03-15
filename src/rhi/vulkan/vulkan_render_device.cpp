@@ -11,6 +11,7 @@
 #include <signal.h>
 #include <string.h>
 
+#include "nova_renderer/camera.hpp"
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/frame_context.hpp"
 #include "nova_renderer/renderables.hpp"
@@ -1660,17 +1661,25 @@ namespace nova::renderer::rhi {
             // Material index
             vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eAll).setOffset(0).setSize(sizeof(uint32_t))};
 
+        const auto camera_buffer_descriptor_type = (MAX_NUM_CAMERAS * sizeof(CameraUboData)) < gpu.props.limits.maxUniformBufferRange ?
+                                                       vk::DescriptorType::eUniformBuffer :
+                                                       vk::DescriptorType::eStorageBuffer;
+
+        const auto material_buffer_descriptor_type = MATERIAL_BUFFER_SIZE.b_count() < gpu.props.limits.maxUniformBufferRange ?
+                                                         vk::DescriptorType::eUniformBuffer :
+                                                         vk::DescriptorType::eStorageBuffer;
+
         // Binding for the array of material parameter buffers. Nova uses a variable-length, partially-bound
         const rx::vector<vk::DescriptorSetLayoutBinding> bindings = rx::array{// Camera data buffer
                                                                               vk::DescriptorSetLayoutBinding()
                                                                                   .setBinding(0)
-                                                                                  .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                                                                                  .setDescriptorType(camera_buffer_descriptor_type)
                                                                                   .setDescriptorCount(1)
                                                                                   .setStageFlags(vk::ShaderStageFlagBits::eAll),
                                                                               // Material data buffer
                                                                               vk::DescriptorSetLayoutBinding()
                                                                                   .setBinding(1)
-                                                                                  .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                                                                                  .setDescriptorType(material_buffer_descriptor_type)
                                                                                   .setDescriptorCount(1)
                                                                                   .setStageFlags(vk::ShaderStageFlagBits::eAll),
                                                                               // Point sampler
@@ -1712,7 +1721,8 @@ namespace nova::renderer::rhi {
 
         device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &standard_pipeline_layout);
 
-        auto* pool = create_descriptor_pool(rx::array{rx::pair{DescriptorType::UniformBuffer, 5_u32 * 1024},
+        auto* pool = create_descriptor_pool(rx::array{rx::pair{DescriptorType::StorageBuffer, 5_u32 * 1024},
+                                                      rx::pair{DescriptorType::UniformBuffer, 5_u32 * 1024},
                                                       rx::pair{DescriptorType::Texture, MAX_NUM_TEXTURES * 1024},
                                                       rx::pair{DescriptorType::Sampler, 3_u32 * 1024}},
                                             internal_allocator);
