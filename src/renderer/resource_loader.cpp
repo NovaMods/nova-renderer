@@ -319,6 +319,10 @@ namespace nova::renderer {
         buffers->push_back(buffer);
     }
 
+    const rx::vector<TextureResource>& DeviceResources::get_all_textures() const {
+        return textures;
+    }
+
     size_t size_in_bytes(const PixelFormat pixel_format) {
         switch(pixel_format) {
             case PixelFormat::Rgba8:

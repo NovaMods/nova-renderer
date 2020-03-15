@@ -122,6 +122,7 @@ namespace nova::renderer {
 
         void return_staging_buffer(rhi::RhiBuffer* buffer);
 
+        [[nodiscard]] const rx::vector<TextureResource>& get_all_textures() const;
     private:
         NovaRenderer& renderer;
 

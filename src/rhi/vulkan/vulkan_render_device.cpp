@@ -466,6 +466,16 @@ namespace nova::renderer::rhi {
             vk::DescriptorSet set;
             device.allocateDescriptorSets(&allocate_info, &set);
 
+            if(settings->debug.enabled) {
+                VkDebugUtilsObjectNameInfoEXT object_name = {};
+                object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+                object_name.objectType = VK_OBJECT_TYPE_DESCRIPTOR_SET;
+                object_name.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkDescriptorSet>(set));
+                object_name.pObjectName = "Standard descriptor set";
+
+                NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
+            }
+
             return set;
 
         } else {
@@ -1724,6 +1734,13 @@ namespace nova::renderer::rhi {
                 static_cast<VkDescriptorPool>(standard_descriptor_set_pool->descriptor_pool));
             descriptor_pool_name.pObjectName = "Standard Descriptor Set Pool";
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &descriptor_pool_name));
+
+            VkDebugUtilsObjectNameInfoEXT descriptor_set_layout_name = {};
+            descriptor_set_layout_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+            descriptor_set_layout_name.objectType = VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
+            descriptor_set_layout_name.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkDescriptorSetLayout>(standard_set_layout));
+            descriptor_set_layout_name.pObjectName = "Standard descriptor set layout";
+            NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &descriptor_set_layout_name));
         }
     }
 

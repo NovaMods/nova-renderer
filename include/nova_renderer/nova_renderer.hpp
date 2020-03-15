@@ -357,6 +357,8 @@ namespace nova::renderer {
         rx::ptr<PerFrameDeviceArray<CameraUboData>> camera_data;
 
         void update_camera_matrix_buffer(uint32_t frame_idx);
+
+        rx::vector<rhi::RhiImage*> get_all_images(rx::memory::allocator& allocator);
 #pragma endregion
     };
 

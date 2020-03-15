@@ -290,7 +290,9 @@ namespace nova::renderer {
 
             device->write_data_to_buffer(material_buffer->buffer, material_buffer->size, 0, material_buffer->buffer);
 
-            cmds->bind_material_resources(material_buffer->buffer, point_sampler, point_sampler, point_sampler, {}, frame_allocator);
+            const auto images = get_all_images(frame_allocator);
+
+            cmds->bind_material_resources(material_buffer->buffer, point_sampler, point_sampler, point_sampler, images, frame_allocator);
 
             FrameContext ctx = {};
             ctx.frame_count = frame_count;
@@ -588,6 +590,17 @@ namespace nova::renderer {
         });
 
         camera_data->upload_to_device(frame_idx);
+    }
+
+    rx::vector<rhi::RhiImage*> NovaRenderer::get_all_images(rx::memory::allocator& allocator) {
+        rx::vector<rhi::RhiImage*> images{&allocator};
+
+        const auto& textures = device_resources->get_all_textures();
+        images.reserve(textures.size());
+
+        textures.each_fwd([&](const TextureResource& texture) { images.emplace_back(texture.image); });
+
+        return images;
     }
 
     void NovaRenderer::destroy_dynamic_resources() {

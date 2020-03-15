@@ -51,11 +51,11 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderCommandList::bind_material_resources(RhiBuffer* material_buffer,
-                                                 RhiSampler* point_sampler,
-                                                 RhiSampler* bilinear_sampler,
-                                                 RhiSampler* trilinear_sampler,
-                                                 const rx::vector<RhiImage*>& textures,
-                                                 rx::memory::allocator& allocator) {
+                                                          RhiSampler* point_sampler,
+                                                          RhiSampler* bilinear_sampler,
+                                                          RhiSampler* trilinear_sampler,
+                                                          const rx::vector<RhiImage*>& textures,
+                                                          rx::memory::allocator& allocator) {
         const auto set = device.get_next_standard_descriptor_set();
 
         const auto* vk_buffer = static_cast<VulkanBuffer*>(material_buffer);
@@ -88,7 +88,9 @@ namespace nova::renderer::rhi {
                 .setDstBinding(0)
                 .setDstArrayElement(0)
                 .setDescriptorCount(1)
-                .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                .setDescriptorType(material_buffer->size > device.gpu.props.limits.maxUniformBufferRange ?
+                                       vk::DescriptorType::eStorageBuffer :
+                                       vk::DescriptorType::eUniformBuffer)
                 .setPBufferInfo(&material_buffer_write),
             vk::WriteDescriptorSet()
                 .setDstSet(set)
