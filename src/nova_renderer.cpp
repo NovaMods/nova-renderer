@@ -286,6 +286,12 @@ namespace nova::renderer {
                                                                           frame_allocator);
             cmds->set_debug_name("RendergraphCommands");
 
+            auto& material_buffer = material_device_buffers[cur_frame_idx];
+
+            device->write_data_to_buffer(material_buffer->buffer, material_buffer->size, 0, material_buffer->buffer);
+
+            cmds->bind_material_resources(material_buffer->buffer, point_sampler, point_sampler, point_sampler, {}, frame_allocator);
+
             FrameContext ctx = {};
             ctx.frame_count = frame_count;
             ctx.frame_idx = cur_frame_idx;

@@ -23,7 +23,7 @@ namespace nova::renderer::rhi {
 
         void set_debug_name(const rx::string& name) override;
 
-        void bind_resources(RhiBuffer* material_buffer,
+        void bind_material_resources(RhiBuffer* material_buffer,
                             RhiSampler* point_sampler,
                             RhiSampler* bilinear_sampler,
                             RhiSampler* trilinear_sampler,

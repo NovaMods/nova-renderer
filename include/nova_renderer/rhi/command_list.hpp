@@ -57,8 +57,8 @@ namespace nova::renderer::rhi {
         /*!
          * \brief
          */
-        virtual void bind_resources(RhiBuffer* rhi_buffer,
-                                    RhiSampler* rhi_sampler,
+        virtual void bind_material_resources(RhiBuffer* material_buffer,
+                                    RhiSampler* point_sampler,
                                     RhiSampler* bilinear_sampler,
                                     RhiSampler* trilinear_sampler,
                                     const rx::vector<RhiImage*>& vector,

@@ -32,8 +32,8 @@ namespace nova::renderer {
 
         allocator = &rx::memory::g_system_allocator;
 
-        vertex_buffers.reserve(num_in_flight_frames);
-        index_buffers.reserve(num_in_flight_frames);
+        vertex_buffers.resize(num_in_flight_frames);
+        index_buffers.resize(num_in_flight_frames);
         for(uint32_t i = 0; i < num_in_flight_frames; i++) {
             vertex_buffers[i] = device->create_buffer({rx::string::format("%sVertices%d", name, i),
                                                        vertex_buffer_size,

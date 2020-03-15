@@ -50,7 +50,7 @@ namespace nova::renderer::rhi {
         device.vkSetDebugUtilsObjectNameEXT(device.device, &vk_name);
     }
 
-    void VulkanRenderCommandList::bind_resources(RhiBuffer* material_buffer,
+    void VulkanRenderCommandList::bind_material_resources(RhiBuffer* material_buffer,
                                                  RhiSampler* point_sampler,
                                                  RhiSampler* bilinear_sampler,
                                                  RhiSampler* trilinear_sampler,
