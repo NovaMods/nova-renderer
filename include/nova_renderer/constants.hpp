@@ -12,7 +12,7 @@ namespace nova::renderer {
     constexpr const char* MATERIAL_DATA_BUFFER_NAME = "NovaMaterialData";
     constexpr const char* CAMERA_MATRIX_BUFFER_NAME = "NovaCameraMatrixBuffer";
 
-    constexpr mem::Bytes MATERIAL_BUFFER_SIZE = 1_mb;
+    constexpr mem::Bytes MATERIAL_BUFFER_SIZE = 64_kb;
 
     constexpr uint32_t AMD_PCI_VENDOR_ID = 0x1022;
     constexpr uint32_t INTEL_PCI_VENDOR_ID = 8086;

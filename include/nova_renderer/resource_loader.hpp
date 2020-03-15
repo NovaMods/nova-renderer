@@ -35,7 +35,7 @@ namespace nova::renderer {
         mem::Bytes size = 0;
     };
 
-    using TextureResourceAccessor = MapAccessor<rx::string, TextureResource>;
+    using TextureResourceAccessor = VectorAccessor<TextureResource>;
 
     using BufferResourceAccessor = MapAccessor<rx::string, BufferResource>;
 
@@ -71,6 +71,8 @@ namespace nova::renderer {
                                                                            rhi::PixelFormat pixel_format,
                                                                            const void* data,
                                                                            rx::memory::allocator& allocator);
+
+        [[nodiscard]] rx::optional<uint32_t> get_texture_idx_for_name(const rx::string& name);
 
         /*!
          * \brief Retrieves the texture with the specified name
@@ -127,9 +129,9 @@ namespace nova::renderer {
 
         rx::memory::allocator& internal_allocator;
 
-        rx::map<rx::string, TextureResource> textures;
+        rx::vector<TextureResource> textures;
 
-        rx::map<rx::string, TextureResource> render_targets;
+        rx::map<rx::string, uint32_t> texture_name_to_idx;
 
         rx::map<rx_size, rx::vector<rhi::RhiBuffer*>> staging_buffers;
 

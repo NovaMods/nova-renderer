@@ -19,7 +19,12 @@ namespace nova::renderer {
     size_t size_in_bytes(PixelFormat pixel_format);
 
     DeviceResources::DeviceResources(NovaRenderer& renderer)
-        : renderer(renderer), device(renderer.get_device()), internal_allocator(renderer.get_global_allocator()) {}
+        : renderer{renderer},
+          device{renderer.get_device()},
+          internal_allocator{renderer.get_global_allocator()},
+          textures{&internal_allocator},
+          staging_buffers{&internal_allocator},
+          uniform_buffers{&internal_allocator} {}
 
     rx::optional<BufferResourceAccessor> DeviceResources::create_uniform_buffer(const rx::string& name, const Bytes size) {
         const auto event_name = rx::string::format("create_uniform_buffer(%s)", name);
@@ -137,14 +142,25 @@ namespace nova::renderer {
             logger(rx::log::level::k_verbose, "Uploaded texture data to texture %s", name);
         }
 
-        textures.insert(name, resource);
+        auto idx = textures.size();
 
-        return TextureResourceAccessor{&textures, name};
+        textures.push_back(resource);
+        texture_name_to_idx.insert(name, static_cast<uint32_t>(idx));
+
+        return TextureResourceAccessor{&textures, idx};
+    }
+
+    rx::optional<uint32_t> DeviceResources::get_texture_idx_for_name(const rx::string& name) {
+        if(auto* idx = texture_name_to_idx.find(name); idx != nullptr) {
+            return *idx;
+        }
+
+        return rx::nullopt;
     }
 
     rx::optional<TextureResourceAccessor> DeviceResources::get_texture(const rx::string& name) {
-        if(textures.find(name) != nullptr) {
-            return TextureResourceAccessor{&textures, name};
+        if(auto idx = get_texture_idx_for_name(name); idx) {
+            return TextureResourceAccessor{&textures, *idx};
 
         }
 
@@ -235,9 +251,12 @@ namespace nova::renderer {
                 device.destroy_fences(upload_done_fences, allocator);
             }
 
-            render_targets.insert(name, resource);
+            auto idx = textures.size();
 
-            return TextureResourceAccessor{&render_targets, name};
+            textures.push_back(resource);
+            texture_name_to_idx.insert(name, idx);
+
+            return TextureResourceAccessor{&textures, idx};
 
         } else {
             logger(rx::log::level::k_error, "Could not create render target %s", name);
@@ -246,8 +265,8 @@ namespace nova::renderer {
     }
 
     rx::optional<TextureResourceAccessor> DeviceResources::get_render_target(const rx::string& name) {
-        if(render_targets.find(name) != nullptr) {
-            return TextureResourceAccessor{&render_targets, name};
+        if(auto idx = get_texture_idx_for_name(name); idx) {
+            return TextureResourceAccessor{&textures, *idx};
 
         } else {
             return rx::nullopt;
@@ -255,9 +274,10 @@ namespace nova::renderer {
     }
 
     void DeviceResources::destroy_render_target(const rx::string& texture_name, rx::memory::allocator& allocator) {
-        if(const auto* texture = render_targets.find(texture_name); texture != nullptr) {
-            device.destroy_texture(texture->image, allocator);
-            render_targets.erase(texture_name);
+        if(const auto idx = get_texture_idx_for_name(texture_name); idx) {
+            const auto texture = textures[*idx];
+            device.destroy_texture(texture.image, allocator);
+            textures.erase(*idx, *idx);
         }
 #if NOVA_DEBUG
         else {
