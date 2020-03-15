@@ -22,6 +22,8 @@ namespace nova::renderer {
         : renderer(renderer), device(renderer.get_device()), internal_allocator(renderer.get_global_allocator()) {}
 
     rx::optional<BufferResourceAccessor> DeviceResources::create_uniform_buffer(const rx::string& name, const Bytes size) {
+        const auto event_name = rx::string::format("create_uniform_buffer(%s)", name);
+        MTR_SCOPE("DeviceResources", event_name.data());
         BufferResource resource = {};
         resource.name = name;
         resource.size = size;
@@ -59,6 +61,8 @@ namespace nova::renderer {
                                                                           const PixelFormat pixel_format,
                                                                           const void* data,
                                                                           rx::memory::allocator& allocator) {
+        const auto event_name = rx::string::format("create_texture(%s)", name);
+        MTR_SCOPE("DeviceResources", event_name.data());
 
         TextureResource resource = {};
 
@@ -81,6 +85,7 @@ namespace nova::renderer {
         resource.image->is_dynamic = false;
 
         if(data != nullptr) {
+            MTR_SCOPE("DeviceResources", "Upload Data To Texture");
             RhiBuffer* staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
 
             RhiRenderCommandList* cmds = device.create_command_list(0,
@@ -158,6 +163,9 @@ namespace nova::renderer {
                                                                                 const PixelFormat pixel_format,
                                                                                 rx::memory::allocator& allocator,
                                                                                 const bool /* can_be_sampled // Not yet supported */) {
+        const auto event_name = rx::string::format("create_render_target(%s)", name);
+        MTR_SCOPE("DeviceResources", event_name.data());
+
         renderpack::TextureCreateInfo create_info;
         create_info.name = name;
         create_info.usage = ImageUsage::RenderTarget;
@@ -180,6 +188,8 @@ namespace nova::renderer {
             resource.image = image;
 
             {
+                MTR_SCOPE("DeviceResources", "Transition Render Target Layout");
+
                 RhiRenderCommandList* cmds = device.create_command_list(0,
                                                                         QueueType::Graphics,
                                                                         RhiRenderCommandList::Level::Primary,
