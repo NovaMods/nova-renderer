@@ -7,11 +7,14 @@
 
 #include <dxc/dxcapi.h>
 
+#include "rx/core/map.h"
+#include "rx/core/string.h"
+
 namespace rx {
     namespace memory {
         struct allocator;
     }
-}
+} // namespace rx
 
 namespace nova::renderer {
     /*!
@@ -19,7 +22,7 @@ namespace nova::renderer {
      */
     class NovaDxcIncludeHandler final : public IDxcIncludeHandler {
     public:
-        explicit NovaDxcIncludeHandler(rx::memory::allocator& allocator);
+        explicit NovaDxcIncludeHandler(rx::memory::allocator& allocator, IDxcLibrary& library);
 
         HRESULT QueryInterface(const IID& class_id, void** output_object) override;
 
@@ -31,6 +34,10 @@ namespace nova::renderer {
 
     private:
         rx::memory::allocator& allocator;
+
+        IDxcLibrary& library;
+
+        rx::map<rx::string, rx::string> builtin_files;
 
         ULONG num_refs = 0;
     };
