@@ -21,6 +21,11 @@ struct Camera {
 [[vk::push_constant]]
 struct StandardPushConstants {
     /*!
+     * \brief Index of the camera that will render this draw
+     */
+    uint camera_index;
+
+    /*!
      * \brief Index of the material data for the current draw
      */
     uint material_index;
