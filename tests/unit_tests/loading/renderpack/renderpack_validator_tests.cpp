@@ -69,7 +69,7 @@ TEST(GraphicsPipelineValidator, NoWarningsOrErrors) {
 
     const auto err = pipeline_json.error();
     if(err) {
-        logger(rx::log::level::k_error, "Could not create JSON resource: %s", *err);
+        logger->error("Could not create JSON resource: %s", *err);
     }
 
     const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline_json);
@@ -1616,7 +1616,7 @@ TEST(TextureValidator, NoErrorsOrWarnings) {
 
     const auto err = texture.error();
     if(err) {
-        logger(rx::log::level::k_error, "%s", *err);
+        logger->error("%s", *err);
     }
 
     const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_texture_data(texture);
@@ -1751,7 +1751,7 @@ TEST(TextureFormatValidator, HeightMissing) {
     })"};
 
     if(const auto err = texture_format.error()) {
-        logger(rx::log::level::k_error, "%s", *err);
+        logger->error("%s", *err);
     }
 
     const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_texture_format(texture_format,
