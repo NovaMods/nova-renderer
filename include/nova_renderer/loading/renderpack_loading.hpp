@@ -29,5 +29,8 @@ namespace nova::renderer::renderpack {
                                           rhi::ShaderStage stage,
                                           const rx::vector<rx::string>& defines = {});
 
-    rx::vector<uint32_t> compile_shader(const rx::string& source, rhi::ShaderStage stage, rhi::ShaderLanguage source_language);
+    rx::vector<uint32_t> compile_shader(const rx::string& source,
+                                        rhi::ShaderStage stage,
+                                        rhi::ShaderLanguage source_language,
+                                        filesystem::FolderAccessorBase* folder_accessor = nullptr);
 } // namespace nova::renderer::renderpack

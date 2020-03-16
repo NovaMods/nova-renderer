@@ -29,7 +29,7 @@ namespace nova::renderer {
      */
     class NovaDxcIncludeHandler final : public IDxcIncludeHandler {
     public:
-        explicit NovaDxcIncludeHandler(rx::memory::allocator& allocator, IDxcLibrary& library, filesystem::FolderAccessorBase& folder_accessor);
+        explicit NovaDxcIncludeHandler(rx::memory::allocator& allocator, IDxcLibrary& library, filesystem::FolderAccessorBase* folder_accessor);
 
         virtual ~NovaDxcIncludeHandler() = default;
 
@@ -46,7 +46,7 @@ namespace nova::renderer {
 
         IDxcLibrary& library;
 
-        filesystem::FolderAccessorBase& folder_accessor;
+        filesystem::FolderAccessorBase* folder_accessor;
 
         rx::concurrency::mutex mtx;
 

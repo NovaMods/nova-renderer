@@ -11,7 +11,7 @@ namespace nova::renderer {
 
     NovaDxcIncludeHandler::NovaDxcIncludeHandler(rx::memory::allocator& allocator,
                                                  IDxcLibrary& library,
-                                                 filesystem::FolderAccessorBase& folder_accessor)
+                                                 filesystem::FolderAccessorBase* folder_accessor)
         : allocator{allocator}, library{library}, folder_accessor{folder_accessor}, builtin_files{&allocator} {
         const auto standard_pipeline_layout_hlsl = R"(
 struct Camera {
@@ -126,8 +126,8 @@ Texture2D textures[] : register(t3);
 
             return 0;
 
-        } else if(folder_accessor.does_resource_exist(filename)) {
-            const auto included_shader = folder_accessor.read_text_file(filename);
+        } else if(folder_accessor != nullptr && folder_accessor->does_resource_exist(filename)) {
+            const auto included_shader = folder_accessor->read_text_file(filename);
 
             IDxcBlobEncoding* encoding;
             library.CreateBlobWithEncodingFromPinned(filename.data(), static_cast<uint32_t>(filename.size()), CP_UTF8, &encoding);
@@ -138,6 +138,6 @@ Texture2D textures[] : register(t3);
             return 0;
         }
 
-            return ERROR_FILE_NOT_FOUND;
+        return ERROR_FILE_NOT_FOUND;
     }
 } // namespace nova::renderer

@@ -272,10 +272,10 @@ namespace nova::renderer::renderpack {
 
         const auto& compiled_shader = [&] {
             if(filename.ends_with(".hlsl")) {
-                return compile_shader(shader_source, stage, rhi::ShaderLanguage::Hlsl);
+                return compile_shader(shader_source, stage, rhi::ShaderLanguage::Hlsl, folder_access);
 
             } else {
-                return compile_shader(shader_source, stage, rhi::ShaderLanguage::Glsl);
+                return compile_shader(shader_source, stage, rhi::ShaderLanguage::Glsl, folder_access);
             }
         }();
 
@@ -385,7 +385,7 @@ namespace nova::renderer::renderpack {
         }
     }
 
-    rx::vector<uint32_t> compile_shader(const rx::string& source, const rhi::ShaderStage stage, const rhi::ShaderLanguage source_language) {
+    rx::vector<uint32_t> compile_shader(const rx::string& source, const rhi::ShaderStage stage, const rhi::ShaderLanguage source_language, FolderAccessorBase* folder_accessor) {
         /*
          * Compile HLSL -> SPIR-V, using delicious DXC
          *
@@ -419,7 +419,7 @@ namespace nova::renderer::renderpack {
 
         rx::vector<LPCWSTR> args = rx::array{L"-spirv", L"-fspv-target-env=vulkan1.1", L"-fspv-reflect"};
 
-        auto* includer = new NovaDxcIncludeHandler{*(&rx::memory::g_system_allocator), *lib};
+        auto* includer = new NovaDxcIncludeHandler{*(&rx::memory::g_system_allocator), *lib, folder_accessor};
 
         IDxcOperationResult* compile_result;
         hr = compiler->Compile(encoding,

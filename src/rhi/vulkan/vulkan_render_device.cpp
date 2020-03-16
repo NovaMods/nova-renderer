@@ -1657,9 +1657,11 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::create_standard_pipeline_layout() {
-        standard_push_constants = rx::array{
-            // Material index
-            vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eAll).setOffset(0).setSize(sizeof(uint32_t))};
+        standard_push_constants = rx::array{// Camera and Material index
+                                            vk::PushConstantRange()
+                                                .setStageFlags(vk::ShaderStageFlagBits::eAll)
+                                                .setOffset(0)
+                                                .setSize(sizeof(uint32_t) * 2)};
 
         const auto camera_buffer_descriptor_type = (MAX_NUM_CAMERAS * sizeof(CameraUboData)) < gpu.props.limits.maxUniformBufferRange ?
                                                        vk::DescriptorType::eUniformBuffer :

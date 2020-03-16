@@ -24,7 +24,9 @@ namespace nova::renderer {
           internal_allocator{renderer.get_global_allocator()},
           textures{&internal_allocator},
           staging_buffers{&internal_allocator},
-          uniform_buffers{&internal_allocator} {}
+          uniform_buffers{&internal_allocator} {
+        create_default_textures();
+    }
 
     rx::optional<BufferResourceAccessor> DeviceResources::create_uniform_buffer(const rx::string& name, const Bytes size) {
         const auto event_name = rx::string::format("create_uniform_buffer(%s)", name);
@@ -173,12 +175,12 @@ namespace nova::renderer {
         return rx::nullopt;
     }
 
-    rx::optional<TextureResourceAccessor> DeviceResources::create_render_target(const rx::string& name,
-                                                                                const size_t width,
-                                                                                const size_t height,
-                                                                                const PixelFormat pixel_format,
-                                                                                rx::memory::allocator& allocator,
-                                                                                const bool /* can_be_sampled // Not yet supported */) {
+    rx::optional<RenderTargetAccessor> DeviceResources::create_render_target(const rx::string& name,
+                                                                             const size_t width,
+                                                                             const size_t height,
+                                                                             const PixelFormat pixel_format,
+                                                                             rx::memory::allocator& allocator,
+                                                                             const bool /* can_be_sampled // Not yet supported */) {
         const auto event_name = rx::string::format("create_render_target(%s)", name);
         MTR_SCOPE("DeviceResources", event_name.data());
 
@@ -251,12 +253,9 @@ namespace nova::renderer {
                 device.destroy_fences(upload_done_fences, allocator);
             }
 
-            auto idx = textures.size();
+            render_targets.insert(name, resource);
 
-            textures.push_back(resource);
-            texture_name_to_idx.insert(name, static_cast<uint32_t>(idx));
-
-            return TextureResourceAccessor{&textures, idx};
+            return RenderTargetAccessor{&render_targets, name};
 
         } else {
             logger(rx::log::level::k_error, "Could not create render target %s", name);
@@ -264,9 +263,9 @@ namespace nova::renderer {
         }
     }
 
-    rx::optional<TextureResourceAccessor> DeviceResources::get_render_target(const rx::string& name) {
-        if(auto idx = get_texture_idx_for_name(name); idx) {
-            return TextureResourceAccessor{&textures, *idx};
+    rx::optional<RenderTargetAccessor> DeviceResources::get_render_target(const rx::string& name) {
+        if(render_targets.find(name) != nullptr) {
+            return RenderTargetAccessor{&render_targets, name};
 
         } else {
             return rx::nullopt;
@@ -320,6 +319,24 @@ namespace nova::renderer {
     }
 
     const rx::vector<TextureResource>& DeviceResources::get_all_textures() const { return textures; }
+
+    void DeviceResources::create_default_textures() {
+        MTR_SCOPE("DeviceResources", "create_default_textures");
+
+        const auto make_color_tex = [&](const rx::string& name, const uint32_t color) {
+            rx::array<uint8_t[64]> tex_data;
+            for(uint32_t i = 0; i < tex_data.size(); i++) {
+                tex_data[i] = color;
+            }
+            if(!create_texture(name, 8, 8, PixelFormat::Rgba8, tex_data.data(), internal_allocator)) {
+                logger(rx::log::level::k_error, "Could not create texture %s", name);
+            }
+        };
+
+        make_color_tex(WHITE_TEXTURE_NAME, 0xFFFFFFFF);
+        make_color_tex(BLACK_TEXTURE_NAME, 0x00000000);
+        make_color_tex(GRAY_TEXTURE_NAME, 0x80808080);
+    }
 
     size_t size_in_bytes(const PixelFormat pixel_format) {
         switch(pixel_format) {

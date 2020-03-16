@@ -37,6 +37,8 @@ namespace nova::renderer {
 
     using TextureResourceAccessor = VectorAccessor<TextureResource>;
 
+    using RenderTargetAccessor = MapAccessor<rx::string, TextureResource>;
+
     using BufferResourceAccessor = MapAccessor<rx::string, BufferResource>;
 
     /*!
@@ -97,17 +99,17 @@ namespace nova::renderer {
          *
          * \return The new render target if it could be created, or am empty optional if it could not
          */
-        [[nodiscard]] rx::optional<TextureResourceAccessor> create_render_target(const rx::string& name,
-                                                                                 rx_size width,
-                                                                                 rx_size height,
-                                                                                 rhi::PixelFormat pixel_format,
-                                                                                 rx::memory::allocator& allocator,
-                                                                                 bool can_be_sampled = false);
+        [[nodiscard]] rx::optional<RenderTargetAccessor> create_render_target(const rx::string& name,
+                                                                              rx_size width,
+                                                                              rx_size height,
+                                                                              rhi::PixelFormat pixel_format,
+                                                                              rx::memory::allocator& allocator,
+                                                                              bool can_be_sampled = false);
 
         /*!
          * \brief Retrieves the render target with the specified name
          */
-        [[nodiscard]] rx::optional<TextureResourceAccessor> get_render_target(const rx::string& name);
+        [[nodiscard]] rx::optional<RenderTargetAccessor> get_render_target(const rx::string& name);
 
         void destroy_render_target(const rx::string& texture_name, rx::memory::allocator& allocator);
 
@@ -123,6 +125,7 @@ namespace nova::renderer {
         void return_staging_buffer(rhi::RhiBuffer* buffer);
 
         [[nodiscard]] const rx::vector<TextureResource>& get_all_textures() const;
+
     private:
         NovaRenderer& renderer;
 
@@ -134,8 +137,12 @@ namespace nova::renderer {
 
         rx::map<rx::string, uint32_t> texture_name_to_idx;
 
+        rx::map<rx::string, TextureResource> render_targets;
+
         rx::map<rx_size, rx::vector<rhi::RhiBuffer*>> staging_buffers;
 
         rx::map<rx::string, BufferResource> uniform_buffers;
+
+        void create_default_textures();
     };
 } // namespace nova::renderer

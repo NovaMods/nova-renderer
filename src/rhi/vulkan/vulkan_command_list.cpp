@@ -142,6 +142,8 @@ namespace nova::renderer::rhi {
 
         device.device.updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
 
+        logger(rx::log::level::k_verbose, "Bound %u textures to the descriptor array", vk_textures.size());
+
         vkCmdBindDescriptorSets(cmds,
                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 device.standard_pipeline_layout,
