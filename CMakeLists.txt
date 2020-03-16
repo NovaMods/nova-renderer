@@ -220,7 +220,7 @@ set(UNIX_NOVA_SOURCE
         include/nova_renderer/util/x11_but_good.hpp
         src/util/linux_utils.cpp
         src/util/linux_utils.hpp
-        src/utils/win_adapter.cpp
+        src/util/win_adapter.cpp
         )
 
 if(WIN32)
