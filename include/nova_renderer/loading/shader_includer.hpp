@@ -25,6 +25,8 @@ namespace nova::renderer {
     public:
         explicit NovaDxcIncludeHandler(rx::memory::allocator& allocator, IDxcLibrary& library);
 
+        virtual ~NovaDxcIncludeHandler() = default;
+
         HRESULT QueryInterface(const REFIID class_id, void** output_object) override;
 
         ULONG AddRef() override;
