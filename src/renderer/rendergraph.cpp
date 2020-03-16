@@ -169,7 +169,7 @@ namespace nova::renderer {
         }
     }
 
-    void Renderpass::setup_renderpass(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {}
+    void Renderpass::setup_renderpass(rhi::RhiRenderCommandList& /* cmds */, FrameContext& /* ctx */) {}
 
     void renderer::MaterialPass::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         MTR_SCOPE("MaterialPass", "record");

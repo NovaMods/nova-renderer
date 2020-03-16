@@ -39,9 +39,6 @@ rx::global_group g_nova_globals{"Nova"};
 
 RX_LOG("nova", logger);
 
-// TODO: Use this somehow
-const Bytes GLOBAL_MEMORY_POOL_SIZE = 1_gb;
-
 rx::global<nova::renderer::LogHandles> logging_event_handles{"system", "log_handles", &rx::memory::g_system_allocator};
 
 void init_rex() {

@@ -71,7 +71,7 @@ Texture2D textures[] : register(t3);
         builtin_files.insert(STANDARD_PIPELINE_LAYOUT_FILE_NAME, standard_pipeline_layout_hlsl);
     }
 
-    HRESULT NovaDxcIncludeHandler::QueryInterface(const IID& class_id, void** output_object) {
+    HRESULT NovaDxcIncludeHandler::QueryInterface(const REFIID class_id, void** output_object) {
         if(!output_object) {
             return E_INVALIDARG;
         }
@@ -82,27 +82,29 @@ Texture2D textures[] : register(t3);
             *output_object = reinterpret_cast<LPVOID>(this);
             AddRef();
 
-            return NOERROR;
+            return 0;
         }
 
         return E_NOINTERFACE;
     }
 
     ULONG NovaDxcIncludeHandler::AddRef() {
-        InterlockedIncrement(&num_refs);
+        rx::concurrency::scope_lock l{mtx};
+        num_refs++;
 
         return num_refs;
     }
 
     ULONG NovaDxcIncludeHandler::Release() {
-        const auto ref_count = InterlockedDecrement(&num_refs);
+        rx::concurrency::scope_lock l{mtx};
+        num_refs--;
 
-        if(ref_count == 0) {
+        if(num_refs == 0) {
             // TODO: Figure out how to use a Rex allocator instead of forcing things to be on the heap
             delete this;
         }
 
-        return ref_count;
+        return num_refs;
     }
 
     HRESULT NovaDxcIncludeHandler::LoadSource(const LPCWSTR wide_filename, IDxcBlob** included_source) {
@@ -113,12 +115,12 @@ Texture2D textures[] : register(t3);
 
         if(const auto* file = builtin_files.find(filename)) {
             IDxcBlobEncoding* encoding;
-            library.CreateBlobWithEncodingFromPinned(file->data(), file->size(), CP_UTF8, &encoding);
+            library.CreateBlobWithEncodingFromPinned(file->data(), static_cast<uint32_t>(file->size()), CP_UTF8, &encoding);
             *included_source = encoding;
 
             logger(rx::log::level::k_verbose, "Included file");
 
-            return NOERROR;
+            return 0;
         }
 
         return ERROR_FILE_NOT_FOUND;

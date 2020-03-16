@@ -254,7 +254,7 @@ namespace nova::renderer {
             auto idx = textures.size();
 
             textures.push_back(resource);
-            texture_name_to_idx.insert(name, idx);
+            texture_name_to_idx.insert(name, static_cast<uint32_t>(idx));
 
             return TextureResourceAccessor{&textures, idx};
 
@@ -319,9 +319,7 @@ namespace nova::renderer {
         buffers->push_back(buffer);
     }
 
-    const rx::vector<TextureResource>& DeviceResources::get_all_textures() const {
-        return textures;
-    }
+    const rx::vector<TextureResource>& DeviceResources::get_all_textures() const { return textures; }
 
     size_t size_in_bytes(const PixelFormat pixel_format) {
         switch(pixel_format) {

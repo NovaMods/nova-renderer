@@ -7,6 +7,7 @@
 
 #include <dxc/dxcapi.h>
 
+#include "rx/core/concurrency/mutex.h"
 #include "rx/core/map.h"
 #include "rx/core/string.h"
 
@@ -24,7 +25,7 @@ namespace nova::renderer {
     public:
         explicit NovaDxcIncludeHandler(rx::memory::allocator& allocator, IDxcLibrary& library);
 
-        HRESULT QueryInterface(const IID& class_id, void** output_object) override;
+        HRESULT QueryInterface(const REFIID class_id, void** output_object) override;
 
         ULONG AddRef() override;
 
@@ -36,6 +37,8 @@ namespace nova::renderer {
         rx::memory::allocator& allocator;
 
         IDxcLibrary& library;
+
+        rx::concurrency::mutex mtx;
 
         rx::map<rx::string, rx::string> builtin_files;
 

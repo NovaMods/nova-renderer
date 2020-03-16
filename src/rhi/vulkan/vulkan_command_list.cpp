@@ -135,7 +135,7 @@ namespace nova::renderer::rhi {
                 .setDstSet(set)
                 .setDstBinding(5)
                 .setDstArrayElement(0)
-                .setDescriptorCount(vk_textures.size())
+                .setDescriptorCount(static_cast<uint32_t>(vk_textures.size()))
                 .setDescriptorType(vk::DescriptorType::eSampledImage)
                 .setPImageInfo(vk_textures.data()),
         };
