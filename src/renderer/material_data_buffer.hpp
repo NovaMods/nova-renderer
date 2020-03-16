@@ -45,6 +45,8 @@ namespace nova::renderer {
         template <typename MaterialDataStruct>
         [[nodiscard]] uint32_t get_next_free_index();
 
+        [[nodiscard]] rx_byte* data() const;
+
     private:
         rx::memory::view buffer;
 

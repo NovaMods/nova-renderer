@@ -283,14 +283,14 @@ namespace nova::renderer {
                                                                           frame_allocator);
             cmds->set_debug_name("RendergraphCommands");
 
-            auto& material_buffer = material_device_buffers[cur_frame_idx];
+            auto& device_material_buffer = material_device_buffers[cur_frame_idx];
 
-            device->write_data_to_buffer(material_buffer->buffer, material_buffer->size, 0, material_buffer->buffer);
+            device->write_data_to_buffer(material_buffer->data(), device_material_buffer->size, 0, device_material_buffer->buffer);
 
             const auto images = get_all_images(frame_allocator);
 
             cmds->bind_material_resources(camera_data->get_buffer_for_frame(cur_frame_idx),
-                                          material_buffer->buffer,
+                                          device_material_buffer->buffer,
                                           point_sampler,
                                           point_sampler,
                                           point_sampler,
