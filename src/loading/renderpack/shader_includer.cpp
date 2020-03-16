@@ -78,7 +78,7 @@ Texture2D textures[] : register(t3);
 
         *output_object = nullptr;
 
-        if(class_id == IID_IUnknown || class_id == __uuidof(IDxcIncludeHandler)) {
+        if(class_id == __uuidof(IDxcIncludeHandler)) {
             *output_object = reinterpret_cast<LPVOID>(this);
             AddRef();
 
