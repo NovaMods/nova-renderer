@@ -458,10 +458,16 @@ namespace nova::renderer::rhi {
 
     vk::DescriptorSet VulkanRenderDevice::get_next_standard_descriptor_set() {
         if(standard_descriptor_sets.is_empty()) {
+            const auto variable_set_counts = rx::array{MAX_NUM_TEXTURES};
+            const auto count_allocate_info = vk::DescriptorSetVariableDescriptorCountAllocateInfo()
+                                                 .setPDescriptorCounts(variable_set_counts.data())
+                                                 .setDescriptorSetCount(static_cast<uint32_t>(variable_set_counts.size()));
+
             const auto allocate_info = vk::DescriptorSetAllocateInfo()
                                            .setDescriptorPool(standard_descriptor_set_pool->descriptor_pool)
                                            .setDescriptorSetCount(1)
-                                           .setPSetLayouts(&standard_set_layout);
+                                           .setPSetLayouts(&standard_set_layout)
+                                           .setPNext(&count_allocate_info);
 
             vk::DescriptorSet set;
             device.allocateDescriptorSets(&allocate_info, &set);
@@ -1660,6 +1666,18 @@ namespace nova::renderer::rhi {
             // Camera and Material index
             vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eAll).setOffset(0).setSize(sizeof(uint32_t) * 2)};
 
+        const auto flags_per_binding = rx::array{vk::DescriptorBindingFlags{},
+                                                 vk::DescriptorBindingFlags{},
+                                                 vk::DescriptorBindingFlags{},
+                                                 vk::DescriptorBindingFlags{},
+                                                 vk::DescriptorBindingFlags{},
+                                                 vk::DescriptorBindingFlagBits::eVariableDescriptorCount |
+                                                     vk::DescriptorBindingFlagBits::ePartiallyBound};
+
+        const auto set_flags = vk::DescriptorSetLayoutBindingFlagsCreateInfo()
+                                   .setBindingCount(flags_per_binding.size())
+                                   .setPBindingFlags(flags_per_binding.data());
+
         const auto camera_buffer_descriptor_type = (MAX_NUM_CAMERAS * sizeof(CameraUboData)) < gpu.props.limits.maxUniformBufferRange ?
                                                        vk::DescriptorType::eUniformBuffer :
                                                        vk::DescriptorType::eStorageBuffer;
@@ -1708,7 +1726,8 @@ namespace nova::renderer::rhi {
 
         const auto dsl_layout_create = vk::DescriptorSetLayoutCreateInfo()
                                            .setBindingCount(static_cast<uint32_t>(bindings.size()))
-                                           .setPBindings(bindings.data());
+                                           .setPBindings(bindings.data())
+                                           .setPNext(&set_flags);
 
         device.createDescriptorSetLayout(&dsl_layout_create, &vk_internal_allocator, &standard_set_layout);
 
