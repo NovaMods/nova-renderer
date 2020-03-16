@@ -107,6 +107,7 @@ set(NOVA_SOURCE
         include/nova_renderer/filesystem/virtual_filesystem.hpp
 
         include/nova_renderer/loading/renderpack_loading.hpp
+        include/nova_renderer/loading/shader_includer.hpp
 
         include/nova_renderer/rhi/forward_decls.hpp
         include/nova_renderer/rhi/command_list.hpp
@@ -171,6 +172,7 @@ set(NOVA_SOURCE
 
         src/loading/json_utils.hpp
         src/loading/renderpack/renderpack_loading.cpp
+        src/loading/renderpack/shader_includer.cpp
         src/loading/renderpack/renderpack_data.cpp
         src/loading/renderpack/renderpack_validator.cpp
         src/loading/renderpack/renderpack_validator.hpp

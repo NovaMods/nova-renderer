@@ -16,6 +16,7 @@
 
 #include "../json_utils.hpp"
 #include "minitrace.h"
+#include "nova_renderer/loading/shader_includer.hpp"
 #include "render_graph_builder.hpp"
 #include "renderpack_validator.hpp"
 
@@ -418,6 +419,8 @@ namespace nova::renderer::renderpack {
 
         rx::vector<LPCWSTR> args = rx::array{L"-spirv", L"-fspv-target-env=vulkan1.1", L"-fspv-reflect"};
 
+        auto* includer = new NovaDxcIncludeHandler{*(&rx::memory::g_system_allocator)};
+
         IDxcOperationResult* compile_result;
         hr = compiler->Compile(encoding,
                                L"unknown", // File name, for error messages
@@ -427,7 +430,7 @@ namespace nova::renderer::renderpack {
                                static_cast<UINT32>(args.size()),
                                nullptr,
                                0,
-                               nullptr,
+                               includer,
                                &compile_result);
         if(FAILED(hr)) {
             logger(rx::log::level::k_error, "Could not compile shader");

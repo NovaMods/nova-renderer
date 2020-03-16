@@ -5,7 +5,6 @@
 #include <rx/core/optional.h>
 #include <rx/core/ptr.h>
 
-#include "../../src/renderer/material_data_buffer.hpp"
 #include "nova_renderer/camera.hpp"
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
@@ -19,6 +18,8 @@
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
+
+#include "../../src/renderer/material_data_buffer.hpp"
 
 namespace rx {
     namespace memory {
@@ -44,7 +45,7 @@ namespace nova::renderer {
      *
      * If you don't call this function, Nova will send all log messages to `stdout`
      *
-     * You may manually unregister your handler by calling `LogHandles::clear()`, but you don't need to. This function is intentionally not
+     * You may manually unregister your handlers by calling `LogHandles::clear()`, but you don't need to. This function is intentionally not
      * marked `[[nodiscard]]` because doing things with the handles is completely optional
      */
     template <typename LogHandlerFunc>
