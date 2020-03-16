@@ -1,14 +1,18 @@
 #include "nova_renderer/loading/shader_includer.hpp"
 
-#include "rx/core/log.h"
+#include <rx/core/log.h>
+
+#include "nova_renderer/filesystem/folder_accessor.hpp"
 
 namespace nova::renderer {
     RX_LOG("NovaDxcIncludeHandler", logger);
 
     constexpr const char* STANDARD_PIPELINE_LAYOUT_FILE_NAME = "./nova/standard_pipeline_layout.hlsl";
 
-    NovaDxcIncludeHandler::NovaDxcIncludeHandler(rx::memory::allocator& allocator, IDxcLibrary& library)
-        : allocator{allocator}, library{library}, builtin_files{&allocator} {
+    NovaDxcIncludeHandler::NovaDxcIncludeHandler(rx::memory::allocator& allocator,
+                                                 IDxcLibrary& library,
+                                                 filesystem::FolderAccessorBase& folder_accessor)
+        : allocator{allocator}, library{library}, folder_accessor{folder_accessor}, builtin_files{&allocator} {
         const auto standard_pipeline_layout_hlsl = R"(
 struct Camera {
     float4x4 view;
@@ -97,14 +101,14 @@ Texture2D textures[] : register(t3);
 
     ULONG NovaDxcIncludeHandler::Release() {
         rx::concurrency::scope_lock l{mtx};
-        num_refs--;
+        const auto ref_count = --num_refs;
 
-        if(num_refs == 0) {
+        if(ref_count == 0) {
             // TODO: Figure out how to use a Rex allocator instead of forcing things to be on the heap
             delete this;
         }
 
-        return num_refs;
+        return ref_count;
     }
 
     HRESULT NovaDxcIncludeHandler::LoadSource(const LPCWSTR wide_filename, IDxcBlob** included_source) {
@@ -118,11 +122,22 @@ Texture2D textures[] : register(t3);
             library.CreateBlobWithEncodingFromPinned(file->data(), static_cast<uint32_t>(file->size()), CP_UTF8, &encoding);
             *included_source = encoding;
 
-            logger(rx::log::level::k_verbose, "Included file");
+            logger(rx::log::level::k_verbose, "Included %s from builtin snippets", filename);
+
+            return 0;
+
+        } else if(folder_accessor.does_resource_exist(filename)) {
+            const auto included_shader = folder_accessor.read_text_file(filename);
+
+            IDxcBlobEncoding* encoding;
+            library.CreateBlobWithEncodingFromPinned(filename.data(), static_cast<uint32_t>(filename.size()), CP_UTF8, &encoding);
+            *included_source = encoding;
+
+            logger(rx::log::level::k_verbose, "Included %s from renderpack", filename);
 
             return 0;
         }
 
-        return ERROR_FILE_NOT_FOUND;
+            return ERROR_FILE_NOT_FOUND;
     }
 } // namespace nova::renderer

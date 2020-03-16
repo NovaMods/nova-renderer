@@ -11,6 +11,12 @@
 #include "rx/core/map.h"
 #include "rx/core/string.h"
 
+namespace nova {
+    namespace filesystem {
+        class FolderAccessorBase;
+    }
+}
+
 namespace rx {
     namespace memory {
         struct allocator;
@@ -23,7 +29,7 @@ namespace nova::renderer {
      */
     class NovaDxcIncludeHandler final : public IDxcIncludeHandler {
     public:
-        explicit NovaDxcIncludeHandler(rx::memory::allocator& allocator, IDxcLibrary& library);
+        explicit NovaDxcIncludeHandler(rx::memory::allocator& allocator, IDxcLibrary& library, filesystem::FolderAccessorBase& folder_accessor);
 
         virtual ~NovaDxcIncludeHandler() = default;
 
@@ -39,6 +45,8 @@ namespace nova::renderer {
         rx::memory::allocator& allocator;
 
         IDxcLibrary& library;
+
+        filesystem::FolderAccessorBase& folder_accessor;
 
         rx::concurrency::mutex mtx;
 
