@@ -41,13 +41,9 @@ namespace nova::renderer {
         return ref_count;
     }
 
-    HRESULT NovaDxcIncludeHandler::LoadSource(const LPCWSTR wide_filename, IDxcBlob** included_source) {
-        const auto utf8_length = WideCharToMultiByte(CP_UTF8, 0, wide_filename, -1, nullptr, 0, nullptr, nullptr);
-
-        rx::string filename {&allocator};
-        filename.resize(utf8_length);
-
-        WideCharToMultiByte(CP_UTF8, 0, wide_filename, -1, filename.data(), filename.size(), nullptr, nullptr);
+    HRESULT NovaDxcIncludeHandler::LoadSource(LPCWSTR wide_filename, IDxcBlob** included_source) {
+        const rx::wide_string wide_filename_str{reinterpret_cast<const rx_u16*>(wide_filename)};
+        const auto filename = wide_filename_str.to_utf8();
 
         logger(rx::log::level::k_info, "Trying to include file (%s)", filename);
 
