@@ -24,7 +24,7 @@ namespace nova::filesystem {
             return allocator->create<RegularFolderAccessor>(path);
         }
 
-        logger(rx::log::level::k_error, "Could not create folder accessor for path %s", path);
+        logger->error("Could not create folder accessor for path %s", path);
 
         return nullptr;
     }

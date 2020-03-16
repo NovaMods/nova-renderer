@@ -42,7 +42,7 @@ namespace nova::renderer::rhi {
                 return VK_IMAGE_LAYOUT_UNDEFINED;
 
             default:
-                logger(rx::log::level::k_error, "%u is not a valid image state", static_cast<uint32_t>(layout));
+                logger->error("%u is not a valid image state", static_cast<uint32_t>(layout));
                 return VK_IMAGE_LAYOUT_GENERAL;
         }
     }
@@ -255,7 +255,7 @@ namespace nova::renderer::rhi {
                 return VK_FORMAT_D24_UNORM_S8_UINT;
 
             default:
-                logger(rx::log::level::k_error, "Unknown pixel format, returning RGBA8");
+                logger->error("Unknown pixel format, returning RGBA8");
                 return VK_FORMAT_R8G8B8A8_UNORM;
         }
     }

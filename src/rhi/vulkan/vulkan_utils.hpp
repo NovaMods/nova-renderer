@@ -88,7 +88,7 @@ namespace nova::renderer::rhi {
     {                                                                                                                                      \
         const VkResult result = (expr);                                                                                                    \
         if(result != VK_SUCCESS) {                                                                                                         \
-            logger(rx::log::level::k_error, "%s:%u=>%s=%s", __FILE__, __LINE__, #expr, to_string(result));                                 \
+            logger->error("%s:%u=>%s=%s", __FILE__, __LINE__, #expr, to_string(result));                                 \
         }                                                                                                                                  \
     }
 #else

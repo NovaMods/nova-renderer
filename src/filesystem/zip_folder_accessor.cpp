@@ -14,7 +14,7 @@ namespace nova::filesystem {
 
     ZipFolderAccessor::ZipFolderAccessor(const rx::string& folder) : FolderAccessorBase(folder) {
         if(mz_zip_reader_init_file(&zip_archive, folder.data(), 0) == 0) {
-            logger(rx::log::level::k_error, "Could not open zip archive %s", folder);
+            logger->error("Could not open zip archive %s", folder);
         }
 
         build_file_tree();
@@ -26,7 +26,7 @@ namespace nova::filesystem {
         const auto full_path = rx::string::format("%s/%s", root_folder, path);
 
         if(!does_resource_exist_on_filesystem(full_path)) {
-            logger(rx::log::level::k_error, "Resource at path %s does not exist", full_path);
+            logger->error("Resource at path %s does not exist", full_path);
             return {};
         }
 
@@ -38,7 +38,7 @@ namespace nova::filesystem {
             const mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
             const rx::string err = mz_zip_get_error_string(err_code);
 
-            logger(rx::log::level::k_error, "Could not get information for file %s:%s", full_path, err);
+            logger->error("Could not get information for file %s:%s", full_path, err);
         }
 
         rx::vector<uint8_t> resource_buffer;
@@ -53,7 +53,7 @@ namespace nova::filesystem {
             const mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
             const rx::string err = mz_zip_get_error_string(err_code);
 
-            logger(rx::log::level::k_error, "Could not extract file %s:%s", full_path, err);
+            logger->error("Could not extract file %s:%s", full_path, err);
         }
 
         return resource_buffer;
@@ -78,7 +78,7 @@ namespace nova::filesystem {
             });
 
             if(!found_node) {
-                logger(rx::log::level::k_error, "Couldn't find node %s", folder);
+                logger->error("Couldn't find node %s", folder);
             }
         });
 
@@ -176,7 +176,7 @@ namespace nova::filesystem {
         }
 
         ss << folder.name.data();
-        logger(rx::log::level::k_info, ss.str().c_str());
+        logger->info(ss.str().c_str());
 
         folder.children.each_fwd([&](const FileTreeNode& child) { print_file_tree(child, depth + 1); });
     }

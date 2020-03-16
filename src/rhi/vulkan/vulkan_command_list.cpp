@@ -142,7 +142,7 @@ namespace nova::renderer::rhi {
 
         device.device.updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
 
-        logger(rx::log::level::k_verbose, "Bound %u textures to the descriptor array", vk_textures.size());
+        logger->verbose("Bound %u textures to the descriptor array", vk_textures.size());
 
         vkCmdBindDescriptorSets(cmds,
                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -297,7 +297,7 @@ namespace nova::renderer::rhi {
                     pipeline = current_render_pass->cached_pipelines.find(state.name);
 
                 } else {
-                    logger(rx::log::level::k_error, "Could not compile pipeline %s", state.name);
+                    logger->error("Could not compile pipeline %s", state.name);
                     return;
                 }
             }
@@ -307,7 +307,7 @@ namespace nova::renderer::rhi {
             }
 
         } else {
-            logger(rx::log::level::k_error, "Cannot use a pipeline state when not in a renderpass");
+            logger->error("Cannot use a pipeline state when not in a renderpass");
         }
     }
 
@@ -380,7 +380,7 @@ namespace nova::renderer::rhi {
         if(!vk_image->is_depth_tex) {
             image_copy.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         } else {
-            logger(rx::log::level::k_error, "Can not upload data to depth images");
+            logger->error("Can not upload data to depth images");
         }
         image_copy.imageSubresource.layerCount = 1;
         image_copy.imageExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1};

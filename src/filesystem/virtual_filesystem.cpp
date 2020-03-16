@@ -24,8 +24,7 @@ namespace nova::filesystem {
 
     FolderAccessorBase* VirtualFilesystem::get_folder_accessor(const rx::string& path) const {
         if(resource_roots.is_empty()) {
-            logger(rx::log::level::k_error,
-                   "No resource roots available in the virtual filesystem! You must register at least one resource root path");
+            logger->error("No resource roots available in the virtual filesystem! You must register at least one resource root path");
 
             return nullptr;
         }
@@ -42,7 +41,7 @@ namespace nova::filesystem {
         });
 
         if(ret_val == nullptr) {
-            logger(rx::log::level::k_error, "Could not find folder %s", path);
+            logger->error("Could not find folder %s", path);
         }
 
         return ret_val;

@@ -357,7 +357,7 @@ namespace nova::renderer {
                     }
 
                 } else {
-                    rg_log(rx::log::level::k_error, "No render target named %s", attachment_info.name);
+                    rg_log->error("No render target named %s", attachment_info.name);
                     missing_render_targets = true;
                 }
             }
@@ -379,10 +379,9 @@ namespace nova::renderer {
         }();
 
         if(!attachment_errors.is_empty()) {
-            attachment_errors.each_fwd([&](const rx::string& err) { rg_log(rx::log::level::k_error, "%s", err); });
+            attachment_errors.each_fwd([&](const rx::string& err) { rg_log->error("%s", err); });
 
-            rg_log(
-                rx::log::level::k_error,
+            rg_log->error(
                 "Could not create renderpass %s because there were errors in the attachment specification. Look above this message for details",
                 create_info.name);
             return nullptr;
@@ -393,7 +392,7 @@ namespace nova::renderer {
             renderpass->renderpass = renderpass_result.value;
 
         } else {
-            rg_log(rx::log::level::k_error, "Could not create renderpass %s: %s", create_info.name, renderpass_result.error.to_string());
+            rg_log->error("Could not create renderpass %s: %s", create_info.name, renderpass_result.error.to_string());
             return nullptr;
         }
 

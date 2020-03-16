@@ -60,7 +60,7 @@ void init_rex() {
         auto* log_handles = log_handles_global->cast<nova::renderer::LogHandles>();
 
         rx::globals::find("loggers")->each([&](rx::global_node* logger_node) {
-            log_handles->push_back(logger_node->cast<rx::log>()->on_write([](const rx::log::level level, const rx::string& message) {
+            log_handles->push_back(logger_node->cast<rx::log>()->on_queue([](const rx::log::level level, const rx::string& message) {
                 switch(level) {
                     case rx::log::level::k_error:
                         printf("[error  ]: %s\n", message.data());
@@ -126,7 +126,7 @@ namespace nova::renderer {
             })"};
         const auto& vertex_spirv = renderpack::compile_shader(vertex_source, rhi::ShaderStage::Vertex, rhi::ShaderLanguage::Hlsl);
         if(vertex_spirv.is_empty()) {
-            logger(rx::log::level::k_error, "Could not compile builtin backbuffer output vertex shader");
+            logger->error("Could not compile builtin backbuffer output vertex shader");
         }
         vertex_shader = {"/nova/shaders/backbuffer_output.vertex.hlsl", vertex_spirv};
 
@@ -155,7 +155,7 @@ namespace nova::renderer {
             })"};
         const auto& pixel_spirv = renderpack::compile_shader(pixel_source, rhi::ShaderStage::Fragment, rhi::ShaderLanguage::Hlsl);
         if(pixel_spirv.is_empty()) {
-            logger(rx::log::level::k_error, "Could not compile builtin backbuffer output pixel shader");
+            logger->error("Could not compile builtin backbuffer output pixel shader");
         }
         pixel_shader = {"/nova/shaders/backbuffer_output.pixel.hlsl", pixel_spirv};
 
@@ -212,11 +212,11 @@ namespace nova::renderer {
                     render_doc->SetCaptureOptionU32(eRENDERDOC_Option_SaveAllInitials, 1U);
                     render_doc->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, 1U);
 
-                    logger(rx::log::level::k_info, "Loaded RenderDoc successfully");
+                    logger->info("Loaded RenderDoc successfully");
 
                     return 0;
                 })
-                .on_error([](const ntl::NovaError& error) { logger(rx::log::level::k_error, "%s", error.to_string()); });
+                .on_error([](const ntl::NovaError& error) { logger->error("%s", error.to_string()); });
         }
 
         {
@@ -328,11 +328,11 @@ namespace nova::renderer {
 
     MeshId NovaRenderer::create_mesh(const MeshData& mesh_data) {
         if(mesh_data.num_vertex_attributes == 0) {
-            logger(rx::log::level::k_error, "Can not add a mesh with zero vertex attributes");
+            logger->error("Can not add a mesh with zero vertex attributes");
         }
 
         if(mesh_data.num_indices == 0) {
-            logger(rx::log::level::k_error, "Can not add a mesh with zero indices");
+            logger->error("Can not add a mesh with zero indices");
         }
 
         rhi::RhiBufferCreateInfo vertex_buffer_create_info;
@@ -449,23 +449,23 @@ namespace nova::renderer {
             destroy_dynamic_resources();
 
             destroy_renderpasses();
-            logger(rx::log::level::k_verbose, "Resources from old renderpack destroyed");
+            logger->verbose("Resources from old renderpack destroyed");
         }
 
         create_dynamic_textures(data.resources.render_targets);
-        logger(rx::log::level::k_verbose, "Dynamic textures created");
+        logger->verbose("Dynamic textures created");
 
         create_render_passes(data.graph_data.passes, data.pipelines);
 
-        logger(rx::log::level::k_verbose, "Created render passes");
+        logger->verbose("Created render passes");
 
         create_pipelines_and_materials(data.pipelines, data.materials);
 
-        logger(rx::log::level::k_verbose, "Created pipelines and materials");
+        logger->verbose("Created pipelines and materials");
 
         renderpacks_loaded = true;
 
-        logger(rx::log::level::k_verbose, "Renderpack %s loaded successfully", renderpack_name);
+        logger->verbose("Renderpack %s loaded successfully", renderpack_name);
     }
 
     const rx::vector<MaterialPass>& NovaRenderer::get_material_passes_for_pipeline(const rx::string& pipeline) {
@@ -507,7 +507,7 @@ namespace nova::renderer {
                     }
                 });
             } else {
-                logger(rx::log::level::k_error, "Could not create renderpass %s", create_info.name);
+                logger->error("Could not create renderpass %s", create_info.name);
             }
         });
     }
@@ -519,7 +519,7 @@ namespace nova::renderer {
             MTR_SCOPE("create_pipelines_and_materials", rp_pipeline_state.name.data());
             const auto pipeline_state = to_pipeline_state_create_info(rp_pipeline_state, *rendergraph);
             if(!pipeline_state) {
-                logger(rx ::log::level::k_error, "Could not create pipeline %s", rp_pipeline_state.name);
+                logger->error("Could not create pipeline %s", rp_pipeline_state.name);
             }
 
             Pipeline pipeline;
@@ -613,7 +613,7 @@ namespace nova::renderer {
                 device_resources->destroy_render_target(tex_data.name, *renderpack_allocator);
             });
 
-            logger(rx::log::level::k_verbose, "Deleted all dynamic textures from renderpack %s", loaded_renderpack->name);
+            logger->verbose("Deleted all dynamic textures from renderpack %s", loaded_renderpack->name);
         }
     }
 
@@ -635,7 +635,7 @@ namespace nova::renderer {
 
         const auto* pass_key = material_pass_keys.find(material_name);
         if(pass_key == nullptr) {
-            logger(rx::log::level::k_error, "No material named %s for pass %s", material_name.material_name, material_name.pass_name);
+            logger->error("No material named %s for pass %s", material_name.material_name, material_name.pass_name);
             return std::numeric_limits<uint64_t>::max();
         }
 
@@ -722,7 +722,7 @@ namespace nova::renderer {
                 }
             }
         } else {
-            logger(rx::log::level::k_error, "Could not find a mesh with ID %u", create_info.mesh);
+            logger->error("Could not find a mesh with ID %u", create_info.mesh);
             return std::numeric_limits<uint64_t>::max();
         }
 
@@ -735,16 +735,13 @@ namespace nova::renderer {
         MTR_SCOPE("NovaRenderer", "update_renderable");
         const auto* key = renderable_keys.find(renderable);
         if(key == nullptr) {
-            logger(rx::log::level::k_error, "Could not update renderable %u", renderable);
+            logger->error("Could not update renderable %u", renderable);
             return;
         }
 
         auto* passes = passes_by_pipeline.find(key->pipeline_name);
         if(passes == nullptr) {
-            logger(rx::log::level::k_error,
-                   "Could not find draws for pipeline %s, as requested by renderable %u",
-                   key->pipeline_name,
-                   renderable);
+            logger->error("Could not find draws for pipeline %s, as requested by renderable %u", key->pipeline_name, renderable);
             return;
         }
 
@@ -839,7 +836,7 @@ namespace nova::renderer {
                                                                              true);
 
             if(!scene_output) {
-                logger(rx::log::level::k_error, "Could not create scene output render target");
+                logger->error("Could not create scene output render target");
 
             } else {
                 dynamic_texture_infos.insert(SCENE_OUTPUT_RT_NAME,
@@ -858,7 +855,7 @@ namespace nova::renderer {
                                                                           true);
 
             if(!ui_output) {
-                logger(rx::log::level::k_error, "Could not create UI output render target");
+                logger->error("Could not create UI output render target");
 
             } else {
                 dynamic_texture_infos.insert(UI_OUTPUT_RT_NAME,
@@ -882,7 +879,7 @@ namespace nova::renderer {
                 material_device_buffers.emplace_back(*buffer);
 
             } else {
-                logger(rx::log::level::k_error, "Could not create builtin buffer %s", buffer_name);
+                logger->error("Could not create builtin buffer %s", buffer_name);
             }
         }
 
@@ -890,14 +887,14 @@ namespace nova::renderer {
             builtin_buffer_names.emplace_back(PER_FRAME_DATA_NAME);
 
         } else {
-            logger(rx::log::level::k_error, "Could not create builtin buffer %s", PER_FRAME_DATA_NAME);
+            logger->error("Could not create builtin buffer %s", PER_FRAME_DATA_NAME);
         }
 
         if(device_resources->create_uniform_buffer(MODEL_MATRIX_BUFFER_NAME, sizeof(glm::mat4) * 0xFFFF)) {
             builtin_buffer_names.emplace_back(MODEL_MATRIX_BUFFER_NAME);
 
         } else {
-            logger(rx::log::level::k_error, "Could not create builtin buffer %s", MODEL_MATRIX_BUFFER_NAME);
+            logger->error("Could not create builtin buffer %s", MODEL_MATRIX_BUFFER_NAME);
         }
     }
 
@@ -923,7 +920,7 @@ namespace nova::renderer {
 
         if(rendergraph->create_renderpass<BackbufferOutputRenderpass>(*device_resources, ui_output->image, scene_output->image) ==
            nullptr) {
-            logger(rx::log::level::k_error, "Could not create the backbuffer output renderpass");
+            logger->error("Could not create the backbuffer output renderpass");
         }
 
         backbuffer_output_pipeline_create_info->viewport_size = device->get_swapchain()->get_size();

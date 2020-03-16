@@ -80,7 +80,7 @@ namespace nova::renderer::renderpack {
     ntl::Result<rx::vector<RenderPassCreateInfo>> order_passes(const rx::vector<RenderPassCreateInfo>& passes) {
         MTR_SCOPE("Renderpass", "order_passes");
 
-        logger(rx::log::level::k_verbose, "Executing Pass Scheduler");
+        logger->verbose("Executing Pass Scheduler");
 
         rx::map<rx::string, RenderPassCreateInfo> render_passes_to_order;
         passes.each_fwd([&](const RenderPassCreateInfo& create_info) { render_passes_to_order.insert(create_info.name, create_info); });
@@ -92,7 +92,7 @@ namespace nova::renderer::renderpack {
          * Build some acceleration structures
          */
 
-        logger(rx::log::level::k_verbose, "Collecting passes that write to each resource...");
+        logger->verbose("Collecting passes that write to each resource...");
         // Maps from resource name to pass that writes to that resource, then from resource name to pass that reads from
         // that resource
         auto resource_to_write_pass = rx::map<rx::string, rx::vector<rx::string>>{};
@@ -119,11 +119,11 @@ namespace nova::renderer::renderpack {
          * Initial ordering of passes
          */
 
-        logger(rx::log::level::k_verbose, "First pass at ordering passes...");
+        logger->verbose("First pass at ordering passes...");
         // The passes, in simple dependency order
         if(resource_to_write_pass.find(BACKBUFFER_NAME) == nullptr) {
-            logger(rx::log::level::k_error,
-                   "This render graph does not write to the backbuffer. Unable to load this renderpack because it can't render anything");
+            logger->error(
+                "This render graph does not write to the backbuffer. Unable to load this renderpack because it can't render anything");
             return ntl::Result<rx::vector<RenderPassCreateInfo>>(ntl::NovaError("Failed to order passes because no backbuffer was found"));
         }
 
@@ -170,8 +170,7 @@ namespace nova::renderer::renderpack {
                               const rx::map<rx::string, rx::vector<rx::string>>& resource_to_write_pass,
                               const uint32_t depth) {
         if(depth > passes.size()) {
-            logger(rx::log::level::k_error,
-                   "Circular render graph detected! Please fix your render graph to not have circular dependencies");
+            logger->error("Circular render graph detected! Please fix your render graph to not have circular dependencies");
         }
 
         const auto& pass = *passes.find(pass_name);
@@ -179,7 +178,7 @@ namespace nova::renderer::renderpack {
         pass.texture_inputs.each_fwd([&](const rx::string& texture_name) {
             if(const auto write_passes = resource_to_write_pass.find(texture_name); write_passes == nullptr) {
                 // TODO: Ignore the implicitly defined resources
-                logger(rx::log::level::k_error, "Pass %s reads from resource %s, but nothing writes to it", pass_name, texture_name);
+                logger->error("Pass %s reads from resource %s, but nothing writes to it", pass_name, texture_name);
             } else {
                 ordered_passes += *write_passes;
 
@@ -191,7 +190,7 @@ namespace nova::renderer::renderpack {
 
         pass.input_buffers.each_fwd([&](const rx::string& buffer_name) {
             if(const auto& write_passes = resource_to_write_pass.find(buffer_name); write_passes == nullptr) {
-                logger(rx::log::level::k_error, "Pass %s reads from buffer %s, but no passes write to it", pass_name, buffer_name);
+                logger->error("Pass %s reads from buffer %s, but no passes write to it", pass_name, buffer_name);
             } else {
                 ordered_passes += *write_passes;
 
@@ -247,10 +246,9 @@ namespace nova::renderer::renderpack {
 
         for(size_t i = 0; i < resources_in_order.size(); i++) {
             const auto& to_alias_name = resources_in_order[i];
-            logger(rx::log::level::k_verbose,
-                   "Determining if we can alias `%s`. Does it exist? %d",
-                   to_alias_name,
-                   (textures.find(to_alias_name) != nullptr));
+            logger->verbose("Determining if we can alias `%s`. Does it exist? %d",
+                            to_alias_name,
+                            (textures.find(to_alias_name) != nullptr));
 
             if(to_alias_name == BACKBUFFER_NAME || to_alias_name == SCENE_OUTPUT_RT_NAME) {
                 // Yay special cases!
@@ -261,7 +259,7 @@ namespace nova::renderer::renderpack {
 
             // Only try to alias with lower-indexed resources
             for(size_t j = 0; j < i; j++) {
-                logger(rx::log::level::k_verbose, "Trying to alias it with resource at index %zu out of %zu", j, resources_in_order.size());
+                logger->verbose("Trying to alias it with resource at index %zu out of %zu", j, resources_in_order.size());
                 const rx::string& try_alias_name = resources_in_order[j];
                 if(resource_used_range.find(to_alias_name)->is_disjoint_with(*resource_used_range.find(try_alias_name))) {
                     // They can be aliased if they have the same format

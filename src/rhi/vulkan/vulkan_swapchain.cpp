@@ -24,7 +24,7 @@ namespace nova::renderer::rhi {
         rx::vector<VkImage> vk_images = get_swapchain_images();
 
         if(vk_images.is_empty()) {
-            logger(rx::log::level::k_error, "The swapchain returned zero images");
+            logger->error("The swapchain returned zero images");
         }
 
         swapchain_image_layouts.resize(num_swapchain_images);
@@ -60,11 +60,11 @@ namespace nova::renderer::rhi {
                                                           &acquired_image_idx);
         if(acquire_result == VK_ERROR_OUT_OF_DATE_KHR || acquire_result == VK_SUBOPTIMAL_KHR) {
             // TODO: Recreate the swapchain and all screen-relative textures
-            logger(rx::log::level::k_error, "Swapchain out of date! One day you'll write the code to recreate it");
+            logger->error("Swapchain out of date! One day you'll write the code to recreate it");
             return 0;
         }
         if(acquire_result != VK_SUCCESS) {
-            logger(rx::log::level::k_error, "%s:%u=>%s", __FILE__, __LINE__, to_string(acquire_result));
+            logger->error("%s:%u=>%s", __FILE__, __LINE__, to_string(acquire_result));
         }
 
         // Block until we have the swapchain image in order to mimic D3D12. TODO: Reevaluate this decision
@@ -93,11 +93,11 @@ namespace nova::renderer::rhi {
         const auto result = vkQueuePresentKHR(render_device->graphics_queue, &present_info);
 
         if(result != VK_SUCCESS) {
-            logger(rx::log::level::k_error, "Could not present swapchain images: vkQueuePresentKHR failed: %s", to_string(result));
+            logger->error("Could not present swapchain images: vkQueuePresentKHR failed: %s", to_string(result));
         }
 
         if(swapchain_result != VK_SUCCESS) {
-            logger(rx::log::level::k_error, "Could not present swapchain image %u: Presenting failed: %s", image_idx, to_string(result));
+            logger->error("Could not present swapchain image %u: Presenting failed: %s", image_idx, to_string(result));
         }
     }
 
@@ -284,7 +284,7 @@ namespace nova::renderer::rhi {
 
         auto res = vkCreateSwapchainKHR(render_device->device, &info, nullptr, &swapchain);
 
-        logger(rx::log::level::k_error, "%u", res);
+        logger->error("%u", res);
 
         swapchain_format = surface_format.format;
         this->present_mode = present_mode;

@@ -38,7 +38,7 @@ namespace nova::renderer {
         const RhiBufferCreateInfo create_info = {rx::string::format("UniformBuffer%s", name), size.b_count(), BufferUsage::UniformBuffer};
         resource.buffer = device.create_buffer(create_info, internal_allocator);
         if(resource.buffer == nullptr) {
-            logger(rx::log::level::k_error, "Could not create uniform buffer %s", name);
+            logger->error("Could not create uniform buffer %s", name);
             return rx::nullopt;
         }
 
@@ -141,7 +141,7 @@ namespace nova::renderer {
 
             return_staging_buffer(staging_buffer);
 
-            logger(rx::log::level::k_verbose, "Uploaded texture data to texture %s", name);
+            logger->verbose("Uploaded texture data to texture %s", name);
         }
 
         auto idx = textures.size();
@@ -168,7 +168,7 @@ namespace nova::renderer {
 
 #if NOVA_DEBUG
         else {
-            logger(rx::log::level::k_error, "Could not find image \"%s\"", name);
+            logger->error("Could not find image \"%s\"", name);
         }
 #endif
 
@@ -258,7 +258,7 @@ namespace nova::renderer {
             return RenderTargetAccessor{&render_targets, name};
 
         } else {
-            logger(rx::log::level::k_error, "Could not create render target %s", name);
+            logger->error("Could not create render target %s", name);
             return rx::nullopt;
         }
     }
@@ -280,7 +280,7 @@ namespace nova::renderer {
         }
 #if NOVA_DEBUG
         else {
-            logger(rx::log::level::k_error, "Could not delete texture %s, are you sure you spelled it correctly?", texture_name);
+            logger->error("Could not delete texture %s, are you sure you spelled it correctly?", texture_name);
         }
 #endif
     }
@@ -329,7 +329,7 @@ namespace nova::renderer {
                 tex_data[i] = color;
             }
             if(!create_texture(name, 8, 8, PixelFormat::Rgba8, tex_data.data(), internal_allocator)) {
-                logger(rx::log::level::k_error, "Could not create texture %s", name);
+                logger->error("Could not create texture %s", name);
             }
         };
 

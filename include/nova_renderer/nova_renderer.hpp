@@ -36,7 +36,7 @@ namespace spirv_cross {
 } // namespace spirv_cross
 
 namespace nova::renderer {
-    using LogHandles = rx::vector<rx::log::event_type::handle>;
+    using LogHandles = rx::vector<rx::log::queue_event::handle>;
 
     /*!
      * \brief Registers a log message writing function

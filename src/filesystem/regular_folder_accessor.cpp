@@ -22,7 +22,7 @@ namespace nova::filesystem {
         }();
 
         if(!does_resource_exist_on_filesystem(full_path)) {
-            logger(rx::log::level::k_error, "Resource at path %s doesn't exist", full_path);
+            logger->error("Resource at path %s doesn't exist", full_path);
             return {};
         }
 
@@ -52,7 +52,7 @@ namespace nova::filesystem {
         }
 
         if(const rx::filesystem::file file{resource_path, "r"}) {
-            // logger(rx::log::level::k_verbose, "%s exists", resource_path);
+            // logger->verbose("%s exists", resource_path);
             resource_existence.insert(resource_path, true);
             return true;
 

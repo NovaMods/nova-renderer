@@ -13,10 +13,10 @@
 #include "nova_renderer/filesystem/filesystem_helpers.hpp"
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
+#include "nova_renderer/loading/shader_includer.hpp"
 
 #include "../json_utils.hpp"
 #include "minitrace.h"
-#include "nova_renderer/loading/shader_includer.hpp"
 #include "render_graph_builder.hpp"
 #include "renderpack_validator.hpp"
 
@@ -63,10 +63,9 @@ namespace nova::renderer::renderpack {
                 if(pixel_format) {
                     output.pixel_format = *pixel_format;
                 } else {
-                    logger(rx::log::level::k_error,
-                           "Render pass %s is trying to use texture %s, but it's not in the render graph's dynamic texture list",
-                           pass.name,
-                           output.name);
+                    logger->error("Render pass %s is trying to use texture %s, but it's not in the render graph's dynamic texture list",
+                                  pass.name,
+                                  output.name);
                 }
 
                 return true;
@@ -112,7 +111,7 @@ namespace nova::renderer::renderpack {
         if(graph_data) {
             data.graph_data = *graph_data;
         } else {
-            logger(rx::log::level::k_error, "Could not load render graph file. Error: %s", graph_data.error.to_string());
+            logger->error("Could not load render graph file. Error: %s", graph_data.error.to_string());
         }
         data.pipelines = load_pipeline_files(folder_access);
         data.materials = load_material_files(folder_access);
@@ -211,7 +210,7 @@ namespace nova::renderer::renderpack {
         const ValidationReport report = validate_graphics_pipeline(json_pipeline);
         print(report);
         if(!report.errors.is_empty()) {
-            logger(rx::log::level::k_error, "Loading pipeline file %s failed", pipeline_path);
+            logger->error("Loading pipeline file %s failed", pipeline_path);
             return rx::nullopt;
         }
 
@@ -249,7 +248,7 @@ namespace nova::renderer::renderpack {
                                                                       new_pipeline.defines);
         }
 
-        logger(rx::log::level::k_verbose, "Load of pipeline %s succeeded", pipeline_path);
+        logger->verbose("Load of pipeline %s succeeded", pipeline_path);
 
         return new_pipeline;
     }
@@ -280,7 +279,7 @@ namespace nova::renderer::renderpack {
         }();
 
         if(compiled_shader.is_empty()) {
-            logger(rx::log::level::k_error, "Could not compile shader file %s", filename);
+            logger->error("Could not compile shader file %s", filename);
         }
 
         return compiled_shader;
@@ -317,7 +316,7 @@ namespace nova::renderer::renderpack {
         print(report);
         if(!report.errors.is_empty()) {
             // There were errors, this material can't be loaded
-            logger(rx::log::level::k_error, "Load of material %s failed", material_path);
+            logger->error("Load of material %s failed", material_path);
             return {};
         }
 
@@ -329,7 +328,7 @@ namespace nova::renderer::renderpack {
 
         material.passes.each_fwd([&](MaterialPass& pass) { pass.material_name = material.name; });
 
-        logger(rx::log::level::k_verbose, "Load of material &s succeeded - name %s", material_path, material.name);
+        logger->verbose("Load of material &s succeeded - name %s", material_path, material.name);
         return material;
     }
 
@@ -380,12 +379,15 @@ namespace nova::renderer::renderpack {
             case rhi::ShaderStage::Intersection:
                 [[fallthrough]];
             default:;
-                logger(rx::log::level::k_error, "Unsupported shader stage %u", stage);
+                logger->error("Unsupported shader stage %u", stage);
                 return {};
         }
     }
 
-    rx::vector<uint32_t> compile_shader(const rx::string& source, const rhi::ShaderStage stage, const rhi::ShaderLanguage source_language, FolderAccessorBase* folder_accessor) {
+    rx::vector<uint32_t> compile_shader(const rx::string& source,
+                                        const rhi::ShaderStage stage,
+                                        const rhi::ShaderLanguage source_language,
+                                        FolderAccessorBase* folder_accessor) {
         /*
          * Compile HLSL -> SPIR-V, using delicious DXC
          *
@@ -397,21 +399,21 @@ namespace nova::renderer::renderpack {
         IDxcLibrary* lib;
         auto hr = DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&lib));
         if(FAILED(hr)) {
-            logger(rx::log::level::k_error, "Could not create DXC Library instance");
+            logger->error("Could not create DXC Library instance");
             return {};
         }
 
         IDxcCompiler* compiler;
         hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler));
         if(FAILED(hr)) {
-            logger(rx::log::level::k_error, "Could not create DXC instance");
+            logger->error("Could not create DXC instance");
             return {};
         }
 
         IDxcBlobEncoding* encoding;
         hr = lib->CreateBlobWithEncodingFromPinned(source.data(), static_cast<UINT32>(source.size()), CP_UTF8, &encoding);
         if(FAILED(hr)) {
-            logger(rx::log::level::k_error, "Could not create blob from shader");
+            logger->error("Could not create blob from shader");
             return {};
         }
 
@@ -433,7 +435,7 @@ namespace nova::renderer::renderpack {
                                includer,
                                &compile_result);
         if(FAILED(hr)) {
-            logger(rx::log::level::k_error, "Could not compile shader");
+            logger->error("Could not compile shader");
             return {};
         }
 
@@ -448,7 +450,7 @@ namespace nova::renderer::renderpack {
         } else {
             IDxcBlobEncoding* error_buffer;
             compile_result->GetErrorBuffer(&error_buffer);
-            logger(rx::log::level::k_error, "Error compiling shader:\n%s\n", static_cast<char const*>(error_buffer->GetBufferPointer()));
+            logger->error("Error compiling shader:\n%s\n", static_cast<char const*>(error_buffer->GetBufferPointer()));
             error_buffer->Release();
 
             return {};

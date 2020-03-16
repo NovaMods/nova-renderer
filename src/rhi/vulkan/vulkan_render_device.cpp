@@ -239,8 +239,7 @@ namespace nova::renderer::rhi {
 
         if(writes_to_backbuffer) {
             if(data.texture_outputs.size() > 1) {
-                logger(
-                    rx::log::level::k_error,
+                logger->error(
                     "Pass %s writes to the backbuffer, and other textures. Passes that write to the backbuffer are not allowed to write to any other textures",
                     data.name);
             }
@@ -511,14 +510,14 @@ namespace nova::renderer::rhi {
                                                                     vk::RenderPass renderpass,
                                                                     rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_pipeline");
-        logger(rx::log::level::k_verbose, "Creating a VkPipeline for pipeline %s", state.name);
+        logger->verbose("Creating a VkPipeline for pipeline %s", state.name);
 
         VulkanPipeline vk_pipeline{};
 
         rx::vector<VkPipelineShaderStageCreateInfo> shader_stages{&internal_allocator};
         rx::map<VkShaderStageFlags, VkShaderModule> shader_modules{&internal_allocator};
 
-        logger(rx::log::level::k_verbose, "Compiling vertex module");
+        logger->verbose("Compiling vertex module");
         const auto vertex_module = create_shader_module(state.vertex_shader.source);
         if(vertex_module) {
             shader_modules.insert(VK_SHADER_STAGE_VERTEX_BIT, *vertex_module);
@@ -527,7 +526,7 @@ namespace nova::renderer::rhi {
         }
 
         if(state.geometry_shader) {
-            logger(rx::log::level::k_verbose, "Compiling geometry module");
+            logger->verbose("Compiling geometry module");
             const auto geometry_module = create_shader_module(state.geometry_shader->source);
             if(geometry_module) {
                 shader_modules.insert(VK_SHADER_STAGE_GEOMETRY_BIT, *geometry_module);
@@ -537,7 +536,7 @@ namespace nova::renderer::rhi {
         }
 
         if(state.pixel_shader) {
-            logger(rx::log::level::k_verbose, "Compiling fragment module");
+            logger->verbose("Compiling fragment module");
             const auto fragment_module = create_shader_module(state.pixel_shader->source);
             if(fragment_module) {
                 shader_modules.insert(VK_SHADER_STAGE_FRAGMENT_BIT, *fragment_module);
@@ -848,7 +847,7 @@ namespace nova::renderer::rhi {
             return buffer;
 
         } else {
-            logger(rx::log::level::k_error, "Could not create buffer %s: %s", info.name, to_string(result));
+            logger->error("Could not create buffer %s: %s", info.name, to_string(result));
 
             return nullptr;
         }
@@ -968,7 +967,7 @@ namespace nova::renderer::rhi {
             return image;
 
         } else {
-            logger(rx::log::level::k_error, "Could not create image %s: %s", info.name, to_string(result));
+            logger->error("Could not create image %s: %s", info.name, to_string(result));
 
             return nullptr;
         }
@@ -1056,7 +1055,7 @@ namespace nova::renderer::rhi {
 
         if(settings->debug.enabled) {
             if(result != VK_SUCCESS) {
-                logger(rx::log::level::k_error, "Could not wait for fences. %s (error code %x)", to_string(result), result);
+                logger->error("Could not wait for fences. %s (error code %x)", to_string(result), result);
                 BREAK_ON_DEVICE_LOST(result);
             }
         }
@@ -1223,7 +1222,7 @@ namespace nova::renderer::rhi {
 
         if(settings->debug.enabled) {
             if(result != VK_SUCCESS) {
-                logger(rx::log::level::k_error, "Could not submit command list: %s", to_string(result));
+                logger->error("Could not submit command list: %s", to_string(result));
                 BREAK_ON_DEVICE_LOST(result);
             }
         }
@@ -1439,7 +1438,7 @@ namespace nova::renderer::rhi {
         const auto result = vmaCreateAllocator(&create_info, &vma);
 
         if(result != VK_SUCCESS) {
-            logger(rx::log::level::k_error, "Could not initialize VMA: %s", to_string(result));
+            logger->error("Could not initialize VMA: %s", to_string(result));
         }
     }
 
@@ -1509,7 +1508,7 @@ namespace nova::renderer::rhi {
                 }
 
                 if(graphics_family_idx != 0xFFFFFFFF) {
-                    logger(rx::log::level::k_info, "Selected GPU %s", gpu.props.deviceName);
+                    logger->info("Selected GPU %s", gpu.props.deviceName);
                     gpu.phys_device = current_device;
                     break;
                 }
@@ -1517,7 +1516,7 @@ namespace nova::renderer::rhi {
         }
 
         if(gpu.phys_device == nullptr) {
-            logger(rx::log::level::k_error, "Failed to find good GPU");
+            logger->error("Failed to find good GPU");
 
             // TODO: Message the user that GPU selection failed
 
@@ -1615,7 +1614,7 @@ namespace nova::renderer::rhi {
             std::stringstream ss;
             required.each([&](const rx::string& extension) { ss << extension.data() << ", "; });
 
-            logger(rx::log::level::k_warning, "Device does not support these required extensions: %s", ss.str().c_str());
+            logger->warning("Device does not support these required extensions: %s", ss.str().c_str());
         }
 
         const auto device_supports_required_extensions = required.is_empty();
@@ -1657,11 +1656,9 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::create_standard_pipeline_layout() {
-        standard_push_constants = rx::array{// Camera and Material index
-                                            vk::PushConstantRange()
-                                                .setStageFlags(vk::ShaderStageFlagBits::eAll)
-                                                .setOffset(0)
-                                                .setSize(sizeof(uint32_t) * 2)};
+        standard_push_constants = rx::array{
+            // Camera and Material index
+            vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eAll).setOffset(0).setSize(sizeof(uint32_t) * 2)};
 
         const auto camera_buffer_descriptor_type = (MAX_NUM_CAMERAS * sizeof(CameraUboData)) < gpu.props.limits.maxUniformBufferRange ?
                                                        vk::DescriptorType::eUniformBuffer :
@@ -1818,10 +1815,9 @@ namespace nova::renderer::rhi {
         uint32_t num_sets = 0;
         all_bindings.each_value([&](const RhiResourceBindingDescription& desc) {
             if(desc.set >= gpu.props.limits.maxBoundDescriptorSets) {
-                logger(rx::log::level::k_error,
-                       "Descriptor set %u is out of range - your GPU only supports %u sets!",
-                       desc.set,
-                       gpu.props.limits.maxBoundDescriptorSets);
+                logger->error("Descriptor set %u is out of range - your GPU only supports %u sets!",
+                              desc.set,
+                              gpu.props.limits.maxBoundDescriptorSets);
             } else {
                 num_sets = rx::algorithm::max(num_sets, desc.set + 1);
             }
@@ -1849,13 +1845,13 @@ namespace nova::renderer::rhi {
             bindings_by_set.emplace_back(num_bindings);
             binding_flags_by_set.emplace_back(num_bindings);
 
-            logger(rx::log::level::k_verbose, "Set %u has %u bindings", set, num_bindings);
+            logger->verbose("Set %u has %u bindings", set, num_bindings);
             set++;
         });
 
         all_bindings.each_value([&](const RhiResourceBindingDescription& binding) {
             if(binding.set >= bindings_by_set.size()) {
-                logger(rx::log::level::k_error, "You've skipped one or more descriptor sets! Don't do that, Nova can't handle it");
+                logger->error("You've skipped one or more descriptor sets! Don't do that, Nova can't handle it");
                 return true;
             }
 
@@ -1865,11 +1861,7 @@ namespace nova::renderer::rhi {
             descriptor_binding.descriptorCount = binding.count;
             descriptor_binding.stageFlags = to_vk_shader_stage_flags(binding.stages);
 
-            logger(rx::log::level::k_verbose,
-                   "Descriptor %u.%u is type %s",
-                   binding.set,
-                   binding.binding,
-                   descriptor_type_to_string(binding.type));
+            logger->verbose("Descriptor %u.%u is type %s", binding.set, binding.binding, descriptor_type_to_string(binding.type));
 
             if(binding.is_unbounded) {
                 binding_flags_by_set[binding.set][binding.binding] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
@@ -1878,7 +1870,7 @@ namespace nova::renderer::rhi {
                 // Record the maximum number of descriptors in the variable size array in this set
                 variable_descriptor_counts[binding.set] = binding.count;
 
-                logger(rx::log::level::k_verbose, "Descriptor %u.%u is unbounded", binding.set, binding.binding);
+                logger->verbose("Descriptor %u.%u is unbounded", binding.set, binding.binding);
 
             } else {
                 binding_flags_by_set[binding.set][binding.binding] = 0;
@@ -1986,7 +1978,7 @@ namespace nova::renderer::rhi {
             return rx::optional<VkShaderModule>(module);
 
         } else {
-            logger(rx::log::level::k_error, "Could not create shader module: %s", to_string(result));
+            logger->error("Could not create shader module: %s", to_string(result));
             return rx::nullopt;
         }
     }
@@ -2047,7 +2039,7 @@ namespace nova::renderer::rhi {
         const rx::string msg = rx::string::format("[%s] %s %s %s %s", type, queue_list, command_buffer_list, object_list, vk_message);
 
         if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
-            logger(rx::log::level::k_error, "%s", msg);
+            logger->error("%s", msg);
 #ifdef NOVA_LINUX
             nova_backtrace();
 #endif
@@ -2063,21 +2055,21 @@ namespace nova::renderer::rhi {
 
         } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {
             // Warnings may hint at unexpected / non-spec API usage
-            logger(rx::log::level::k_warning, "%s", msg);
+            logger->warning("%s", msg);
 
         } else if(((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) != 0) &&
                   ((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U)) { // No validation info!
             // Informal messages that may become handy during debugging
-            logger(rx::log::level::k_info, "%s", msg);
+            logger->info("%s", msg);
 
         } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) != 0) {
             // Diagnostic info from the Vulkan loader and layers
             // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
-            logger(rx::log::level::k_verbose, "%s", msg);
+            logger->verbose("%s", msg);
 
         } else if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U) { // No validation info!
             // Catch-all to be super sure
-            logger(rx::log::level::k_info, "%s", msg);
+            logger->info("%s", msg);
         }
 
         return VK_FALSE;

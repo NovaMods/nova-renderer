@@ -115,14 +115,14 @@ Texture2D textures[] : register(t3);
         const rx::wide_string wide_filename_str{&allocator, reinterpret_cast<const rx_u16*>(wide_filename)};
         const auto filename = wide_filename_str.to_utf8();
 
-        logger(rx::log::level::k_verbose, "Trying to include file (%s)", filename);
+        logger->verbose("Trying to include file (%s)", filename);
 
         if(const auto* file = builtin_files.find(filename)) {
             IDxcBlobEncoding* encoding;
             library.CreateBlobWithEncodingFromPinned(file->data(), static_cast<uint32_t>(file->size()), CP_UTF8, &encoding);
             *included_source = encoding;
 
-            logger(rx::log::level::k_verbose, "Included %s from builtin snippets", filename);
+            logger->verbose("Included %s from builtin snippets", filename);
 
             return 0;
 
@@ -133,7 +133,7 @@ Texture2D textures[] : register(t3);
             library.CreateBlobWithEncodingFromPinned(filename.data(), static_cast<uint32_t>(filename.size()), CP_UTF8, &encoding);
             *included_source = encoding;
 
-            logger(rx::log::level::k_verbose, "Included %s from renderpack", filename);
+            logger->verbose("Included %s from renderpack", filename);
 
             return 0;
         }
