@@ -76,8 +76,8 @@ namespace nova::renderer {
         }
 
         // All camera indices are free at program startup
-        for(int32_t i = num_elements - 1; i >= 0; i--) {
-            free_indices.emplace_back(static_cast<uint32_t>(i));
+        for(uint32_t i = num_elements - 1; i < num_elements; i--) {
+            free_indices.emplace_back(i);
         }
     }
 
