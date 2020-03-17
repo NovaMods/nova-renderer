@@ -580,7 +580,15 @@ namespace nova::renderer {
 
                 } else {
                     const auto framebuffer_size = device->get_swapchain()->get_size();
-                    data.projection = glm::ortho(0_u32, framebuffer_size.x, 0_u32, framebuffer_size.y);
+                    glm::mat4 ui_matrix{
+                        {2.0f, 0.0f, 0.0f, -1.0f},
+                        {0.0f, 2.0f, 0.0f, -1.0f},
+                        {0.0f, 0.0f, -1.0f, 0.0f},
+                        {0.0f, 0.0f, 0.0f, 1.0f},
+                    };
+                    ui_matrix[0][0] /= framebuffer_size.x;
+                    ui_matrix[1][1] /= framebuffer_size.y;
+                    data.projection = ui_matrix;
                 }
             }
         });

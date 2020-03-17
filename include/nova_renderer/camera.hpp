@@ -73,6 +73,9 @@ namespace nova::renderer {
 
         /*!
          * \brief Vertical field of view
+         *
+         * A non-zero number means the camera renders things in worldspace, while zero means that this camera renders things
+         * orthographically in screen space
          */
         float field_of_view;
 
