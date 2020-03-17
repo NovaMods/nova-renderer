@@ -259,8 +259,6 @@ namespace nova::renderer {
             device->wait_for_fences(cur_frame_fences);
             device->reset_fences(cur_frame_fences);
 
-            update_camera_matrix_buffer(cur_frame_idx);
-
             rhi::RhiRenderCommandList* cmds = device->create_command_list(0,
                                                                           rhi::QueueType::Graphics,
                                                                           rhi::RhiRenderCommandList::Level::Primary,
@@ -268,8 +266,6 @@ namespace nova::renderer {
             cmds->set_debug_name("RendergraphCommands");
 
             auto& device_material_buffer = material_device_buffers[cur_frame_idx];
-
-            device->write_data_to_buffer(material_buffer->data(), device_material_buffer->size, device_material_buffer->buffer);
 
             const auto images = get_all_images(frame_allocator);
 
@@ -295,6 +291,11 @@ namespace nova::renderer {
                 auto* renderpass = rendergraph->get_renderpass(renderpass_name);
                 renderpass->execute(*cmds, ctx);
             });
+
+            // The rendergraph may update the camera and material data, so we upload the data at the end of the frame
+            // TODO: Put pointers to the mapped camera and material buffers in FrameContext
+            update_camera_matrix_buffer(cur_frame_idx);
+            device->write_data_to_buffer(material_buffer->data(), device_material_buffer->size, device_material_buffer->buffer);
 
             device->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences[cur_frame_idx]);
 
