@@ -281,6 +281,10 @@ namespace nova::renderer::rhi {
         current_render_pass = nullptr;
     }
 
+    void VulkanRenderCommandList::set_material_index(uint32_t index) {
+        vkCmdPushConstants(cmds, device.standard_pipeline_layout, VK_SHADER_STAGE_ALL, sizeof(uint32_t), sizeof(uint32_t), &index);   
+    }
+
     void VulkanRenderCommandList::set_pipeline_state(const RhiGraphicsPipelineState& state) {
         MTR_SCOPE("VulkanRenderCommandList", "bind_pipeline");
 

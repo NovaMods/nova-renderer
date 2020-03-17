@@ -55,7 +55,7 @@ namespace nova::renderer::rhi {
         virtual void set_debug_name(const rx::string& name) = 0;
 
         /*!
-         * \brief
+         * \brief Bind the buffers of all the resources that Nova needs to render an object
          */
         virtual void bind_material_resources(RhiBuffer* camera_buffer,
                                              RhiBuffer* material_buffer,
@@ -143,6 +143,8 @@ namespace nova::renderer::rhi {
         virtual void begin_renderpass(RhiRenderpass* renderpass, RhiFramebuffer* framebuffer) = 0;
 
         virtual void end_renderpass() = 0;
+
+        virtual void set_material_index(uint32_t index) = 0;
 
         virtual void set_pipeline_state(const RhiGraphicsPipelineState& pipeline) = 0;
 
