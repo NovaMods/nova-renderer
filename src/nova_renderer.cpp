@@ -29,6 +29,7 @@
 
 #include "debugging/renderdoc.hpp"
 #include "loading/renderpack/render_graph_builder.hpp"
+#include "logging/console_log_stream.hpp"
 #include "render_objects/uniform_structs.hpp"
 #include "renderer/builtin/backbuffer_output_pass.hpp"
 
@@ -39,7 +40,7 @@ rx::global_group g_nova_globals{"Nova"};
 
 RX_LOG("nova", logger);
 
-rx::global<nova::renderer::LogHandles> logging_event_handles{"system", "log_handles", &rx::memory::g_system_allocator};
+rx::global<nova::StdoutStream> stdout_stream{"system", "stdout_stream"};
 
 void init_rex() {
     static bool initialized = false;
@@ -52,31 +53,13 @@ void init_rex() {
         // Explicitly initialize globals that need to be initialized in a specific
         // order for things to work.
         system_group->find("allocator")->init();
+        stdout_stream.init();
         system_group->find("logger")->init();
 
-        auto* log_handles_global = system_group->find("log_handles");
-        log_handles_global->init();
-
-        auto* log_handles = log_handles_global->cast<nova::renderer::LogHandles>();
-
-        rx::globals::find("loggers")->each([&](rx::global_node* logger_node) {
-            log_handles->push_back(logger_node->cast<rx::log>()->on_queue([](const rx::log::level level, const rx::string& message) {
-                switch(level) {
-                    case rx::log::level::k_error:
-                        printf("[error  ]: %s\n", message.data());
-                        break;
-                    case rx::log::level::k_info:
-                        printf("[info   ]: %s\n", message.data());
-                        break;
-                    case rx::log::level::k_verbose:
-                        printf("[verbose]: %s\n", message.data());
-                        break;
-                    case rx::log::level::k_warning:
-                        printf("[warning]: %s\n", message.data());
-                        break;
-                }
-            }));
-        });
+        const auto subscribed = rx::log::subscribe(&stdout_stream);
+        if(!subscribed) {
+            fprintf(stderr, "Could not subscribe to logger");
+        }
 
         rx::globals::init();
 
@@ -285,7 +268,7 @@ namespace nova::renderer {
 
             auto& device_material_buffer = material_device_buffers[cur_frame_idx];
 
-            device->write_data_to_buffer(material_buffer->data(), device_material_buffer->size, 0, device_material_buffer->buffer);
+            device->write_data_to_buffer(material_buffer->data(), device_material_buffer->size, device_material_buffer->buffer);
 
             const auto images = get_all_images(frame_allocator);
 
@@ -319,6 +302,11 @@ namespace nova::renderer {
             device->wait_for_fences(cur_frame_fences);
 
             device->get_swapchain()->present(cur_frame_idx);
+
+            {
+                MTR_SCOPE("NovaRenderer", "Flush Log");
+                rx::log::flush();
+            }
         }
         mtr_flush();
     }
@@ -348,7 +336,7 @@ namespace nova::renderer {
             staging_vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
 
             rhi::RhiBuffer* staging_vertex_buffer = device->create_buffer(staging_vertex_buffer_create_info, *global_allocator);
-            device->write_data_to_buffer(mesh_data.vertex_data_ptr, vertex_buffer_create_info.size, 0, staging_vertex_buffer);
+            device->write_data_to_buffer(mesh_data.vertex_data_ptr, vertex_buffer_create_info.size, staging_vertex_buffer);
 
             rhi::RhiRenderCommandList* vertex_upload_cmds = device->create_command_list(0,
                                                                                         rhi::QueueType::Transfer,
@@ -387,7 +375,7 @@ namespace nova::renderer {
             rhi::RhiBufferCreateInfo staging_index_buffer_create_info = index_buffer_create_info;
             staging_index_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
             rhi::RhiBuffer* staging_index_buffer = device->create_buffer(staging_index_buffer_create_info, *global_allocator);
-            device->write_data_to_buffer(mesh_data.index_data_ptr, index_buffer_create_info.size, 0, staging_index_buffer);
+            device->write_data_to_buffer(mesh_data.index_data_ptr, index_buffer_create_info.size, staging_index_buffer);
 
             rhi::RhiRenderCommandList* indices_upload_cmds = device->create_command_list(0,
                                                                                          rhi::QueueType::Transfer,
@@ -575,10 +563,10 @@ namespace nova::renderer {
 
     void NovaRenderer::update_camera_matrix_buffer(const uint32_t frame_idx) {
         MTR_SCOPE("NovaRenderer", "update_camera_matrix_buffer");
-        uint32_t i = 0;
+
         cameras.each_fwd([&](const Camera& cam) {
             if(cam.is_active) {
-                auto& data = (*camera_data)[i];
+                auto& data = camera_data->at(cam.index);
                 data.previous_view = data.view;
                 data.previous_projection = data.projection;
 
@@ -587,9 +575,14 @@ namespace nova::renderer {
                 data.view = rotate(data.view, cam.rotation.y, {0, 1, 0});
                 data.view = rotate(data.view, cam.rotation.z, {0, 0, 1});
 
-                data.projection = glm::perspective(cam.field_of_view, cam.aspect_ratio, cam.near_plane, cam.far_plane);
+                if(cam.field_of_view > 0) {
+                    data.projection = glm::perspective(cam.field_of_view, cam.aspect_ratio, cam.near_plane, cam.far_plane);
+
+                } else {
+                    const auto framebuffer_size = device->get_swapchain()->get_size();
+                    data.projection = glm::ortho(0_u32, framebuffer_size.x, 0_u32, framebuffer_size.y);
+                }
             }
-            i++;
         });
 
         camera_data->upload_to_device(frame_idx);

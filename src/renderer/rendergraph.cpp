@@ -135,9 +135,7 @@ namespace nova::renderer {
 
                     return true;
                 })
-                .on_error([&](const auto& err) {
-                    rg_log->error("Could not determine renderpass execution order: %s", err.to_string());
-                });
+                .on_error([&](const auto& err) { rg_log->error("Could not determine renderpass execution order: %s", err.to_string()); });
 
             is_dirty = false;
         }
@@ -193,10 +191,10 @@ namespace nova::renderer {
 
         batch.commands.each_fwd([&](const StaticMeshRenderCommand& command) {
             if(command.is_visible) {
-                ctx.nova->get_device().write_data_to_buffer(&command.model_matrix,
-                                                            sizeof(glm::mat4),
-                                                            ctx.cur_model_matrix_index * sizeof(glm::mat4),
-                                                            (*model_matrix_buffer)->buffer);
+                /* ctx.nova->get_device().write_data_to_buffer(&command.model_matrix,
+                                                             sizeof(glm::mat4),
+                                                             ctx.cur_model_matrix_index * sizeof(glm::mat4),
+                                                             (*model_matrix_buffer)->buffer);*/
                 ctx.cur_model_matrix_index++;
             }
         });
@@ -225,10 +223,10 @@ namespace nova::renderer {
 
         batch.commands.each_fwd([&](const StaticMeshRenderCommand& command) {
             if(command.is_visible) {
-                ctx.nova->get_device().write_data_to_buffer(&command.model_matrix,
+                /*ctx.nova->get_device().write_data_to_buffer(&command.model_matrix,
                                                             sizeof(glm::mat4),
                                                             ctx.cur_model_matrix_index * sizeof(glm::mat4),
-                                                            (*model_matrix_buffer)->buffer);
+                                                            (*model_matrix_buffer)->buffer);*/
                 ctx.cur_model_matrix_index++;
             }
         });

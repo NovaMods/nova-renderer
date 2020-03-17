@@ -182,6 +182,9 @@ set(NOVA_SOURCE
 
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
+
+        src/logging/console_log_stream.hpp
+        src/logging/console_log_stream.cpp
         
         src/windowing/window.cpp
         )

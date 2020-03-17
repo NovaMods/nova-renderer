@@ -123,10 +123,9 @@ namespace nova::renderer::rhi {
          *
          * \param data The data to upload
          * \param num_bytes The number of bytes to write
-         * \param offset The offset from the start of the buffer to write the data at
          * \param buffer The buffer to write to
          */
-        virtual void write_data_to_buffer(const void* data, mem::Bytes num_bytes, mem::Bytes offset, const RhiBuffer* buffer) = 0;
+        virtual void write_data_to_buffer(const void* data, mem::Bytes num_bytes, const RhiBuffer* buffer) = 0;
 
         /*!
          * \brief Creates a new Sampler object

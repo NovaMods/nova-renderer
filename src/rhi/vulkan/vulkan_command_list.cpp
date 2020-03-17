@@ -251,9 +251,7 @@ namespace nova::renderer::rhi {
         MTR_SCOPE("VulkanRenderCommandList", "set_camera");
         camera_index = camera.index;
 
-        if(current_layout != VK_NULL_HANDLE) {
-            vkCmdPushConstants(cmds, current_layout, VK_SHADER_STAGE_ALL, 0, sizeof(uint32_t), &camera_index);
-        }
+        vkCmdPushConstants(cmds, device.standard_pipeline_layout, VK_SHADER_STAGE_ALL, 0, sizeof(uint32_t), &camera_index);
     }
 
     void VulkanRenderCommandList::begin_renderpass(RhiRenderpass* renderpass, RhiFramebuffer* framebuffer) {

@@ -3,11 +3,12 @@
 #include <minitrace.h>
 #include <rx/core/vector.h>
 
-#include "nova_renderer/camera.hpp"
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 
 namespace nova::renderer {
+    RX_LOG("PerFrameDeviceArray", pfa_logger);
+
     /*!
      * \brief Array of data which is unique for each frame of execution
      */
@@ -31,6 +32,8 @@ namespace nova::renderer {
 
         ElementType& operator[](uint32_t idx);
 
+        ElementType& at(uint32_t idx);
+
         void upload_to_device(uint32_t frame_idx);
 
         [[nodiscard]] uint32_t get_next_free_slot();
@@ -47,8 +50,7 @@ namespace nova::renderer {
         rx::vector<rhi::RhiBuffer*> per_frame_buffers;
         rhi::RenderDevice& device;
 
-        ElementType* data;
-        size_t num_elements;
+        rx::vector<ElementType> data;
 
         rx::vector<uint32_t> free_indices;
     };
@@ -60,11 +62,10 @@ namespace nova::renderer {
                                                           rx::memory::allocator& internal_allocator)
         : internal_allocator{internal_allocator},
           device{device},
-          data{reinterpret_cast<ElementType*>(internal_allocator.allocate(num_elements * sizeof(ElementType)))},
-          num_elements{num_elements},
+          data{&internal_allocator, num_elements},
           free_indices{&internal_allocator} {
         rhi::RhiBufferCreateInfo create_info;
-        create_info.size = sizeof(CameraUboData) * MAX_NUM_CAMERAS;
+        create_info.size = sizeof(ElementType) * data.size();
         create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
         per_frame_buffers.reserve(num_in_flight_frames);
@@ -75,7 +76,7 @@ namespace nova::renderer {
         }
 
         // All camera indices are free at program startup
-        for(uint32_t i = 0; i < MAX_NUM_CAMERAS; i++) {
+        for(uint32_t i = 0; i < num_elements; i++) {
             free_indices.emplace_back(i);
         }
     }
@@ -86,17 +87,24 @@ namespace nova::renderer {
     }
 
     template <typename ElementType>
+    ElementType& PerFrameDeviceArray<ElementType>::at(uint32_t idx) {
+        return data[idx];
+    }
+
+    template <typename ElementType>
     void PerFrameDeviceArray<ElementType>::upload_to_device(const uint32_t frame_idx) {
         MTR_SCOPE("PerFrameDeviceArray", "upload_to_device");
-        device.write_data_to_buffer(data, sizeof(data), 0, per_frame_buffers[frame_idx]);
+
+        const auto num_bytes_to_write = sizeof(ElementType) * data.size();
+
+        device.write_data_to_buffer(data.data(), num_bytes_to_write, per_frame_buffers[frame_idx]);
     }
 
     template <typename ElementType>
     uint32_t PerFrameDeviceArray<ElementType>::get_next_free_slot() {
         const auto val = free_indices.last();
 
-        const auto erase_idx = free_indices.size() - 1;
-        free_indices.erase(erase_idx, erase_idx);
+        free_indices.pop_back();
 
         return val;
     }
@@ -108,7 +116,7 @@ namespace nova::renderer {
 
     template <typename ElementType>
     size_t PerFrameDeviceArray<ElementType>::size() const {
-        return num_elements;
+        return data.size();
     }
 
     template <typename ElementType>

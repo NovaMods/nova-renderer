@@ -17,7 +17,7 @@
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/window.hpp"
-
+#include "rx/core/abort.h"
 #include "vk_structs.hpp"
 #include "vulkan_command_list.hpp"
 #include "vulkan_utils.hpp"
@@ -859,7 +859,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void VulkanRenderDevice::write_data_to_buffer(const void* data, const Bytes num_bytes, const Bytes offset, const RhiBuffer* buffer) {
+    void VulkanRenderDevice::write_data_to_buffer(const void* data, const Bytes num_bytes, const RhiBuffer* buffer) {
         MTR_SCOPE("VulkanRenderDevice", "write_data_to_buffer");
         const auto* vulkan_buffer = static_cast<const VulkanBuffer*>(buffer);
 
@@ -2065,11 +2065,7 @@ namespace nova::renderer::rhi {
 
             auto* vk_render_device = reinterpret_cast<VulkanRenderDevice*>(render_device);
             if(vk_render_device->settings->debug.break_on_validation_errors) {
-#if defined(NOVA_WINDOWS)
-                DebugBreak();
-#elif defined(NOVA_LINUX)
-                raise(SIGINT);
-#endif
+                rx::abort("Validation error");
             }
 
         } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {

@@ -99,13 +99,13 @@ namespace nova::renderer {
                 vertex_buffer_size,
                 size);
 
-            device->write_data_to_buffer(data, vertex_buffer_size, 0, cached_vertex_buffer);
+            device->write_data_to_buffer(data, vertex_buffer_size, cached_vertex_buffer);
             num_vertex_bytes_to_upload = vertex_buffer_size;
 
         } else {
 #endif
 
-            device->write_data_to_buffer(data, size, 0, cached_vertex_buffer);
+            device->write_data_to_buffer(data, size, cached_vertex_buffer);
             num_vertex_bytes_to_upload = size;
 
 #ifdef NOVA_DEBUG
@@ -121,12 +121,12 @@ namespace nova::renderer {
                 index_buffer_size,
                 size);
 
-            device->write_data_to_buffer(data, index_buffer_size, 0, cached_index_buffer);
+            device->write_data_to_buffer(data, index_buffer_size, cached_index_buffer);
             num_index_bytes_to_upload = index_buffer_size;
 
         } else {
 #endif
-            device->write_data_to_buffer(data, size, 0, cached_index_buffer);
+            device->write_data_to_buffer(data, size, cached_index_buffer);
             num_index_bytes_to_upload = size;
 
 #ifdef NOVA_DEBUG

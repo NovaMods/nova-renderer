@@ -113,7 +113,7 @@ namespace nova::renderer::rhi {
 
         RhiBuffer* create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) override;
 
-        void write_data_to_buffer(const void* data, mem::Bytes num_bytes, mem::Bytes offset, const RhiBuffer* buffer) override;
+        void write_data_to_buffer(const void* data, mem::Bytes num_bytes, const RhiBuffer* buffer) override;
 
         RhiSampler* create_sampler(const RhiSamplerCreateInfo& create_info, rx::memory::allocator& allocator) override;
 
