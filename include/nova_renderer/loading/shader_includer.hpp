@@ -6,16 +6,15 @@
 #endif
 
 #include <dxc/dxcapi.h>
-
-#include "rx/core/concurrency/mutex.h"
-#include "rx/core/map.h"
-#include "rx/core/string.h"
+#include <rx/core/concurrency/mutex.h>
+#include <rx/core/map.h>
+#include <rx/core/string.h>
 
 namespace nova {
     namespace filesystem {
         class FolderAccessorBase;
     }
-}
+} // namespace nova
 
 namespace rx {
     namespace memory {
@@ -29,9 +28,11 @@ namespace nova::renderer {
      */
     class NovaDxcIncludeHandler final : public IDxcIncludeHandler {
     public:
-        explicit NovaDxcIncludeHandler(rx::memory::allocator& allocator, IDxcLibrary& library, filesystem::FolderAccessorBase* folder_accessor);
+        explicit NovaDxcIncludeHandler(rx::memory::allocator& allocator,
+                                       IDxcLibrary& library,
+                                       filesystem::FolderAccessorBase* folder_accessor);
 
-        virtual ~NovaDxcIncludeHandler() = default;
+        // virtual ~NovaDxcIncludeHandler() = default;
 
         HRESULT QueryInterface(const REFIID class_id, void** output_object) override;
 
