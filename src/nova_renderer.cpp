@@ -155,8 +155,8 @@ namespace nova::renderer {
     }
 
     rx_size FullMaterialPassName::hash() const {
-        const rx_size material_name_hash = rx::hash<rx::string>{}(material_name);
-        const rx_size pass_name_hash = rx::hash<rx::string>{}(pass_name);
+        const rx_size material_name_hash = material_name.hash();
+        const rx_size pass_name_hash = pass_name.hash();
 
         return rx::hash_combine(material_name_hash, pass_name_hash);
     }
