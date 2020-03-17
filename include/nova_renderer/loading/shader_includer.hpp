@@ -36,6 +36,12 @@ namespace nova::renderer {
 
         HRESULT QueryInterface(const REFIID class_id, void** output_object) override;
 
+#if NOVA_WINDOWS
+        ULONG AddRef() override;
+
+        ULONG Release() override;
+#endif
+
         HRESULT LoadSource(LPCWSTR wide_filename, IDxcBlob** included_source) override;
 
     private:
@@ -45,10 +51,12 @@ namespace nova::renderer {
 
         filesystem::FolderAccessorBase* folder_accessor;
 
-        rx::concurrency::mutex mtx;
-
         rx::map<rx::string, rx::string> builtin_files;
 
+#if NOVA_WINDOWS
+        rx::concurrency::mutex mtx;
+
         ULONG num_refs = 0;
+#endif
     };
 } // namespace nova::renderer

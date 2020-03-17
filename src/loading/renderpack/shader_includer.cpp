@@ -86,12 +86,34 @@ Texture2D textures[] : register(t3);
 
         if(class_id == __uuidof(IDxcIncludeHandler)) {
             *output_object = reinterpret_cast<LPVOID>(this);
+            AddRef();
 
             return 0;
         }
 
         return E_NOINTERFACE;
     }
+
+#if NOVA_WINDOWS
+    ULONG NovaDxcIncludeHandler::AddRef() {
+        rx::concurrency::scope_lock l{mtx};
+        num_refs++;
+
+        return num_refs;
+    }
+
+    ULONG NovaDxcIncludeHandler::Release() {
+        rx::concurrency::scope_lock l{mtx};
+        const auto ref_count = --num_refs;
+
+        if(ref_count == 0) {
+            // TODO: Figure out how to use a Rex allocator instead of forcing things to be on the heap
+            delete this;
+        }
+
+        return ref_count;
+    }
+#endif
 
     HRESULT NovaDxcIncludeHandler::LoadSource(const LPCWSTR wide_filename, IDxcBlob** included_source) {
         const rx::wide_string wide_filename_str{&allocator, reinterpret_cast<const rx_u16*>(wide_filename)};
