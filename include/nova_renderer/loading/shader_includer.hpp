@@ -36,6 +36,9 @@ namespace nova::renderer {
 
         HRESULT QueryInterface(const REFIID class_id, void** output_object) override;
 
+        // In the Linux support library, these are implemented in IUnknown
+        // However, I ran into an issue where the linker couldn't find definitions for these methods. I added the definitions to the
+        // WinAdapter.h header in DXC, which seems to work for now
 #if NOVA_WINDOWS
         ULONG AddRef() override;
 
