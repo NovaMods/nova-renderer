@@ -32,7 +32,7 @@ namespace nova::renderer {
                                        IDxcLibrary& library,
                                        filesystem::FolderAccessorBase* folder_accessor);
 
-        // virtual ~NovaDxcIncludeHandler() = default;
+        virtual ~NovaDxcIncludeHandler() = default;
 
         HRESULT QueryInterface(const REFIID class_id, void** output_object) override;
 
