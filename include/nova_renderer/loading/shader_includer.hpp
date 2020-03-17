@@ -36,10 +36,6 @@ namespace nova::renderer {
 
         HRESULT QueryInterface(const REFIID class_id, void** output_object) override;
 
-        ULONG AddRef() override;
-
-        ULONG Release() override;
-
         HRESULT LoadSource(LPCWSTR wide_filename, IDxcBlob** included_source) override;
 
     private:
