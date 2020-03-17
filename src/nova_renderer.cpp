@@ -76,6 +76,7 @@ void rex_fini() {
         rx::globals::fini();
 
         system_group->find("logger")->fini();
+        stdout_stream.fini();
         system_group->find("allocator")->fini();
 
         deinitialized = true;

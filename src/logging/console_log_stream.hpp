@@ -7,8 +7,8 @@ namespace nova {
     class StdoutStream final : public rx::stream {
     public:
         StdoutStream();
-
-        ~StdoutStream() = default;
+        
+        virtual ~StdoutStream() = default;
 
         rx_u64 on_write(const rx_byte* data, rx_u64 size) override;
 
