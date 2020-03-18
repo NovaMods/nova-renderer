@@ -5,12 +5,12 @@
 #include <sstream>
 
 #include <minitrace.h>
+#include <rx/core/abort.h>
 #include <rx/core/algorithm/max.h>
 #include <rx/core/log.h>
 #include <rx/core/set.h>
 #include <signal.h>
 #include <string.h>
-#include <vulkan/vulkan_win32.h>
 
 #include "nova_renderer/camera.hpp"
 #include "nova_renderer/constants.hpp"
@@ -19,7 +19,6 @@
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/window.hpp"
 
-#include "rx/core/abort.h"
 #include "vk_structs.hpp"
 #include "vulkan_command_list.hpp"
 #include "vulkan_utils.hpp"
