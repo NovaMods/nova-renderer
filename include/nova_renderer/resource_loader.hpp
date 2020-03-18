@@ -74,7 +74,7 @@ namespace nova::renderer {
                                                                            const void* data,
                                                                            rx::memory::allocator& allocator);
 
-        [[nodiscard]] rx::optional<uint32_t> get_texture_idx_for_name(const rx::string& name);
+        [[nodiscard]] rx::optional<uint32_t> get_texture_idx_for_name(const rx::string& name) const;
 
         /*!
          * \brief Retrieves the texture with the specified name

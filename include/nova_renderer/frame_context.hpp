@@ -1,10 +1,11 @@
 #pragma once
 
-#include <cstddef>
+#include <stddef.h>
 
 #include <rx/core/memory/allocator.h>
 
 #include "nova_renderer/rhi/forward_decls.hpp"
+#include "nova_renderer/resource_loader.hpp"
 
 namespace nova::renderer {
     class NovaRenderer;
@@ -46,5 +47,7 @@ namespace nova::renderer {
         size_t cur_model_matrix_index = 0;
 
         rx::memory::allocator* allocator = nullptr;
+
+        BufferResourceAccessor material_buffer;
     };
 } // namespace nova::renderer

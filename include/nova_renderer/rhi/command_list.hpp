@@ -62,7 +62,7 @@ namespace nova::renderer::rhi {
                                              RhiSampler* point_sampler,
                                              RhiSampler* bilinear_sampler,
                                              RhiSampler* trilinear_sampler,
-                                             const rx::vector<RhiImage*>& vector,
+                                             const rx::vector<RhiImage*>& images,
                                              rx::memory::allocator& allocator) = 0;
 
         /*!

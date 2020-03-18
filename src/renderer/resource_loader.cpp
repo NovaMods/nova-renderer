@@ -149,15 +149,18 @@ namespace nova::renderer {
         textures.push_back(resource);
         texture_name_to_idx.insert(name, static_cast<uint32_t>(idx));
 
+        logger->verbose("Added texture %s to the textures array, there's now %u textures total", name, textures.size());
+
         return TextureResourceAccessor{&textures, idx};
     }
 
-    rx::optional<uint32_t> DeviceResources::get_texture_idx_for_name(const rx::string& name) {
+    rx::optional<uint32_t> DeviceResources::get_texture_idx_for_name(const rx::string& name) const {
         if(auto* idx = texture_name_to_idx.find(name); idx != nullptr) {
             return *idx;
         }
 
-        return rx::nullopt;
+        // Return a default value so the user sees something beautiful
+        return 0_u32;
     }
 
     rx::optional<TextureResourceAccessor> DeviceResources::get_texture(const rx::string& name) {
@@ -324,7 +327,7 @@ namespace nova::renderer {
         MTR_SCOPE("DeviceResources", "create_default_textures");
 
         const auto make_color_tex = [&](const rx::string& name, const uint32_t color) {
-            rx::array<uint8_t[64]> tex_data;
+            rx::array<uint8_t[64 * 4]> tex_data;
             for(uint32_t i = 0; i < tex_data.size(); i++) {
                 tex_data[i] = color;
             }

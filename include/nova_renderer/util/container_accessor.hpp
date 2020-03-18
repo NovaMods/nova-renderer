@@ -31,7 +31,7 @@ namespace nova::renderer {
 
     private:
         rx::map<KeyType, ValueType>* map = nullptr;
-        KeyType key = 0;
+        KeyType key = {};
     };
 
     template <typename ValueType>

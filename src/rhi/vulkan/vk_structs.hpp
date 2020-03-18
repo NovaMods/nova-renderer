@@ -65,7 +65,7 @@ namespace nova::renderer::rhi {
     };
 
     struct VulkanDescriptorPool : RhiDescriptorPool {
-        VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
+        vk::DescriptorPool descriptor_pool{};
     };
 
     struct VulkanDescriptorSet : RhiDescriptorSet {

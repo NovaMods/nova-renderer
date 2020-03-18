@@ -257,25 +257,7 @@ namespace nova::renderer {
             cur_frame_fences.push_back(frame_fences[cur_frame_idx]);
 
             device->wait_for_fences(cur_frame_fences);
-            device->reset_fences(cur_frame_fences);
-
-            rhi::RhiRenderCommandList* cmds = device->create_command_list(0,
-                                                                          rhi::QueueType::Graphics,
-                                                                          rhi::RhiRenderCommandList::Level::Primary,
-                                                                          frame_allocator);
-            cmds->set_debug_name("RendergraphCommands");
-
-            auto& device_material_buffer = material_device_buffers[cur_frame_idx];
-
-            const auto images = get_all_images(frame_allocator);
-
-            cmds->bind_material_resources(camera_data->get_buffer_for_frame(cur_frame_idx),
-                                          device_material_buffer->buffer,
-                                          point_sampler,
-                                          point_sampler,
-                                          point_sampler,
-                                          images,
-                                          frame_allocator);
+            device->reset_fences(cur_frame_fences);            
 
             FrameContext ctx = {};
             ctx.frame_count = frame_count;
@@ -284,6 +266,24 @@ namespace nova::renderer {
             ctx.allocator = &frame_allocator;
             ctx.swapchain_framebuffer = swapchain->get_framebuffer(cur_frame_idx);
             ctx.swapchain_image = swapchain->get_image(cur_frame_idx);
+            ctx.camera_matrix_buffer = camera_data->get_buffer_for_frame(cur_frame_idx);
+            ctx.material_buffer = material_device_buffers[cur_frame_idx];
+
+            rhi::RhiRenderCommandList* cmds = device->create_command_list(0,
+                                                                          rhi::QueueType::Graphics,
+                                                                          rhi::RhiRenderCommandList::Level::Primary,
+                                                                          frame_allocator);
+            cmds->set_debug_name("RendergraphCommands");
+
+            const auto images = get_all_images(frame_allocator);
+
+            cmds->bind_material_resources(ctx.camera_matrix_buffer,
+                                          ctx.material_buffer->buffer,
+                                          point_sampler,
+                                          point_sampler,
+                                          point_sampler,
+                                          images,
+                                          frame_allocator);
 
             const auto& renderpass_order = rendergraph->calculate_renderpass_execution_order();
 
@@ -293,9 +293,8 @@ namespace nova::renderer {
             });
 
             // The rendergraph may update the camera and material data, so we upload the data at the end of the frame
-            // TODO: Put pointers to the mapped camera and material buffers in FrameContext
             update_camera_matrix_buffer(cur_frame_idx);
-            device->write_data_to_buffer(material_buffer->data(), device_material_buffer->size, device_material_buffer->buffer);
+            device->write_data_to_buffer(material_buffer->data(), ctx.material_buffer->size, ctx.material_buffer->buffer);
 
             device->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences[cur_frame_idx]);
 
