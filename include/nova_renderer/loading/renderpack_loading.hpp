@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rx/core/vector.h>
+
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 #include "nova_renderer/renderpack_data.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"
@@ -27,5 +29,8 @@ namespace nova::renderer::renderpack {
                                           rhi::ShaderStage stage,
                                           const rx::vector<rx::string>& defines = {});
 
-    rx::vector<uint32_t> compile_shader(const rx::string& source, rhi::ShaderStage stage, rhi::ShaderLanguage source_language);
+    rx::vector<uint32_t> compile_shader(const rx::string& source,
+                                        rhi::ShaderStage stage,
+                                        rhi::ShaderLanguage source_language,
+                                        filesystem::FolderAccessorBase* folder_accessor = nullptr);
 } // namespace nova::renderer::renderpack

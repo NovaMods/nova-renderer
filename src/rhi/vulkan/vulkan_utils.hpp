@@ -1,7 +1,9 @@
 #pragma once
 
-#include "nova_renderer/rhi/command_list.hpp"
+#include <vulkan/vulkan.hpp>
+
 #include "nova_renderer/renderpack_data.hpp"
+#include "nova_renderer/rhi/command_list.hpp"
 
 // idk maybe this header is included in places that already include Vulkan? Either way I want this include here and not anywhere else
 // ReSharper disable once CppUnusedIncludeDirective
@@ -13,8 +15,8 @@ namespace nova {
         enum class BlendFactor;
         enum class StencilOp;
         enum class CompareOp;
-    }
-}
+    } // namespace renderer
+} // namespace nova
 
 namespace nova::renderer::rhi {
     VkImageLayout to_vk_image_layout(ResourceState layout);
@@ -24,7 +26,7 @@ namespace nova::renderer::rhi {
     VkPrimitiveTopology to_primitive_topology(renderpack::RPPrimitiveTopology topology);
 
     VkBlendFactor to_blend_factor(BlendFactor factor);
-    
+
     VkBlendOp to_blend_op(const BlendOp blend_op);
 
     VkCompareOp to_compare_op(CompareOp compare_op);
@@ -37,7 +39,7 @@ namespace nova::renderer::rhi {
 
     VkSamplerAddressMode to_vk_address_mode(TextureCoordWrapMode wrap_mode);
 
-    VkDescriptorType to_vk_descriptor_type(DescriptorType type);
+    vk::DescriptorType to_vk_descriptor_type(DescriptorType type);
 
     VkShaderStageFlags to_vk_shader_stage_flags(ShaderStage flags);
 
@@ -50,14 +52,14 @@ namespace nova::renderer::rhi {
     /*!
      * \brief Wraps a Rex allocator so the Vulkan driver can use it
      */
-    inline VkAllocationCallbacks wrap_allocator(rx::memory::allocator* allocator);
+    inline vk::AllocationCallbacks wrap_allocator(rx::memory::allocator& allocator);
 
     bool operator&(const ShaderStage& lhs, const ShaderStage& rhs);
 
-    RX_HINT_FORCE_INLINE VkAllocationCallbacks wrap_allocator(rx::memory::allocator* allocator) {
-        VkAllocationCallbacks callbacks{};
+    RX_HINT_FORCE_INLINE vk::AllocationCallbacks wrap_allocator(rx::memory::allocator& allocator) {
+        vk::AllocationCallbacks callbacks{};
 
-        callbacks.pUserData = allocator;
+        callbacks.pUserData = &allocator;
         callbacks.pfnAllocation =
             [](void* user_data, const size_t size, size_t /* alignment */, VkSystemAllocationScope /* allocation_scope */) -> void* {
             auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);
@@ -88,7 +90,7 @@ namespace nova::renderer::rhi {
     {                                                                                                                                      \
         const VkResult result = (expr);                                                                                                    \
         if(result != VK_SUCCESS) {                                                                                                         \
-            logger(rx::log::level::k_error, "%s:%u=>%s=%s", __FILE__, __LINE__, #expr, to_string(result));                                 \
+            logger->error("%s:%u=>%s=%s", __FILE__, __LINE__, #expr, to_string(result));                                                   \
         }                                                                                                                                  \
     }
 #else

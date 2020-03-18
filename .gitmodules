@@ -10,12 +10,6 @@
 [submodule "external/miniz"]
 	path = external/miniz
 	url = https://github.com/richgel999/miniz.git
-[submodule "external/glslang"]
-	path = external/glslang
-	url = https://github.com/KhronosGroup/glslang.git
-[submodule "external/SPIRV-Cross"]
-	path = external/SPIRV-Cross
-	url = https://github.com/NovaMods/SPIRV-Cross.git
 [submodule "external/SPIRV-Tools"]
 	path = external/SPIRV-Tools
 	url = https://github.com/KhronosGroup/SPIRV-Tools.git
@@ -31,3 +25,9 @@
 [submodule "external/rex_core"]
 	path = external/rex_core
 	url = https://github.com/NovaMods/rex_core.git
+[submodule "external/SPIRV-Cross"]
+	path = external/SPIRV-Cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross.git
+[submodule "external/dxc-wrapper"]
+	path = external/dxc-wrapper
+	url = https://github.com/NovaMods/dxc-wrapper.git

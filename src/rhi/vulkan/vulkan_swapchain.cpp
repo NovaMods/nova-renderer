@@ -2,9 +2,9 @@
 
 #include <rx/core/log.h>
 
+#include "minitrace.h"
 #include "vulkan_render_device.hpp"
 #include "vulkan_utils.hpp"
-
 #ifdef ERROR
 #undef ERROR
 #endif
@@ -17,13 +17,14 @@ namespace nova::renderer::rhi {
                                      const glm::uvec2 window_dimensions,
                                      const rx::vector<VkPresentModeKHR>& present_modes)
         : Swapchain(num_swapchain_images, window_dimensions), render_device(render_device), num_swapchain_images(num_swapchain_images) {
+        MTR_SCOPE("VulkanSwapchain", "VulkanSwapchain");
 
         create_swapchain(num_swapchain_images, present_modes, window_dimensions);
 
         rx::vector<VkImage> vk_images = get_swapchain_images();
 
         if(vk_images.is_empty()) {
-            logger(rx::log::level::k_error, "The swapchain returned zero images");
+            logger->error("The swapchain returned zero images");
         }
 
         swapchain_image_layouts.resize(num_swapchain_images);
@@ -45,7 +46,8 @@ namespace nova::renderer::rhi {
         transition_swapchain_images_into_color_attachment_layout(vk_images);
     }
 
-    uint8_t VulkanSwapchain::acquire_next_swapchain_image(rx::memory::allocator* allocator) {
+    uint8_t VulkanSwapchain::acquire_next_swapchain_image(rx::memory::allocator& allocator) {
+        MTR_SCOPE("VulkanSwapchain", "acquire_next_swapchain_image");
         auto* fence = render_device->create_fence(false, allocator);
         auto* vk_fence = static_cast<VulkanFence*>(fence);
 
@@ -58,11 +60,11 @@ namespace nova::renderer::rhi {
                                                           &acquired_image_idx);
         if(acquire_result == VK_ERROR_OUT_OF_DATE_KHR || acquire_result == VK_SUBOPTIMAL_KHR) {
             // TODO: Recreate the swapchain and all screen-relative textures
-            logger(rx::log::level::k_error, "Swapchain out of date! One day you'll write the code to recreate it");
+            logger->error("Swapchain out of date! One day you'll write the code to recreate it");
             return 0;
         }
         if(acquire_result != VK_SUCCESS) {
-            logger(rx::log::level::k_error, "%s:%u=>%s", __FILE__, __LINE__, to_string(acquire_result));
+            logger->error("%s:%u=>%s", __FILE__, __LINE__, to_string(acquire_result));
         }
 
         // Block until we have the swapchain image in order to mimic D3D12. TODO: Reevaluate this decision
@@ -76,6 +78,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanSwapchain::present(const uint32_t image_idx) {
+        MTR_SCOPE("VulkanSwapchain", "present");
         VkResult swapchain_result = {};
 
         VkPresentInfoKHR present_info = {};
@@ -90,15 +93,16 @@ namespace nova::renderer::rhi {
         const auto result = vkQueuePresentKHR(render_device->graphics_queue, &present_info);
 
         if(result != VK_SUCCESS) {
-            logger(rx::log::level::k_error, "Could not present swapchain images: vkQueuePresentKHR failed: %s", to_string(result));
+            logger->error("Could not present swapchain images: vkQueuePresentKHR failed: %s", to_string(result));
         }
 
         if(swapchain_result != VK_SUCCESS) {
-            logger(rx::log::level::k_error, "Could not present swapchain image %u: Presenting failed: %s", image_idx, to_string(result));
+            logger->error("Could not present swapchain image %u: Presenting failed: %s", image_idx, to_string(result));
         }
     }
 
     void VulkanSwapchain::transition_swapchain_images_into_color_attachment_layout(const rx::vector<VkImage>& images) const {
+        MTR_SCOPE("VulkanSwapchain", "transition_swapchain_images_into_color_attachment_layout");
         rx::vector<VkImageMemoryBarrier> barriers;
         barriers.reserve(images.size());
 
@@ -249,6 +253,7 @@ namespace nova::renderer::rhi {
     void VulkanSwapchain::create_swapchain(const uint32_t requested_num_swapchain_images,
                                            const rx::vector<VkPresentModeKHR>& present_modes,
                                            const glm::uvec2& window_dimensions) {
+        MTR_SCOPE("VulkanSwapchain", "create_swapchain");
 
         const auto surface_format = choose_surface_format(render_device->gpu.surface_formats);
         const auto present_mode = choose_present_mode(present_modes);
@@ -279,7 +284,7 @@ namespace nova::renderer::rhi {
 
         auto res = vkCreateSwapchainKHR(render_device->device, &info, nullptr, &swapchain);
 
-        logger(rx::log::level::k_error, "%u", res);
+        logger->error("%u", res);
 
         swapchain_format = surface_format.format;
         this->present_mode = present_mode;
@@ -287,6 +292,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanSwapchain::create_resources_for_frame(const VkImage image, const VkRenderPass renderpass, const glm::uvec2& swapchain_size) {
+        MTR_SCOPE("VulkanSwapchain", "create_resources_for_frame");
         auto* vk_image = new VulkanImage;
         vk_image->type = ResourceType::Image;
         vk_image->is_dynamic = true;
@@ -340,6 +346,7 @@ namespace nova::renderer::rhi {
     }
 
     rx::vector<VkImage> VulkanSwapchain::get_swapchain_images() {
+        MTR_SCOPE("VulkanSwapchain", "get_swapchain_images");
         rx::vector<VkImage> vk_images;
 
         vkGetSwapchainImagesKHR(render_device->device, swapchain, &num_swapchain_images, nullptr);

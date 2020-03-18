@@ -2,19 +2,28 @@
 
 #pragma once
 
-#include "nova_renderer/memory/bytes.hpp"
+#include "nova_renderer/util/bytes.hpp"
 
 using namespace nova::mem::operators;
 
 namespace nova::renderer {
     constexpr const char* MODEL_MATRIX_BUFFER_NAME = "NovaModelMatrixUBO";
     constexpr const char* PER_FRAME_DATA_NAME = "NovaPerFrameUBO";
+    constexpr const char* MATERIAL_DATA_BUFFER_NAME = "NovaMaterialData";
+    constexpr const char* CAMERA_MATRIX_BUFFER_NAME = "NovaCameraMatrixBuffer";
+
+    constexpr mem::Bytes MATERIAL_BUFFER_SIZE = 64_kb;
 
     constexpr uint32_t AMD_PCI_VENDOR_ID = 0x1022;
     constexpr uint32_t INTEL_PCI_VENDOR_ID = 8086;
     constexpr uint32_t NVIDIA_PCI_VENDOR_ID = 0x10DE;
 
-    constexpr uint32_t NUM_IN_FLIGHT_FRAMES = 3;
+    constexpr uint32_t MAX_NUM_CAMERAS = 256;
+
+    /*!
+     * \brief Maximum number of textures that Nova can handle
+     */
+    constexpr uint32_t MAX_NUM_TEXTURES = 1024;
 
     constexpr mem::Bytes PER_FRAME_MEMORY_SIZE = 2_mb;
 

@@ -1,8 +1,8 @@
 #include "nova_renderer/renderpack_data_conversions.hpp"
 
 #include "nova_renderer/rendergraph.hpp"
-#include "nova_renderer/rhi/rhi_enums.hpp"
 #include "nova_renderer/renderpack_data.hpp"
+#include "nova_renderer/rhi/rhi_enums.hpp"
 
 #include "rx/core/log.h"
 #include "spirv_glsl.hpp"
@@ -38,7 +38,7 @@ namespace nova::renderer::renderpack {
                         return rhi::VertexFieldFormat::Float4;
 
                     default:
-                        logger(rx::log::level::k_error, "Nova does not support float fields with %u vector elements", spirv_type.vecsize);
+                        logger->error("Nova does not support float fields with %u vector elements", spirv_type.vecsize);
                         return rhi::VertexFieldFormat::Invalid;
                 }
             };
@@ -84,7 +84,7 @@ namespace nova::renderer::renderpack {
             case SPIRType::Char:
                 [[fallthrough]];
             default:
-                logger(rx::log::level::k_error, "Nova does not support vertex fields of type %u", spirv_type.basetype);
+                logger->error("Nova does not support vertex fields of type %u", spirv_type.basetype);
         }
 
         return {};
@@ -221,11 +221,10 @@ namespace nova::renderer::renderpack {
         }
     }
 
-    rx::optional<PipelineStateCreateInfo> to_pipeline_state_create_info(const PipelineData& data,
-                                                                        const Rendergraph& rendergraph) {
+    rx::optional<RhiGraphicsPipelineState> to_pipeline_state_create_info(const PipelineData& data, const Rendergraph& rendergraph) {
         constexpr auto npos = rx::vector<RasterizerState>::k_npos;
 
-        PipelineStateCreateInfo info{};
+        RhiGraphicsPipelineState info{};
 
         info.name = data.name;
 
@@ -244,7 +243,7 @@ namespace nova::renderer::renderpack {
         // Viewport and scissor test
         const auto* pass = rendergraph.get_renderpass(data.pass);
         if(pass == nullptr) {
-            logger(rx::log::level::k_error, "Could not find render pass %s, which pipeline %s needs", data.pass, data.name);
+            logger->error("Could not find render pass %s, which pipeline %s needs", data.pass, data.name);
             return rx::nullopt;
         }
         info.viewport_size = pass->framebuffer->size;
@@ -326,9 +325,8 @@ namespace nova::renderer::renderpack {
 
         const auto& pass_data = rendergraph.get_metadata_for_renderpass(data.pass);
         if(!pass_data) {
-            logger(rx::log::level::k_error,
-                   "Could not retrieve metadata for renderpass %s. Why can we retrieve the renderpass but not its metadata?",
-                   data.pass);
+            logger->error("Could not retrieve metadata for renderpass %s. Why can we retrieve the renderpass but not its metadata?",
+                          data.pass);
             return rx::nullopt;
         }
 

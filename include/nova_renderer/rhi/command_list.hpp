@@ -6,6 +6,13 @@
 #include "nova_renderer/rhi/rhi_enums.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 
+namespace nova {
+    namespace renderer {
+        struct RhiGraphicsPipelineState;
+        class Camera;
+    } // namespace renderer
+} // namespace nova
+
 namespace nova::renderer::rhi {
     enum class IndexType {
         Uint16,
@@ -27,25 +34,36 @@ namespace nova::renderer::rhi {
      *
      * Command lists are fully bound to ChaiScript
      */
-    class CommandList {
+    class RhiRenderCommandList {
     public:
         enum class Level {
             Primary,
             Secondary,
         };
 
-        CommandList() = default;
+        RhiRenderCommandList() = default;
 
-        CommandList(CommandList&& old) noexcept = default;
-        CommandList& operator=(CommandList&& old) noexcept = default;
+        RhiRenderCommandList(RhiRenderCommandList&& old) noexcept = default;
+        RhiRenderCommandList& operator=(RhiRenderCommandList&& old) noexcept = default;
 
-        CommandList(const CommandList& other) = delete;
-        CommandList& operator=(const CommandList& other) = delete;
+        RhiRenderCommandList(const RhiRenderCommandList& other) = delete;
+        RhiRenderCommandList& operator=(const RhiRenderCommandList& other) = delete;
 
         /*!
          * \brief Sets the debug name of this command list, so that API debugging tools can give you a nice name
          */
         virtual void set_debug_name(const rx::string& name) = 0;
+
+        /*!
+         * \brief Bind the buffers of all the resources that Nova needs to render an object
+         */
+        virtual void bind_material_resources(RhiBuffer* camera_buffer,
+                                             RhiBuffer* material_buffer,
+                                             RhiSampler* point_sampler,
+                                             RhiSampler* bilinear_sampler,
+                                             RhiSampler* trilinear_sampler,
+                                             const rx::vector<RhiImage*>& images,
+                                             rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Inserts a barrier so that all access to a resource before the barrier is resolved before any access
@@ -105,7 +123,16 @@ namespace nova::renderer::rhi {
          * These command lists should be secondary command lists. Nova doesn't validate this because yolo but you need
          * to be nice - the API-specific validation layers _will_ yell at you
          */
-        virtual void execute_command_lists(const rx::vector<CommandList*>& lists) = 0;
+        virtual void execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) = 0;
+
+        /*!
+         * \brief Sets the camera that subsequent drawcalls will use to render
+         *
+         * May be called at any time
+         *
+         * \param camera The camera to render with
+         */
+        virtual void set_camera(const Camera& camera) = 0;
 
         /*!
          * \brief Begins a renderpass
@@ -117,7 +144,9 @@ namespace nova::renderer::rhi {
 
         virtual void end_renderpass() = 0;
 
-        virtual void bind_pipeline(const RhiPipeline* pipeline) = 0;
+        virtual void set_material_index(uint32_t index) = 0;
+
+        virtual void set_pipeline_state(const RhiGraphicsPipelineState& pipeline) = 0;
 
         virtual void bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets,
                                           const RhiPipelineInterface* pipeline_interface) = 0;
@@ -150,6 +179,6 @@ namespace nova::renderer::rhi {
 
         virtual void set_scissor_rect(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
 
-        virtual ~CommandList() = default;
+        virtual ~RhiRenderCommandList() = default;
     };
 } // namespace nova::renderer::rhi

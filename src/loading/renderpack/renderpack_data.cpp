@@ -259,7 +259,7 @@ namespace nova::renderer::renderpack {
             return rhi::PixelFormat::Depth24Stencil8;
         }
 
-        logger(rx::log::level::k_error, "Unsupported pixel format %s", str);
+        logger->error("Unsupported pixel format %s", str);
         return {};
     }
 
@@ -271,7 +271,7 @@ namespace nova::renderer::renderpack {
             return TextureDimensionType::Absolute;
         }
 
-        logger(rx::log::level::k_error, "Unsupported texture dimension type %s", str);
+        logger->error("Unsupported texture dimension type %s", str);
         return {};
     }
 
@@ -286,7 +286,7 @@ namespace nova::renderer::renderpack {
             return TextureFilter::Point;
         }
 
-        logger(rx::log::level::k_error, "Unsupported texture filter %s", str);
+        logger->error("Unsupported texture filter %s", str);
         return {};
     }
 
@@ -298,7 +298,7 @@ namespace nova::renderer::renderpack {
             return WrapMode::Clamp;
         }
 
-        logger(rx::log::level::k_error, "Unsupported wrap mode %s", str);
+        logger->error("Unsupported wrap mode %s", str);
         return {};
     }
 
@@ -328,7 +328,7 @@ namespace nova::renderer::renderpack {
             return RPStencilOp::Invert;
         }
 
-        logger(rx::log::level::k_error, "Unsupported stencil op %s", str);
+        logger->error("Unsupported stencil op %s", str);
         return {};
     }
 
@@ -358,7 +358,7 @@ namespace nova::renderer::renderpack {
             return RPCompareOp::Always;
         }
 
-        logger(rx::log::level::k_error, "Unsupported compare op ", str);
+        logger->error("Unsupported compare op ", str);
         return {};
     }
 
@@ -373,7 +373,7 @@ namespace nova::renderer::renderpack {
             return MsaaSupport::None;
         }
 
-        logger(rx::log::level::k_error, "Unsupported antialiasing mode %s", str);
+        logger->error("Unsupported antialiasing mode %s", str);
         return {};
     }
 
@@ -385,7 +385,7 @@ namespace nova::renderer::renderpack {
             return RPPrimitiveTopology::Lines;
         }
 
-        logger(rx::log::level::k_error, "Unsupported primitive mode %s", str);
+        logger->error("Unsupported primitive mode %s", str);
         return {};
     }
 
@@ -421,7 +421,7 @@ namespace nova::renderer::renderpack {
             return RPBlendFactor::OneMinusDstAlpha;
         }
 
-        logger(rx::log::level::k_error, "Unsupported blend factor %s", str);
+        logger->error("Unsupported blend factor %s", str);
         return {};
     }
 
@@ -436,7 +436,7 @@ namespace nova::renderer::renderpack {
             return RenderQueue::Cutout;
         }
 
-        logger(rx::log::level::k_error, "Unsupported render queue %s", str);
+        logger->error("Unsupported render queue %s", str);
         return {};
     }
 
@@ -451,7 +451,7 @@ namespace nova::renderer::renderpack {
             return ScissorTestMode::DynamicScissorRect;
         }
 
-        logger(rx::log::level::k_error, "Unsupported scissor mode %s", str);
+        logger->error("Unsupported scissor mode %s", str);
         return {};
     }
 
@@ -487,7 +487,7 @@ namespace nova::renderer::renderpack {
             return RasterizerState::DisableAlphaWrite;
         }
 
-        logger(rx::log::level::k_error, "Unsupported state enum %s", str);
+        logger->error("Unsupported state enum %s", str);
         return {};
     }
 

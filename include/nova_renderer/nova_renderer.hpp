@@ -1,18 +1,25 @@
 #pragma once
 
+#include <rx/core/log.h>
+#include <rx/core/map.h>
+#include <rx/core/optional.h>
+#include <rx/core/ptr.h>
+
+#include "nova_renderer/camera.hpp"
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
 #include "nova_renderer/nova_settings.hpp"
-#include "nova_renderer/pipeline_storage.hpp"
+#include "nova_renderer/per_frame_device_array.hpp"
 #include "nova_renderer/procedural_mesh.hpp"
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/renderdoc_app.h"
 #include "nova_renderer/rendergraph.hpp"
 #include "nova_renderer/resource_loader.hpp"
-#include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
+
+#include "../../src/renderer/material_data_buffer.hpp"
 
 namespace rx {
     namespace memory {
@@ -29,7 +36,7 @@ namespace spirv_cross {
 } // namespace spirv_cross
 
 namespace nova::renderer {
-    using LogHandles = rx::vector<rx::log::event_type::handle>;
+    using LogHandles = rx::vector<rx::log::queue_event::handle>;
 
     /*!
      * \brief Registers a log message writing function
@@ -38,7 +45,7 @@ namespace nova::renderer {
      *
      * If you don't call this function, Nova will send all log messages to `stdout`
      *
-     * You may manually unregister your handler by calling `LogHandles::clear()`, but you don't need to. This function is intentionally not
+     * You may manually unregister your handlers by calling `LogHandles::clear()`, but you don't need to. This function is intentionally not
      * marked `[[nodiscard]]` because doing things with the handles is completely optional
      */
     template <typename LogHandlerFunc>
@@ -114,7 +121,7 @@ namespace nova::renderer {
         template <typename RenderpassType, typename... Args>
         RenderpassType* create_ui_renderpass(Args&&... args);
 
-        [[nodiscard]] const rx::vector<MaterialPass>& get_material_passes_for_pipeline(rhi::RhiPipeline* const pipeline);
+        [[nodiscard]] const rx::vector<MaterialPass>& get_material_passes_for_pipeline(const rx::string& pipeline);
 
         [[nodiscard]] rx::optional<RenderpassMetadata> get_renderpass_metadata(const rx::string& renderpass_name) const;
 
@@ -125,7 +132,7 @@ namespace nova::renderer {
 
         [[nodiscard]] NovaSettingsAccessManager& get_settings();
 
-        [[nodiscard]] rx::memory::allocator* get_global_allocator() const;
+        [[nodiscard]] rx::memory::allocator& get_global_allocator() const;
 
 #pragma region Meshes
         /*!
@@ -163,39 +170,50 @@ namespace nova::renderer {
         [[nodiscard]] rhi::RhiSampler* get_point_sampler() const;
 #pragma endregion
 
+#pragma region Materials
         /*!
-         * \brief Binds the resources for one material to that material's descriptor sets
+         * \brief Creates a new material of the specified type
          *
-         * This method does not perform any validation. It assumes that descriptor_descriptions has a description for
-         * every descriptor that the material wants to bind to, and it assumes that material has all the needed
-         * descriptors
-         *
-         * \param material The material to bind resources to
-         * \param bindings What resources should be bound to what descriptor. The key is the descriptor name and the
-         * value is the resource name
-         * \param descriptor_descriptions A map from descriptor name to all the information you need to update that
-         * descriptor
+         * \return A pointer to the new material, or nullptr if the material can't be created for whatever reason
          */
-        void bind_data_to_material_descriptor_sets(const MaterialPass& material,
-                                                   const rx::map<rx::string, rx::string>& bindings,
-                                                   const rx::map<rx::string, rhi::RhiResourceBindingDescription>& descriptor_descriptions);
+        template <typename MaterialType>
+        [[nodiscard]] rx::pair<uint32_t, MaterialType*> create_material();
+
+        /*!
+         * \brief Gets the pipeline with the provided name
+         *
+         * \param pipeline_name Name of the pipeline to find
+         *
+         * \return The pipeline if it exists, or nullptr if it does not
+         */
+        [[nodiscard]] Pipeline* find_pipeline(const rx::string& pipeline_name);
+
+#pragma endregion
 
         [[nodiscard]] RenderableId add_renderable_for_material(const FullMaterialPassName& material_name,
-                                                               const StaticMeshRenderableData& renderable);
+                                                               const StaticMeshRenderableCreateInfo& create_info);
 
-        [[nodiscard]] rhi::RenderDevice& get_engine() const;
+        /*!
+         * \brief Updates a renderable's information
+         *
+         * \param renderable The renderable to update
+         * \param update_data The new data for the renderable
+         */
+        void update_renderable(RenderableId renderable, const StaticMeshRenderableUpdateData& update_data);
+
+        [[nodiscard]] CameraAccessor create_camera(const CameraCreateInfo& create_info);
+
+        [[nodiscard]] rhi::RenderDevice& get_device() const;
 
         [[nodiscard]] NovaWindow& get_window() const;
 
         [[nodiscard]] DeviceResources& get_resource_manager() const;
 
-        [[nodiscard]] PipelineStorage& get_pipeline_storage() const;
-
     private:
-        NovaSettingsAccessManager render_settings;
+        NovaSettingsAccessManager settings;
 
-        std::unique_ptr<rhi::RenderDevice> device;
-        std::unique_ptr<NovaWindow> window;
+        rx::ptr<rhi::RenderDevice> device;
+        rx::ptr<NovaWindow> window;
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
@@ -222,15 +240,9 @@ namespace nova::renderer {
          */
         rx::memory::allocator* renderpack_allocator;
 
-        DeviceResources* device_resources;
-
-        DeviceMemoryResource* mesh_memory;
-
-        DeviceMemoryResource* ubo_memory;
+        rx::ptr<DeviceResources> device_resources;
 
         rhi::RhiDescriptorPool* global_descriptor_pool;
-
-        DeviceMemoryResource* staging_buffer_memory;
 
         void* staging_buffer_memory_ptr;
 
@@ -238,16 +250,6 @@ namespace nova::renderer {
         void create_global_allocators();
 
         static void initialize_virtual_filesystem();
-
-        /*!
-         * \brief Creates global GPU memory pools
-         *
-         * Creates pools for mesh data and for uniform buffers. The size of the mesh memory pool is a guess that might be true for some
-         * games, I'll get more accurate guesses when I have actual data. The size of the uniform buffer pool is the size of the builtin
-         * uniform buffers plus memory for the estimated number of renderables, which again will just be a guess and probably not a
-         * super good one
-         */
-        void create_global_gpu_pools();
 
         void create_global_sync_objects();
 
@@ -263,9 +265,8 @@ namespace nova::renderer {
 
         void create_renderpass_manager();
 
+        // MUST be called when the swapchain size changes
         void create_builtin_renderpasses();
-
-        void initialize_descriptor_pool();
 
         void create_builtin_pipelines();
 #pragma endregion
@@ -302,9 +303,10 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Rendering pipelines
-        PipelineStorage* pipeline_storage;
-
-        rx::map<rhi::RhiPipeline*, rx::vector<MaterialPass>> passes_by_pipeline;
+        /*!
+         * \brief Map from pipeline name to all the material passes that use that pipeline
+         */
+        rx::map<rx::string, rx::vector<MaterialPass>> passes_by_pipeline;
 
         rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas;
 
@@ -334,11 +336,30 @@ namespace nova::renderer {
         rx::vector<rx::string> builtin_buffer_names;
         uint32_t cur_model_matrix_index = 0;
 
-        rx::array<rhi::RhiFence* [NUM_IN_FLIGHT_FRAMES]> frame_fences;
+        rx::vector<rhi::RhiFence*> frame_fences;
 
         rx::map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
+        rx::map<rx::string, Pipeline> pipelines;
 
-        rx::concurrency::mutex ui_function_mutex;
+        rx::ptr<MaterialDataBuffer> material_buffer;
+        rx::vector<BufferResourceAccessor> material_device_buffers;
+
+        struct RenderableKey {
+            rx::string pipeline_name{};
+            uint32_t material_pass_idx{};
+            RenderableType type{};
+            uint32_t batch_idx{};
+            uint32_t renderable_idx{};
+        };
+
+        rx::map<RenderableId, RenderableKey> renderable_keys;
+
+        rx::vector<Camera> cameras;
+        rx::ptr<PerFrameDeviceArray<CameraUboData>> camera_data;
+
+        void update_camera_matrix_buffer(uint32_t frame_idx);
+
+        rx::vector<rhi::RhiImage*> get_all_images(rx::memory::allocator& allocator);
 #pragma endregion
     };
 
@@ -358,5 +379,13 @@ namespace nova::renderer {
     template <typename RenderpassType, typename... Args>
     RenderpassType* NovaRenderer::create_ui_renderpass(Args&&... args) {
         return rendergraph->create_renderpass<RenderpassType>(*device_resources, rx::utility::forward<Args>(args)...);
+    }
+
+    template <typename MaterialType>
+    rx::pair<uint32_t, MaterialType*> NovaRenderer::create_material() {
+        // We need to return the index so that we can send the index to the shader
+        // WE NEED TO RETURN THE INDEX, NOT JUST A POINTER TO THE MATERIAL
+        const auto idx = material_buffer->get_next_free_index<MaterialType>();
+        return {idx, &material_buffer->at<MaterialType>(idx)};
     }
 } // namespace nova::renderer

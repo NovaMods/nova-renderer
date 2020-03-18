@@ -1,18 +1,20 @@
 #pragma once
 
-#include <nova_renderer/rhi/swapchain.hpp>
 #include <rx/core/log.h>
+#include <rx/core/map.h>
+#include <rx/core/optional.h>
 
 #include "nova_renderer/frame_context.hpp"
 #include "nova_renderer/procedural_mesh.hpp"
 #include "nova_renderer/renderables.hpp"
+#include "nova_renderer/renderpack_data.hpp"
+#include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
-#include "nova_renderer/renderpack_data.hpp"
+#include "nova_renderer/rhi/swapchain.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
 
 #include "resource_loader.hpp"
-#include "rhi/pipeline_create_info.hpp"
 
 namespace nova::renderer {
     RX_LOG("rendergraph", rg_log);
@@ -22,6 +24,36 @@ namespace nova::renderer {
     namespace renderpack {
         struct RenderPassCreateInfo;
     }
+
+#pragma region Metadata structs
+    struct FullMaterialPassName {
+        rx::string material_name;
+        rx::string pass_name;
+
+        bool operator==(const FullMaterialPassName& other) const;
+
+        rx_size hash() const;
+    };
+
+    struct MaterialPassKey {
+        rx::string pipeline_name;
+        uint32_t material_pass_index;
+    };
+
+    struct MaterialPassMetadata {
+        renderpack::MaterialPass data;
+    };
+
+    struct PipelineMetadata {
+        RhiGraphicsPipelineState data;
+
+        rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas{};
+    };
+
+    struct RenderpassMetadata {
+        renderpack::RenderPassCreateInfo data;
+    };
+#pragma endregion
 
 #pragma region Structs for rendering
     template <typename RenderCommandType>
@@ -65,57 +97,29 @@ namespace nova::renderer {
     };
 
     struct MaterialPass {
+        FullMaterialPassName name;
+
         rx::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
         rx::vector<ProceduralMeshBatch<StaticMeshRenderCommand>> static_procedural_mesh_draws;
 
         rx::vector<rhi::RhiDescriptorSet*> descriptor_sets;
         const rhi::RhiPipelineInterface* pipeline_interface = nullptr;
 
-        void record(rhi::CommandList& cmds, FrameContext& ctx) const;
+        void record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;
 
         static void record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch,
-                                                       rhi::CommandList& cmds,
+                                                       rhi::RhiRenderCommandList& cmds,
                                                        FrameContext& ctx);
         static void record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
-                                                       rhi::CommandList& cmds,
+                                                       rhi::RhiRenderCommandList& cmds,
                                                        FrameContext& ctx);
     };
 
     struct Pipeline {
-        rhi::RhiPipeline* pipeline = nullptr;
+        RhiGraphicsPipelineState pipeline{};
         rhi::RhiPipelineInterface* pipeline_interface = nullptr;
 
-        void record(rhi::CommandList& cmds, FrameContext& ctx) const;
-    };
-#pragma endregion
-
-#pragma region Metadata structs
-    struct FullMaterialPassName {
-        rx::string material_name;
-        rx::string pass_name;
-
-        bool operator==(const FullMaterialPassName& other) const;
-
-        rx_size hash() const;
-    };
-
-    struct MaterialPassKey {
-        rx::string pipeline_name;
-        uint32_t material_pass_index;
-    };
-
-    struct MaterialPassMetadata {
-        renderpack::MaterialPass data;
-    };
-
-    struct PipelineMetadata {
-        PipelineStateCreateInfo data;
-
-        rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas{};
-    };
-
-    struct RenderpassMetadata {
-        renderpack::RenderPassCreateInfo data;
+        void record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;
     };
 #pragma endregion
 
@@ -170,7 +174,7 @@ namespace nova::renderer {
          * everything you should need to render. If there's something you need that isn't in the frame context, submit an issue on the Nova
          * GitHub
          */
-        virtual void execute(rhi::CommandList& cmds, FrameContext& ctx);
+        virtual void execute(rhi::RhiRenderCommandList& cmds, FrameContext& ctx);
 
         /*!
          * \brief Returns the framebuffer that this renderpass should render to
@@ -184,7 +188,7 @@ namespace nova::renderer {
          * By default `render` calls this method before calling `setup_renderpass`. If you override `render`, you'll need to call
          * this method yourself before using any of this renderpass's resources
          */
-        virtual void record_pre_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const;
+        virtual void record_pre_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;
 
         /*!
          * \brief Allows a renderpass to perform work before the recording of the actual renderpass
@@ -193,7 +197,7 @@ namespace nova::renderer {
          *
          * The default `render` method calls this after `record_pre_renderpass_barriers` and before `record_renderpass_contents`
          */
-        virtual void setup_renderpass(rhi::CommandList& cmds, FrameContext& ctx);
+        virtual void setup_renderpass(rhi::RhiRenderCommandList& cmds, FrameContext& ctx);
 
         /*!
          * \brief Renders the contents of this renderpass
@@ -209,7 +213,7 @@ namespace nova::renderer {
          * everything you should need to render. If there's something you need that isn't in the frame context, submit an issue on the Nova
          * GitHub
          */
-        virtual void record_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx);
+        virtual void record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx);
 
         /*!
          * \brief Records all the resource barriers that need to take place after this renderpass renders anything
@@ -217,7 +221,7 @@ namespace nova::renderer {
          * By default `render` calls this method after calling `render_renderpass_contents`. If you override `render`, you'll need to call
          * this method yourself near the end of your `render` method
          */
-        virtual void record_post_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const;
+        virtual void record_post_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;
     };
 
     /*!
@@ -232,7 +236,7 @@ namespace nova::renderer {
          * \brief Constructs a Rendergraph which will allocate its internal memory from the provided allocator, and which will execute on
          * the provided device
          */
-        Rendergraph(rx::memory::allocator* allocator, rhi::RenderDevice& device);
+        Rendergraph(rx::memory::allocator& allocator, rhi::RenderDevice& device);
 
         /*!
          * \brief Creates a new renderpass of the specified type using it's own create info
@@ -276,7 +280,7 @@ namespace nova::renderer {
     private:
         bool is_dirty = false;
 
-        rx::memory::allocator* allocator;
+        rx::memory::allocator& allocator;
 
         rhi::RenderDevice& device;
 
@@ -289,7 +293,7 @@ namespace nova::renderer {
     template <typename RenderpassType, typename... Args>
     RenderpassType* Rendergraph::create_renderpass(DeviceResources& resource_storage, Args&&... args) {
 
-        auto* renderpass = allocator->create<RenderpassType>(rx::utility::forward<Args>(args)...);
+        auto* renderpass = allocator.create<RenderpassType>(rx::utility::forward<Args>(args)...);
         const auto& create_info = RenderpassType::get_create_info();
 
         return add_renderpass(renderpass, create_info, resource_storage);
@@ -353,7 +357,7 @@ namespace nova::renderer {
                     }
 
                 } else {
-                    rg_log(rx::log::level::k_error, "No render target named %s", attachment_info.name);
+                    rg_log->error("No render target named %s", attachment_info.name);
                     missing_render_targets = true;
                 }
             }
@@ -375,10 +379,9 @@ namespace nova::renderer {
         }();
 
         if(!attachment_errors.is_empty()) {
-            attachment_errors.each_fwd([&](const rx::string& err) { rg_log(rx::log::level::k_error, "%s", err); });
+            attachment_errors.each_fwd([&](const rx::string& err) { rg_log->error("%s", err); });
 
-            rg_log(
-                rx::log::level::k_error,
+            rg_log->error(
                 "Could not create renderpass %s because there were errors in the attachment specification. Look above this message for details",
                 create_info.name);
             return nullptr;
@@ -389,7 +392,7 @@ namespace nova::renderer {
             renderpass->renderpass = renderpass_result.value;
 
         } else {
-            rg_log(rx::log::level::k_error, "Could not create renderpass %s: %s", create_info.name, renderpass_result.error.to_string());
+            rg_log->error("Could not create renderpass %s: %s", create_info.name, renderpass_result.error.to_string());
             return nullptr;
         }
 

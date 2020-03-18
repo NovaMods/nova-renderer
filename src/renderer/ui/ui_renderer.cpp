@@ -16,13 +16,13 @@ namespace nova::renderer {
 
     UiRenderpass::UiRenderpass() : Renderpass(UI_RENDER_PASS_NAME, true) {}
 
-    void UiRenderpass::record_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) { render_ui(cmds, ctx); }
+    void UiRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) { render_ui(cmds, ctx); }
 
     const renderpack::RenderPassCreateInfo& UiRenderpass::get_create_info() {
         return *ui_create_info;
     }
 
-    void NullUiRenderpass::render_ui(rhi::CommandList& /* cmds */, FrameContext& /* ctx */) {
+    void NullUiRenderpass::render_ui(rhi::RhiRenderCommandList& /* cmds */, FrameContext& /* ctx */) {
         // Intentionally empty
     }
 } // namespace nova::renderer

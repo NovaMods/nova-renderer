@@ -4,6 +4,7 @@
 #include "nova_renderer/rhi/command_list.hpp"
 
 #include "../loading/renderpack/render_graph_builder.hpp"
+#include "minitrace.h"
 
 namespace nova::renderer {
     using namespace renderpack;
@@ -12,7 +13,9 @@ namespace nova::renderer {
 
     Renderpass::Renderpass(rx::string name, const bool is_builtin) : name(std::move(name)), is_builtin(is_builtin) {}
 
-    void Renderpass::execute(rhi::CommandList& cmds, FrameContext& ctx) {
+    void Renderpass::execute(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
+        const auto& profiling_event_name = rx::string::format("Execute %s", name);
+        MTR_SCOPE("Renderpass", profiling_event_name.data());
         // TODO: Figure if any of these barriers are implicit
         // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource instead of
         // using a robust default
@@ -32,7 +35,8 @@ namespace nova::renderer {
         record_post_renderpass_barriers(cmds, ctx);
     }
 
-    void Renderpass::record_pre_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const {
+    void Renderpass::record_pre_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
+        MTR_SCOPE("Renderpass", "record_pre_renderpass_barriers");
         if(read_texture_barriers.size() > 0) {
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
@@ -64,19 +68,19 @@ namespace nova::renderer {
         }
     }
 
-    void Renderpass::record_renderpass_contents(rhi::CommandList& cmds, FrameContext& ctx) {
-        auto& pipeline_storage = ctx.nova->get_pipeline_storage();
+    void Renderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
+        MTR_SCOPE("Renderpass", "record_renderpass_contents");
 
-        // TODO: I _actually_ want to get all the draw commands from NovaRenderer, instead of storing them in this struct
         pipeline_names.each_fwd([&](const rx::string& pipeline_name) {
-            const auto pipeline = pipeline_storage.get_pipeline(pipeline_name);
+            const auto* pipeline = ctx.nova->find_pipeline(pipeline_name);
             if(pipeline) {
                 pipeline->record(cmds, ctx);
             }
         });
     }
 
-    void Renderpass::record_post_renderpass_barriers(rhi::CommandList& cmds, FrameContext& ctx) const {
+    void Renderpass::record_post_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
+        MTR_SCOPE("Renderpass", "record_post_renderpass_barriers");
         if(writes_to_backbuffer) {
             rhi::RhiResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = ctx.swapchain_image;
@@ -94,7 +98,7 @@ namespace nova::renderer {
         }
     }
 
-    Rendergraph::Rendergraph(rx::memory::allocator* allocator, rhi::RenderDevice& device) : allocator(allocator), device(device) {}
+    Rendergraph::Rendergraph(rx::memory::allocator& allocator, rhi::RenderDevice& device) : allocator(allocator), device(device) {}
 
     void Rendergraph::destroy_renderpass(const rx::string& name) {
         if(Renderpass** renderpass = renderpasses.find(name)) {
@@ -112,9 +116,10 @@ namespace nova::renderer {
     }
 
     rx::vector<rx::string> Rendergraph::calculate_renderpass_execution_order() {
+        MTR_SCOPE("Rendergraph", "calculate_renderpass_execution_order");
         if(is_dirty) {
             const auto create_infos = [&]() {
-                rx::vector<RenderPassCreateInfo> create_info_temp(allocator);
+                rx::vector<RenderPassCreateInfo> create_info_temp{&allocator};
                 create_info_temp.reserve(renderpass_metadatas.size());
 
                 renderpass_metadatas.each_value([&](const RenderpassMetadata& metadata) { create_info_temp.emplace_back(metadata.data); });
@@ -130,9 +135,7 @@ namespace nova::renderer {
 
                     return true;
                 })
-                .on_error([&](const auto& err) {
-                    rg_log(rx::log::level::k_error, "Could not determine renderpass execution order: %s", err.to_string());
-                });
+                .on_error([&](const auto& err) { rg_log->error("Could not determine renderpass execution order: %s", err.to_string()); });
 
             is_dirty = false;
         }
@@ -164,9 +167,11 @@ namespace nova::renderer {
         }
     }
 
-    void Renderpass::setup_renderpass(rhi::CommandList& cmds, FrameContext& ctx) {}
+    void Renderpass::setup_renderpass(rhi::RhiRenderCommandList& /* cmds */, FrameContext& /* ctx */) {}
 
-    void renderer::MaterialPass::record(rhi::CommandList& cmds, FrameContext& ctx) const {
+    void renderer::MaterialPass::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
+        MTR_SCOPE("MaterialPass", "record");
+
         cmds.bind_descriptor_sets(descriptor_sets, pipeline_interface);
 
         static_mesh_draws.each_fwd(
@@ -177,24 +182,26 @@ namespace nova::renderer {
     }
 
     void renderer::MaterialPass::record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch,
-                                                                    rhi::CommandList& cmds,
+                                                                    rhi::RhiRenderCommandList& cmds,
                                                                     FrameContext& ctx) {
+        MTR_SCOPE("MaterialPass", "record_rendering_static_mesh_batch");
         const uint64_t start_index = ctx.cur_model_matrix_index;
+
+        auto model_matrix_buffer = ctx.nova->get_resource_manager().get_uniform_buffer(MODEL_MATRIX_BUFFER_NAME);
 
         batch.commands.each_fwd([&](const StaticMeshRenderCommand& command) {
             if(command.is_visible) {
-                auto model_matrix_buffer = ctx.nova->get_resource_manager().get_uniform_buffer(MODEL_MATRIX_BUFFER_NAME);
-                ctx.nova->get_engine().write_data_to_buffer(&command.model_matrix,
-                                                            sizeof(glm::mat4),
-                                                            ctx.cur_model_matrix_index * sizeof(glm::mat4),
-                                                            (*model_matrix_buffer)->buffer);
+                /* ctx.nova->get_device().write_data_to_buffer(&command.model_matrix,
+                                                             sizeof(glm::mat4),
+                                                             ctx.cur_model_matrix_index * sizeof(glm::mat4),
+                                                             (*model_matrix_buffer)->buffer);*/
                 ctx.cur_model_matrix_index++;
             }
         });
 
         if(start_index != ctx.cur_model_matrix_index) {
             // TODO: There's probably a better way to do this
-            rx::vector<rhi::RhiBuffer*> vertex_buffers;
+            rx::vector<rhi::RhiBuffer*> vertex_buffers{ctx.allocator};
             vertex_buffers.reserve(batch.num_vertex_attributes);
             for(uint32_t i = 0; i < batch.num_vertex_attributes; i++) {
                 vertex_buffers.push_back(batch.vertex_buffer);
@@ -207,23 +214,25 @@ namespace nova::renderer {
     }
 
     void renderer::MaterialPass::record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
-                                                                    rhi::CommandList& cmds,
+                                                                    rhi::RhiRenderCommandList& cmds,
                                                                     FrameContext& ctx) {
+        MTR_SCOPE("MaterialPass", "record_rendering_static_mesh_batch (ProceduralMesh)");
         const uint64_t start_index = ctx.cur_model_matrix_index;
+
+        auto model_matrix_buffer = ctx.nova->get_resource_manager().get_uniform_buffer(MODEL_MATRIX_BUFFER_NAME);
 
         batch.commands.each_fwd([&](const StaticMeshRenderCommand& command) {
             if(command.is_visible) {
-                auto model_matrix_buffer = ctx.nova->get_resource_manager().get_uniform_buffer(MODEL_MATRIX_BUFFER_NAME);
-                ctx.nova->get_engine().write_data_to_buffer(&command.model_matrix,
+                /*ctx.nova->get_device().write_data_to_buffer(&command.model_matrix,
                                                             sizeof(glm::mat4),
                                                             ctx.cur_model_matrix_index * sizeof(glm::mat4),
-                                                            (*model_matrix_buffer)->buffer);
+                                                            (*model_matrix_buffer)->buffer);*/
                 ctx.cur_model_matrix_index++;
             }
         });
 
         if(start_index != ctx.cur_model_matrix_index) {
-            const auto& [vertex_buffer, index_buffer] = batch.mesh->get_buffers_for_frame(ctx.frame_count % NUM_IN_FLIGHT_FRAMES);
+            const auto& [vertex_buffer, index_buffer] = batch.mesh->get_buffers_for_frame(ctx.frame_idx);
             // TODO: There's probably a better way to do this
             rx::vector<rhi::RhiBuffer*> vertex_buffers;
             vertex_buffers.reserve(7);
@@ -235,10 +244,11 @@ namespace nova::renderer {
         }
     }
 
-    void Pipeline::record(rhi::CommandList& cmds, FrameContext& ctx) const {
-        cmds.bind_pipeline(pipeline);
+    void Pipeline::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
+        MTR_SCOPE("Pipeline", "record");
+        cmds.set_pipeline_state(pipeline);
 
-        const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline);
+        const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline.name);
 
         passes.each_fwd([&](const renderer::MaterialPass& pass) { pass.record(cmds, ctx); });
     }

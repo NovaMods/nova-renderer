@@ -72,8 +72,6 @@ jobs:
           # Binary artifacts
           mkdir artifacts
           cp LICENSE artifacts
-          cp build/nova-test-unit artifacts
-          cp build/nova-test-end-to-end artifacts
           cp build/libnova-renderer.a artifacts
       # Upload binary artifacts
       - name: Upload binary artifacts
@@ -151,7 +149,9 @@ jobs:
       - name: Run unit tests
         working-directory: build/Debug
         shell: bash
-        run: ./nova-test-unit.exe --gtest_color=yes
+        run: |
+          cp ../../external/dxc-wrapper/extern/dxc/bin/dxcompiler.dll ./
+          ./nova-test-unit.exe --gtest_color=yes
       # Prepare artifacts for uploading
       - name: Prepare artifacts
         shell: bash
@@ -159,8 +159,6 @@ jobs:
           # Binary artifacts
           mkdir artifacts
           cp LICENSE artifacts
-          cp build/Debug/nova-test-unit.exe artifacts
-          cp build/Debug/nova-test-end-to-end.exe artifacts
           cp build/Debug/nova-renderer.lib artifacts
       # Upload binary artifacts
       - name: Upload binary artifacts

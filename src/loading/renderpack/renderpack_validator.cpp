@@ -271,9 +271,9 @@ namespace nova::renderer::renderpack {
     }
 
     void print(const ValidationReport& report) {
-        report.errors.each_fwd([&](const rx::string& error) { logger(rx::log::level::k_error, "%s", error); });
+        report.errors.each_fwd([&](const rx::string& error) { logger->error("%s", error); });
 
-        report.warnings.each_fwd([&](const rx::string& warning) { logger(rx::log::level::k_verbose, "%s", warning); });
+        report.warnings.each_fwd([&](const rx::string& warning) { logger->verbose("%s", warning); });
     }
 
     void ValidationReport::merge_in(const ValidationReport& other) {

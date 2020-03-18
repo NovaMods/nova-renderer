@@ -90,6 +90,7 @@ set(NOVA_SOURCE
         include/nova_renderer/util/result.hpp
         include/nova_renderer/util/utils.hpp
         include/nova_renderer/util/container_accessor.hpp
+        include/nova_renderer/util/bytes.hpp
 
         include/nova_renderer/nova_renderer.hpp
         include/nova_renderer/nova_settings.hpp
@@ -106,12 +107,7 @@ set(NOVA_SOURCE
         include/nova_renderer/filesystem/virtual_filesystem.hpp
 
         include/nova_renderer/loading/renderpack_loading.hpp
-
-        include/nova_renderer/memory/bytes.hpp
-        include/nova_renderer/memory/allocation_strategy.hpp
-        include/nova_renderer/memory/allocation_structs.hpp
-        include/nova_renderer/memory/block_allocation_strategy.hpp
-        include/nova_renderer/memory/bump_point_allocation_strategy.hpp
+        include/nova_renderer/loading/shader_includer.hpp
 
         include/nova_renderer/rhi/forward_decls.hpp
         include/nova_renderer/rhi/command_list.hpp
@@ -120,13 +116,14 @@ set(NOVA_SOURCE
         include/nova_renderer/rhi/rhi_types.hpp
         include/nova_renderer/rhi/pipeline_create_info.hpp
         include/nova_renderer/rhi/render_device.hpp
-        include/nova_renderer/rhi/device_memory_resource.hpp
 
         include/nova_renderer/procedural_mesh.hpp
         include/nova_renderer/rendergraph.hpp
         include/nova_renderer/ui_renderer.hpp
-        include/nova_renderer/pipeline_storage.hpp
         include/nova_renderer/resource_loader.hpp
+        include/nova_renderer/camera.hpp
+        include/nova_renderer/per_frame_device_array.hpp
+        include/nova_renderer/material.hpp
 
         src/nova_renderer.cpp
 
@@ -156,18 +153,26 @@ set(NOVA_SOURCE
         src/render_objects/procedural_mesh.cpp
         src/render_objects/uniform_structs.hpp
         src/render_objects/renderables.cpp
+
         src/renderer/rendergraph.cpp
         src/renderer/ui/ui_renderer.cpp
         src/renderer/builtin/backbuffer_output_pass.hpp
         src/renderer/builtin/backbuffer_output_pass.cpp
-        src/renderer/pipeline_storage.cpp
         src/renderer/resource_loader.cpp
+        src/renderer/camera.cpp
+        src/renderer/visibility_cache.hpp
+        src/renderer/visibility_cache.cpp
+        src/renderer/material_data_buffer.cpp
+        src/renderer/material_data_buffer.hpp
+        src/renderer/material.cpp
 
         src/util/utils.cpp
         src/util/result.cpp
+        src/util/bytes.cpp
 
         src/loading/json_utils.hpp
         src/loading/renderpack/renderpack_loading.cpp
+        src/loading/renderpack/shader_includer.cpp
         src/loading/renderpack/renderpack_data.cpp
         src/loading/renderpack/renderpack_validator.cpp
         src/loading/renderpack/renderpack_validator.hpp
@@ -177,13 +182,11 @@ set(NOVA_SOURCE
 
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
+
+        src/logging/console_log_stream.hpp
+        src/logging/console_log_stream.cpp
         
         src/windowing/window.cpp
-
-        src/memory/device_memory_resource.cpp
-        src/memory/block_allocation_strategy.cpp
-        src/memory/bump_point_allocation_strategy.cpp
-        src/memory/bytes.cpp
         )
 
 #################################################################
@@ -331,10 +334,7 @@ add_coverage(nova-renderer)
 set(COMMON_LINK_LIBS
         ${CMAKE_DL_LIBS}
         glm::glm
-        glslang
-        OGLCompiler
-        OSDependent
-        SPIRV
+        dxc-wrap 
         minitrace
         miniz
         vma::vma
@@ -361,22 +361,6 @@ else()
 endif()
 set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} ${GLFW_TARGET_NAME})
 include_directories(SYSTEM ${CMAKE_CURRENT_LIST_DIR}/external/glfw/include)
-
-
-##############################
-# Find C++ filesystem header #
-##############################
-# On some toolchains its still <experimental/filesystem> while on others its already <filesystem>
-check_include_file_cxx("filesystem" CXX_STD_FILESYSTEM)
-if(NOT CXX_STD_FILESYSTEM)
-    check_include_file_cxx("experimental/filesystem" CXX_STD_FILESYSTEM_EXPERIMENTAL)
-    if(NOT CXX_STD_FILESYSTEM_EXPERIMENTAL)
-        message(FATAL_ERROR "Failed to find a filesystem header for C++")
-    endif()
-    target_compile_definitions(nova-renderer PUBLIC NOVA_STD_FILESYSTEM_EXPERIMENTAL=1)
-else()
-    target_compile_definitions(nova-renderer PUBLIC NOVA_STD_FILESYSTEM=1)
-endif()
 
 ############################
 # Platform dependent fixes #

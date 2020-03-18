@@ -42,7 +42,7 @@ namespace nova::renderer::rhi {
                 return VK_IMAGE_LAYOUT_UNDEFINED;
 
             default:
-                logger(rx::log::level::k_error, "%u is not a valid image state", static_cast<uint32_t>(layout));
+                logger->error("%u is not a valid image state", static_cast<uint32_t>(layout));
                 return VK_IMAGE_LAYOUT_GENERAL;
         }
     }
@@ -255,7 +255,7 @@ namespace nova::renderer::rhi {
                 return VK_FORMAT_D24_UNORM_S8_UINT;
 
             default:
-                logger(rx::log::level::k_error, "Unknown pixel format, returning RGBA8");
+                logger->error("Unknown pixel format, returning RGBA8");
                 return VK_FORMAT_R8G8B8A8_UNORM;
         }
     }
@@ -298,25 +298,25 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkDescriptorType to_vk_descriptor_type(const DescriptorType type) {
+    vk::DescriptorType to_vk_descriptor_type(const DescriptorType type) {
         switch(type) {
             case DescriptorType::CombinedImageSampler:
-                return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                return vk::DescriptorType::eCombinedImageSampler;
 
             case DescriptorType::UniformBuffer:
-                return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                return vk::DescriptorType::eUniformBuffer;
 
             case DescriptorType::StorageBuffer:
-                return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                return vk::DescriptorType::eStorageBuffer;
 
             case DescriptorType::Texture:
-                return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                return vk::DescriptorType::eSampledImage;
 
             case DescriptorType::Sampler:
-                return VK_DESCRIPTOR_TYPE_SAMPLER;
+                return vk::DescriptorType::eSampler;
 
             default:
-                return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                return vk::DescriptorType::eUniformBuffer;
         }
     }
 

@@ -40,7 +40,7 @@ namespace nova::filesystem {
         /*!
          * \brief Map from filename to its index in the zip folder. Miniz seems to like indexes
          */
-        rx::map<rx::string, uint32_t> resource_indexes;
+        rx::map<rx::string, int32_t> resource_indexes;
 
         mz_zip_archive zip_archive = {};
 

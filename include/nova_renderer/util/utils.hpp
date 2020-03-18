@@ -36,4 +36,16 @@ namespace nova::renderer {
 
 #define FORMAT(s, ...) fmt::format(fmt(s), __VA_ARGS__)
 
+#define PROFILE_VOID_EXPR(expr, category, event_name)                                                                                      \
+    [&] {                                                                                                                                  \
+        MTR_SCOPE(#category, #event_name);                                                                                                 \
+        expr;                                                                                                                              \
+    }()
+
+#define PROFILE_RET_EXPR(expr, category, event_name)                                                                                       \
+    [&] {                                                                                                                                  \
+        MTR_SCOPE(#category, #event_name);                                                                                                 \
+        return expr;                                                                                                                       \
+    }()
+
 } // namespace nova::renderer

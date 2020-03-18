@@ -28,7 +28,7 @@ namespace nova::renderer {
             return ntl::Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc. Error: %s", error));
         }
 
-        logger(rx::log::level::k_verbose, "Loaded RenderDoc DLL from %s", renderdoc_dll_path);
+        logger->verbose("Loaded RenderDoc DLL from %s", renderdoc_dll_path);
 
         const auto get_api = reinterpret_cast<pRENDERDOC_GetAPI>(GetProcAddress(renderdoc_dll, "RENDERDOC_GetAPI"));
         if(!get_api) {
@@ -55,12 +55,12 @@ namespace nova::renderer {
         RENDERDOC_API_1_3_0* api;
         const int32_t ret = get_api(eRENDERDOC_API_Version_1_3_0, reinterpret_cast<void**>(&api));
         if(ret != 1) {
-            logger(rx::log::level::k_error, "Could not load RenderDoc API");
+            logger->error("Could not load RenderDoc API");
 
             return ntl::Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc API. Error code %d", ret));
         }
 
-        logger(rx::log::level::k_verbose, "Loaded RenderDoc 1.3 API");
+        logger->verbose("Loaded RenderDoc 1.3 API");
         return ntl::Result(api);
     }
 } // namespace nova::renderer

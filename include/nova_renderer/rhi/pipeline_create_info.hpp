@@ -344,7 +344,7 @@ namespace nova::renderer {
     /*!
      * \brief All the information needed to create a pipeline state
      */
-    struct PipelineStateCreateInfo {
+    struct RhiGraphicsPipelineState {
         /*!
          * \brief Name of this pipeline state
          */

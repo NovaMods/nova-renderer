@@ -6,8 +6,6 @@
 #include <stdint.h>
 
 #include "nova_renderer/constants.hpp"
-#include "nova_renderer/memory/block_allocation_strategy.hpp"
-#include "nova_renderer/rhi/device_memory_resource.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 
 namespace nova::renderer {
@@ -31,18 +29,20 @@ namespace nova::renderer {
          *
          * \param vertex_buffer_size The number of bytes the vertex buffer needs
          * \param index_buffer_size The number of bytes that the index buffer needs
+         * \param num_in_flight_frames Number of in-flight frames that this proc mesh supports
          * \param device The device to create the buffers on
          * \param name Name of this procedural mesh
          */
         ProceduralMesh(uint64_t vertex_buffer_size,
                        uint64_t index_buffer_size,
+                       uint32_t num_in_flight_frames,
                        rhi::RenderDevice* device,
                        const rx::string& name = "ProceduralMesh");
 
         ProceduralMesh(ProceduralMesh&& old) noexcept;
         ProceduralMesh& operator=(ProceduralMesh&& old) noexcept;
 
-        ~ProceduralMesh();
+        ~ProceduralMesh() = default;
 
         /*!
          * \brief Sets the data to upload to the vertex buffer
@@ -69,7 +69,7 @@ namespace nova::renderer {
          * \param cmds The command list to record commands into
          * \param frame_idx The index of the frame to write the data to
          */
-        void record_commands_to_upload_data(rhi::CommandList* cmds, uint8_t frame_idx) const;
+        void record_commands_to_upload_data(rhi::RhiRenderCommandList* cmds, uint8_t frame_idx) const;
 
         /*!
          * \brief Returns the vertex and index buffer for the provided frame
@@ -81,8 +81,8 @@ namespace nova::renderer {
 
         rx::string name;
 
-        rx::array<rhi::RhiBuffer* [NUM_IN_FLIGHT_FRAMES]> vertex_buffers;
-        rx::array<rhi::RhiBuffer* [NUM_IN_FLIGHT_FRAMES]> index_buffers;
+        rx::vector<rhi::RhiBuffer*> vertex_buffers;
+        rx::vector<rhi::RhiBuffer*> index_buffers;
 
         rhi::RhiBuffer* cached_vertex_buffer;
         rhi::RhiBuffer* cached_index_buffer;
@@ -91,11 +91,6 @@ namespace nova::renderer {
         uint64_t num_index_bytes_to_upload = 0;
 
         rx::memory::allocator* allocator;
-
-        mem::BlockAllocationStrategy* device_memory_allocation_strategy;
-        mem::BlockAllocationStrategy* host_memory_allocation_strategy;
-        DeviceMemoryResource* device_buffers_memory;
-        DeviceMemoryResource* cached_buffers_memory;
 
 #ifdef NOVA_DEBUG
         uint64_t vertex_buffer_size;

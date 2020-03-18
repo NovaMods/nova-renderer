@@ -4,7 +4,6 @@
 
 namespace nova::renderer::rhi {
     struct RhiDescriptorSet;
-    struct RhiPipeline;
     struct RhiRenderpass;
     struct RhiFramebuffer;
     struct RhiPipelineInterface;
@@ -19,6 +18,6 @@ namespace nova::renderer::rhi {
     struct RhiDescriptorPool;
 
     class Swapchain;
-    class CommandList;
+    class RhiRenderCommandList;
     class RenderDevice;
 } // namespace nova::renderer::rhi

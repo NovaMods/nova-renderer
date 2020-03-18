@@ -2,10 +2,10 @@
 
 #include <glm/glm.hpp>
 
-#include "nova_renderer/memory/bytes.hpp"
+#include "nova_renderer/renderpack_data.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"
-#include "nova_renderer/renderpack_data.hpp"
+#include "nova_renderer/util/bytes.hpp"
 
 namespace nova::renderer::rhi {
 
@@ -60,6 +60,14 @@ namespace nova::renderer::rhi {
 
     struct RhiBuffer : RhiResource {
         mem::Bytes size = 0;
+    };
+
+    struct RhiMaterialResources {
+        RhiBuffer* material_data_buffer;
+        RhiSampler* point_sampler;
+        RhiSampler* bilinear_sampler;
+        RhiSampler* trilinear_sampler;
+        rx::vector<RhiImage*> images;
     };
 
     struct RhiFramebuffer {
@@ -124,8 +132,6 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] uint32_t get_num_descriptors_of_type(DescriptorType type) const;
     };
-
-    struct RhiPipeline {};
 
     struct RhiSemaphore {};
 

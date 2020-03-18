@@ -1,16 +1,19 @@
 #include "nova_renderer/loading/renderpack_loading.hpp"
 
-#define ENABLE_HLSL
-#include <SPIRV/GlslangToSpv.h>
-#include <glslang/Include/ResourceLimits.h>
-#include <glslang/Public/ShaderLang.h>
 #include <rx/core/json.h>
 #include <rx/core/log.h>
+
+#include "nova_renderer/util/platform.hpp"
+#ifdef NOVA_WINDOWS
+#include <comdef.h>
+#endif
+#include <dxc/dxcapi.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/filesystem_helpers.hpp"
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
+#include "nova_renderer/loading/shader_includer.hpp"
 
 #include "../json_utils.hpp"
 #include "minitrace.h"
@@ -21,114 +24,6 @@ namespace nova::renderer::renderpack {
     RX_LOG("RenderpackLoading", logger);
 
     using namespace filesystem;
-
-    // Removed from the GLSLang version we're using
-    // TODO: Copy and fill in with values from the RHI so we don't accidentally limit a shader
-    const TBuiltInResource DEFAULT_BUILT_IN_RESOURCE = {
-        /* .MaxLights = */ 32,
-        /* .MaxClipPlanes = */ 6,
-        /* .MaxTextureUnits = */ 32,
-        /* .MaxTextureCoords = */ 32,
-        /* .MaxVertexAttribs = */ 64,
-        /* .MaxVertexUniformComponents = */ 4096,
-        /* .MaxVaryingFloats = */ 64,
-        /* .MaxVertexTextureImageUnits = */ 32,
-        /* .MaxCombinedTextureImageUnits = */ 80,
-        /* .MaxTextureImageUnits = */ 32,
-        /* .MaxFragmentUniformComponents = */ 4096,
-        /* .MaxDrawBuffers = */ 32,
-        /* .MaxVertexUniformVectors = */ 128,
-        /* .MaxVaryingVectors = */ 8,
-        /* .MaxFragmentUniformVectors = */ 16,
-        /* .MaxVertexOutputVectors = */ 16,
-        /* .MaxFragmentInputVectors = */ 15,
-        /* .MinProgramTexelOffset = */ -8,
-        /* .MaxProgramTexelOffset = */ 7,
-        /* .MaxClipDistances = */ 8,
-        /* .MaxComputeWorkGroupCountX = */ 65535,
-        /* .MaxComputeWorkGroupCountY = */ 65535,
-        /* .MaxComputeWorkGroupCountZ = */ 65535,
-        /* .MaxComputeWorkGroupSizeX = */ 1024,
-        /* .MaxComputeWorkGroupSizeY = */ 1024,
-        /* .MaxComputeWorkGroupSizeZ = */ 64,
-        /* .MaxComputeUniformComponents = */ 1024,
-        /* .MaxComputeTextureImageUnits = */ 16,
-        /* .MaxComputeImageUniforms = */ 8,
-        /* .MaxComputeAtomicCounters = */ 8,
-        /* .MaxComputeAtomicCounterBuffers = */ 1,
-        /* .MaxVaryingComponents = */ 60,
-        /* .MaxVertexOutputComponents = */ 64,
-        /* .MaxGeometryInputComponents = */ 64,
-        /* .MaxGeometryOutputComponents = */ 128,
-        /* .MaxFragmentInputComponents = */ 128,
-        /* .MaxImageUnits = */ 8,
-        /* .MaxCombinedImageUnitsAndFragmentOutputs = */ 8,
-        /* .MaxCombinedShaderOutputResources = */ 8,
-        /* .MaxImageSamples = */ 0,
-        /* .MaxVertexImageUniforms = */ 0,
-        /* .MaxTessControlImageUniforms = */ 0,
-        /* .MaxTessEvaluationImageUniforms = */ 0,
-        /* .MaxGeometryImageUniforms = */ 0,
-        /* .MaxFragmentImageUniforms = */ 8,
-        /* .MaxCombinedImageUniforms = */ 8,
-        /* .MaxGeometryTextureImageUnits = */ 16,
-        /* .MaxGeometryOutputVertices = */ 256,
-        /* .MaxGeometryTotalOutputComponents = */ 1024,
-        /* .MaxGeometryUniformComponents = */ 1024,
-        /* .MaxGeometryVaryingComponents = */ 64,
-        /* .MaxTessControlInputComponents = */ 128,
-        /* .MaxTessControlOutputComponents = */ 128,
-        /* .MaxTessControlTextureImageUnits = */ 16,
-        /* .MaxTessControlUniformComponents = */ 1024,
-        /* .MaxTessControlTotalOutputComponents = */ 4096,
-        /* .MaxTessEvaluationInputComponents = */ 128,
-        /* .MaxTessEvaluationOutputComponents = */ 128,
-        /* .MaxTessEvaluationTextureImageUnits = */ 16,
-        /* .MaxTessEvaluationUniformComponents = */ 1024,
-        /* .MaxTessPatchComponents = */ 120,
-        /* .MaxPatchVertices = */ 32,
-        /* .MaxTessGenLevel = */ 64,
-        /* .MaxViewports = */ 16,
-        /* .MaxVertexAtomicCounters = */ 0,
-        /* .MaxTessControlAtomicCounters = */ 0,
-        /* .MaxTessEvaluationAtomicCounters = */ 0,
-        /* .MaxGeometryAtomicCounters = */ 0,
-        /* .MaxFragmentAtomicCounters = */ 8,
-        /* .MaxCombinedAtomicCounters = */ 8,
-        /* .MaxAtomicCounterBindings = */ 1,
-        /* .MaxVertexAtomicCounterBuffers = */ 0,
-        /* .MaxTessControlAtomicCounterBuffers = */ 0,
-        /* .MaxTessEvaluationAtomicCounterBuffers = */ 0,
-        /* .MaxGeometryAtomicCounterBuffers = */ 0,
-        /* .MaxFragmentAtomicCounterBuffers = */ 1,
-        /* .MaxCombinedAtomicCounterBuffers = */ 1,
-        /* .MaxAtomicCounterBufferSize = */ 16384,
-        /* .MaxTransformFeedbackBuffers = */ 4,
-        /* .MaxTransformFeedbackInterleavedComponents = */ 64,
-        /* .MaxCullDistances = */ 8,
-        /* .MaxCombinedClipAndCullDistances = */ 8,
-        /* .MaxSamples = */ 4,
-        /* .MaxMeshOutputVerticesNV */ 1024,
-        /* .MaxMeshOutputPrimitivesNV */ 1024,
-        /* .MaxMeshWorkGroupSizeX_NV */ 1024,
-        /* .MaxMeshWorkGroupSizeY_NV */ 1024,
-        /* .MaxMeshWorkGroupSizeZ_NV */ 1024,
-        /* .MaxTaskWorkGroupSizeX_NV */ 1024,
-        /* .MaxTaskWorkGroupSizeY_NV */ 1024,
-        /* .MaxTaskWorkGroupSizeZ_NV */ 1024,
-        /* .MaxMeshViewCountNV */ 1024,
-        /* .limits = */
-        {
-            /* .nonInductiveForLoops = */ true,
-            /* .whileLoops = */ true,
-            /* .doWhileLoops = */ true,
-            /* .generalUniformIndexing = */ true,
-            /* .generalAttributeMatrixVectorIndexing = */ true,
-            /* .generalVaryingIndexing = */ true,
-            /* .generalSamplerIndexing = */ true,
-            /* .generalVariableIndexing = */ true,
-            /* .generalConstantMatrixVectorIndexing = */ true,
-        }};
 
     rx::optional<RenderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access);
 
@@ -168,10 +63,9 @@ namespace nova::renderer::renderpack {
                 if(pixel_format) {
                     output.pixel_format = *pixel_format;
                 } else {
-                    logger(rx::log::level::k_error,
-                           "Render pass %s is trying to use texture %s, but it's not in the render graph's dynamic texture list",
-                           pass.name,
-                           output.name);
+                    logger->error("Render pass %s is trying to use texture %s, but it's not in the render graph's dynamic texture list",
+                                  pass.name,
+                                  output.name);
                 }
 
                 return true;
@@ -217,7 +111,7 @@ namespace nova::renderer::renderpack {
         if(graph_data) {
             data.graph_data = *graph_data;
         } else {
-            logger(rx::log::level::k_error, "Could not load render graph file. Error: %s", graph_data.error.to_string());
+            logger->error("Could not load render graph file. Error: %s", graph_data.error.to_string());
         }
         data.pipelines = load_pipeline_files(folder_access);
         data.materials = load_material_files(folder_access);
@@ -316,7 +210,7 @@ namespace nova::renderer::renderpack {
         const ValidationReport report = validate_graphics_pipeline(json_pipeline);
         print(report);
         if(!report.errors.is_empty()) {
-            logger(rx::log::level::k_error, "Loading pipeline file %s failed", pipeline_path);
+            logger->error("Loading pipeline file %s failed", pipeline_path);
             return rx::nullopt;
         }
 
@@ -354,12 +248,10 @@ namespace nova::renderer::renderpack {
                                                                       new_pipeline.defines);
         }
 
-        logger(rx::log::level::k_verbose, "Load of pipeline %s succeeded", pipeline_path);
+        logger->verbose("Load of pipeline %s succeeded", pipeline_path);
 
         return new_pipeline;
     }
-
-    EShLanguage to_glslang_shader_stage(rhi::ShaderStage stage);
 
     rx::vector<uint32_t> load_shader_file(const rx::string& filename,
                                           FolderAccessorBase* folder_access,
@@ -379,15 +271,15 @@ namespace nova::renderer::renderpack {
 
         const auto& compiled_shader = [&] {
             if(filename.ends_with(".hlsl")) {
-                return compile_shader(shader_source, stage, rhi::ShaderLanguage::Hlsl);
+                return compile_shader(shader_source, stage, rhi::ShaderLanguage::Hlsl, folder_access);
 
             } else {
-                return compile_shader(shader_source, stage, rhi::ShaderLanguage::Glsl);
+                return compile_shader(shader_source, stage, rhi::ShaderLanguage::Glsl, folder_access);
             }
         }();
 
         if(compiled_shader.is_empty()) {
-            logger(rx::log::level::k_error, "Could not compile shader file %s", filename);
+            logger->error("Could not compile shader file %s", filename);
         }
 
         return compiled_shader;
@@ -424,7 +316,7 @@ namespace nova::renderer::renderpack {
         print(report);
         if(!report.errors.is_empty()) {
             // There were errors, this material can't be loaded
-            logger(rx::log::level::k_error, "Load of material %s failed", material_path);
+            logger->error("Load of material %s failed", material_path);
             return {};
         }
 
@@ -436,7 +328,7 @@ namespace nova::renderer::renderpack {
 
         material.passes.each_fwd([&](MaterialPass& pass) { pass.material_name = material.name; });
 
-        logger(rx::log::level::k_verbose, "Load of material &s succeeded - name %s", material_path, material.name);
+        logger->verbose("Load of material &s succeeded - name %s", material_path, material.name);
         return material;
     }
 
@@ -450,117 +342,118 @@ namespace nova::renderer::renderpack {
         });
     }
 
-    EShLanguage to_glslang_shader_stage(const rhi::ShaderStage stage) {
+    LPCWSTR to_hlsl_profile(const rhi::ShaderStage stage) {
         switch(stage) {
             case rhi::ShaderStage::Vertex:
-                return EShLangVertex;
+                return L"vs_6_4";
 
             case rhi::ShaderStage::TessellationControl:
-                return EShLangTessControl;
+                return L"hs_6_4";
+
             case rhi::ShaderStage::TessellationEvaluation:
-                return EShLangTessEvaluation;
+                return L"ds_6_4";
 
             case rhi::ShaderStage::Geometry:
-                return EShLangGeometry;
+                return L"gs_6_4";
 
             case rhi::ShaderStage::Fragment:
-                return EShLangFragment;
+                return L"ps_6_4";
 
             case rhi::ShaderStage::Compute:
-                return EShLangCompute;
-
-            case rhi::ShaderStage::Raygen:
-                return EShLangRayGenNV;
-
-            case rhi::ShaderStage::AnyHit:
-                return EShLangAnyHitNV;
-
-            case rhi::ShaderStage::ClosestHit:
-                return EShLangClosestHitNV;
-
-            case rhi::ShaderStage::Miss:
-                return EShLangMissNV;
-
-            case rhi::ShaderStage::Intersection:
-                return EShLangIntersectNV;
+                return L"cs_6_4";
 
             case rhi::ShaderStage::Task:
-                return EShLangTaskNV;
+                return L"as_6_4";
 
             case rhi::ShaderStage::Mesh:
-                return EShLangMeshNV;
+                return L"ms_6_4";
 
-            default:
-                return EShLangCount;
+            case rhi::ShaderStage::Raygen:
+                [[fallthrough]];
+            case rhi::ShaderStage::AnyHit:
+                [[fallthrough]];
+            case rhi::ShaderStage::ClosestHit:
+                [[fallthrough]];
+            case rhi::ShaderStage::Miss:
+                [[fallthrough]];
+            case rhi::ShaderStage::Intersection:
+                [[fallthrough]];
+            default:;
+                logger->error("Unsupported shader stage %u", stage);
+                return {};
         }
     }
 
-    rx::vector<uint32_t> compile_shader(const rx::string& source, const rhi::ShaderStage stage, const rhi::ShaderLanguage source_language) {
-        MTR_SCOPE("compile_shader", "Self");
+    rx::vector<uint32_t> compile_shader(const rx::string& source,
+                                        const rhi::ShaderStage stage,
+                                        const rhi::ShaderLanguage source_language,
+                                        FolderAccessorBase* folder_accessor) {
+        /*
+         * Compile HLSL -> SPIR-V, using delicious DXC
+         *
+         * We use the old interface IDxcCompiler instead of IDxcCompiler3 because IDxcCompiler3 does not work, at all. It tells me that it
+         * has a result, then it won't give me that result. I asked on the DirectX server and many other places, but apparently not even
+         * Microsoft knows how to the new API for their compiler. Thus, I'm using the old and deprecated API - because it actually works
+         */
 
-        const auto glslang_stage = to_glslang_shader_stage(stage);
-
-        // Be sure that we have glslang when we need to compile shaders
-        glslang::InitializeProcess();
-
-        glslang::TShader shader{glslang_stage};
-
-        const auto* source_ptr = source.data();
-        shader.setStrings(&source_ptr, 1);
-
-        if(source_language == rhi::ShaderLanguage::Hlsl) {
-            shader.setEnvInput(glslang::EShSourceHlsl, glslang_stage, glslang::EShClientVulkan, 100);
-            shader.setHlslIoMapping(true);
-
-        } else if(source_language == rhi::ShaderLanguage::Glsl) {
-            // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
-            shader.setEnvInput(glslang::EShSourceGlsl, glslang_stage, glslang::EShClientVulkan, 100);
-
-        } else {
-            logger(rx::log::level::k_error, "Incompatible shader source language");
-        }
-
-        shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_0);
-
-        // TODO: Query the runtime for what version of SPIR-V we should target
-        // For now just target the one that Works On My Machine
-        shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3);
-
-        shader.setEntryPoint("main");
-
-        const bool shader_compiled = shader.parse(&DEFAULT_BUILT_IN_RESOURCE,
-                                                  450,
-                                                  ECoreProfile,
-                                                  false,
-                                                  false,
-                                                  EShMessages(EShMsgVulkanRules | EShMsgSpvRules));
-
-        const char* info_log = shader.getInfoLog();
-        if(std::strlen(info_log) > 0) {
-            const char* info_debug_log = shader.getInfoDebugLog();
-            logger(rx::log::level::k_info, "Shader compilation messages:\n%s\n%s", info_log, info_debug_log);
-        }
-
-        if(!shader_compiled) {
-            logger(rx::log::level::k_error, "Could not compile shader");
+        IDxcLibrary* lib;
+        auto hr = DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&lib));
+        if(FAILED(hr)) {
+            logger->error("Could not create DXC Library instance");
             return {};
         }
 
-        glslang::TProgram program;
-        program.addShader(&shader);
-        const bool shader_linked = program.link(EShMsgDefault);
-        if(!shader_linked) {
-            const char* program_info_log = program.getInfoLog();
-            const char* program_debug_info_log = program.getInfoDebugLog();
-            logger(rx::log::level::k_error, "Program failed to link: %s\n%s", program_info_log, program_debug_info_log);
+        IDxcCompiler* compiler;
+        hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler));
+        if(FAILED(hr)) {
+            logger->error("Could not create DXC instance");
+            return {};
         }
 
-        // Using std::vector is okay here because we have to interface with `glslang`
-        std::vector<uint32_t> spirv_std;
-        GlslangToSpv(*program.getIntermediate(glslang_stage), spirv_std);
+        IDxcBlobEncoding* encoding;
+        hr = lib->CreateBlobWithEncodingFromPinned(source.data(), static_cast<UINT32>(source.size()), CP_UTF8, &encoding);
+        if(FAILED(hr)) {
+            logger->error("Could not create blob from shader");
+            return {};
+        }
 
-        rx::vector<uint32_t> spirv_rx(spirv_std.size());
-        memcpy(spirv_rx.data(), spirv_std.data(), spirv_std.size() * sizeof(uint32_t));
-        return spirv_rx;
+        const auto profile = to_hlsl_profile(stage);
+
+        rx::vector<LPCWSTR> args = rx::array{L"-spirv", L"-fspv-target-env=vulkan1.1", L"-fspv-reflect"};
+
+        auto* includer = new NovaDxcIncludeHandler{*(&rx::memory::g_system_allocator), *lib, folder_accessor};
+
+        IDxcOperationResult* compile_result;
+        hr = compiler->Compile(encoding,
+                               L"unknown", // File name, for error messages
+                               L"main",    // Entry point
+                               profile,
+                               args.data(),
+                               static_cast<UINT32>(args.size()),
+                               nullptr,
+                               0,
+                               includer,
+                               &compile_result);
+        if(FAILED(hr)) {
+            logger->error("Could not compile shader");
+            return {};
+        }
+
+        compile_result->GetStatus(&hr);
+        if(SUCCEEDED(hr)) {
+            IDxcBlob* result_blob;
+            hr = compile_result->GetResult(&result_blob);
+            rx::vector<uint32_t> spirv{result_blob->GetBufferSize() / sizeof(uint32_t)};
+            memcpy(spirv.data(), result_blob->GetBufferPointer(), result_blob->GetBufferSize());
+            return spirv;
+
+        } else {
+            IDxcBlobEncoding* error_buffer;
+            compile_result->GetErrorBuffer(&error_buffer);
+            logger->error("Error compiling shader:\n%s\n", static_cast<char const*>(error_buffer->GetBufferPointer()));
+            error_buffer->Release();
+
+            return {};
+        }
     }
 } // namespace nova::renderer::renderpack
