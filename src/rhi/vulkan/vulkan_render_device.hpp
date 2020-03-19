@@ -106,6 +106,9 @@ namespace nova::renderer::rhi {
                                            const glm::uvec2& framebuffer_size,
                                            rx::memory::allocator& allocator) override;
 
+        [[nodiscard]] rx::ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                                                     rx::memory::allocator& allocator) override;
+
         ntl::Result<RhiPipelineInterface*> create_pipeline_interface(const rx::map<rx::string, RhiResourceBindingDescription>& bindings,
                                                                      const rx::vector<renderpack::TextureAttachmentInfo>& color_attachments,
                                                                      const rx::optional<renderpack::TextureAttachmentInfo>& depth_texture,
@@ -186,7 +189,8 @@ namespace nova::renderer::rhi {
         [[nodiscard]] vk::DescriptorSet get_next_standard_descriptor_set();
 
         /*!
-         * \brief Lets the render device know that all the provided descriptor sets are no longer in use by the GPU and can be used for whatever
+         * \brief Lets the render device know that all the provided descriptor sets are no longer in use by the GPU and can be used for
+         * whatever
          */
         void return_standard_descriptor_sets(const rx::vector<vk::DescriptorSet>& sets);
 

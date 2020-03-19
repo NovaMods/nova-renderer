@@ -114,6 +114,7 @@ set(NOVA_SOURCE
         include/nova_renderer/rhi/swapchain.hpp
         include/nova_renderer/rhi/rhi_enums.hpp
         include/nova_renderer/rhi/rhi_types.hpp
+        include/nova_renderer/rhi/resource_binder.hpp
         include/nova_renderer/rhi/pipeline_create_info.hpp
         include/nova_renderer/rhi/render_device.hpp
 
@@ -140,6 +141,8 @@ set(NOVA_SOURCE
         src/rhi/vulkan/vulkan_utils.cpp
         src/rhi/vulkan/vulkan_swapchain.cpp
         src/rhi/vulkan/vulkan_swapchain.hpp
+        src/rhi/vulkan/vulkan_resource_binder.hpp
+        src/rhi/vulkan/vulkan_resource_binder.cpp
 
         src/filesystem/zip_folder_accessor.hpp
         src/filesystem/regular_folder_accessor.hpp
@@ -165,6 +168,8 @@ set(NOVA_SOURCE
         src/renderer/material_data_buffer.cpp
         src/renderer/material_data_buffer.hpp
         src/renderer/material.cpp
+        src/renderer/pipeline_reflection.hpp
+        src/renderer/pipeline_reflection.cpp
 
         src/util/utils.cpp
         src/util/result.cpp

@@ -1,10 +1,14 @@
 #include "nova_renderer/rendergraph.hpp"
 
+#include <utility>
+
+#include <minitrace.h>
+
 #include "nova_renderer/nova_renderer.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 
 #include "../loading/renderpack/render_graph_builder.hpp"
-#include "minitrace.h"
+#include "pipeline_reflection.hpp"
 
 namespace nova::renderer {
     using namespace renderpack;
@@ -96,6 +100,27 @@ namespace nova::renderer {
             barriers.push_back(backbuffer_barrier);
             cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::BottomOfPipe, barriers);
         }
+    }
+
+    void SceneRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {}
+
+    GlobalRenderpass::GlobalRenderpass(const rx::string& name,
+                                       RhiGraphicsPipelineState pipeline_state,
+                                       const DeviceResources& resources,
+                                       rhi::RenderDevice& device,
+                                       const bool is_builtin)
+        : Renderpass(name, is_builtin), pipeline_state(std::move(pipeline_state)) {
+        const auto bindings = get_bespoke_image_binding_locations(pipeline_state, device.get_allocator());
+    }
+
+    void GlobalRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
+        cmds.set_pipeline_state(pipeline_state);
+
+        // TODO: Bind render targets as sampled images
+
+        // TODO: Bind a fullscreen triangle mesh
+
+        cmds.draw_indexed_mesh(3);
     }
 
     Rendergraph::Rendergraph(rx::memory::allocator& allocator, rhi::RenderDevice& device) : allocator(allocator), device(device) {}

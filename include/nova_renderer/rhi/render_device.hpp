@@ -9,6 +9,7 @@
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/window.hpp"
 
+#include "resource_binder.hpp"
 #include "rx/core/ptr.h"
 
 namespace nova::renderer {
@@ -100,6 +101,9 @@ namespace nova::renderer::rhi {
                                                                  const rx::optional<RhiImage*> depth_attachment,
                                                                  const glm::uvec2& framebuffer_size,
                                                                  rx::memory::allocator& allocator) = 0;
+
+        [[nodiscard]] virtual rx::ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                                                             rx::memory::allocator& allocator) = 0;
 
         [[nodiscard]] virtual ntl::Result<RhiPipelineInterface*> create_pipeline_interface(
             const rx::map<rx::string, RhiResourceBindingDescription>& bindings,

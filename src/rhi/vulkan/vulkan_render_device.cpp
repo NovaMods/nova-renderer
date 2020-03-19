@@ -300,6 +300,11 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
+    rx::ptr<RhiResourceBinder> VulkanRenderDevice::create_resource_binder_for_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                                                       rx::memory::allocator& allocator) {
+        return {};
+    }
+
     ntl::Result<RhiPipelineInterface*> VulkanRenderDevice::create_pipeline_interface(
         const rx::map<rx::string, RhiResourceBindingDescription>& bindings,
         const rx::vector<renderpack::TextureAttachmentInfo>& color_attachments,
@@ -1588,6 +1593,16 @@ namespace nova::renderer::rhi {
         descriptor_indexing_features.descriptorBindingPartiallyBound = VK_TRUE;
         descriptor_indexing_features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
         device_create_info.pNext = &descriptor_indexing_features;
+
+        const auto dev_12_features = vk::PhysicalDeviceVulkan12Features()
+                                         .setDescriptorIndexing(true)
+                                         .setShaderSampledImageArrayNonUniformIndexing(true)
+                                         .setRuntimeDescriptorArray(true)
+                                         .setDescriptorBindingVariableDescriptorCount(true)
+                                         .setDescriptorBindingPartiallyBound(true)
+                                         .setDescriptorBindingSampledImageUpdateAfterBind(true);
+
+        device_create_info.pNext = &dev_12_features;
 
         const VkAllocationCallbacks& vk_alloc = wrap_allocator(internal_allocator);
         VkDevice vk_device;
