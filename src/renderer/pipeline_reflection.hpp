@@ -2,20 +2,23 @@
 #include <rx/core/map.h>
 #include <rx/core/string.h>
 
+#include "nova_renderer/rhi/rhi_enums.hpp"
+#include "nova_renderer/rhi/rhi_types.hpp"
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 
-namespace nova::renderer {
-    struct ResourceBindingLocation {
-        uint32_t set;
-        uint32_t binding;
-    };
+namespace spirv_cross {
+    struct Resource;
+    class Compiler;
+}
 
-    /*!
-     * \brief Retrieves the binding locations of all bespoke images that the graphics pipeline uses
-     *
-     * Bespoke images are any images that aren't part of the textures array. This typically only includes render targets and other images
-     * that shaders write to
-     */
-    rx::map<rx::string, ResourceBindingLocation> get_bespoke_image_binding_locations(const RhiGraphicsPipelineState& pipeline_state,
-                                                                                     rx::memory::allocator& allocator);
+namespace nova::renderer {
+    void get_shader_module_descriptors(const rx::vector<uint32_t>& spirv,
+                                       rhi::ShaderStage shader_stage,
+                                       rx::map<rx::string, rhi::RhiResourceBindingDescription>& bindings);
+
+    void add_resource_to_bindings(rx::map<rx::string, rhi::RhiResourceBindingDescription>& bindings,
+                                  rhi::ShaderStage shader_stage,
+                                  const spirv_cross::Compiler& shader_compiler,
+                                  const spirv_cross::Resource& resource,
+                                  rhi::DescriptorType type);
 } // namespace nova::renderer
