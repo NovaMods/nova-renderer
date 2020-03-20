@@ -41,7 +41,7 @@ namespace nova::renderer::rhi {
 
     vk::DescriptorType to_vk_descriptor_type(DescriptorType type);
 
-    VkShaderStageFlags to_vk_shader_stage_flags(ShaderStage flags);
+    vk::ShaderStageFlags to_vk_shader_stage_flags(ShaderStage flags);
 
     rx::string to_string(VkResult result);
 

@@ -1,9 +1,11 @@
 #pragma once
 
 #include <spirv_glsl.hpp>
+#include <vulkan/vulkan.hpp>
 
 #include "nova_renderer/rhi/resource_binder.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
+#include "rx/core/deferred_function.h"
 
 namespace nova {
     namespace renderer {
@@ -36,7 +38,7 @@ namespace nova::renderer::rhi {
         VulkanRenderDevice* device;
 
         rx::memory::allocator* allocator;
-
-        void create_descriptor_set_layouts(const rx::map<rx::string, RhiResourceBindingDescription>& all_bindings);
+        rx::vector<vk::DescriptorSetLayout> create_descriptor_set_layouts(
+            const rx::map<rx::string, RhiResourceBindingDescription>& all_bindings);
     };
 } // namespace nova::renderer::rhi

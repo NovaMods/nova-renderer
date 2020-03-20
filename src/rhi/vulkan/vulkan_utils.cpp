@@ -320,47 +320,47 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkShaderStageFlags to_vk_shader_stage_flags(const ShaderStage flags) {
-        VkShaderStageFlags vk_flags = 0;
+    vk::ShaderStageFlags to_vk_shader_stage_flags(const ShaderStage flags) {
+        vk::ShaderStageFlags vk_flags{};
 
         if(flags & ShaderStage::Vertex) {
-            vk_flags |= VK_SHADER_STAGE_VERTEX_BIT;
+            vk_flags |= vk::ShaderStageFlagBits::eVertex;
         }
         if(flags & ShaderStage::TessellationControl) {
-            vk_flags |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+            vk_flags |= vk::ShaderStageFlagBits::eTessellationControl;
         }
         if(flags & ShaderStage::TessellationEvaluation) {
-            vk_flags |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+            vk_flags |= vk::ShaderStageFlagBits::eTessellationEvaluation;
         }
         if(flags & ShaderStage::Geometry) {
-            vk_flags |= VK_SHADER_STAGE_GEOMETRY_BIT;
+            vk_flags |= vk::ShaderStageFlagBits::eGeometry;
         }
         if(flags & ShaderStage::Fragment) {
-            vk_flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+            vk_flags |= vk::ShaderStageFlagBits::eFragment;
         }
         if(flags & ShaderStage::Compute) {
-            vk_flags |= VK_SHADER_STAGE_COMPUTE_BIT;
+            vk_flags |= vk::ShaderStageFlagBits::eCompute;
         }
         if(flags & ShaderStage::Raygen) {
-            vk_flags |= VK_SHADER_STAGE_RAYGEN_BIT_NV;
+            vk_flags |= vk::ShaderStageFlagBits::eRaygenNV;
         }
         if(flags & ShaderStage::AnyHit) {
-            vk_flags |= VK_SHADER_STAGE_ANY_HIT_BIT_NV;
+            vk_flags |= vk::ShaderStageFlagBits::eAnyHitNV;
         }
         if(flags & ShaderStage::ClosestHit) {
-            vk_flags |= VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV;
+            vk_flags |= vk::ShaderStageFlagBits::eClosestHitNV;
         }
         if(flags & ShaderStage::Miss) {
-            vk_flags |= VK_SHADER_STAGE_MISS_BIT_NV;
+            vk_flags |= vk::ShaderStageFlagBits::eMissNV;
         }
         if(flags & ShaderStage::Intersection) {
-            vk_flags |= VK_SHADER_STAGE_INTERSECTION_BIT_NV;
+            vk_flags |= vk::ShaderStageFlagBits::eIntersectionNV;
         }
         if(flags & ShaderStage::Task) {
-            vk_flags |= VK_SHADER_STAGE_TASK_BIT_NV;
+            vk_flags |= vk::ShaderStageFlagBits::eTaskNV;
         }
         if(flags & ShaderStage::Mesh) {
-            vk_flags |= VK_SHADER_STAGE_MESH_BIT_NV;
+            vk_flags |= vk::ShaderStageFlagBits::eMeshNV;
         }
 
         return vk_flags;
