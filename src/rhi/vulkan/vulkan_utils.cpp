@@ -505,10 +505,6 @@ namespace nova::renderer::rhi {
                 return "Display Mode KHR";
             case VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT:
                 return "Debug Report Callback EXT";
-            case VK_OBJECT_TYPE_OBJECT_TABLE_NVX:
-                return "Object Table NVX";
-            case VK_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NVX:
-                return "Indirect Commands Layout NVX";
             case VK_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT:
                 return "Debug Utils Messenger EXT";
             case VK_OBJECT_TYPE_VALIDATION_CACHE_EXT:
