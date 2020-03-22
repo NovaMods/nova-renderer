@@ -64,6 +64,8 @@ namespace nova::renderer {
 
     const renderpack::RenderPassCreateInfo& BackbufferOutputRenderpass::get_create_info() { return *backbuffer_output_create_info; }
 
+    void BackbufferOutputRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {}
+
     void BackbufferOutputRenderpass::record_post_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         Renderpass::record_post_renderpass_barriers(cmds, ctx);
 

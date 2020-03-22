@@ -66,6 +66,11 @@ namespace nova::renderer::rhi {
                                              rx::memory::allocator& allocator) = 0;
 
         /*!
+         * \brief Uses the provided resource binder to bind resources to the command list
+         */
+        virtual void bind_resources(RhiResourceBinder& binder) = 0;
+
+        /*!
          * \brief Inserts a barrier so that all access to a resource before the barrier is resolved before any access
          * to the resource after the barrier
          *

@@ -106,17 +106,16 @@ namespace nova::renderer {
 
     GlobalRenderpass::GlobalRenderpass(const rx::string& name,
                                        RhiGraphicsPipelineState pipeline_state,
-                                       const DeviceResources& resources,
-                                       rhi::RenderDevice& device,
+                                       rx::ptr<RhiResourceBinder> resource_binder_in,
                                        const bool is_builtin)
-        : Renderpass(name, is_builtin), pipeline_state(std::move(pipeline_state)) {
-        const auto bindings = get_bespoke_image_binding_locations(pipeline_state, device.get_allocator());
-    }
+        : Renderpass{name, is_builtin},
+          pipeline_state{rx::utility::move(pipeline_state)},
+          resource_binder{rx::utility::move(resource_binder_in)} {}
 
     void GlobalRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
         cmds.set_pipeline_state(pipeline_state);
 
-        // TODO: Bind render targets as sampled images
+        cmds.bind_resources(*resource_binder);
 
         // TODO: Bind a fullscreen triangle mesh
 

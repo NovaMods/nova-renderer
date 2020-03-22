@@ -16,7 +16,7 @@ namespace nova::renderer::rhi {
      */
     class VulkanRenderCommandList final : public RhiRenderCommandList {
     public:
-        VkCommandBuffer cmds;
+        vk::CommandBuffer cmds;
 
         VulkanRenderCommandList(VkCommandBuffer cmds, VulkanRenderDevice& render_device, rx::memory::allocator& allocator);
         ~VulkanRenderCommandList() override = default;
@@ -30,6 +30,8 @@ namespace nova::renderer::rhi {
                                      RhiSampler* trilinear_sampler,
                                      const rx::vector<RhiImage*>& textures,
                                      rx::memory::allocator& allocator) override;
+
+        void bind_resources(RhiResourceBinder& binder) override;
 
         void resource_barriers(PipelineStage stages_before_barrier,
                                PipelineStage stages_after_barrier,
@@ -74,7 +76,6 @@ namespace nova::renderer::rhi {
          * This method should free any transient resources that the command lists uses
          */
         void cleanup_resources();
-
     private:
         VulkanRenderDevice& device;
 

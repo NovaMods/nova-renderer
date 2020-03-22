@@ -11,6 +11,7 @@
 
 #include "vk_structs.hpp"
 #include "vulkan_render_device.hpp"
+#include "vulkan_resource_binder.hpp"
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer::rhi {
@@ -152,6 +153,14 @@ namespace nova::renderer::rhi {
                                 nullptr);
 
         descriptor_sets.emplace_back(set);
+    }
+
+    void VulkanRenderCommandList::bind_resources(RhiResourceBinder& binder) {
+        auto& vk_binder = static_cast<VulkanResourceBinder&>(binder);
+        const auto& sets = vk_binder.get_sets();
+        const auto& layout = vk_binder.get_layout();
+
+        cmds.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 0, static_cast<uint32_t>(sets.size()), sets.data(), 0, nullptr);
     }
 
     void VulkanRenderCommandList::resource_barriers(const PipelineStage stages_before_barrier,
