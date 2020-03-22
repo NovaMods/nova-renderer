@@ -78,6 +78,14 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanResourceBinder::bind_buffer_array(const rx::string& binding_name, const rx::vector<RhiBuffer*>& buffers) {
+#if NOVA_DEBUG
+        buffers.each_fwd([&](const RhiBuffer* buffer) {
+            if(buffer->size > render_device->gpu.props.limits.maxUniformBufferRange) {
+                logger->error("Cannot bind a buffer with a size greater than %u", render_device->gpu.props.limits.maxUniformBufferRange);
+            }
+        });
+#endif
+
         bind_resource_array(binding_name, buffers, bound_buffers);
 
         dirty = true;
@@ -201,11 +209,87 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanResourceBinder::update_all_descriptors() {
-        rx::vector<VulkanDescriptorSetWrite> writes{allocator};
+        rx::vector<vk::WriteDescriptorSet> writes{allocator};
+        writes.reserve(bound_images.size() + bound_samplers.size() + bound_buffers.size());
+
+        rx::vector<rx::vector<vk::DescriptorImageInfo>> all_image_infos{allocator};
+        all_image_infos.reserve(bound_images.size() + bound_samplers.size());
+
+        rx::vector<vk::DescriptorBufferInfo> all_buffer_infos{allocator};
+        all_buffer_infos.reserve(bound_buffers.size());
 
         bound_images.each_pair([&](const rx::string& name, const rx::vector<RhiImage*>& images) {
+            const auto& binding = *bindings.find(name);
+            const auto set = sets[binding.set];
 
+            rx::vector<vk::DescriptorImageInfo> image_infos{allocator};
+            image_infos.reserve(images.size());
+
+            images.each_fwd([&](const RhiImage* image) {
+                const auto* vk_image = static_cast<const VulkanImage*>(image);
+                auto image_info = vk::DescriptorImageInfo()
+                                      .setImageView(vk_image->image_view)
+                                      .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+                image_infos.push_back(rx::utility::move(image_info));
+            });
+
+            auto write = vk::WriteDescriptorSet()
+                             .setDstSet(set)
+                             .setDstBinding(binding.binding)
+                             .setDstArrayElement(0)
+                             .setDescriptorCount(static_cast<uint32_t>(image_infos.size()))
+                             .setDescriptorType(vk::DescriptorType::eSampledImage)
+                             .setPImageInfo(image_infos.data());
+            writes.push_back(rx::utility::move(write));
         });
+
+        bound_samplers.each_pair([&](const rx::string& name, const rx::vector<RhiSampler*>& samplers) {
+            const auto& binding = *bindings.find(name);
+            const auto set = sets[binding.set];
+
+            rx::vector<vk::DescriptorImageInfo> sampler_infos{allocator};
+            sampler_infos.reserve(samplers.size());
+
+            samplers.each_fwd([&](const RhiSampler* sampler) {
+                const auto* vk_sampler = static_cast<const VulkanSampler*>(sampler);
+                auto sampler_info = vk::DescriptorImageInfo().setSampler(vk_sampler->sampler);
+                sampler_infos.push_back(rx::utility::move(sampler_info));
+            });
+
+            auto write = vk::WriteDescriptorSet()
+                             .setDstSet(set)
+                             .setDstBinding(binding.binding)
+                             .setDstArrayElement(0)
+                             .setDescriptorCount(static_cast<uint32_t>(sampler_infos.size()))
+                             .setDescriptorType(vk::DescriptorType::eSampler)
+                             .setPImageInfo(sampler_infos.data());
+            writes.push_back(rx::utility::move(write));
+        });
+
+        bound_buffers.each_pair([&](const rx::string& name, const rx::vector<RhiBuffer*>& buffers) {
+            const auto& binding = *bindings.find(name);
+            const auto set = sets[binding.set];
+
+            rx::vector<vk::DescriptorBufferInfo> buffer_infos{allocator};
+            buffer_infos.reserve(buffers.size());
+
+            buffers.each_fwd([&](const RhiBuffer* buffer) {
+                const auto* vk_buffer = static_cast<const VulkanBuffer*>(buffer);
+                auto buffer_info = vk::DescriptorBufferInfo().setBuffer(vk_buffer->buffer).setOffset(0).setRange(vk_buffer->size.b_count());
+                buffer_infos.push_back(rx::utility::move(buffer_info));
+            });
+
+            auto write = vk::WriteDescriptorSet()
+                             .setDstSet(set)
+                             .setDstBinding(binding.binding)
+                             .setDstArrayElement(0)
+                             .setDescriptorCount(static_cast<uint32_t>(buffer_infos.size()))
+                             .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                             .setPBufferInfo(buffer_infos.data());
+            writes.push_back(rx::utility::move(write));
+        });
+
+        render_device->device.updateDescriptorSets(static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     }
 
     template <typename ResourceType>
