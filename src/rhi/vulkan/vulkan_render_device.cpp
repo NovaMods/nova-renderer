@@ -21,6 +21,7 @@
 
 #include "vk_structs.hpp"
 #include "vulkan_command_list.hpp"
+#include "vulkan_resource_binder.hpp"
 #include "vulkan_utils.hpp"
 
 // TODO: Move window creation out of the RHI
@@ -302,7 +303,7 @@ namespace nova::renderer::rhi {
 
     rx::ptr<RhiResourceBinder> VulkanRenderDevice::create_resource_binder_for_pipeline(const RhiGraphicsPipelineState& pipeline_state,
                                                                                        rx::memory::allocator& allocator) {
-        return {};
+        return rx::make_ptr<VulkanResourceBinder>(&allocator, pipeline_state, *this, allocator);
     }
 
     ntl::Result<RhiPipelineInterface*> VulkanRenderDevice::create_pipeline_interface(
