@@ -18,6 +18,60 @@ namespace nova::renderer::rhi {
         rx::vector<VkVertexInputBindingDescription> bindings;
     };
 
+    struct VulkanDescriptorImageInfo {
+        vk::Image image;
+        renderpack::TextureFormat format;
+    };
+
+    struct VulkanDescriptorBufferInfo {
+        vk::Buffer buffer;
+    };
+
+    struct VulkanDescriptorSamplerInfo {
+        vk::Sampler sampler;
+    };
+
+    union VulkanDescriptorResourceInfo {
+        VulkanDescriptorResourceInfo();
+
+        /*!
+         * \brief Information to update an image descriptor
+         */
+        VulkanDescriptorImageInfo image_info;
+
+        /*!
+         * \brief Information to update a buffer descriptor
+         */
+        VulkanDescriptorBufferInfo buffer_info{};
+
+        VulkanDescriptorSamplerInfo sampler_info;
+    };
+
+    struct VulkanDescriptorSetWrite {
+        /*!
+         * \brief Pointer to the descriptor set to write to
+         */
+        vk::DescriptorSet set;
+
+        /*!
+         * \brief The specific binding in the set that you want to write to
+         */
+        uint32_t binding;
+
+        /*!
+         * \brief The type of descriptor you're writing to
+         */
+        vk::DescriptorType type;
+
+        /*!
+         * \brief All the resources to bind to this descriptor
+         *
+         * You may only bind multiple resources if the descriptor is an array descriptor. Knowing whether you're binding to an array
+         * descriptor or not is your responsibility
+         */
+        rx::vector<VulkanDescriptorResourceInfo> resources;
+    };
+
     /*!
      * \brief Task that should be executed when a fence has been signaled
      */
@@ -178,8 +232,8 @@ namespace nova::renderer::rhi {
                                                                   vk::RenderPass renderpass,
                                                                   rx::memory::allocator& allocator);
 
-        [[nodiscard]] RhiDescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
-                                                                rx::memory::allocator& allocator);
+        [[nodiscard]] rx::optional<vk::DescriptorPool> create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
+                                                                              rx::memory::allocator& allocator);
 
         /*!
          * \brief Gets the next available descriptor set for the standard pipeline layout
@@ -193,6 +247,8 @@ namespace nova::renderer::rhi {
          * whatever
          */
         void return_standard_descriptor_sets(const rx::vector<vk::DescriptorSet>& sets);
+
+        void update_descriptor_sets(rx::vector<VulkanDescriptorSetWrite>& writes);
 
         [[nodiscard]] vk::Fence get_next_submission_fence();
 

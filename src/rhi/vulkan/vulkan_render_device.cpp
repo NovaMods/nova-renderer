@@ -439,8 +439,8 @@ namespace nova::renderer::rhi {
         return ntl::Result(static_cast<RhiPipelineInterface*>(pipeline_interface));
     }
 
-    RhiDescriptorPool* VulkanRenderDevice::create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
-                                                                  rx::memory::allocator& allocator) {
+    rx::optional<vk::DescriptorPool> VulkanRenderDevice::create_descriptor_pool(
+        const rx::map<DescriptorType, uint32_t>& descriptor_capacity, rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_descriptor_pool");
         rx::vector<vk::DescriptorPoolSize> pool_sizes{&internal_allocator};
 
@@ -456,9 +456,9 @@ namespace nova::renderer::rhi {
                                           .setPoolSizeCount(static_cast<uint32_t>(pool_sizes.size()))
                                           .setPPoolSizes(pool_sizes.data());
 
-        auto* pool = allocator.create<VulkanDescriptorPool>();
+        vk::DescriptorPool pool;
         const auto& vk_alloc = wrap_allocator(allocator);
-        device.createDescriptorPool(&pool_create_info, &vk_alloc, &pool->descriptor_pool);
+        device.createDescriptorPool(&pool_create_info, &vk_alloc, &pool);
 
         return pool;
     }
@@ -501,6 +501,144 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderDevice::return_standard_descriptor_sets(const rx::vector<vk::DescriptorSet>& sets) {
         standard_descriptor_sets += sets;
+    }
+
+    void VulkanRenderDevice::update_descriptor_sets(rx::vector<VulkanDescriptorSetWrite>& writes) {
+        rx::vector<VkWriteDescriptorSet> vk_writes{&internal_allocator};
+        vk_writes.reserve(writes.size());
+
+        rx::vector<VkDescriptorImageInfo> image_infos{&internal_allocator};
+        image_infos.reserve(writes.size());
+
+        rx::vector<VkDescriptorBufferInfo> buffer_infos{&internal_allocator};
+        buffer_infos.reserve(writes.size());
+
+        writes.each_fwd([&](const VulkanDescriptorSetWrite& write) {
+            VkWriteDescriptorSet vk_write = {};
+            vk_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            vk_write.dstSet = static_cast<const VulkanDescriptorSet*>(write.set)->descriptor_set;
+            vk_write.dstBinding = write.binding;
+            vk_write.descriptorCount = static_cast<uint32_t>(write.resources.size());
+            vk_write.dstArrayElement = 0;
+
+            switch(write.type) {
+                case DescriptorType::CombinedImageSampler: {
+                    // We have a single array for all the image infos, so we need to save the index of the image info for this descriptor
+                    // update
+                    const auto first_image_info_idx = image_infos.size();
+
+                    write.resources.each_fwd([&](const VulkanDescriptorResourceInfo& info) {
+                        VkDescriptorImageInfo vk_image_info{};
+                        vk_image_info.imageView = image_view_for_image(info.image_info.image);
+                        vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+                        image_infos.emplace_back(vk_image_info);
+                    });
+
+                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    vk_write.pImageInfo = &image_infos[first_image_info_idx];
+
+                    // logger(rx::log::level::k_verbose, "Updating CombinedImageSampler descriptor set %x", vk_write.dstSet);
+
+                    vk_writes.push_back(vk_write);
+                } break;
+
+                case DescriptorType::UniformBuffer: {
+                    // We have a single array for all the buffer infos, so we need to save the index of the buffer info for this descriptor
+                    // update
+                    const auto first_buffer_info_idx = buffer_infos.size();
+
+                    write.resources.each_fwd([&](const VulkanDescriptorResourceInfo& info) {
+                        const auto* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
+
+                        VkDescriptorBufferInfo vk_buffer_info;
+                        vk_buffer_info.buffer = vk_buffer->buffer;
+                        vk_buffer_info.offset = 0;
+                        vk_buffer_info.range = vk_buffer->size.b_count();
+
+                        buffer_infos.emplace_back(vk_buffer_info);
+                    });
+
+                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    vk_write.pBufferInfo = &buffer_infos[first_buffer_info_idx];
+
+                    // logger(rx::log::level::k_verbose, "Updating UniformBuffer descriptor set %x", vk_write.dstSet);
+
+                    vk_writes.push_back(vk_write);
+                } break;
+
+                case DescriptorType::StorageBuffer: {
+                    // We have a single array for all the buffer infos, so we need to save the index of the buffer info for this descriptor
+                    // update
+                    const auto first_buffer_info_idx = buffer_infos.size();
+                    write.resources.each_fwd([&](const VulkanDescriptorResourceInfo& info) {
+                        const auto* vk_buffer = static_cast<const VulkanBuffer*>(info.buffer_info.buffer);
+
+                        VkDescriptorBufferInfo vk_buffer_info;
+                        vk_buffer_info.buffer = vk_buffer->buffer;
+                        vk_buffer_info.offset = 0;
+                        vk_buffer_info.range = vk_buffer->size.b_count();
+
+                        buffer_infos.emplace_back(vk_buffer_info);
+                    });
+
+                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    vk_write.pBufferInfo = &buffer_infos[first_buffer_info_idx];
+
+                    // logger(rx::log::level::k_verbose, "Updating StorageBuffer descriptor set %x", vk_write.dstSet);
+
+                    vk_writes.push_back(vk_write);
+                } break;
+
+                case DescriptorType::Texture: {
+                    // We have a single array for all the image infos, so we need to save the index of the image info for this descriptor
+                    // update
+                    const auto first_image_info_idx = image_infos.size();
+
+                    write.resources.each_fwd([&](const VulkanDescriptorResourceInfo& info) {
+                        VkDescriptorImageInfo vk_image_info = {};
+                        vk_image_info.imageView = image_view_for_image(info.image_info.image);
+                        vk_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+                        image_infos.emplace_back(vk_image_info);
+                    });
+
+                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                    vk_write.pImageInfo = &image_infos[first_image_info_idx];
+
+                    // logger(rx::log::level::k_verbose, "Updating Texture descriptor set %x", vk_write.dstSet);
+
+                    vk_writes.push_back(vk_write);
+                } break;
+
+                case DescriptorType::Sampler: {
+                    // We have a single array for all the image infos, so we need to save the index of the image info for this descriptor
+                    // update
+                    // Also we store the sampler infos in the same array as the image infos and it's weird
+                    const auto first_image_info_idx = image_infos.size();
+
+                    write.resources.each_fwd([&](const VulkanDescriptorResourceInfo& info) {
+                        VkDescriptorImageInfo vk_image_info = {};
+                        vk_image_info.sampler = static_cast<VulkanSampler*>(info.sampler_info.sampler)->sampler;
+
+                        image_infos.emplace_back(vk_image_info);
+                    });
+
+                    vk_write.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+                    vk_write.pImageInfo = &image_infos[first_image_info_idx];
+
+                    // logger(rx::log::level::k_verbose, "Updating Sampler descriptor set %x", vk_write.dstSet);
+
+                    vk_writes.push_back(vk_write);
+
+                } break;
+
+                default:
+                    logger->error("Don't know how to update %s descriptor set %x", descriptor_type_to_string(write.type), vk_write.dstSet);
+            }
+        });
+
+        vkUpdateDescriptorSets(device, static_cast<uint32_t>(vk_writes.size()), vk_writes.data(), 0, nullptr);
     }
 
     vk::Fence VulkanRenderDevice::get_next_submission_fence() {

@@ -6,6 +6,12 @@
 #include "nova_renderer/rhi/forward_decls.hpp"
 
 namespace nova::renderer {
+    /*!
+     * \brief Abstraction for making resources available to shaders
+     *
+     * Resource binders are meant to be long-lived. You should create them for your materials as early as possible and simply use them over
+     * and over and over
+     */
     class RhiResourceBinder {
     public:
         virtual ~RhiResourceBinder() = default;

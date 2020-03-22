@@ -14,11 +14,22 @@
 namespace nova::renderer::rhi {
     RX_LOG("VulkanResourceBinder", logger);
 
+    template <typename ResourceType>
+    void bind_resource_array(const rx::string& binding_name,
+                             const rx::vector<ResourceType*>& resources,
+                             rx::map<rx::string, rx::vector<ResourceType*>>& bound_resources);
+
     VulkanResourceBinder::VulkanResourceBinder(const RhiGraphicsPipelineState& pipeline_state,
                                                VulkanRenderDevice& device,
                                                rx::memory::allocator& allocator)
-        : device{&device}, allocator{&allocator} {
-        rx::map<rx::string, RhiResourceBindingDescription> bindings;
+        : render_device{&device},
+          allocator{&allocator},
+          vk_allocator{wrap_allocator(allocator)},
+          ds_layouts{&allocator},
+          bindings{&allocator},
+          bound_images{&allocator},
+          bound_buffers{&allocator},
+          bound_samplers{&allocator} {
 
         get_shader_module_descriptors(pipeline_state.vertex_shader.source, ShaderStage::Vertex, bindings);
 
@@ -30,11 +41,66 @@ namespace nova::renderer::rhi {
         }
 
         create_descriptor_set_layouts(bindings);
+
+        const auto pipeline_layout_create = vk::PipelineLayoutCreateInfo()
+                                                .setSetLayoutCount(ds_layouts.size())
+                                                .setPSetLayouts(ds_layouts.data)
+                                                .setPushConstantRangeCount(0)
+                                                .setPPushConstantRanges(nullptr);
+
+        device.device.createPipelineLayout(&pipeline_layout_create, &vk_allocator, &layout);
     }
 
-    rx::vector<vk::DescriptorSetLayout> VulkanResourceBinder::create_descriptor_set_layouts(
-        const rx::map<rx::string, RhiResourceBindingDescription>& all_bindings) {
-        const auto max_sets = device->gpu.props.limits.maxBoundDescriptorSets;
+    VulkanResourceBinder::~VulkanResourceBinder() {
+        auto& device = render_device->device;
+
+        device.destroyPipelineLayout(layout, &vk_allocator);
+
+        ds_layouts.each_fwd([&](const vk::DescriptorSetLayout dsl) { device.destroyDescriptorSetLayout(dsl, &vk_allocator); });
+    }
+
+    void VulkanResourceBinder::bind_image(const rx::string& binding_name, RhiImage* image) {
+        bind_image_array(binding_name, rx::array{allocator, image});
+    }
+
+    void VulkanResourceBinder::bind_buffer(const rx::string& binding_name, RhiBuffer* buffer) {
+        bind_buffer_array(binding_name, rx::array{allocator, buffer});
+    }
+
+    void VulkanResourceBinder::bind_sampler(const rx::string& binding_name, RhiSampler* sampler) {
+        bind_sampler_array(binding_name, rx::array{allocator, sampler});
+    }
+
+    void VulkanResourceBinder::bind_image_array(const rx::string& binding_name, const rx::vector<RhiImage*>& images) {
+        bind_resource_array(binding_name, images, bound_images);
+
+        dirty = true;
+    }
+
+    void VulkanResourceBinder::bind_buffer_array(const rx::string& binding_name, const rx::vector<RhiBuffer*>& buffers) {
+        bind_resource_array(binding_name, buffers, bound_buffers);
+
+        dirty = true;
+    }
+
+    void VulkanResourceBinder::bind_sampler_array(const rx::string& binding_name, const rx::vector<RhiSampler*>& samplers) {
+        bind_resource_array(binding_name, samplers, bound_samplers);
+
+        dirty = true;
+    }
+
+    vk::PipelineLayout VulkanResourceBinder::get_layout() const { return layout; }
+
+    const rx::vector<vk::DescriptorSet>& VulkanResourceBinder::get_sets() {
+        if(dirty) {
+            update_all_descriptors();
+        }
+
+        return sets;
+    }
+
+    void VulkanResourceBinder::create_descriptor_set_layouts(const rx::map<rx::string, RhiResourceBindingDescription>& all_bindings) {
+        const auto max_sets = render_device->gpu.props.limits.maxBoundDescriptorSets;
 
         uint32_t num_sets = 0;
         all_bindings.each_value([&](const RhiResourceBindingDescription& desc) {
@@ -78,7 +144,7 @@ namespace nova::renderer::rhi {
                 return true;
             }
 
-            const auto descriptor_binding = vk::DescriptorSetLayoutBinding{}
+            const auto descriptor_binding = vk::DescriptorSetLayoutBinding()
                                                 .setBinding(binding.binding)
                                                 .setDescriptorType(to_vk_descriptor_type(binding.type))
                                                 .setDescriptorCount(binding.count)
@@ -128,14 +194,29 @@ namespace nova::renderer::rhi {
             dsl_create_infos.push_back(create_info);
         });
 
-        rx::vector<vk::DescriptorSetLayout> layouts{allocator};
-        auto vk_alloc = wrap_allocator(*allocator);
-        layouts.resize(dsl_create_infos.size());
+        ds_layouts.resize(dsl_create_infos.size());
         for(size_t i = 0; i < dsl_create_infos.size(); i++) {
-            device->device.createDescriptorSetLayout(&dsl_create_infos[i], &vk_alloc, &layouts[i]);
+            render_device->device.createDescriptorSetLayout(&dsl_create_infos[i], &vk_allocator, &ds_layouts[i]);
         }
-
-        return layouts;
     }
 
+    void VulkanResourceBinder::update_all_descriptors() {
+        rx::vector<VulkanDescriptorSetWrite> writes{allocator};
+
+        bound_images.each_pair([&](const rx::string& name, const rx::vector<RhiImage*>& images) {
+
+        });
+    }
+
+    template <typename ResourceType>
+    void bind_resource_array(const rx::string& binding_name,
+                             const rx::vector<ResourceType*>& resources,
+                             rx::map<rx::string, rx::vector<ResourceType*>>& bound_resources) {
+        if(auto* bound_data = bound_resources.find(binding_name)) {
+            *bound_data = resources;
+
+        } else {
+            bound_resources.insert(binding_name, resources);
+        }
+    }
 } // namespace nova::renderer::rhi
