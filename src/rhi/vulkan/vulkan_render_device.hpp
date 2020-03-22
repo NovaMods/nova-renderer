@@ -71,7 +71,7 @@ namespace nova::renderer::rhi {
          */
         vk::PipelineLayout standard_pipeline_layout;
 
-        rx::ptr<VulkanDescriptorPool> standard_descriptor_set_pool;
+        vk::DescriptorPool standard_descriptor_set_pool;
 
         /*!
          * \brief The descriptor set that binds to the standard pipeline layout
@@ -259,11 +259,6 @@ namespace nova::renderer::rhi {
                                                            MemorySearchMode search_mode = MemorySearchMode::Fuzzy) const;
 
         [[nodiscard]] rx::optional<VkShaderModule> create_shader_module(const rx::vector<uint32_t>& spirv) const;
-
-        [[nodiscard]] rx::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
-            const rx::map<rx::string, RhiResourceBindingDescription>& all_bindings,
-            rx::vector<uint32_t>& variable_descriptor_counts,
-            rx::memory::allocator& allocator) const;
 
         /*!
          * \brief Gets the image view associated with the given image

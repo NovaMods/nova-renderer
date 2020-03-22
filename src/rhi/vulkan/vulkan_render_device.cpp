@@ -472,7 +472,7 @@ namespace nova::renderer::rhi {
                                                  .setDescriptorSetCount(static_cast<uint32_t>(variable_set_counts.size()));
 
             const auto allocate_info = vk::DescriptorSetAllocateInfo()
-                                           .setDescriptorPool(standard_descriptor_set_pool->descriptor_pool)
+                                           .setDescriptorPool(standard_descriptor_set_pool)
                                            .setDescriptorSetCount(1)
                                            .setPSetLayouts(&standard_set_layout)
                                            .setPNext(&count_allocate_info);
@@ -1760,13 +1760,13 @@ namespace nova::renderer::rhi {
 
         device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &standard_pipeline_layout);
 
-        auto* pool = create_descriptor_pool(rx::array{rx::pair{DescriptorType::StorageBuffer, 5_u32 * 1024},
-                                                      rx::pair{DescriptorType::UniformBuffer, 5_u32 * 1024},
-                                                      rx::pair{DescriptorType::Texture, MAX_NUM_TEXTURES * 1024},
-                                                      rx::pair{DescriptorType::Sampler, 3_u32 * 1024}},
-                                            internal_allocator);
+        const auto& pool = create_descriptor_pool(rx::array{rx::pair{DescriptorType::StorageBuffer, 5_u32 * 1024},
+                                                            rx::pair{DescriptorType::UniformBuffer, 5_u32 * 1024},
+                                                            rx::pair{DescriptorType::Texture, MAX_NUM_TEXTURES * 1024},
+                                                            rx::pair{DescriptorType::Sampler, 3_u32 * 1024}},
+                                                  internal_allocator);
 
-        standard_descriptor_set_pool = rx::ptr<VulkanDescriptorPool>{&internal_allocator, static_cast<VulkanDescriptorPool*>(pool)};
+        standard_descriptor_set_pool = *pool;
 
         if(settings->debug.enabled) {
             VkDebugUtilsObjectNameInfoEXT pipeline_layout_name = {};
@@ -1779,8 +1779,7 @@ namespace nova::renderer::rhi {
             VkDebugUtilsObjectNameInfoEXT descriptor_pool_name = {};
             descriptor_pool_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             descriptor_pool_name.objectType = VK_OBJECT_TYPE_DESCRIPTOR_POOL;
-            descriptor_pool_name.objectHandle = reinterpret_cast<uint64_t>(
-                static_cast<VkDescriptorPool>(standard_descriptor_set_pool->descriptor_pool));
+            descriptor_pool_name.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkDescriptorPool>(standard_descriptor_set_pool));
             descriptor_pool_name.pObjectName = "Standard Descriptor Set Pool";
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &descriptor_pool_name));
 
@@ -1837,124 +1836,6 @@ namespace nova::renderer::rhi {
         }
 
         return VK_MAX_MEMORY_TYPES;
-    }
-
-    rx::vector<VkDescriptorSetLayout> VulkanRenderDevice::create_descriptor_set_layouts(
-        const rx::map<rx::string, RhiResourceBindingDescription>& all_bindings,
-        rx::vector<uint32_t>& variable_descriptor_counts,
-        rx::memory::allocator& allocator) const {
-        MTR_SCOPE("VulkanRenderDevice", "create_descriptor_set_layouts");
-
-        /*
-         * A few tasks to accomplish:
-         * - Take the unordered map of descriptor sets (all_bindings) and convert it into
-         *      VkDescriptorSetLayoutCreateInfo structs, ordering everything along the way
-         * -
-         */
-
-        uint32_t num_sets = 0;
-        all_bindings.each_value([&](const RhiResourceBindingDescription& desc) {
-            if(desc.set >= gpu.props.limits.maxBoundDescriptorSets) {
-                logger->error("Descriptor set %u is out of range - your GPU only supports %u sets!",
-                              desc.set,
-                              gpu.props.limits.maxBoundDescriptorSets);
-            } else {
-                num_sets = rx::algorithm::max(num_sets, desc.set + 1);
-            }
-        });
-
-        variable_descriptor_counts.resize(num_sets, 0);
-
-        // Some precalculations so we know how much room we actually need
-        rx::vector<uint32_t> num_bindings_per_set{&allocator};
-        num_bindings_per_set.resize(num_sets);
-
-        all_bindings.each_value([&](const RhiResourceBindingDescription& desc) {
-            num_bindings_per_set[desc.set] = rx::algorithm::max(num_bindings_per_set[desc.set], desc.binding + 1);
-        });
-
-        rx::vector<rx::vector<VkDescriptorSetLayoutBinding>> bindings_by_set{&allocator};
-        rx::vector<rx::vector<VkDescriptorBindingFlags>> binding_flags_by_set{&allocator};
-        bindings_by_set.reserve(num_sets);
-        binding_flags_by_set.reserve(num_sets);
-
-        uint32_t set = 0;
-
-        num_bindings_per_set.each_fwd([&](const uint32_t num_bindings) {
-            // Emplace back vectors large enough to hold all the bindings we have
-            bindings_by_set.emplace_back(num_bindings);
-            binding_flags_by_set.emplace_back(num_bindings);
-
-            logger->verbose("Set %u has %u bindings", set, num_bindings);
-            set++;
-        });
-
-        all_bindings.each_value([&](const RhiResourceBindingDescription& binding) {
-            if(binding.set >= bindings_by_set.size()) {
-                logger->error("You've skipped one or more descriptor sets! Don't do that, Nova can't handle it");
-                return true;
-            }
-
-            VkDescriptorSetLayoutBinding descriptor_binding = {};
-            descriptor_binding.binding = binding.binding;
-            descriptor_binding.descriptorType = static_cast<VkDescriptorType>(to_vk_descriptor_type(binding.type));
-            descriptor_binding.descriptorCount = binding.count;
-            descriptor_binding.stageFlags = to_vk_shader_stage_flags(binding.stages);
-
-            logger->verbose("Descriptor %u.%u is type %s", binding.set, binding.binding, descriptor_type_to_string(binding.type));
-
-            if(binding.is_unbounded) {
-                binding_flags_by_set[binding.set][binding.binding] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
-                                                                     VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
-
-                // Record the maximum number of descriptors in the variable size array in this set
-                variable_descriptor_counts[binding.set] = binding.count;
-
-                logger->verbose("Descriptor %u.%u is unbounded", binding.set, binding.binding);
-
-            } else {
-                binding_flags_by_set[binding.set][binding.binding] = 0;
-            }
-
-            bindings_by_set[binding.set][binding.binding] = descriptor_binding;
-
-            return true;
-        });
-
-        rx::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos{&allocator};
-        dsl_create_infos.reserve(bindings_by_set.size());
-
-        rx::vector<VkDescriptorSetLayoutBindingFlagsCreateInfo> flag_infos{&allocator};
-        flag_infos.reserve(bindings_by_set.size());
-
-        // We may make bindings_by_set much larger than it needs to be is there's multiple descriptor bindings per set. Thus, only iterate
-        // through the sets we actually care about
-        bindings_by_set.each_fwd([&](const rx::vector<VkDescriptorSetLayoutBinding>& bindings) {
-            VkDescriptorSetLayoutCreateInfo create_info = {};
-            create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            create_info.bindingCount = static_cast<uint32_t>(bindings.size());
-            create_info.pBindings = bindings.data();
-
-            const auto& flags = binding_flags_by_set[dsl_create_infos.size()];
-            VkDescriptorSetLayoutBindingFlagsCreateInfo binding_flags = {};
-            binding_flags.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-            binding_flags.bindingCount = static_cast<uint32_t>(flags.size());
-            binding_flags.pBindingFlags = flags.data();
-            flag_infos.emplace_back(binding_flags);
-
-            create_info.pNext = &flag_infos[flag_infos.size() - 1];
-
-            dsl_create_infos.push_back(create_info);
-        });
-
-        rx::vector<VkDescriptorSetLayout> layouts{&allocator};
-        const VkAllocationCallbacks& vk_alloc = wrap_allocator(allocator);
-        layouts.resize(dsl_create_infos.size());
-        for(size_t i = 0; i < dsl_create_infos.size(); i++) {
-            vkCreateDescriptorSetLayout(device, &dsl_create_infos[i], &vk_alloc, &layouts[i]);
-        }
-
-        return layouts;
     }
 
     VkImageView VulkanRenderDevice::image_view_for_image(const RhiImage* image) {

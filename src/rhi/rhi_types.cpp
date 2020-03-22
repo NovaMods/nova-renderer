@@ -9,8 +9,6 @@ namespace nova::renderer::rhi {
 
     RhiResourceBarrier::RhiResourceBarrier() : buffer_memory_barrier{0, 0} {};
 
-    RhiDescriptorResourceInfo::RhiDescriptorResourceInfo() : image_info{} {};
-
     uint32_t RhiPipelineInterface::get_num_descriptors_of_type(const DescriptorType type) const {
         uint32_t num_descriptors = 0;
         bindings.each_value([&](const RhiResourceBindingDescription& description) {

@@ -16,7 +16,7 @@ namespace nova::renderer::rhi {
      */
     class VulkanRenderCommandList final : public RhiRenderCommandList {
     public:
-        vk::CommandBuffer cmds;
+        VkCommandBuffer cmds;
 
         VulkanRenderCommandList(VkCommandBuffer cmds, VulkanRenderDevice& render_device, rx::memory::allocator& allocator);
         ~VulkanRenderCommandList() override = default;

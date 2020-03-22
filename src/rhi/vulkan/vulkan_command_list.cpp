@@ -160,7 +160,14 @@ namespace nova::renderer::rhi {
         const auto& sets = vk_binder.get_sets();
         const auto& layout = vk_binder.get_layout();
 
-        cmds.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 0, static_cast<uint32_t>(sets.size()), sets.data(), 0, nullptr);
+        vkCmdBindDescriptorSets(cmds,
+                                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                layout,
+                                0,
+                                static_cast<uint32_t>(sets.size()),
+                                reinterpret_cast<const VkDescriptorSet*>(sets.data()),
+                                0,
+                                nullptr);
     }
 
     void VulkanRenderCommandList::resource_barriers(const PipelineStage stages_before_barrier,

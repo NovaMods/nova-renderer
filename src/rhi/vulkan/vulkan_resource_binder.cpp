@@ -44,7 +44,7 @@ namespace nova::renderer::rhi {
 
         const auto pipeline_layout_create = vk::PipelineLayoutCreateInfo()
                                                 .setSetLayoutCount(ds_layouts.size())
-                                                .setPSetLayouts(ds_layouts.data)
+                                                .setPSetLayouts(ds_layouts.data())
                                                 .setPushConstantRangeCount(0)
                                                 .setPPushConstantRanges(nullptr);
 
@@ -60,15 +60,15 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanResourceBinder::bind_image(const rx::string& binding_name, RhiImage* image) {
-        bind_image_array(binding_name, rx::array{allocator, image});
+        bind_image_array(binding_name, {allocator, rx::array{image}});
     }
 
     void VulkanResourceBinder::bind_buffer(const rx::string& binding_name, RhiBuffer* buffer) {
-        bind_buffer_array(binding_name, rx::array{allocator, buffer});
+        bind_buffer_array(binding_name, {allocator, rx::array{buffer}});
     }
 
     void VulkanResourceBinder::bind_sampler(const rx::string& binding_name, RhiSampler* sampler) {
-        bind_sampler_array(binding_name, rx::array{allocator, sampler});
+        bind_sampler_array(binding_name, {allocator, rx::array{sampler}});
     }
 
     void VulkanResourceBinder::bind_image_array(const rx::string& binding_name, const rx::vector<RhiImage*>& images) {
