@@ -307,7 +307,7 @@ namespace nova::renderer::rhi {
         if(current_render_pass != nullptr) {
             auto* pipeline = current_render_pass->cached_pipelines.find(state.name);
             if(pipeline == nullptr) {
-                const auto pipeline_result = device.create_pipeline(state, current_render_pass->pass, allocator);
+                const auto pipeline_result = device.create_pipeline(state, current_render_pass, allocator);
                 if(pipeline_result) {
                     current_render_pass->cached_pipelines.insert(state.name, *pipeline_result);
                     pipeline = current_render_pass->cached_pipelines.find(state.name);

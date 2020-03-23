@@ -266,22 +266,21 @@ namespace nova::renderer {
          *
          * \param name The name of this renderpass
          * \param pipeline_state The graphics pipeline state to use when executing this renderpass
-         * \param resource_binder_in The binder that this renderpass will use to bind its resources. You should bind resources to this before
-         * calling this constructor
          * \param is_builtin Whether this render pass is built in to Nova or comes from a renderpack
          */
         explicit GlobalRenderpass(const rx::string& name,
                                   RhiGraphicsPipelineState pipeline_state,
-                                  rx::ptr<RhiResourceBinder> resource_binder_in,
                                   bool is_builtin = false);
 
     protected:
-        void record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) override;
-
-    private:
         RhiGraphicsPipelineState pipeline_state;
 
         rx::ptr<RhiResourceBinder> resource_binder;
+
+        /*!
+         * \brief Issues a fullscreen drawcall that uses its resource binder and pipeline state
+         */
+        void record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) override;
     };
 
     /*!

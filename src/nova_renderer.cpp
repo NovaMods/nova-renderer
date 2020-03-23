@@ -257,7 +257,7 @@ namespace nova::renderer {
             cur_frame_fences.push_back(frame_fences[cur_frame_idx]);
 
             device->wait_for_fences(cur_frame_fences);
-            device->reset_fences(cur_frame_fences);            
+            device->reset_fences(cur_frame_fences);
 
             FrameContext ctx = {};
             ctx.frame_count = frame_count;
@@ -920,8 +920,11 @@ namespace nova::renderer {
         const auto& ui_output = *device_resources->get_render_target(UI_OUTPUT_RT_NAME);
         const auto& scene_output = *device_resources->get_render_target(SCENE_OUTPUT_RT_NAME);
 
-        if(rendergraph->create_renderpass<BackbufferOutputRenderpass>(*device_resources, ui_output->image, scene_output->image) ==
-           nullptr) {
+        if(rendergraph->create_renderpass<BackbufferOutputRenderpass>(*device_resources,
+                                                                      ui_output->image,
+                                                                      scene_output->image,
+                                                                      *backbuffer_output_pipeline_create_info,
+                                                                      *device) == nullptr) {
             logger->error("Could not create the backbuffer output renderpass");
         }
 

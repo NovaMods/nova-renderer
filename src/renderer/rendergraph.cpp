@@ -104,13 +104,8 @@ namespace nova::renderer {
 
     void SceneRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {}
 
-    GlobalRenderpass::GlobalRenderpass(const rx::string& name,
-                                       RhiGraphicsPipelineState pipeline_state,
-                                       rx::ptr<RhiResourceBinder> resource_binder_in,
-                                       const bool is_builtin)
-        : Renderpass{name, is_builtin},
-          pipeline_state{rx::utility::move(pipeline_state)},
-          resource_binder{rx::utility::move(resource_binder_in)} {}
+    GlobalRenderpass::GlobalRenderpass(const rx::string& name, RhiGraphicsPipelineState pipeline_state, const bool is_builtin)
+        : Renderpass{name, is_builtin}, pipeline_state{rx::utility::move(pipeline_state)} {}
 
     void GlobalRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
         cmds.set_pipeline_state(pipeline_state);

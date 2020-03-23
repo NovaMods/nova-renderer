@@ -2,15 +2,16 @@
 #include "nova_renderer/rendergraph.hpp"
 
 namespace nova::renderer {
-    class BackbufferOutputRenderpass final : public Renderpass {
+    class BackbufferOutputRenderpass final : public GlobalRenderpass {
     public:
-        explicit BackbufferOutputRenderpass(rhi::RhiResource* ui_output, rhi::RhiResource* scene_output);
+        explicit BackbufferOutputRenderpass(rhi::RhiImage* ui_output,
+                                            rhi::RhiImage* scene_output,
+                                            const RhiGraphicsPipelineState& pipeline_state,
+                                            rhi::RenderDevice& device);
 
         static const renderpack::RenderPassCreateInfo& get_create_info();
 
     protected:
-        void record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) override;
-
         void record_post_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const override;
 
     private:

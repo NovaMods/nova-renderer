@@ -25,8 +25,16 @@ namespace nova::renderer {
 
     rx::global<BackbufferOutputRenderpassCreateInfo> backbuffer_output_create_info{"Nova", "BackbufferOutputCreateInfo"};
 
-    BackbufferOutputRenderpass::BackbufferOutputRenderpass(rhi::RhiResource* ui_output, rhi::RhiResource* scene_output)
-        : Renderpass(BACKBUFFER_OUTPUT_RENDER_PASS_NAME, true) {
+    BackbufferOutputRenderpass::BackbufferOutputRenderpass(rhi::RhiImage* ui_output,
+                                                           rhi::RhiImage* scene_output,
+                                                           const RhiGraphicsPipelineState& pipeline_state,
+                                                           rhi::RenderDevice& device)
+        : GlobalRenderpass(BACKBUFFER_OUTPUT_RENDER_PASS_NAME, pipeline_state, true) {
+        resource_binder = device.create_resource_binder_for_pipeline(pipeline_state, device.get_allocator());
+
+        resource_binder->bind_image("ui_output", ui_output);
+        resource_binder->bind_image("scene_output", scene_output);
+
         rhi::RhiResourceBarrier pre_pass_barrier;
         pre_pass_barrier.access_before_barrier = rhi::ResourceAccess::ColorAttachmentWrite;
         pre_pass_barrier.access_after_barrier = rhi::ResourceAccess::ShaderRead;
@@ -45,7 +53,7 @@ namespace nova::renderer {
         read_texture_barriers.push_back(pre_pass_barrier);
 
         rhi::RhiResourceBarrier post_pass_barrier;
-        post_pass_barrier.access_before_barrier = rhi::ResourceAccess::ShaderRead;        
+        post_pass_barrier.access_before_barrier = rhi::ResourceAccess::ShaderRead;
         post_pass_barrier.access_after_barrier = rhi::ResourceAccess::ColorAttachmentWrite;
         post_pass_barrier.old_state = rhi::ResourceState::ShaderRead;
         post_pass_barrier.new_state = rhi::ResourceState::RenderTarget;
@@ -63,8 +71,6 @@ namespace nova::renderer {
     }
 
     const renderpack::RenderPassCreateInfo& BackbufferOutputRenderpass::get_create_info() { return *backbuffer_output_create_info; }
-
-    void BackbufferOutputRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {}
 
     void BackbufferOutputRenderpass::record_post_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         Renderpass::record_post_renderpass_barriers(cmds, ctx);
