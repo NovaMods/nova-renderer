@@ -302,8 +302,24 @@ namespace nova::renderer::rhi {
         return framebuffer;
     }
 
-    rx::ptr<RhiPipeline> VulkanRenderDevice::create_pipeline(const RhiGraphicsPipelineState& pipeline_state,
-                                                             rx::memory::allocator& allocator) {
+    rx::ptr<RhiPipeline> VulkanRenderDevice::create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                                     rx::memory::allocator& allocator) {
+        // For the Vulkan backend, creating a surface pipeline means creating a pipeline that uses the standard pipeline layout
+
+        auto pipeline = rx::make_ptr<VulkanPipeline>(&allocator);
+        pipeline->name = pipeline_state.name;
+        pipeline->layout.layout = standard_pipeline_layout;
+        pipeline->layout.descriptor_set_layouts = {&allocator, rx::array{standard_set_layout}};
+        pipeline->layout.variable_descriptor_set_counts = {&allocator, rx::array{MAX_NUM_TEXTURES}};
+        pipeline->layout.bindings = standard_layout_bindings;
+        pipeline->state = pipeline_state;
+
+        return pipeline;
+    }
+
+    rx::ptr<RhiPipeline> VulkanRenderDevice::create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                                    rx::memory::allocator& allocator) {
+        // For the Vulkan backend, creating a global pipeline means creating a pipeline with a bespoke pipeline layout
 
         const auto& layout = create_pipeline_layout(pipeline_state);
 
@@ -1188,7 +1204,7 @@ namespace nova::renderer::rhi {
                                                 .setSetLayoutCount(static_cast<uint32_t>(ds_layouts.size()))
                                                 .setPSetLayouts(ds_layouts.data())
                                                 .setPushConstantRangeCount(static_cast<uint32_t>(standard_push_constants.size()))
-                                                .setPPushConstantRanges(standard_push_constants.data());    // TODO: Get this from reflection
+                                                .setPPushConstantRanges(standard_push_constants.data()); // TODO: Get this from reflection
 
         vk::PipelineLayout layout;
         device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &layout);

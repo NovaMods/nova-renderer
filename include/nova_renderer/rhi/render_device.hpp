@@ -102,8 +102,24 @@ namespace nova::renderer::rhi {
                                                                  const glm::uvec2& framebuffer_size,
                                                                  rx::memory::allocator& allocator) = 0;
 
-        [[nodiscard]] virtual rx::ptr<RhiPipeline> create_pipeline(const RhiGraphicsPipelineState& pipeline_state,
-                                                                   rx::memory::allocator& allocator) = 0;
+        /*!
+         * \brief Creates a new surface pipeline
+         *
+         * Surface pipelines render objects using Nova's material system. The backend does a little work to set them up so they're 100%
+         * compatible with the material system. They currently can't access any resources outside of the material system, and _have_ to use
+         * the standard pipeline layout
+         */
+        [[nodiscard]] virtual rx::ptr<RhiPipeline> create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                                           rx::memory::allocator& allocator) = 0;
+
+        /*!
+         * \brief Creates a global pipeline
+         *
+         * Global pipelines are pipelines that aren't tied to any specific objects in the world. Global pipelines typically read render
+         * targets to do something like post processing
+         */
+        [[nodiscard]] virtual rx::ptr<RhiPipeline> create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                                          rx::memory::allocator& allocator) = 0;
 
         [[nodiscard]] virtual rx::ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
                                                                                              rx::memory::allocator& allocator) = 0;

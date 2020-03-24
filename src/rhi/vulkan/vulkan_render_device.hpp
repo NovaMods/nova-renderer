@@ -61,6 +61,8 @@ namespace nova::renderer::rhi {
          */
         rx::vector<vk::PushConstantRange> standard_push_constants;
 
+        rx::map<rx::string, RhiResourceBindingDescription> standard_layout_bindings;
+
         /*!
          * \brief Layout for the standard descriptor set
          */
@@ -106,7 +108,11 @@ namespace nova::renderer::rhi {
                                            const glm::uvec2& framebuffer_size,
                                            rx::memory::allocator& allocator) override;
 
-        rx::ptr<RhiPipeline> create_pipeline(const RhiGraphicsPipelineState& pipeline_state, rx::memory::allocator& allocator) override;
+        rx::ptr<RhiPipeline> create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                     rx::memory::allocator& allocator) override;
+
+        rx::ptr<RhiPipeline> create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                    rx::memory::allocator& allocator) override;
 
         rx::ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
                                                                        rx::memory::allocator& allocator) override;
