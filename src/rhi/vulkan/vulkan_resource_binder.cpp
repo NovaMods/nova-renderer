@@ -86,7 +86,7 @@ namespace nova::renderer::rhi {
         rx::vector<rx::vector<vk::DescriptorImageInfo>> all_image_infos{allocator};
         all_image_infos.reserve(bound_images.size() + bound_samplers.size());
 
-        rx::vector<vk::DescriptorBufferInfo> all_buffer_infos{allocator};
+        rx::vector < rx::vector<vk::DescriptorBufferInfo>> all_buffer_infos{allocator};
         all_buffer_infos.reserve(bound_buffers.size());
 
         bound_images.each_pair([&](const rx::string& name, const rx::vector<RhiImage*>& images) {
@@ -104,13 +104,15 @@ namespace nova::renderer::rhi {
                 image_infos.push_back(rx::utility::move(image_info));
             });
 
+            all_image_infos.push_back(rx::utility::move(image_infos));
+
             auto write = vk::WriteDescriptorSet()
                              .setDstSet(set)
                              .setDstBinding(binding.binding)
                              .setDstArrayElement(0)
                              .setDescriptorCount(static_cast<uint32_t>(image_infos.size()))
                              .setDescriptorType(vk::DescriptorType::eSampledImage)
-                             .setPImageInfo(image_infos.data());
+                             .setPImageInfo(all_image_infos.last().data());
             writes.push_back(rx::utility::move(write));
         });
 
@@ -127,13 +129,15 @@ namespace nova::renderer::rhi {
                 sampler_infos.push_back(rx::utility::move(sampler_info));
             });
 
+            all_image_infos.push_back(rx::utility::move(sampler_infos));
+
             auto write = vk::WriteDescriptorSet()
                              .setDstSet(set)
                              .setDstBinding(binding.binding)
                              .setDstArrayElement(0)
                              .setDescriptorCount(static_cast<uint32_t>(sampler_infos.size()))
                              .setDescriptorType(vk::DescriptorType::eSampler)
-                             .setPImageInfo(sampler_infos.data());
+                             .setPImageInfo(all_image_infos.last().data());
             writes.push_back(rx::utility::move(write));
         });
 
@@ -150,13 +154,15 @@ namespace nova::renderer::rhi {
                 buffer_infos.push_back(rx::utility::move(buffer_info));
             });
 
+            all_buffer_infos.push_back(rx::utility::move(buffer_infos));
+
             auto write = vk::WriteDescriptorSet()
                              .setDstSet(set)
                              .setDstBinding(binding.binding)
                              .setDstArrayElement(0)
                              .setDescriptorCount(static_cast<uint32_t>(buffer_infos.size()))
                              .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-                             .setPBufferInfo(buffer_infos.data());
+                             .setPBufferInfo(all_buffer_infos.last().data());
             writes.push_back(rx::utility::move(write));
         });
 
