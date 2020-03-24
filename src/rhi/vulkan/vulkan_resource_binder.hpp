@@ -24,8 +24,8 @@ namespace nova::renderer::rhi {
     public:
 #pragma region Lifecycle
         VulkanResourceBinder(VulkanRenderDevice& device,
-                             const rx::map<rx::string, RhiResourceBindingDescription>& bindings,
-                             const rx::vector<vk::DescriptorSet>& sets,
+                             rx::map<rx::string, RhiResourceBindingDescription> bindings,
+                             rx::vector<vk::DescriptorSet> sets,
                              vk::PipelineLayout layout,
                              rx::memory::allocator& allocator);
 

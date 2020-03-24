@@ -35,6 +35,14 @@ namespace nova::renderer::rhi {
         vk::DescriptorSet set;
     };
 
+    struct VulkanPipelineLayoutInfo {
+        rx::map<rx::string, RhiResourceBindingDescription> bindings;
+
+        rx::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
+
+        vk::PipelineLayout layout;
+    };
+
     /*!
      * \brief Represents a Vulkan pipeline
      *
@@ -42,12 +50,10 @@ namespace nova::renderer::rhi {
      * write to. This struct just contains the input layout of the pipeline and the PSO create info, which we combine
      * with a renderpass to compile the pipeline
      */
-    struct VulkanPipeline {
+    struct VulkanPipeline : RhiPipeline {
         RhiGraphicsPipelineState state;
 
-        vk::PipelineLayout layout;
-
-        rx::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
+        VulkanPipelineLayoutInfo layout;
     };
 
     struct VulkanRenderpass : RhiRenderpass {

@@ -3,8 +3,6 @@
 #include <rx/core/algorithm/max.h>
 #include <rx/core/log.h>
 
-#include "nova_renderer/rhi/pipeline_create_info.hpp"
-#include "nova_renderer/rhi/rhi_enums.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 #include "../../renderer/pipeline_reflection.hpp"
@@ -20,15 +18,15 @@ namespace nova::renderer::rhi {
                              rx::map<rx::string, rx::vector<ResourceType*>>& bound_resources);
 
     VulkanResourceBinder::VulkanResourceBinder(VulkanRenderDevice& device,
-                                               const rx::map<rx::string, RhiResourceBindingDescription>& bindings,
-                                               const rx::vector<vk::DescriptorSet>& sets,
+                                               rx::map<rx::string, RhiResourceBindingDescription> bindings,
+                                               rx::vector<vk::DescriptorSet> sets,
                                                vk::PipelineLayout layout,
                                                rx::memory::allocator& allocator)
         : render_device{&device},
           allocator{&allocator},
           layout{layout},
-          sets{sets},
-          bindings{bindings},
+          sets{rx::utility::move(sets)},
+          bindings{rx::utility::move(bindings)},
           bound_images{&allocator},
           bound_buffers{&allocator},
           bound_samplers{&allocator} {}

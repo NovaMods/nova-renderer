@@ -135,10 +135,6 @@ namespace nova::renderer::rhi {
 
         void destroy_framebuffer(RhiFramebuffer* framebuffer, rx::memory::allocator& allocator) override;
 
-        void destroy_pipeline_interface(RhiPipelineInterface* pipeline_interface, rx::memory::allocator& allocator) override;
-
-        void destroy_pipeline(VulkanPipeline* pipeline, rx::memory::allocator& allocator);
-
         void destroy_texture(RhiImage* resource, rx::memory::allocator& allocator) override;
 
         void destroy_semaphores(rx::vector<RhiSemaphore*>& semaphores, rx::memory::allocator& allocator) override;
@@ -162,7 +158,7 @@ namespace nova::renderer::rhi {
     public:
         [[nodiscard]] uint32_t get_queue_family_index(QueueType type) const;
 
-        rx::pair<rx::vector<vk::DescriptorSetLayout>, vk::PipelineLayout> create_pipeline_layout(const RhiGraphicsPipelineState& state);
+        VulkanPipelineLayoutInfo create_pipeline_layout(const RhiGraphicsPipelineState& state);
 
         /*!
          * \brief Creates a new PSO
@@ -173,7 +169,7 @@ namespace nova::renderer::rhi {
          *
          * \return The new PSO
          */
-        [[nodiscard]] ntl::Result<VulkanPipeline> create_pipeline(const RhiGraphicsPipelineState& state,
+        [[nodiscard]] ntl::Result<vk::Pipeline> compile_pipeline_state(const VulkanPipeline& state,
                                                                   const VulkanRenderpass& renderpass,
                                                                   rx::memory::allocator& allocator);
 
@@ -192,6 +188,8 @@ namespace nova::renderer::rhi {
          * whatever
          */
         void return_standard_descriptor_sets(const rx::vector<vk::DescriptorSet>& sets);
+
+        rx::vector<vk::DescriptorSet> create_descriptors(const rx::vector<vk::DescriptorSetLayout>& descriptor_set_layouts);
 
         [[nodiscard]] vk::Fence get_next_submission_fence();
 

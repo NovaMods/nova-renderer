@@ -305,14 +305,23 @@ namespace nova::renderer::rhi {
     rx::ptr<RhiPipeline> VulkanRenderDevice::create_pipeline(const RhiGraphicsPipelineState& pipeline_state,
                                                              rx::memory::allocator& allocator) {
 
-        const auto& [descriptor_set_layouts, pipeline_layout] = create_pipeline_layout(pipeline_state);
+        const auto& layout = create_pipeline_layout(pipeline_state);
 
-        return rx::make_ptr<VulkanPipeline>(&allocator, pipeline_state, pipeline_layout, descriptor_set_layouts);
+        return rx::make_ptr<VulkanPipeline>(&allocator, pipeline_state, layout);
     }
 
     rx::ptr<RhiResourceBinder> VulkanRenderDevice::create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
                                                                                        rx::memory::allocator& allocator) {
-        
+        const auto& vk_pipeline = static_cast<const VulkanPipeline&>(pipeline);
+
+        auto descriptors = create_descriptors(vk_pipeline.layout.descriptor_set_layouts);
+
+        return rx::make_ptr<VulkanResourceBinder>(*allocator,
+                                                  *this,
+                                                  vk_pipeline.layout.bindings,
+                                                  descriptors,
+                                                  vk_pipeline.layout.layout,
+                                                  allocator);
     }
 
     rx::optional<vk::DescriptorPool> VulkanRenderDevice::create_descriptor_pool(
@@ -395,13 +404,14 @@ namespace nova::renderer::rhi {
         }
     }
 
-    ntl::Result<VulkanPipeline> VulkanRenderDevice::create_pipeline(const RhiGraphicsPipelineState& state,
+    ntl::Result<vk::Pipeline> VulkanRenderDevice::compile_pipeline_state(const VulkanPipeline& pipeline_state,
                                                                     const VulkanRenderpass& renderpass,
                                                                     rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_pipeline");
-        logger->verbose("Creating a VkPipeline for pipeline %s", state.name);
 
-        VulkanPipeline vk_pipeline{};
+        const auto& state = pipeline_state.state;
+
+        logger->verbose("Creating a VkPipeline for pipeline %s", state.name);
 
         rx::vector<VkPipelineShaderStageCreateInfo> shader_stages{&internal_allocator};
         rx::map<VkShaderStageFlags, VkShaderModule> shader_modules{&internal_allocator};
@@ -411,7 +421,7 @@ namespace nova::renderer::rhi {
         if(vertex_module) {
             shader_modules.insert(VK_SHADER_STAGE_VERTEX_BIT, *vertex_module);
         } else {
-            return ntl::Result<VulkanPipeline>{ntl::NovaError("Could not create vertex module")};
+            return ntl::Result<vk::Pipeline>{ntl::NovaError("Could not create vertex module")};
         }
 
         if(state.geometry_shader) {
@@ -420,7 +430,7 @@ namespace nova::renderer::rhi {
             if(geometry_module) {
                 shader_modules.insert(VK_SHADER_STAGE_GEOMETRY_BIT, *geometry_module);
             } else {
-                return ntl::Result<VulkanPipeline>{ntl::NovaError("Could not geometry module")};
+                return ntl::Result<vk::Pipeline>{ntl::NovaError("Could not geometry module")};
             }
         }
 
@@ -430,7 +440,7 @@ namespace nova::renderer::rhi {
             if(fragment_module) {
                 shader_modules.insert(VK_SHADER_STAGE_FRAGMENT_BIT, *fragment_module);
             } else {
-                return ntl::Result<VulkanPipeline>{ntl::NovaError("Could not pixel module")};
+                return ntl::Result<vk::Pipeline>{ntl::NovaError("Could not pixel module")};
             }
 
         } // namespace nova::renderer::rhi
@@ -647,31 +657,29 @@ namespace nova::renderer::rhi {
         pipeline_create_info.pDepthStencilState = &depth_stencil_create_info;
         pipeline_create_info.pColorBlendState = &color_blend_create_info;
         pipeline_create_info.pDynamicState = &dynamic_state_create_info;
-        pipeline_create_info.layout = pipeline_layout ? *pipeline_layout : standard_pipeline_layout;
+        pipeline_create_info.layout = pipeline_state.layout.layout;
 
         pipeline_create_info.renderPass = renderpass.pass;
         pipeline_create_info.subpass = 0;
         pipeline_create_info.basePipelineIndex = -1;
 
         const VkAllocationCallbacks& vk_alloc = wrap_allocator(allocator);
-        const auto result = vkCreateGraphicsPipelines(device, nullptr, 1, &pipeline_create_info, &vk_alloc, &vk_pipeline.pipeline);
+        vk::Pipeline pipeline;
+        const auto result = vkCreateGraphicsPipelines(device, nullptr, 1, &pipeline_create_info, &vk_alloc, reinterpret_cast<VkPipeline*>(&pipeline));
         if(result != VK_SUCCESS) {
-            return ntl::Result<VulkanPipeline>{MAKE_ERROR("Could not compile pipeline %s", state.name)};
+            return ntl::Result<vk::Pipeline>{MAKE_ERROR("Could not compile pipeline %s", state.name)};
         }
-
-        // TODO: Figure out how to have bespoke pipeline layouts for things like post-processing
-        vk_pipeline.layout = standard_pipeline_layout;
 
         if(settings.settings.debug.enabled) {
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             object_name.objectType = VK_OBJECT_TYPE_PIPELINE;
-            object_name.objectHandle = reinterpret_cast<uint64_t>(vk_pipeline.pipeline);
+            object_name.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkPipeline>(pipeline));
             object_name.pObjectName = state.name.data();
             NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
         }
 
-        return ntl::Result{vk_pipeline};
+        return ntl::Result{pipeline};
     }
 
     RhiBuffer* VulkanRenderDevice::create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) {
@@ -977,13 +985,6 @@ namespace nova::renderer::rhi {
         allocator.deallocate(reinterpret_cast<rx_byte*>(framebuffer));
     }
 
-    void VulkanRenderDevice::destroy_pipeline(VulkanPipeline* pipeline, rx::memory::allocator& allocator) {
-        MTR_SCOPE("VulkanRenderDevice", "destroy_pipeline");
-        vkDestroyPipeline(device, pipeline->pipeline, nullptr);
-
-        allocator.deallocate(reinterpret_cast<rx_byte*>(pipeline));
-    }
-
     void VulkanRenderDevice::destroy_texture(RhiImage* resource, rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "destroy_texture");
         auto* vk_image = static_cast<VulkanImage*>(resource);
@@ -1145,10 +1146,9 @@ namespace nova::renderer::rhi {
         }
     }
 
-    rx::pair<rx::vector<vk::DescriptorSetLayout>, vk::PipelineLayout> VulkanRenderDevice::create_pipeline_layout(
-        const RhiGraphicsPipelineState& state) {
-        const auto descriptors = get_all_descriptors(state);
-        const auto ds_layouts = create_descriptor_set_layouts(descriptors, *this, internal_allocator);
+    VulkanPipelineLayoutInfo VulkanRenderDevice::create_pipeline_layout(const RhiGraphicsPipelineState& state) {
+        const auto bindings = get_all_descriptors(state);
+        const auto ds_layouts = create_descriptor_set_layouts(bindings, *this, internal_allocator);
 
         const auto pipeline_layout_create = vk::PipelineLayoutCreateInfo()
                                                 .setSetLayoutCount(ds_layouts.size())
@@ -1159,7 +1159,7 @@ namespace nova::renderer::rhi {
         vk::PipelineLayout layout;
         device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &layout);
 
-        return {ds_layouts, layout};
+        return {bindings, ds_layouts, layout};
     }
 
     void VulkanRenderDevice::create_surface() {
