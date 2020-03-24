@@ -1187,8 +1187,8 @@ namespace nova::renderer::rhi {
         const auto pipeline_layout_create = vk::PipelineLayoutCreateInfo()
                                                 .setSetLayoutCount(static_cast<uint32_t>(ds_layouts.size()))
                                                 .setPSetLayouts(ds_layouts.data())
-                                                .setPushConstantRangeCount(0)
-                                                .setPPushConstantRanges(nullptr);
+                                                .setPushConstantRangeCount(static_cast<uint32_t>(standard_push_constants.size()))
+                                                .setPPushConstantRanges(standard_push_constants.data());    // TODO: Get this from reflection
 
         vk::PipelineLayout layout;
         device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &layout);

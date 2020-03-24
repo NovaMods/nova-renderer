@@ -122,6 +122,11 @@ namespace nova::renderer::rhi {
         bool operator!=(const RhiResourceBindingDescription& other);
     };
 
+    struct RhiPushConstantRange {
+        uint32_t offset;
+        uint32_t size;
+    };
+
     struct RhiVertexField {
         rx::string name;
 

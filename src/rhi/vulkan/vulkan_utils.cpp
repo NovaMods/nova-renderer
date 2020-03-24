@@ -338,7 +338,7 @@ namespace nova::renderer::rhi {
         if(flags & ShaderStage::Geometry) {
             vk_flags |= vk::ShaderStageFlagBits::eGeometry;
         }
-        if(flags & ShaderStage::Fragment) {
+        if(flags & ShaderStage::Pixel) {
             vk_flags |= vk::ShaderStageFlagBits::eFragment;
         }
         if(flags & ShaderStage::Compute) {

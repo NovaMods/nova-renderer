@@ -17,7 +17,7 @@ namespace nova::renderer {
             get_shader_module_descriptors(pipeline_state.geometry_shader->source, ShaderStage::Geometry, bindings);
         }
         if(pipeline_state.pixel_shader) {
-            get_shader_module_descriptors(pipeline_state.pixel_shader->source, ShaderStage::Fragment, bindings);
+            get_shader_module_descriptors(pipeline_state.pixel_shader->source, ShaderStage::Pixel, bindings);
         }
 
         return bindings;
@@ -27,7 +27,7 @@ namespace nova::renderer {
                                        const ShaderStage shader_stage,
                                        rx::map<rx::string, RhiResourceBindingDescription>& bindings) {
         const spirv_cross::Compiler shader_compiler{spirv.data(), spirv.size()};
-        const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
+        const spirv_cross::ShaderResources& resources = shader_compiler.get_shader_resources();
 
         for(const auto& resource : resources.separate_images) {
             add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, DescriptorType::Texture);

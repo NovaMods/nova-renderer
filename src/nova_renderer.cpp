@@ -137,7 +137,7 @@ namespace nova::renderer {
 
                 return combined_color;
             })"};
-        const auto& pixel_spirv = renderpack::compile_shader(pixel_source, rhi::ShaderStage::Fragment, rhi::ShaderLanguage::Hlsl);
+        const auto& pixel_spirv = renderpack::compile_shader(pixel_source, rhi::ShaderStage::Pixel, rhi::ShaderLanguage::Hlsl);
         if(pixel_spirv.is_empty()) {
             logger->error("Could not compile builtin backbuffer output pixel shader");
         }
