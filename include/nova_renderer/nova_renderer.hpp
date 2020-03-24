@@ -223,8 +223,6 @@ namespace nova::renderer {
 
         MeshId fullscreen_triangle_id;
 
-        RenderableId backbuffer_output_renderable;
-
         /*!
          * \brief The allocator that all of Nova's memory will be allocated through
          *

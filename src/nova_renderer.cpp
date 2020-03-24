@@ -512,8 +512,9 @@ namespace nova::renderer {
                 return false;
             }
 
+            // TODO: A way for renderpack pipelines to say if they're global or surface pipelines
             Pipeline pipeline;
-            pipeline.pipeline = device->create_pipeline(*pipeline_state, *renderpack_allocator);
+            pipeline.pipeline = device->create_surface_pipeline(*pipeline_state, *renderpack_allocator);
 
             create_materials_for_pipeline(pipeline, materials, rp_pipeline_state.name);
 
@@ -919,44 +920,21 @@ namespace nova::renderer {
 
     void NovaRenderer::create_renderpass_manager() { rendergraph = global_allocator->create<Rendergraph>(*global_allocator, *device); }
 
+    // ReSharper disable once CppMemberFunctionMayBeConst
     void NovaRenderer::create_builtin_renderpasses() {
         const auto& ui_output = *device_resources->get_render_target(UI_OUTPUT_RT_NAME);
         const auto& scene_output = *device_resources->get_render_target(SCENE_OUTPUT_RT_NAME);
 
-        auto backbuffer_pipeline = device->create_pipeline(*backbuffer_output_pipeline_create_info, *global_allocator);
+        backbuffer_output_pipeline_create_info->viewport_size = device->get_swapchain()->get_size();
+        auto backbuffer_pipeline = device->create_global_pipeline(*backbuffer_output_pipeline_create_info, *global_allocator);
         if(rendergraph->create_renderpass<BackbufferOutputRenderpass>(*device_resources,
                                                                       ui_output->image,
                                                                       scene_output->image,
                                                                       rx::utility::move(backbuffer_pipeline),
                                                                       *device) == nullptr) {
+
             logger->error("Could not create the backbuffer output renderpass");
         }
-
-        backbuffer_output_pipeline_create_info->viewport_size = device->get_swapchain()->get_size();
-
-        const auto pipeline_state = *backbuffer_output_pipeline_create_info;
-
-        auto rhi_pipeline = device->create_pipeline(pipeline_state, *global_allocator);
-
-        const auto pipeline = Pipeline{rx::utility::move(rhi_pipeline), nullptr};
-
-        const renderpack::MaterialData material{BACKBUFFER_OUTPUT_MATERIAL_NAME,
-                                                rx::array{renderpack::MaterialPass{"main",
-                                                                                   BACKBUFFER_OUTPUT_MATERIAL_NAME,
-                                                                                   BACKBUFFER_OUTPUT_PIPELINE_NAME,
-                                                                                   rx::array{rx::pair{"ui_output", UI_OUTPUT_RT_NAME},
-                                                                                             rx::pair{"scene_output", SCENE_OUTPUT_RT_NAME},
-                                                                                             rx::pair{"tex_sampler", POINT_SAMPLER_NAME}},
-                                                                                   {}}},
-                                                "block"};
-
-        const rx::vector<renderpack::MaterialData> materials = rx::array{material};
-        create_materials_for_pipeline(pipeline, materials, backbuffer_output_pipeline_create_info->name);
-
-        const static FullMaterialPassName BACKBUFFER_OUTPUT_MATERIAL{BACKBUFFER_OUTPUT_MATERIAL_NAME, "main"};
-        const static StaticMeshRenderableCreateInfo FULLSCREEN_TRIANGLE_RENDERABLE{{}, true, fullscreen_triangle_id};
-
-        backbuffer_output_renderable = add_renderable_for_material(BACKBUFFER_OUTPUT_MATERIAL, FULLSCREEN_TRIANGLE_RENDERABLE);
     }
 
     void NovaRenderer::create_builtin_pipelines() {}
