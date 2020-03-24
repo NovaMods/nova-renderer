@@ -319,9 +319,11 @@ namespace nova::renderer::rhi {
                                                                                        rx::memory::allocator& allocator) {
         const auto& vk_pipeline = static_cast<const VulkanPipeline&>(pipeline);
 
-        auto descriptors = create_descriptors(vk_pipeline.layout.descriptor_set_layouts);
+        auto descriptors = create_descriptors(vk_pipeline.layout.descriptor_set_layouts,
+                                              vk_pipeline.layout.variable_descriptor_set_counts,
+                                              allocator);
 
-        return rx::make_ptr<VulkanResourceBinder>(*allocator,
+        return rx::make_ptr<VulkanResourceBinder>(&allocator,
                                                   *this,
                                                   vk_pipeline.layout.bindings,
                                                   descriptors,
@@ -393,6 +395,28 @@ namespace nova::renderer::rhi {
         standard_descriptor_sets += sets;
     }
 
+    rx::vector<vk::DescriptorSet> VulkanRenderDevice::create_descriptors(const rx::vector<vk::DescriptorSetLayout>& descriptor_set_layouts,
+                                                                         const rx::vector<uint32_t>& variable_descriptor_max_counts,
+                                                                         rx::memory::allocator& allocator) const {
+        RX_ASSERT(descriptor_set_layouts.size() == variable_descriptor_max_counts.size(),
+                  "Descriptor set layous and varaible descriptor counts must be the same size");
+
+        const auto variable_descriptor_counts = vk::DescriptorSetVariableDescriptorCountAllocateInfo()
+                                                    .setDescriptorSetCount(static_cast<uint32_t>(variable_descriptor_max_counts.size()))
+                                                    .setPDescriptorCounts(variable_descriptor_max_counts.data());
+
+        const auto allocate_info = vk::DescriptorSetAllocateInfo()
+                                       .setDescriptorSetCount(static_cast<uint32_t>(descriptor_set_layouts.size()))
+                                       .setPSetLayouts(descriptor_set_layouts.data())
+                                       .setDescriptorPool(standard_descriptor_set_pool)
+                                       .setPNext(&variable_descriptor_counts);
+
+        rx::vector<vk::DescriptorSet> sets{&allocator, descriptor_set_layouts.size()};
+        device.allocateDescriptorSets(&allocate_info, sets.data());
+
+        return sets;
+    }
+
     vk::Fence VulkanRenderDevice::get_next_submission_fence() {
         if(submission_fences.is_empty()) {
             const auto fence_create_info = vk::FenceCreateInfo();
@@ -410,8 +434,8 @@ namespace nova::renderer::rhi {
     }
 
     ntl::Result<vk::Pipeline> VulkanRenderDevice::compile_pipeline_state(const VulkanPipeline& pipeline_state,
-                                                                    const VulkanRenderpass& renderpass,
-                                                                    rx::memory::allocator& allocator) {
+                                                                         const VulkanRenderpass& renderpass,
+                                                                         rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_pipeline");
 
         const auto& state = pipeline_state.state;
@@ -496,8 +520,8 @@ namespace nova::renderer::rhi {
         VkViewport viewport;
         viewport.x = 0;
         viewport.y = 0;
-        viewport.width = renderpass.render_area.extent.width;
-        viewport.height = renderpass.render_area.extent.height;
+        viewport.width = static_cast<float>(renderpass.render_area.extent.width);
+        viewport.height = static_cast<float>(renderpass.render_area.extent.height);
         viewport.minDepth = 0.0F;
         viewport.maxDepth = 1.0F;
 
@@ -670,7 +694,12 @@ namespace nova::renderer::rhi {
 
         const VkAllocationCallbacks& vk_alloc = wrap_allocator(allocator);
         vk::Pipeline pipeline;
-        const auto result = vkCreateGraphicsPipelines(device, nullptr, 1, &pipeline_create_info, &vk_alloc, reinterpret_cast<VkPipeline*>(&pipeline));
+        const auto result = vkCreateGraphicsPipelines(device,
+                                                      nullptr,
+                                                      1,
+                                                      &pipeline_create_info,
+                                                      &vk_alloc,
+                                                      reinterpret_cast<VkPipeline*>(&pipeline));
         if(result != VK_SUCCESS) {
             return ntl::Result<vk::Pipeline>{MAKE_ERROR("Could not compile pipeline %s", state.name)};
         }
@@ -1156,7 +1185,7 @@ namespace nova::renderer::rhi {
         const auto ds_layouts = create_descriptor_set_layouts(bindings, *this, internal_allocator);
 
         const auto pipeline_layout_create = vk::PipelineLayoutCreateInfo()
-                                                .setSetLayoutCount(ds_layouts.size())
+                                                .setSetLayoutCount(static_cast<uint32_t>(ds_layouts.size()))
                                                 .setPSetLayouts(ds_layouts.data())
                                                 .setPushConstantRangeCount(0)
                                                 .setPPushConstantRanges(nullptr);
@@ -1164,7 +1193,14 @@ namespace nova::renderer::rhi {
         vk::PipelineLayout layout;
         device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &layout);
 
-        return {bindings, ds_layouts, layout};
+        rx::vector<uint32_t> variable_descriptor_counts{&internal_allocator, ds_layouts.size()};
+        bindings.each_value([&](const RhiResourceBindingDescription& binding_desc) {
+            if(binding_desc.is_unbounded && binding_desc.count > variable_descriptor_counts[binding_desc.set]) {
+                variable_descriptor_counts[binding_desc.set] = binding_desc.count;
+            }
+        });
+
+        return {bindings, ds_layouts, layout, variable_descriptor_counts};
     }
 
     void VulkanRenderDevice::create_surface() {
@@ -1584,7 +1620,7 @@ namespace nova::renderer::rhi {
                                                      vk::DescriptorBindingFlagBits::ePartiallyBound};
 
         const auto set_flags = vk::DescriptorSetLayoutBindingFlagsCreateInfo()
-                                   .setBindingCount(flags_per_binding.size())
+                                   .setBindingCount(static_cast<uint32_t>(flags_per_binding.size()))
                                    .setPBindingFlags(flags_per_binding.data());
 
         const auto camera_buffer_descriptor_type = (MAX_NUM_CAMERAS * sizeof(CameraUboData)) < gpu.props.limits.maxUniformBufferRange ?

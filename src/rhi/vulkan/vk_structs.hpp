@@ -41,6 +41,8 @@ namespace nova::renderer::rhi {
         rx::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
 
         vk::PipelineLayout layout;
+
+        rx::vector<uint32_t> variable_descriptor_set_counts;
     };
 
     /*!

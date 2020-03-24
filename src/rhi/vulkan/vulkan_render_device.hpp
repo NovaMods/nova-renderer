@@ -170,8 +170,8 @@ namespace nova::renderer::rhi {
          * \return The new PSO
          */
         [[nodiscard]] ntl::Result<vk::Pipeline> compile_pipeline_state(const VulkanPipeline& state,
-                                                                  const VulkanRenderpass& renderpass,
-                                                                  rx::memory::allocator& allocator);
+                                                                       const VulkanRenderpass& renderpass,
+                                                                       rx::memory::allocator& allocator);
 
         [[nodiscard]] rx::optional<vk::DescriptorPool> create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
                                                                               rx::memory::allocator& allocator);
@@ -189,7 +189,9 @@ namespace nova::renderer::rhi {
          */
         void return_standard_descriptor_sets(const rx::vector<vk::DescriptorSet>& sets);
 
-        rx::vector<vk::DescriptorSet> create_descriptors(const rx::vector<vk::DescriptorSetLayout>& descriptor_set_layouts);
+        rx::vector<vk::DescriptorSet> create_descriptors(const rx::vector<vk::DescriptorSetLayout>& descriptor_set_layouts,
+                                                         const rx::vector<uint32_t>& variable_descriptor_max_counts,
+                                                         rx::memory::allocator& allocator) const;
 
         [[nodiscard]] vk::Fence get_next_submission_fence();
 

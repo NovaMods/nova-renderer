@@ -509,14 +509,17 @@ namespace nova::renderer {
             const auto pipeline_state = to_pipeline_state_create_info(rp_pipeline_state, *rendergraph);
             if(!pipeline_state) {
                 logger->error("Could not create pipeline %s", rp_pipeline_state.name);
+                return false;
             }
 
             Pipeline pipeline;
-            pipeline.pipeline = *pipeline_state;
+            pipeline.pipeline = device->create_pipeline(*pipeline_state, *renderpack_allocator);
 
             create_materials_for_pipeline(pipeline, materials, rp_pipeline_state.name);
 
-            pipelines.insert(rp_pipeline_state.name, pipeline);
+            pipelines.insert(rp_pipeline_state.name, rx::utility::move(pipeline));
+
+            return true;
         });
     }
 
@@ -559,7 +562,7 @@ namespace nova::renderer {
             });
         });
 
-        passes_by_pipeline.insert(pipeline.pipeline.name, passes);
+        passes_by_pipeline.insert(pipeline.pipeline->name, passes);
     }
 
     void NovaRenderer::update_camera_matrix_buffer(const uint32_t frame_idx) {
@@ -920,10 +923,11 @@ namespace nova::renderer {
         const auto& ui_output = *device_resources->get_render_target(UI_OUTPUT_RT_NAME);
         const auto& scene_output = *device_resources->get_render_target(SCENE_OUTPUT_RT_NAME);
 
+        auto backbuffer_pipeline = device->create_pipeline(*backbuffer_output_pipeline_create_info, *global_allocator);
         if(rendergraph->create_renderpass<BackbufferOutputRenderpass>(*device_resources,
                                                                       ui_output->image,
                                                                       scene_output->image,
-                                                                      *backbuffer_output_pipeline_create_info,
+                                                                      rx::utility::move(backbuffer_pipeline),
                                                                       *device) == nullptr) {
             logger->error("Could not create the backbuffer output renderpass");
         }
@@ -932,7 +936,9 @@ namespace nova::renderer {
 
         const auto pipeline_state = *backbuffer_output_pipeline_create_info;
 
-        const auto pipeline = Pipeline{pipeline_state, nullptr};
+        auto rhi_pipeline = device->create_pipeline(pipeline_state, *global_allocator);
+
+        const auto pipeline = Pipeline{rx::utility::move(rhi_pipeline), nullptr};
 
         const renderpack::MaterialData material{BACKBUFFER_OUTPUT_MATERIAL_NAME,
                                                 rx::array{renderpack::MaterialPass{"main",

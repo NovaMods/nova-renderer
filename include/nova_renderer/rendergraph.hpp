@@ -268,9 +268,7 @@ namespace nova::renderer {
          * \param pipeline The graphics pipeline state to use when executing this renderpass
          * \param is_builtin Whether this render pass is built in to Nova or comes from a renderpack
          */
-        explicit GlobalRenderpass(const rx::string& name,
-                                  rx::ptr<rhi::RhiPipeline> pipeline,
-                                  bool is_builtin = false);
+        explicit GlobalRenderpass(const rx::string& name, rx::ptr<rhi::RhiPipeline> pipeline, bool is_builtin = false);
 
     protected:
         rx::ptr<rhi::RhiPipeline> pipeline;
