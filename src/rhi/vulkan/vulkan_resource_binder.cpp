@@ -19,45 +19,19 @@ namespace nova::renderer::rhi {
                              const rx::vector<ResourceType*>& resources,
                              rx::map<rx::string, rx::vector<ResourceType*>>& bound_resources);
 
-    VulkanResourceBinder::VulkanResourceBinder(const RhiGraphicsPipelineState& pipeline_state,
-                                               VulkanRenderDevice& device,
+    VulkanResourceBinder::VulkanResourceBinder(VulkanRenderDevice& device,
+                                               const rx::map<rx::string, RhiResourceBindingDescription>& bindings,
+                                               const rx::vector<vk::DescriptorSet>& sets,
+                                               vk::PipelineLayout layout,
                                                rx::memory::allocator& allocator)
         : render_device{&device},
           allocator{&allocator},
-          vk_allocator{wrap_allocator(allocator)},
-          ds_layouts{&allocator},
-          bindings{&allocator},
+          layout{layout},
+          sets{sets},
+          bindings{bindings},
           bound_images{&allocator},
           bound_buffers{&allocator},
-          bound_samplers{&allocator} {
-
-        get_shader_module_descriptors(pipeline_state.vertex_shader.source, ShaderStage::Vertex, bindings);
-
-        if(pipeline_state.geometry_shader) {
-            get_shader_module_descriptors(pipeline_state.geometry_shader->source, ShaderStage::Geometry, bindings);
-        }
-        if(pipeline_state.pixel_shader) {
-            get_shader_module_descriptors(pipeline_state.pixel_shader->source, ShaderStage::Fragment, bindings);
-        }
-
-        ds_layouts = create_descriptor_set_layouts(bindings, device, allocator);
-
-        const auto pipeline_layout_create = vk::PipelineLayoutCreateInfo()
-                                                .setSetLayoutCount(ds_layouts.size())
-                                                .setPSetLayouts(ds_layouts.data())
-                                                .setPushConstantRangeCount(0)
-                                                .setPPushConstantRanges(nullptr);
-
-        device.device.createPipelineLayout(&pipeline_layout_create, &vk_allocator, &layout);
-    }
-
-    VulkanResourceBinder::~VulkanResourceBinder() {
-        auto& device = render_device->device;
-
-        device.destroyPipelineLayout(layout, &vk_allocator);
-
-        ds_layouts.each_fwd([&](const vk::DescriptorSetLayout dsl) { device.destroyDescriptorSetLayout(dsl, &vk_allocator); });
-    }
+          bound_samplers{&allocator} {}
 
     void VulkanResourceBinder::bind_image(const rx::string& binding_name, RhiImage* image) {
         bind_image_array(binding_name, {allocator, rx::array{image}});

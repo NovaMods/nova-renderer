@@ -23,7 +23,11 @@ namespace nova::renderer::rhi {
     class VulkanResourceBinder final : public RhiResourceBinder {
     public:
 #pragma region Lifecycle
-        VulkanResourceBinder(const RhiGraphicsPipelineState& pipeline_state, VulkanRenderDevice& device, rx::memory::allocator& allocator);
+        VulkanResourceBinder(VulkanRenderDevice& device,
+                             const rx::map<rx::string, RhiResourceBindingDescription>& bindings,
+                             const rx::vector<vk::DescriptorSet>& sets,
+                             vk::PipelineLayout layout,
+                             rx::memory::allocator& allocator);
 
         VulkanResourceBinder(const VulkanResourceBinder& other) = delete;
         VulkanResourceBinder& operator=(const VulkanResourceBinder& other) = delete;
@@ -31,7 +35,7 @@ namespace nova::renderer::rhi {
         VulkanResourceBinder(VulkanResourceBinder&& old) noexcept = default;
         VulkanResourceBinder& operator=(VulkanResourceBinder&& old) noexcept = default;
 
-        ~VulkanResourceBinder() override;
+        ~VulkanResourceBinder() override = default;
 #pragma endregion
 
 #pragma region RhiResourceBinder
@@ -58,10 +62,6 @@ namespace nova::renderer::rhi {
         VulkanRenderDevice* render_device;
 
         rx::memory::allocator* allocator;
-
-        vk::AllocationCallbacks vk_allocator;
-
-        rx::vector<vk::DescriptorSetLayout> ds_layouts;
 
         /*!
          * \brief Layout for pipelines that can access this binder's resources
