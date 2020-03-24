@@ -19,6 +19,7 @@ namespace nova {
 } // namespace nova
 
 namespace nova::renderer::rhi {
+    class VulkanRenderDevice;
     VkImageLayout to_vk_image_layout(ResourceState layout);
 
     VkAccessFlags to_vk_access_flags(ResourceAccess access);
@@ -47,7 +48,12 @@ namespace nova::renderer::rhi {
 
     rx::string to_string(VkObjectType obj_type);
 
-    VkFormat to_vk_vertex_format(VertexFieldFormat field);
+    [[nodiscard]] VkFormat to_vk_vertex_format(VertexFieldFormat field);
+
+    [[nodiscard]] rx::vector<vk::DescriptorSetLayout> create_descriptor_set_layouts(
+        const rx::map<rx::string, RhiResourceBindingDescription>& all_bindings,
+        VulkanRenderDevice& render_device,
+        rx::memory::allocator& allocator);;
 
     /*!
      * \brief Wraps a Rex allocator so the Vulkan driver can use it

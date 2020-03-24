@@ -106,13 +106,10 @@ namespace nova::renderer::rhi {
                                            const glm::uvec2& framebuffer_size,
                                            rx::memory::allocator& allocator) override;
 
-        [[nodiscard]] rx::ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiGraphicsPipelineState& pipeline_state,
-                                                                                     rx::memory::allocator& allocator) override;
+        rx::ptr<RhiPipeline> create_pipeline(const RhiGraphicsPipelineState& pipeline_state, rx::memory::allocator& allocator) override;
 
-        ntl::Result<RhiPipelineInterface*> create_pipeline_interface(const rx::map<rx::string, RhiResourceBindingDescription>& bindings,
-                                                                     const rx::vector<renderpack::TextureAttachmentInfo>& color_attachments,
-                                                                     const rx::optional<renderpack::TextureAttachmentInfo>& depth_texture,
-                                                                     rx::memory::allocator& allocator) override;
+        rx::ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
+                                                                       rx::memory::allocator& allocator) override;
 
         RhiBuffer* create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) override;
 
@@ -165,6 +162,8 @@ namespace nova::renderer::rhi {
     public:
         [[nodiscard]] uint32_t get_queue_family_index(QueueType type) const;
 
+        rx::pair<rx::vector<vk::DescriptorSetLayout>, vk::PipelineLayout> create_pipeline_layout(const RhiGraphicsPipelineState& state);
+
         /*!
          * \brief Creates a new PSO
          *
@@ -175,7 +174,7 @@ namespace nova::renderer::rhi {
          * \return The new PSO
          */
         [[nodiscard]] ntl::Result<VulkanPipeline> create_pipeline(const RhiGraphicsPipelineState& state,
-                                                                  vk::RenderPass renderpass,
+                                                                  const VulkanRenderpass& renderpass,
                                                                   rx::memory::allocator& allocator);
 
         [[nodiscard]] rx::optional<vk::DescriptorPool> create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,

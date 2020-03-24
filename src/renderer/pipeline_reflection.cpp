@@ -8,6 +8,21 @@ namespace nova::renderer {
 
     RX_LOG("PipelineReflection", logger);
 
+    rx::map<rx::string, RhiResourceBindingDescription> get_all_descriptors(const RhiGraphicsPipelineState& pipeline_state) {
+        rx::map<rx::string, RhiResourceBindingDescription> bindings;
+
+        get_shader_module_descriptors(pipeline_state.vertex_shader.source, ShaderStage::Vertex, bindings);
+
+        if(pipeline_state.geometry_shader) {
+            get_shader_module_descriptors(pipeline_state.geometry_shader->source, ShaderStage::Geometry, bindings);
+        }
+        if(pipeline_state.pixel_shader) {
+            get_shader_module_descriptors(pipeline_state.pixel_shader->source, ShaderStage::Fragment, bindings);
+        }
+
+        return bindings;
+    }
+
     void get_shader_module_descriptors(const rx::vector<uint32_t>& spirv,
                                        const ShaderStage shader_stage,
                                        rx::map<rx::string, RhiResourceBindingDescription>& bindings) {
@@ -45,6 +60,12 @@ namespace nova::renderer {
         new_binding.type = type;
         new_binding.count = 1;
         new_binding.stages = shader_stage;
+
+        logger->verbose("Pipeline reflection found resource %s of type %s in binding %u.%u",
+                        resource.name.c_str(),
+                        descriptor_type_to_string(type),
+                        set_idx,
+                        binding_idx);
 
         const spirv_cross::SPIRType& type_information = shader_compiler.get_type(resource.type_id);
         if(!type_information.array.empty()) {

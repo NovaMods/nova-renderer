@@ -79,8 +79,6 @@ namespace nova::renderer::rhi {
         rx::map<rx::string, rx::vector<RhiBuffer*>> bound_buffers;
         rx::map<rx::string, rx::vector<RhiSampler*>> bound_samplers;
 
-        void create_descriptor_set_layouts(const rx::map<rx::string, RhiResourceBindingDescription>& all_bindings);
-
         void update_all_descriptors();
     };
 } // namespace nova::renderer::rhi

@@ -141,7 +141,7 @@ namespace nova::renderer::rhi {
                 .setPImageInfo(vk_textures.data()),
         };
 
-        device.device.updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
+        device.device.updateDescriptorSets(static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
 
         vkCmdBindDescriptorSets(cmds,
                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -307,10 +307,9 @@ namespace nova::renderer::rhi {
         if(current_render_pass != nullptr) {
             auto* pipeline = current_render_pass->cached_pipelines.find(state.name);
             if(pipeline == nullptr) {
-                const auto pipeline_result = device.create_pipeline(state, current_render_pass, allocator);
+                const auto pipeline_result = device.create_pipeline(state, *current_render_pass, allocator);
                 if(pipeline_result) {
-                    current_render_pass->cached_pipelines.insert(state.name, *pipeline_result);
-                    pipeline = current_render_pass->cached_pipelines.find(state.name);
+                    pipeline = current_render_pass->cached_pipelines.insert(state.name, *pipeline_result);
 
                 } else {
                     logger->error("Could not compile pipeline %s", state.name);

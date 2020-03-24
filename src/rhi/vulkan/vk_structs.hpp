@@ -7,6 +7,7 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 
+#include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
@@ -34,9 +35,19 @@ namespace nova::renderer::rhi {
         vk::DescriptorSet set;
     };
 
+    /*!
+     * \brief Represents a Vulkan pipeline
+     *
+     * Vulkan pipelines are actually compiled lazily, because they depend on the layouts of the render targets they
+     * write to. This struct just contains the input layout of the pipeline and the PSO create info, which we combine
+     * with a renderpass to compile the pipeline
+     */
     struct VulkanPipeline {
-        VkPipeline pipeline = VK_NULL_HANDLE;
-        VkPipelineLayout layout = VK_NULL_HANDLE;
+        RhiGraphicsPipelineState state;
+
+        vk::PipelineLayout layout;
+
+        rx::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
     };
 
     struct VulkanRenderpass : RhiRenderpass {
