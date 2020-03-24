@@ -53,7 +53,7 @@ namespace nova::renderer::rhi {
 
         void set_material_index(uint32_t index) override;
 
-        void set_pipeline_state(const RhiGraphicsPipelineState& state) override;
+        void set_pipeline(const RhiPipeline& state) override;
 
         void bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets,
                                   const RhiPipelineInterface* pipeline_interface) override;

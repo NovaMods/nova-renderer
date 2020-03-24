@@ -66,7 +66,7 @@ namespace nova::renderer::rhi {
          * We keep a cache of PSOs that are used by this renderpass, using the frontend name of the pipeline state as a key. If we've
          * already used a pipeline state with this renderpass we just get the caches PSO, otherwise we have to create it
          */
-        rx::map<rx::string, VulkanPipeline> cached_pipelines;
+        rx::map<rx::string, vk::Pipeline> cached_pipelines;
     };
 
     struct VulkanFramebuffer : RhiFramebuffer {

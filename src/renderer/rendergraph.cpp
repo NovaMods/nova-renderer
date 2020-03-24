@@ -108,7 +108,7 @@ namespace nova::renderer {
         : Renderpass{name, is_builtin}, pipeline_state{rx::utility::move(pipeline_state)} {}
 
     void GlobalRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
-        cmds.set_pipeline_state(pipeline_state);
+        cmds.set_pipeline(pipeline_state);
 
         cmds.bind_resources(*resource_binder);
 
@@ -265,7 +265,7 @@ namespace nova::renderer {
 
     void Pipeline::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         MTR_SCOPE("Pipeline", "record");
-        cmds.set_pipeline_state(pipeline);
+        cmds.set_pipeline(pipeline);
 
         const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline.name);
 

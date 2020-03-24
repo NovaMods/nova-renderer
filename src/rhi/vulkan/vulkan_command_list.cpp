@@ -301,24 +301,26 @@ namespace nova::renderer::rhi {
         vkCmdPushConstants(cmds, device.standard_pipeline_layout, VK_SHADER_STAGE_ALL, sizeof(uint32_t), sizeof(uint32_t), &index);
     }
 
-    void VulkanRenderCommandList::set_pipeline_state(const RhiGraphicsPipelineState& state) {
+    void VulkanRenderCommandList::set_pipeline(const RhiPipeline& state) {
         MTR_SCOPE("VulkanRenderCommandList", "bind_pipeline");
 
+        const auto& vk_pipeline = static_cast<const VulkanPipeline&>(state);
+
         if(current_render_pass != nullptr) {
-            auto* pipeline = current_render_pass->cached_pipelines.find(state.name);
+            auto* pipeline = current_render_pass->cached_pipelines.find(vk_pipeline.state.name);
             if(pipeline == nullptr) {
-                const auto pipeline_result = device.create_pipeline(state, *current_render_pass, allocator);
+                const auto pipeline_result = device.compile_pipeline_state(vk_pipeline, *current_render_pass, allocator);
                 if(pipeline_result) {
-                    pipeline = current_render_pass->cached_pipelines.insert(state.name, *pipeline_result);
+                    pipeline = current_render_pass->cached_pipelines.insert(vk_pipeline.state.name, *pipeline_result);
 
                 } else {
-                    logger->error("Could not compile pipeline %s", state.name);
+                    logger->error("Could not compile pipeline %s", vk_pipeline.state.name);
                     return;
                 }
             }
 
             if(pipeline != nullptr) {
-                vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
+                vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<VkPipeline>(*pipeline));
             }
 
         } else {
