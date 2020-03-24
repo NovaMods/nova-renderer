@@ -564,21 +564,8 @@ namespace nova::renderer::rhi {
             num_bindings_per_set[desc.set] = rx::algorithm::max(num_bindings_per_set[desc.set], desc.binding + 1);
         });
 
-        rx::vector<rx::vector<vk::DescriptorSetLayoutBinding>> bindings_by_set{&allocator};
-        rx::vector<rx::vector<vk::DescriptorBindingFlags>> binding_flags_by_set{&allocator};
-        bindings_by_set.reserve(num_sets);
-        binding_flags_by_set.reserve(num_sets);
-
-        uint32_t set = 0;
-
-        num_bindings_per_set.each_fwd([&](const uint32_t num_bindings) {
-            // Emplace back vectors large enough to hold all the bindings we have
-            bindings_by_set.emplace_back(&allocator, num_bindings);
-            binding_flags_by_set.emplace_back(&allocator, num_bindings);
-
-            logger->verbose("Set %u has %u bindings", set, num_bindings);
-            set++;
-        });
+        rx::vector<rx::vector<vk::DescriptorSetLayoutBinding>> bindings_by_set{&allocator, num_sets};
+        rx::vector<rx::vector<vk::DescriptorBindingFlags>> binding_flags_by_set{&allocator, num_sets};
 
         all_bindings.each_value([&](const RhiResourceBindingDescription& binding) {
             if(binding.set >= bindings_by_set.size()) {
@@ -595,8 +582,8 @@ namespace nova::renderer::rhi {
             logger->verbose("Descriptor %u.%u is type %s", binding.set, binding.binding, descriptor_type_to_string(binding.type));
 
             if(binding.is_unbounded) {
-                binding_flags_by_set[binding.set][binding.binding] = vk::DescriptorBindingFlagBits::eVariableDescriptorCount |
-                                                                     vk::DescriptorBindingFlagBits::ePartiallyBound;
+                binding_flags_by_set[binding.set].push_back(vk::DescriptorBindingFlagBits::eVariableDescriptorCount |
+                                                                     vk::DescriptorBindingFlagBits::ePartiallyBound);
 
                 // Record the maximum number of descriptors in the variable size array in this set
                 variable_descriptor_counts[binding.set] = binding.count;
@@ -604,10 +591,10 @@ namespace nova::renderer::rhi {
                 logger->verbose("Descriptor %u.%u is unbounded", binding.set, binding.binding);
 
             } else {
-                binding_flags_by_set[binding.set][binding.binding] = {};
+                binding_flags_by_set[binding.set].push_back({});
             }
 
-            bindings_by_set[binding.set][binding.binding] = descriptor_binding;
+            bindings_by_set[binding.set].push_back(descriptor_binding);
 
             return true;
         });
