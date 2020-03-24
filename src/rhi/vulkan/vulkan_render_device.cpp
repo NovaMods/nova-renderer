@@ -307,7 +307,12 @@ namespace nova::renderer::rhi {
 
         const auto& layout = create_pipeline_layout(pipeline_state);
 
-        return rx::make_ptr<VulkanPipeline>(&allocator, pipeline_state, layout);
+        auto pipeline = rx::make_ptr<VulkanPipeline>(&allocator);
+        pipeline->name = pipeline_state.name;
+        pipeline->layout = layout;
+        pipeline->state = pipeline_state;
+
+        return pipeline;
     }
 
     rx::ptr<RhiResourceBinder> VulkanRenderDevice::create_resource_binder_for_pipeline(const RhiPipeline& pipeline,

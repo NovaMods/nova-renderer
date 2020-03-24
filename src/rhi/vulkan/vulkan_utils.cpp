@@ -573,8 +573,8 @@ namespace nova::renderer::rhi {
 
         num_bindings_per_set.each_fwd([&](const uint32_t num_bindings) {
             // Emplace back vectors large enough to hold all the bindings we have
-            bindings_by_set.emplace_back(allocator, num_bindings);
-            binding_flags_by_set.emplace_back(allocator, num_bindings);
+            bindings_by_set.emplace_back(&allocator, num_bindings);
+            binding_flags_by_set.emplace_back(&allocator, num_bindings);
 
             logger->verbose("Set %u has %u bindings", set, num_bindings);
             set++;
