@@ -116,7 +116,7 @@ namespace nova::renderer {
     };
 
     struct Pipeline {
-        RhiGraphicsPipelineState pipeline{};
+        rx::ptr<rhi::RhiPipeline> pipeline{};
         rhi::RhiPipelineInterface* pipeline_interface = nullptr;
 
         void record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;
@@ -265,15 +265,15 @@ namespace nova::renderer {
          * object. This means that a renderpack's dynamic resources _MUST_ be created before its render graph
          *
          * \param name The name of this renderpass
-         * \param pipeline_state The graphics pipeline state to use when executing this renderpass
+         * \param pipeline The graphics pipeline state to use when executing this renderpass
          * \param is_builtin Whether this render pass is built in to Nova or comes from a renderpack
          */
         explicit GlobalRenderpass(const rx::string& name,
-                                  RhiGraphicsPipelineState pipeline_state,
+                                  rx::ptr<rhi::RhiPipeline> pipeline,
                                   bool is_builtin = false);
 
     protected:
-        RhiGraphicsPipelineState pipeline_state;
+        rx::ptr<rhi::RhiPipeline> pipeline;
 
         rx::ptr<RhiResourceBinder> resource_binder;
 

@@ -27,10 +27,10 @@ namespace nova::renderer {
 
     BackbufferOutputRenderpass::BackbufferOutputRenderpass(rhi::RhiImage* ui_output,
                                                            rhi::RhiImage* scene_output,
-                                                           const RhiGraphicsPipelineState& pipeline_state,
+                                                           rx::ptr<rhi::RhiPipeline> pipeline,
                                                            rhi::RenderDevice& device)
-        : GlobalRenderpass(BACKBUFFER_OUTPUT_RENDER_PASS_NAME, pipeline_state, true) {
-        resource_binder = device.create_resource_binder_for_pipeline(pipeline_state, device.get_allocator());
+        : GlobalRenderpass(BACKBUFFER_OUTPUT_RENDER_PASS_NAME, rx::utility::move(pipeline), true) {
+        resource_binder = device.create_resource_binder_for_pipeline(*(this->pipeline), device.get_allocator());
 
         resource_binder->bind_image("ui_output", ui_output);
         resource_binder->bind_image("scene_output", scene_output);

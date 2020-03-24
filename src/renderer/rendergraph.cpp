@@ -104,11 +104,11 @@ namespace nova::renderer {
 
     void SceneRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {}
 
-    GlobalRenderpass::GlobalRenderpass(const rx::string& name, RhiGraphicsPipelineState pipeline_state, const bool is_builtin)
-        : Renderpass{name, is_builtin}, pipeline_state{rx::utility::move(pipeline_state)} {}
+    GlobalRenderpass::GlobalRenderpass(const rx::string& name, rx::ptr<rhi::RhiPipeline> pipeline, const bool is_builtin)
+        : Renderpass{name, is_builtin}, pipeline{rx::utility::move(pipeline)} {}
 
     void GlobalRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
-        cmds.set_pipeline(pipeline_state);
+        cmds.set_pipeline(*pipeline);
 
         cmds.bind_resources(*resource_binder);
 
@@ -265,9 +265,9 @@ namespace nova::renderer {
 
     void Pipeline::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         MTR_SCOPE("Pipeline", "record");
-        cmds.set_pipeline(pipeline);
+        cmds.set_pipeline(*pipeline);
 
-        const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline.name);
+        const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline->name);
 
         passes.each_fwd([&](const renderer::MaterialPass& pass) { pass.record(cmds, ctx); });
     }
