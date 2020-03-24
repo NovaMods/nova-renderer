@@ -102,14 +102,11 @@ namespace nova::renderer::rhi {
                                                                  const glm::uvec2& framebuffer_size,
                                                                  rx::memory::allocator& allocator) = 0;
 
-        [[nodiscard]] virtual rx::ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiGraphicsPipelineState& pipeline_state,
-                                                                                             rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual rx::ptr<RhiPipeline> create_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                                   rx::memory::allocator& allocator) = 0;
 
-        [[nodiscard]] virtual ntl::Result<RhiPipelineInterface*> create_pipeline_interface(
-            const rx::map<rx::string, RhiResourceBindingDescription>& bindings,
-            const rx::vector<renderpack::TextureAttachmentInfo>& color_attachments,
-            const rx::optional<renderpack::TextureAttachmentInfo>& depth_texture,
-            rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual rx::ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
+                                                                                             rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Creates a buffer with undefined contents
@@ -177,14 +174,6 @@ namespace nova::renderer::rhi {
          * need to clean up their GPU objects
          */
         virtual void destroy_framebuffer(RhiFramebuffer* framebuffer, rx::memory::allocator& allocator) = 0;
-
-        /*!
-         * \brief Clean up any GPU objects a PipelineInterface may own
-         *
-         * While PipelineInterfaces are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we
-         * still need to clean up their GPU objects
-         */
-        virtual void destroy_pipeline_interface(RhiPipelineInterface* pipeline_interface, rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Clean up any GPU objects an Image may own

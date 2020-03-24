@@ -70,6 +70,8 @@ namespace nova::renderer::rhi {
         rx::vector<RhiImage*> images;
     };
 
+    struct RhiPipeline {};
+
     struct RhiFramebuffer {
         glm::uvec2 size;
 
