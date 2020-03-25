@@ -156,6 +156,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderCommandList::bind_resources(RhiResourceBinder& binder) {
+        MTR_SCOPE("VulkanRenderCommandList", "bind_resources");
         auto& vk_binder = static_cast<VulkanResourceBinder&>(binder);
         const auto& sets = vk_binder.get_sets();
         const auto& layout = vk_binder.get_layout();

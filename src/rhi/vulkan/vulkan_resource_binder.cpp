@@ -6,6 +6,7 @@
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 #include "../../renderer/pipeline_reflection.hpp"
+#include "minitrace.h"
 #include "vulkan_render_device.hpp"
 #include "vulkan_utils.hpp"
 
@@ -74,12 +75,14 @@ namespace nova::renderer::rhi {
     const rx::vector<vk::DescriptorSet>& VulkanResourceBinder::get_sets() {
         if(dirty) {
             update_all_descriptors();
+            dirty = false;
         }
 
         return sets;
     }
 
     void VulkanResourceBinder::update_all_descriptors() {
+        MTR_SCOPE("VulkanResourceBinder", "update_all_descriptors");
         rx::vector<vk::WriteDescriptorSet> writes{allocator};
         writes.reserve(bound_images.size() + bound_samplers.size() + bound_buffers.size());
 
