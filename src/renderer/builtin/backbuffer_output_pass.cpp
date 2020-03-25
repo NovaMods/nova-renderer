@@ -27,13 +27,16 @@ namespace nova::renderer {
 
     BackbufferOutputRenderpass::BackbufferOutputRenderpass(rhi::RhiImage* ui_output,
                                                            rhi::RhiImage* scene_output,
+                                                           rhi::RhiSampler* point_sampler,
                                                            rx::ptr<rhi::RhiPipeline> pipeline,
+                                                           MeshId mesh,
                                                            rhi::RenderDevice& device)
-        : GlobalRenderpass(BACKBUFFER_OUTPUT_RENDER_PASS_NAME, rx::utility::move(pipeline), true) {
+        : GlobalRenderpass(BACKBUFFER_OUTPUT_RENDER_PASS_NAME, rx::utility::move(pipeline), mesh, true) {
         resource_binder = device.create_resource_binder_for_pipeline(*(this->pipeline), device.get_allocator());
 
         resource_binder->bind_image("ui_output", ui_output);
         resource_binder->bind_image("scene_output", scene_output);
+        resource_binder->bind_sampler("tex_sampler", point_sampler);
 
         rhi::RhiResourceBarrier pre_pass_barrier;
         pre_pass_barrier.access_before_barrier = rhi::ResourceAccess::ColorAttachmentWrite;

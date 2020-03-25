@@ -6,7 +6,9 @@ namespace nova::renderer {
     public:
         explicit BackbufferOutputRenderpass(rhi::RhiImage* ui_output,
                                             rhi::RhiImage* scene_output,
+                                            rhi::RhiSampler* point_sampler,
                                             rx::ptr<rhi::RhiPipeline> pipeline,
+                                            MeshId mesh,
                                             rhi::RenderDevice& device);
 
         static const renderpack::RenderPassCreateInfo& get_create_info();

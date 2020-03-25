@@ -110,7 +110,7 @@ namespace nova::renderer::rhi {
                              .setDstSet(set)
                              .setDstBinding(binding.binding)
                              .setDstArrayElement(0)
-                             .setDescriptorCount(static_cast<uint32_t>(image_infos.size()))
+                             .setDescriptorCount(static_cast<uint32_t>(images.size()))
                              .setDescriptorType(vk::DescriptorType::eSampledImage)
                              .setPImageInfo(all_image_infos.last().data());
             writes.push_back(rx::utility::move(write));
@@ -135,7 +135,7 @@ namespace nova::renderer::rhi {
                              .setDstSet(set)
                              .setDstBinding(binding.binding)
                              .setDstArrayElement(0)
-                             .setDescriptorCount(static_cast<uint32_t>(sampler_infos.size()))
+                             .setDescriptorCount(static_cast<uint32_t>(samplers.size()))
                              .setDescriptorType(vk::DescriptorType::eSampler)
                              .setPImageInfo(all_image_infos.last().data());
             writes.push_back(rx::utility::move(write));
@@ -160,7 +160,7 @@ namespace nova::renderer::rhi {
                              .setDstSet(set)
                              .setDstBinding(binding.binding)
                              .setDstArrayElement(0)
-                             .setDescriptorCount(static_cast<uint32_t>(buffer_infos.size()))
+                             .setDescriptorCount(static_cast<uint32_t>(buffers.size()))
                              .setDescriptorType(vk::DescriptorType::eUniformBuffer)
                              .setPBufferInfo(all_buffer_infos.last().data());
             writes.push_back(rx::utility::move(write));

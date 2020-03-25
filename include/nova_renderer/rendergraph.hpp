@@ -266,14 +266,17 @@ namespace nova::renderer {
          *
          * \param name The name of this renderpass
          * \param pipeline The graphics pipeline state to use when executing this renderpass
+         * \param mesh The mesh to execute this renderpass over. Will usually be the fullscreen triangle
          * \param is_builtin Whether this render pass is built in to Nova or comes from a renderpack
          */
-        explicit GlobalRenderpass(const rx::string& name, rx::ptr<rhi::RhiPipeline> pipeline, bool is_builtin = false);
+        explicit GlobalRenderpass(const rx::string& name, rx::ptr<rhi::RhiPipeline> pipeline, MeshId mesh, bool is_builtin = false);
 
     protected:
         rx::ptr<rhi::RhiPipeline> pipeline;
 
         rx::ptr<RhiResourceBinder> resource_binder;
+
+        MeshId mesh;
 
         /*!
          * \brief Issues a fullscreen drawcall that uses its resource binder and pipeline state

@@ -156,6 +156,8 @@ namespace nova::renderer {
          */
         [[nodiscard]] ProceduralMeshAccessor create_procedural_mesh(uint64_t vertex_size, uint64_t index_size);
 
+        [[nodiscard]] rx::optional<Mesh> get_mesh(MeshId mesh);
+
         /*!
          * \brief Destroys the mesh with the provided ID, freeing up whatever VRAM it was using
          *

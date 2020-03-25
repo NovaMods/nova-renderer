@@ -104,15 +104,17 @@ namespace nova::renderer {
 
     void SceneRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {}
 
-    GlobalRenderpass::GlobalRenderpass(const rx::string& name, rx::ptr<rhi::RhiPipeline> pipeline, const bool is_builtin)
-        : Renderpass{name, is_builtin}, pipeline{rx::utility::move(pipeline)} {}
+    GlobalRenderpass::GlobalRenderpass(const rx::string& name, rx::ptr<rhi::RhiPipeline> pipeline, const MeshId mesh, const bool is_builtin)
+        : Renderpass{name, is_builtin}, pipeline{rx::utility::move(pipeline)}, mesh{mesh} {}
 
     void GlobalRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
         cmds.set_pipeline(*pipeline);
 
         cmds.bind_resources(*resource_binder);
 
-        // TODO: Bind a fullscreen triangle mesh
+        const auto mesh_data = ctx.nova->get_mesh(mesh);
+        cmds.bind_index_buffer(mesh_data->index_buffer, rhi::IndexType::Uint32);
+        cmds.bind_vertex_buffers(rx::array{mesh_data->vertex_buffer});
 
         cmds.draw_indexed_mesh(3);
     }

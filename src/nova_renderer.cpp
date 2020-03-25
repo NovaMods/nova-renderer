@@ -429,6 +429,15 @@ namespace nova::renderer {
         return ProceduralMeshAccessor{&proc_meshes, our_id};
     }
 
+    rx::optional<Mesh> NovaRenderer::get_mesh(const MeshId mesh_id) {
+        if(const auto* mesh = meshes.find(mesh_id)) {
+            return *mesh;
+
+        } else {
+            return rx::nullopt;
+        }
+    }
+
     void NovaRenderer::load_renderpack(const rx::string& renderpack_name) {
         MTR_SCOPE("RenderpackLoading", "load_renderpack");
 
@@ -930,7 +939,9 @@ namespace nova::renderer {
         if(rendergraph->create_renderpass<BackbufferOutputRenderpass>(*device_resources,
                                                                       ui_output->image,
                                                                       scene_output->image,
+                                                                      point_sampler,
                                                                       rx::utility::move(backbuffer_pipeline),
+                                                                      fullscreen_triangle_id,
                                                                       *device) == nullptr) {
 
             logger->error("Could not create the backbuffer output renderpass");
