@@ -15,7 +15,7 @@ namespace nova::renderer {
     constexpr mem::Bytes MATERIAL_BUFFER_SIZE = 64_kb;
 
     constexpr uint32_t AMD_PCI_VENDOR_ID = 0x1022;
-    constexpr uint32_t INTEL_PCI_VENDOR_ID = 8086;
+    constexpr uint32_t INTEL_PCI_VENDOR_ID = 0x8086;
     constexpr uint32_t NVIDIA_PCI_VENDOR_ID = 0x10DE;
 
     constexpr uint32_t MAX_NUM_CAMERAS = 256;

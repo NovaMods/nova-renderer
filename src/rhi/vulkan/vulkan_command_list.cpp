@@ -358,7 +358,6 @@ namespace nova::renderer::rhi {
         for(uint32_t i = 0; i < buffers.size(); i++) {
             offsets.push_back(i);
             const auto* vk_buffer = static_cast<const VulkanBuffer*>(buffers[i]);
-            logger->verbose("Binding buffer %u", vk_buffer->buffer);
             vk_buffers.push_back(vk_buffer->buffer);
         }
 

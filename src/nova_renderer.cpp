@@ -288,7 +288,6 @@ namespace nova::renderer {
             const auto& renderpass_order = rendergraph->calculate_renderpass_execution_order();
 
             renderpass_order.each_fwd([&](const rx::string& renderpass_name) {
-                logger->verbose("Recording renderpass %s in frame idx %u", renderpass_name, cur_frame_idx);
                 auto* renderpass = rendergraph->get_renderpass(renderpass_name);
                 renderpass->execute(*cmds, ctx);
             });

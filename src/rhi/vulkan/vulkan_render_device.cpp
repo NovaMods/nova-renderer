@@ -366,7 +366,10 @@ namespace nova::renderer::rhi {
 
         vk::DescriptorPool pool;
         const auto& vk_alloc = wrap_allocator(allocator);
-        device.createDescriptorPool(&pool_create_info, &vk_alloc, &pool);
+        const auto result = device.createDescriptorPool(&pool_create_info, &vk_alloc, &pool);
+        if(result != vk::Result::eSuccess) {
+            logger->error("Could not create descriptor pool: %s", vk::to_string(result).c_str());
+        }
 
         return pool;
     }
@@ -1428,6 +1431,10 @@ namespace nova::renderer::rhi {
                     continue;
                 }
 
+                if(!is_intel_gpu) {
+                    //continue;
+                }
+
                 const auto supports_extensions = does_device_support_extensions(current_device, device_extensions);
                 if(!supports_extensions) {
                     continue;
@@ -1552,7 +1559,8 @@ namespace nova::renderer::rhi {
                                           VulkanRenderEngine,
                                           vkCreateDevice);
         if(res != VK_SUCCESS) {
-            // logger();
+            logger->error("Could not create Vulkan device: %s", vk::to_string(vk::Result{res}).c_str());
+            rx::log::flush();
         }
         device = vk_device;
 
@@ -1701,10 +1709,10 @@ namespace nova::renderer::rhi {
 
         device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &standard_pipeline_layout);
 
-        const auto& pool = create_descriptor_pool(rx::array{rx::pair{DescriptorType::StorageBuffer, 5_u32 * 1024},
-                                                            rx::pair{DescriptorType::UniformBuffer, 5_u32 * 1024},
-                                                            rx::pair{DescriptorType::Texture, MAX_NUM_TEXTURES * 1024},
-                                                            rx::pair{DescriptorType::Sampler, 3_u32 * 1024}},
+        const auto& pool = create_descriptor_pool(rx::array{rx::pair{DescriptorType::StorageBuffer, 5_u32 * 128},
+                                                            rx::pair{DescriptorType::UniformBuffer, 5_u32 * 128},
+                                                            rx::pair{DescriptorType::Texture, MAX_NUM_TEXTURES * 128},
+                                                            rx::pair{DescriptorType::Sampler, 3_u32 * 128}},
                                                   internal_allocator);
 
         standard_descriptor_set_pool = *pool;
@@ -1908,7 +1916,7 @@ namespace nova::renderer::rhi {
 
             auto* vk_render_device = reinterpret_cast<VulkanRenderDevice*>(render_device);
             if(vk_render_device->settings->debug.break_on_validation_errors) {
-                rx::abort("Validation error");
+                rx::abort("Vulkan validation error");
             }
 
         } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {
