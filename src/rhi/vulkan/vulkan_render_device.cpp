@@ -1428,11 +1428,11 @@ namespace nova::renderer::rhi {
                     // _probably_ discreet GPUs, so let's not use the Intel GPU and instead use the discreet GPU
                     // TODO: Make a local device for the integrated GPU when we figure out multi-GPU
                     // TODO: Rework this code when Intel releases discreet GPUs
-                    continue;
+                    //continue;
                 }
 
                 if(!is_intel_gpu) {
-                    //continue;
+                    continue;
                 }
 
                 const auto supports_extensions = does_device_support_extensions(current_device, device_extensions);
