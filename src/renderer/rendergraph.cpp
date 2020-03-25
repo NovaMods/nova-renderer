@@ -78,6 +78,7 @@ namespace nova::renderer {
         pipeline_names.each_fwd([&](const rx::string& pipeline_name) {
             const auto* pipeline = ctx.nova->find_pipeline(pipeline_name);
             if(pipeline) {
+                logger->verbose("Recording pipeline %s", pipeline_name);
                 pipeline->record(cmds, ctx);
             }
         });
@@ -193,7 +194,10 @@ namespace nova::renderer {
     void renderer::MaterialPass::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         MTR_SCOPE("MaterialPass", "record");
 
-        cmds.bind_descriptor_sets(descriptor_sets, pipeline_interface);
+        logger->verbose("Recording material pass %s: %u static mesh draws, %u procedural mesh draws",
+                        name,
+                        static_mesh_draws.size(),
+                        static_procedural_mesh_draws.size());
 
         static_mesh_draws.each_fwd(
             [&](const MeshBatch<StaticMeshRenderCommand>& batch) { record_rendering_static_mesh_batch(batch, cmds, ctx); });

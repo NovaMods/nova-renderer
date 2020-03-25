@@ -320,6 +320,7 @@ namespace nova::renderer::rhi {
             }
 
             if(pipeline != nullptr) {
+                rx::log::flush();   // Hack while I debug something
                 vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<VkPipeline>(*pipeline));
             }
 
@@ -357,6 +358,7 @@ namespace nova::renderer::rhi {
         for(uint32_t i = 0; i < buffers.size(); i++) {
             offsets.push_back(i);
             const auto* vk_buffer = static_cast<const VulkanBuffer*>(buffers[i]);
+            logger->verbose("Binding buffer %u", vk_buffer->buffer);
             vk_buffers.push_back(vk_buffer->buffer);
         }
 
