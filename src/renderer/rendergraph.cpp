@@ -1,10 +1,14 @@
 #include "nova_renderer/rendergraph.hpp"
 
+#include <utility>
+
+#include <minitrace.h>
+
 #include "nova_renderer/nova_renderer.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 
 #include "../loading/renderpack/render_graph_builder.hpp"
-#include "minitrace.h"
+#include "pipeline_reflection.hpp"
 
 namespace nova::renderer {
     using namespace renderpack;
@@ -96,6 +100,23 @@ namespace nova::renderer {
             barriers.push_back(backbuffer_barrier);
             cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::BottomOfPipe, barriers);
         }
+    }
+
+    void SceneRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {}
+
+    GlobalRenderpass::GlobalRenderpass(const rx::string& name, rx::ptr<rhi::RhiPipeline> pipeline, const MeshId mesh, const bool is_builtin)
+        : Renderpass{name, is_builtin}, pipeline{rx::utility::move(pipeline)}, mesh{mesh} {}
+
+    void GlobalRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
+        cmds.set_pipeline(*pipeline);
+
+        cmds.bind_resources(*resource_binder);
+
+        const auto mesh_data = ctx.nova->get_mesh(mesh);
+        cmds.bind_index_buffer(mesh_data->index_buffer, rhi::IndexType::Uint32);
+        cmds.bind_vertex_buffers(rx::array{mesh_data->vertex_buffer});
+
+        cmds.draw_indexed_mesh(3);
     }
 
     Rendergraph::Rendergraph(rx::memory::allocator& allocator, rhi::RenderDevice& device) : allocator(allocator), device(device) {}
@@ -246,9 +267,9 @@ namespace nova::renderer {
 
     void Pipeline::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         MTR_SCOPE("Pipeline", "record");
-        cmds.set_pipeline_state(pipeline);
+        cmds.set_pipeline(*pipeline);
 
-        const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline.name);
+        const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline->name);
 
         passes.each_fwd([&](const renderer::MaterialPass& pass) { pass.record(cmds, ctx); });
     }

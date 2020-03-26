@@ -137,7 +137,7 @@ namespace nova::renderer::rhi {
         TessellationControl = 0x0002,
         TessellationEvaluation = 0x0004,
         Geometry = 0x0008,
-        Fragment = 0x0010,
+        Pixel = 0x0010,
         Compute = 0x0020,
         Raygen = 0x0100,
         AnyHit = 0x0200,

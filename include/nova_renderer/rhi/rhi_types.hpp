@@ -70,6 +70,10 @@ namespace nova::renderer::rhi {
         rx::vector<RhiImage*> images;
     };
 
+    struct RhiPipeline {
+        rx::string name;
+    };
+
     struct RhiFramebuffer {
         glm::uvec2 size;
 
@@ -116,6 +120,11 @@ namespace nova::renderer::rhi {
         bool operator==(const RhiResourceBindingDescription& other);
 
         bool operator!=(const RhiResourceBindingDescription& other);
+    };
+
+    struct RhiPushConstantRange {
+        uint32_t offset;
+        uint32_t size;
     };
 
     struct RhiVertexField {
@@ -192,60 +201,6 @@ namespace nova::renderer::rhi {
         };
 
         RhiResourceBarrier();
-    };
-
-    struct RhiDescriptorImageInfo {
-        RhiImage* image;
-        renderpack::TextureFormat format;
-    };
-
-    struct RhiDescriptorBufferInfo {
-        RhiBuffer* buffer;
-    };
-
-    struct RhiDescriptorSamplerInfo {
-        RhiSampler* sampler;
-    };
-
-    union RhiDescriptorResourceInfo {
-        RhiDescriptorResourceInfo();
-
-        /*!
-         * \brief Information to update an image descriptor
-         */
-        RhiDescriptorImageInfo image_info;
-
-        /*!
-         * \brief Information to update a buffer descriptor
-         */
-        RhiDescriptorBufferInfo buffer_info{};
-
-        RhiDescriptorSamplerInfo sampler_info;
-    };
-
-    struct RhiDescriptorSetWrite {
-        /*!
-         * \brief Pointer to the descriptor set to write to
-         */
-        RhiDescriptorSet* set;
-
-        /*!
-         * \brief The specific binding in the set that you want to write to
-         */
-        uint32_t binding;
-
-        /*!
-         * \brief The type of descriptor you're writing to
-         */
-        DescriptorType type;
-
-        /*!
-         * \brief All the resources to bind to this descriptor
-         *
-         * You may only bind multiple resources if the descriptor is an array descriptor. Knowing whether you're binding to an array
-         * descriptor or not is your responsibility
-         */
-        rx::vector<RhiDescriptorResourceInfo> resources;
     };
 #pragma endregion
 

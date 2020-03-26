@@ -61,6 +61,8 @@ namespace nova::renderer::rhi {
          */
         rx::vector<vk::PushConstantRange> standard_push_constants;
 
+        rx::map<rx::string, RhiResourceBindingDescription> standard_layout_bindings;
+
         /*!
          * \brief Layout for the standard descriptor set
          */
@@ -71,7 +73,7 @@ namespace nova::renderer::rhi {
          */
         vk::PipelineLayout standard_pipeline_layout;
 
-        rx::ptr<VulkanDescriptorPool> standard_descriptor_set_pool;
+        vk::DescriptorPool standard_descriptor_set_pool;
 
         /*!
          * \brief The descriptor set that binds to the standard pipeline layout
@@ -106,10 +108,14 @@ namespace nova::renderer::rhi {
                                            const glm::uvec2& framebuffer_size,
                                            rx::memory::allocator& allocator) override;
 
-        ntl::Result<RhiPipelineInterface*> create_pipeline_interface(const rx::map<rx::string, RhiResourceBindingDescription>& bindings,
-                                                                     const rx::vector<renderpack::TextureAttachmentInfo>& color_attachments,
-                                                                     const rx::optional<renderpack::TextureAttachmentInfo>& depth_texture,
-                                                                     rx::memory::allocator& allocator) override;
+        rx::ptr<RhiPipeline> create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                     rx::memory::allocator& allocator) override;
+
+        rx::ptr<RhiPipeline> create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                    rx::memory::allocator& allocator) override;
+
+        rx::ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
+                                                                       rx::memory::allocator& allocator) override;
 
         RhiBuffer* create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) override;
 
@@ -135,10 +141,6 @@ namespace nova::renderer::rhi {
 
         void destroy_framebuffer(RhiFramebuffer* framebuffer, rx::memory::allocator& allocator) override;
 
-        void destroy_pipeline_interface(RhiPipelineInterface* pipeline_interface, rx::memory::allocator& allocator) override;
-
-        void destroy_pipeline(VulkanPipeline* pipeline, rx::memory::allocator& allocator);
-
         void destroy_texture(RhiImage* resource, rx::memory::allocator& allocator) override;
 
         void destroy_semaphores(rx::vector<RhiSemaphore*>& semaphores, rx::memory::allocator& allocator) override;
@@ -162,6 +164,8 @@ namespace nova::renderer::rhi {
     public:
         [[nodiscard]] uint32_t get_queue_family_index(QueueType type) const;
 
+        VulkanPipelineLayoutInfo create_pipeline_layout(const RhiGraphicsPipelineState& state);
+
         /*!
          * \brief Creates a new PSO
          *
@@ -171,12 +175,12 @@ namespace nova::renderer::rhi {
          *
          * \return The new PSO
          */
-        [[nodiscard]] ntl::Result<VulkanPipeline> create_pipeline(const RhiGraphicsPipelineState& state,
-                                                                  vk::RenderPass renderpass,
-                                                                  rx::memory::allocator& allocator);
+        [[nodiscard]] ntl::Result<vk::Pipeline> compile_pipeline_state(const VulkanPipeline& state,
+                                                                       const VulkanRenderpass& renderpass,
+                                                                       rx::memory::allocator& allocator);
 
-        [[nodiscard]] RhiDescriptorPool* create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
-                                                                rx::memory::allocator& allocator);
+        [[nodiscard]] rx::optional<vk::DescriptorPool> create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
+                                                                              rx::memory::allocator& allocator);
 
         /*!
          * \brief Gets the next available descriptor set for the standard pipeline layout
@@ -186,9 +190,14 @@ namespace nova::renderer::rhi {
         [[nodiscard]] vk::DescriptorSet get_next_standard_descriptor_set();
 
         /*!
-         * \brief Lets the render device know that all the provided descriptor sets are no longer in use by the GPU and can be used for whatever
+         * \brief Lets the render device know that all the provided descriptor sets are no longer in use by the GPU and can be used for
+         * whatever
          */
         void return_standard_descriptor_sets(const rx::vector<vk::DescriptorSet>& sets);
+
+        rx::vector<vk::DescriptorSet> create_descriptors(const rx::vector<vk::DescriptorSetLayout>& descriptor_set_layouts,
+                                                         const rx::vector<uint32_t>& variable_descriptor_max_counts,
+                                                         rx::memory::allocator& allocator) const;
 
         [[nodiscard]] vk::Fence get_next_submission_fence();
 
@@ -255,11 +264,6 @@ namespace nova::renderer::rhi {
                                                            MemorySearchMode search_mode = MemorySearchMode::Fuzzy) const;
 
         [[nodiscard]] rx::optional<VkShaderModule> create_shader_module(const rx::vector<uint32_t>& spirv) const;
-
-        [[nodiscard]] rx::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
-            const rx::map<rx::string, RhiResourceBindingDescription>& all_bindings,
-            rx::vector<uint32_t>& variable_descriptor_counts,
-            rx::memory::allocator& allocator) const;
 
         /*!
          * \brief Gets the image view associated with the given image

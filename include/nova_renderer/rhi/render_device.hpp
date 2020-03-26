@@ -9,6 +9,7 @@
 #include "nova_renderer/util/result.hpp"
 #include "nova_renderer/window.hpp"
 
+#include "resource_binder.hpp"
 #include "rx/core/ptr.h"
 
 namespace nova::renderer {
@@ -101,11 +102,27 @@ namespace nova::renderer::rhi {
                                                                  const glm::uvec2& framebuffer_size,
                                                                  rx::memory::allocator& allocator) = 0;
 
-        [[nodiscard]] virtual ntl::Result<RhiPipelineInterface*> create_pipeline_interface(
-            const rx::map<rx::string, RhiResourceBindingDescription>& bindings,
-            const rx::vector<renderpack::TextureAttachmentInfo>& color_attachments,
-            const rx::optional<renderpack::TextureAttachmentInfo>& depth_texture,
-            rx::memory::allocator& allocator) = 0;
+        /*!
+         * \brief Creates a new surface pipeline
+         *
+         * Surface pipelines render objects using Nova's material system. The backend does a little work to set them up so they're 100%
+         * compatible with the material system. They currently can't access any resources outside of the material system, and _have_ to use
+         * the standard pipeline layout
+         */
+        [[nodiscard]] virtual rx::ptr<RhiPipeline> create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                                           rx::memory::allocator& allocator) = 0;
+
+        /*!
+         * \brief Creates a global pipeline
+         *
+         * Global pipelines are pipelines that aren't tied to any specific objects in the world. Global pipelines typically read render
+         * targets to do something like post processing
+         */
+        [[nodiscard]] virtual rx::ptr<RhiPipeline> create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                                          rx::memory::allocator& allocator) = 0;
+
+        [[nodiscard]] virtual rx::ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
+                                                                                             rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Creates a buffer with undefined contents
@@ -173,14 +190,6 @@ namespace nova::renderer::rhi {
          * need to clean up their GPU objects
          */
         virtual void destroy_framebuffer(RhiFramebuffer* framebuffer, rx::memory::allocator& allocator) = 0;
-
-        /*!
-         * \brief Clean up any GPU objects a PipelineInterface may own
-         *
-         * While PipelineInterfaces are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we
-         * still need to clean up their GPU objects
-         */
-        virtual void destroy_pipeline_interface(RhiPipelineInterface* pipeline_interface, rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Clean up any GPU objects an Image may own

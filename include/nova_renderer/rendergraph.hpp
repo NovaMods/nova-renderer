@@ -116,7 +116,7 @@ namespace nova::renderer {
     };
 
     struct Pipeline {
-        RhiGraphicsPipelineState pipeline{};
+        rx::ptr<rhi::RhiPipeline> pipeline{};
         rhi::RhiPipelineInterface* pipeline_interface = nullptr;
 
         void record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;
@@ -222,6 +222,66 @@ namespace nova::renderer {
          * this method yourself near the end of your `render` method
          */
         virtual void record_post_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;
+    };
+
+    // Intentionally using a C enum because this is actually a bitmask
+    enum ObjectType {
+        OpaqueSurface = 0x1,
+        TransparentSurface = 0x2,
+        Particle = 0x4,
+        Volume = 0x8,
+    };
+
+    /*!
+     * \brief A renderpass that draws objects in a scene
+     *
+     * Scene renderpasses have some information about which kinds of objects they draw - transparent, opaque, particles, ets
+     */
+    class SceneRenderpass : public Renderpass {
+    public:
+        /*!
+         * \brief Draws this render pass's objects
+         */
+        void record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) override;
+
+    private:
+        ObjectType drawn_objects;
+    };
+
+    /*!
+     * \brief A renderpass that doesn't operate on a specific object, but rather on data that's accessible for the whole scene
+     *
+     * Examples: light culling in a forward+ renderer, lighting in a deferred renderer, or post-processing
+     *
+     * Global renderpasses typically only execute one graphics pipeline, and they do it across the entire scene. They operate on render
+     * targets like the absolute chads they are
+     */
+    class GlobalRenderpass : public Renderpass {
+    public:
+        /*!
+         * \brief Creates a new global render pass that will use the provided pipeline
+         *
+         * We use shader reflection to figure out which render targets the pipeline wants to use, then cache them from the device resources
+         * object. This means that a renderpack's dynamic resources _MUST_ be created before its render graph
+         *
+         * \param name The name of this renderpass
+         * \param pipeline The graphics pipeline state to use when executing this renderpass
+         * \param mesh The mesh to execute this renderpass over. Will usually be the fullscreen triangle
+         * \param is_builtin Whether this render pass is built in to Nova or comes from a renderpack
+         */
+        explicit GlobalRenderpass(const rx::string& name, rx::ptr<rhi::RhiPipeline> pipeline, MeshId mesh, bool is_builtin = false);
+
+    protected:
+        rx::ptr<rhi::RhiPipeline> pipeline;
+
+        rx::ptr<RhiResourceBinder> resource_binder;
+
+        MeshId mesh;
+
+        /*!
+         * \brief Issues a fullscreen drawcall that uses its resource binder and pipeline state
+         */
+        void record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) override;
     };
 
     /*!

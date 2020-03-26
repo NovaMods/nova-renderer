@@ -1,10 +1,13 @@
 #include "vulkan_utils.hpp"
 
+#include <rx/core/algorithm/max.h>
 #include <rx/core/log.h>
 
 #include "nova_renderer/renderables.hpp"
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
+
+#include "vulkan_render_device.hpp"
 
 namespace nova::renderer::rhi {
     RX_LOG("VulkanUtil", logger);
@@ -320,47 +323,47 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkShaderStageFlags to_vk_shader_stage_flags(const ShaderStage flags) {
-        VkShaderStageFlags vk_flags = 0;
+    vk::ShaderStageFlags to_vk_shader_stage_flags(const ShaderStage flags) {
+        vk::ShaderStageFlags vk_flags{};
 
         if(flags & ShaderStage::Vertex) {
-            vk_flags |= VK_SHADER_STAGE_VERTEX_BIT;
+            vk_flags |= vk::ShaderStageFlagBits::eVertex;
         }
         if(flags & ShaderStage::TessellationControl) {
-            vk_flags |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+            vk_flags |= vk::ShaderStageFlagBits::eTessellationControl;
         }
         if(flags & ShaderStage::TessellationEvaluation) {
-            vk_flags |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+            vk_flags |= vk::ShaderStageFlagBits::eTessellationEvaluation;
         }
         if(flags & ShaderStage::Geometry) {
-            vk_flags |= VK_SHADER_STAGE_GEOMETRY_BIT;
+            vk_flags |= vk::ShaderStageFlagBits::eGeometry;
         }
-        if(flags & ShaderStage::Fragment) {
-            vk_flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+        if(flags & ShaderStage::Pixel) {
+            vk_flags |= vk::ShaderStageFlagBits::eFragment;
         }
         if(flags & ShaderStage::Compute) {
-            vk_flags |= VK_SHADER_STAGE_COMPUTE_BIT;
+            vk_flags |= vk::ShaderStageFlagBits::eCompute;
         }
         if(flags & ShaderStage::Raygen) {
-            vk_flags |= VK_SHADER_STAGE_RAYGEN_BIT_NV;
+            vk_flags |= vk::ShaderStageFlagBits::eRaygenNV;
         }
         if(flags & ShaderStage::AnyHit) {
-            vk_flags |= VK_SHADER_STAGE_ANY_HIT_BIT_NV;
+            vk_flags |= vk::ShaderStageFlagBits::eAnyHitNV;
         }
         if(flags & ShaderStage::ClosestHit) {
-            vk_flags |= VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV;
+            vk_flags |= vk::ShaderStageFlagBits::eClosestHitNV;
         }
         if(flags & ShaderStage::Miss) {
-            vk_flags |= VK_SHADER_STAGE_MISS_BIT_NV;
+            vk_flags |= vk::ShaderStageFlagBits::eMissNV;
         }
         if(flags & ShaderStage::Intersection) {
-            vk_flags |= VK_SHADER_STAGE_INTERSECTION_BIT_NV;
+            vk_flags |= vk::ShaderStageFlagBits::eIntersectionNV;
         }
         if(flags & ShaderStage::Task) {
-            vk_flags |= VK_SHADER_STAGE_TASK_BIT_NV;
+            vk_flags |= vk::ShaderStageFlagBits::eTaskNV;
         }
         if(flags & ShaderStage::Mesh) {
-            vk_flags |= VK_SHADER_STAGE_MESH_BIT_NV;
+            vk_flags |= vk::ShaderStageFlagBits::eMeshNV;
         }
 
         return vk_flags;
@@ -505,10 +508,6 @@ namespace nova::renderer::rhi {
                 return "Display Mode KHR";
             case VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT:
                 return "Debug Report Callback EXT";
-            case VK_OBJECT_TYPE_OBJECT_TABLE_NVX:
-                return "Object Table NVX";
-            case VK_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NVX:
-                return "Indirect Commands Layout NVX";
             case VK_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT:
                 return "Debug Utils Messenger EXT";
             case VK_OBJECT_TYPE_VALIDATION_CACHE_EXT:
@@ -537,6 +536,101 @@ namespace nova::renderer::rhi {
             default:
                 return VK_FORMAT_R32G32B32_SFLOAT;
         }
+    }
+
+    rx::vector<vk::DescriptorSetLayout> create_descriptor_set_layouts(
+        const rx::map<rx::string, RhiResourceBindingDescription>& all_bindings,
+        VulkanRenderDevice& render_device,
+        rx::memory::allocator& allocator) {
+        const auto max_sets = render_device.gpu.props.limits.maxBoundDescriptorSets;
+
+        uint32_t num_sets = 0;
+        all_bindings.each_value([&](const RhiResourceBindingDescription& desc) {
+            if(desc.set >= max_sets) {
+                logger->error("Descriptor set %u is out of range - your GPU only supports %u sets!", desc.set, max_sets);
+            } else {
+                num_sets = rx::algorithm::max(num_sets, desc.set + 1);
+            }
+        });
+
+        rx::vector<uint32_t> variable_descriptor_counts{&allocator};
+        variable_descriptor_counts.resize(num_sets, 0);
+
+        // Some precalculations so we know how much room we actually need
+        rx::vector<uint32_t> num_bindings_per_set{&allocator};
+        num_bindings_per_set.resize(num_sets);
+
+        all_bindings.each_value([&](const RhiResourceBindingDescription& desc) {
+            num_bindings_per_set[desc.set] = rx::algorithm::max(num_bindings_per_set[desc.set], desc.binding + 1);
+        });
+
+        rx::vector<rx::vector<vk::DescriptorSetLayoutBinding>> bindings_by_set{&allocator, num_sets};
+        rx::vector<rx::vector<vk::DescriptorBindingFlags>> binding_flags_by_set{&allocator, num_sets};
+
+        all_bindings.each_value([&](const RhiResourceBindingDescription& binding) {
+            if(binding.set >= bindings_by_set.size()) {
+                logger->error("You've skipped one or more descriptor sets! Don't do that, Nova can't handle it");
+                return true;
+            }
+
+            const auto descriptor_binding = vk::DescriptorSetLayoutBinding()
+                                                .setBinding(binding.binding)
+                                                .setDescriptorType(to_vk_descriptor_type(binding.type))
+                                                .setDescriptorCount(binding.count)
+                                                .setStageFlags(to_vk_shader_stage_flags(binding.stages));
+
+            logger->verbose("Descriptor %u.%u is type %s", binding.set, binding.binding, descriptor_type_to_string(binding.type));
+
+            if(binding.is_unbounded) {
+                binding_flags_by_set[binding.set].push_back(vk::DescriptorBindingFlagBits::eVariableDescriptorCount |
+                                                                     vk::DescriptorBindingFlagBits::ePartiallyBound);
+
+                // Record the maximum number of descriptors in the variable size array in this set
+                variable_descriptor_counts[binding.set] = binding.count;
+
+                logger->verbose("Descriptor %u.%u is unbounded", binding.set, binding.binding);
+
+            } else {
+                binding_flags_by_set[binding.set].push_back({});
+            }
+
+            bindings_by_set[binding.set].push_back(descriptor_binding);
+
+            return true;
+        });
+
+        rx::vector<vk::DescriptorSetLayoutCreateInfo> dsl_create_infos{&allocator};
+        dsl_create_infos.reserve(bindings_by_set.size());
+
+        rx::vector<vk::DescriptorSetLayoutBindingFlagsCreateInfo> flag_infos{&allocator};
+        flag_infos.reserve(bindings_by_set.size());
+
+        // We may make bindings_by_set much larger than it needs to be is there's multiple descriptor bindings per set. Thus, only iterate
+        // through the sets we actually care about
+        bindings_by_set.each_fwd([&](const rx::vector<vk::DescriptorSetLayoutBinding>& bindings) {
+            vk::DescriptorSetLayoutCreateInfo create_info = {};
+            create_info.bindingCount = static_cast<uint32_t>(bindings.size());
+            create_info.pBindings = bindings.data();
+
+            const auto& flags = binding_flags_by_set[dsl_create_infos.size()];
+            vk::DescriptorSetLayoutBindingFlagsCreateInfo binding_flags = {};
+            binding_flags.bindingCount = static_cast<uint32_t>(flags.size());
+            binding_flags.pBindingFlags = flags.data();
+            flag_infos.emplace_back(binding_flags);
+
+            create_info.pNext = &flag_infos[flag_infos.size() - 1];
+
+            dsl_create_infos.push_back(create_info);
+        });
+
+        rx::vector<vk::DescriptorSetLayout> ds_layouts{&allocator};
+        ds_layouts.resize(dsl_create_infos.size());
+        auto vk_allocator = wrap_allocator(allocator);
+        for(size_t i = 0; i < dsl_create_infos.size(); i++) {
+            render_device.device.createDescriptorSetLayout(&dsl_create_infos[i], &vk_allocator, &ds_layouts[i]);
+        }
+
+        return ds_layouts;
     }
 
     bool operator&(const ShaderStage& lhs, const ShaderStage& rhs) { return static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs); }

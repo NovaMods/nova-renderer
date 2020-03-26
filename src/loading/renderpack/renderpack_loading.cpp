@@ -244,7 +244,7 @@ namespace nova::renderer::renderpack {
         if(new_pipeline.fragment_shader) {
             (*new_pipeline.fragment_shader).source = load_shader_file((*new_pipeline.fragment_shader).filename,
                                                                       folder_access,
-                                                                      rhi::ShaderStage::Fragment,
+                                                                      rhi::ShaderStage::Pixel,
                                                                       new_pipeline.defines);
         }
 
@@ -356,7 +356,7 @@ namespace nova::renderer::renderpack {
             case rhi::ShaderStage::Geometry:
                 return L"gs_6_4";
 
-            case rhi::ShaderStage::Fragment:
+            case rhi::ShaderStage::Pixel:
                 return L"ps_6_4";
 
             case rhi::ShaderStage::Compute:

@@ -66,6 +66,11 @@ namespace nova::renderer::rhi {
                                              rx::memory::allocator& allocator) = 0;
 
         /*!
+         * \brief Uses the provided resource binder to bind resources to the command list
+         */
+        virtual void bind_resources(RhiResourceBinder& binder) = 0;
+
+        /*!
          * \brief Inserts a barrier so that all access to a resource before the barrier is resolved before any access
          * to the resource after the barrier
          *
@@ -146,7 +151,7 @@ namespace nova::renderer::rhi {
 
         virtual void set_material_index(uint32_t index) = 0;
 
-        virtual void set_pipeline_state(const RhiGraphicsPipelineState& pipeline) = 0;
+        virtual void set_pipeline(const RhiPipeline& pipeline) = 0;
 
         virtual void bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets,
                                           const RhiPipelineInterface* pipeline_interface) = 0;
