@@ -29,10 +29,6 @@
 #ifdef NOVA_LINUX
 #define NOVA_VK_XLIB
 #include "../../util/linux_utils.hpp"
-
-#elif defined(NOVA_WINDOWS)
-#include "nova_renderer/util/windows.hpp"
-
 #endif
 
 using namespace nova::mem;
@@ -56,8 +52,10 @@ namespace nova::renderer::rhi {
 
     void FencedTask::operator()() const { work_to_perform(); }
 
-    VulkanRenderDevice::VulkanRenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator)
-        : RenderDevice{settings, window, allocator},
+    VulkanRenderDevice::VulkanRenderDevice(NovaSettingsAccessManager& settings_in,
+                                           NovaWindow& window_in,
+                                           rx::memory::allocator& allocator) // NOLINT(cppcoreguidelines-pro-type-member-init)
+        : RenderDevice{settings_in, window_in, allocator},
           vk_internal_allocator{wrap_allocator(internal_allocator)},
           command_pools_by_thread_idx{&internal_allocator},
           fenced_tasks{&internal_allocator} {
@@ -65,7 +63,7 @@ namespace nova::renderer::rhi {
 
         create_instance();
 
-        if(settings.settings.debug.enabled) {
+        if(settings_in.settings.debug.enabled) {
             enable_debug_output();
         }
 
@@ -77,7 +75,7 @@ namespace nova::renderer::rhi {
 
         initialize_vma();
 
-        if(settings.settings.debug.enabled) {
+        if(settings_in.settings.debug.enabled) {
             // Late init, can only be used when the device has already been created
             vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
                 vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT"));
@@ -787,13 +785,11 @@ namespace nova::renderer::rhi {
             buffer->size = info.size;
 
             if(settings->debug.enabled) {
-                VkDebugUtilsObjectNameInfoEXT object_name = {};
-                object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-                object_name.objectType = VK_OBJECT_TYPE_BUFFER;
-                object_name.objectHandle = reinterpret_cast<uint64_t>(buffer->buffer);
-                object_name.pObjectName = info.name.data();
-
-                NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
+                const auto object_name = vk::DebugUtilsObjectNameInfoEXT()
+                                             .setObjectType(vk::ObjectType::eBuffer)
+                                             .setObjectHandle(reinterpret_cast<uint64_t>(buffer->buffer))
+                                             .setPObjectName(info.name.data());
+                device.setDebugUtilsObjectNameEXT(&object_name);
             }
 
             return buffer;
@@ -1197,7 +1193,6 @@ namespace nova::renderer::rhi {
 
             default:
                 RX_ASSERT(false, "Unknown queue type %u", static_cast<uint32_t>(type));
-                return 9999; // I have to return _something_ or Visual Studio gets mad
         }
     }
 
@@ -1344,27 +1339,27 @@ namespace nova::renderer::rhi {
         MTR_SCOPE("VulkanRenderDevice", "save_device_info");
         switch(gpu.props.vendorID) {
             case AMD_PCI_VENDOR_ID:
-                info.architecture = DeviceArchitecture::Amd;
+                device_info.architecture = DeviceArchitecture::Amd;
                 break;
 
             case INTEL_PCI_VENDOR_ID:
-                info.architecture = DeviceArchitecture::Intel;
+                device_info.architecture = DeviceArchitecture::Intel;
                 break;
 
             case NVIDIA_PCI_VENDOR_ID:
-                info.architecture = DeviceArchitecture::Nvidia;
+                device_info.architecture = DeviceArchitecture::Nvidia;
                 break;
 
             default:
-                info.architecture = DeviceArchitecture::Unknown;
+                device_info.architecture = DeviceArchitecture::Unknown;
         }
 
         vk_info.max_uniform_buffer_size = gpu.props.limits.maxUniformBufferRange;
-        info.max_texture_size = gpu.props.limits.maxImageDimension2D;
+        device_info.max_texture_size = gpu.props.limits.maxImageDimension2D;
 
         // TODO: Something smarter when Intel releases discreet GPUS
         // TODO: Handle integrated AMD GPUs
-        info.is_uma = info.architecture == DeviceArchitecture::Intel;
+        device_info.is_uma = device_info.architecture == DeviceArchitecture::Intel;
 
         uint32_t extension_count;
         vkEnumerateDeviceExtensionProperties(gpu.phys_device, nullptr, &extension_count, nullptr);
@@ -1376,11 +1371,11 @@ namespace nova::renderer::rhi {
         };
 
         // TODO: Update as more GPUs support hardware raytracing
-        info.supports_raytracing = available_extensions.find_if(extension_name_matcher(VK_NV_RAY_TRACING_EXTENSION_NAME)) !=
-                                   rx::vector<VkExtensionProperties>::k_npos;
+        device_info.supports_raytracing = available_extensions.find_if(extension_name_matcher(VK_NV_RAY_TRACING_EXTENSION_NAME)) !=
+                                          rx::vector<VkExtensionProperties>::k_npos;
 
         // TODO: Update as more GPUs support mesh shaders
-        info.supports_mesh_shaders = available_extensions.find_if(extension_name_matcher(VK_NV_MESH_SHADER_EXTENSION_NAME));
+        device_info.supports_mesh_shaders = available_extensions.find_if(extension_name_matcher(VK_NV_MESH_SHADER_EXTENSION_NAME));
     }
 
     void VulkanRenderDevice::initialize_vma() {

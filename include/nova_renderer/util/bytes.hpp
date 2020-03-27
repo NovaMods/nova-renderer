@@ -23,7 +23,7 @@ namespace nova::mem {
     class Bytes {
     public:
         // ReSharper disable once CppNonExplicitConvertingConstructor
-        constexpr Bytes(rx_size const count) noexcept : byte_count(count){};
+        constexpr Bytes(rx_size const count) noexcept : byte_count(count){}
 
         constexpr Bytes(Bytes const& other) noexcept = default;
         constexpr Bytes& operator=(Bytes const& other) noexcept = default;
@@ -127,13 +127,13 @@ namespace nova::mem {
          *
          * \param count Amount of kilobytes to represent.
          */
-        constexpr explicit KBytes(rx_size const count) noexcept : Bytes(count * 1024){};
+        constexpr explicit KBytes(rx_size const count) noexcept : Bytes(count * 1024){}
         /**
          * Losslessly copies from another \ref Bytes instance.
          *
          * \param b Instance to copy from.
          */
-        constexpr explicit KBytes(Bytes const b) noexcept : Bytes(b){};
+        constexpr explicit KBytes(Bytes const b) noexcept : Bytes(b){}
     };
 
     /**
@@ -147,13 +147,13 @@ namespace nova::mem {
          *
          * \param count Amount of megabytes to represent.
          */
-        constexpr explicit MBytes(rx_size const count) noexcept : Bytes(count * 1048576){};
+        constexpr explicit MBytes(rx_size const count) noexcept : Bytes(count * 1048576){}
         /**
          * Losslessly copies from another \ref Bytes instance.
          *
          * \param b Instance to copy from.
          */
-        constexpr explicit MBytes(Bytes const b) noexcept : Bytes(b){};
+        constexpr explicit MBytes(Bytes const b) noexcept : Bytes(b){}
     };
 
     /**
@@ -167,13 +167,13 @@ namespace nova::mem {
          *
          * \param count Amount of gigabytes to represent.
          */
-        constexpr explicit GBytes(rx_size const count) noexcept : Bytes(count * 1073741824){};
+        constexpr explicit GBytes(rx_size const count) noexcept : Bytes(count * 1073741824){}
         /**
          * Losslessly copies from another \ref Bytes instance.
          *
          * \param b Instance to copy from.
          */
-        constexpr explicit GBytes(Bytes const b) noexcept : Bytes(b){};
+        constexpr explicit GBytes(Bytes const b) noexcept : Bytes(b){}
     };
 
     constexpr Bytes operator*(rx_size const multiplicand, Bytes const lhs) noexcept { return lhs * multiplicand; }

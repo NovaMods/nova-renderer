@@ -153,9 +153,6 @@ namespace nova::renderer::rhi {
 
         virtual void set_pipeline(const RhiPipeline& pipeline) = 0;
 
-        virtual void bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets,
-                                          const RhiPipelineInterface* pipeline_interface) = 0;
-
         /*!
          * \brief Binds the provided vertex buffers to the command list
          *

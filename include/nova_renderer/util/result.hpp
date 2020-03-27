@@ -41,7 +41,8 @@ namespace ntl {
             } else {
                 error = other.error;
             }
-        };
+        }
+
         Result& operator=(const Result<ValueType, ErrorType>& other) {
             if(other.has_value) {
                 value = other.value;
@@ -50,7 +51,7 @@ namespace ntl {
             }
 
             return *this;
-        };
+        }
 
         explicit Result(Result<ValueType, ErrorType> && old) noexcept {
             if(old.has_value) {
@@ -62,7 +63,7 @@ namespace ntl {
                 error = rx::utility::move(old.error);
                 old.error = {};
             }
-        };
+        }
 
         Result& operator=(Result<ValueType, ErrorType>&& old) noexcept {
             if(old.has_value) {
@@ -76,7 +77,7 @@ namespace ntl {
             }
 
             return *this;
-        };
+        }
 
         ~Result() {
             if(has_value) {

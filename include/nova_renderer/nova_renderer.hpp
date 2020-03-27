@@ -78,7 +78,7 @@ namespace nova::renderer {
         /*!
          * \brief Initializes the Nova Renderer
          */
-        explicit NovaRenderer(const NovaSettings& settings);
+        explicit NovaRenderer(const NovaSettings& settings_in);
 
         NovaRenderer(NovaRenderer&& other) noexcept = delete;
         NovaRenderer& operator=(NovaRenderer&& other) noexcept = delete;
@@ -295,7 +295,7 @@ namespace nova::renderer {
         void create_dynamic_textures(const rx::vector<renderpack::TextureCreateInfo>& texture_create_infos);
 
         void create_render_passes(const rx::vector<renderpack::RenderPassCreateInfo>& pass_create_infos,
-                                  const rx::vector<renderpack::PipelineData>& pipelines) const;
+                                  const rx::vector<renderpack::PipelineData>& new_pipelines) const;
 
         void destroy_dynamic_resources();
 

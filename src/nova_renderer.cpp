@@ -1,8 +1,5 @@
 #include "nova_renderer/nova_renderer.hpp"
 
-#include <array>
-#include <future>
-
 #pragma warning(push, 0)
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
@@ -36,11 +33,11 @@
 using namespace nova::mem;
 using namespace operators;
 
-rx::global_group g_nova_globals{"Nova"};
+static rx::global_group g_nova_globals{"Nova"};
 
 RX_LOG("nova", logger);
 
-rx::global<nova::StdoutStream> stdout_stream{"system", "stdout_stream"};
+static rx::global<nova::StdoutStream> stdout_stream{"system", "stdout_stream"};
 
 void init_rex() {
     static bool initialized = false;
@@ -149,7 +146,7 @@ namespace nova::renderer {
         color_attachments.emplace_back(BACKBUFFER_NAME, rhi::PixelFormat::Rgba8, false);
     }
 
-    rx::global<BackbufferOutputPipelineCreateInfo> backbuffer_output_pipeline_create_info{"Nova", "BackbufferOutputPipelineCreateInfo"};
+    static rx::global<BackbufferOutputPipelineCreateInfo> backbuffer_output_pipeline_create_info{"Nova", "BackbufferOutputPipelineCreateInfo"};
 
     bool FullMaterialPassName::operator==(const FullMaterialPassName& other) const {
         return material_name == other.material_name && pass_name == other.pass_name;
@@ -162,8 +159,8 @@ namespace nova::renderer {
         return rx::hash_combine(material_name_hash, pass_name_hash);
     }
 
-    NovaRenderer::NovaRenderer(const NovaSettings& settings)
-        : settings{settings}, global_allocator{&rx::memory::g_system_allocator}, cameras{global_allocator} {
+    NovaRenderer::NovaRenderer(const NovaSettings& settings_in)
+        : settings{settings_in}, global_allocator{&rx::memory::g_system_allocator}, cameras{global_allocator} {
         mtr_init("trace.json");
 
         MTR_META_PROCESS_NAME("NovaRenderer");
@@ -175,17 +172,17 @@ namespace nova::renderer {
 
         initialize_virtual_filesystem();
 
-        window = rx::make_ptr<NovaWindow>(global_allocator, settings);
+        window = rx::make_ptr<NovaWindow>(global_allocator, settings_in);
 
-        if(settings.debug.renderdoc.enabled) {
+        if(settings_in.debug.renderdoc.enabled) {
             MTR_SCOPE("Init", "LoadRenderdoc");
-            auto rd_load_result = load_renderdoc(settings.debug.renderdoc.renderdoc_dll_path);
+            auto rd_load_result = load_renderdoc(settings_in.debug.renderdoc.renderdoc_dll_path);
 
             rd_load_result
                 .map([&](RENDERDOC_API_1_3_0* api) {
                     render_doc = api;
 
-                    render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path);
+                    render_doc->SetCaptureFilePathTemplate(settings_in.debug.renderdoc.capture_path);
 
                     RENDERDOC_InputButton capture_key[] = {eRENDERDOC_Key_F12, eRENDERDOC_Key_PrtScrn};
                     render_doc->SetCaptureKeys(capture_key, 2);
@@ -229,7 +226,7 @@ namespace nova::renderer {
         cameras.reserve(MAX_NUM_CAMERAS);
         camera_data = rx::make_ptr<PerFrameDeviceArray<CameraUboData>>(global_allocator,
                                                                        MAX_NUM_CAMERAS,
-                                                                       settings.max_in_flight_frames,
+                                                                       settings_in.max_in_flight_frames,
                                                                        *device,
                                                                        *global_allocator);
     }
@@ -487,7 +484,7 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_render_passes(const rx::vector<renderpack::RenderPassCreateInfo>& pass_create_infos,
-                                            const rx::vector<renderpack::PipelineData>& pipelines) const {
+                                            const rx::vector<renderpack::PipelineData>& new_pipelines) const {
         MTR_SCOPE("create_render_passes", "Self");
         device->set_num_renderpasses(static_cast<uint32_t>(pass_create_infos.size()));
 
@@ -495,7 +492,7 @@ namespace nova::renderer {
             MTR_SCOPE("create_render_passes", create_info.name.data());
             auto* renderpass = global_allocator->create<Renderpass>(create_info.name);
             if(rendergraph->add_renderpass(renderpass, create_info, *device_resources) != nullptr) {
-                pipelines.each_fwd([&](const renderpack::PipelineData& pipeline) {
+                new_pipelines.each_fwd([&](const renderpack::PipelineData& pipeline) {
                     if(pipeline.pass == create_info.name) {
                         renderpass->pipeline_names.emplace_back(pipeline.name);
                     }
@@ -701,7 +698,7 @@ namespace nova::renderer {
                 }
             }
 
-        } else if(const auto* proc_mesh = proc_meshes.find(create_info.mesh)) {
+        } else if(proc_meshes.find(create_info.mesh) != nullptr) {
             if(create_info.is_static) {
                 key.type = RenderableType::ProceduralMesh;
                 bool need_to_add_batch = false;
@@ -758,7 +755,7 @@ namespace nova::renderer {
 
         auto& material_pass = (*passes)[key->material_pass_idx];
 
-        auto command = [&] {
+        auto& command = [&] {
             switch(key->type) {
                 case RenderableType::StaticMesh: {
                     auto& batch = material_pass.static_mesh_draws[key->batch_idx];

@@ -22,7 +22,7 @@ namespace nova::renderer {
         /*!
          * \brief The number of frames that were started before this frame
          */
-        size_t frame_count;
+        uint64_t frame_count;
 
         /*!
          * \brief Index of the frame currently being rendered

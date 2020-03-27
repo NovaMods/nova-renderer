@@ -63,7 +63,7 @@ namespace nova::renderer::rhi {
      */
     class RenderDevice {
     public:
-        DeviceInfo info;
+        DeviceInfo device_info;
 
         NovaSettingsAccessManager& settings;
 
@@ -165,7 +165,7 @@ namespace nova::renderer::rhi {
         [[nodiscard]] virtual rx::vector<RhiFence*> create_fences(uint32_t num_fences, bool signaled, rx::memory::allocator& allocator) = 0;
 
         /*!
-         * \blocks the fence until all fences are signaled
+         * \brief Blocks the fence until all fences are signaled
          *
          * Fences are waited on for an infinite time
          *

@@ -99,7 +99,7 @@ namespace nova::renderer {
             bool enabled = false;
 
             /*!
-             * \breif Controls if the API-specific validation layers are enabled
+             * \brief Controls if the API-specific validation layers are enabled
              *
              * This should be enabled most of the time for Nova developers and almost never for renderpack authors. Nova developers need it
              * on to debug their Vulkan usage, while Nova should be robust enough that errors that the validation layers would catch never

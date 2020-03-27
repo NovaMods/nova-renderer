@@ -75,8 +75,8 @@ TEST(GraphicsPipelineValidator, NoWarningsOrErrors) {
     const nova::renderer::renderpack::ValidationReport report = nova::renderer::renderpack::validate_graphics_pipeline(pipeline_json);
     nova::renderer::renderpack::print(report);
 
-    EXPECT_EQ(report.warnings.size(), 0);
-    EXPECT_EQ(report.errors.size(), 0);
+    EXPECT_EQ(report.warnings.size(), 0u);
+    EXPECT_EQ(report.errors.size(), 0u);
 }
 
 TEST(GraphicsPipelineValidator, MissingName) {

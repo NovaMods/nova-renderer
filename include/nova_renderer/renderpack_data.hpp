@@ -245,7 +245,7 @@ namespace nova::renderer::renderpack {
         MsaaSupport msaa_support{};
 
         /*!
-         * \brief
+         * \brief The type of primitive that this pipeline will render
          */
         RPPrimitiveTopology primitive_mode{};
 

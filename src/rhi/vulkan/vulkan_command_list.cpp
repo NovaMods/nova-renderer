@@ -16,22 +16,23 @@
 
 namespace nova::renderer::rhi {
     RX_LOG("VkCmdLst", logger);
-    VkIndexType to_vk_index_type(const IndexType index_type) {
+
+    static VkIndexType to_vk_index_type(const IndexType index_type) {
         switch(index_type) {
             case IndexType::Uint16:
                 return VK_INDEX_TYPE_UINT16;
 
             case IndexType::Uint32:
-                [[fallthrough]];
-            default:
                 return VK_INDEX_TYPE_UINT32;
         }
+
+        return VK_INDEX_TYPE_UINT32;
     }
 
     VulkanRenderCommandList::VulkanRenderCommandList(VkCommandBuffer cmds,
                                                      VulkanRenderDevice& render_device,
                                                      rx::memory::allocator& allocator)
-        : cmds(cmds), device(render_device), allocator(allocator), descriptor_sets{&allocator} {
+        : cmds(cmds), device(render_device), internal_allocator(allocator), descriptor_sets{&allocator} {
         MTR_SCOPE("VulkanRenderCommandList", "VulkanRenderCommandList");
         // TODO: Put this begin info in the constructor parameters
         VkCommandBufferBeginInfo begin_info = {};
@@ -175,10 +176,10 @@ namespace nova::renderer::rhi {
                                                     const PipelineStage stages_after_barrier,
                                                     const rx::vector<RhiResourceBarrier>& barriers) {
         MTR_SCOPE("VulkanRenderCommandList", "resource_barriers");
-        rx::vector<VkBufferMemoryBarrier> buffer_barriers{&allocator};
+        rx::vector<VkBufferMemoryBarrier> buffer_barriers{&internal_allocator};
         buffer_barriers.reserve(barriers.size());
 
-        rx::vector<VkImageMemoryBarrier> image_barriers{&allocator};
+        rx::vector<VkImageMemoryBarrier> image_barriers{&internal_allocator};
         image_barriers.reserve(barriers.size());
 
         barriers.each_fwd([&](const RhiResourceBarrier& barrier) {
@@ -247,13 +248,12 @@ namespace nova::renderer::rhi {
         auto* vk_destination_buffer = static_cast<VulkanBuffer*>(destination_buffer);
         auto* vk_source_buffer = static_cast<VulkanBuffer*>(source_buffer);
 
-        // TODO: fix the crash on this line
         vkCmdCopyBuffer(cmds, vk_source_buffer->buffer, vk_destination_buffer->buffer, 1, &copy);
     }
 
     void VulkanRenderCommandList::execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) {
         MTR_SCOPE("VulkanRenderCommandList", "execute_command_lists");
-        rx::vector<VkCommandBuffer> buffers{&allocator};
+        rx::vector<VkCommandBuffer> buffers{&internal_allocator};
         buffers.reserve(lists.size());
 
         lists.each_fwd([&](RhiRenderCommandList* list) {
@@ -278,7 +278,7 @@ namespace nova::renderer::rhi {
 
         current_render_pass = vk_renderpass;
 
-        rx::vector<VkClearValue> clear_values{&allocator, vk_framebuffer->num_attachments};
+        rx::vector<VkClearValue> clear_values{&internal_allocator, vk_framebuffer->num_attachments};
 
         VkRenderPassBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -310,7 +310,7 @@ namespace nova::renderer::rhi {
         if(current_render_pass != nullptr) {
             auto* pipeline = current_render_pass->cached_pipelines.find(vk_pipeline.state.name);
             if(pipeline == nullptr) {
-                const auto pipeline_result = device.compile_pipeline_state(vk_pipeline, *current_render_pass, allocator);
+                const auto pipeline_result = device.compile_pipeline_state(vk_pipeline, *current_render_pass, internal_allocator);
                 if(pipeline_result) {
                     pipeline = current_render_pass->cached_pipelines.insert(vk_pipeline.state.name, *pipeline_result);
 
@@ -330,31 +330,12 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void VulkanRenderCommandList::bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets,
-                                                       const RhiPipelineInterface* pipeline_interface) {
-        MTR_SCOPE("VulkanRenderCommandList", "bind_descriptor_sets");
-        const auto* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
-
-        for(uint32_t i = 0; i < descriptor_sets.size(); i++) {
-            const auto* vk_set = static_cast<const VulkanDescriptorSet*>(descriptor_sets[i]);
-
-            vkCmdBindDescriptorSets(cmds,
-                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                    device.standard_pipeline_layout,
-                                    i,
-                                    1,
-                                    &vk_set->descriptor_set,
-                                    0,
-                                    nullptr);
-        }
-    }
-
     void VulkanRenderCommandList::bind_vertex_buffers(const rx::vector<RhiBuffer*>& buffers) {
         MTR_SCOPE("VulkanRenderCommandList", "bind_vertex_buffers");
-        rx::vector<VkBuffer> vk_buffers{&allocator};
+        rx::vector<VkBuffer> vk_buffers{&internal_allocator};
         vk_buffers.reserve(buffers.size());
 
-        rx::vector<VkDeviceSize> offsets{&allocator};
+        rx::vector<VkDeviceSize> offsets{&internal_allocator};
         offsets.reserve(buffers.size());
         for(uint32_t i = 0; i < buffers.size(); i++) {
             offsets.push_back(i);

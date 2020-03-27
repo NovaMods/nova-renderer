@@ -55,9 +55,6 @@ namespace nova::renderer::rhi {
 
         void set_pipeline(const RhiPipeline& state) override;
 
-        void bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets,
-                                  const RhiPipelineInterface* pipeline_interface) override;
-
         void bind_vertex_buffers(const rx::vector<RhiBuffer*>& buffers) override;
 
         void bind_index_buffer(const RhiBuffer* buffer, IndexType index_type) override;
@@ -79,7 +76,7 @@ namespace nova::renderer::rhi {
     private:
         VulkanRenderDevice& device;
 
-        rx::memory::allocator& allocator;
+        rx::memory::allocator& internal_allocator;
 
         uint32_t camera_index = 0;
 

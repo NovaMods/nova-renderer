@@ -300,7 +300,7 @@ namespace nova::renderer {
         BlendFactor src_color_factor = BlendFactor::SrcAlpha;
 
         /*!
-         * \brier Blending factor for the color in the output render target
+         * \brief Blending factor for the color in the output render target
          */
         BlendFactor dst_color_factor = BlendFactor::OneMinusSrcAlpha;
 
@@ -361,7 +361,7 @@ namespace nova::renderer {
         rx::optional<ShaderSource> geometry_shader{};
 
         /*!
-         * \brier Pixel shader to use
+         * \brief Pixel shader to use
          */
         rx::optional<ShaderSource> pixel_shader{};
 
