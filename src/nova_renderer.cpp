@@ -340,7 +340,7 @@ namespace nova::renderer {
             device->write_data_to_buffer(mesh_data.vertex_data_ptr, vertex_buffer_create_info.size, staging_vertex_buffer);
 
             rhi::RhiRenderCommandList* vertex_upload_cmds = device->create_command_list(0,
-                                                                                        rhi::QueueType::Transfer,
+                                                                                        rhi::QueueType::Graphics,
                                                                                         rhi::RhiRenderCommandList::Level::Primary,
                                                                                         *global_allocator);
             vertex_upload_cmds->set_debug_name("VertexDataUpload");
@@ -352,7 +352,7 @@ namespace nova::renderer {
             vertex_barrier.new_state = rhi::ResourceState::Common;
             vertex_barrier.access_before_barrier = rhi::ResourceAccess::CopyWrite;
             vertex_barrier.access_after_barrier = rhi::ResourceAccess::VertexAttributeRead;
-            vertex_barrier.source_queue = rhi::QueueType::Transfer;
+            vertex_barrier.source_queue = rhi::QueueType::Graphics;
             vertex_barrier.destination_queue = rhi::QueueType::Graphics;
             vertex_barrier.buffer_memory_barrier.offset = 0;
             vertex_barrier.buffer_memory_barrier.size = vertex_buffer->size;
@@ -361,9 +361,7 @@ namespace nova::renderer {
             barriers.push_back(vertex_barrier);
             vertex_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, barriers);
 
-            device->submit_command_list(vertex_upload_cmds, rhi::QueueType::Transfer);
-
-            // TODO: Barrier on the mesh's first usage
+            device->submit_command_list(vertex_upload_cmds, rhi::QueueType::Graphics);
         }
 
         rhi::RhiBufferCreateInfo index_buffer_create_info;
@@ -379,7 +377,7 @@ namespace nova::renderer {
             device->write_data_to_buffer(mesh_data.index_data_ptr, index_buffer_create_info.size, staging_index_buffer);
 
             rhi::RhiRenderCommandList* indices_upload_cmds = device->create_command_list(0,
-                                                                                         rhi::QueueType::Transfer,
+                                                                                         rhi::QueueType::Graphics,
                                                                                          rhi::RhiRenderCommandList::Level::Primary,
                                                                                          *global_allocator);
             indices_upload_cmds->set_debug_name("IndexDataUpload");
@@ -391,7 +389,7 @@ namespace nova::renderer {
             index_barrier.new_state = rhi::ResourceState::Common;
             index_barrier.access_before_barrier = rhi::ResourceAccess::CopyWrite;
             index_barrier.access_after_barrier = rhi::ResourceAccess::IndexRead;
-            index_barrier.source_queue = rhi::QueueType::Transfer;
+            index_barrier.source_queue = rhi::QueueType::Graphics;
             index_barrier.destination_queue = rhi::QueueType::Graphics;
             index_barrier.buffer_memory_barrier.offset = 0;
             index_barrier.buffer_memory_barrier.size = index_buffer->size;
@@ -400,9 +398,7 @@ namespace nova::renderer {
             barriers.push_back(index_barrier);
             indices_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, barriers);
 
-            device->submit_command_list(indices_upload_cmds, rhi::QueueType::Transfer);
-
-            // TODO: Barrier on the mesh's first usage
+            device->submit_command_list(indices_upload_cmds, rhi::QueueType::Graphics);
         }
 
         // TODO: Clean up staging buffers

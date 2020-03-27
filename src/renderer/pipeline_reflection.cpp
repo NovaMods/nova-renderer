@@ -82,7 +82,7 @@ namespace nova::renderer {
             if(existing_binding != new_binding) {
                 // They have two different bindings with the same name. Not allowed
                 logger->error("You have two different uniforms named %s in different shader stages. This is not allowed. Use unique names",
-                              resource.name);
+                              resource.name.c_str());
 
             } else {
                 // Same binding, probably at different stages - let's fix that

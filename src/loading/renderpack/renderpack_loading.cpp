@@ -342,7 +342,7 @@ namespace nova::renderer::renderpack {
         });
     }
 
-    LPCWSTR to_hlsl_profile(const rhi::ShaderStage stage) {
+    static LPCWSTR to_hlsl_profile(const rhi::ShaderStage stage) {
         switch(stage) {
             case rhi::ShaderStage::Vertex:
                 return L"vs_6_4";

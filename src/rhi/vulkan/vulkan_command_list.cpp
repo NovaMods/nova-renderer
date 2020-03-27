@@ -303,7 +303,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderCommandList::set_pipeline(const RhiPipeline& state) {
-        MTR_SCOPE("VulkanRenderCommandList", "bind_pipeline");
+        MTR_SCOPE("VulkanRenderCommandList", "set_pipeline");
 
         const auto& vk_pipeline = static_cast<const VulkanPipeline&>(state);
 
@@ -321,7 +321,7 @@ namespace nova::renderer::rhi {
             }
 
             if(pipeline != nullptr) {
-                rx::log::flush();   // Hack while I debug something
+                MTR_SCOPE("VulkanCommandList", "vkCmdBindPipeline");
                 vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<VkPipeline>(*pipeline));
             }
 

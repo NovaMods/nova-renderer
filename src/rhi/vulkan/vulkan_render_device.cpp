@@ -52,6 +52,8 @@ using namespace nova::mem;
 namespace nova::renderer::rhi {
     RX_LOG("VulkanRenderDevice", logger);
 
+    constexpr auto REQUIRED_VULKAN_VERSION = VK_API_VERSION_1_1;
+
     void FencedTask::operator()() const { work_to_perform(); }
 
     VulkanRenderDevice::VulkanRenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator)
@@ -1260,7 +1262,7 @@ namespace nova::renderer::rhi {
         application_info.pApplicationName = settings.settings.vulkan.application_name;
         application_info.applicationVersion = VK_MAKE_VERSION(version.major, version.minor, version.patch);
         application_info.pEngineName = "Nova Renderer 0.9";
-        application_info.apiVersion = VK_API_VERSION_1_2;
+        application_info.apiVersion = REQUIRED_VULKAN_VERSION;
 
         VkInstanceCreateInfo create_info;
         create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -1405,6 +1407,7 @@ namespace nova::renderer::rhi {
         rx::vector<char*> device_extensions{&internal_allocator};
         device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
         device_extensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
+        device_extensions.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
 
         uint32_t device_count;
         NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
@@ -1421,6 +1424,10 @@ namespace nova::renderer::rhi {
                 VkPhysicalDevice current_device = physical_devices[device_idx];
                 vkGetPhysicalDeviceProperties(current_device, &gpu.props);
 
+                if(gpu.props.apiVersion < REQUIRED_VULKAN_VERSION) {
+                    continue;
+                }
+
                 const bool is_intel_gpu = gpu.props.vendorID == INTEL_PCI_VENDOR_ID;
                 const bool more_gpus_available = device_count - 1 > device_idx;
                 if(is_intel_gpu && more_gpus_available) {
@@ -1429,10 +1436,6 @@ namespace nova::renderer::rhi {
                     // TODO: Make a local device for the integrated GPU when we figure out multi-GPU
                     // TODO: Rework this code when Intel releases discreet GPUs
                     continue;
-                }
-
-                if(!is_intel_gpu) {
-                    // continue;
                 }
 
                 const auto supports_extensions = does_device_support_extensions(current_device, device_extensions);
@@ -1542,16 +1545,6 @@ namespace nova::renderer::rhi {
         descriptor_indexing_features.descriptorBindingPartiallyBound = VK_TRUE;
         descriptor_indexing_features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
         device_create_info.pNext = &descriptor_indexing_features;
-
-        const auto dev_12_features = vk::PhysicalDeviceVulkan12Features()
-                                         .setDescriptorIndexing(true)
-                                         .setShaderSampledImageArrayNonUniformIndexing(true)
-                                         .setRuntimeDescriptorArray(true)
-                                         .setDescriptorBindingVariableDescriptorCount(true)
-                                         .setDescriptorBindingPartiallyBound(true)
-                                         .setDescriptorBindingSampledImageUpdateAfterBind(true);
-
-        device_create_info.pNext = &dev_12_features;
 
         const VkAllocationCallbacks& vk_alloc = wrap_allocator(internal_allocator);
         VkDevice vk_device;
