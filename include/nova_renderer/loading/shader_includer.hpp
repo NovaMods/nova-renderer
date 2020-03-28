@@ -34,18 +34,18 @@ namespace nova::renderer {
 
         virtual ~NovaDxcIncludeHandler() = default;
 
-        HRESULT QueryInterface(const REFIID class_id, void** output_object) override;
+        HRESULT STDMETHODCALLTYPE QueryInterface(const REFIID class_id, void** output_object) override;
 
         // In the Linux support library, these are implemented in IUnknown
         // However, I ran into an issue where the linker couldn't find definitions for these methods. I added the definitions to the
         // WinAdapter.h header in DXC, which seems to work for now
 #if NOVA_WINDOWS
-        ULONG AddRef() override;
+        ULONG STDMETHODCALLTYPE AddRef() override;
 
-        ULONG Release() override;
+        ULONG STDMETHODCALLTYPE Release() override;
 #endif
 
-        HRESULT LoadSource(LPCWSTR wide_filename, IDxcBlob** included_source) override;
+        HRESULT STDMETHODCALLTYPE LoadSource(LPCWSTR wide_filename, IDxcBlob** included_source) override;
 
     private:
         rx::memory::allocator& allocator;

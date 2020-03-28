@@ -43,13 +43,12 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderCommandList::set_debug_name(const rx::string& name) {
-        VkDebugUtilsObjectNameInfoEXT vk_name{};
-        vk_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-        vk_name.objectType = VK_OBJECT_TYPE_COMMAND_BUFFER;
-        vk_name.objectHandle = reinterpret_cast<uint64_t>(cmds);
-        vk_name.pObjectName = name.data();
+        const auto vk_name = vk::DebugUtilsObjectNameInfoEXT()
+                                 .setObjectType(vk::ObjectType::eCommandBuffer)
+                                 .setObjectHandle(reinterpret_cast<uint64_t>(cmds))
+                                 .setPObjectName(name.data());
 
-        device.vkSetDebugUtilsObjectNameEXT(device.device, &vk_name);
+        device.device.setDebugUtilsObjectNameEXT(&vk_name);
     }
 
     void VulkanRenderCommandList::bind_material_resources(RhiBuffer* camera_buffer,

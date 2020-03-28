@@ -357,12 +357,12 @@ namespace nova::renderer::rhi {
             for(uint32_t i = 0; i < vk_images.size(); i++) {
                 const auto image_name = "Swapchain image " + std::to_string(i);
 
-                VkDebugUtilsObjectNameInfoEXT object_name = {};
-                object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-                object_name.objectType = VK_OBJECT_TYPE_IMAGE;
-                object_name.objectHandle = reinterpret_cast<uint64_t>(vk_images[i]);
-                object_name.pObjectName = image_name.c_str();
-                NOVA_CHECK_RESULT(render_device->vkSetDebugUtilsObjectNameEXT(render_device->device, &object_name));
+                const auto object_name = vk::DebugUtilsObjectNameInfoEXT()
+                                             .setObjectType(vk::ObjectType::eImage)
+                                             .setObjectHandle(reinterpret_cast<uint64_t>(vk_images[i]))
+                                             .setPObjectName(image_name.c_str());
+
+                render_device->device.setDebugUtilsObjectNameEXT(&object_name);
             }
         }
 

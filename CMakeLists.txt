@@ -328,8 +328,6 @@ include(GNUInstallDirs)
 # Add extra warnings if possible #
 ##################################
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    set(CMAKE_CXX_FLAGS -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-c++98-c++11-c++14-compat 
-                                           -Wno-c++98-c++11-c++14-compat-pedantic ${CMAKE_CXX_FLAGS})
     target_compile_options_if_supported(nova-renderer PUBLIC 
                                         -Wall -Wextra -Wpedantic -Wconversion -Wdefaulted-function-deleted 
                                         -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-c++98-c++11-c++14-compat 
@@ -344,6 +342,7 @@ add_coverage(nova-renderer)
 #########################
 set(COMMON_LINK_LIBS
         ${CMAKE_DL_LIBS}
+        ${Vulkan_LIBRARIES}
         glm::glm
         dxc-wrap 
         minitrace
@@ -355,12 +354,6 @@ set(COMMON_LINK_LIBS
         spirv-cross-glsl
         spirv-cross-reflect
         spirv-cross-util)
-
-if(WIN32)
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan-1)
-else()
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan)
-endif()
 
 # TODO: Figure out why we need to do this, and add a comment when we know
 if(TARGET glfw)

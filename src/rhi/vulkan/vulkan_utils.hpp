@@ -58,28 +58,28 @@ namespace nova::renderer::rhi {
     /*!
      * \brief Wraps a Rex allocator so the Vulkan driver can use it
      */
-    inline vk::AllocationCallbacks wrap_allocator(rx::memory::allocator& allocator);
+    inline vk::AllocationCallbacks wrap_allocator(rx::memory::allocator& allocator_in);
 
     bool operator&(const ShaderStage& lhs, const ShaderStage& rhs);
 
-    RX_HINT_FORCE_INLINE vk::AllocationCallbacks wrap_allocator(rx::memory::allocator& allocator) {
+    RX_HINT_FORCE_INLINE vk::AllocationCallbacks wrap_allocator(rx::memory::allocator& allocator_in) {
         vk::AllocationCallbacks callbacks{};
 
-        callbacks.pUserData = &allocator;
-        callbacks.pfnAllocation =
-            [](void* user_data, const size_t size, size_t /* alignment */, VkSystemAllocationScope /* allocation_scope */) -> void* {
+        callbacks.pUserData = &allocator_in;
+        callbacks.setPfnAllocation(
+            +[](void* user_data, size_t size, size_t /* alignment */, VkSystemAllocationScope /* allocation_scope */) -> void* {
             auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);
             return allocator->allocate(size);
-        };
-        callbacks.pfnReallocation = [](void* user_data,
+        });
+        callbacks.pfnReallocation = +[](void* user_data,
                                        void* original,
-                                       const size_t size,
+                                       size_t size,
                                        size_t /* alignment */,
                                        VkSystemAllocationScope /* allocation_scope */) -> void* {
             auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);
             return allocator->reallocate(reinterpret_cast<rx_byte*>(original), size);
         };
-        callbacks.pfnFree = [](void* user_data, void* memory) {
+        callbacks.pfnFree = +[](void* user_data, void* memory) {
             auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);
             allocator->deallocate(reinterpret_cast<rx_byte*>(memory));
         };

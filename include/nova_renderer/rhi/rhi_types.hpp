@@ -71,13 +71,13 @@ namespace nova::renderer::rhi {
     };
 
     struct RhiPipeline {
-        rx::string name;
+        rx::string name{};
     };
 
     struct RhiFramebuffer {
-        glm::uvec2 size;
+        glm::uvec2 size{};
 
-        uint32_t num_attachments;
+        uint32_t num_attachments{};
     };
 
     struct RhiRenderpass {};

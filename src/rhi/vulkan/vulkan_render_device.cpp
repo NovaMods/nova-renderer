@@ -75,12 +75,6 @@ namespace nova::renderer::rhi {
 
         initialize_vma();
 
-        if(settings_in.settings.debug.enabled) {
-            // Late init, can only be used when the device has already been created
-            vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
-                vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT"));
-        }
-
         create_swapchain();
 
         create_per_thread_command_pools();
@@ -251,12 +245,11 @@ namespace nova::renderer::rhi {
         renderpass->render_area = {{0, 0}, {framebuffer_width, framebuffer_height}};
 
         if(settings.settings.debug.enabled) {
-            VkDebugUtilsObjectNameInfoEXT object_name = {};
-            object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-            object_name.objectType = VK_OBJECT_TYPE_RENDER_PASS;
-            object_name.objectHandle = reinterpret_cast<uint64_t>(renderpass->pass);
-            object_name.pObjectName = data.name.data();
-            NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
+            const auto object_name = vk::DebugUtilsObjectNameInfoEXT{}
+                                         .setObjectType(vk::ObjectType::eRenderPass)
+                                         .setObjectHandle(reinterpret_cast<uint64_t>(renderpass->pass))
+                                         .setPObjectName(data.name.data());
+            device.setDebugUtilsObjectNameEXT(&object_name);
         }
 
         return ntl::Result(static_cast<RhiRenderpass*>(renderpass));
@@ -391,13 +384,12 @@ namespace nova::renderer::rhi {
             device.allocateDescriptorSets(&allocate_info, &set);
 
             if(settings->debug.enabled) {
-                VkDebugUtilsObjectNameInfoEXT object_name = {};
-                object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-                object_name.objectType = VK_OBJECT_TYPE_DESCRIPTOR_SET;
-                object_name.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkDescriptorSet>(set));
-                object_name.pObjectName = "Standard descriptor set";
+                const auto object_name = vk::DebugUtilsObjectNameInfoEXT{}
+                                             .setObjectType(vk::ObjectType::eDescriptorSet)
+                                             .setObjectHandle(reinterpret_cast<uint64_t>(static_cast<VkDescriptorSet>(set)))
+                                             .setPObjectName("Standard descriptor set");
 
-                NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
+                device.setDebugUtilsObjectNameEXT(&object_name);
             }
 
             return set;
@@ -724,12 +716,12 @@ namespace nova::renderer::rhi {
         }
 
         if(settings.settings.debug.enabled) {
-            VkDebugUtilsObjectNameInfoEXT object_name = {};
-            object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-            object_name.objectType = VK_OBJECT_TYPE_PIPELINE;
-            object_name.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkPipeline>(pipeline));
-            object_name.pObjectName = state.name.data();
-            NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
+            const auto object_name = vk::DebugUtilsObjectNameInfoEXT{}
+                                         .setObjectType(vk::ObjectType::ePipeline)
+                                         .setObjectHandle(reinterpret_cast<uint64_t>(static_cast<VkPipeline>(pipeline)))
+                                         .setPObjectName(state.name.data());
+
+            device.setDebugUtilsObjectNameEXT(&object_name);
         }
 
         return ntl::Result{pipeline};
@@ -885,13 +877,12 @@ namespace nova::renderer::rhi {
         const auto result = vmaCreateImage(vma, &image_create_info, &vma_info, &image->image, &image->allocation, nullptr);
         if(result == VK_SUCCESS) {
             if(settings->debug.enabled) {
-                VkDebugUtilsObjectNameInfoEXT object_name = {};
-                object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-                object_name.objectType = VK_OBJECT_TYPE_IMAGE;
-                object_name.objectHandle = reinterpret_cast<uint64_t>(image->image);
-                object_name.pObjectName = info.name.data();
+                const auto object_name = vk::DebugUtilsObjectNameInfoEXT{}
+                                             .setObjectType(vk::ObjectType::eImage)
+                                             .setObjectHandle(reinterpret_cast<uint64_t>(image->image))
+                                             .setPObjectName(info.name.data());
 
-                NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
+                device.setDebugUtilsObjectNameEXT(&object_name);
             }
 
             VkImageViewCreateInfo image_view_create_info = {};
@@ -1316,23 +1307,21 @@ namespace nova::renderer::rhi {
     void VulkanRenderDevice::enable_debug_output() {
         MTR_SCOPE("VulkanRenderDevice", "enable_debug_output");
 
-        vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
-            vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
-        vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
-            vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT"));
+        const auto debug_create_info = vk::DebugUtilsMessengerCreateInfoEXT{}
+                                           .setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+                                                               vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
+                                                               vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+                                                               vk::DebugUtilsMessageSeverityFlagBitsEXT::eError)
+                                           .setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+                                                           vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+                                                           vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance)
+                                           .setPfnUserCallback(
+                                               reinterpret_cast<PFN_vkDebugUtilsMessengerCallbackEXT>(&debug_report_callback))
+                                           .setPUserData(this);
 
-        VkDebugUtilsMessengerCreateInfoEXT debug_create_info = {};
-        debug_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        debug_create_info.pNext = nullptr;
-        debug_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-                                            VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        debug_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                                        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-        debug_create_info.pfnUserCallback = reinterpret_cast<PFN_vkDebugUtilsMessengerCallbackEXT>(&debug_report_callback);
-        debug_create_info.pUserData = this;
+        const auto& vk_alloc = wrap_allocator(internal_allocator);
 
-        const VkAllocationCallbacks& vk_alloc = wrap_allocator(internal_allocator);
-        NOVA_CHECK_RESULT(vkCreateDebugUtilsMessengerEXT(instance, &debug_create_info, &vk_alloc, &debug_callback));
+        vk::Instance{instance}.createDebugUtilsMessengerEXT(&debug_create_info, &vk_alloc, &debug_callback);
     }
 
     void VulkanRenderDevice::save_device_info() {
@@ -1706,26 +1695,26 @@ namespace nova::renderer::rhi {
         standard_descriptor_set_pool = *pool;
 
         if(settings->debug.enabled) {
-            VkDebugUtilsObjectNameInfoEXT pipeline_layout_name = {};
-            pipeline_layout_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-            pipeline_layout_name.objectType = VK_OBJECT_TYPE_PIPELINE_LAYOUT;
-            pipeline_layout_name.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkPipelineLayout>(standard_pipeline_layout));
-            pipeline_layout_name.pObjectName = "Standard Pipeline Layout";
-            NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &pipeline_layout_name));
+            const auto pipeline_layout_name = vk::DebugUtilsObjectNameInfoEXT{}
+                                                  .setObjectType(vk::ObjectType::ePipelineLayout)
+                                                  .setObjectHandle(
+                                                      reinterpret_cast<uint64_t>(static_cast<VkPipelineLayout>(standard_pipeline_layout)))
+                                                  .setPObjectName("Standard Pipeline Layout");
+            device.setDebugUtilsObjectNameEXT(&pipeline_layout_name);
 
-            VkDebugUtilsObjectNameInfoEXT descriptor_pool_name = {};
-            descriptor_pool_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-            descriptor_pool_name.objectType = VK_OBJECT_TYPE_DESCRIPTOR_POOL;
-            descriptor_pool_name.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkDescriptorPool>(standard_descriptor_set_pool));
-            descriptor_pool_name.pObjectName = "Standard Descriptor Set Pool";
-            NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &descriptor_pool_name));
+            const auto descriptor_pool_name = vk::DebugUtilsObjectNameInfoEXT{}
+                                                  .setObjectType(vk::ObjectType::eDescriptorPool)
+                                                  .setObjectHandle(reinterpret_cast<uint64_t>(
+                                                      static_cast<VkDescriptorPool>(standard_descriptor_set_pool)))
+                                                  .setPObjectName("Standard Descriptor Set Pool");
+            device.setDebugUtilsObjectNameEXT(&descriptor_pool_name);
 
-            VkDebugUtilsObjectNameInfoEXT descriptor_set_layout_name = {};
-            descriptor_set_layout_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-            descriptor_set_layout_name.objectType = VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
-            descriptor_set_layout_name.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkDescriptorSetLayout>(standard_set_layout));
-            descriptor_set_layout_name.pObjectName = "Standard descriptor set layout";
-            NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &descriptor_set_layout_name));
+            const auto descriptor_set_layout_name = vk::DebugUtilsObjectNameInfoEXT{}
+                                                        .setObjectType(vk::ObjectType::eDescriptorSetLayout)
+                                                        .setObjectHandle(reinterpret_cast<uint64_t>(
+                                                            static_cast<VkDescriptorSetLayout>(standard_set_layout)))
+                                                        .setPObjectName("Standard Descriptor Set Layout");
+            device.setDebugUtilsObjectNameEXT(&descriptor_set_layout_name);
         }
     }
 

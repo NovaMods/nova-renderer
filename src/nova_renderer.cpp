@@ -146,7 +146,8 @@ namespace nova::renderer {
         color_attachments.emplace_back(BACKBUFFER_NAME, rhi::PixelFormat::Rgba8, false);
     }
 
-    static rx::global<BackbufferOutputPipelineCreateInfo> backbuffer_output_pipeline_create_info{"Nova", "BackbufferOutputPipelineCreateInfo"};
+    static rx::global<BackbufferOutputPipelineCreateInfo> backbuffer_output_pipeline_create_info{"Nova",
+                                                                                                 "BackbufferOutputPipelineCreateInfo"};
 
     bool FullMaterialPassName::operator==(const FullMaterialPassName& other) const {
         return material_name == other.material_name && pass_name == other.pass_name;
@@ -755,28 +756,35 @@ namespace nova::renderer {
 
         auto& material_pass = (*passes)[key->material_pass_idx];
 
-        auto& command = [&] {
-            switch(key->type) {
-                case RenderableType::StaticMesh: {
-                    auto& batch = material_pass.static_mesh_draws[key->batch_idx];
-                    return batch.commands[key->renderable_idx];
-                }
+        switch(key->type) {
+            case RenderableType::StaticMesh: {
+                auto& batch = material_pass.static_mesh_draws[key->batch_idx];
+                auto& command = batch.commands[key->renderable_idx];
 
-                case RenderableType::ProceduralMesh: {
-                    auto& batch = material_pass.static_procedural_mesh_draws[key->batch_idx];
-                    return batch.commands[key->renderable_idx];
-                }
+                command.is_visible = update_data.visible;
+
+                // TODO: Make sure my matrix math is correct
+                command.model_matrix = glm::translate(glm::mat4{1}, update_data.position);
+                command.model_matrix = glm::scale(command.model_matrix, update_data.scale);
+                command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.x, {1, 0, 0});
+                command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.y, {0, 1, 0});
+                command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.z, {0, 0, 1});
             }
-        }();
 
-        command.is_visible = update_data.visible;
+            case RenderableType::ProceduralMesh: {
+                auto& batch = material_pass.static_procedural_mesh_draws[key->batch_idx];
+                auto& command = batch.commands[key->renderable_idx];
 
-        // TODO: Make sure my matrix math is correct
-        command.model_matrix = glm::translate(glm::mat4{1}, update_data.position);
-        command.model_matrix = glm::scale(command.model_matrix, update_data.scale);
-        command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.x, {1, 0, 0});
-        command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.y, {0, 1, 0});
-        command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.z, {0, 0, 1});
+                command.is_visible = update_data.visible;
+
+                // TODO: Make sure my matrix math is correct
+                command.model_matrix = glm::translate(glm::mat4{1}, update_data.position);
+                command.model_matrix = glm::scale(command.model_matrix, update_data.scale);
+                command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.x, {1, 0, 0});
+                command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.y, {0, 1, 0});
+                command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.z, {0, 0, 1});
+            }
+        }
     }
 
     CameraAccessor NovaRenderer::create_camera(const CameraCreateInfo& create_info) {

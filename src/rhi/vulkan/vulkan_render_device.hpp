@@ -80,11 +80,6 @@ namespace nova::renderer::rhi {
          */
         rx::vector<vk::DescriptorSet> standard_descriptor_sets;
 
-        // Debugging things
-        PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
-        PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
-        PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;
-
         VulkanRenderDevice(NovaSettingsAccessManager& settings_in, NovaWindow& window_in, rx::memory::allocator& allocator);
 
         VulkanRenderDevice(VulkanRenderDevice&& old) noexcept = delete;
@@ -283,7 +278,7 @@ namespace nova::renderer::rhi {
 #pragma endregion
 
 #pragma region Debugging
-        VkDebugUtilsMessengerEXT debug_callback{};
+        vk::DebugUtilsMessengerEXT debug_callback{};
 
         static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
                                                                     VkDebugUtilsMessageTypeFlagsEXT message_types,
