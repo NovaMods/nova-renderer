@@ -249,7 +249,7 @@ namespace nova::renderer::rhi {
                                          .setObjectType(vk::ObjectType::eRenderPass)
                                          .setObjectHandle(reinterpret_cast<uint64_t>(renderpass->pass))
                                          .setPObjectName(data.name.data());
-            device.setDebugUtilsObjectNameEXT(&object_name);
+            device.setDebugUtilsObjectNameEXT(&object_name, device_dynamic_loader);
         }
 
         return ntl::Result(static_cast<RhiRenderpass*>(renderpass));
@@ -389,7 +389,7 @@ namespace nova::renderer::rhi {
                                              .setObjectHandle(reinterpret_cast<uint64_t>(static_cast<VkDescriptorSet>(set)))
                                              .setPObjectName("Standard descriptor set");
 
-                device.setDebugUtilsObjectNameEXT(&object_name);
+                device.setDebugUtilsObjectNameEXT(&object_name, device_dynamic_loader);
             }
 
             return set;
@@ -721,7 +721,7 @@ namespace nova::renderer::rhi {
                                          .setObjectHandle(reinterpret_cast<uint64_t>(static_cast<VkPipeline>(pipeline)))
                                          .setPObjectName(state.name.data());
 
-            device.setDebugUtilsObjectNameEXT(&object_name);
+            device.setDebugUtilsObjectNameEXT(&object_name, device_dynamic_loader);
         }
 
         return ntl::Result{pipeline};
@@ -781,7 +781,7 @@ namespace nova::renderer::rhi {
                                              .setObjectType(vk::ObjectType::eBuffer)
                                              .setObjectHandle(reinterpret_cast<uint64_t>(buffer->buffer))
                                              .setPObjectName(info.name.data());
-                device.setDebugUtilsObjectNameEXT(&object_name);
+                device.setDebugUtilsObjectNameEXT(&object_name, device_dynamic_loader);
             }
 
             return buffer;
@@ -882,7 +882,7 @@ namespace nova::renderer::rhi {
                                              .setObjectHandle(reinterpret_cast<uint64_t>(image->image))
                                              .setPObjectName(info.name.data());
 
-                device.setDebugUtilsObjectNameEXT(&object_name);
+                device.setDebugUtilsObjectNameEXT(&object_name, device_dynamic_loader);
             }
 
             VkImageViewCreateInfo image_view_create_info = {};
@@ -1302,6 +1302,8 @@ namespace nova::renderer::rhi {
             MTR_SCOPE("VulkanRenderDevice", "vkCreateInstance");
             NOVA_CHECK_RESULT(vkCreateInstance(&create_info, &vk_alloc, &instance));
         }
+
+        instance_dynamic_loader = {instance, vkGetInstanceProcAddr};
     }
 
     void VulkanRenderDevice::enable_debug_output() {
@@ -1321,7 +1323,7 @@ namespace nova::renderer::rhi {
 
         const auto& vk_alloc = wrap_allocator(internal_allocator);
 
-        vk::Instance{instance}.createDebugUtilsMessengerEXT(&debug_create_info, &vk_alloc, &debug_callback);
+        vk::Instance{instance}.createDebugUtilsMessengerEXT(&debug_create_info, &vk_alloc, &debug_callback, instance_dynamic_loader);
     }
 
     void VulkanRenderDevice::save_device_info() {
@@ -1541,6 +1543,8 @@ namespace nova::renderer::rhi {
         }
         device = vk_device;
 
+        device_dynamic_loader = vk::DispatchLoaderDynamic{instance, device};
+
         graphics_family_index = graphics_family_idx;
         vkGetDeviceQueue(device, graphics_family_idx, 0, &graphics_queue);
         compute_family_index = compute_family_idx;
@@ -1700,21 +1704,21 @@ namespace nova::renderer::rhi {
                                                   .setObjectHandle(
                                                       reinterpret_cast<uint64_t>(static_cast<VkPipelineLayout>(standard_pipeline_layout)))
                                                   .setPObjectName("Standard Pipeline Layout");
-            device.setDebugUtilsObjectNameEXT(&pipeline_layout_name);
+            device.setDebugUtilsObjectNameEXT(&pipeline_layout_name, device_dynamic_loader);
 
             const auto descriptor_pool_name = vk::DebugUtilsObjectNameInfoEXT{}
                                                   .setObjectType(vk::ObjectType::eDescriptorPool)
                                                   .setObjectHandle(reinterpret_cast<uint64_t>(
                                                       static_cast<VkDescriptorPool>(standard_descriptor_set_pool)))
                                                   .setPObjectName("Standard Descriptor Set Pool");
-            device.setDebugUtilsObjectNameEXT(&descriptor_pool_name);
+            device.setDebugUtilsObjectNameEXT(&descriptor_pool_name, device_dynamic_loader);
 
             const auto descriptor_set_layout_name = vk::DebugUtilsObjectNameInfoEXT{}
                                                         .setObjectType(vk::ObjectType::eDescriptorSetLayout)
                                                         .setObjectHandle(reinterpret_cast<uint64_t>(
                                                             static_cast<VkDescriptorSetLayout>(standard_set_layout)))
                                                         .setPObjectName("Standard Descriptor Set Layout");
-            device.setDebugUtilsObjectNameEXT(&descriptor_set_layout_name);
+            device.setDebugUtilsObjectNameEXT(&descriptor_set_layout_name, device_dynamic_loader);
         }
     }
 

@@ -48,7 +48,7 @@ namespace nova::renderer::rhi {
                                  .setObjectHandle(reinterpret_cast<uint64_t>(cmds))
                                  .setPObjectName(name.data());
 
-        device.device.setDebugUtilsObjectNameEXT(&vk_name);
+        device.device.setDebugUtilsObjectNameEXT(&vk_name, device.device_dynamic_loader);
     }
 
     void VulkanRenderCommandList::bind_material_resources(RhiBuffer* camera_buffer,

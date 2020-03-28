@@ -55,7 +55,7 @@ namespace nova::renderer::rhi {
         const auto acquire_result = vkAcquireNextImageKHR(render_device->device,
                                                           swapchain,
                                                           std::numeric_limits<uint64_t>::max(),
-                                                          VK_NULL_HANDLE,
+                                                          nullptr,
                                                           vk_fence->fence,
                                                           &acquired_image_idx);
         if(acquire_result == VK_ERROR_OUT_OF_DATE_KHR || acquire_result == VK_SUBOPTIMAL_KHR) {
@@ -180,7 +180,7 @@ namespace nova::renderer::rhi {
 
     void VulkanSwapchain::deinit() {
         swapchain_images.each_fwd([&](const RhiImage* i) {
-            const VulkanImage* vk_image = static_cast<const VulkanImage*>(i);
+            const auto* vk_image = static_cast<const VulkanImage*>(i);
             vkDestroyImage(render_device->device, vk_image->image, nullptr);
             delete i;
         });
@@ -190,7 +190,7 @@ namespace nova::renderer::rhi {
         swapchain_image_views.clear();
 
         fences.each_fwd([&](const RhiFence* f) {
-            const VulkanFence* vk_fence = static_cast<const VulkanFence*>(f);
+            const auto* vk_fence = static_cast<const VulkanFence*>(f);
             vkDestroyFence(render_device->device, vk_fence->fence, nullptr);
             delete f;
         });
@@ -362,7 +362,7 @@ namespace nova::renderer::rhi {
                                              .setObjectHandle(reinterpret_cast<uint64_t>(vk_images[i]))
                                              .setPObjectName(image_name.c_str());
 
-                render_device->device.setDebugUtilsObjectNameEXT(&object_name);
+                render_device->device.setDebugUtilsObjectNameEXT(&object_name, render_device->device_dynamic_loader);
             }
         }
 
@@ -378,7 +378,7 @@ namespace nova::renderer::rhi {
         color_attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
-        VkAttachmentReference color_ref = {};
+        VkAttachmentReference color_ref;
         color_ref.attachment = 0;
         color_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 

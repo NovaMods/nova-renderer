@@ -38,8 +38,10 @@ namespace nova::renderer::rhi {
 
         // Global Vulkan objects
         VkInstance instance;
+        vk::DispatchLoaderDynamic instance_dynamic_loader;
 
         vk::Device device;
+        vk::DispatchLoaderDynamic device_dynamic_loader;
 
         VkSurfaceKHR surface{};
 
