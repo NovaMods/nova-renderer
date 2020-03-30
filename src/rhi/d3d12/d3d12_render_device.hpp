@@ -86,6 +86,8 @@ namespace nova::renderer::rhi {
 
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> graphics_queue;
 
+        Microsoft::WRL::ComPtr<ID3D12CommandQueue> dma_queue;
+
         /*!
          * \brief Indicates whether this device has a Unified Memory Architecture
          *
@@ -115,6 +117,8 @@ namespace nova::renderer::rhi {
         void select_adapter();
 
         void create_queues();
+
+        void create_standard_root_signature();
 #pragma endregion
     };
 } // namespace nova::renderer::rhi

@@ -53,19 +53,19 @@ StructuredBuffer<MaterialData> material_buffer : register (t1);
  * \brief Point sampler you can use to sample any texture
  */
 [[vk::binding(2, 0)]]
-SamplerState point_sampler : register(s0);
+SamplerState point_sampler : register(s0, space0);
 
 /*!
  * \brief Bilinear sampler you can use to sample any texture
  */
 [[vk::binding(3, 0)]]
-SamplerState bilinear_filter : register(s1);
+SamplerState bilinear_filter : register(s0, space1);
 
 /*!
  * \brief Trilinear sampler you can use to sample any texture
  */
 [[vk::binding(4, 0)]]
-SamplerState trilinear_filter : register(s3);
+SamplerState trilinear_filter : register(s0, space2);
 
 /*!
  * \brief Array of all the textures that are available for a shader to sample from

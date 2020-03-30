@@ -145,9 +145,6 @@ set(NOVA_SOURCE
         src/rhi/vulkan/vulkan_resource_binder.hpp
         src/rhi/vulkan/vulkan_resource_binder.cpp
 
-        src/rhi/d3d12/d3d12_render_device.cpp
-        src/rhi/d3d12/d3d12_render_device.hpp
-
         src/filesystem/zip_folder_accessor.hpp
         src/filesystem/regular_folder_accessor.hpp
         src/filesystem/folder_accessor.cpp
@@ -227,6 +224,10 @@ set(WINDOWS_NOVA_SOURCE
         include/nova_renderer/util/windows.hpp
         src/util/windows_utils.cpp
         src/util/windows_utils.hpp
+
+        src/rhi/d3d12/d3dx12.h
+        src/rhi/d3d12/d3d12_render_device.cpp
+        src/rhi/d3d12/d3d12_render_device.hpp
         )
 
 set(UNIX_NOVA_SOURCE
