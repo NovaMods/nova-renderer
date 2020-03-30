@@ -1,9 +1,10 @@
 #pragma once
 
-#include "nova_renderer/rhi/render_device.hpp"
-
-#include <dxgi.h>
 #include <d3d12.h>
+#include <dxgi.h>
+#include <wrl/client.h>
+
+#include "nova_renderer/rhi/render_device.hpp"
 
 namespace nova::renderer::rhi {
     class D3D12RenderDevice final : public RenderDevice {
@@ -79,9 +80,9 @@ namespace nova::renderer::rhi {
 #pragma endregion
 
     private:
-        IDXGIFactory* factory;
+        Microsoft::WRL::ComPtr<IDXGIFactory> factory;
 
-        ID3D12Device* device;
+        Microsoft::WRL::ComPtr<ID3D12Device> device;
 
         void initialize_dxgi();
 
