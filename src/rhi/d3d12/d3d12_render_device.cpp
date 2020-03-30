@@ -5,6 +5,7 @@
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/exception.hpp"
 
+#include "D3D12MemAlloc.h"
 #include "d3dx12.h"
 using namespace Microsoft::WRL;
 
@@ -13,6 +14,11 @@ namespace nova::renderer ::rhi {
 
     D3D12RenderDevice::D3D12RenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator)
         : RenderDevice(settings, window, allocator) {
+
+        if(settings->debug.enabled && settings->debug.enable_validation_layers) {
+            enable_validation_layer();
+        }
+
         initialize_dxgi();
 
         select_adapter();
@@ -20,6 +26,22 @@ namespace nova::renderer ::rhi {
         create_queues();
 
         create_standard_root_signature();
+
+        create_descriptor_heaps();
+
+        initialize_dma();
+    }
+
+    D3D12RenderDevice::~D3D12RenderDevice() { dma_allocator->Release(); }
+
+    void D3D12RenderDevice::enable_validation_layer() {
+        const auto res = D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
+        if(SUCCEEDED(res)) {
+            debug_controller->EnableDebugLayer();
+
+        } else {
+            logger->error("Could not enable the D3D12 validation layer");
+        }
     }
 
     void D3D12RenderDevice::initialize_dxgi() { CreateDXGIFactory(IID_PPV_ARGS(&factory)); }
@@ -75,6 +97,16 @@ namespace nova::renderer ::rhi {
                 if(SUCCEEDED(res)) {
                     render_pass_tier = options5.RenderPassesTier;
                     has_raytracing = options5.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
+                }
+
+                if(settings->debug.enabled && settings->debug.enable_validation_layers) {
+                    if(settings->debug.break_on_validation_errors) {
+                        res = device->QueryInterface(IID_PPV_ARGS(&info_queue));
+                        if(SUCCEEDED(res)) {
+                            info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+                            info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+                        }
+                    }
                 }
 
                 return false;
@@ -159,6 +191,34 @@ namespace nova::renderer ::rhi {
                                              IID_PPV_ARGS(&standard_root_signature));
         if(FAILED(result)) {
             throw Exception("Could not create root signature");
+        }
+    }
+
+    void D3D12RenderDevice::create_descriptor_heaps() {
+        D3D12_DESCRIPTOR_HEAP_DESC cbv_srv_uav_heap_desc{};
+        cbv_srv_uav_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        cbv_srv_uav_heap_desc.NumDescriptors = 65536;
+        cbv_srv_uav_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        device->CreateDescriptorHeap(&cbv_srv_uav_heap_desc, IID_PPV_ARGS(&shader_resource_descriptor_heap));
+
+        D3D12_DESCRIPTOR_HEAP_DESC rtv_descriptor_heap_desc{};
+        rtv_descriptor_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+        rtv_descriptor_heap_desc.NumDescriptors = 1024;
+        device->CreateDescriptorHeap(&rtv_descriptor_heap_desc, IID_PPV_ARGS(&rtv_descriptor_heap));
+
+        D3D12_DESCRIPTOR_HEAP_DESC dsv_descriptor_heap_desc{};
+        dsv_descriptor_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+        dsv_descriptor_heap_desc.NumDescriptors = 1024;
+        device->CreateDescriptorHeap(&dsv_descriptor_heap_desc, IID_PPV_ARGS(&dsv_descriptor_heap));
+    }
+
+    void D3D12RenderDevice::initialize_dma() {
+        D3D12MA::ALLOCATOR_DESC allocator_desc{};
+        allocator_desc.pAdapter = adapter.Get();
+        allocator_desc.pDevice = device.Get();
+        const auto result = D3D12MA::CreateAllocator(&allocator_desc, &dma_allocator);
+        if(FAILED(result)) {
+            throw Exception("Could not initialize D3D12 Memory Allocator");
         }
     }
 } // namespace nova::renderer::rhi

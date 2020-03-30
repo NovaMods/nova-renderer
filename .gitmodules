@@ -31,3 +31,6 @@
 [submodule "external/dxc-wrapper"]
 	path = external/dxc-wrapper
 	url = https://github.com/NovaMods/dxc-wrapper.git
+[submodule "external/D3D12MemoryAllocator"]
+	path = external/D3D12MemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator.git

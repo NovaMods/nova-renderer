@@ -4,6 +4,7 @@
 #include <dxgi.h>
 #include <wrl/client.h>
 
+#include "D3D12MemAlloc.h"
 #include "nova_renderer/rhi/render_device.hpp"
 
 namespace nova::renderer::rhi {
@@ -11,7 +12,7 @@ namespace nova::renderer::rhi {
     public:
         D3D12RenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator);
 
-        ~D3D12RenderDevice() override = default;
+        ~D3D12RenderDevice() override;
 
 #pragma region RenderDevice
         void set_num_renderpasses(uint32_t num_renderpasses) override;
@@ -82,13 +83,27 @@ namespace nova::renderer::rhi {
     private:
         Microsoft::WRL::ComPtr<IDXGIFactory> factory;
 
+        Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
+
         Microsoft::WRL::ComPtr<ID3D12Device> device;
+
+        Microsoft::WRL::ComPtr<ID3D12Debug> debug_controller;
+
+        Microsoft::WRL::ComPtr<ID3D12InfoQueue> info_queue;
 
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> graphics_queue;
 
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> dma_queue;
 
         Microsoft::WRL::ComPtr<ID3D12RootSignature> standard_root_signature;
+
+        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> shader_resource_descriptor_heap;
+
+        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap;
+
+        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsv_descriptor_heap;
+
+        D3D12MA::Allocator* dma_allocator;
 
         /*!
          * \brief Indicates whether this device has a Unified Memory Architecture
@@ -114,6 +129,8 @@ namespace nova::renderer::rhi {
         bool has_raytracing = false;
 
 #pragma region Initialization
+        void enable_validation_layer();
+
         void initialize_dxgi();
 
         void select_adapter();
@@ -121,6 +138,10 @@ namespace nova::renderer::rhi {
         void create_queues();
 
         void create_standard_root_signature();
+
+        void create_descriptor_heaps();
+
+        void initialize_dma();
 #pragma endregion
     };
 } // namespace nova::renderer::rhi

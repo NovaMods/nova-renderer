@@ -72,6 +72,10 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/rex_core)
 # Apparently they don't have an `include/` directory, you just include the src folder? Thanks AMD :|
 include_directories(${CMAKE_CURRENT_LIST_DIR}/VulkanMemoryAllocator/src)
 
+# DMA
+# Something something check for Windows
+include_directories(${CMAKE_CURRENT_LIST_DIR}/D3D12MemoryAllocator/src)
+
 # DXC
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/dxc-wrapper/extern/dxc)
 
