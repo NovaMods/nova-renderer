@@ -23,6 +23,8 @@ namespace nova::renderer::rhi {
 
         void set_debug_name(const rx::string& name) override;
 
+        void set_checkpoint(const rx::string& checkpoint_name) override;
+
         void bind_material_resources(RhiBuffer* camera_buffer,
                                      RhiBuffer* material_buffer,
                                      RhiSampler* point_sampler,
@@ -73,6 +75,7 @@ namespace nova::renderer::rhi {
          * This method should free any transient resources that the command lists uses
          */
         void cleanup_resources();
+        
     private:
         VulkanRenderDevice& device;
 

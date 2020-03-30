@@ -294,6 +294,8 @@ namespace nova::renderer {
             update_camera_matrix_buffer(cur_frame_idx);
             device->write_data_to_buffer(material_buffer->data(), ctx.material_buffer->size, ctx.material_buffer->buffer);
 
+            cmds->set_checkpoint("frame finished");
+
             device->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences[cur_frame_idx]);
 
             // Wait for the GPU to finish before presenting. This destroys pipelining and throughput, however at this time I'm not sure how
@@ -769,6 +771,8 @@ namespace nova::renderer {
                 command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.x, {1, 0, 0});
                 command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.y, {0, 1, 0});
                 command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.z, {0, 0, 1});
+
+                break;
             }
 
             case RenderableType::ProceduralMesh: {
@@ -783,6 +787,8 @@ namespace nova::renderer {
                 command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.x, {1, 0, 0});
                 command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.y, {0, 1, 0});
                 command.model_matrix = glm::rotate(command.model_matrix, update_data.rotation.z, {0, 0, 1});
+
+                break;
             }
         }
     }

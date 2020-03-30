@@ -107,12 +107,13 @@ namespace nova::renderer {
 
         void record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;
 
-        static void record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch,
-                                                       rhi::RhiRenderCommandList& cmds,
-                                                       FrameContext& ctx);
-        static void record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
-                                                       rhi::RhiRenderCommandList& cmds,
-                                                       FrameContext& ctx);
+        void record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch,
+                                                rhi::RhiRenderCommandList& cmds,
+                                                FrameContext& ctx) const;
+
+        void record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
+                                                rhi::RhiRenderCommandList& cmds,
+                                                FrameContext& ctx) const;
     };
 
     struct Pipeline {

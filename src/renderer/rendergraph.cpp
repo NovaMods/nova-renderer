@@ -45,12 +45,14 @@ namespace nova::renderer {
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
             cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::FragmentShader, read_texture_barriers);
+            cmds.set_checkpoint(rx::string::format("Finished read texture barriers for renderpass %s", name));
         }
 
         if(write_texture_barriers.size() > 0) {
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
             cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::FragmentShader, write_texture_barriers);
+            cmds.set_checkpoint(rx::string::format("Finished write texture barriers for renderpass %s", name));
         }
 
         if(writes_to_backbuffer) {
@@ -69,6 +71,8 @@ namespace nova::renderer {
             rx::vector<rhi::RhiResourceBarrier> barriers{&rx::memory::g_system_allocator};
             barriers.push_back(backbuffer_barrier);
             cmds.resource_barriers(rhi::PipelineStage::TopOfPipe, rhi::PipelineStage::ColorAttachmentOutput, barriers);
+
+            cmds.set_checkpoint(rx::string::format("Finished backbuffer barrier for renderpass %s", name));
         }
     }
 
@@ -81,6 +85,8 @@ namespace nova::renderer {
                 pipeline->record(cmds, ctx);
             }
         });
+
+        cmds.set_checkpoint(rx::string::format("Finished renderpass contents for %s", name));
     }
 
     void Renderpass::record_post_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
@@ -99,6 +105,8 @@ namespace nova::renderer {
             rx::vector<rhi::RhiResourceBarrier> barriers{&rx::memory::g_system_allocator};
             barriers.push_back(backbuffer_barrier);
             cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::BottomOfPipe, barriers);
+
+            cmds.set_checkpoint(rx::string::format("Finished post renderpass backbuffer barrier for renderpass %s", name));
         }
     }
 
@@ -117,6 +125,7 @@ namespace nova::renderer {
         cmds.bind_vertex_buffers(rx::array{mesh_data->vertex_buffer});
 
         cmds.draw_indexed_mesh(3);
+        cmds.set_checkpoint(rx::string::format("Draw %s fullscreen triangle", name));
     }
 
     Rendergraph::Rendergraph(rx::memory::allocator& allocator, rhi::RenderDevice& device) : allocator(allocator), device(device) {}
@@ -202,7 +211,7 @@ namespace nova::renderer {
 
     void renderer::MaterialPass::record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch,
                                                                     rhi::RhiRenderCommandList& cmds,
-                                                                    FrameContext& ctx) {
+                                                                    FrameContext& ctx) const {
         MTR_SCOPE("MaterialPass", "record_rendering_static_mesh_batch");
         const uint64_t start_index = ctx.cur_model_matrix_index;
 
@@ -226,15 +235,17 @@ namespace nova::renderer {
                 vertex_buffers.push_back(batch.vertex_buffer);
             }
             cmds.bind_vertex_buffers(vertex_buffers);
-            cmds.bind_index_buffer(batch.index_buffer, rhi::IndexType::Uint32);
 
-            cmds.draw_indexed_mesh(batch.num_indices);
+            cmds.set_checkpoint(rx::string::format("Bind vertex buffers for pass %s.%s", name.material_name, name.pass_name));
+            // cmds.bind_index_buffer(batch.index_buffer, rhi::IndexType::Uint32);
+
+            // cmds.draw_indexed_mesh(batch.num_indices);
         }
     }
 
     void renderer::MaterialPass::record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
                                                                     rhi::RhiRenderCommandList& cmds,
-                                                                    FrameContext& ctx) {
+                                                                    FrameContext& ctx) const {
         MTR_SCOPE("MaterialPass", "record_rendering_static_mesh_batch (ProceduralMesh)");
         const uint64_t start_index = ctx.cur_model_matrix_index;
 
@@ -258,8 +269,10 @@ namespace nova::renderer {
             for(uint32_t i = 0; i < 7; i++) {
                 vertex_buffers.push_back(vertex_buffer);
             }
-            cmds.bind_vertex_buffers(vertex_buffers);
-            cmds.bind_index_buffer(index_buffer, rhi::IndexType::Uint32);
+            // cmds.bind_vertex_buffers(vertex_buffers);
+            // cmds.bind_index_buffer(index_buffer, rhi::IndexType::Uint32);
+            //
+            // TODO: Issue a drawcall
         }
     }
 
@@ -267,8 +280,12 @@ namespace nova::renderer {
         MTR_SCOPE("Pipeline", "record");
         cmds.set_pipeline(*pipeline);
 
+        cmds.set_checkpoint(rx::string::format("Bind pipeline %s", pipeline->name));
+
         const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline->name);
 
         passes.each_fwd([&](const renderer::MaterialPass& pass) { pass.record(cmds, ctx); });
+
+        cmds.set_checkpoint(rx::string::format("Record all drawcalls for pipeline %s", pipeline->name));
     }
 } // namespace nova::renderer

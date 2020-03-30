@@ -33,18 +33,6 @@
 
 using namespace nova::mem;
 
-#if defined(NOVA_WINDOWS)
-#define BREAK_ON_DEVICE_LOST(result)                                                                                                       \
-    if((result) == VK_ERROR_DEVICE_LOST) {                                                                                                 \
-        DebugBreak();                                                                                                                      \
-    }
-#elif defined(NOVA_LINUX)
-#define BREAK_ON_DEVICE_LOST(result)                                                                                                       \
-    if((result) == VK_ERROR_DEVICE_LOST) {                                                                                                 \
-        raise(SIGINT);                                                                                                                     \
-    }
-#endif
-
 namespace nova::renderer::rhi {
     RX_LOG("VulkanRenderDevice", logger);
 
@@ -58,7 +46,8 @@ namespace nova::renderer::rhi {
         : RenderDevice{settings_in, window_in, allocator},
           vk_internal_allocator{wrap_allocator(internal_allocator)},
           command_pools_by_thread_idx{&internal_allocator},
-          fenced_tasks{&internal_allocator} {
+          fenced_tasks{&internal_allocator},
+          checkpoint_names{&internal_allocator} {
         MTR_SCOPE("VulkanRenderDevice", "VulkanRenderDevice");
 
         create_instance();
@@ -442,6 +431,13 @@ namespace nova::renderer::rhi {
 
             return fence;
         }
+    }
+
+    uint32_t VulkanRenderDevice::save_checkpoint_name(const rx::string& checkpoint_name) {
+        const auto checkpoint_idx = checkpoint_names.size();
+        checkpoint_names.push_back(checkpoint_name);
+
+        return checkpoint_idx;
     }
 
     ntl::Result<vk::Pipeline> VulkanRenderDevice::compile_pipeline_state(const VulkanPipeline& pipeline_state,
@@ -995,7 +991,6 @@ namespace nova::renderer::rhi {
         if(settings->debug.enabled) {
             if(result != VK_SUCCESS) {
                 logger->error("Could not wait for fences. %s (error code %x)", to_string(result), result);
-                BREAK_ON_DEVICE_LOST(result);
             }
         }
     }
@@ -1137,19 +1132,36 @@ namespace nova::renderer::rhi {
             }
         }();
 
+        // For debugging 
+        vkQueueWaitIdle(queue_to_submit_to);
         const auto result = vkQueueSubmit(queue_to_submit_to, 1, &submit_info, vk_signal_fence);
+
+        if(settings->debug.enabled) {
+            if(result != VK_SUCCESS) {
+                logger->error("Could not submit command list: %s", to_string(result));
+
+                if(has_nv_device_checkpoints) {
+                    uint32_t num_checkpoints;
+                    device_dynamic_loader.vkGetQueueCheckpointDataNV(queue_to_submit_to, &num_checkpoints, nullptr);
+                    rx::vector<VkCheckpointDataNV> checkpoint_data{&internal_allocator, num_checkpoints};
+                    checkpoint_data.each_fwd([](VkCheckpointDataNV& data) { data.sType = VK_STRUCTURE_TYPE_CHECKPOINT_DATA_NV; });
+                    device_dynamic_loader.vkGetQueueCheckpointDataNV(queue_to_submit_to, &num_checkpoints, checkpoint_data.data());
+
+                    checkpoint_data.each_fwd([&](const VkCheckpointDataNV& data) {
+                        const auto stages = vk::to_string(vk::PipelineStageFlagBits{data.stage});
+                        const auto checkpoint_name = checkpoint_names[reinterpret_cast<uint32_t>(data.pCheckpointMarker)];
+                        logger->error("Pipeline stage %s reached checkpoint %s", stages.c_str(), checkpoint_name);
+                    });
+                }
+
+                rx::abort("VK_DEVICE_LOST on queue submit");
+            }
+        }
 
         fenced_tasks.emplace_back(vk_signal_fence, [&] {
             vk_list->cleanup_resources();
             submission_fences.emplace_back(vk_signal_fence);
         });
-
-        if(settings->debug.enabled) {
-            if(result != VK_SUCCESS) {
-                logger->error("Could not submit command list: %s", to_string(result));
-                BREAK_ON_DEVICE_LOST(result);
-            }
-        }
     }
 
     void VulkanRenderDevice::end_frame(FrameContext& /* ctx */) {
@@ -1421,6 +1433,10 @@ namespace nova::renderer::rhi {
                     // _probably_ discreet GPUs, so let's not use the Intel GPU and instead use the discreet GPU
                     // TODO: Make a local device for the integrated GPU when we figure out multi-GPU
                     // TODO: Rework this code when Intel releases discreet GPUs
+                    // continue;
+                }
+
+                if(!is_intel_gpu) {
                     continue;
                 }
 
@@ -1460,6 +1476,11 @@ namespace nova::renderer::rhi {
 
                 if(graphics_family_idx != 0xFFFFFFFF) {
                     logger->info("Selected GPU %s", gpu.props.deviceName);
+
+                    has_nv_device_checkpoints = does_device_support_extensions(current_device,
+                                                                               rx::array{
+                                                                                   VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME});
+
                     gpu.phys_device = current_device;
                     break;
                 }
@@ -1513,6 +1534,10 @@ namespace nova::renderer::rhi {
         device_create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
         device_create_info.pQueueCreateInfos = queue_create_infos.data();
         device_create_info.pEnabledFeatures = &physical_device_features;
+
+        if(has_nv_device_checkpoints) {
+            device_extensions.push_back(VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME);
+        }
 
         device_create_info.enabledExtensionCount = static_cast<uint32_t>(device_extensions.size());
         device_create_info.ppEnabledExtensionNames = device_extensions.data();

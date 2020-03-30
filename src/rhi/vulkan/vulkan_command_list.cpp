@@ -51,6 +51,15 @@ namespace nova::renderer::rhi {
         device.device.setDebugUtilsObjectNameEXT(&vk_name, device.device_dynamic_loader);
     }
 
+    void VulkanRenderCommandList::set_checkpoint(const rx::string& checkpoint_name) {
+        if(device.has_nv_device_checkpoints) {
+            // Save the checkpoint name to the render device, send the index of the checkpoint name to the driver
+            const auto checkpoint_idx = device.save_checkpoint_name(checkpoint_name);
+
+            device.device_dynamic_loader.vkCmdSetCheckpointNV(cmds, reinterpret_cast<void*>(checkpoint_idx));
+        }
+    }
+
     void VulkanRenderCommandList::bind_material_resources(RhiBuffer* camera_buffer,
                                                           RhiBuffer* material_buffer,
                                                           RhiSampler* point_sampler,

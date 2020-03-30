@@ -3,6 +3,7 @@
 #include <rx/core/log.h>
 
 #include "minitrace.h"
+#include "rx/core/abort.h"
 #include "vulkan_render_device.hpp"
 #include "vulkan_utils.hpp"
 #ifdef ERROR
@@ -282,9 +283,13 @@ namespace nova::renderer::rhi {
 
         info.clipped = VK_TRUE;
 
-        auto res = vkCreateSwapchainKHR(render_device->device, &info, nullptr, &swapchain);
+        const auto res = vkCreateSwapchainKHR(render_device->device, &info, nullptr, &swapchain);
 
-        logger->error("%u", res);
+        if(res != VK_SUCCESS) {
+            const auto result_string = vk::to_string(vk::Result{res});
+            const auto msg = rx::string::format("Could not create swapchain: %s", result_string.c_str());
+            rx::abort(msg.data());
+        }
 
         swapchain_format = surface_format.format;
         this->present_mode = present_mode;

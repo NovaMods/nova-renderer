@@ -55,6 +55,15 @@ namespace nova::renderer::rhi {
         virtual void set_debug_name(const rx::string& name) = 0;
 
         /*!
+         * \brief Sets a checkpoint on the command list
+         *
+         * When the GPU driver dies, the render engine can inspect the checkpoints to find out why
+         *
+         * This may or may not be supported on all platforms and GPU APIs
+         */
+        virtual void set_checkpoint(const rx::string& checkpoint_name) = 0;
+
+        /*!
          * \brief Bind the buffers of all the resources that Nova needs to render an object
          */
         virtual void bind_material_resources(RhiBuffer* camera_buffer,

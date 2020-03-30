@@ -58,6 +58,8 @@ namespace nova::renderer::rhi {
 
         uint32_t cur_frame_idx;
 
+        bool has_nv_device_checkpoints = false;
+
         /*!
          * \brief All the push constants in the standard pipeline layout
          */
@@ -198,6 +200,11 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] vk::Fence get_next_submission_fence();
 
+        /*!
+         * \brief Save a checkpoint name to the device, returning a handle that can be used in device checkpoints
+         */
+        [[nodiscard]] uint32_t save_checkpoint_name(const rx::string& checkpoint_name);
+
     protected:
         void create_surface();
 
@@ -214,6 +221,8 @@ namespace nova::renderer::rhi {
         rx::vector<FencedTask> fenced_tasks;
 
         rx::vector<vk::Fence> submission_fences;
+
+        rx::vector<rx::string> checkpoint_names;
 
 #pragma region Initialization
         rx::vector<const char*> enabled_layer_names;
