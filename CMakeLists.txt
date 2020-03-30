@@ -101,6 +101,7 @@ set(NOVA_SOURCE
         include/nova_renderer/constants.hpp
         include/nova_renderer/frame_context.hpp
         include/nova_renderer/renderpack_data_conversions.hpp
+        include/nova_renderer/exception.hpp
 
         include/nova_renderer/filesystem/filesystem_helpers.hpp
         include/nova_renderer/filesystem/folder_accessor.hpp
@@ -177,6 +178,7 @@ set(NOVA_SOURCE
         src/util/utils.cpp
         src/util/result.cpp
         src/util/bytes.cpp
+        src/util/exception.cpp
 
         src/loading/json_utils.hpp
         src/loading/renderpack/renderpack_loading.cpp

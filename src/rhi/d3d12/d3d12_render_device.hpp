@@ -84,6 +84,8 @@ namespace nova::renderer::rhi {
 
         Microsoft::WRL::ComPtr<ID3D12Device> device;
 
+        Microsoft::WRL::ComPtr<ID3D12CommandQueue> graphics_queue;
+
         /*!
          * \brief Indicates whether this device has a Unified Memory Architecture
          *
@@ -107,8 +109,12 @@ namespace nova::renderer::rhi {
          */
         bool has_raytracing = false;
 
+#pragma region Initialization
         void initialize_dxgi();
 
         void select_adapter();
+
+        void create_queues();
+#pragma endregion
     };
 } // namespace nova::renderer::rhi

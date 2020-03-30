@@ -1,6 +1,7 @@
 #include "d3d12_render_device.hpp"
 
 #include "nova_renderer/constants.hpp"
+#include "nova_renderer/exception.hpp"
 
 #include "rx/core/log.h"
 using namespace Microsoft::WRL;
@@ -13,6 +14,8 @@ namespace nova::renderer ::rhi {
         initialize_dxgi();
 
         select_adapter();
+
+        create_queues();
     }
 
     void D3D12RenderDevice::initialize_dxgi() { CreateDXGIFactory(IID_PPV_ARGS(&factory)); }
@@ -33,7 +36,7 @@ namespace nova::renderer ::rhi {
 
         // TODO: Score adapters based on things like supported feature level and available vram
 
-        adapters.each_fwd([&](ComPtr<IDXGIAdapter> adapter) {
+        adapters.each_fwd([&](const ComPtr<IDXGIAdapter>& adapter) {
             DXGI_ADAPTER_DESC desc;
             adapter->GetDesc(&desc);
 
@@ -77,7 +80,28 @@ namespace nova::renderer ::rhi {
         });
 
         if(!device) {
-            logger->error("Could not find a suitable D3D12 adapter");
+            throw Exception("Could not find a suitable D3D12 adapter");
+        }
+    }
+
+    void D3D12RenderDevice::create_queues() {
+        // One graphics queue and one optional DMA queue
+        D3D12_COMMAND_QUEUE_DESC graphics_queue_desc{};
+        graphics_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+
+        auto result = device->CreateCommandQueue(&graphics_queue_desc, IID_PPV_ARGS(&graphics_queue));
+        if(FAILED(result)) {
+            throw Exception("Could not create graphics command queue");
+        }
+
+        if(!is_uma) {
+            // No need to care about DMA on UMA cause we can just map everything
+            D3D12_COMMAND_QUEUE_DESC dma_queue_desc{};
+            dma_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
+            result = device->CreateCommandQueue(&dma_queue_desc, IID_PPV_ARGS(&dma_queue));
+            if(FAILED(result)) {
+                logger->warning("Could not create a DMA queue on a non-UMA adapter, data transfers will have to use the graphics queue");
+            }
         }
     }
 } // namespace nova::renderer::rhi
