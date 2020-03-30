@@ -84,6 +84,29 @@ namespace nova::renderer::rhi {
 
         Microsoft::WRL::ComPtr<ID3D12Device> device;
 
+        /*!
+         * \brief Indicates whether this device has a Unified Memory Architecture
+         *
+         * UMA devices don't need to use a transfer queue to upload data, they can map a pointer directly to all resources
+         */
+        bool is_uma = false;
+
+        /*!
+         * \brief Indicates the level of hardware and driver support for render passes
+         *
+         * Tier 0 - No support, don't use renderpasses
+         * Tier 1 - render targets and depth/stencil writes should use renderpasses, but UAV writes are not supported
+         * Tire 2 - render targets, depth/stencil, and UAV writes should use renderpasses
+         */
+        D3D12_RENDER_PASS_TIER render_pass_tier = D3D12_RENDER_PASS_TIER_0;
+
+        /*!
+         * \brief Indicates support the the DXR API
+         *
+         * If this is `false`, the user will be unable to use any DXR shaderpacks
+         */
+        bool has_raytracing = false;
+
         void initialize_dxgi();
 
         void select_adapter();

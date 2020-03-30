@@ -43,10 +43,32 @@ namespace nova::renderer ::rhi {
             }
 
             ComPtr<ID3D12Device> try_device;
-            const auto res = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(&try_device));
+            auto res = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&try_device));
             if(SUCCEEDED(res)) {
-                // We created a device with the feature level we need, no need to enumerate other adapters
+                // check the features we care about
+                D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12_options;
+                try_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &d3d12_options, sizeof(d3d12_options));
+                if(d3d12_options.ResourceBindingTier != D3D12_RESOURCE_BINDING_TIER_3) {
+                    // Resource binding tire three means we can have partially bound descriptor array. Nova relies on partially bound
+                    // descriptor arrays
+                    return true;
+                }
+
                 device = try_device;
+
+                // Save information about the device
+                D3D12_FEATURE_DATA_ARCHITECTURE arch;
+                res = device->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE, &arch, sizeof(D3D12_FEATURE_DATA_ARCHITECTURE));
+                if(SUCCEEDED(res)) {
+                    is_uma = arch.CacheCoherentUMA;
+                }
+
+                D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5;
+                res = device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &options5, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS5));
+                if(SUCCEEDED(res)) {
+                    render_pass_tier = options5.RenderPassesTier;
+                    has_raytracing = options5.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
+                }
 
                 return false;
             }
