@@ -88,6 +88,8 @@ namespace nova::renderer::rhi {
 
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> dma_queue;
 
+        Microsoft::WRL::ComPtr<ID3D12RootSignature> standard_root_signature;
+
         /*!
          * \brief Indicates whether this device has a Unified Memory Architecture
          *
