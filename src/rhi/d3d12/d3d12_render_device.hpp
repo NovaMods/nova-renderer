@@ -4,7 +4,7 @@
 #include <dxgi.h>
 #include <wrl/client.h>
 
-#include "D3D12MemAlloc.h"
+#include <D3D12MemAlloc.h>
 #include "nova_renderer/rhi/render_device.hpp"
 
 namespace nova::renderer::rhi {
@@ -18,13 +18,13 @@ namespace nova::renderer::rhi {
         void set_num_renderpasses(uint32_t num_renderpasses) override;
 
         [[nodiscard]] ntl::Result<RhiRenderpass*> create_renderpass(const renderpack::RenderPassCreateInfo& data,
-                                                                    const glm::vec<2, unsigned, glm::qualifier::defaultp>& framebuffer_size,
+                                                                    const glm::uvec2& framebuffer_size,
                                                                     rx::memory::allocator& allocator) override;
 
         [[nodiscard]] RhiFramebuffer* create_framebuffer(const RhiRenderpass* renderpass,
                                                          const rx::vector<RhiImage*>& color_attachments,
                                                          const rx::optional<RhiImage*> depth_attachment,
-                                                         const glm::vec<2, unsigned, glm::qualifier::defaultp>& framebuffer_size,
+                                                         const glm::uvec2& framebuffer_size,
                                                          rx::memory::allocator& allocator) override;
 
         [[nodiscard]] rx::ptr<RhiPipeline> create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,

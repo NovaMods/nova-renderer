@@ -93,4 +93,7 @@ namespace nova::renderer {
     constexpr const char* BACKBUFFER_NAME = "NovaBackbuffer";
 
     constexpr const char* POINT_SAMPLER_NAME = "NovaPointSampler";
+
+    constexpr bool RX_ITERATION_CONTINUE = true;
+    constexpr bool RX_ITERATION_STOP = false;
 } // namespace nova::renderer

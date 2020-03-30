@@ -228,6 +228,8 @@ set(WINDOWS_NOVA_SOURCE
         src/rhi/d3d12/d3dx12.h
         src/rhi/d3d12/d3d12_render_device.cpp
         src/rhi/d3d12/d3d12_render_device.hpp
+        src/rhi/d3d12/d3d12_structs.hpp
+        src/rhi/d3d12/d3d12_structs.cpp
         )
 
 set(UNIX_NOVA_SOURCE

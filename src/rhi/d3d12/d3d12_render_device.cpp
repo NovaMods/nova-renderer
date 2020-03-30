@@ -5,8 +5,9 @@
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/exception.hpp"
 
-#include "D3D12MemAlloc.h"
+#include "d3d12_structs.hpp"
 #include "d3dx12.h"
+
 using namespace Microsoft::WRL;
 
 namespace nova::renderer ::rhi {
@@ -33,6 +34,22 @@ namespace nova::renderer ::rhi {
     }
 
     D3D12RenderDevice::~D3D12RenderDevice() { dma_allocator->Release(); }
+
+    void D3D12RenderDevice::set_num_renderpasses(uint32_t /* num_renderpasses */) {
+        // Don't think we actually need to do anything
+    }
+
+    ntl::Result<RhiRenderpass*> D3D12RenderDevice::create_renderpass(const renderpack::RenderPassCreateInfo& data,
+                                                                     const glm::uvec2& /* framebuffer_size */,
+                                                                     rx::memory::allocator& allocator) {
+        auto* renderpass = allocator.create<D3D12RenderPass>();
+
+        if(!data.output_buffers.is_empty()) {
+            renderpass->flags |= D3D12_RENDER_PASS_FLAG_ALLOW_UAV_WRITES;
+        }
+
+        return ntl::Result<RhiRenderpass*>{renderpass};
+    }
 
     void D3D12RenderDevice::enable_validation_layer() {
         const auto res = D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
@@ -68,7 +85,7 @@ namespace nova::renderer ::rhi {
 
             if(desc.VendorId == INTEL_PCI_VENDOR_ID && adapters.size() > 1) {
                 // Prefer something other then the Intel GPU
-                return true;
+                return RX_ITERATION_CONTINUE;
             }
 
             ComPtr<ID3D12Device> try_device;
@@ -78,9 +95,11 @@ namespace nova::renderer ::rhi {
                 D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12_options;
                 try_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &d3d12_options, sizeof(d3d12_options));
                 if(d3d12_options.ResourceBindingTier != D3D12_RESOURCE_BINDING_TIER_3) {
-                    // Resource binding tire three means we can have partially bound descriptor array. Nova relies on partially bound
-                    // descriptor arrays
-                    return true;
+                    // Resource binding tier three means we can have partially bound descriptor array. Nova relies on partially bound
+                    // descriptor arrays, so we need it
+                    // Thus - if we find an adapter without full descriptor indexing support, we ignore it
+
+                    return RX_ITERATION_CONTINUE;
                 }
 
                 device = try_device;
@@ -109,10 +128,10 @@ namespace nova::renderer ::rhi {
                     }
                 }
 
-                return false;
+                return RX_ITERATION_STOP;
             }
 
-            return true;
+            return RX_ITERATION_CONTINUE;
         });
 
         if(!device) {
