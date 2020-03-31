@@ -1,11 +1,13 @@
 #pragma once
 
+#include <D3D12MemAlloc.h>
 #include <d3d12.h>
 #include <dxgi.h>
 #include <wrl/client.h>
 
-#include <D3D12MemAlloc.h>
 #include "nova_renderer/rhi/render_device.hpp"
+
+#include "descriptor_allocator.hpp"
 
 namespace nova::renderer::rhi {
     class D3D12RenderDevice final : public RenderDevice {
@@ -97,11 +99,9 @@ namespace nova::renderer::rhi {
 
         Microsoft::WRL::ComPtr<ID3D12RootSignature> standard_root_signature;
 
-        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> shader_resource_descriptor_heap;
-
-        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap;
-
-        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsv_descriptor_heap;
+        rx::ptr<DescriptorAllocator> shader_resource_descriptors;
+        rx::ptr<DescriptorAllocator> render_target_descriptors;
+        rx::ptr<DescriptorAllocator> depth_stencil_descriptors;
 
         D3D12MA::Allocator* dma_allocator;
 
@@ -138,6 +138,8 @@ namespace nova::renderer::rhi {
         void create_queues();
 
         void create_standard_root_signature();
+
+        [[nodiscard]] rx::ptr<DescriptorAllocator> create_descriptor_allocator(D3D12_DESCRIPTOR_HEAP_TYPE type, UINT num_descriptors) const;
 
         void create_descriptor_heaps();
 

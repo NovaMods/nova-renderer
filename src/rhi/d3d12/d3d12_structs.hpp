@@ -1,6 +1,7 @@
 #pragma once
 
 #include <d3d12.h>
+#include <wrl/client.h>
 
 #include "nova_renderer/rhi/rhi_types.hpp"
 
@@ -10,5 +11,15 @@ namespace nova::renderer::rhi {
         rx::optional<D3D12_RENDER_PASS_DEPTH_STENCIL_DESC> depth_stencil_description;
 
         D3D12_RENDER_PASS_FLAGS flags;
+    };
+
+    struct D3D12Framebuffer : RhiFramebuffer {
+        rx::vector<D3D12_CPU_DESCRIPTOR_HANDLE> render_target_descriptors;
+        rx::optional<D3D12_CPU_DESCRIPTOR_HANDLE> depth_stencil_descriptor;
+    };
+
+    struct D3D12Image : RhiImage {
+        Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+        DXGI_FORMAT format;
     };
 } // namespace nova::renderer::rhi

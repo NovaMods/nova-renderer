@@ -43,12 +43,52 @@ namespace nova::renderer ::rhi {
                                                                      const glm::uvec2& /* framebuffer_size */,
                                                                      rx::memory::allocator& allocator) {
         auto* renderpass = allocator.create<D3D12RenderPass>();
+        renderpass->render_target_descriptions = rx::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC>{&allocator};
 
         if(!data.output_buffers.is_empty()) {
             renderpass->flags |= D3D12_RENDER_PASS_FLAG_ALLOW_UAV_WRITES;
         }
 
         return ntl::Result<RhiRenderpass*>{renderpass};
+    }
+
+    RhiFramebuffer* D3D12RenderDevice::create_framebuffer(const RhiRenderpass* /* renderpass */,
+                                                          const rx::vector<RhiImage*>& color_attachments,
+                                                          const rx::optional<RhiImage*> depth_attachment,
+                                                          const glm::uvec2& framebuffer_size,
+                                                          rx::memory::allocator& allocator) {
+        auto* framebuffer = allocator.create<D3D12Framebuffer>();
+        framebuffer->size = framebuffer_size;
+
+        rx::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtv_descriptors{&allocator};
+        color_attachments.each_fwd([&](const RhiImage* image) {
+            auto* d3d12_image = static_cast<const D3D12Image*>(image);
+            const auto descriptor_handle = render_target_descriptors->get_next_free_descriptor();
+
+            D3D12_RENDER_TARGET_VIEW_DESC desc{};
+            desc.Format = d3d12_image->format;
+            desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+
+            device->CreateRenderTargetView(d3d12_image->resource.Get(), &desc, descriptor_handle);
+
+            rtv_descriptors.push_back(descriptor_handle);
+        });
+        framebuffer->num_attachments = static_cast<uint32_t>(framebuffer->render_target_descriptors.size());
+
+        if(depth_attachment) {
+            auto* d3d12_depth = static_cast<const D3D12Image*>(*depth_attachment);
+            const auto descriptor_handle = depth_stencil_descriptors->get_next_free_descriptor();
+
+            D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc{};
+            dsv_desc.Format = d3d12_depth->format;
+            dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+
+            device->CreateDepthStencilView(d3d12_depth->resource.Get(), &dsv_desc, descriptor_handle);
+
+            framebuffer->depth_stencil_descriptor = descriptor_handle;
+        }
+
+        return framebuffer;
     }
 
     void D3D12RenderDevice::enable_validation_layer() {
@@ -213,22 +253,25 @@ namespace nova::renderer ::rhi {
         }
     }
 
+    rx::ptr<DescriptorAllocator> D3D12RenderDevice::create_descriptor_allocator(const D3D12_DESCRIPTOR_HEAP_TYPE type,
+                                                                                const UINT num_descriptors) const {
+        ComPtr<ID3D12DescriptorHeap> heap;
+
+        D3D12_DESCRIPTOR_HEAP_DESC heap_desc{};
+        heap_desc.Type = type;
+        heap_desc.NumDescriptors = num_descriptors;
+        heap_desc.Flags = (type == D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE :
+                                                                            D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+        device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&heap));
+        const auto descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+        return rx::make_ptr<DescriptorAllocator>(&internal_allocator, heap, descriptor_size, internal_allocator);
+    }
+
     void D3D12RenderDevice::create_descriptor_heaps() {
-        D3D12_DESCRIPTOR_HEAP_DESC cbv_srv_uav_heap_desc{};
-        cbv_srv_uav_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        cbv_srv_uav_heap_desc.NumDescriptors = 65536;
-        cbv_srv_uav_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-        device->CreateDescriptorHeap(&cbv_srv_uav_heap_desc, IID_PPV_ARGS(&shader_resource_descriptor_heap));
-
-        D3D12_DESCRIPTOR_HEAP_DESC rtv_descriptor_heap_desc{};
-        rtv_descriptor_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-        rtv_descriptor_heap_desc.NumDescriptors = 1024;
-        device->CreateDescriptorHeap(&rtv_descriptor_heap_desc, IID_PPV_ARGS(&rtv_descriptor_heap));
-
-        D3D12_DESCRIPTOR_HEAP_DESC dsv_descriptor_heap_desc{};
-        dsv_descriptor_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-        dsv_descriptor_heap_desc.NumDescriptors = 1024;
-        device->CreateDescriptorHeap(&dsv_descriptor_heap_desc, IID_PPV_ARGS(&dsv_descriptor_heap));
+        shader_resource_descriptors = create_descriptor_allocator(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 65536);
+        render_target_descriptors = create_descriptor_allocator(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1024);
+        depth_stencil_descriptors = create_descriptor_allocator(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 512);
     }
 
     void D3D12RenderDevice::initialize_dma() {
