@@ -1,9 +1,11 @@
 #include "d3d12_render_device.hpp"
 
 #include <rx/core/log.h>
+#include <spirv_hlsl.hpp>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/exception.hpp"
+#include "nova_renderer/rhi/pipeline_create_info.hpp"
 
 #include "d3d12_structs.hpp"
 #include "d3dx12.h"
@@ -14,7 +16,7 @@ namespace nova::renderer ::rhi {
     RX_LOG("D3D12RenderDevice", logger);
 
     D3D12RenderDevice::D3D12RenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator)
-        : RenderDevice(settings, window, allocator) {
+        : RenderDevice(settings, window, allocator), standard_hlsl_bindings{&internal_allocator} {
 
         if(settings->debug.enabled && settings->debug.enable_validation_layers) {
             enable_validation_layer();
@@ -31,6 +33,8 @@ namespace nova::renderer ::rhi {
         create_descriptor_heaps();
 
         initialize_dma();
+
+        initialize_standard_resource_binding_mappings();
     }
 
     D3D12RenderDevice::~D3D12RenderDevice() { dma_allocator->Release(); }
@@ -89,6 +93,23 @@ namespace nova::renderer ::rhi {
         }
 
         return framebuffer;
+    }
+
+    rx::ptr<RhiPipeline> D3D12RenderDevice::create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                                    rx::memory::allocator& allocator) {
+        auto pipeline = rx::make_ptr<D3D12Pipeline>(&allocator);
+
+        spirv_cross::CompilerHLSL compiler{pipeline_state.vertex_shader.source.data(), pipeline_state.vertex_shader.source.size()};
+
+        spirv_cross::CompilerHLSL::Options options{};
+        options.shader_model = 51;
+        compiler.set_hlsl_options(options);
+        standard_hlsl_bindings.each_fwd(
+            [&](const spirv_cross::HLSLResourceBinding& binding) { compiler.add_hlsl_resource_binding(binding); });
+
+        const auto vertex_shader_hlsl = compiler.compile();
+
+        // TODO: Compile to DXIL
     }
 
     void D3D12RenderDevice::enable_validation_layer() {
@@ -282,5 +303,37 @@ namespace nova::renderer ::rhi {
         if(FAILED(result)) {
             throw Exception("Could not initialize D3D12 Memory Allocator");
         }
+    }
+
+    void D3D12RenderDevice::initialize_standard_resource_binding_mappings() {
+        standard_hlsl_bindings.clear();
+        standard_hlsl_bindings.reserve(6);
+
+        spirv_cross::HLSLResourceBinding camera_buffer_binding{};
+        standard_hlsl_bindings.push_back(rx::utility::move(camera_buffer_binding));
+
+        spirv_cross::HLSLResourceBinding material_buffer_binding{};
+        material_buffer_binding.binding = 1;
+        material_buffer_binding.srv.register_binding = 1;
+        standard_hlsl_bindings.push_back(rx::utility::move(material_buffer_binding));
+
+        spirv_cross::HLSLResourceBinding point_sampler_binding{};
+        point_sampler_binding.binding = 2;
+        standard_hlsl_bindings.push_back(rx::utility::move(point_sampler_binding));
+
+        spirv_cross::HLSLResourceBinding bilinear_sampler_binding{};
+        bilinear_sampler_binding.binding = 3;
+        bilinear_sampler_binding.sampler.register_space = 1;
+        standard_hlsl_bindings.push_back(rx::utility::move(bilinear_sampler_binding));
+
+        spirv_cross::HLSLResourceBinding trilinear_sampler_binding{};
+        trilinear_sampler_binding.binding = 4;
+        trilinear_sampler_binding.sampler.register_space = 2;
+        standard_hlsl_bindings.push_back(rx::utility::move(trilinear_sampler_binding));
+
+        spirv_cross::HLSLResourceBinding texture_binding{};
+        texture_binding.binding = 5;
+        texture_binding.srv.register_binding = 3;
+        standard_hlsl_bindings.push_back(rx::utility::move(texture_binding));
     }
 } // namespace nova::renderer::rhi

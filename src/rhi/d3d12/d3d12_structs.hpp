@@ -22,4 +22,10 @@ namespace nova::renderer::rhi {
         Microsoft::WRL::ComPtr<ID3D12Resource> resource;
         DXGI_FORMAT format;
     };
+
+    struct D3D12Pipeline : RhiPipeline {
+        Microsoft::WRL::ComPtr<ID3DBlob> vertex_shader_bytecode{};
+        Microsoft::WRL::ComPtr<ID3DBlob> geometry_shader_bytecode{};
+        Microsoft::WRL::ComPtr<ID3DBlob> pixel_shader_bytecode{};
+    };
 } // namespace nova::renderer::rhi

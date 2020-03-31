@@ -8,6 +8,7 @@
 #include "nova_renderer/rhi/render_device.hpp"
 
 #include "descriptor_allocator.hpp"
+#include "spirv_hlsl.hpp"
 
 namespace nova::renderer::rhi {
     class D3D12RenderDevice final : public RenderDevice {
@@ -97,6 +98,7 @@ namespace nova::renderer::rhi {
 
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> dma_queue;
 
+        rx::vector<spirv_cross::HLSLResourceBinding> standard_hlsl_bindings;
         Microsoft::WRL::ComPtr<ID3D12RootSignature> standard_root_signature;
 
         rx::ptr<DescriptorAllocator> shader_resource_descriptors;
@@ -144,6 +146,8 @@ namespace nova::renderer::rhi {
         void create_descriptor_heaps();
 
         void initialize_dma();
+
+        void initialize_standard_resource_binding_mappings();
 #pragma endregion
     };
 } // namespace nova::renderer::rhi
