@@ -153,6 +153,40 @@ namespace nova::renderer ::rhi {
         auto pipeline = rx::make_ptr<D3D12Pipeline>(&allocator);
         pipeline->name = pipeline_state.name;
         pipeline->create_info = pipeline_state;
+        pipeline->root_signature = standard_root_signature;
+
+        // TODO: Compile the shader stages asynchronously
+        pipeline->vertex_shader_bytecode = compile_spirv_to_dxil(pipeline_state.vertex_shader.source, L"vs_6_4", pipeline_state.name);
+        if(!pipeline->vertex_shader_bytecode) {
+            return {};
+        }
+
+        if(pipeline_state.geometry_shader) {
+            pipeline->geometry_shader_bytecode = compile_spirv_to_dxil(pipeline_state.geometry_shader->source,
+                                                                       L"gs_6_4",
+                                                                       pipeline_state.name);
+            if(!pipeline->geometry_shader_bytecode) {
+                return {};
+            }
+        }
+
+        if(pipeline_state.pixel_shader) {
+            pipeline->pixel_shader_bytecode = compile_spirv_to_dxil(pipeline_state.pixel_shader->source, L"ps_6_4", pipeline_state.name);
+            if(!pipeline->pixel_shader_bytecode) {
+                return {};
+            }
+        }
+
+        return pipeline;
+    }
+
+    rx::ptr<RhiPipeline> D3D12RenderDevice::create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                                   rx::memory::allocator& allocator) {
+        auto pipeline = rx::make_ptr<D3D12Pipeline>(&allocator);
+        pipeline->name = pipeline_state.name;
+        pipeline->create_info = pipeline_state;
+
+        TODO: Reflect on the pipeline and extract information about the root signature and its bindings
 
         // TODO: Compile the shader stages asynchronously
         pipeline->vertex_shader_bytecode = compile_spirv_to_dxil(pipeline_state.vertex_shader.source, L"vs_6_4", pipeline_state.name);
