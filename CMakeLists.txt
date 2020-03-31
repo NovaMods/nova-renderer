@@ -232,6 +232,10 @@ set(WINDOWS_NOVA_SOURCE
         src/rhi/d3d12/d3d12_structs.cpp
         src/rhi/d3d12/descriptor_allocator.hpp
         src/rhi/d3d12/descriptor_allocator.cpp
+        src/rhi/d3d12/d3d12_resource_binder.hpp
+        src/rhi/d3d12/d3d12_resource_binder.cpp
+        src/rhi/d3d12/d3d12_command_list.hpp
+        src/rhi/d3d12/d3d12_command_list.cpp
         )
 
 set(UNIX_NOVA_SOURCE

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <d3d12.h>
+#include <dxc/dxcapi.h>
 #include <wrl/client.h>
 
 #include "nova_renderer/rhi/rhi_types.hpp"
@@ -23,13 +24,26 @@ namespace nova::renderer::rhi {
         DXGI_FORMAT format;
     };
 
+    struct D3D12Buffer : RhiBuffer {
+        Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+    };
+
+    struct D3D12Sampler : RhiSampler {
+        
+    };
+
     struct D3D12Pipeline : RhiPipeline {
-        Microsoft::WRL::ComPtr<ID3DBlob> vertex_shader_bytecode{};
-        Microsoft::WRL::ComPtr<ID3DBlob> geometry_shader_bytecode{};
-        Microsoft::WRL::ComPtr<ID3DBlob> pixel_shader_bytecode{};
+        Microsoft::WRL::ComPtr<IDxcBlob> vertex_shader_bytecode{};
+        Microsoft::WRL::ComPtr<IDxcBlob> geometry_shader_bytecode{};
+        Microsoft::WRL::ComPtr<IDxcBlob> pixel_shader_bytecode{};
 
         RhiGraphicsPipelineState create_info;
 
         Microsoft::WRL::ComPtr<ID3D12RootSignature> root_signature;
+
+        rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC> bindings;
+        rx::map<rx::string, D3D12_CPU_DESCRIPTOR_HANDLE> descriptors;
     };
+
+    struct D3D12ResourceBindingDesc {};
 } // namespace nova::renderer::rhi

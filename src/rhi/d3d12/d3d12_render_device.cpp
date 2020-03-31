@@ -1,6 +1,10 @@
 #include "d3d12_render_device.hpp"
 
+// Needed to keep the d3d12shader.h header happy
+#include <basetyps.h>
+#include <d3dcompiler.h>
 #include <dxc/dxcapi.h>
+#include <minitrace.h>
 #include <rx/core/log.h>
 #include <spirv_hlsl.hpp>
 
@@ -9,15 +13,18 @@
 #include "nova_renderer/loading/shader_includer.hpp"
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 
+#include "d3d12_resource_binder.hpp"
 #include "d3d12_structs.hpp"
 #include "d3dx12.h"
+
 using namespace Microsoft::WRL;
 
 namespace nova::renderer ::rhi {
     RX_LOG("D3D12RenderDevice", logger);
 
     D3D12RenderDevice::D3D12RenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator)
-        : RenderDevice(settings, window, allocator), standard_hlsl_bindings{&internal_allocator} {
+        : RenderDevice(settings, window, allocator), standard_hlsl_bindings{internal_allocator} {
+        MTR_SCOPE("D3D12RenderDevice", "D3D12RenderDevice");
 
         if(settings->debug.enabled && settings->debug.enable_validation_layers) {
             enable_validation_layer();
@@ -49,8 +56,10 @@ namespace nova::renderer ::rhi {
     ntl::Result<RhiRenderpass*> D3D12RenderDevice::create_renderpass(const renderpack::RenderPassCreateInfo& data,
                                                                      const glm::uvec2& /* framebuffer_size */,
                                                                      rx::memory::allocator& allocator) {
+        MTR_SCOPE("D3D12RenderDevice", "create_renderpass");
+
         auto* renderpass = allocator.create<D3D12RenderPass>();
-        renderpass->render_target_descriptions = rx::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC>{&allocator};
+        renderpass->render_target_descriptions = rx::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC>{allocator};
 
         if(!data.output_buffers.is_empty()) {
             renderpass->flags |= D3D12_RENDER_PASS_FLAG_ALLOW_UAV_WRITES;
@@ -64,10 +73,12 @@ namespace nova::renderer ::rhi {
                                                           const rx::optional<RhiImage*> depth_attachment,
                                                           const glm::uvec2& framebuffer_size,
                                                           rx::memory::allocator& allocator) {
+        MTR_SCOPE("D3D12RenderDevice", "create_framebuffer");
+
         auto* framebuffer = allocator.create<D3D12Framebuffer>();
         framebuffer->size = framebuffer_size;
 
-        rx::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtv_descriptors{&allocator};
+        rx::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtv_descriptors{allocator};
         color_attachments.each_fwd([&](const RhiImage* image) {
             auto* d3d12_image = static_cast<const D3D12Image*>(image);
             const auto descriptor_handle = render_target_descriptors->get_next_free_descriptor();
@@ -101,6 +112,8 @@ namespace nova::renderer ::rhi {
     ComPtr<IDxcBlob> D3D12RenderDevice::compile_spirv_to_dxil(const rx::vector<uint32_t>& spirv,
                                                               const LPCWSTR target_profile,
                                                               const rx::string& pipeline_name) {
+        MTR_SCOPE("D3D12RenderDevice", "compile_spirv_to_dxil");
+
         spirv_cross::CompilerHLSL compiler{spirv.data(), spirv.size()};
 
         spirv_cross::CompilerHLSL::Options options{};
@@ -150,7 +163,9 @@ namespace nova::renderer ::rhi {
 
     rx::ptr<RhiPipeline> D3D12RenderDevice::create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
                                                                     rx::memory::allocator& allocator) {
-        auto pipeline = rx::make_ptr<D3D12Pipeline>(&allocator);
+        MTR_SCOPE("D3D12RenderDevice", "create_surface_pipeline");
+
+        auto pipeline = rx::make_ptr<D3D12Pipeline>(allocator);
         pipeline->name = pipeline_state.name;
         pipeline->create_info = pipeline_state;
         pipeline->root_signature = standard_root_signature;
@@ -180,19 +195,24 @@ namespace nova::renderer ::rhi {
         return pipeline;
     }
 
+    void get_bindings_for_shader(const ComPtr<IDxcBlob>& shader_blob, rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings);
+
     rx::ptr<RhiPipeline> D3D12RenderDevice::create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
                                                                    rx::memory::allocator& allocator) {
-        auto pipeline = rx::make_ptr<D3D12Pipeline>(&allocator);
+        MTR_SCOPE("D3D12RenderDevice", "create_global_pipeline");
+
+        auto pipeline = rx::make_ptr<D3D12Pipeline>(allocator);
         pipeline->name = pipeline_state.name;
         pipeline->create_info = pipeline_state;
-
-        TODO: Reflect on the pipeline and extract information about the root signature and its bindings
 
         // TODO: Compile the shader stages asynchronously
         pipeline->vertex_shader_bytecode = compile_spirv_to_dxil(pipeline_state.vertex_shader.source, L"vs_6_4", pipeline_state.name);
         if(!pipeline->vertex_shader_bytecode) {
             return {};
         }
+
+        rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC> bindings{allocator};
+        get_bindings_for_shader(pipeline->vertex_shader_bytecode, bindings);
 
         if(pipeline_state.geometry_shader) {
             pipeline->geometry_shader_bytecode = compile_spirv_to_dxil(pipeline_state.geometry_shader->source,
@@ -201,6 +221,7 @@ namespace nova::renderer ::rhi {
             if(!pipeline->geometry_shader_bytecode) {
                 return {};
             }
+            get_bindings_for_shader(pipeline->geometry_shader_bytecode, bindings);
         }
 
         if(pipeline_state.pixel_shader) {
@@ -208,9 +229,26 @@ namespace nova::renderer ::rhi {
             if(!pipeline->pixel_shader_bytecode) {
                 return {};
             }
+            get_bindings_for_shader(pipeline->pixel_shader_bytecode, bindings);
         }
 
+        const auto& [descriptors, root_sig] = create_root_signature(bindings, allocator);
+        pipeline->descriptors = descriptors;
+        pipeline->root_signature = root_sig;
+
+        pipeline->bindings = bindings;
+
         return pipeline;
+    }
+
+    rx::ptr<RhiResourceBinder> D3D12RenderDevice::create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
+                                                                                      rx::memory::allocator& allocator) {
+        MTR_SCOPE("D3D12ResourceBinder", "create_resource_binder_for_pipeline");
+
+        auto& d3d12_pipeline = static_cast<const D3D12Pipeline&>(pipeline);
+        auto binder = rx::make_ptr<D3D12ResourceBinder>(allocator, d3d12_pipeline, allocator);
+
+        return binder;
     }
 
     void D3D12RenderDevice::enable_validation_layer() {
@@ -223,14 +261,21 @@ namespace nova::renderer ::rhi {
         }
     }
 
-    void D3D12RenderDevice::initialize_dxgi() { CreateDXGIFactory(IID_PPV_ARGS(&factory)); }
+    void D3D12RenderDevice::initialize_dxgi() {
+        MTR_SCOPE("D3D12RenderDevice", "initialize_dxgi");
+
+        CreateDXGIFactory(IID_PPV_ARGS(&factory));
+    }
 
     void D3D12RenderDevice::select_adapter() {
+        MTR_SCOPE("D3D12RenderDevice", "select_adapter");
+
         // We want an adapter:
         // - Not integrated, if possible
 
         // TODO: Figure out how to get the number of adapters in advance
-        rx::vector<ComPtr<IDXGIAdapter>> adapters{&internal_allocator};
+        rx::vector<ComPtr<IDXGIAdapter>> adapters{internal_allocator};
+        adapters.reserve(5);
 
         UINT adapter_idx = 0;
         ComPtr<IDXGIAdapter> cur_adapter;
@@ -302,6 +347,8 @@ namespace nova::renderer ::rhi {
     }
 
     void D3D12RenderDevice::create_queues() {
+        MTR_SCOPE("D3D12RenderDevice", "create_queues");
+
         // One graphics queue and one optional DMA queue
         D3D12_COMMAND_QUEUE_DESC graphics_queue_desc{};
         graphics_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -322,8 +369,31 @@ namespace nova::renderer ::rhi {
         }
     }
 
+    ComPtr<ID3D12RootSignature> D3D12RenderDevice::compile_root_signature(const D3D12_ROOT_SIGNATURE_DESC& root_signature_desc) const {
+        ComPtr<ID3DBlob> root_signature_blob;
+        ComPtr<ID3DBlob> error_blob;
+        auto result = D3D12SerializeRootSignature(&root_signature_desc, D3D_ROOT_SIGNATURE_VERSION_1, &root_signature_blob, &error_blob);
+        if(FAILED(result)) {
+            const rx::string msg{internal_allocator, reinterpret_cast<char*>(error_blob->GetBufferPointer()), error_blob->GetBufferSize()};
+            throw Exception(rx::string::format("Could not create standard root signature: %s", msg));
+        }
+
+        ComPtr<ID3D12RootSignature> sig;
+        result = device->CreateRootSignature(0,
+                                             root_signature_blob->GetBufferPointer(),
+                                             root_signature_blob->GetBufferSize(),
+                                             IID_PPV_ARGS(&sig));
+        if(FAILED(result)) {
+            throw Exception("Could not create root signature");
+        }
+
+        return sig;
+    }
+
     void D3D12RenderDevice::create_standard_root_signature() {
-        rx::vector<CD3DX12_ROOT_PARAMETER> root_parameters{&internal_allocator, 4};
+        MTR_SCOPE("D3D12RenderDevice", "create_standard_root_signature");
+
+        rx::vector<CD3DX12_ROOT_PARAMETER> root_parameters{internal_allocator, 4};
 
         // Root constants for material index and camera index
         root_parameters[0].InitAsConstants(2, 0);
@@ -337,7 +407,7 @@ namespace nova::renderer ::rhi {
         // Textures array
         root_parameters[3].InitAsShaderResourceView(3, MAX_NUM_TEXTURES);
 
-        rx::vector<D3D12_STATIC_SAMPLER_DESC> static_samplers{&internal_allocator, 3};
+        rx::vector<D3D12_STATIC_SAMPLER_DESC> static_samplers{internal_allocator, 3};
 
         // Point sampler
         auto& point_sampler_desc = static_samplers[0];
@@ -358,21 +428,7 @@ namespace nova::renderer ::rhi {
         root_signature_desc.NumStaticSamplers = static_cast<UINT>(static_samplers.size());
         root_signature_desc.pStaticSamplers = static_samplers.data();
 
-        ComPtr<ID3DBlob> root_signature_blob;
-        ComPtr<ID3DBlob> error_blob;
-        auto result = D3D12SerializeRootSignature(&root_signature_desc, D3D_ROOT_SIGNATURE_VERSION_1, &root_signature_blob, &error_blob);
-        if(FAILED(result)) {
-            const rx::string msg{&internal_allocator, reinterpret_cast<char*>(error_blob->GetBufferPointer()), error_blob->GetBufferSize()};
-            throw Exception(rx::string::format("Could not create standard root signature: %s", msg));
-        }
-
-        result = device->CreateRootSignature(0,
-                                             root_signature_blob->GetBufferPointer(),
-                                             root_signature_blob->GetBufferSize(),
-                                             IID_PPV_ARGS(&standard_root_signature));
-        if(FAILED(result)) {
-            throw Exception("Could not create root signature");
-        }
+        standard_root_signature = compile_root_signature(root_signature_desc);
     }
 
     rx::ptr<DescriptorAllocator> D3D12RenderDevice::create_descriptor_allocator(const D3D12_DESCRIPTOR_HEAP_TYPE type,
@@ -387,16 +443,20 @@ namespace nova::renderer ::rhi {
         device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&heap));
         const auto descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-        return rx::make_ptr<DescriptorAllocator>(&internal_allocator, heap, descriptor_size, internal_allocator);
+        return rx::make_ptr<DescriptorAllocator>(internal_allocator, heap, descriptor_size, internal_allocator);
     }
 
     void D3D12RenderDevice::create_descriptor_heaps() {
+        MTR_SCOPE("D3D12RenderDevice", "create_descriptor_heaps");
+
         shader_resource_descriptors = create_descriptor_allocator(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 65536);
         render_target_descriptors = create_descriptor_allocator(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1024);
         depth_stencil_descriptors = create_descriptor_allocator(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 512);
     }
 
     void D3D12RenderDevice::initialize_dma() {
+        MTR_SCOPE("D3D12RenderDevice", "initialize_dma");
+
         D3D12MA::ALLOCATOR_DESC allocator_desc{};
         allocator_desc.pAdapter = adapter.Get();
         allocator_desc.pDevice = device.Get();
@@ -439,6 +499,8 @@ namespace nova::renderer ::rhi {
     }
 
     void D3D12RenderDevice::create_shader_compiler() {
+        MTR_SCOPE("D3D12RenderDevice", "create_shader_compiler");
+
         auto hr = DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&dxc_library));
         if(FAILED(hr)) {
             throw Exception("Could not create DXC Library instance");
@@ -448,5 +510,101 @@ namespace nova::renderer ::rhi {
         if(FAILED(hr)) {
             throw Exception("Could not create DXC instance");
         }
+    }
+
+    void get_bindings_for_shader(const ComPtr<IDxcBlob>& shader_blob, rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings) {
+
+        ComPtr<::ID3D12ShaderReflection> reflector;
+        const auto result = D3DReflect(shader_blob->GetBufferPointer(), shader_blob->GetBufferSize(), IID_PPV_ARGS(&reflector));
+        if(FAILED(result)) {
+            return;
+        }
+
+        D3D12_SHADER_DESC shader_desc;
+        reflector->GetDesc(&shader_desc);
+
+        for(UINT i = 0; i < shader_desc.BoundResources; i++) {
+            D3D12_SHADER_INPUT_BIND_DESC desc;
+            reflector->GetResourceBindingDesc(i, &desc);
+
+            // Save the name, bind point, and register space so we know how to construct the descriptor table for this shader
+            // Currently this code doesn't support any kind of arrays
+
+            bindings.insert(rx::string{bindings.allocator(), desc.Name}, desc);
+        }
+    }
+
+    static D3D12_DESCRIPTOR_RANGE_TYPE to_range_type(const D3D_SHADER_INPUT_TYPE type) {
+        switch(type) {
+            case D3D_SIT_STRUCTURED:
+                [[fallthrough]];
+            case D3D_SIT_TBUFFER:
+                [[fallthrough]];
+            case D3D_SIT_TEXTURE:
+                return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+            case D3D_SIT_SAMPLER:
+                return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+
+            case D3D_SIT_UAV_APPEND_STRUCTURED:
+                [[fallthrough]];
+            case D3D_SIT_UAV_CONSUME_STRUCTURED:
+                [[fallthrough]];
+            case D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER:
+                [[fallthrough]];
+            case D3D_SIT_UAV_RWTYPED:
+                [[fallthrough]];
+            case D3D_SIT_UAV_RWSTRUCTURED:
+                return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+
+            case D3D_SIT_CBUFFER:
+                [[fallthrough]];
+            default:
+                return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+        }
+    }
+
+    D3D12RenderDevice::RootSignatureWithDescriptors D3D12RenderDevice::create_root_signature(
+        const rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings, rx::memory::allocator& allocator) {
+        MTR_SCOPE("D3D12RenderDevice", "create_root_signature");
+
+        // build a descriptor table for these bindings
+        // We allocate descriptors for the table as well, because we need them for the root signature
+
+        rx::map<rx::string, D3D12_CPU_DESCRIPTOR_HANDLE> descriptors{allocator};
+
+        rx::vector<D3D12_DESCRIPTOR_RANGE> ranges{allocator};
+        ranges.reserve(bindings.size());
+
+        bindings.each_pair([&](const rx::string& binding_name, const D3D12_SHADER_INPUT_BIND_DESC& binding_desc) {
+            const auto descriptor = shader_resource_descriptors->get_next_free_descriptor();
+
+            D3D12_DESCRIPTOR_RANGE range;
+            range.RangeType = to_range_type(binding_desc.Type);
+            range.NumDescriptors = 1;
+            range.BaseShaderRegister = binding_desc.BindPoint;
+            range.RegisterSpace = binding_desc.Space;
+            range.OffsetInDescriptorsFromTableStart = descriptor.ptr;
+
+            ranges.push_back(rx::utility::move(range));
+
+            descriptors.insert(binding_name, descriptor);
+        });
+
+        D3D12_ROOT_DESCRIPTOR_TABLE table;
+        table.NumDescriptorRanges = ranges.size();
+        table.pDescriptorRanges = ranges.data();
+
+        D3D12_ROOT_PARAMETER root_param{};
+        root_param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+        root_param.DescriptorTable = table;
+
+        D3D12_ROOT_SIGNATURE_DESC root_sig_desc{};
+        root_sig_desc.NumParameters = 1;
+        root_sig_desc.pParameters = &root_param;
+
+        const auto root_sig = compile_root_signature(root_sig_desc);
+
+        return {descriptors, root_sig};
     }
 } // namespace nova::renderer::rhi

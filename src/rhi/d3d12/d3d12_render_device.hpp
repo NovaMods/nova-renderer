@@ -2,14 +2,15 @@
 
 #include <D3D12MemAlloc.h>
 #include <d3d12.h>
+#include <d3d12shader.h>
+#include <dxc/dxcapi.h>
 #include <dxgi.h>
+#include <spirv_hlsl.hpp>
 #include <wrl/client.h>
 
 #include "nova_renderer/rhi/render_device.hpp"
 
 #include "descriptor_allocator.hpp"
-#include "dxc/dxcapi.h"
-#include "spirv_hlsl.hpp"
 
 namespace nova::renderer::rhi {
     class D3D12RenderDevice final : public RenderDevice {
@@ -158,9 +159,18 @@ namespace nova::renderer::rhi {
 #pragma endregion
 
 #pragma region Helpers
-        Microsoft::WRL::ComPtr<IDxcBlob> compile_spirv_to_dxil(const rx::vector<uint32_t>& spirv,
-                                                               LPCWSTR target_profile,
-                                                               const rx::string& pipeline_name);
+        [[nodiscard]] Microsoft::WRL::ComPtr<IDxcBlob> compile_spirv_to_dxil(const rx::vector<uint32_t>& spirv,
+                                                                             LPCWSTR target_profile,
+                                                                             const rx::string& pipeline_name);
+
+        using RootSignatureWithDescriptors = rx::pair<rx::map<rx::string, D3D12_CPU_DESCRIPTOR_HANDLE>,
+                                                      Microsoft::WRL::ComPtr<ID3D12RootSignature>>;
+
+        [[nodiscard]] RootSignatureWithDescriptors create_root_signature(const rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings,
+                                                                         rx::memory::allocator& allocator);
+
+        [[nodiscard]] Microsoft::WRL::ComPtr<ID3D12RootSignature> compile_root_signature(
+            const D3D12_ROOT_SIGNATURE_DESC& root_signature_desc) const;
 #pragma endregion
     };
 } // namespace nova::renderer::rhi
