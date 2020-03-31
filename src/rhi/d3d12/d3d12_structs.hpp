@@ -27,5 +27,9 @@ namespace nova::renderer::rhi {
         Microsoft::WRL::ComPtr<ID3DBlob> vertex_shader_bytecode{};
         Microsoft::WRL::ComPtr<ID3DBlob> geometry_shader_bytecode{};
         Microsoft::WRL::ComPtr<ID3DBlob> pixel_shader_bytecode{};
+
+        RhiGraphicsPipelineState create_info;
+
+        Microsoft::WRL::ComPtr<ID3D12RootSignature> root_signature;
     };
 } // namespace nova::renderer::rhi

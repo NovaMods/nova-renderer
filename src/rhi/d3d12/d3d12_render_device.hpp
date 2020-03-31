@@ -8,6 +8,7 @@
 #include "nova_renderer/rhi/render_device.hpp"
 
 #include "descriptor_allocator.hpp"
+#include "dxc/dxcapi.h"
 #include "spirv_hlsl.hpp"
 
 namespace nova::renderer::rhi {
@@ -107,6 +108,10 @@ namespace nova::renderer::rhi {
 
         D3D12MA::Allocator* dma_allocator;
 
+        Microsoft::WRL::ComPtr<IDxcLibrary> dxc_library;
+
+        Microsoft::WRL::ComPtr<IDxcCompiler> dxc_compiler;
+
         /*!
          * \brief Indicates whether this device has a Unified Memory Architecture
          *
@@ -148,6 +153,14 @@ namespace nova::renderer::rhi {
         void initialize_dma();
 
         void initialize_standard_resource_binding_mappings();
+
+        void create_shader_compiler();
+#pragma endregion
+
+#pragma region Helpers
+        Microsoft::WRL::ComPtr<IDxcBlob> compile_spirv_to_dxil(const rx::vector<uint32_t>& spirv,
+                                                               LPCWSTR target_profile,
+                                                               const rx::string& pipeline_name);
 #pragma endregion
     };
 } // namespace nova::renderer::rhi

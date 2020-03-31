@@ -1,15 +1,16 @@
 #include "d3d12_render_device.hpp"
 
+#include <dxc/dxcapi.h>
 #include <rx/core/log.h>
 #include <spirv_hlsl.hpp>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/exception.hpp"
+#include "nova_renderer/loading/shader_includer.hpp"
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 
 #include "d3d12_structs.hpp"
 #include "d3dx12.h"
-
 using namespace Microsoft::WRL;
 
 namespace nova::renderer ::rhi {
@@ -35,6 +36,8 @@ namespace nova::renderer ::rhi {
         initialize_dma();
 
         initialize_standard_resource_binding_mappings();
+
+        create_shader_compiler();
     }
 
     D3D12RenderDevice::~D3D12RenderDevice() { dma_allocator->Release(); }
@@ -95,11 +98,10 @@ namespace nova::renderer ::rhi {
         return framebuffer;
     }
 
-    rx::ptr<RhiPipeline> D3D12RenderDevice::create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
-                                                                    rx::memory::allocator& allocator) {
-        auto pipeline = rx::make_ptr<D3D12Pipeline>(&allocator);
-
-        spirv_cross::CompilerHLSL compiler{pipeline_state.vertex_shader.source.data(), pipeline_state.vertex_shader.source.size()};
+    ComPtr<IDxcBlob> D3D12RenderDevice::compile_spirv_to_dxil(const rx::vector<uint32_t>& spirv,
+                                                              const LPCWSTR target_profile,
+                                                              const rx::string& pipeline_name) {
+        spirv_cross::CompilerHLSL compiler{spirv.data(), spirv.size()};
 
         spirv_cross::CompilerHLSL::Options options{};
         options.shader_model = 51;
@@ -109,7 +111,72 @@ namespace nova::renderer ::rhi {
 
         const auto vertex_shader_hlsl = compiler.compile();
 
-        // TODO: Compile to DXIL
+        ComPtr<IDxcBlobEncoding> encoding;
+        auto result = dxc_library->CreateBlobWithEncodingFromPinned(vertex_shader_hlsl.c_str(),
+                                                                    vertex_shader_hlsl.size(),
+                                                                    CP_UTF8,
+                                                                    &encoding);
+        if(FAILED(result)) {
+            logger->error("Could not creating encoding blob for vertex shader for pipeline %s", pipeline_name);
+            return {};
+        }
+
+        ComPtr<IDxcOperationResult> compile_result;
+        result = dxc_compiler
+                     ->Compile(encoding.Get(), L"unknown", L"main", target_profile, nullptr, 0, nullptr, 0, nullptr, &compile_result);
+        if(FAILED(result)) {
+            logger->error("Could not compile vertex shader for pipeline %s", pipeline_name);
+            return {};
+        }
+
+        compile_result->GetStatus(&result);
+        if(SUCCEEDED(result)) {
+            ComPtr<IDxcBlob> result_blob;
+            result = compile_result->GetResult(&result_blob);
+            rx::vector<uint32_t> dxil{result_blob->GetBufferSize() / sizeof(uint32_t)};
+            memcpy(dxil.data(), result_blob->GetBufferPointer(), result_blob->GetBufferSize());
+
+            return result_blob;
+
+        } else {
+            IDxcBlobEncoding* error_buffer;
+            compile_result->GetErrorBuffer(&error_buffer);
+            logger->error("Error compiling shader:\n%s\n", static_cast<char const*>(error_buffer->GetBufferPointer()));
+            error_buffer->Release();
+
+            return {};
+        }
+    }
+
+    rx::ptr<RhiPipeline> D3D12RenderDevice::create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+                                                                    rx::memory::allocator& allocator) {
+        auto pipeline = rx::make_ptr<D3D12Pipeline>(&allocator);
+        pipeline->name = pipeline_state.name;
+        pipeline->create_info = pipeline_state;
+
+        // TODO: Compile the shader stages asynchronously
+        pipeline->vertex_shader_bytecode = compile_spirv_to_dxil(pipeline_state.vertex_shader.source, L"vs_6_4", pipeline_state.name);
+        if(!pipeline->vertex_shader_bytecode) {
+            return {};
+        }
+
+        if(pipeline_state.geometry_shader) {
+            pipeline->geometry_shader_bytecode = compile_spirv_to_dxil(pipeline_state.geometry_shader->source,
+                                                                       L"gs_6_4",
+                                                                       pipeline_state.name);
+            if(!pipeline->geometry_shader_bytecode) {
+                return {};
+            }
+        }
+
+        if(pipeline_state.pixel_shader) {
+            pipeline->pixel_shader_bytecode = compile_spirv_to_dxil(pipeline_state.pixel_shader->source, L"ps_6_4", pipeline_state.name);
+            if(!pipeline->pixel_shader_bytecode) {
+                return {};
+            }
+        }
+
+        return pipeline;
     }
 
     void D3D12RenderDevice::enable_validation_layer() {
@@ -335,5 +402,17 @@ namespace nova::renderer ::rhi {
         texture_binding.binding = 5;
         texture_binding.srv.register_binding = 3;
         standard_hlsl_bindings.push_back(rx::utility::move(texture_binding));
+    }
+
+    void D3D12RenderDevice::create_shader_compiler() {
+        auto hr = DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&dxc_library));
+        if(FAILED(hr)) {
+            throw Exception("Could not create DXC Library instance");
+        }
+
+        hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxc_compiler));
+        if(FAILED(hr)) {
+            throw Exception("Could not create DXC instance");
+        }
     }
 } // namespace nova::renderer::rhi
