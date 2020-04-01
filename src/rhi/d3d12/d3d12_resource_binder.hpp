@@ -35,7 +35,7 @@ namespace nova::renderer::rhi {
 
         void update_descriptors();
 
-        [[nodiscard]] ID3D12RootSignature* get_root_signature();
+        [[nodiscard]] ID3D12RootSignature* get_root_signature() const;
 
     private:
         rx::map<rx::string, D3D12Image*> bound_images;

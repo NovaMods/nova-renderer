@@ -1,5 +1,6 @@
 #pragma once
 
+#include <D3D12MemAlloc.h>
 #include <d3d12.h>
 #include <d3d12shader.h>
 #include <dxc/dxcapi.h>
@@ -28,6 +29,7 @@ namespace nova::renderer::rhi {
 
     struct D3D12Buffer : RhiBuffer {
         Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+        D3D12MA::Allocation* alloc;
     };
 
     struct D3D12Sampler : RhiSampler {

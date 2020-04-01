@@ -15,6 +15,7 @@
 
 #include "d3d12_resource_binder.hpp"
 #include "d3d12_structs.hpp"
+#include "d3d12_utils.hpp"
 #include "d3dx12.h"
 
 using namespace Microsoft::WRL;
@@ -251,6 +252,44 @@ namespace nova::renderer ::rhi {
         return binder;
     }
 
+    RhiBuffer* D3D12RenderDevice::create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) {
+        const auto desc = CD3DX12_RESOURCE_DESC::Buffer(info.size.b_count());
+
+        D3D12MA::ALLOCATION_DESC alloc_desc{};
+        switch(info.buffer_usage) {
+            case BufferUsage::StagingBuffer:
+                [[fallthrough]];
+            case BufferUsage::UniformBuffer:
+                alloc_desc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+                break;
+
+            case BufferUsage::IndexBuffer:
+                [[fallthrough]];
+            case BufferUsage::VertexBuffer:
+                alloc_desc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+                break;
+        }
+
+        auto* buffer = allocator.create<D3D12Buffer>();
+        const auto result = dma_allocator->CreateResource(&alloc_desc,
+                                                          &desc,
+                                                          D3D12_RESOURCE_STATE_COMMON,
+                                                          nullptr,
+                                                          &buffer->alloc,
+                                                          IID_PPV_ARGS(&buffer->resource));
+        if(FAILED(result)) {
+            logger->error("Could not create buffer %s", info.name);
+            return nullptr;
+        }
+
+        buffer->size = info.size;
+        buffer->type = ResourceType::Buffer;
+
+        set_object_name(buffer->resource.Get(), info.name);
+
+        return buffer;
+    }
+
     void D3D12RenderDevice::enable_validation_layer() {
         const auto res = D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
         if(SUCCEEDED(res)) {
@@ -344,6 +383,8 @@ namespace nova::renderer ::rhi {
         if(!device) {
             throw Exception("Could not find a suitable D3D12 adapter");
         }
+
+        set_object_name(device.Get(), "Nova D3D12 Device");
     }
 
     void D3D12RenderDevice::create_queues() {
@@ -358,6 +399,8 @@ namespace nova::renderer ::rhi {
             throw Exception("Could not create graphics command queue");
         }
 
+        set_object_name(graphics_queue.Get(), "Nova Direct Queue");
+
         if(!is_uma) {
             // No need to care about DMA on UMA cause we can just map everything
             D3D12_COMMAND_QUEUE_DESC dma_queue_desc{};
@@ -365,6 +408,9 @@ namespace nova::renderer ::rhi {
             result = device->CreateCommandQueue(&dma_queue_desc, IID_PPV_ARGS(&dma_queue));
             if(FAILED(result)) {
                 logger->warning("Could not create a DMA queue on a non-UMA adapter, data transfers will have to use the graphics queue");
+
+            } else {
+                set_object_name(dma_queue.Get(), "Nova DMA queue");
             }
         }
     }
@@ -429,6 +475,8 @@ namespace nova::renderer ::rhi {
         root_signature_desc.pStaticSamplers = static_samplers.data();
 
         standard_root_signature = compile_root_signature(root_signature_desc);
+
+        set_object_name(standard_root_signature.Get(), "Standard Root Signature");
     }
 
     rx::ptr<DescriptorAllocator> D3D12RenderDevice::create_descriptor_allocator(const D3D12_DESCRIPTOR_HEAP_TYPE type,

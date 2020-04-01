@@ -236,6 +236,8 @@ set(WINDOWS_NOVA_SOURCE
         src/rhi/d3d12/d3d12_resource_binder.cpp
         src/rhi/d3d12/d3d12_command_list.hpp
         src/rhi/d3d12/d3d12_command_list.cpp
+        src/rhi/d3d12/d3d12_utils.hpp
+        src/rhi/d3d12/d3d12_utils.cpp
         )
 
 set(UNIX_NOVA_SOURCE
