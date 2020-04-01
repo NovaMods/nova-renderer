@@ -1,9 +1,11 @@
 #pragma once
 
 #include <d3d12.h>
+#include <d3d12shader.h>
 #include <dxc/dxcapi.h>
 #include <wrl/client.h>
 
+#include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
@@ -29,7 +31,7 @@ namespace nova::renderer::rhi {
     };
 
     struct D3D12Sampler : RhiSampler {
-        
+        D3D12_SAMPLER_DESC desc;
     };
 
     struct D3D12Pipeline : RhiPipeline {
