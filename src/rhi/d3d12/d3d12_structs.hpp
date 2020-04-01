@@ -10,6 +10,10 @@
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
+    constexpr uint32_t CPU_FENCE_UNSIGNALED = 0;
+    constexpr uint32_t CPU_FENCE_SIGNALED = 16;
+    constexpr uint32_t GPU_FENCE_SIGNALED = 32;
+
     struct D3D12RenderPass : RhiRenderpass {
         rx::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC> render_target_descriptions;
         rx::optional<D3D12_RENDER_PASS_DEPTH_STENCIL_DESC> depth_stencil_description;
@@ -52,5 +56,10 @@ namespace nova::renderer::rhi {
 
     struct D3D12Semaphore : RhiSemaphore {
         Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+    };
+
+    struct D3D12Fence : RhiFence {
+        Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+        HANDLE event;
     };
 } // namespace nova::renderer::rhi

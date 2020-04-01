@@ -379,6 +379,40 @@ namespace nova::renderer ::rhi {
         return semaphores;
     }
 
+    rx::ptr<RhiFence> D3D12RenderDevice::create_fence(const bool signaled, rx::memory::allocator& allocator) {
+        auto fence = rx::make_ptr<D3D12Fence>(allocator);
+
+        const auto initial_fence_value = signaled ? CPU_FENCE_SIGNALED : CPU_FENCE_UNSIGNALED;
+        const auto result = device->CreateFence(initial_fence_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence->fence));
+        if(SUCCEEDED(result)) {
+            fence->event = CreateEvent(nullptr, 0, signaled ? 1 : 0, nullptr);
+
+            return fence;
+
+        } else {
+            logger->error("Could not create fence");
+            return {};
+        }
+    }
+
+    rx::vector<rx::ptr<RhiFence>> D3D12RenderDevice::create_fences(const uint32_t num_fences,
+                                                                   const bool signaled,
+                                                                   rx::memory::allocator& allocator) {
+        rx::vector<rx::ptr<RhiFence>> fences{allocator};
+        fences.reserve(num_fences);
+
+        for(uint32_t i = 0; i < num_fences; i++) {
+            auto fence = create_fence(signaled, allocator);
+            if(fence) {
+                fences.push_back(rx::utility::move(fence));
+            } else {
+                return {};
+            }
+        }
+
+        return fences;
+    }
+
     void D3D12RenderDevice::enable_validation_layer() {
         const auto res = D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
         if(SUCCEEDED(res)) {
