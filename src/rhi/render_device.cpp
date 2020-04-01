@@ -14,6 +14,6 @@ namespace nova::renderer::rhi {
           swapchain_size(settings.settings.window.width, settings.settings.window.height) {}
 
     rx::ptr<RenderDevice> create_render_device(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator) {
-        return rx::make_ptr<VulkanRenderDevice>(&allocator, settings, window, allocator);
+        return rx::make_ptr<VulkanRenderDevice>(allocator, settings, window, allocator);
     }
 } // namespace nova::renderer::rhi

@@ -92,15 +92,15 @@ namespace nova::renderer::rhi {
          *
          * \return The newly created renderpass
          */
-        [[nodiscard]] virtual ntl::Result<RhiRenderpass*> create_renderpass(const renderpack::RenderPassCreateInfo& data,
-                                                                            const glm::uvec2& framebuffer_size,
-                                                                            rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual rx::ptr<RhiRenderpass> create_renderpass(const renderpack::RenderPassCreateInfo& data,
+                                                                       const glm::uvec2& framebuffer_size,
+                                                                       rx::memory::allocator& allocator) = 0;
 
-        [[nodiscard]] virtual RhiFramebuffer* create_framebuffer(const RhiRenderpass* renderpass,
-                                                                 const rx::vector<RhiImage*>& color_attachments,
-                                                                 const rx::optional<RhiImage*> depth_attachment,
-                                                                 const glm::uvec2& framebuffer_size,
-                                                                 rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual rx::ptr<RhiFramebuffer> create_framebuffer(const RhiRenderpass* renderpass,
+                                                                         const rx::vector<RhiImage*>& color_attachments,
+                                                                         const rx::optional<RhiImage*> depth_attachment,
+                                                                         const glm::uvec2& framebuffer_size,
+                                                                         rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Creates a new surface pipeline
@@ -127,7 +127,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Creates a buffer with undefined contents
          */
-        [[nodiscard]] virtual RhiBuffer* create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual rx::ptr<RhiBuffer> create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Writes data to a buffer
@@ -142,27 +142,32 @@ namespace nova::renderer::rhi {
          * \param num_bytes The number of bytes to write
          * \param buffer The buffer to write to
          */
-        virtual void write_data_to_buffer(const void* data, mem::Bytes num_bytes, const RhiBuffer* buffer) = 0;
+        virtual void write_data_to_buffer(const void* data, mem::Bytes num_bytes, const RhiBuffer& buffer) = 0;
 
         /*!
          * \brief Creates a new Sampler object
          */
-        [[nodiscard]] virtual RhiSampler* create_sampler(const RhiSamplerCreateInfo& create_info, rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual rx::ptr<RhiSampler> create_sampler(const RhiSamplerCreateInfo& create_info,
+                                                                 rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Creates an empty image
          *
          * The image will start out in the Undefined layout. You must transition it to whatever layout you want to use
          */
-        [[nodiscard]] virtual RhiImage* create_image(const renderpack::TextureCreateInfo& info, rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual rx::ptr<RhiImage> create_image(const renderpack::TextureCreateInfo& info,
+                                                             rx::memory::allocator& allocator) = 0;
 
-        [[nodiscard]] virtual RhiSemaphore* create_semaphore(rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual rx::ptr<RhiSemaphore> create_semaphore(rx::memory::allocator& allocator) = 0;
 
-        [[nodiscard]] virtual rx::vector<RhiSemaphore*> create_semaphores(uint32_t num_semaphores, rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual rx::vector<rx::ptr<RhiSemaphore>> create_semaphores(uint32_t num_semaphores,
+                                                                                  rx::memory::allocator& allocator) = 0;
 
-        [[nodiscard]] virtual RhiFence* create_fence(bool signaled, rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual rx::ptr<RhiFence> create_fence(bool signaled, rx::memory::allocator& allocator) = 0;
 
-        [[nodiscard]] virtual rx::vector<RhiFence*> create_fences(uint32_t num_fences, bool signaled, rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual rx::vector<rx::ptr<RhiFence>> create_fences(uint32_t num_fences,
+                                                                          bool signaled,
+                                                                          rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Blocks the fence until all fences are signaled
@@ -171,7 +176,7 @@ namespace nova::renderer::rhi {
          *
          * \param fences All the fences to wait for
          */
-        virtual void wait_for_fences(rx::vector<RhiFence*> fences) = 0;
+        virtual void wait_for_fences(const rx::vector<RhiFence*>& fences) = 0;
 
         virtual void reset_fences(const rx::vector<RhiFence*>& fences) = 0;
 
@@ -181,7 +186,7 @@ namespace nova::renderer::rhi {
          * While Renderpasses are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
          * need to clean up their GPU objects
          */
-        virtual void destroy_renderpass(RhiRenderpass* pass, rx::memory::allocator& allocator) = 0;
+        virtual void destroy_renderpass(rx::ptr<RhiRenderpass> pass, rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Clean up any GPU objects a Framebuffer may own
@@ -189,7 +194,7 @@ namespace nova::renderer::rhi {
          * While Framebuffers are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
          * need to clean up their GPU objects
          */
-        virtual void destroy_framebuffer(RhiFramebuffer* framebuffer, rx::memory::allocator& allocator) = 0;
+        virtual void destroy_framebuffer(rx::ptr<RhiFramebuffer> framebuffer, rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Clean up any GPU objects an Image may own
@@ -197,7 +202,7 @@ namespace nova::renderer::rhi {
          * While Images are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still need
          * to clean up their GPU objects
          */
-        virtual void destroy_texture(RhiImage* resource, rx::memory::allocator& allocator) = 0;
+        virtual void destroy_texture(rx::ptr<RhiImage> resource, rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Clean up any GPU objects a Semaphores may own
@@ -205,7 +210,7 @@ namespace nova::renderer::rhi {
          * While Semaphores are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
          * need to clean up their GPU objects
          */
-        virtual void destroy_semaphores(rx::vector<RhiSemaphore*>& semaphores, rx::memory::allocator& allocator) = 0;
+        virtual void destroy_semaphores(rx::vector<rx::ptr<RhiSemaphore>>& semaphores, rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Clean up any GPU objects a Fence may own
@@ -213,7 +218,7 @@ namespace nova::renderer::rhi {
          * While Fence are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still need to
          * clean up their GPU objects
          */
-        virtual void destroy_fences(const rx::vector<RhiFence*>& fences, rx::memory::allocator& allocator) = 0;
+        virtual void destroy_fences(const rx::vector<rx::ptr<RhiFence>>& fences, rx::memory::allocator& allocator) = 0;
 
         [[nodiscard]] Swapchain* get_swapchain() const;
 
@@ -231,14 +236,14 @@ namespace nova::renderer::rhi {
          * Command lists allocated by this method are returned ready to record commands into - the caller doesn't need
          * to begin the command list
          */
-        virtual RhiRenderCommandList* create_command_list(uint32_t thread_idx,
-                                                          QueueType needed_queue_type,
-                                                          RhiRenderCommandList::Level level,
-                                                          rx::memory::allocator& allocator) = 0;
+        virtual rx::ptr<RhiRenderCommandList> create_command_list(uint32_t thread_idx,
+                                                                  QueueType needed_queue_type,
+                                                                  RhiRenderCommandList::Level level,
+                                                                  rx::memory::allocator& allocator) = 0;
 
-        virtual void submit_command_list(RhiRenderCommandList* cmds,
+        virtual void submit_command_list(rx::ptr<RhiRenderCommandList> cmds,
                                          QueueType queue,
-                                         RhiFence* fence_to_signal = nullptr,
+                                         rx::optional<RhiFence> fence_to_signal = rx::nullopt,
                                          const rx::vector<RhiSemaphore*>& wait_semaphores = {},
                                          const rx::vector<RhiSemaphore*>& signal_semaphores = {}) = 0;
 
@@ -270,7 +275,7 @@ namespace nova::renderer::rhi {
          */
         RenderDevice(NovaSettingsAccessManager& settings,
                      NovaWindow& window,
-                     rx::memory::allocator& allocator = *rx::memory::g_system_allocator);
+                     rx::memory::allocator& allocator = rx::memory::system_allocator::instance());
     };
 
     /*!
