@@ -22,15 +22,15 @@ namespace nova::renderer::rhi {
 #pragma region RenderDevice
         void set_num_renderpasses(uint32_t num_renderpasses) override;
 
-        [[nodiscard]] ntl::Result<RhiRenderpass*> create_renderpass(const renderpack::RenderPassCreateInfo& data,
-                                                                    const glm::uvec2& framebuffer_size,
-                                                                    rx::memory::allocator& allocator) override;
+        [[nodiscard]] rx::ptr<RhiRenderpass> create_renderpass(const renderpack::RenderPassCreateInfo& data,
+                                                               const glm::uvec2& framebuffer_size,
+                                                               rx::memory::allocator& allocator) override;
 
-        [[nodiscard]] RhiFramebuffer* create_framebuffer(const RhiRenderpass* renderpass,
-                                                         const rx::vector<RhiImage*>& color_attachments,
-                                                         const rx::optional<RhiImage*> depth_attachment,
-                                                         const glm::uvec2& framebuffer_size,
-                                                         rx::memory::allocator& allocator) override;
+        [[nodiscard]] rx::ptr<RhiFramebuffer> create_framebuffer(const RhiRenderpass* renderpass,
+                                                                 const rx::vector<RhiImage*>& color_attachments,
+                                                                 const rx::optional<RhiImage*> depth_attachment,
+                                                                 const glm::uvec2& framebuffer_size,
+                                                                 rx::memory::allocator& allocator) override;
 
         [[nodiscard]] rx::ptr<RhiPipeline> create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
                                                                    rx::memory::allocator& allocator) override;
@@ -41,44 +41,48 @@ namespace nova::renderer::rhi {
         [[nodiscard]] rx::ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
                                                                                      rx::memory::allocator& allocator) override;
 
-        [[nodiscard]] RhiBuffer* create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) override;
+        [[nodiscard]] rx::ptr<RhiBuffer> create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) override;
 
-        void write_data_to_buffer(const void* data, mem::Bytes num_bytes, const RhiBuffer* buffer) override;
+        void write_data_to_buffer(const void* data, mem::Bytes num_bytes, const RhiBuffer& buffer) override;
 
-        [[nodiscard]] RhiSampler* create_sampler(const RhiSamplerCreateInfo& create_info, rx::memory::allocator& allocator) override;
+        [[nodiscard]] rx::ptr<RhiSampler> create_sampler(const RhiSamplerCreateInfo& create_info,
+                                                         rx::memory::allocator& allocator) override;
 
-        [[nodiscard]] RhiImage* create_image(const renderpack::TextureCreateInfo& info, rx::memory::allocator& allocator) override;
+        [[nodiscard]] rx::ptr<RhiImage> create_image(const renderpack::TextureCreateInfo& info, rx::memory::allocator& allocator) override;
 
-        [[nodiscard]] RhiSemaphore* create_semaphore(rx::memory::allocator& allocator) override;
+        [[nodiscard]] rx::ptr<RhiSemaphore> create_semaphore(rx::memory::allocator& allocator) override;
 
-        [[nodiscard]] rx::vector<RhiSemaphore*> create_semaphores(uint32_t num_semaphores, rx::memory::allocator& allocator) override;
+        [[nodiscard]] rx::vector<rx::ptr<RhiSemaphore>> create_semaphores(uint32_t num_semaphores,
+                                                                          rx::memory::allocator& allocator) override;
 
-        [[nodiscard]] RhiFence* create_fence(bool signaled, rx::memory::allocator& allocator) override;
+        [[nodiscard]] rx::ptr<RhiFence> create_fence(bool signaled, rx::memory::allocator& allocator) override;
 
-        [[nodiscard]] rx::vector<RhiFence*> create_fences(uint32_t num_fences, bool signaled, rx::memory::allocator& allocator) override;
+        [[nodiscard]] rx::vector<rx::ptr<RhiFence>> create_fences(uint32_t num_fences,
+                                                                  bool signaled,
+                                                                  rx::memory::allocator& allocator) override;
 
-        void wait_for_fences(rx::vector<RhiFence*> fences) override;
+        void wait_for_fences(const rx::vector<RhiFence*>& fences) override;
 
         void reset_fences(const rx::vector<RhiFence*>& fences) override;
 
-        void destroy_renderpass(RhiRenderpass* pass, rx::memory::allocator& allocator) override;
+        void destroy_renderpass(rx::ptr<RhiRenderpass> pass, rx::memory::allocator& allocator) override;
 
-        void destroy_framebuffer(RhiFramebuffer* framebuffer, rx::memory::allocator& allocator) override;
+        void destroy_framebuffer(rx::ptr<RhiFramebuffer> framebuffer, rx::memory::allocator& allocator) override;
 
-        void destroy_texture(RhiImage* resource, rx::memory::allocator& allocator) override;
+        void destroy_texture(rx::ptr<RhiImage> resource, rx::memory::allocator& allocator) override;
 
-        void destroy_semaphores(rx::vector<RhiSemaphore*>& semaphores, rx::memory::allocator& allocator) override;
+        void destroy_semaphores(rx::vector<rx::ptr<RhiSemaphore>>& semaphores, rx::memory::allocator& allocator) override;
 
-        void destroy_fences(const rx::vector<RhiFence*>& fences, rx::memory::allocator& allocator) override;
+        void destroy_fences(const rx::vector<rx::ptr<RhiFence>>& fences, rx::memory::allocator& allocator) override;
 
-        RhiRenderCommandList* create_command_list(uint32_t thread_idx,
-                                                  QueueType needed_queue_type,
-                                                  RhiRenderCommandList::Level level,
-                                                  rx::memory::allocator& allocator) override;
+        rx::ptr<RhiRenderCommandList> create_command_list(uint32_t thread_idx,
+                                                          QueueType needed_queue_type,
+                                                          RhiRenderCommandList::Level level,
+                                                          rx::memory::allocator& allocator) override;
 
-        void submit_command_list(RhiRenderCommandList* cmds,
+        void submit_command_list(rx::ptr<RhiRenderCommandList> cmds,
                                  QueueType queue,
-                                 RhiFence* fence_to_signal,
+                                 rx::optional<RhiFence> fence_to_signal,
                                  const rx::vector<RhiSemaphore*>& wait_semaphores,
                                  const rx::vector<RhiSemaphore*>& signal_semaphores) override;
 

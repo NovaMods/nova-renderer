@@ -54,29 +54,29 @@ namespace nova::renderer ::rhi {
         // Don't think we actually need to do anything
     }
 
-    ntl::Result<RhiRenderpass*> D3D12RenderDevice::create_renderpass(const renderpack::RenderPassCreateInfo& data,
-                                                                     const glm::uvec2& /* framebuffer_size */,
-                                                                     rx::memory::allocator& allocator) {
+    rx::ptr<RhiRenderpass> D3D12RenderDevice::create_renderpass(const renderpack::RenderPassCreateInfo& data,
+                                                                const glm::uvec2& /* framebuffer_size */,
+                                                                rx::memory::allocator& allocator) {
         MTR_SCOPE("D3D12RenderDevice", "create_renderpass");
 
-        auto* renderpass = allocator.create<D3D12RenderPass>();
+        auto renderpass = rx::make_ptr<D3D12RenderPass>(allocator);
         renderpass->render_target_descriptions = rx::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC>{allocator};
 
         if(!data.output_buffers.is_empty()) {
             renderpass->flags |= D3D12_RENDER_PASS_FLAG_ALLOW_UAV_WRITES;
         }
 
-        return ntl::Result<RhiRenderpass*>{renderpass};
+        return renderpass;
     }
 
-    RhiFramebuffer* D3D12RenderDevice::create_framebuffer(const RhiRenderpass* /* renderpass */,
-                                                          const rx::vector<RhiImage*>& color_attachments,
-                                                          const rx::optional<RhiImage*> depth_attachment,
-                                                          const glm::uvec2& framebuffer_size,
-                                                          rx::memory::allocator& allocator) {
+    rx::ptr<RhiFramebuffer> D3D12RenderDevice::create_framebuffer(const RhiRenderpass* /* renderpass */,
+                                                                  const rx::vector<RhiImage*>& color_attachments,
+                                                                  const rx::optional<RhiImage*> depth_attachment,
+                                                                  const glm::uvec2& framebuffer_size,
+                                                                  rx::memory::allocator& allocator) {
         MTR_SCOPE("D3D12RenderDevice", "create_framebuffer");
 
-        auto* framebuffer = allocator.create<D3D12Framebuffer>();
+        auto framebuffer = rx::make_ptr<D3D12Framebuffer>(allocator);
         framebuffer->size = framebuffer_size;
 
         rx::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtv_descriptors{allocator};
@@ -252,7 +252,7 @@ namespace nova::renderer ::rhi {
         return binder;
     }
 
-    RhiBuffer* D3D12RenderDevice::create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) {
+    rx::ptr<RhiBuffer> D3D12RenderDevice::create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) {
         const auto desc = CD3DX12_RESOURCE_DESC::Buffer(info.size.b_count());
 
         D3D12MA::ALLOCATION_DESC alloc_desc{};
@@ -270,7 +270,7 @@ namespace nova::renderer ::rhi {
                 break;
         }
 
-        auto* buffer = allocator.create<D3D12Buffer>();
+        auto buffer = rx::make_ptr<D3D12Buffer>(allocator);
         const auto result = dma_allocator->CreateResource(&alloc_desc,
                                                           &desc,
                                                           D3D12_RESOURCE_STATE_COMMON,
@@ -279,7 +279,7 @@ namespace nova::renderer ::rhi {
                                                           IID_PPV_ARGS(&buffer->resource));
         if(FAILED(result)) {
             logger->error("Could not create buffer %s", info.name);
-            return nullptr;
+            return {};
         }
 
         buffer->size = info.size;
@@ -290,8 +290,8 @@ namespace nova::renderer ::rhi {
         return buffer;
     }
 
-    RhiSampler* D3D12RenderDevice::create_sampler(const RhiSamplerCreateInfo& create_info, rx::memory::allocator& allocator) {
-        auto* sampler = allocator.create<D3D12Sampler>();
+    rx::ptr<RhiSampler> D3D12RenderDevice::create_sampler(const RhiSamplerCreateInfo& create_info, rx::memory::allocator& allocator) {
+        auto sampler = rx::make_ptr<D3D12Sampler>(allocator);
         sampler->desc.Filter = to_d3d12_filter(create_info.min_filter, create_info.mag_filter);
         sampler->desc.AddressU = to_d3d12_address_mode(create_info.x_wrap_mode);
         sampler->desc.AddressV = to_d3d12_address_mode(create_info.y_wrap_mode);
@@ -304,15 +304,79 @@ namespace nova::renderer ::rhi {
         return sampler;
     }
 
-    RhiImage* D3D12RenderDevice::create_image(const renderpack::TextureCreateInfo& info, rx::memory::allocator& allocator) {
+    rx::ptr<RhiImage> D3D12RenderDevice::create_image(const renderpack::TextureCreateInfo& info, rx::memory::allocator& allocator) {
         const auto format = to_dxgi_format(info.format.pixel_format);
-        const auto desc = CD3DX12_RESOURCE_DESC::Tex2D(format, info.format.width, info.format.width);
+        const auto desc = CD3DX12_RESOURCE_DESC::Tex2D(format, rx::math::round(info.format.width), rx::math::round(info.format.width));
 
         D3D12MA::ALLOCATION_DESC alloc_desc{};
         alloc_desc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 
-        auto* image = allocator.create<D3D12Image>();
-        image->format
+        auto image = rx::make_ptr<D3D12Image>(allocator);
+        image->format = format;
+
+        const auto initial_state = [&] {
+            switch(info.usage) {
+                case renderpack::ImageUsage::RenderTarget:
+                    image->is_dynamic = true;
+                    if(!is_depth_format(info.format.pixel_format)) {
+                        image->is_depth_tex = true;
+                        return D3D12_RESOURCE_STATE_DEPTH_WRITE;
+
+                    } else {
+                        return D3D12_RESOURCE_STATE_RENDER_TARGET;
+                    }
+
+                case renderpack::ImageUsage::SampledImage:
+                    return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+            }
+
+            return D3D12_RESOURCE_STATE_COMMON;
+        }();
+
+        const auto result = dma_allocator->CreateResource(&alloc_desc,
+                                                          &desc,
+                                                          initial_state,
+                                                          nullptr,
+                                                          &image->allocation,
+                                                          IID_PPV_ARGS(&image->resource));
+        if(FAILED(result)) {
+            logger->error("Could not create image %s", info.name);
+            return {};
+        }
+
+        image->type = ResourceType::Image;
+
+        set_object_name(image->resource.Get(), info.name);
+
+        return image;
+    }
+
+    rx::ptr<RhiSemaphore> D3D12RenderDevice::create_semaphore(rx::memory::allocator& allocator) {
+        auto semaphore = rx::make_ptr<D3D12Semaphore>(allocator);
+
+        const auto result = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&semaphore->fence));
+        if(SUCCEEDED(result)) {
+            return semaphore;
+        }
+
+        return {};
+    }
+
+    rx::vector<rx::ptr<RhiSemaphore>> D3D12RenderDevice::create_semaphores(const uint32_t num_semaphores,
+                                                                           rx::memory::allocator& allocator) {
+        rx::vector<rx::ptr<RhiSemaphore>> semaphores{allocator};
+        semaphores.reserve(num_semaphores);
+
+        for(uint32_t i = 0; i < num_semaphores; i++) {
+            auto semaphore = create_semaphore(allocator);
+            if(semaphore) {
+                semaphores.push_back(rx::utility::move(semaphore));
+            } else {
+                return {};
+            }
+        }
+
+        return semaphores;
     }
 
     void D3D12RenderDevice::enable_validation_layer() {

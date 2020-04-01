@@ -23,8 +23,9 @@ namespace nova::renderer::rhi {
     };
 
     struct D3D12Image : RhiImage {
-        Microsoft::WRL::ComPtr<ID3D12Resource> resource;
         DXGI_FORMAT format;
+        D3D12MA::Allocation* allocation;
+        Microsoft::WRL::ComPtr<ID3D12Resource> resource;
     };
 
     struct D3D12Buffer : RhiBuffer {
@@ -49,5 +50,7 @@ namespace nova::renderer::rhi {
         rx::map<rx::string, D3D12_CPU_DESCRIPTOR_HANDLE> descriptors;
     };
 
-    struct D3D12ResourceBindingDesc {};
+    struct D3D12Semaphore : RhiSemaphore {
+        Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+    };
 } // namespace nova::renderer::rhi
