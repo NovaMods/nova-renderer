@@ -65,4 +65,25 @@ namespace nova::renderer::rhi {
                 return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
         }
     }
+
+    DXGI_FORMAT to_dxgi_format(const PixelFormat format) {
+        switch(format) {
+            case PixelFormat::Rgba16F:
+                return DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+            case PixelFormat::Rgba32F:
+                return DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+            case PixelFormat::Depth32:
+                return DXGI_FORMAT_D32_FLOAT;
+
+            case PixelFormat::Depth24Stencil8:
+                return DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+            case PixelFormat::Rgba8:
+                [[fallthrough]];
+            default:
+                return DXGI_FORMAT_R8G8B8A8_UNORM;
+        }
+    }
 } // namespace nova::renderer::rhi

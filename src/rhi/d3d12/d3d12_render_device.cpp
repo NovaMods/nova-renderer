@@ -304,6 +304,17 @@ namespace nova::renderer ::rhi {
         return sampler;
     }
 
+    RhiImage* D3D12RenderDevice::create_image(const renderpack::TextureCreateInfo& info, rx::memory::allocator& allocator) {
+        const auto format = to_dxgi_format(info.format.pixel_format);
+        const auto desc = CD3DX12_RESOURCE_DESC::Tex2D(format, info.format.width, info.format.width);
+
+        D3D12MA::ALLOCATION_DESC alloc_desc{};
+        alloc_desc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+
+        auto* image = allocator.create<D3D12Image>();
+        image->format
+    }
+
     void D3D12RenderDevice::enable_validation_layer() {
         const auto res = D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
         if(SUCCEEDED(res)) {
