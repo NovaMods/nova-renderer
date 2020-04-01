@@ -17,7 +17,7 @@
 #include "d3d12_structs.hpp"
 #include "d3d12_utils.hpp"
 #include "d3dx12.h"
-
+#include "rx/core/math/round.h"
 using namespace Microsoft::WRL;
 
 namespace nova::renderer ::rhi {
@@ -288,6 +288,20 @@ namespace nova::renderer ::rhi {
         set_object_name(buffer->resource.Get(), info.name);
 
         return buffer;
+    }
+
+    RhiSampler* D3D12RenderDevice::create_sampler(const RhiSamplerCreateInfo& create_info, rx::memory::allocator& allocator) {
+        auto* sampler = allocator.create<D3D12Sampler>();
+        sampler->desc.Filter = to_d3d12_filter(create_info.min_filter, create_info.mag_filter);
+        sampler->desc.AddressU = to_d3d12_address_mode(create_info.x_wrap_mode);
+        sampler->desc.AddressV = to_d3d12_address_mode(create_info.y_wrap_mode);
+        sampler->desc.AddressW = to_d3d12_address_mode(create_info.z_wrap_mode);
+        sampler->desc.MipLODBias = create_info.mip_bias;
+        sampler->desc.MaxAnisotropy = rx::math::round(create_info.max_anisotropy);
+        sampler->desc.MinLOD = create_info.min_lod;
+        sampler->desc.MaxLOD = create_info.max_lod;
+
+        return sampler;
     }
 
     void D3D12RenderDevice::enable_validation_layer() {
