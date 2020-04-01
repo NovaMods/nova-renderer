@@ -31,3 +31,5 @@ readability*
 -*-use-auto
 -*-else-after-return
 -*-pro-type-static-cast-downcast
+-clang-diagnostic-return-std-move-in-c++11
+-clang-diagnostic-language-extension-token
