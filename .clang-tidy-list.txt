@@ -33,3 +33,4 @@ readability*
 -*-pro-type-static-cast-downcast
 -clang-diagnostic-return-std-move-in-c++11
 -clang-diagnostic-language-extension-token
+-modernize-use-trailing-return-type

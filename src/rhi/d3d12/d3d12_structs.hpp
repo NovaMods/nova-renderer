@@ -60,6 +60,5 @@ namespace nova::renderer::rhi {
 
     struct D3D12Fence : RhiFence {
         Microsoft::WRL::ComPtr<ID3D12Fence> fence;
-        HANDLE event;
     };
 } // namespace nova::renderer::rhi

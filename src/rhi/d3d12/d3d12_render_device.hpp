@@ -8,6 +8,7 @@
 #include <spirv_hlsl.hpp>
 #include <wrl/client.h>
 
+#include "d3d12_structs.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 
 #include "descriptor_allocator.hpp"
@@ -89,12 +90,15 @@ namespace nova::renderer::rhi {
         void end_frame(FrameContext& ctx) override;
 #pragma endregion
 
+        void wait_for_single_fence(const D3D12Fence& fence);
+
     private:
         Microsoft::WRL::ComPtr<IDXGIFactory> factory;
 
         Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
 
         Microsoft::WRL::ComPtr<ID3D12Device> device;
+        Microsoft::WRL::ComPtr<ID3D12Device1> device1;
 
         Microsoft::WRL::ComPtr<ID3D12Debug> debug_controller;
 
@@ -140,6 +144,8 @@ namespace nova::renderer::rhi {
          */
         bool has_raytracing = false;
 
+        rx::vector<HANDLE> fence_wait_events;
+
 #pragma region Initialization
         void enable_validation_layer();
 
@@ -175,6 +181,8 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] Microsoft::WRL::ComPtr<ID3D12RootSignature> compile_root_signature(
             const D3D12_ROOT_SIGNATURE_DESC& root_signature_desc) const;
+
+        [[nodisacrd]] HANDLE get_next_event();
 #pragma endregion
     };
 } // namespace nova::renderer::rhi

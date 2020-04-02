@@ -24,7 +24,7 @@ namespace nova::renderer ::rhi {
     RX_LOG("D3D12RenderDevice", logger);
 
     D3D12RenderDevice::D3D12RenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator)
-        : RenderDevice(settings, window, allocator), standard_hlsl_bindings{internal_allocator} {
+        : RenderDevice(settings, window, allocator), standard_hlsl_bindings{internal_allocator}, fence_wait_events{internal_allocator} {
         MTR_SCOPE("D3D12RenderDevice", "D3D12RenderDevice");
 
         if(settings->debug.enabled && settings->debug.enable_validation_layers) {
@@ -385,8 +385,6 @@ namespace nova::renderer ::rhi {
         const auto initial_fence_value = signaled ? CPU_FENCE_SIGNALED : CPU_FENCE_UNSIGNALED;
         const auto result = device->CreateFence(initial_fence_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence->fence));
         if(SUCCEEDED(result)) {
-            fence->event = CreateEvent(nullptr, 0, signaled ? 1 : 0, nullptr);
-
             return fence;
 
         } else {
@@ -411,6 +409,68 @@ namespace nova::renderer ::rhi {
         }
 
         return fences;
+    }
+
+    void D3D12RenderDevice::wait_for_fences(const rx::vector<RhiFence*>& fences) {
+        if(fences.is_empty()) {
+            return;
+
+        } else if(fences.size() == 1) {
+            auto& d3d12_fence = static_cast<D3D12Fence&>(*fences[0]);
+            const auto event = get_next_event();
+
+            d3d12_fence.fence->SetEventOnCompletion(CPU_FENCE_SIGNALED, event);
+
+            // 2 seconds is the default TDR limit
+            WaitForSingleObject(event, 2000);
+
+            fence_wait_events.push_back(event);
+
+        } else {
+            if(device1) {
+                rx::vector<ID3D12Fence*> d3d12_fences{internal_allocator};
+                rx::vector<UINT64> fence_values{internal_allocator};
+
+                d3d12_fences.reserve(fences.size());
+                fence_values.reserve(fences.size());
+
+                fences.each_fwd([&](const RhiFence& fence) {
+                    const auto& d3d12_fence = static_cast<const D3D12Fence&>(fence);
+                    d3d12_fences.push_back(d3d12_fence.fence.Get());
+                    fence_values.push_back(CPU_FENCE_SIGNALED);
+                });
+
+                const auto event = get_next_event();
+
+                device1->SetEventOnMultipleFenceCompletion(d3d12_fences.data(),
+                                                           fence_values.data(),
+                                                           static_cast<UINT>(d3d12_fences.size()),
+                                                           D3D12_MULTIPLE_FENCE_WAIT_FLAG_ALL,
+                                                           event);
+
+                // 2 seconds is the default TDR limit
+                WaitForSingleObject(event, 2000);
+
+                fence_wait_events.push_back(event);
+
+            } else {
+                // We're running on a system with really old drivers, so we have to be kinda lame
+                rx::vector<HANDLE> events{internal_allocator};
+                events.reserve(fences.size());
+
+                fences.each_fwd([&](const RhiFence& fence) {
+                    const auto event = get_next_event();
+                    auto& d3d12_fence = static_cast<const D3D12Fence&>(fence);
+                    d3d12_fence.fence->SetEventOnCompletion(CPU_FENCE_SIGNALED, event);
+
+                    events.push_back(event);
+                });
+
+                WaitForMultipleObjects(static_cast<DWORD>(events.size()), events.data(), 1, 2000);
+
+                fence_wait_events += events;
+            }
+        }
     }
 
     void D3D12RenderDevice::enable_validation_layer() {
@@ -472,6 +532,8 @@ namespace nova::renderer ::rhi {
                 }
 
                 device = try_device;
+
+                device->QueryInterface(IID_PPV_ARGS(&device1));
 
                 // Save information about the device
                 D3D12_FEATURE_DATA_ARCHITECTURE arch;
@@ -557,6 +619,17 @@ namespace nova::renderer ::rhi {
         }
 
         return sig;
+    }
+
+    HANDLE D3D12RenderDevice::get_next_event() {
+        if(fence_wait_events.is_empty()) {
+            return CreateEvent(nullptr, 0, 0, nullptr);
+
+        } else {
+            const auto event = fence_wait_events.last();
+            fence_wait_events.pop_back();
+            return event;
+        }
     }
 
     void D3D12RenderDevice::create_standard_root_signature() {
