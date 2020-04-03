@@ -8,9 +8,9 @@
 #include <spirv_hlsl.hpp>
 #include <wrl/client.h>
 
-#include "d3d12_structs.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 
+#include "d3d12_structs.hpp"
 #include "descriptor_allocator.hpp"
 
 namespace nova::renderer::rhi {
@@ -121,6 +121,9 @@ namespace nova::renderer::rhi {
 
         Microsoft::WRL::ComPtr<IDxcCompiler> dxc_compiler;
 
+        Microsoft::WRL::ComPtr<ID3D12CommandAllocator> direct_command_allocator;
+        Microsoft::WRL::ComPtr<ID3D12CommandAllocator> copy_command_allocator;
+
         /*!
          * \brief Indicates whether this device has a Unified Memory Architecture
          *
@@ -154,6 +157,8 @@ namespace nova::renderer::rhi {
         void select_adapter();
 
         void create_queues();
+
+        void create_command_allocators();
 
         void create_standard_root_signature();
 

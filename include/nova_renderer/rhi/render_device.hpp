@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rx/core/memory/system_allocator.h>
+#include <rx/core/ptr.h>
 
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/renderpack_data.hpp"
@@ -10,7 +11,6 @@
 #include "nova_renderer/window.hpp"
 
 #include "resource_binder.hpp"
-#include "rx/core/ptr.h"
 
 namespace nova::renderer {
     struct FrameContext;

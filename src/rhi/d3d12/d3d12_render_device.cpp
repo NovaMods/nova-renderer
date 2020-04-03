@@ -6,6 +6,7 @@
 #include <dxc/dxcapi.h>
 #include <minitrace.h>
 #include <rx/core/log.h>
+#include <rx/core/math/round.h>
 #include <spirv_hlsl.hpp>
 
 #include "nova_renderer/constants.hpp"
@@ -13,11 +14,12 @@
 #include "nova_renderer/loading/shader_includer.hpp"
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 
+#include "d3d12_render_command_list.hpp"
 #include "d3d12_resource_binder.hpp"
 #include "d3d12_structs.hpp"
 #include "d3d12_utils.hpp"
 #include "d3dx12.h"
-#include "rx/core/math/round.h"
+
 using namespace Microsoft::WRL;
 
 namespace nova::renderer ::rhi {
@@ -36,6 +38,8 @@ namespace nova::renderer ::rhi {
         select_adapter();
 
         create_queues();
+
+        create_command_allocators();
 
         create_standard_root_signature();
 
@@ -434,9 +438,9 @@ namespace nova::renderer ::rhi {
                 d3d12_fences.reserve(fences.size());
                 fence_values.reserve(fences.size());
 
-                fences.each_fwd([&](const RhiFence& fence) {
-                    const auto& d3d12_fence = static_cast<const D3D12Fence&>(fence);
-                    d3d12_fences.push_back(d3d12_fence.fence.Get());
+                fences.each_fwd([&](const RhiFence* fence) {
+                    const auto* d3d12_fence = static_cast<const D3D12Fence*>(fence);
+                    d3d12_fences.push_back(d3d12_fence->fence.Get());
                     fence_values.push_back(CPU_FENCE_SIGNALED);
                 });
 
@@ -458,10 +462,10 @@ namespace nova::renderer ::rhi {
                 rx::vector<HANDLE> events{internal_allocator};
                 events.reserve(fences.size());
 
-                fences.each_fwd([&](const RhiFence& fence) {
+                fences.each_fwd([&](const RhiFence* fence) {
                     const auto event = get_next_event();
-                    auto& d3d12_fence = static_cast<const D3D12Fence&>(fence);
-                    d3d12_fence.fence->SetEventOnCompletion(CPU_FENCE_SIGNALED, event);
+                    const auto* d3d12_fence = static_cast<const D3D12Fence*>(fence);
+                    d3d12_fence->fence->SetEventOnCompletion(CPU_FENCE_SIGNALED, event);
 
                     events.push_back(event);
                 });
@@ -471,6 +475,68 @@ namespace nova::renderer ::rhi {
                 fence_wait_events += events;
             }
         }
+    }
+
+    void D3D12RenderDevice::reset_fences(const rx::vector<RhiFence*>& /* fences */) { /* Don't need to reset fences in D3D12 */
+    }
+
+    void D3D12RenderDevice::destroy_renderpass(rx::ptr<RhiRenderpass> /* pass */, rx::memory::allocator& /* allocator */) {
+        // D3D12 renderpasses have no GPU objects, so we don't need to do anything+ to destroy them
+    }
+
+    void D3D12RenderDevice::destroy_framebuffer(const rx::ptr<RhiFramebuffer> framebuffer, rx::memory::allocator& /* allocator */) {
+        const auto* fb = framebuffer.get();
+        const auto* d3d12_framebuffer = static_cast<const D3D12Framebuffer*>(fb);
+
+        d3d12_framebuffer->render_target_descriptors.each_fwd(
+            [&](const D3D12_CPU_DESCRIPTOR_HANDLE& descriptor) { render_target_descriptors->release_descriptor(descriptor); });
+
+        if(d3d12_framebuffer->depth_stencil_descriptor) {
+            depth_stencil_descriptors->release_descriptor(*d3d12_framebuffer->depth_stencil_descriptor);
+        }
+    }
+
+    void D3D12RenderDevice::destroy_texture(rx::ptr<RhiImage> /* resource */, rx::memory::allocator& /* allocator */) {
+        // D3D12 ComPtr will free the texture when needed
+    }
+
+    void D3D12RenderDevice::destroy_semaphores(rx::vector<rx::ptr<RhiSemaphore>>& /* semaphores */,
+                                               rx::memory::allocator& /* allocator */) {}
+
+    void D3D12RenderDevice::destroy_fences(const rx::vector<rx::ptr<RhiFence>>& /* fences */, rx::memory::allocator& /* allocator */) {}
+
+    rx::ptr<RhiRenderCommandList> D3D12RenderDevice::create_command_list(uint32_t /* thread_idx */,
+                                                                         QueueType needed_queue_type,
+                                                                         RhiRenderCommandList::Level level,
+                                                                         rx::memory::allocator& allocator) {
+        const auto& [command_list_type, command_allocator] = [&] () -> rx::pair<D3D12_COMMAND_LIST_TYPE, ID3D12CommandAllocator*>{
+            if(needed_queue_type == QueueType::Transfer) {
+                return {D3D12_COMMAND_LIST_TYPE_COPY, copy_command_allocator.Get()};
+
+            } else if(needed_queue_type == QueueType::AsyncCompute) {
+                return {D3D12_COMMAND_LIST_TYPE_COMPUTE, direct_command_allocator.Get()};
+
+            } else {
+                if(level == RhiRenderCommandList::Level::Primary) {
+                    return {D3D12_COMMAND_LIST_TYPE_DIRECT, direct_command_allocator.Get()};
+
+                } else {
+                    return {D3D12_COMMAND_LIST_TYPE_BUNDLE, direct_command_allocator.Get()};
+                }
+            }
+        }();
+
+        ComPtr<ID3D12CommandList> cmds;
+        const auto result = device->CreateCommandList(0, command_list_type, command_allocator, nullptr, IID_PPV_ARGS(&cmds));
+        if(FAILED(result)) {
+            logger->error("Could not create copy command list");
+            return {};
+        }
+
+        ComPtr<ID3D12GraphicsCommandList> commands;
+        cmds->QueryInterface(commands.GetAddressOf());
+
+        return rx::make_ptr<D3D12RenderCommandList>(allocator, commands);
     }
 
     void D3D12RenderDevice::enable_validation_layer() {
@@ -533,7 +599,7 @@ namespace nova::renderer ::rhi {
 
                 device = try_device;
 
-                device->QueryInterface(IID_PPV_ARGS(&device1));
+                device->QueryInterface(device1.GetAddressOf());
 
                 // Save information about the device
                 D3D12_FEATURE_DATA_ARCHITECTURE arch;
@@ -551,7 +617,7 @@ namespace nova::renderer ::rhi {
 
                 if(settings->debug.enabled && settings->debug.enable_validation_layers) {
                     if(settings->debug.break_on_validation_errors) {
-                        res = device->QueryInterface(IID_PPV_ARGS(&info_queue));
+                        res = device->QueryInterface(info_queue.GetAddressOf());
                         if(SUCCEEDED(res)) {
                             info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
                             info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
@@ -597,6 +663,18 @@ namespace nova::renderer ::rhi {
             } else {
                 set_object_name(dma_queue.Get(), "Nova DMA queue");
             }
+        }
+    }
+
+    void D3D12RenderDevice::create_command_allocators() {
+        auto result = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&direct_command_allocator));
+        if(FAILED(result)) {
+            throw Exception("Could not create direct command allocator");
+        }
+
+        result = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COPY, IID_PPV_ARGS(&copy_command_allocator));
+        if(FAILED(result)) {
+            throw Exception("Could not create copy command allocator");
         }
     }
 

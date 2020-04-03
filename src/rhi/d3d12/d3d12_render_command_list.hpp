@@ -6,9 +6,17 @@
 #include "nova_renderer/rhi/command_list.hpp"
 
 namespace nova::renderer::rhi {
-    class D3D12CommandList : RhiRenderCommandList {
+    class D3D12RenderCommandList : RhiRenderCommandList {
     public:
-        ~D3D12CommandList() override;
+        explicit D3D12RenderCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmds);
+
+        D3D12RenderCommandList(const D3D12RenderCommandList& other) = delete;
+        D3D12RenderCommandList& operator=(const D3D12RenderCommandList& other) = delete;
+
+        D3D12RenderCommandList(D3D12RenderCommandList&& old) noexcept = default;
+        D3D12RenderCommandList& operator=(D3D12RenderCommandList&& old) noexcept = default;
+
+        ~D3D12RenderCommandList() override = default;
 
 #pragma region RhiRenderCommandList
         void set_debug_name(const rx::string& name) override;
@@ -61,5 +69,6 @@ namespace nova::renderer::rhi {
 
     private:
         Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> command_list;
+        Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4> command_list_4;
     };
 } // namespace nova::renderer::rhi
