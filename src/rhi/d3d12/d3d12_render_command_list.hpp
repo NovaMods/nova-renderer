@@ -8,7 +8,7 @@
 namespace nova::renderer::rhi {
     class D3D12RenderCommandList : RhiRenderCommandList {
     public:
-        explicit D3D12RenderCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmds);
+        explicit D3D12RenderCommandList(rx::memory::allocator& allocator, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmds);
 
         D3D12RenderCommandList(const D3D12RenderCommandList& other) = delete;
         D3D12RenderCommandList& operator=(const D3D12RenderCommandList& other) = delete;
@@ -23,11 +23,11 @@ namespace nova::renderer::rhi {
 
         void set_checkpoint(const rx::string& checkpoint_name) override;
 
-        void bind_material_resources(RhiBuffer* camera_buffer,
-                                     RhiBuffer* material_buffer,
-                                     RhiSampler* point_sampler,
-                                     RhiSampler* bilinear_sampler,
-                                     RhiSampler* trilinear_sampler,
+        void bind_material_resources(RhiBuffer& camera_buffer,
+                                     RhiBuffer& material_buffer,
+                                     RhiSampler& point_sampler,
+                                     RhiSampler& bilinear_sampler,
+                                     RhiSampler& trilinear_sampler,
                                      const rx::vector<RhiImage*>& images,
                                      rx::memory::allocator& allocator) override;
 
@@ -37,20 +37,20 @@ namespace nova::renderer::rhi {
                                PipelineStage stages_after_barrier,
                                const rx::vector<RhiResourceBarrier>& barriers) override;
 
-        void copy_buffer(RhiBuffer* destination_buffer,
+        void copy_buffer(RhiBuffer& destination_buffer,
                          mem::Bytes destination_offset,
-                         RhiBuffer* source_buffer,
+                         RhiBuffer& source_buffer,
                          mem::Bytes source_offset,
                          mem::Bytes num_bytes) override;
 
         void upload_data_to_image(
-            RhiImage* image, size_t width, size_t height, size_t bytes_per_pixel, RhiBuffer* staging_buffer, const void* data) override;
+            RhiImage& image, size_t width, size_t height, size_t bytes_per_pixel, RhiBuffer& staging_buffer, const void* data) override;
 
         void execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) override;
 
         void set_camera(const Camera& camera) override;
 
-        void begin_renderpass(RhiRenderpass* renderpass, RhiFramebuffer* framebuffer) override;
+        void begin_renderpass(RhiRenderpass& renderpass, RhiFramebuffer& framebuffer) override;
 
         void end_renderpass() override;
 
@@ -60,7 +60,7 @@ namespace nova::renderer::rhi {
 
         void bind_vertex_buffers(const rx::vector<RhiBuffer*>& buffers) override;
 
-        void bind_index_buffer(const RhiBuffer* buffer, IndexType index_size) override;
+        void bind_index_buffer(const RhiBuffer& buffer, IndexType index_size) override;
 
         void draw_indexed_mesh(uint32_t num_indices, uint32_t offset, uint32_t num_instances) override;
 
@@ -68,6 +68,8 @@ namespace nova::renderer::rhi {
 #pragma endregion
 
     private:
+        rx::memory::allocator* internal_allocator;
+
         Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> command_list;
         Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4> command_list_4;
     };

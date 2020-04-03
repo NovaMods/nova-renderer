@@ -66,11 +66,11 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Bind the buffers of all the resources that Nova needs to render an object
          */
-        virtual void bind_material_resources(RhiBuffer* camera_buffer,
-                                             RhiBuffer* material_buffer,
-                                             RhiSampler* point_sampler,
-                                             RhiSampler* bilinear_sampler,
-                                             RhiSampler* trilinear_sampler,
+        virtual void bind_material_resources(RhiBuffer& camera_buffer,
+                                             RhiBuffer& material_buffer,
+                                             RhiSampler& point_sampler,
+                                             RhiSampler& bilinear_sampler,
+                                             RhiSampler& trilinear_sampler,
                                              const rx::vector<RhiImage*>& images,
                                              rx::memory::allocator& allocator) = 0;
 
@@ -109,9 +109,9 @@ namespace nova::renderer::rhi {
          * \pre destination_offset plus num_bytes is less than the size of destination_buffer
          * \pre destination_offset plus num_bytes is less than the size of source_buffer
          */
-        virtual void copy_buffer(RhiBuffer* destination_buffer,
+        virtual void copy_buffer(RhiBuffer& destination_buffer,
                                  mem::Bytes destination_offset,
-                                 RhiBuffer* source_buffer,
+                                 RhiBuffer& source_buffer,
                                  mem::Bytes source_offset,
                                  mem::Bytes num_bytes) = 0;
 
@@ -129,7 +129,7 @@ namespace nova::renderer::rhi {
          * \note The image must be in the Common layout prior to uploading data to it
          */
         virtual void upload_data_to_image(
-            RhiImage* image, size_t width, size_t height, size_t bytes_per_pixel, RhiBuffer* staging_buffer, const void* data) = 0;
+            RhiImage& image, size_t width, size_t height, size_t bytes_per_pixel, RhiBuffer& staging_buffer, const void* data) = 0;
 
         /*!
          * \brief Executed a number of command lists
@@ -154,7 +154,7 @@ namespace nova::renderer::rhi {
          * \param renderpass The renderpass to begin
          * \param framebuffer The framebuffer to render to
          */
-        virtual void begin_renderpass(RhiRenderpass* renderpass, RhiFramebuffer* framebuffer) = 0;
+        virtual void begin_renderpass(RhiRenderpass& renderpass, RhiFramebuffer& framebuffer) = 0;
 
         virtual void end_renderpass() = 0;
 
@@ -177,7 +177,7 @@ namespace nova::renderer::rhi {
          *
          * The index buffer must use 32-bit indices. This will likely change in the future but for now it's a thing
          */
-        virtual void bind_index_buffer(const RhiBuffer* buffer, IndexType index_size) = 0;
+        virtual void bind_index_buffer(const RhiBuffer& buffer, IndexType index_size) = 0;
 
         /*!
          * \brief Records rendering instances of an indexed mesh

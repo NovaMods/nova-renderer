@@ -63,7 +63,7 @@ namespace nova::renderer ::rhi {
                                                                 rx::memory::allocator& allocator) {
         MTR_SCOPE("D3D12RenderDevice", "create_renderpass");
 
-        auto renderpass = rx::make_ptr<D3D12RenderPass>(allocator);
+        auto renderpass = rx::make_ptr<D3D12Renderpass>(allocator);
         renderpass->render_target_descriptions = rx::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC>{allocator};
 
         if(!data.output_buffers.is_empty()) {
