@@ -34,3 +34,4 @@ readability*
 -clang-diagnostic-return-std-move-in-c++11
 -clang-diagnostic-language-extension-token
 -modernize-use-trailing-return-type
+-clang-diagnostic-covered-switch-default

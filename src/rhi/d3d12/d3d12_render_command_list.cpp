@@ -1,12 +1,18 @@
 #include "d3d12_render_command_list.hpp"
 
+#include <minitrace.h>
+#include <rx/core/log.h>
+
 #include "d3d12_resource_binder.hpp"
 #include "d3d12_utils.hpp"
-#include "minitrace.h"
 
 namespace nova::renderer::rhi {
-    D3D12RenderCommandList::D3D12RenderCommandList(rx::memory::allocator& allocator, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmds)
-        : internal_allocator{&allocator}, command_list{rx::utility::move(cmds)} {
+    RX_LOG("D3D12RenderCommandList", logger);
+
+    D3D12RenderCommandList::D3D12RenderCommandList(rx::memory::allocator& allocator,
+                                                   Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmds,
+                                                   D3D12RenderDevice& device_in)
+        : internal_allocator{&allocator}, device{&device_in}, command_list{rx::utility::move(cmds)} {
         MTR_SCOPE("D3D12RenderCommandList", "D3D12RenderCommandList");
 
         command_list->QueryInterface(command_list_4.GetAddressOf());
@@ -18,7 +24,7 @@ namespace nova::renderer::rhi {
         set_object_name(command_list.Get(), name);
     }
 
-    void D3D12RenderCommandList::set_checkpoint(const rx::string& checkpoint_name) {
+    void D3D12RenderCommandList::set_checkpoint(const rx::string& /* checkpoint_name */) {
         // D3D12 is lame with this
         // You can use `ID3D12GraphicsCommandList2::WriteBufferImmediate` to write a specific value to a specific GPU virtual address. I
         // definitely could make a buffer that holds the values for each command list, and use WriteBufferImmediate to write values to
@@ -52,9 +58,11 @@ namespace nova::renderer::rhi {
     void D3D12RenderCommandList::begin_renderpass(RhiRenderpass& renderpass, RhiFramebuffer& framebuffer) {
         MTR_SCOPE("D3D12RenderCommandList", "begin_renderpass");
 
-        if(command_list_4) {
-            auto& d3d12_renderpass = static_cast<D3D12Renderpass&>(renderpass);
+        auto& d3d12_renderpass = static_cast<D3D12Renderpass&>(renderpass);
 
+        current_renderpass = &d3d12_renderpass;
+
+        if(command_list_4) {
             auto* depth_stencil_descriptor = d3d12_renderpass.depth_stencil_description ? &(*d3d12_renderpass.depth_stencil_description) :
                                                                                           nullptr;
 
@@ -86,9 +94,26 @@ namespace nova::renderer::rhi {
 
     void D3D12RenderCommandList::set_pipeline(const RhiPipeline& pipeline) {
         MTR_SCOPE("D3D12RenderCommandList", "set_pipeline");
+
+        if(current_renderpass == nullptr) {
+            logger->error("Can not set a pipeline");
+            return;
+        }
+
         const auto& d3d12_pipeline = static_cast<const D3D12Pipeline&>(pipeline);
 
-        // TODO: Create the pipeline ig
+        if(auto* pso = current_renderpass->cached_pipelines.find(d3d12_pipeline.name)) {
+            command_list->SetPipelineState(pso->Get());
+
+        } else {
+            const auto new_pso = device->compile_pso(d3d12_pipeline, *current_renderpass);
+            current_renderpass->cached_pipelines.insert(d3d12_pipeline.name, new_pso);
+            command_list->SetPipelineState(new_pso.Get());
+        }
+
+        if(d3d12_pipeline.create_info.stencil_state) {
+            command_list->OMSetStencilRef(d3d12_pipeline.create_info.stencil_state->reference_value);
+        }
     }
 
     void D3D12RenderCommandList::bind_vertex_buffers(const rx::vector<RhiBuffer*>& buffers) {
@@ -104,7 +129,7 @@ namespace nova::renderer::rhi {
             views.emplace_back(d3d12_buffer->resource->GetGPUVirtualAddress(), static_cast<UINT>(d3d12_buffer->size.b_count()), 0);
         });
 
-        command_list->IASetVertexBuffers(0, views.size(), views.data());
+        command_list->IASetVertexBuffers(0, static_cast<UINT>(views.size()), views.data());
     }
 
     void D3D12RenderCommandList::bind_index_buffer(const RhiBuffer& buffer, const IndexType index_size) {

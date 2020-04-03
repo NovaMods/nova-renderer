@@ -295,6 +295,8 @@ namespace nova::renderer ::rhi {
     }
 
     rx::ptr<RhiSampler> D3D12RenderDevice::create_sampler(const RhiSamplerCreateInfo& create_info, rx::memory::allocator& allocator) {
+        MTR_SCOPE("D3D12RenderDevice", "create_sampler");
+
         auto sampler = rx::make_ptr<D3D12Sampler>(allocator);
         sampler->desc.Filter = to_d3d12_filter(create_info.min_filter, create_info.mag_filter);
         sampler->desc.AddressU = to_d3d12_address_mode(create_info.x_wrap_mode);
@@ -309,6 +311,8 @@ namespace nova::renderer ::rhi {
     }
 
     rx::ptr<RhiImage> D3D12RenderDevice::create_image(const renderpack::TextureCreateInfo& info, rx::memory::allocator& allocator) {
+        MTR_SCOPE("D3D12RenderDevice", "create_image");
+
         const auto format = to_dxgi_format(info.format.pixel_format);
         const auto desc = CD3DX12_RESOURCE_DESC::Tex2D(format, rx::math::round(info.format.width), rx::math::round(info.format.width));
 
@@ -356,6 +360,8 @@ namespace nova::renderer ::rhi {
     }
 
     rx::ptr<RhiSemaphore> D3D12RenderDevice::create_semaphore(rx::memory::allocator& allocator) {
+        MTR_SCOPE("D3D12RenderDevice", "create_semaphore");
+
         auto semaphore = rx::make_ptr<D3D12Semaphore>(allocator);
 
         const auto result = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&semaphore->fence));
@@ -368,6 +374,8 @@ namespace nova::renderer ::rhi {
 
     rx::vector<rx::ptr<RhiSemaphore>> D3D12RenderDevice::create_semaphores(const uint32_t num_semaphores,
                                                                            rx::memory::allocator& allocator) {
+        MTR_SCOPE("D3D12RenderDevice", "create_semaphores");
+
         rx::vector<rx::ptr<RhiSemaphore>> semaphores{allocator};
         semaphores.reserve(num_semaphores);
 
@@ -384,6 +392,8 @@ namespace nova::renderer ::rhi {
     }
 
     rx::ptr<RhiFence> D3D12RenderDevice::create_fence(const bool signaled, rx::memory::allocator& allocator) {
+        MTR_SCOPE("D3D12RenderDevice", "create_fence");
+
         auto fence = rx::make_ptr<D3D12Fence>(allocator);
 
         const auto initial_fence_value = signaled ? CPU_FENCE_SIGNALED : CPU_FENCE_UNSIGNALED;
@@ -400,6 +410,8 @@ namespace nova::renderer ::rhi {
     rx::vector<rx::ptr<RhiFence>> D3D12RenderDevice::create_fences(const uint32_t num_fences,
                                                                    const bool signaled,
                                                                    rx::memory::allocator& allocator) {
+        MTR_SCOPE("D3D12RenderDevice", "create_fences");
+
         rx::vector<rx::ptr<RhiFence>> fences{allocator};
         fences.reserve(num_fences);
 
@@ -416,6 +428,8 @@ namespace nova::renderer ::rhi {
     }
 
     void D3D12RenderDevice::wait_for_fences(const rx::vector<RhiFence*>& fences) {
+        MTR_SCOPE("D3D12RenderDevice", "wait_for_fences");
+
         if(fences.is_empty()) {
             return;
 
@@ -485,6 +499,8 @@ namespace nova::renderer ::rhi {
     }
 
     void D3D12RenderDevice::destroy_framebuffer(const rx::ptr<RhiFramebuffer> framebuffer, rx::memory::allocator& /* allocator */) {
+        MTR_SCOPE("D3D12RenderDevice", "destroy_framebuffer");
+
         const auto* fb = framebuffer.get();
         const auto* d3d12_framebuffer = static_cast<const D3D12Framebuffer*>(fb);
 
@@ -509,7 +525,9 @@ namespace nova::renderer ::rhi {
                                                                          QueueType needed_queue_type,
                                                                          RhiRenderCommandList::Level level,
                                                                          rx::memory::allocator& allocator) {
-        const auto& [command_list_type, command_allocator] = [&] () -> rx::pair<D3D12_COMMAND_LIST_TYPE, ID3D12CommandAllocator*>{
+        MTR_SCOPE("D3D12RenderDevice", "create_command_list");
+
+        const auto& [command_list_type, command_allocator] = [&]() -> rx::pair<D3D12_COMMAND_LIST_TYPE, ID3D12CommandAllocator*> {
             if(needed_queue_type == QueueType::Transfer) {
                 return {D3D12_COMMAND_LIST_TYPE_COPY, copy_command_allocator.Get()};
 
@@ -537,6 +555,99 @@ namespace nova::renderer ::rhi {
         cmds->QueryInterface(commands.GetAddressOf());
 
         return rx::make_ptr<D3D12RenderCommandList>(allocator, commands);
+    }
+
+    ComPtr<ID3D12PipelineState> D3D12RenderDevice::compile_pso(const D3D12Pipeline& pipeline_info, D3D12Renderpass& current_renderpass) {
+        MTR_SCOPE("D3D12RenderDevice", "compile_pso");
+
+        const auto& create_info = pipeline_info.create_info;
+
+        D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
+        desc.pRootSignature = pipeline_info.root_signature.Get();
+        desc.VS.pShaderBytecode = pipeline_info.vertex_shader_bytecode->GetBufferPointer();
+        desc.VS.BytecodeLength = pipeline_info.vertex_shader_bytecode->GetBufferSize();
+
+        if(pipeline_info.geometry_shader_bytecode) {
+            desc.GS.pShaderBytecode = pipeline_info.geometry_shader_bytecode->GetBufferPointer();
+            desc.GS.BytecodeLength = pipeline_info.geometry_shader_bytecode->GetBufferSize();
+        }
+
+        if(pipeline_info.pixel_shader_bytecode) {
+            desc.PS.pShaderBytecode = pipeline_info.pixel_shader_bytecode->GetBufferPointer();
+            desc.PS.BytecodeLength = pipeline_info.pixel_shader_bytecode->GetBufferSize();
+        }
+
+        if(create_info.blend_state) {
+            const auto& rt_blends = create_info.blend_state->render_target_states;
+            for(uint32_t i = 0; i < rt_blends.size(); i++) {
+                auto& render_target_blend = desc.BlendState.RenderTarget[i];
+
+                const auto& rt_blend = rt_blends[i];
+
+                render_target_blend.BlendEnable = static_cast<BOOL>(rt_blend.enable);
+                if(rt_blend.enable) {
+                    render_target_blend.LogicOpEnable = 0;
+                    render_target_blend.SrcBlend = to_d3d12_blend(rt_blend.src_color_factor);
+                    render_target_blend.DestBlend = to_d3d12_blend(rt_blend.dst_color_factor);
+                    render_target_blend.BlendOp = to_d3d12_blend_op(rt_blend.color_op);
+                    render_target_blend.SrcBlendAlpha = to_d3d12_blend(rt_blend.src_alpha_factor);
+                    render_target_blend.DestBlendAlpha = to_d3d12_blend(rt_blend.dst_alpha_factor);
+                    render_target_blend.BlendOpAlpha = to_d3d12_blend_op(rt_blend.alpha_op);
+                    render_target_blend.LogicOp = D3D12_LOGIC_OP_NOOP;
+                    render_target_blend.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+                }
+            }
+        }
+
+        desc.SampleMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+        desc.RasterizerState.FillMode = to_d3d12_fill_mode(create_info.rasterizer_state.fill_mode);
+        desc.RasterizerState.CullMode = to_d3d12_cull_mode(create_info.rasterizer_state.cull_mode);
+        desc.RasterizerState.FrontCounterClockwise = 1;
+        desc.RasterizerState.DepthBias = create_info.rasterizer_state.depth_bias; // TODO: Figure out how to properly handle this
+        desc.RasterizerState.DepthBiasClamp = create_info.rasterizer_state.maximum_depth_bias;
+        desc.RasterizerState.SlopeScaledDepthBias = create_info.rasterizer_state.slope_scaled_depth_bias;
+        if(create_info.multisampling_state) {
+            desc.RasterizerState.MultisampleEnable = 1;
+            desc.RasterizerState.AntialiasedLineEnable = 1;
+        }
+
+        if(create_info.depth_state) {
+            desc.DepthStencilState.DepthEnable = 1;
+            desc.DepthStencilState.DepthWriteMask = create_info.depth_state->enable_depth_write ? D3D12_DEPTH_WRITE_MASK_ALL :
+                                                                                                  D3D12_DEPTH_WRITE_MASK_ZERO;
+            desc.DepthStencilState.DepthFunc = to_d3d12_compare_func(create_info.depth_state->compare_op);
+        }
+
+        if(create_info.stencil_state) {
+            desc.DepthStencilState.StencilEnable = 1;
+            desc.DepthStencilState.StencilReadMask = create_info.stencil_state->compare_mask;
+            desc.DepthStencilState.StencilWriteMask = create_info.stencil_state->write_mask;
+
+            auto& d3d12_front_face = desc.DepthStencilState.FrontFace;
+            auto& front_face = create_info.stencil_state->front_face_op;
+            d3d12_front_face.StencilFailOp = to_d3d12_stencil_op(front_face.fail_op);
+            d3d12_front_face.StencilDepthFailOp = to_d3d12_stencil_op(front_face.depth_fail_op);
+            d3d12_front_face.StencilPassOp = to_d3d12_stencil_op(front_face.pass_op);
+            d3d12_front_face.StencilFunc = to_d3d12_compare_func(front_face.compare_op);
+
+            auto& d3d12_back_face = desc.DepthStencilState.BackFace;
+            auto& back_face = create_info.stencil_state->back_face_op;
+            d3d12_back_face.StencilFailOp = to_d3d12_stencil_op(back_face.fail_op);
+            d3d12_back_face.StencilDepthFailOp = to_d3d12_stencil_op(back_face.depth_fail_op);
+            d3d12_back_face.StencilPassOp = to_d3d12_stencil_op(back_face.pass_op);
+            d3d12_back_face.StencilFunc = to_d3d12_compare_func(back_face.compare_op);
+        }
+
+        ComPtr<ID3D12PipelineState> pso;
+        const auto result = device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pso));
+        if(SUCCEEDED(result)) {
+            return pso;
+
+        } else {
+            logger->error("Could not compile pso %s", pipeline_info.name);
+            return {};
+        }
     }
 
     void D3D12RenderDevice::enable_validation_layer() {
@@ -667,6 +778,8 @@ namespace nova::renderer ::rhi {
     }
 
     void D3D12RenderDevice::create_command_allocators() {
+        MTR_SCOPE("D3D12RenderDevice", "create_command_allocators");
+
         auto result = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&direct_command_allocator));
         if(FAILED(result)) {
             throw Exception("Could not create direct command allocator");
@@ -679,6 +792,8 @@ namespace nova::renderer ::rhi {
     }
 
     ComPtr<ID3D12RootSignature> D3D12RenderDevice::compile_root_signature(const D3D12_ROOT_SIGNATURE_DESC& root_signature_desc) const {
+        MTR_SCOPE("D3D12RenderDevice", "compile_root_signature");
+
         ComPtr<ID3DBlob> root_signature_blob;
         ComPtr<ID3DBlob> error_blob;
         auto result = D3D12SerializeRootSignature(&root_signature_desc, D3D_ROOT_SIGNATURE_VERSION_1, &root_signature_blob, &error_blob);

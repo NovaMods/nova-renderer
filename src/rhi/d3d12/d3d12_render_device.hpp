@@ -92,6 +92,8 @@ namespace nova::renderer::rhi {
 
         void wait_for_single_fence(const D3D12Fence& fence);
 
+        [[nodiscard]] Microsoft::WRL::ComPtr<ID3D12PipelineState> compile_pso(const D3D12Pipeline& pipeline_info, D3D12Renderpass& current_renderpass);
+
     private:
         Microsoft::WRL::ComPtr<IDXGIFactory> factory;
 

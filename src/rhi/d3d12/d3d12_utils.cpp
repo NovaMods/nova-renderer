@@ -1,5 +1,7 @@
 #include "d3d12_utils.hpp"
 
+#include "nova_renderer/rhi/pipeline_create_info.hpp"
+
 namespace nova::renderer::rhi {
     void set_object_name(ID3D12Object* object, const rx::string& name) {
         const auto wide_name = name.to_utf16();
@@ -84,6 +86,172 @@ namespace nova::renderer::rhi {
                 [[fallthrough]];
             default:
                 return DXGI_FORMAT_R8G8B8A8_UNORM;
+        }
+    }
+
+    D3D12_BLEND to_d3d12_blend(const BlendFactor blend_factor) {
+        switch(blend_factor) {
+            case BlendFactor::Zero:
+                return D3D12_BLEND_ZERO;
+
+            case BlendFactor::One:
+                return D3D12_BLEND_ONE;
+
+            case BlendFactor::SrcColor:
+                return D3D12_BLEND_SRC_COLOR;
+
+            case BlendFactor::OneMinusSrcColor:
+                return D3D12_BLEND_INV_SRC_COLOR;
+
+            case BlendFactor::DstColor:
+                return D3D12_BLEND_DEST_COLOR;
+
+            case BlendFactor::OneMinusDstColor:
+                return D3D12_BLEND_INV_DEST_COLOR;
+
+            case BlendFactor::SrcAlpha:
+                return D3D12_BLEND_SRC_ALPHA;
+
+            case BlendFactor::OneMinusSrcAlpha:
+                return D3D12_BLEND_INV_SRC_ALPHA;
+
+            case BlendFactor::DstAlpha:
+                return D3D12_BLEND_DEST_ALPHA;
+
+            case BlendFactor::OneMinusDstAlpha:
+                return D3D12_BLEND_INV_DEST_ALPHA;
+
+            case BlendFactor::ConstantColor:
+                return D3D12_BLEND_BLEND_FACTOR;
+
+            case BlendFactor::OneMinusConstantColor:
+                return D3D12_BLEND_INV_BLEND_FACTOR;
+
+            case BlendFactor::ConstantAlpha:
+                return D3D12_BLEND_BLEND_FACTOR;
+
+            case BlendFactor::OneMinusConstantAlpha:
+                return D3D12_BLEND_INV_BLEND_FACTOR;
+
+            case BlendFactor::ClampedSrcAlpha:
+                return D3D12_BLEND_SRC_ALPHA_SAT;
+
+            default:
+                return D3D12_BLEND_ONE;
+        }
+    }
+
+    D3D12_BLEND_OP to_d3d12_blend_op(const BlendOp blend_op) {
+        switch(blend_op) {
+            case BlendOp::Add:
+                return D3D12_BLEND_OP_ADD;
+
+            case BlendOp::Subtract:
+                return D3D12_BLEND_OP_SUBTRACT;
+
+            case BlendOp::ReverseSubtract:
+                return D3D12_BLEND_OP_REV_SUBTRACT;
+
+            case BlendOp::Min:
+                return D3D12_BLEND_OP_MIN;
+
+            case BlendOp::Max:
+                return D3D12_BLEND_OP_MAX;
+
+            default:
+                return D3D12_BLEND_OP_ADD;
+        }
+    }
+
+    D3D12_FILL_MODE to_d3d12_fill_mode(const FillMode fill_mode) {
+        switch(fill_mode) {
+            case FillMode::Solid:
+                return D3D12_FILL_MODE_SOLID;
+
+            case FillMode::Wireframe:
+                [[fallthrough]];
+            case FillMode::Points:
+                return D3D12_FILL_MODE_WIREFRAME;
+
+            default:
+                return D3D12_FILL_MODE_SOLID;
+        }
+    }
+
+    D3D12_CULL_MODE to_d3d12_cull_mode(const PrimitiveCullingMode cull_mode) {
+        switch(cull_mode) {
+            case PrimitiveCullingMode::BackFace:
+                return D3D12_CULL_MODE_BACK;
+
+            case PrimitiveCullingMode::FrontFace:
+                return D3D12_CULL_MODE_FRONT;
+
+            case PrimitiveCullingMode::None:
+                return D3D12_CULL_MODE_NONE;
+
+            default:
+                return D3D12_CULL_MODE_BACK;
+        }
+    }
+
+    D3D12_COMPARISON_FUNC to_d3d12_compare_func(const CompareOp compare_op) {
+        switch(compare_op) {
+            case CompareOp::Never:
+                return D3D12_COMPARISON_FUNC_NEVER;
+
+            case CompareOp::Less:
+                return D3D12_COMPARISON_FUNC_LESS;
+
+            case CompareOp::LessEqual:
+                return D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+            case CompareOp::Greater:
+                return D3D12_COMPARISON_FUNC_GREATER;
+
+            case CompareOp::GreaterEqual:
+                return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+
+            case CompareOp::Equal:
+                return D3D12_COMPARISON_FUNC_EQUAL;
+
+            case CompareOp::NotEqual:
+                return D3D12_COMPARISON_FUNC_NOT_EQUAL;
+
+            case CompareOp::Always:
+                [[fallthrough]];
+            default:
+                return D3D12_COMPARISON_FUNC_ALWAYS;
+        }
+    }
+
+    D3D12_STENCIL_OP to_d3d12_stencil_op(const StencilOp stencil_op) {
+        switch(stencil_op) {
+            case StencilOp::Keep:
+                return D3D12_STENCIL_OP_KEEP;
+
+            case StencilOp::Zero:
+                return D3D12_STENCIL_OP_ZERO;
+
+            case StencilOp::Replace:
+                return D3D12_STENCIL_OP_REPLACE;
+
+            case StencilOp::Increment:
+                return D3D12_STENCIL_OP_INCR;
+
+            case StencilOp::IncrementAndWrap:
+                return D3D12_STENCIL_OP_INCR_SAT;
+
+            case StencilOp::Decrement:
+                return D3D12_STENCIL_OP_DECR;
+
+            case StencilOp::DecrementAndWrap:
+                return D3D12_STENCIL_OP_DECR_SAT;
+
+            case StencilOp::Invert:
+                return D3D12_STENCIL_OP_INVERT;
+
+            default:
+                return D3D12_STENCIL_OP_KEEP;
         }
     }
 } // namespace nova::renderer::rhi

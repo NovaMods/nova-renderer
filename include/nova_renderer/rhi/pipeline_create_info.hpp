@@ -145,21 +145,6 @@ namespace nova::renderer {
          * \brief How to compare a stencil value to the value in the stencil buffer
          */
         CompareOp compare_op{};
-
-        /*!
-         * \brief A bitmask of which stencil bits to compare
-         */
-        uint32_t compare_mask{};
-
-        /*!
-         * \brief A bitmask of what stencil bits to write
-         */
-        uint32_t write_mask{};
-
-        /*!
-         * \brief Reference value to use in the stencil test
-         */
-        uint32_t reference_value{};
     };
 
     /*!
@@ -175,6 +160,21 @@ namespace nova::renderer {
          * \brief The stencil operations to perform for back faces
          */
         StencilOpState back_face_op{};
+
+        /*!
+         * \brief A bitmask of which stencil bits to compare
+         */
+        uint8_t compare_mask{};
+
+        /*!
+         * \brief A bitmask of what stencil bits to write
+         */
+        uint8_t write_mask{};
+
+        /*!
+         * \brief Reference value to use in the stencil test
+         */
+        uint32_t reference_value{};
     };
 
     /*!

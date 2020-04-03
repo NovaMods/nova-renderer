@@ -3,12 +3,14 @@
 #include <d3d12.h>
 #include <wrl/client.h>
 
+#include "d3d12_render_device.hpp"
+#include "d3d12_structs.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 
 namespace nova::renderer::rhi {
     class D3D12RenderCommandList : RhiRenderCommandList {
     public:
-        explicit D3D12RenderCommandList(rx::memory::allocator& allocator, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmds);
+        explicit D3D12RenderCommandList(rx::memory::allocator& allocator, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmds, D3D12RenderDevice& device_in);
 
         D3D12RenderCommandList(const D3D12RenderCommandList& other) = delete;
         D3D12RenderCommandList& operator=(const D3D12RenderCommandList& other) = delete;
@@ -70,7 +72,11 @@ namespace nova::renderer::rhi {
     private:
         rx::memory::allocator* internal_allocator;
 
+        D3D12RenderDevice* device;
+
         Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> command_list;
         Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4> command_list_4;
+
+        D3D12Renderpass* current_renderpass = nullptr; 
     };
 } // namespace nova::renderer::rhi

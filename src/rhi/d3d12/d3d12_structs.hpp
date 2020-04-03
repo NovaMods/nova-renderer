@@ -19,6 +19,8 @@ namespace nova::renderer::rhi {
         rx::optional<D3D12_RENDER_PASS_DEPTH_STENCIL_DESC> depth_stencil_description;
 
         D3D12_RENDER_PASS_FLAGS flags;
+
+        rx::map<rx::string, Microsoft::WRL::ComPtr<ID3D12PipelineState>> cached_pipelines;
     };
 
     struct D3D12Framebuffer : RhiFramebuffer {
