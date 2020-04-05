@@ -6,6 +6,8 @@
 #include "d3d12_resource_binder.hpp"
 #include "d3d12_utils.hpp"
 
+using Microsoft::WRL::ComPtr;
+
 namespace nova::renderer::rhi {
     RX_LOG("D3D12RenderCommandList", logger);
 

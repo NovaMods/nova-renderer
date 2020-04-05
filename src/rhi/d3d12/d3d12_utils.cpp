@@ -1,8 +1,16 @@
 #include "d3d12_utils.hpp"
 
+#include <d3dcompiler.h>
+#include <rx/core/log.h>
+#include <wrl/client.h>
+
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 
+using Microsoft::WRL::ComPtr;
+
 namespace nova::renderer::rhi {
+    RX_LOG("D3D12Utils", logger);
+
     void set_object_name(ID3D12Object* object, const rx::string& name) {
         const auto wide_name = name.to_utf16();
 
@@ -252,6 +260,27 @@ namespace nova::renderer::rhi {
 
             default:
                 return D3D12_STENCIL_OP_KEEP;
+        }
+    }
+
+    uint32_t size_in_bytes(const DXGI_FORMAT format) {
+        // TODO: Fill in with more formats as needed
+        switch(format) {
+            case DXGI_FORMAT_R32_FLOAT:
+                return 4;
+
+            case DXGI_FORMAT_R32G32_FLOAT:
+                return 8;
+
+            case DXGI_FORMAT_R32G32B32_FLOAT:
+                return 12;
+
+            case DXGI_FORMAT_R32G32B32A32_FLOAT:
+                return 16;
+
+            default:
+                // Will hopefully cause enough problems that I'll know
+                return 0;
         }
     }
 } // namespace nova::renderer::rhi

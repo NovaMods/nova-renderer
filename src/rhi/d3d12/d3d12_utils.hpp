@@ -1,11 +1,13 @@
 #pragma once
 
 #include <d3d12.h>
+#include <d3d12shader.h>
+#include <dxc/dxcapi.h>
 #include <rx/core/string.h>
 
 #include "nova_renderer/renderpack_data.hpp"
-#include "nova_renderer/rhi/rhi_enums.hpp"
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
+#include "nova_renderer/rhi/rhi_enums.hpp"
 
 namespace nova::renderer::rhi {
     void set_object_name(ID3D12Object* object, const rx::string& name);
@@ -27,4 +29,6 @@ namespace nova::renderer::rhi {
     D3D12_COMPARISON_FUNC to_d3d12_compare_func(CompareOp compare_op);
 
     D3D12_STENCIL_OP to_d3d12_stencil_op(StencilOp stencil_op);
-}
+
+    uint32_t size_in_bytes(DXGI_FORMAT format);
+} // namespace nova::renderer::rhi

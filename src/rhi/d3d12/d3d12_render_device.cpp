@@ -20,7 +20,7 @@
 #include "d3d12_utils.hpp"
 #include "d3dx12.h"
 
-using namespace Microsoft::WRL;
+using Microsoft::WRL::ComPtr;
 
 namespace nova::renderer ::rhi {
     RX_LOG("D3D12RenderDevice", logger);
@@ -166,6 +166,38 @@ namespace nova::renderer ::rhi {
         }
     }
 
+    static rx::pair<rx::vector<D3D12_INPUT_ELEMENT_DESC>, rx::vector<rx::string>> get_vertex_attributes(ID3D12ShaderReflection* reflector) {
+        D3D12_SHADER_DESC shader_desc;
+        reflector->GetDesc(&shader_desc);
+
+        rx::vector<D3D12_INPUT_ELEMENT_DESC> attributes;
+        attributes.reserve(shader_desc.InputParameters);
+
+        rx::vector<rx::string> semantic_names;
+        semantic_names.reserve(shader_desc.InputParameters);
+
+        uint32_t offset = 0;
+
+        for(uint32_t i = 0; i < shader_desc.InputParameters; i++) {
+            D3D12_SIGNATURE_PARAMETER_DESC param_desc;
+            reflector->GetInputParameterDesc(i, &param_desc);
+
+            // TODO: Figure out how to actually get the format
+            DXGI_FORMAT format = DXGI_FORMAT_R32G32B32_FLOAT;
+
+            semantic_names.emplace_back(param_desc.SemanticName);
+
+            const auto& name = semantic_names.last();
+
+            attributes
+                .emplace_back(name.data(), param_desc.SemanticIndex, format, i, offset, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 1);
+
+            offset += size_in_bytes(format);
+        }
+
+        return {attributes, semantic_names};
+    }
+
     rx::ptr<RhiPipeline> D3D12RenderDevice::create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
                                                                     rx::memory::allocator& allocator) {
         MTR_SCOPE("D3D12RenderDevice", "create_surface_pipeline");
@@ -180,6 +212,20 @@ namespace nova::renderer ::rhi {
         if(!pipeline->vertex_shader_bytecode) {
             return {};
         }
+
+        ComPtr<ID3D12ShaderReflection> reflector;
+        const auto result = D3DReflect(pipeline->vertex_shader_bytecode->GetBufferPointer(),
+                                       pipeline->vertex_shader_bytecode->GetBufferSize(),
+                                       IID_PPV_ARGS(&reflector));
+        if(FAILED(result)) {
+            logger->error("Creating pipeline &s failed: could not get reflection information for vertex shaders", pipeline_state.name);
+
+            return {};
+        }
+
+        const auto& [attributes, semantic_names] = get_vertex_attributes(reflector.Get());
+        pipeline->vertex_attributes = attributes;
+        pipeline->semantic_names = semantic_names;
 
         if(pipeline_state.geometry_shader) {
             pipeline->geometry_shader_bytecode = compile_spirv_to_dxil(pipeline_state.geometry_shader->source,
@@ -200,7 +246,7 @@ namespace nova::renderer ::rhi {
         return pipeline;
     }
 
-    void get_bindings_for_shader(const ComPtr<IDxcBlob>& shader_blob, rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings);
+    void get_bindings_for_shader(ID3D12ShaderReflection* reflector, rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings);
 
     rx::ptr<RhiPipeline> D3D12RenderDevice::create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
                                                                    rx::memory::allocator& allocator) {
@@ -216,8 +262,22 @@ namespace nova::renderer ::rhi {
             return {};
         }
 
+        ComPtr<ID3D12ShaderReflection> reflector;
+        auto result = D3DReflect(pipeline->vertex_shader_bytecode->GetBufferPointer(),
+                                       pipeline->vertex_shader_bytecode->GetBufferSize(),
+                                       IID_PPV_ARGS(&reflector));
+        if(FAILED(result)) {
+            logger->error("Creating pipeline &s failed: could not get reflection information for vertex shaders", pipeline_state.name);
+
+            return {};
+        }
+
+        const auto& [attributes, semantic_names] = get_vertex_attributes(reflector.Get());
+        pipeline->vertex_attributes = attributes;
+        pipeline->semantic_names = semantic_names;
+
         rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC> bindings{allocator};
-        get_bindings_for_shader(pipeline->vertex_shader_bytecode, bindings);
+        get_bindings_for_shader(reflector.Get(), bindings);
 
         if(pipeline_state.geometry_shader) {
             pipeline->geometry_shader_bytecode = compile_spirv_to_dxil(pipeline_state.geometry_shader->source,
@@ -226,7 +286,18 @@ namespace nova::renderer ::rhi {
             if(!pipeline->geometry_shader_bytecode) {
                 return {};
             }
-            get_bindings_for_shader(pipeline->geometry_shader_bytecode, bindings);
+
+            ComPtr<ID3D12ShaderReflection> geometry_reflector;
+            result = D3DReflect(pipeline->geometry_shader_bytecode->GetBufferPointer(),
+                                           pipeline->geometry_shader_bytecode->GetBufferSize(),
+                                           IID_PPV_ARGS(&geometry_reflector));
+            if(FAILED(result)) {
+                logger->error("Creating pipeline &s failed: could not get reflection information for geometry shader", pipeline_state.name);
+
+                return {};
+            }
+
+            get_bindings_for_shader(geometry_reflector.Get(), bindings);
         }
 
         if(pipeline_state.pixel_shader) {
@@ -234,7 +305,17 @@ namespace nova::renderer ::rhi {
             if(!pipeline->pixel_shader_bytecode) {
                 return {};
             }
-            get_bindings_for_shader(pipeline->pixel_shader_bytecode, bindings);
+
+            ComPtr<ID3D12ShaderReflection> pixel_reflector;
+            result = D3DReflect(pipeline->pixel_shader_bytecode->GetBufferPointer(),
+                                pipeline->pixel_shader_bytecode->GetBufferSize(),
+                                IID_PPV_ARGS(&pixel_reflector));
+            if(FAILED(result)) {
+                logger->error("Creating pipeline &s failed: could not get reflection information for pixel shader", pipeline_state.name);
+
+                return {};
+            }
+            get_bindings_for_shader(pixel_reflector.Get(), bindings);
         }
 
         const auto& [descriptors, root_sig] = create_root_signature(bindings, allocator);
@@ -639,6 +720,9 @@ namespace nova::renderer ::rhi {
             d3d12_back_face.StencilFunc = to_d3d12_compare_func(back_face.compare_op);
         }
 
+        desc.InputLayout.NumElements = static_cast<UINT>(pipeline_info.vertex_attributes.size());
+        desc.InputLayout.pInputElementDescs = pipeline_info.vertex_attributes.data();
+
         ComPtr<ID3D12PipelineState> pso;
         const auto result = device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pso));
         if(SUCCEEDED(result)) {
@@ -949,14 +1033,7 @@ namespace nova::renderer ::rhi {
         }
     }
 
-    void get_bindings_for_shader(const ComPtr<IDxcBlob>& shader_blob, rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings) {
-
-        ComPtr<::ID3D12ShaderReflection> reflector;
-        const auto result = D3DReflect(shader_blob->GetBufferPointer(), shader_blob->GetBufferSize(), IID_PPV_ARGS(&reflector));
-        if(FAILED(result)) {
-            return;
-        }
-
+    void get_bindings_for_shader(ID3D12ShaderReflection* reflector, rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings) {
         D3D12_SHADER_DESC shader_desc;
         reflector->GetDesc(&shader_desc);
 

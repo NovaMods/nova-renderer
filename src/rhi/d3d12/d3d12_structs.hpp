@@ -54,6 +54,9 @@ namespace nova::renderer::rhi {
 
         rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC> bindings;
         rx::map<rx::string, D3D12_CPU_DESCRIPTOR_HANDLE> descriptors;
+
+        rx::vector<D3D12_INPUT_ELEMENT_DESC> vertex_attributes;
+        rx::vector<rx::string> semantic_names;
     };
 
     struct D3D12Semaphore : RhiSemaphore {
