@@ -304,6 +304,9 @@ namespace nova::renderer::rhi {
 
         } else if(access == ResourceAccess::AccelerationStructureRead || access == ResourceAccess::AccelerationStructureWrite) {
             return D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
+
+        } else if(access == ResourceAccess::ShadingRateImageRead) {
+            return D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE;
         }
 
         switch(state) {

@@ -3,9 +3,12 @@
 #include <minitrace.h>
 #include <rx/core/log.h>
 
+#include "nova_renderer/camera.hpp"
+
 #include "d3d12_resource_binder.hpp"
 #include "d3d12_utils.hpp"
 #include "d3dx12.h"
+
 using Microsoft::WRL::ComPtr;
 
 namespace nova::renderer::rhi {
@@ -87,6 +90,8 @@ namespace nova::renderer::rhi {
                                        num_bytes.b_count());
     }
 
+    void D3D12RenderCommandList::set_camera(const Camera& camera) { command_list->SetGraphicsRoot32BitConstant(0, camera.index, 0); }
+
     void D3D12RenderCommandList::begin_renderpass(RhiRenderpass& renderpass, RhiFramebuffer& framebuffer) {
         MTR_SCOPE("D3D12RenderCommandList", "begin_renderpass");
 
@@ -123,6 +128,8 @@ namespace nova::renderer::rhi {
             command_list_4->EndRenderPass();
         }
     }
+
+    void D3D12RenderCommandList::set_material_index(const uint32_t index) { command_list->SetGraphicsRoot32BitConstant(0, index, 1); }
 
     void D3D12RenderCommandList::set_pipeline(const RhiPipeline& pipeline) {
         MTR_SCOPE("D3D12RenderCommandList", "set_pipeline");
@@ -186,5 +193,15 @@ namespace nova::renderer::rhi {
 
     void D3D12RenderCommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t offset, const uint32_t num_instances) {
         command_list->DrawIndexedInstanced(num_indices, num_instances, offset, 0, 0);
+    }
+
+    void D3D12RenderCommandList::set_scissor_rect(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height) {
+        D3D12_RECT scissor_rect;
+        scissor_rect.top = y;
+        scissor_rect.left = x;
+        scissor_rect.bottom = y + height;
+        scissor_rect.right = x + width;
+
+        command_list->RSSetScissorRects(1, &scissor_rect);
     }
 } // namespace nova::renderer::rhi
