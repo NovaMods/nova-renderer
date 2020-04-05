@@ -8,6 +8,7 @@
 #include <spirv_hlsl.hpp>
 #include <wrl/client.h>
 
+#include "d3d12_resource_binder.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 
 #include "d3d12_structs.hpp"
@@ -43,6 +44,8 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] rx::ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
                                                                                      rx::memory::allocator& allocator) override;
+
+        RhiResourceBinder* get_material_resource_binder() override;
 
         [[nodiscard]] rx::ptr<RhiBuffer> create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) override;
 
@@ -151,6 +154,8 @@ namespace nova::renderer::rhi {
 
         rx::vector<HANDLE> fence_wait_events;
 
+        rx::ptr<D3D12ResourceBinder> material_resource_binder;
+
 #pragma region Initialization
         void enable_validation_layer();
 
@@ -173,6 +178,8 @@ namespace nova::renderer::rhi {
         void initialize_standard_resource_binding_mappings();
 
         void create_shader_compiler();
+
+        void create_material_resource_binder();
 #pragma endregion
 
 #pragma region Helpers

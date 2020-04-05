@@ -25,14 +25,6 @@ namespace nova::renderer::rhi {
 
         void set_checkpoint(const rx::string& checkpoint_name) override;
 
-        void bind_material_resources(RhiBuffer& camera_buffer,
-                                     RhiBuffer& material_buffer,
-                                     RhiSampler& point_sampler,
-                                     RhiSampler& bilinear_sampler,
-                                     RhiSampler& trilinear_sampler,
-                                     const rx::vector<RhiImage*>& images,
-                                     rx::memory::allocator& allocator) override;
-
         void bind_resources(RhiResourceBinder& binder) override;
 
         void resource_barriers(PipelineStage stages_before_barrier,

@@ -64,17 +64,6 @@ namespace nova::renderer::rhi {
         virtual void set_checkpoint(const rx::string& checkpoint_name) = 0;
 
         /*!
-         * \brief Bind the buffers of all the resources that Nova needs to render an object
-         */
-        virtual void bind_material_resources(RhiBuffer& camera_buffer,
-                                             RhiBuffer& material_buffer,
-                                             RhiSampler& point_sampler,
-                                             RhiSampler& bilinear_sampler,
-                                             RhiSampler& trilinear_sampler,
-                                             const rx::vector<RhiImage*>& images,
-                                             rx::memory::allocator& allocator) = 0;
-
-        /*!
          * \brief Uses the provided resource binder to bind resources to the command list
          */
         virtual void bind_resources(RhiResourceBinder& binder) = 0;

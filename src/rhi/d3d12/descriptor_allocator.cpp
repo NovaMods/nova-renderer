@@ -4,9 +4,9 @@
 
 namespace nova::renderer::rhi {
     DescriptorAllocator::DescriptorAllocator(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptor_heap_in,
-                                             const uint32_t descriptor_size_in,
+                                             const UINT descriptor_size_in,
                                              rx::memory::allocator& allocator)
-        : heap{rx::utility::move(descriptor_heap_in)}, descriptor_size{descriptor_size_in}, available_descriptors{&allocator} {}
+        : heap{rx::utility::move(descriptor_heap_in)}, descriptor_size{descriptor_size_in}, available_descriptors{allocator} {}
 
     D3D12_CPU_DESCRIPTOR_HANDLE DescriptorAllocator::get_next_free_descriptor() {
         if(available_descriptors.is_empty()) {
@@ -24,4 +24,8 @@ namespace nova::renderer::rhi {
     }
 
     void DescriptorAllocator::release_descriptor(const D3D12_CPU_DESCRIPTOR_HANDLE descriptor) { available_descriptors.push_back(descriptor); }
+
+    UINT DescriptorAllocator::get_descriptor_size() const {
+        return descriptor_size;
+    }
 } // namespace nova::renderer::rhi

@@ -50,6 +50,8 @@ namespace nova::renderer ::rhi {
         initialize_standard_resource_binding_mappings();
 
         create_shader_compiler();
+
+        create_material_resource_binder();
     }
 
     D3D12RenderDevice::~D3D12RenderDevice() { dma_allocator->Release(); }
@@ -337,6 +339,8 @@ namespace nova::renderer ::rhi {
 
         return binder;
     }
+
+    RhiResourceBinder* D3D12RenderDevice::get_material_resource_binder() { return material_resource_binder.get(); }
 
     rx::ptr<RhiBuffer> D3D12RenderDevice::create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) {
         const auto desc = CD3DX12_RESOURCE_DESC::Buffer(info.size.b_count());
@@ -738,7 +742,7 @@ namespace nova::renderer ::rhi {
         if(create_info.multisampling_state) {
             const auto& multisampling = *create_info.multisampling_state;
             desc.SampleDesc.Count = multisampling.num_samples;
-            desc.SampleDesc.Quality = 1;    // TODO
+            desc.SampleDesc.Quality = 1; // TODO
         }
 
         ComPtr<ID3D12PipelineState> pso;
@@ -980,7 +984,7 @@ namespace nova::renderer ::rhi {
         heap_desc.Flags = (type == D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE :
                                                                             D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
         device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&heap));
-        const auto descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        const auto descriptor_size = device->GetDescriptorHandleIncrementSize(type);
 
         return rx::make_ptr<DescriptorAllocator>(internal_allocator, heap, descriptor_size, internal_allocator);
     }
@@ -1051,6 +1055,14 @@ namespace nova::renderer ::rhi {
         }
     }
 
+    void D3D12RenderDevice::create_material_resource_binder() {
+
+        material_resource_binder = rx::make_ptr<D3D12ResourceBinder>(internal_allocator,
+                                                                     &internal_allocator,
+                                                                     device,
+                                                                     standard_root_signature);
+    }
+
     void get_bindings_for_shader(ID3D12ShaderReflection* reflector, rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings) {
         D3D12_SHADER_DESC shader_desc;
         reflector->GetDesc(&shader_desc);
@@ -1116,7 +1128,8 @@ namespace nova::renderer ::rhi {
             range.NumDescriptors = 1;
             range.BaseShaderRegister = binding_desc.BindPoint;
             range.RegisterSpace = binding_desc.Space;
-            range.OffsetInDescriptorsFromTableStart = descriptor.ptr;
+            range.OffsetInDescriptorsFromTableStart = static_cast<UINT>(descriptor.ptr /
+                                                                        shader_resource_descriptors->get_descriptor_size());
 
             ranges.push_back(rx::utility::move(range));
 
@@ -1124,7 +1137,7 @@ namespace nova::renderer ::rhi {
         });
 
         D3D12_ROOT_DESCRIPTOR_TABLE table;
-        table.NumDescriptorRanges = ranges.size();
+        table.NumDescriptorRanges = static_cast<UINT>(ranges.size());
         table.pDescriptorRanges = ranges.data();
 
         D3D12_ROOT_PARAMETER root_param{};

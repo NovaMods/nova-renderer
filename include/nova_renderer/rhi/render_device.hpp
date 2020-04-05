@@ -125,6 +125,11 @@ namespace nova::renderer::rhi {
                                                                                              rx::memory::allocator& allocator) = 0;
 
         /*!
+         * \brief Retrieves the resource binder that binds the material resources
+         */
+        [[nodiscar]] virtual RhiResourceBinder* get_material_resource_binder() = 0;
+
+        /*!
          * \brief Creates a buffer with undefined contents
          */
         [[nodiscard]] virtual rx::ptr<RhiBuffer> create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) = 0;
