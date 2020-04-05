@@ -283,4 +283,6 @@ namespace nova::renderer::rhi {
                 return 0;
         }
     }
+
+    D3D12_PRIMITIVE_TOPOLOGY to_d3d12_primitive_topology(PrimitiveTopology topology) {}
 } // namespace nova::renderer::rhi

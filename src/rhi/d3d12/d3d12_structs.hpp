@@ -16,7 +16,10 @@ namespace nova::renderer::rhi {
 
     struct D3D12Renderpass : RhiRenderpass {
         rx::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC> render_target_descriptions;
+        rx::vector<DXGI_FORMAT> render_target_formats;
+
         rx::optional<D3D12_RENDER_PASS_DEPTH_STENCIL_DESC> depth_stencil_description;
+        rx::optional<DXGI_FORMAT> depth_stencil_format;
 
         D3D12_RENDER_PASS_FLAGS flags;
 
@@ -55,8 +58,8 @@ namespace nova::renderer::rhi {
         rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC> bindings;
         rx::map<rx::string, D3D12_CPU_DESCRIPTOR_HANDLE> descriptors;
 
-        rx::vector<D3D12_INPUT_ELEMENT_DESC> vertex_attributes;
-        rx::vector<rx::string> semantic_names;
+        rx::vector<D3D12_INPUT_ELEMENT_DESC> input_assembler_elements;
+        rx::vector<rx::string> input_assembler_semantic_names;
     };
 
     struct D3D12Semaphore : RhiSemaphore {

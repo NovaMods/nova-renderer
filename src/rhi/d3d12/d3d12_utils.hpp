@@ -31,4 +31,6 @@ namespace nova::renderer::rhi {
     D3D12_STENCIL_OP to_d3d12_stencil_op(StencilOp stencil_op);
 
     uint32_t size_in_bytes(DXGI_FORMAT format);
+
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE to_d3d12_primitive_topology(PrimitiveTopology topology);
 } // namespace nova::renderer::rhi

@@ -166,7 +166,8 @@ namespace nova::renderer ::rhi {
         }
     }
 
-    static rx::pair<rx::vector<D3D12_INPUT_ELEMENT_DESC>, rx::vector<rx::string>> get_vertex_attributes(ID3D12ShaderReflection* reflector) {
+    static rx::pair<rx::vector<D3D12_INPUT_ELEMENT_DESC>, rx::vector<rx::string>> get_input_assembler_elements(
+        ID3D12ShaderReflection* reflector) {
         D3D12_SHADER_DESC shader_desc;
         reflector->GetDesc(&shader_desc);
 
@@ -223,9 +224,9 @@ namespace nova::renderer ::rhi {
             return {};
         }
 
-        const auto& [attributes, semantic_names] = get_vertex_attributes(reflector.Get());
-        pipeline->vertex_attributes = attributes;
-        pipeline->semantic_names = semantic_names;
+        const auto& [input_assembler_elements, semantic_names] = get_input_assembler_elements(reflector.Get());
+        pipeline->input_assembler_elements = input_assembler_elements;
+        pipeline->input_assembler_semantic_names = semantic_names;
 
         if(pipeline_state.geometry_shader) {
             pipeline->geometry_shader_bytecode = compile_spirv_to_dxil(pipeline_state.geometry_shader->source,
@@ -264,17 +265,17 @@ namespace nova::renderer ::rhi {
 
         ComPtr<ID3D12ShaderReflection> reflector;
         auto result = D3DReflect(pipeline->vertex_shader_bytecode->GetBufferPointer(),
-                                       pipeline->vertex_shader_bytecode->GetBufferSize(),
-                                       IID_PPV_ARGS(&reflector));
+                                 pipeline->vertex_shader_bytecode->GetBufferSize(),
+                                 IID_PPV_ARGS(&reflector));
         if(FAILED(result)) {
             logger->error("Creating pipeline &s failed: could not get reflection information for vertex shaders", pipeline_state.name);
 
             return {};
         }
 
-        const auto& [attributes, semantic_names] = get_vertex_attributes(reflector.Get());
-        pipeline->vertex_attributes = attributes;
-        pipeline->semantic_names = semantic_names;
+        const auto& [attributes, semantic_names] = get_input_assembler_elements(reflector.Get());
+        pipeline->input_assembler_elements = attributes;
+        pipeline->input_assembler_semantic_names = semantic_names;
 
         rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC> bindings{allocator};
         get_bindings_for_shader(reflector.Get(), bindings);
@@ -289,8 +290,8 @@ namespace nova::renderer ::rhi {
 
             ComPtr<ID3D12ShaderReflection> geometry_reflector;
             result = D3DReflect(pipeline->geometry_shader_bytecode->GetBufferPointer(),
-                                           pipeline->geometry_shader_bytecode->GetBufferSize(),
-                                           IID_PPV_ARGS(&geometry_reflector));
+                                pipeline->geometry_shader_bytecode->GetBufferSize(),
+                                IID_PPV_ARGS(&geometry_reflector));
             if(FAILED(result)) {
                 logger->error("Creating pipeline &s failed: could not get reflection information for geometry shader", pipeline_state.name);
 
@@ -720,8 +721,25 @@ namespace nova::renderer ::rhi {
             d3d12_back_face.StencilFunc = to_d3d12_compare_func(back_face.compare_op);
         }
 
-        desc.InputLayout.NumElements = static_cast<UINT>(pipeline_info.vertex_attributes.size());
-        desc.InputLayout.pInputElementDescs = pipeline_info.vertex_attributes.data();
+        desc.InputLayout.NumElements = static_cast<UINT>(pipeline_info.input_assembler_elements.size());
+        desc.InputLayout.pInputElementDescs = pipeline_info.input_assembler_elements.data();
+
+        desc.PrimitiveTopologyType = to_d3d12_primitive_topology(create_info.topology);
+
+        desc.NumRenderTargets = static_cast<UINT>(current_renderpass.render_target_formats.size());
+        for(uint32_t i = 0; i < desc.NumRenderTargets; i++) {
+            desc.RTVFormats[i] = current_renderpass.render_target_formats[i];
+        }
+
+        if(current_renderpass.depth_stencil_format) {
+            desc.DSVFormat = *current_renderpass.depth_stencil_format;
+        }
+
+        if(create_info.multisampling_state) {
+            const auto& multisampling = *create_info.multisampling_state;
+            desc.SampleDesc.Count = multisampling.num_samples;
+            desc.SampleDesc.Quality = 1;    // TODO
+        }
 
         ComPtr<ID3D12PipelineState> pso;
         const auto result = device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pso));

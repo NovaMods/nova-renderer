@@ -113,7 +113,7 @@ namespace nova::renderer {
     };
 
     struct MultisamplingState {
-        // TODO: Figure out multisampling. The Vulkan book's section is sadly incomplete
+        uint32_t num_samples = 0;
     };
 
     enum class StencilOp { Keep, Zero, Replace, Increment, IncrementAndWrap, Decrement, DecrementAndWrap, Invert };
