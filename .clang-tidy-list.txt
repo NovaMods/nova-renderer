@@ -35,3 +35,4 @@ readability*
 -clang-diagnostic-language-extension-token
 -modernize-use-trailing-return-type
 -clang-diagnostic-covered-switch-default
+-readability-implicit-bool-conversion

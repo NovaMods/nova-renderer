@@ -1,5 +1,6 @@
 #include "d3d12_utils.hpp"
 
+#include <d3d12.h>
 #include <d3dcompiler.h>
 #include <rx/core/log.h>
 #include <wrl/client.h>
@@ -284,5 +285,66 @@ namespace nova::renderer::rhi {
         }
     }
 
-    D3D12_PRIMITIVE_TOPOLOGY to_d3d12_primitive_topology(PrimitiveTopology topology) {}
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE to_d3d12_primitive_topology(const PrimitiveTopology topology) {
+        switch(topology) {
+            case PrimitiveTopology::PointList:
+                return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+
+            case PrimitiveTopology::LineList:
+                return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+
+            case PrimitiveTopology::TriangleList:
+                return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+        }
+    }
+
+    D3D12_RESOURCE_STATES to_d3d12_resource_state(const ResourceState state, const ResourceAccess access) {
+        if(access == ResourceAccess::IndirectCommandRead) {
+            return D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+
+        } else if(access == ResourceAccess::AccelerationStructureRead || access == ResourceAccess::AccelerationStructureWrite) {
+            return D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
+        }
+
+        switch(state) {
+            case ResourceState::CopySource:
+                return D3D12_RESOURCE_STATE_COPY_SOURCE;
+
+            case ResourceState::CopyDestination:
+                return D3D12_RESOURCE_STATE_COPY_DEST;
+
+            case ResourceState::UniformBuffer:
+                [[fallthrough]];
+            case ResourceState::VertexBuffer:
+                return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+
+            case ResourceState::IndexBuffer:
+                return D3D12_RESOURCE_STATE_INDEX_BUFFER;
+
+            case ResourceState::ShaderRead:
+                return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+
+            case ResourceState::ShaderWrite:
+                return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+
+            case ResourceState::RenderTarget:
+                return D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+            case ResourceState::DepthWrite:
+                return D3D12_RESOURCE_STATE_DEPTH_WRITE;
+
+            case ResourceState::DepthRead:
+                return D3D12_RESOURCE_STATE_DEPTH_READ;
+
+            case ResourceState::PresentSource:
+                return D3D12_RESOURCE_STATE_PRESENT;
+
+            case ResourceState::Undefined:
+                [[fallthrough]];
+            case ResourceState::Common:
+                [[fallthrough]];
+            default:
+                return D3D12_RESOURCE_STATE_COMMON;
+        }
+    }
 } // namespace nova::renderer::rhi

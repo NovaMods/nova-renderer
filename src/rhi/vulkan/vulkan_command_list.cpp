@@ -184,10 +184,10 @@ namespace nova::renderer::rhi {
                                                     const PipelineStage stages_after_barrier,
                                                     const rx::vector<RhiResourceBarrier>& barriers) {
         MTR_SCOPE("VulkanRenderCommandList", "resource_barriers");
-        rx::vector<VkBufferMemoryBarrier> buffer_barriers{&internal_allocator};
+        rx::vector<VkBufferMemoryBarrier> buffer_barriers{internal_allocator};
         buffer_barriers.reserve(barriers.size());
 
-        rx::vector<VkImageMemoryBarrier> image_barriers{&internal_allocator};
+        rx::vector<VkImageMemoryBarrier> image_barriers{internal_allocator};
         image_barriers.reserve(barriers.size());
 
         barriers.each_fwd([&](const RhiResourceBarrier& barrier) {

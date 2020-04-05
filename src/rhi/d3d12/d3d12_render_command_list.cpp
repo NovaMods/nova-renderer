@@ -5,7 +5,7 @@
 
 #include "d3d12_resource_binder.hpp"
 #include "d3d12_utils.hpp"
-
+#include "d3dx12.h"
 using Microsoft::WRL::ComPtr;
 
 namespace nova::renderer::rhi {
@@ -40,6 +40,36 @@ namespace nova::renderer::rhi {
         auto& d3d12_binder = static_cast<D3D12ResourceBinder&>(binder);
 
         command_list->SetGraphicsRootSignature(d3d12_binder.get_root_signature());
+    }
+
+    void D3D12RenderCommandList::resource_barriers(PipelineStage /* stages_before_barrier */,
+                                                   PipelineStage /* stages_after_barrier */,
+                                                   const rx::vector<RhiResourceBarrier>& barriers) {
+
+        rx::vector<D3D12_RESOURCE_BARRIER> d3d12_barriers{*internal_allocator};
+        d3d12_barriers.reserve(barriers.size());
+
+        barriers.each_fwd([&](const RhiResourceBarrier& barrier) {
+            auto* resource = [&] {
+                if(barrier.resource_to_barrier->type == ResourceType::Image) {
+                    const auto* image = static_cast<D3D12Image*>(barrier.resource_to_barrier);
+                    return image->resource.Get();
+
+                } else {
+                    auto* buffer = static_cast<D3D12Buffer*>(barrier.resource_to_barrier);
+                    return buffer->resource.Get();
+                }
+            }();
+
+            const auto state_before = to_d3d12_resource_state(barrier.old_state, barrier.access_before_barrier);
+            const auto states_after = to_d3d12_resource_state(barrier.new_state, barrier.access_after_barrier);
+
+            const auto d3d12_barrier = CD3DX12_RESOURCE_BARRIER::Transition(resource, state_before, states_after);
+
+            d3d12_barriers.push_back(rx::utility::must_move(d3d12_barrier));
+        });
+
+        command_list->ResourceBarrier(static_cast<UINT>(d3d12_barriers.size()), d3d12_barriers.data());
     }
 
     void D3D12RenderCommandList::copy_buffer(RhiBuffer& destination_buffer,

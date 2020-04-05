@@ -33,4 +33,6 @@ namespace nova::renderer::rhi {
     uint32_t size_in_bytes(DXGI_FORMAT format);
 
     D3D12_PRIMITIVE_TOPOLOGY_TYPE to_d3d12_primitive_topology(PrimitiveTopology topology);
+
+    D3D12_RESOURCE_STATES to_d3d12_resource_state(ResourceState state, ResourceAccess access);
 } // namespace nova::renderer::rhi
