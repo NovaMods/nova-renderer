@@ -37,6 +37,16 @@ namespace nova::renderer::rhi {
         // D3D12RenderCommandList tonight, so I wrote this comment instead
     }
 
+    void D3D12RenderCommandList::bind_material_resources(RhiBuffer& camera_buffer,
+                                                         RhiBuffer& material_buffer,
+                                                         RhiSampler& point_sampler,
+                                                         RhiSampler& bilinear_sampler,
+                                                         RhiSampler& trilinear_sampler,
+                                                         const rx::vector<RhiImage*>& images,
+                                                         rx::memory::allocator& allocator) {
+        MTR_SCOPE("D3D12RenderCommandList", "bind_material_resources");
+    }
+
     void D3D12RenderCommandList::bind_resources(RhiResourceBinder& binder) {
         MTR_SCOPE("D3D12RenderCommandList", "bind_resources");
 

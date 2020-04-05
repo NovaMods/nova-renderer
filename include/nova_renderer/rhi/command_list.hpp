@@ -115,6 +115,9 @@ namespace nova::renderer::rhi {
                                  mem::Bytes source_offset,
                                  mem::Bytes num_bytes) = 0;
 
+        // TODO: Whether or not to use staging buffers, and how to use the staging buffers, should be 100% internal to the command list.
+        // This method needs to get a bit higher level
+        
         /*!
          * \brief Uploads data to an image in the most API-optimal way
          *
@@ -130,13 +133,6 @@ namespace nova::renderer::rhi {
          */
         virtual void upload_data_to_image(
             RhiImage& image, size_t width, size_t height, size_t bytes_per_pixel, RhiBuffer& staging_buffer, const void* data) = 0;
-
-        /*!
-         * \brief Uploads data to a buffer
-         *
-         * This method assumes that the buffer lives in GPU memory
-         */
-        virtual void upload_data_to_buffer(RhiBuffer& buffer, const void* data) = 0;
 
         /*!
          * \brief Executed a number of command lists
