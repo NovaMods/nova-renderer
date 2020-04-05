@@ -90,6 +90,13 @@ namespace nova::renderer::rhi {
                                        num_bytes.b_count());
     }
 
+    void D3D12RenderCommandList::execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) {
+        lists.each_fwd([&](const RhiRenderCommandList* list) {
+            const auto* d3d12_list = static_cast<const D3D12RenderCommandList*>(list);
+            command_list->ExecuteBundle(d3d12_list->get_d3d12_list());
+        });
+    }
+
     void D3D12RenderCommandList::set_camera(const Camera& camera) { command_list->SetGraphicsRoot32BitConstant(0, camera.index, 0); }
 
     void D3D12RenderCommandList::begin_renderpass(RhiRenderpass& renderpass, RhiFramebuffer& framebuffer) {
@@ -203,5 +210,9 @@ namespace nova::renderer::rhi {
         scissor_rect.right = x + width;
 
         command_list->RSSetScissorRects(1, &scissor_rect);
+    }
+
+    ID3D12GraphicsCommandList* D3D12RenderCommandList::get_d3d12_list() const {
+        return command_list.Get();
     }
 } // namespace nova::renderer::rhi
