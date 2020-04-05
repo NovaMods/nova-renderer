@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rx/core/ptr.h>
+
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 #include "nova_renderer/util/container_accessor.hpp"
@@ -18,7 +20,7 @@ namespace nova::renderer {
     struct TextureResource {
         rx::string name;
 
-        rhi::RhiImage* image = nullptr;
+        rx::ptr<rhi::RhiImage> image;
 
         rx_size width;
 
@@ -30,7 +32,7 @@ namespace nova::renderer {
     struct BufferResource {
         rx::string name;
 
-        rhi::RhiBuffer* buffer = nullptr;
+        rx::ptr<rhi::RhiBuffer> buffer;
 
         mem::Bytes size = 0;
     };

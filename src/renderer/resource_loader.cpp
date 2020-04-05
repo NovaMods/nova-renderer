@@ -22,9 +22,9 @@ namespace nova::renderer {
         : renderer{renderer},
           device{renderer.get_device()},
           internal_allocator{renderer.get_global_allocator()},
-          textures{&internal_allocator},
-          staging_buffers{&internal_allocator},
-          uniform_buffers{&internal_allocator} {
+          textures{internal_allocator},
+          staging_buffers{internal_allocator},
+          uniform_buffers{internal_allocator} {
         create_default_textures();
     }
 
@@ -37,7 +37,7 @@ namespace nova::renderer {
 
         const RhiBufferCreateInfo create_info = {rx::string::format("UniformBuffer%s", name), size.b_count(), BufferUsage::UniformBuffer};
         resource.buffer = device.create_buffer(create_info, internal_allocator);
-        if(resource.buffer == nullptr) {
+        if(!resource.buffer) {
             logger->error("Could not create uniform buffer %s", name);
             return rx::nullopt;
         }
@@ -93,16 +93,16 @@ namespace nova::renderer {
 
         if(data != nullptr) {
             MTR_SCOPE("DeviceResources", "Upload Data To Texture");
-            RhiBuffer* staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
+            auto staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
 
-            RhiRenderCommandList* cmds = device.create_command_list(0,
+            auto cmds = device.create_command_list(0,
                                                                     QueueType::Transfer,
                                                                     RhiRenderCommandList::Level::Primary,
                                                                     allocator);
             cmds->set_debug_name(rx::string::format("UploadTo%s", name));
 
             RhiResourceBarrier initial_texture_barrier = {};
-            initial_texture_barrier.resource_to_barrier = resource.image;
+            initial_texture_barrier.resource_to_barrier = resource.image.get();
             initial_texture_barrier.access_before_barrier = ResourceAccess::CopyRead;
             initial_texture_barrier.access_after_barrier = ResourceAccess::CopyWrite;
             initial_texture_barrier.old_state = ResourceState::Undefined;
@@ -111,13 +111,13 @@ namespace nova::renderer {
             initial_texture_barrier.destination_queue = QueueType::Transfer;
             initial_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
 
-            rx::vector<RhiResourceBarrier> initial_barriers{&allocator};
+            rx::vector<RhiResourceBarrier> initial_barriers{allocator};
             initial_barriers.push_back(initial_texture_barrier);
             cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::Transfer, initial_barriers);
-            cmds->upload_data_to_image(resource.image, width, height, pixel_size, staging_buffer, data);
+            cmds->upload_data_to_image(*resource.image, width, height, pixel_size, *staging_buffer, data);
 
             RhiResourceBarrier final_texture_barrier = {};
-            final_texture_barrier.resource_to_barrier = resource.image;
+            final_texture_barrier.resource_to_barrier = resource.image.get();
             final_texture_barrier.access_before_barrier = ResourceAccess::CopyWrite;
             final_texture_barrier.access_after_barrier = ResourceAccess::ShaderRead;
             final_texture_barrier.old_state = ResourceState::CopyDestination;
@@ -126,18 +126,17 @@ namespace nova::renderer {
             final_texture_barrier.destination_queue = QueueType::Graphics;
             final_texture_barrier.image_memory_barrier.aspect = ImageAspect::Color;
 
-            rx::vector<RhiResourceBarrier> final_barriers{&allocator};
+            rx::vector<RhiResourceBarrier> final_barriers{allocator};
             final_barriers.push_back(final_texture_barrier);
             cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::VertexShader, final_barriers);
 
-            RhiFence* upload_done_fence = device.create_fence(false, allocator);
-            device.submit_command_list(cmds, QueueType::Transfer, upload_done_fence);
+            auto upload_done_fence = device.create_fence(false, allocator);
+            device.submit_command_list(rx::utility::move(cmds), QueueType::Transfer, *upload_done_fence);
 
             // Be sure that the data copy is complete, so that this method doesn't return before the GPU is done with the staging buffer
-            rx::vector<RhiFence*> upload_done_fences{&allocator};
-            upload_done_fences.push_back(upload_done_fence);
-            device.wait_for_fences(upload_done_fences);
-            device.destroy_fences(upload_done_fences, allocator);
+            // TODO: Be smarter about this
+            device.wait_for_fences(rx::array{upload_done_fence.get()});
+            device.destroy_fences(rx::array{rx::utility::move(upload_done_fence)}, allocator);
 
             return_staging_buffer(staging_buffer);
 
@@ -195,7 +194,7 @@ namespace nova::renderer {
         create_info.format.width = static_cast<float>(width);
         create_info.format.height = static_cast<float>(height);
 
-        auto* image = device.create_image(create_info, allocator);
+        auto image = device.create_image(create_info, allocator);
         if(image) {
             // Barrier it into the correct format and return it
 
@@ -206,19 +205,19 @@ namespace nova::renderer {
             resource.format = pixel_format;
             resource.height = height;
             resource.width = width;
-            resource.image = image;
+            resource.image = rx::utility::move(image);
 
             {
                 MTR_SCOPE("DeviceResources", "Transition Render Target Layout");
 
-                RhiRenderCommandList* cmds = device.create_command_list(0,
+                auto cmds = device.create_command_list(0,
                                                                         QueueType::Graphics,
                                                                         RhiRenderCommandList::Level::Primary,
                                                                         allocator);
                 cmds->set_debug_name(rx::string::format("ChangeFormatOf%s", name));
 
                 RhiResourceBarrier initial_texture_barrier = {};
-                initial_texture_barrier.resource_to_barrier = resource.image;
+                initial_texture_barrier.resource_to_barrier = resource.image.get();
                 initial_texture_barrier.old_state = ResourceState::Undefined;
                 initial_texture_barrier.source_queue = QueueType::Graphics;
                 initial_texture_barrier.destination_queue = QueueType::Graphics;
@@ -242,18 +241,16 @@ namespace nova::renderer {
                     stage_after_barrier = PipelineStage::ColorAttachmentOutput;
                 }
 
-                rx::vector<RhiResourceBarrier> initial_barriers{&allocator};
+                rx::vector<RhiResourceBarrier> initial_barriers{allocator};
                 initial_barriers.push_back(initial_texture_barrier);
                 cmds->resource_barriers(PipelineStage::TopOfPipe, stage_after_barrier, initial_barriers);
 
-                RhiFence* upload_done_fence = device.create_fence(false, allocator);
-                device.submit_command_list(cmds, QueueType::Graphics, upload_done_fence);
+                auto upload_done_fence = device.create_fence(false, allocator);
+                device.submit_command_list(rx::utility::move(cmds), QueueType::Graphics, *upload_done_fence.get());
 
                 // Be sure that the data copy is complete, so that this method doesn't return before the GPU is done with the staging buffer
-                rx::vector<RhiFence*> upload_done_fences{&allocator};
-                upload_done_fences.push_back(upload_done_fence);
-                device.wait_for_fences(upload_done_fences);
-                device.destroy_fences(upload_done_fences, allocator);
+                device.wait_for_fences(rx::array{upload_done_fence.get()});
+                device.destroy_fences(rx::array{rx::utility::move(upload_done_fence)}, allocator);
             }
 
             render_targets.insert(name, resource);
@@ -277,8 +274,8 @@ namespace nova::renderer {
 
     void DeviceResources::destroy_render_target(const rx::string& texture_name, rx::memory::allocator& allocator) {
         if(const auto idx = get_texture_idx_for_name(texture_name); idx) {
-            const auto texture = textures[*idx];
-            device.destroy_texture(texture.image, allocator);
+            auto texture = rx::utility::move(textures[*idx]);
+            device.destroy_texture(rx::utility::move(texture.image), allocator);
             textures.erase(*idx, *idx);
         }
 #if NOVA_DEBUG
@@ -288,7 +285,7 @@ namespace nova::renderer {
 #endif
     }
 
-    RhiBuffer* DeviceResources::get_staging_buffer_with_size(const Bytes size) {
+    rx::ptr<RhiBuffer> DeviceResources::get_staging_buffer_with_size(const Bytes size) {
         // Align the size so we can bin the staging buffers
         // TODO: Experiment and find a good alignment
         const auto a = size.b_count() % STAGING_BUFFER_ALIGNMENT;
@@ -307,7 +304,7 @@ namespace nova::renderer {
 
         const RhiBufferCreateInfo info = {"GenericStagingBuffer", actual_size, BufferUsage::StagingBuffer};
 
-        RhiBuffer* buffer = device.create_buffer(info, internal_allocator);
+        auto buffer = device.create_buffer(info, internal_allocator);
         return buffer;
     }
 
