@@ -69,7 +69,7 @@ namespace nova::renderer::rhi {
         void set_scissor_rect(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 #pragma endregion
 
-    ID3D12GraphicsCommandList* get_d3d12_list() const;
+    [[nodiscard]] ID3D12GraphicsCommandList* get_d3d12_list() const;
 
     private:
         rx::memory::allocator* internal_allocator;

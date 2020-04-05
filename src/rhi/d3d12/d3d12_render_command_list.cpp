@@ -48,6 +48,7 @@ namespace nova::renderer::rhi {
     void D3D12RenderCommandList::resource_barriers(PipelineStage /* stages_before_barrier */,
                                                    PipelineStage /* stages_after_barrier */,
                                                    const rx::vector<RhiResourceBarrier>& barriers) {
+        MTR_SCOPE("D3D12RenderCommandList", "resource_barriers");
 
         rx::vector<D3D12_RESOURCE_BARRIER> d3d12_barriers{*internal_allocator};
         d3d12_barriers.reserve(barriers.size());
@@ -80,6 +81,8 @@ namespace nova::renderer::rhi {
                                              RhiBuffer& source_buffer,
                                              const mem::Bytes source_offset,
                                              const mem::Bytes num_bytes) {
+        MTR_SCOPE("D3D12RenderCommandList", "copy_buffer");
+
         auto& d3d12_dst_buffer = static_cast<D3D12Buffer&>(destination_buffer);
         auto& d3d12_src_buffer = static_cast<D3D12Buffer&>(source_buffer);
 
@@ -90,14 +93,27 @@ namespace nova::renderer::rhi {
                                        num_bytes.b_count());
     }
 
+    void D3D12RenderCommandList::upload_data_to_image(
+        RhiImage& image, size_t width, size_t height, size_t bytes_per_pixel, RhiBuffer& staging_buffer, const void* data) {
+        MTR_SCOPE("D3D12RenderCommandList", "upload_data_to_image");
+
+        auto& d3d12_image = static_cast<D3D12Image&>(image);
+    }
+
     void D3D12RenderCommandList::execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) {
+        MTR_SCOPE("D3D12RenderCommandList", "execute_command_lists");
+
         lists.each_fwd([&](const RhiRenderCommandList* list) {
             const auto* d3d12_list = static_cast<const D3D12RenderCommandList*>(list);
             command_list->ExecuteBundle(d3d12_list->get_d3d12_list());
         });
     }
 
-    void D3D12RenderCommandList::set_camera(const Camera& camera) { command_list->SetGraphicsRoot32BitConstant(0, camera.index, 0); }
+    void D3D12RenderCommandList::set_camera(const Camera& camera) {
+        MTR_SCOPE("D3D12RenderCommandList", "set_camera");
+
+        command_list->SetGraphicsRoot32BitConstant(0, camera.index, 0);
+    }
 
     void D3D12RenderCommandList::begin_renderpass(RhiRenderpass& renderpass, RhiFramebuffer& framebuffer) {
         MTR_SCOPE("D3D12RenderCommandList", "begin_renderpass");
@@ -136,7 +152,11 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void D3D12RenderCommandList::set_material_index(const uint32_t index) { command_list->SetGraphicsRoot32BitConstant(0, index, 1); }
+    void D3D12RenderCommandList::set_material_index(const uint32_t index) {
+        MTR_SCOPE("D3D12RenderCommandList", "set_material_index");
+
+        command_list->SetGraphicsRoot32BitConstant(0, index, 1);
+    }
 
     void D3D12RenderCommandList::set_pipeline(const RhiPipeline& pipeline) {
         MTR_SCOPE("D3D12RenderCommandList", "set_pipeline");
@@ -199,6 +219,8 @@ namespace nova::renderer::rhi {
     }
 
     void D3D12RenderCommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t offset, const uint32_t num_instances) {
+        MTR_SCOPE("D3D12RenderCommandList", "draw_indexed_mesh");
+
         command_list->DrawIndexedInstanced(num_indices, num_instances, offset, 0, 0);
     }
 
@@ -212,7 +234,5 @@ namespace nova::renderer::rhi {
         command_list->RSSetScissorRects(1, &scissor_rect);
     }
 
-    ID3D12GraphicsCommandList* D3D12RenderCommandList::get_d3d12_list() const {
-        return command_list.Get();
-    }
+    ID3D12GraphicsCommandList* D3D12RenderCommandList::get_d3d12_list() const { return command_list.Get(); }
 } // namespace nova::renderer::rhi
