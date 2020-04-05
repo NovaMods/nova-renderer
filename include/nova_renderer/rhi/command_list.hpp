@@ -132,6 +132,13 @@ namespace nova::renderer::rhi {
             RhiImage& image, size_t width, size_t height, size_t bytes_per_pixel, RhiBuffer& staging_buffer, const void* data) = 0;
 
         /*!
+         * \brief Uploads data to a buffer
+         *
+         * This method assumes that the buffer lives in GPU memory
+         */
+        virtual void upload_data_to_buffer(RhiBuffer& buffer, const void* data) = 0;
+
+        /*!
          * \brief Executed a number of command lists
          *
          * These command lists should be secondary command lists. Nova doesn't validate this because yolo but you need

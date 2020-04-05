@@ -93,11 +93,26 @@ namespace nova::renderer::rhi {
                                        num_bytes.b_count());
     }
 
-    void D3D12RenderCommandList::upload_data_to_image(
-        RhiImage& image, size_t width, size_t height, size_t bytes_per_pixel, RhiBuffer& staging_buffer, const void* data) {
+    void D3D12RenderCommandList::upload_data_to_image(RhiImage& image,
+                                                      const size_t width,
+                                                      const size_t height,
+                                                      const size_t bytes_per_pixel,
+                                                      RhiBuffer& staging_buffer,
+                                                      const void* data) {
         MTR_SCOPE("D3D12RenderCommandList", "upload_data_to_image");
 
+        const auto data_size = width * height * bytes_per_pixel;
+
+        auto& d3d12_staging_buffer = static_cast<D3D12Buffer&>(staging_buffer);
+
+        D3D12_RANGE map_range{0, data_size};
+        void* dst;
+        d3d12_staging_buffer.resource->Map(0, &map_range, &dst);
+        memcpy(dst, data, data_size);
+
         auto& d3d12_image = static_cast<D3D12Image&>(image);
+
+        command_list->CopyResource(d3d12_image.resource.Get(), d3d12_staging_buffer.resource.Get());
     }
 
     void D3D12RenderCommandList::execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) {

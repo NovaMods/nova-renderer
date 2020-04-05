@@ -16,6 +16,8 @@
 namespace nova::renderer::rhi {
     class D3D12RenderDevice final : public RenderDevice {
     public:
+        D3D12MA::Allocator* dma_allocator = nullptr;
+
         D3D12RenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator);
 
         ~D3D12RenderDevice() override;
@@ -116,8 +118,6 @@ namespace nova::renderer::rhi {
         rx::ptr<DescriptorAllocator> shader_resource_descriptors;
         rx::ptr<DescriptorAllocator> render_target_descriptors;
         rx::ptr<DescriptorAllocator> depth_stencil_descriptors;
-
-        D3D12MA::Allocator* dma_allocator;
 
         Microsoft::WRL::ComPtr<IDxcLibrary> dxc_library;
 
