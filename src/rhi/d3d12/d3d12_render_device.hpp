@@ -152,6 +152,8 @@ namespace nova::renderer::rhi {
          */
         bool has_raytracing = false;
 
+        mem::Bytes max_cbv_size{65536};
+
         rx::vector<HANDLE> fence_wait_events;
 
         rx::ptr<D3D12ResourceBinder> material_resource_binder;

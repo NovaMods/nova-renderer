@@ -8,13 +8,17 @@ namespace nova::renderer::rhi {
     D3D12ResourceBinder::D3D12ResourceBinder(rx::memory::allocator& allocator,
                                              Microsoft::WRL::ComPtr<ID3D12Device> device_in,
                                              Microsoft::WRL::ComPtr<ID3D12RootSignature> root_signature_in,
-                                             rx::map<rx::string, D3D12_CPU_DESCRIPTOR_HANDLE>& descriptors_in)
+                                             rx::map<rx::string, UINT> root_descriptor_bindings_in,
+                                             rx::map<rx::string, D3D12_CPU_DESCRIPTOR_HANDLE> descriptor_table_bindings_in,
+                                             rx::vector<D3D12RootSignatureSlotType> slot_types_in)
         : bound_images{allocator},
           bound_buffers{allocator},
           bound_samplers{allocator},
           device{rx::utility::move(device_in)},
           root_signature{rx::utility::move(root_signature_in)},
-          descriptors{descriptors_in} {}
+          root_descriptor_bindings{rx::utility::move(root_descriptor_bindings_in)},
+          descriptor_table_bindings{rx::utility::move(descriptor_table_bindings_in)},
+          slot_types{rx::utility::move(slot_types_in)} {}
 
     void D3D12ResourceBinder::bind_image(const rx::string& binding_name, RhiImage* image) {
         auto* d3d12_image = static_cast<D3D12Image*>(image);
@@ -59,36 +63,24 @@ namespace nova::renderer::rhi {
     }
 
     void D3D12ResourceBinder::update_descriptors() {
-        bound_images.each_pair([&](const rx::string& binding_name, const D3D12Image* image) {
-            const auto descriptor = *descriptors.find(binding_name);
-
-            D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
-            srv_desc.Format = image->format;
-            srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-            srv_desc.Texture2D.MipLevels = 1;
-
-            device->CreateShaderResourceView(image->resource.Get(), &srv_desc, descriptor);
-        });
-
-        bound_buffers.each_pair([&](const rx::string& binding_name, const D3D12Buffer* buffer) {
-            const auto descriptor = *descriptors.find(binding_name);
-
-            D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
-            srv_desc.Format = DXGI_FORMAT_R8_UNORM;
-            srv_desc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-            srv_desc.Buffer.NumElements = buffer->size.b_count();
-
-            device->CreateShaderResourceView(buffer->resource.Get(), &srv_desc, descriptor);
-        });
-
-        bound_samplers.each_pair([&](const rx::string& binding_name, const D3D12Sampler* sampler) {
-            const auto descriptor = *descriptors.find(binding_name);
-
-            device->CreateSampler(&sampler->desc, descriptor);
-        });
+        // TODO: Update any descriptors in a descriptor table
     }
 
-    ID3D12RootSignature* D3D12ResourceBinder::get_root_signature() const {
-        return root_signature.Get();
+    void D3D12ResourceBinder::bind_descriptors_to_command_list(ID3D12GraphicsCommandList* cmds) const {
+        cmds->SetGraphicsRootSignature(root_signature.Get());
+
+        root_descriptor_bindings.each_pair([&](const rx::string& binding_name, const UINT binding_idx) {
+            if(const auto* image = bound_images.find(binding_name)) {
+                cmds->SetGraphicsRootShaderResourceView(binding_idx, (*image)->resource->GetGPUVirtualAddress());
+
+            } else if(const auto* buffer = bound_buffers.find(binding_name)) {
+                if((*buffer)->is_constant_buffer) {
+                    cmds->SetGraphicsRootConstantBufferView(binding_idx, (*buffer)->resource->GetGPUVirtualAddress());
+
+                } else {
+                    cmds->SetGraphicsRootShaderResourceView(binding_idx, (*buffer)->resource->GetGPUVirtualAddress());
+                }
+            }
+        });
     }
 } // namespace nova::renderer::rhi

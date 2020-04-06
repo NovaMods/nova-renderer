@@ -42,14 +42,7 @@ namespace nova::renderer::rhi {
 
         auto& d3d12_binder = static_cast<D3D12ResourceBinder&>(binder);
 
-        command_list->SetGraphicsRootSignature(d3d12_binder.get_root_signature());
-
-        // Material data uses root descriptors, because it seemed like a good idea
-        // However, that means that in this method, we have to know A) which bindings are root descriptors, and B) which index each
-        // descriptor should get bound to
-        // I think the best way to accomplish this is for the resource binder to store this metadata, then it has a method
-        // `bind_to_command_list` or something that reads that data and calls the right ID3D12GraphicsCommandList method
-        // This is a TODO for tomorrow
+        d3d12_binder.bind_descriptors_to_command_list(command_list.Get());
     }
 
     void D3D12RenderCommandList::resource_barriers(PipelineStage /* stages_before_barrier */,

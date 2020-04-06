@@ -238,6 +238,7 @@ set(WINDOWS_NOVA_SOURCE
         src/rhi/d3d12/d3d12_render_command_list.cpp
         src/rhi/d3d12/d3d12_utils.hpp
         src/rhi/d3d12/d3d12_utils.cpp
+        src/rhi/d3d12/d3d12_enums.hpp
         )
 
 set(UNIX_NOVA_SOURCE
