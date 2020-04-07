@@ -28,20 +28,20 @@ namespace nova::renderer::rhi {
           layout{layout},
           sets{rx::utility::move(sets)},
           bindings{rx::utility::move(bindings)},
-          bound_images{&allocator},
-          bound_buffers{&allocator},
-          bound_samplers{&allocator} {}
+          bound_images{allocator},
+          bound_buffers{allocator},
+          bound_samplers{allocator} {}
 
     void VulkanResourceBinder::bind_image(const rx::string& binding_name, RhiImage* image) {
-        bind_image_array(binding_name, {allocator, rx::array{image}});
+        bind_image_array(binding_name, {*allocator, rx::array{image}});
     }
 
     void VulkanResourceBinder::bind_buffer(const rx::string& binding_name, RhiBuffer* buffer) {
-        bind_buffer_array(binding_name, {allocator, rx::array{buffer}});
+        bind_buffer_array(binding_name, {*allocator, rx::array{buffer}});
     }
 
     void VulkanResourceBinder::bind_sampler(const rx::string& binding_name, RhiSampler* sampler) {
-        bind_sampler_array(binding_name, {allocator, rx::array{sampler}});
+        bind_sampler_array(binding_name, {*allocator, rx::array{sampler}});
     }
 
     void VulkanResourceBinder::bind_image_array(const rx::string& binding_name, const rx::vector<RhiImage*>& images) {
@@ -83,20 +83,20 @@ namespace nova::renderer::rhi {
 
     void VulkanResourceBinder::update_all_descriptors() {
         MTR_SCOPE("VulkanResourceBinder", "update_all_descriptors");
-        rx::vector<vk::WriteDescriptorSet> writes{allocator};
+        rx::vector<vk::WriteDescriptorSet> writes{*allocator};
         writes.reserve(bound_images.size() + bound_samplers.size() + bound_buffers.size());
 
-        rx::vector<rx::vector<vk::DescriptorImageInfo>> all_image_infos{allocator};
+        rx::vector<rx::vector<vk::DescriptorImageInfo>> all_image_infos{*allocator};
         all_image_infos.reserve(bound_images.size() + bound_samplers.size());
 
-        rx::vector < rx::vector<vk::DescriptorBufferInfo>> all_buffer_infos{allocator};
+        rx::vector<rx::vector<vk::DescriptorBufferInfo>> all_buffer_infos{*allocator};
         all_buffer_infos.reserve(bound_buffers.size());
 
         bound_images.each_pair([&](const rx::string& name, const rx::vector<RhiImage*>& images) {
             const auto& binding = *bindings.find(name);
             const auto set = sets[binding.set];
 
-            rx::vector<vk::DescriptorImageInfo> image_infos{allocator};
+            rx::vector<vk::DescriptorImageInfo> image_infos{*allocator};
             image_infos.reserve(images.size());
 
             images.each_fwd([&](const RhiImage* image) {
@@ -123,7 +123,7 @@ namespace nova::renderer::rhi {
             const auto& binding = *bindings.find(name);
             const auto set = sets[binding.set];
 
-            rx::vector<vk::DescriptorImageInfo> sampler_infos{allocator};
+            rx::vector<vk::DescriptorImageInfo> sampler_infos{*allocator};
             sampler_infos.reserve(samplers.size());
 
             samplers.each_fwd([&](const RhiSampler* sampler) {
@@ -148,7 +148,7 @@ namespace nova::renderer::rhi {
             const auto& binding = *bindings.find(name);
             const auto set = sets[binding.set];
 
-            rx::vector<vk::DescriptorBufferInfo> buffer_infos{allocator};
+            rx::vector<vk::DescriptorBufferInfo> buffer_infos{*allocator};
             buffer_infos.reserve(buffers.size());
 
             buffers.each_fwd([&](const RhiBuffer* buffer) {

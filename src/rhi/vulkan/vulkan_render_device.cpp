@@ -75,14 +75,14 @@ namespace nova::renderer::rhi {
         // Pretty sure Vulkan doesn't need to do anything here
     }
 
-    ntl::Result<RhiRenderpass*> VulkanRenderDevice::create_renderpass(const renderpack::RenderPassCreateInfo& data,
-                                                                      const glm::uvec2& framebuffer_size,
-                                                                      rx::memory::allocator& allocator) {
+    rx::ptr<RhiRenderpass> VulkanRenderDevice::create_renderpass(const renderpack::RenderPassCreateInfo& data,
+                                                                 const glm::uvec2& framebuffer_size,
+                                                                 rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_renderpass");
-        auto* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain);
+        auto* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain.get());
         VkExtent2D swapchain_extent = {swapchain_size.x, swapchain_size.y};
 
-        auto* renderpass = allocator.create<VulkanRenderpass>();
+        auto renderpass = rx::make_ptr<VulkanRenderpass>(allocator);
 
         VkSubpassDescription subpass_description = {};
         subpass_description.flags = 0;
@@ -112,9 +112,9 @@ namespace nova::renderer::rhi {
         render_pass_create_info.dependencyCount = 1;
         render_pass_create_info.pDependencies = &image_available_dependency;
 
-        rx::vector<VkAttachmentReference> attachment_references{&allocator};
-        rx::vector<VkAttachmentDescription> attachments{&allocator};
-        rx::vector<VkImageView> framebuffer_attachments{&allocator};
+        rx::vector<VkAttachmentReference> attachment_references{allocator};
+        rx::vector<VkAttachmentDescription> attachments{allocator};
+        rx::vector<VkImageView> framebuffer_attachments{allocator};
         uint32_t framebuffer_width = framebuffer_size.x;
         uint32_t framebuffer_height = framebuffer_size.y;
 
@@ -195,23 +195,26 @@ namespace nova::renderer::rhi {
         }
 
         if(framebuffer_width == 0) {
-            return ntl::Result<RhiRenderpass*>(MAKE_ERROR(
-                "Framebuffer width for pass {:s} is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero width",
-                data.name.data()));
+            logger->error(
+                "Framebuffer width for pass %s is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero width",
+                data.name);
+            return {};
         }
 
         if(framebuffer_height == 0) {
-            return ntl::Result<RhiRenderpass*>(MAKE_ERROR(
-                "Framebuffer height for pass {:s} is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero height",
-                data.name.data()));
+            logger->error(
+                "Framebuffer height for pass %s is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero height",
+                data.name);
+            return {};
         }
 
         if(framebuffer_attachments.size() > gpu.props.limits.maxColorAttachments) {
-            return ntl::Result<RhiRenderpass*>(MAKE_ERROR(
-                "Framebuffer for pass {:s} has {:d} color attachments, but your GPU only supports {:d}. Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures",
-                data.name.data(),
+            logger->error(
+                "Framebuffer for pass %s has %d color attachments, but your GPU only supports %d. Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures",
+                data.name,
                 data.texture_outputs.size(),
-                gpu.props.limits.maxColorAttachments));
+                gpu.props.limits.maxColorAttachments);
+            return {};
         }
 
         subpass_description.colorAttachmentCount = static_cast<uint32_t>(attachment_references.size());
@@ -241,7 +244,7 @@ namespace nova::renderer::rhi {
             device.setDebugUtilsObjectNameEXT(&object_name, device_dynamic_loader);
         }
 
-        return ntl::Result(static_cast<RhiRenderpass*>(renderpass));
+        return rx::utility::move(renderpass);
     }
 
     RhiFramebuffer* VulkanRenderDevice::create_framebuffer(const RhiRenderpass* renderpass,
@@ -1132,7 +1135,7 @@ namespace nova::renderer::rhi {
             }
         }();
 
-        // For debugging 
+        // For debugging
         vkQueueWaitIdle(queue_to_submit_to);
         const auto result = vkQueueSubmit(queue_to_submit_to, 1, &submit_info, vk_signal_fence);
 
