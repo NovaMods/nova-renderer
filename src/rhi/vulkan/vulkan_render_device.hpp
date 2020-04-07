@@ -132,19 +132,19 @@ namespace nova::renderer::rhi {
 
         rx::vector<rx::ptr<RhiFence>> create_fences(uint32_t num_fences, bool signaled, rx::memory::allocator& allocator) override;
 
-        void wait_for_fences(rx::vector<RhiFence*> fences) override;
+        void wait_for_fences(const rx::vector<RhiFence*>& fences) override;
 
         void reset_fences(const rx::vector<RhiFence*>& fences) override;
 
-        void destroy_renderpass(rx::ptr<RhiRenderpass> pass, rx::memory::allocator& allocator) override;
+        void destroy_renderpass(rx::ptr<RhiRenderpass> pass) override;
 
-        void destroy_framebuffer(rx::ptr<RhiFramebuffer> framebuffer, rx::memory::allocator& allocator) override;
+        void destroy_framebuffer(rx::ptr<RhiFramebuffer> framebuffer) override;
 
-        void destroy_texture(rx::ptr<RhiImage> resource, rx::memory::allocator& allocator) override;
+        void destroy_texture(rx::ptr<RhiImage> resource) override;
 
-        void destroy_semaphores(rx::vector<rx::ptr<RhiSemaphore>>& semaphores, rx::memory::allocator& allocator) override;
+        void destroy_semaphores(rx::vector<rx::ptr<RhiSemaphore>>& semaphores) override;
 
-        void destroy_fences(const rx::vector<rx::ptr<RhiFence>>& fences, rx::memory::allocator& allocator) override;
+        void destroy_fences(const rx::vector<rx::ptr<RhiFence>>& fences) override;
 
         rx::ptr<RhiRenderCommandList> create_command_list(uint32_t thread_idx,
                                                           QueueType needed_queue_type,
@@ -153,7 +153,7 @@ namespace nova::renderer::rhi {
 
         void submit_command_list(rx::ptr<RhiRenderCommandList> cmds,
                                  QueueType queue,
-                                 rx::optional<RhiFence*> fence_to_signal = rx::nullopt,
+                                 rx::optional<RhiFence> fence_to_signal = rx::nullopt,
                                  const rx::vector<RhiSemaphore*>& wait_semaphores = {},
                                  const rx::vector<RhiSemaphore*>& signal_semaphores = {}) override;
 

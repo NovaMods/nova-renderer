@@ -36,3 +36,4 @@ readability*
 -modernize-use-trailing-return-type
 -clang-diagnostic-covered-switch-default
 -readability-implicit-bool-conversion
+-cppcoreguidelines-pro-bounds-array-to-pointer-decay
