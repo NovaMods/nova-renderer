@@ -148,8 +148,8 @@ namespace nova::renderer {
 
         bool is_builtin = false;
 
-        rhi::RhiRenderpass* renderpass = nullptr;
-        rhi::RhiFramebuffer* framebuffer = nullptr;
+        rx::ptr<rhi::RhiRenderpass> renderpass;
+        rx::ptr<rhi::RhiFramebuffer> framebuffer;
 
         /*!
          * \brief Names of all the pipelines which are in this renderpass
@@ -398,7 +398,7 @@ namespace nova::renderer {
                 if(render_target_opt) {
                     const auto& render_target = *render_target_opt;
 
-                    color_attachments.push_back(render_target->image);
+                    color_attachments.push_back(render_target->image.get());
 
                     const glm::uvec2 attachment_size = {render_target->width, render_target->height};
                     if(framebuffer_size.x > 0) {
@@ -428,15 +428,14 @@ namespace nova::renderer {
             return nullptr;
         }
 
-        // Can't combine these if statements and I don't want to `.find` twice
-        const auto depth_attachment = [&]() -> rx::optional<rhi::RhiImage*> {
+        const auto depth_attachment = [&]() -> rx::ptr<rhi::RhiImage> {
             if(create_info.depth_texture) {
-                if(const auto depth_tex = resource_storage.get_render_target(create_info.depth_texture->name); depth_tex) {
-                    return (*depth_tex)->image;
+                if(auto depth_tex = resource_storage.get_render_target(create_info.depth_texture->name); depth_tex) {
+                    return rx::utility::move((*depth_tex)->image);
                 }
             }
 
-            return rx::nullopt;
+            return {};
         }();
 
         if(!attachment_errors.is_empty()) {
@@ -448,21 +447,21 @@ namespace nova::renderer {
             return nullptr;
         }
 
-        ntl::Result<rhi::RhiRenderpass*> renderpass_result = device.create_renderpass(create_info, framebuffer_size, allocator);
+        rx::ptr<rhi::RhiRenderpass> renderpass_result = device.create_renderpass(create_info, framebuffer_size, allocator);
         if(renderpass_result) {
-            renderpass->renderpass = renderpass_result.value;
+            renderpass->renderpass = rx::utility::move(renderpass_result);
 
         } else {
-            rg_log->error("Could not create renderpass %s: %s", create_info.name, renderpass_result.error.to_string());
+            rg_log->error("Could not create renderpass %s", create_info.name);
             return nullptr;
         }
 
         // Backbuffer framebuffers are owned by the swapchain, not the renderpass that writes to them, so if the
         // renderpass writes to the backbuffer then we don't need to create a framebuffer for it
         if(!renderpass->writes_to_backbuffer) {
-            renderpass->framebuffer = device.create_framebuffer(renderpass->renderpass,
+            renderpass->framebuffer = device.create_framebuffer(renderpass->renderpass.get(),
                                                                 color_attachments,
-                                                                depth_attachment,
+                                                                depth_attachment.get(),
                                                                 framebuffer_size,
                                                                 allocator);
         }

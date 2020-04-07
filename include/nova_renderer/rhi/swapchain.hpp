@@ -1,8 +1,8 @@
 #pragma once
 #include <glm/glm.hpp>
-
-#include <rx/core/vector.h>
 #include <rx/core/memory/allocator.h>
+#include <rx/core/ptr.h>
+#include <rx/core/vector.h>
 
 namespace nova::renderer::rhi {
     struct RhiFence;
@@ -12,7 +12,7 @@ namespace nova::renderer::rhi {
 
     class Swapchain {
     public:
-        Swapchain(uint32_t num_images, const glm::uvec2& size);
+        Swapchain(uint32_t num_images_in, const glm::uvec2& size);
 
         virtual ~Swapchain() = default;
 
@@ -43,8 +43,8 @@ namespace nova::renderer::rhi {
         // Arrays of the per-frame swapchain resources. Each swapchain implementation is responsible for filling these arrays with
         // API-specific objects
 
-        rx::vector<RhiFramebuffer*> framebuffers;
-        rx::vector<RhiImage*> swapchain_images;
-        rx::vector<RhiFence*> fences;
+        rx::vector<rx::ptr<RhiFramebuffer>> framebuffers;
+        rx::vector<rx::ptr<RhiImage>> swapchain_images;
+        rx::vector<rx::ptr<RhiFence>> fences;
     };
 } // namespace nova::renderer::rhi

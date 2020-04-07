@@ -62,8 +62,8 @@ namespace nova::renderer {
                                                           rx::memory::allocator& internal_allocator)
         : internal_allocator{internal_allocator},
           device{device},
-          data{&internal_allocator, num_elements},
-          free_indices{&internal_allocator} {
+          data{internal_allocator, num_elements},
+          free_indices{internal_allocator} {
         rhi::RhiBufferCreateInfo create_info;
         create_info.size = sizeof(ElementType) * data.size();
         create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;

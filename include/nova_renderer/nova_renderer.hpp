@@ -59,8 +59,10 @@ namespace nova::renderer {
 
 #pragma region Runtime optimized data
     struct Mesh {
-        rhi::RhiBuffer* vertex_buffer = nullptr;
-        rhi::RhiBuffer* index_buffer = nullptr;
+        // Currently the mesh owns its vertex buffers, but once I move to bindless meshes this will no longer be the case
+
+        rx::ptr<rhi::RhiBuffer> vertex_buffer;
+        rx::ptr<rhi::RhiBuffer> index_buffer;
 
         uint32_t num_indices = 0;
         size_t num_vertex_attributes{};
@@ -221,7 +223,7 @@ namespace nova::renderer {
         RENDERDOC_API_1_3_0* render_doc;
         rx::vector<rx::memory::bump_point_allocator*> frame_allocators;
 
-        rhi::RhiSampler* point_sampler;
+        rx::ptr<rhi::RhiSampler> point_sampler;
 
         MeshId fullscreen_triangle_id;
 
@@ -269,6 +271,8 @@ namespace nova::renderer {
         void create_builtin_renderpasses();
 
         void create_builtin_pipelines();
+
+        void initialize_material_resource_binder();
 #pragma endregion
 
 #pragma region Renderpack
@@ -330,13 +334,15 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Rendering
+        RhiResourceBinder* material_resource_binder;
+
         uint64_t frame_count = 0;
         uint8_t cur_frame_idx = 0;
 
         rx::vector<rx::string> builtin_buffer_names;
         uint32_t cur_model_matrix_index = 0;
 
-        rx::vector<rhi::RhiFence*> frame_fences;
+        rx::vector<rx::ptr<rhi::RhiFence>> frame_fences;
 
         rx::map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
         rx::map<rx::string, Pipeline> pipelines;

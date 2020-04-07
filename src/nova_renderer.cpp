@@ -161,7 +161,7 @@ namespace nova::renderer {
     }
 
     NovaRenderer::NovaRenderer(const NovaSettings& settings_in)
-        : settings{settings_in}, global_allocator{&rx::memory::g_system_allocator}, cameras{global_allocator} {
+        : settings{settings_in}, global_allocator{&rx::memory::system_allocator::instance()}, cameras{*global_allocator} {
         mtr_init("trace.json");
 
         MTR_META_PROCESS_NAME("NovaRenderer");
@@ -173,7 +173,7 @@ namespace nova::renderer {
 
         initialize_virtual_filesystem();
 
-        window = rx::make_ptr<NovaWindow>(global_allocator, settings_in);
+        window = rx::make_ptr<NovaWindow>(*global_allocator, settings_in);
 
         if(settings_in.debug.renderdoc.enabled) {
             MTR_SCOPE("Init", "LoadRenderdoc");
@@ -225,11 +225,13 @@ namespace nova::renderer {
         create_builtin_renderpasses();
 
         cameras.reserve(MAX_NUM_CAMERAS);
-        camera_data = rx::make_ptr<PerFrameDeviceArray<CameraUboData>>(global_allocator,
+        camera_data = rx::make_ptr<PerFrameDeviceArray<CameraUboData>>(*global_allocator,
                                                                        MAX_NUM_CAMERAS,
                                                                        settings_in.max_in_flight_frames,
                                                                        *device,
                                                                        *global_allocator);
+
+        initialize_material_resource_binder();
     }
 
     NovaRenderer::~NovaRenderer() {
@@ -251,7 +253,7 @@ namespace nova::renderer {
 
             cur_frame_idx = device->get_swapchain()->acquire_next_swapchain_image(frame_allocator);
 
-            rx::vector<rhi::RhiFence*> cur_frame_fences{global_allocator, rx::array{frame_fences[cur_frame_idx]}};
+            rx::vector<rhi::RhiFence*> cur_frame_fences{*global_allocator, rx::array{frame_fences[cur_frame_idx]}};
 
             device->wait_for_fences(cur_frame_fences);
             device->reset_fences(cur_frame_fences);
@@ -266,21 +268,18 @@ namespace nova::renderer {
             ctx.camera_matrix_buffer = camera_data->get_buffer_for_frame(cur_frame_idx);
             ctx.material_buffer = material_device_buffers[cur_frame_idx];
 
-            rhi::RhiRenderCommandList* cmds = device->create_command_list(0,
-                                                                          rhi::QueueType::Graphics,
-                                                                          rhi::RhiRenderCommandList::Level::Primary,
-                                                                          frame_allocator);
+            rx::ptr<rhi::RhiRenderCommandList> cmds = device->create_command_list(0,
+                                                                                  rhi::QueueType::Graphics,
+                                                                                  rhi::RhiRenderCommandList::Level::Primary,
+                                                                                  frame_allocator);
             cmds->set_debug_name("RendergraphCommands");
 
+            material_resource_binder->bind_buffer("material_buffer", ctx.material_buffer->buffer.get());
+            material_resource_binder->bind_buffer("cameras", ctx.camera_matrix_buffer);
             const auto images = get_all_images(frame_allocator);
+            material_resource_binder->bind_image_array("textures", images);
 
-            cmds->bind_material_resources(ctx.camera_matrix_buffer,
-                                          ctx.material_buffer->buffer,
-                                          point_sampler,
-                                          point_sampler,
-                                          point_sampler,
-                                          images,
-                                          frame_allocator);
+            cmds->bind_resources(*material_resource_binder);
 
             const auto& renderpass_order = rendergraph->calculate_renderpass_execution_order();
 
@@ -291,15 +290,15 @@ namespace nova::renderer {
 
             // The rendergraph may update the camera and material data, so we upload the data at the end of the frame
             update_camera_matrix_buffer(cur_frame_idx);
-            device->write_data_to_buffer(material_buffer->data(), ctx.material_buffer->size, ctx.material_buffer->buffer);
+            device->write_data_to_buffer(material_buffer->data(), ctx.material_buffer->size, *ctx.material_buffer->buffer);
 
             cmds->set_checkpoint("frame finished");
 
-            device->submit_command_list(cmds, rhi::QueueType::Graphics, frame_fences[cur_frame_idx]);
+            device->submit_command_list(rx::utility::move(cmds), rhi::QueueType::Graphics, *frame_fences[cur_frame_idx]);
 
             // Wait for the GPU to finish before presenting. This destroys pipelining and throughput, however at this time I'm not sure how
             // best to say "when GPU finishes this task, CPU should do something"
-            //device->wait_for_fences(cur_frame_fences);
+            // device->wait_for_fences(cur_frame_fences);
 
             device->get_swapchain()->present(cur_frame_idx);
 
@@ -327,7 +326,7 @@ namespace nova::renderer {
         vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::VertexBuffer;
         vertex_buffer_create_info.size = mesh_data.vertex_data_size;
 
-        rhi::RhiBuffer* vertex_buffer = device->create_buffer(vertex_buffer_create_info, *global_allocator);
+        rx::ptr<rhi::RhiBuffer> vertex_buffer = device->create_buffer(vertex_buffer_create_info, *global_allocator);
 
         // TODO: Try to get staging buffers from a pool
 
@@ -335,18 +334,18 @@ namespace nova::renderer {
             rhi::RhiBufferCreateInfo staging_vertex_buffer_create_info = vertex_buffer_create_info;
             staging_vertex_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
 
-            rhi::RhiBuffer* staging_vertex_buffer = device->create_buffer(staging_vertex_buffer_create_info, *global_allocator);
-            device->write_data_to_buffer(mesh_data.vertex_data_ptr, vertex_buffer_create_info.size, staging_vertex_buffer);
+            rx::ptr<rhi::RhiBuffer> staging_vertex_buffer = device->create_buffer(staging_vertex_buffer_create_info, *global_allocator);
+            device->write_data_to_buffer(mesh_data.vertex_data_ptr, vertex_buffer_create_info.size, *staging_vertex_buffer);
 
-            rhi::RhiRenderCommandList* vertex_upload_cmds = device->create_command_list(0,
-                                                                                        rhi::QueueType::Graphics,
-                                                                                        rhi::RhiRenderCommandList::Level::Primary,
-                                                                                        *global_allocator);
+            rx::ptr<rhi::RhiRenderCommandList> vertex_upload_cmds = device->create_command_list(0,
+                                                                                                rhi::QueueType::Graphics,
+                                                                                                rhi::RhiRenderCommandList::Level::Primary,
+                                                                                                *global_allocator);
             vertex_upload_cmds->set_debug_name("VertexDataUpload");
-            vertex_upload_cmds->copy_buffer(vertex_buffer, 0, staging_vertex_buffer, 0, vertex_buffer_create_info.size);
+            vertex_upload_cmds->copy_buffer(*vertex_buffer, 0, *staging_vertex_buffer, 0, vertex_buffer_create_info.size);
 
             rhi::RhiResourceBarrier vertex_barrier = {};
-            vertex_barrier.resource_to_barrier = vertex_buffer;
+            vertex_barrier.resource_to_barrier = vertex_buffer.get();
             vertex_barrier.old_state = rhi::ResourceState::CopyDestination;
             vertex_barrier.new_state = rhi::ResourceState::Common;
             vertex_barrier.access_before_barrier = rhi::ResourceAccess::CopyWrite;
@@ -356,34 +355,34 @@ namespace nova::renderer {
             vertex_barrier.buffer_memory_barrier.offset = 0;
             vertex_barrier.buffer_memory_barrier.size = vertex_buffer->size;
 
-            rx::vector<rhi::RhiResourceBarrier> barriers{global_allocator};
+            rx::vector<rhi::RhiResourceBarrier> barriers{*global_allocator};
             barriers.push_back(vertex_barrier);
             vertex_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, barriers);
 
-            device->submit_command_list(vertex_upload_cmds, rhi::QueueType::Graphics);
+            device->submit_command_list(rx::utility::move(vertex_upload_cmds), rhi::QueueType::Graphics);
         }
 
         rhi::RhiBufferCreateInfo index_buffer_create_info;
         index_buffer_create_info.buffer_usage = rhi::BufferUsage::IndexBuffer;
         index_buffer_create_info.size = mesh_data.index_data_size;
 
-        rhi::RhiBuffer* index_buffer = device->create_buffer(index_buffer_create_info, *global_allocator);
+        rx::ptr<rhi::RhiBuffer> index_buffer = device->create_buffer(index_buffer_create_info, *global_allocator);
 
         {
             rhi::RhiBufferCreateInfo staging_index_buffer_create_info = index_buffer_create_info;
             staging_index_buffer_create_info.buffer_usage = rhi::BufferUsage::StagingBuffer;
-            rhi::RhiBuffer* staging_index_buffer = device->create_buffer(staging_index_buffer_create_info, *global_allocator);
-            device->write_data_to_buffer(mesh_data.index_data_ptr, index_buffer_create_info.size, staging_index_buffer);
+            rx::ptr<rhi::RhiBuffer> staging_index_buffer = device->create_buffer(staging_index_buffer_create_info, *global_allocator);
+            device->write_data_to_buffer(mesh_data.index_data_ptr, index_buffer_create_info.size, *staging_index_buffer);
 
-            rhi::RhiRenderCommandList* indices_upload_cmds = device->create_command_list(0,
-                                                                                         rhi::QueueType::Graphics,
-                                                                                         rhi::RhiRenderCommandList::Level::Primary,
-                                                                                         *global_allocator);
+            rx::ptr<rhi::RhiRenderCommandList> indices_upload_cmds = device->create_command_list(0,
+                                                                                                 rhi::QueueType::Graphics,
+                                                                                                 rhi::RhiRenderCommandList::Level::Primary,
+                                                                                                 *global_allocator);
             indices_upload_cmds->set_debug_name("IndexDataUpload");
-            indices_upload_cmds->copy_buffer(index_buffer, 0, staging_index_buffer, 0, index_buffer_create_info.size);
+            indices_upload_cmds->copy_buffer(*index_buffer, 0, *staging_index_buffer, 0, index_buffer_create_info.size);
 
             rhi::RhiResourceBarrier index_barrier = {};
-            index_barrier.resource_to_barrier = index_buffer;
+            index_barrier.resource_to_barrier = index_buffer.get();
             index_barrier.old_state = rhi::ResourceState::CopyDestination;
             index_barrier.new_state = rhi::ResourceState::Common;
             index_barrier.access_before_barrier = rhi::ResourceAccess::CopyWrite;
@@ -393,24 +392,24 @@ namespace nova::renderer {
             index_barrier.buffer_memory_barrier.offset = 0;
             index_barrier.buffer_memory_barrier.size = index_buffer->size;
 
-            rx::vector<rhi::RhiResourceBarrier> barriers{global_allocator};
+            rx::vector<rhi::RhiResourceBarrier> barriers{*global_allocator};
             barriers.push_back(index_barrier);
             indices_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, barriers);
 
-            device->submit_command_list(indices_upload_cmds, rhi::QueueType::Graphics);
+            device->submit_command_list(rx::utility::move(indices_upload_cmds), rhi::QueueType::Graphics);
         }
 
         // TODO: Clean up staging buffers
 
         Mesh mesh;
         mesh.num_vertex_attributes = mesh_data.num_vertex_attributes;
-        mesh.vertex_buffer = vertex_buffer;
-        mesh.index_buffer = index_buffer;
+        mesh.vertex_buffer = rx::utility::move(vertex_buffer);
+        mesh.index_buffer = rx::utility::move(index_buffer);
         mesh.num_indices = mesh_data.num_indices;
 
         const MeshId new_mesh_id = next_mesh_id;
         next_mesh_id++;
-        meshes.insert(new_mesh_id, mesh);
+        meshes.insert(new_mesh_id, rx::utility::move(mesh));
 
         return new_mesh_id;
     }
@@ -606,7 +605,7 @@ namespace nova::renderer {
     }
 
     rx::vector<rhi::RhiImage*> NovaRenderer::get_all_images(rx::memory::allocator& allocator) {
-        rx::vector<rhi::RhiImage*> images{&allocator};
+        rx::vector<rhi::RhiImage*> images{allocator};
 
         const auto& textures = device_resources->get_all_textures();
         images.reserve(textures.size());
@@ -633,7 +632,7 @@ namespace nova::renderer {
             [&](const renderpack::RenderPassCreateInfo& renderpass) { rendergraph->destroy_renderpass(renderpass.name); });
     }
 
-    rhi::RhiSampler* NovaRenderer::get_point_sampler() const { return point_sampler; }
+    rhi::RhiSampler* NovaRenderer::get_point_sampler() const { return point_sampler.get(); }
 
     Pipeline* NovaRenderer::find_pipeline(const rx::string& pipeline_name) { return pipelines.find(pipeline_name); }
 
@@ -671,7 +670,7 @@ namespace nova::renderer {
 
                 uint32_t batch_idx = 0;
                 material.static_mesh_draws.each_fwd([&](MeshBatch<StaticMeshRenderCommand>& batch) {
-                    if(batch.vertex_buffer == mesh->vertex_buffer) {
+                    if(batch.vertex_buffer == mesh->vertex_buffer.get()) {
                         key.batch_idx = batch_idx;
                         key.renderable_idx = static_cast<uint32_t>(batch.commands.size());
 
@@ -689,8 +688,8 @@ namespace nova::renderer {
                     MeshBatch<StaticMeshRenderCommand> batch;
                     batch.num_vertex_attributes = mesh->num_vertex_attributes;
                     batch.num_indices = mesh->num_indices;
-                    batch.vertex_buffer = mesh->vertex_buffer;
-                    batch.index_buffer = mesh->index_buffer;
+                    batch.vertex_buffer = mesh->vertex_buffer.get();
+                    batch.index_buffer = mesh->index_buffer.get();
                     batch.commands.emplace_back(command);
 
                     key.batch_idx = static_cast<uint32_t>(material.static_mesh_draws.size());
@@ -843,7 +842,7 @@ namespace nova::renderer {
         }
     }
 
-    void NovaRenderer::create_resource_storage() { device_resources = rx::make_ptr<DeviceResources>(global_allocator, *this); }
+    void NovaRenderer::create_resource_storage() { device_resources = rx::make_ptr<DeviceResources>(*global_allocator, *this); }
 
     void NovaRenderer::create_builtin_render_targets() {
         const auto& swapchain_size = device->get_swapchain()->get_size();
@@ -889,7 +888,7 @@ namespace nova::renderer {
 
     void NovaRenderer::create_builtin_uniform_buffers() {
         auto* material_data_memory = global_allocator->allocate(MATERIAL_BUFFER_SIZE.b_count());
-        material_buffer = rx::make_ptr<MaterialDataBuffer>(global_allocator,
+        material_buffer = rx::make_ptr<MaterialDataBuffer>(*global_allocator,
                                                            rx::memory::view{global_allocator,
                                                                             material_data_memory,
                                                                             MATERIAL_BUFFER_SIZE.b_count()});
@@ -955,4 +954,8 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_builtin_pipelines() {}
+
+    void NovaRenderer::initialize_material_resource_binder() {
+        material_resource_binder = device->get_material_resource_binder();
+    }
 } // namespace nova::renderer

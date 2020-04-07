@@ -265,7 +265,7 @@ namespace nova::renderer::rhi {
         NovaWindow& window;
 
         glm::uvec2 swapchain_size = {};
-        Swapchain* swapchain = nullptr;
+        rx::ptr<Swapchain> swapchain;
 
         /*!
          * \brief Initializes the engine

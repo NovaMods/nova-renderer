@@ -3,7 +3,7 @@
 #include "vulkan/vulkan_render_device.hpp"
 
 namespace nova::renderer::rhi {
-    Swapchain* RenderDevice::get_swapchain() const { return swapchain; }
+    Swapchain* RenderDevice::get_swapchain() const { return swapchain.get(); }
 
     rx::memory::allocator& RenderDevice::get_allocator() const { return internal_allocator; }
 
