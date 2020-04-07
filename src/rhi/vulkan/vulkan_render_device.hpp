@@ -30,7 +30,7 @@ namespace nova::renderer::rhi {
     };
 
     /*!
-     * \brief Vulkan implementation of a render engine
+     * \brief Vulkan implementation of a render device
      */
     class VulkanRenderDevice final : public RenderDevice {
     public:
@@ -101,9 +101,9 @@ namespace nova::renderer::rhi {
                                                  const glm::uvec2& framebuffer_size,
                                                  rx::memory::allocator& allocator) override;
 
-        rx::ptr<RhiFramebuffer> create_framebuffer(const RhiRenderpass* renderpass,
+        rx::ptr<RhiFramebuffer> create_framebuffer(const RhiRenderpass& renderpass,
                                                    const rx::vector<RhiImage*>& color_attachments,
-                                                   const rx::optional<RhiImage*> depth_attachment,
+                                                   rx::optional<RhiImage*> depth_attachment,
                                                    const glm::uvec2& framebuffer_size,
                                                    rx::memory::allocator& allocator) override;
 

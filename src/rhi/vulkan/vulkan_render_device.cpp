@@ -247,14 +247,14 @@ namespace nova::renderer::rhi {
         return rx::utility::move(renderpass);
     }
 
-    RhiFramebuffer* VulkanRenderDevice::create_framebuffer(const RhiRenderpass* renderpass,
+    rx::ptr<RhiFramebuffer> VulkanRenderDevice::create_framebuffer(const RhiRenderpass& renderpass,
                                                            const rx::vector<RhiImage*>& color_attachments,
                                                            const rx::optional<RhiImage*> depth_attachment,
                                                            const glm::uvec2& framebuffer_size,
                                                            rx::memory::allocator& allocator) {
-        const auto* vk_renderpass = static_cast<const VulkanRenderpass*>(renderpass);
+        const auto& vk_renderpass = static_cast<const VulkanRenderpass&>(renderpass);
 
-        rx::vector<VkImageView> attachment_views(&allocator);
+        rx::vector<VkImageView> attachment_views{allocator};
         attachment_views.reserve(color_attachments.size() + 1);
 
         color_attachments.each_fwd([&](const RhiImage* attachment) {
@@ -270,32 +270,32 @@ namespace nova::renderer::rhi {
 
         VkFramebufferCreateInfo framebuffer_create_info = {};
         framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebuffer_create_info.renderPass = vk_renderpass->pass;
+        framebuffer_create_info.renderPass = vk_renderpass.pass;
         framebuffer_create_info.attachmentCount = static_cast<uint32_t>(attachment_views.size());
         framebuffer_create_info.pAttachments = attachment_views.data();
         framebuffer_create_info.width = framebuffer_size.x;
         framebuffer_create_info.height = framebuffer_size.y;
         framebuffer_create_info.layers = 1;
 
-        auto* framebuffer = allocator.create<VulkanFramebuffer>();
+        auto framebuffer = rx::make_ptr<VulkanFramebuffer>(allocator);
         framebuffer->size = framebuffer_size;
         framebuffer->num_attachments = static_cast<uint32_t>(attachment_views.size());
 
         const VkAllocationCallbacks& vk_alloc = wrap_allocator(allocator);
         NOVA_CHECK_RESULT(vkCreateFramebuffer(device, &framebuffer_create_info, &vk_alloc, &framebuffer->framebuffer));
 
-        return framebuffer;
+        return rx::utility::move(framebuffer);
     }
 
     rx::ptr<RhiPipeline> VulkanRenderDevice::create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
                                                                      rx::memory::allocator& allocator) {
         // For the Vulkan backend, creating a surface pipeline means creating a pipeline that uses the standard pipeline layout
 
-        auto pipeline = rx::make_ptr<VulkanPipeline>(&allocator);
+        auto pipeline = rx::make_ptr<VulkanPipeline>(allocator);
         pipeline->name = pipeline_state.name;
         pipeline->layout.layout = standard_pipeline_layout;
-        pipeline->layout.descriptor_set_layouts = {&allocator, rx::array{standard_set_layout}};
-        pipeline->layout.variable_descriptor_set_counts = {&allocator, rx::array{MAX_NUM_TEXTURES}};
+        pipeline->layout.descriptor_set_layouts = {allocator, rx::array{standard_set_layout}};
+        pipeline->layout.variable_descriptor_set_counts = {allocator, rx::array{MAX_NUM_TEXTURES}};
         pipeline->layout.bindings = standard_layout_bindings;
         pipeline->state = pipeline_state;
 
@@ -726,9 +726,9 @@ namespace nova::renderer::rhi {
         return ntl::Result{pipeline};
     }
 
-    RhiBuffer* VulkanRenderDevice::create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) {
+    rx::ptr<RhiBuffer> VulkanRenderDevice::create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_buffer");
-        auto* buffer = allocator.create<VulkanBuffer>();
+        auto buffer = rx::make_ptr<VulkanBuffer>(allocator);
 
         VkBufferCreateInfo vk_create_info = {};
         vk_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -783,25 +783,25 @@ namespace nova::renderer::rhi {
                 device.setDebugUtilsObjectNameEXT(&object_name, device_dynamic_loader);
             }
 
-            return buffer;
+            return rx::utility::move(buffer);
 
         } else {
             logger->error("Could not create buffer %s: %s", info.name, to_string(result));
 
-            return nullptr;
+            return {};
         }
     }
 
-    void VulkanRenderDevice::write_data_to_buffer(const void* data, const Bytes num_bytes, const RhiBuffer* buffer) {
+    void VulkanRenderDevice::write_data_to_buffer(const void* data, const Bytes num_bytes, const RhiBuffer& buffer) {
         MTR_SCOPE("VulkanRenderDevice", "write_data_to_buffer");
-        const auto* vulkan_buffer = static_cast<const VulkanBuffer*>(buffer);
+        const auto& vulkan_buffer = static_cast<const VulkanBuffer&>(buffer);
 
-        memcpy(vulkan_buffer->allocation_info.pMappedData, data, num_bytes.b_count());
+        memcpy(vulkan_buffer.allocation_info.pMappedData, data, num_bytes.b_count());
     }
 
-    RhiSampler* VulkanRenderDevice::create_sampler(const RhiSamplerCreateInfo& create_info, rx::memory::allocator& allocator) {
+    rx::ptr<RhiSampler> VulkanRenderDevice::create_sampler(const RhiSamplerCreateInfo& create_info, rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_sampler");
-        auto* sampler = allocator.create<VulkanSampler>();
+        auto sampler = rx::make_ptr<VulkanSampler>(allocator);
 
         VkSamplerCreateInfo vk_create_info = {};
         vk_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -819,7 +819,7 @@ namespace nova::renderer::rhi {
         const VkAllocationCallbacks& alloc_calls = wrap_allocator(allocator);
         vkCreateSampler(device, &vk_create_info, &alloc_calls, &sampler->sampler);
 
-        return sampler;
+        return rx::utility::move(sampler);
     }
 
     RhiImage* VulkanRenderDevice::create_image(const renderpack::TextureCreateInfo& info, rx::memory::allocator& allocator) {
