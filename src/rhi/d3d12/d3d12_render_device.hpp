@@ -167,6 +167,8 @@ namespace nova::renderer::rhi {
 
         void create_queues();
 
+        void create_swapchain(HWND hwnd);
+
         void create_command_allocators();
 
         void create_standard_root_signature();

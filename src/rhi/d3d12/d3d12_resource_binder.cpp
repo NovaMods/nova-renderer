@@ -94,7 +94,7 @@ namespace nova::renderer::rhi {
                 }
 
             } else if(auto* buffers_slot = bound_buffers.find(binding)) {
-                auto* buffers = *buffers_slot;
+                auto& buffers = *buffers_slot;
 
                 switch(descriptor.type) {
                     case D3D12ResourceType::CBV: {

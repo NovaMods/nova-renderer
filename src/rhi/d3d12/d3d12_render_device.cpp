@@ -17,6 +17,7 @@
 #include "d3d12_render_command_list.hpp"
 #include "d3d12_resource_binder.hpp"
 #include "d3d12_structs.hpp"
+#include "d3d12_swapchain.hpp"
 #include "d3d12_utils.hpp"
 #include "d3dx12.h"
 
@@ -38,6 +39,8 @@ namespace nova::renderer ::rhi {
         select_adapter();
 
         create_queues();
+
+        create_swapchain(window.get_window_handle());
 
         create_command_allocators();
 
@@ -169,7 +172,7 @@ namespace nova::renderer ::rhi {
     }
 
     static rx::pair<rx::vector<D3D12_INPUT_ELEMENT_DESC>, rx::vector<rx::string>> get_input_assembler_elements(
-        ID3D12ShaderReflection* reflector) {
+        ::ID3D12ShaderReflection* reflector) {
         D3D12_SHADER_DESC shader_desc;
         reflector->GetDesc(&shader_desc);
 
@@ -249,7 +252,7 @@ namespace nova::renderer ::rhi {
         return pipeline;
     }
 
-    void get_bindings_for_shader(ID3D12ShaderReflection* reflector, rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings);
+    void get_bindings_for_shader(::ID3D12ShaderReflection* reflector, rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings);
 
     rx::ptr<RhiPipeline> D3D12RenderDevice::create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
                                                                    rx::memory::allocator& allocator) {
@@ -265,7 +268,7 @@ namespace nova::renderer ::rhi {
             return {};
         }
 
-        ComPtr<ID3D12ShaderReflection> reflector;
+        ComPtr<::ID3D12ShaderReflection> reflector;
         auto result = D3DReflect(pipeline->vertex_shader_bytecode->GetBufferPointer(),
                                  pipeline->vertex_shader_bytecode->GetBufferSize(),
                                  IID_PPV_ARGS(&reflector));
@@ -290,7 +293,7 @@ namespace nova::renderer ::rhi {
                 return {};
             }
 
-            ComPtr<ID3D12ShaderReflection> geometry_reflector;
+            ComPtr<::ID3D12ShaderReflection> geometry_reflector;
             result = D3DReflect(pipeline->geometry_shader_bytecode->GetBufferPointer(),
                                 pipeline->geometry_shader_bytecode->GetBufferSize(),
                                 IID_PPV_ARGS(&geometry_reflector));
@@ -309,7 +312,7 @@ namespace nova::renderer ::rhi {
                 return {};
             }
 
-            ComPtr<ID3D12ShaderReflection> pixel_reflector;
+            ComPtr<::ID3D12ShaderReflection> pixel_reflector;
             result = D3DReflect(pipeline->pixel_shader_bytecode->GetBufferPointer(),
                                 pipeline->pixel_shader_bytecode->GetBufferSize(),
                                 IID_PPV_ARGS(&pixel_reflector));
@@ -881,6 +884,20 @@ namespace nova::renderer ::rhi {
                 set_object_name(dma_queue.Get(), "Nova DMA queue");
             }
         }
+    }
+
+    void D3D12RenderDevice::create_swapchain(const HWND hwnd) {
+        ComPtr<IDXGIFactory4> factory4;
+        factory.QueryInterface(factory4.GetAddressOf());
+
+        swapchain = rx::make_ptr<D3D12Swapchain>(internal_allocator,
+                                                 *this,
+                                                 factory4.Get(),
+                                                 device.Get(),
+                                                 hwnd,
+                                                 {settings->window.width, settings->window.height},
+                                                 settings->max_in_flight_frames,
+                                                 graphics_queue.Get());
     }
 
     void D3D12RenderDevice::create_command_allocators() {
