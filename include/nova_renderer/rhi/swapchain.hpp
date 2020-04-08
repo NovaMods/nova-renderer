@@ -4,12 +4,9 @@
 #include <rx/core/ptr.h>
 #include <rx/core/vector.h>
 
-namespace nova::renderer::rhi {
-    struct RhiFence;
-    struct RhiFramebuffer;
-    struct RhiImage;
-    struct RhiSemaphore;
+#include "rhi_types.hpp"
 
+namespace nova::renderer::rhi {
     class Swapchain {
     public:
         Swapchain(uint32_t num_images_in, const glm::uvec2& size);

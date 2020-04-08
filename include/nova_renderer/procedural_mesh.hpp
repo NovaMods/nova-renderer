@@ -8,6 +8,8 @@
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"
 
+#include "rx/core/ptr.h"
+
 namespace nova::renderer {
     /*!
      * \brief ProceduralMesh is a mesh which the user will modify every frame
@@ -27,17 +29,17 @@ namespace nova::renderer {
         /*!
          * \brief Creates a new procedural mesh which has the specified amount of space
          *
-         * \param vertex_buffer_size The number of bytes the vertex buffer needs
-         * \param index_buffer_size The number of bytes that the index buffer needs
+         * \param vertex_buffer_size_in The number of bytes the vertex buffer needs
+         * \param index_buffer_size_in The number of bytes that the index buffer needs
          * \param num_in_flight_frames Number of in-flight frames that this proc mesh supports
-         * \param device The device to create the buffers on
-         * \param name Name of this procedural mesh
+         * \param device_in The device to create the buffers on
+         * \param name_in Name of this procedural mesh
          */
-        ProceduralMesh(uint64_t vertex_buffer_size,
-                       uint64_t index_buffer_size,
+        ProceduralMesh(uint64_t vertex_buffer_size_in,
+                       uint64_t index_buffer_size_in,
                        uint32_t num_in_flight_frames,
-                       rhi::RenderDevice* device,
-                       const rx::string& name = "ProceduralMesh");
+                       rhi::RenderDevice* device_in,
+                       const rx::string& name_in = "ProceduralMesh");
 
         ProceduralMesh(ProceduralMesh&& old) noexcept;
         ProceduralMesh& operator=(ProceduralMesh&& old) noexcept;
@@ -81,11 +83,11 @@ namespace nova::renderer {
 
         rx::string name;
 
-        rx::vector<rhi::RhiBuffer*> vertex_buffers;
-        rx::vector<rhi::RhiBuffer*> index_buffers;
+        rx::vector<rx::ptr<rhi::RhiBuffer>> vertex_buffers;
+        rx::vector<rx::ptr<rhi::RhiBuffer>> index_buffers;
 
-        rhi::RhiBuffer* cached_vertex_buffer;
-        rhi::RhiBuffer* cached_index_buffer;
+        rx::ptr<rhi::RhiBuffer> cached_vertex_buffer;
+        rx::ptr<rhi::RhiBuffer> cached_index_buffer;
 
         uint64_t num_vertex_bytes_to_upload = 0;
         uint64_t num_index_bytes_to_upload = 0;

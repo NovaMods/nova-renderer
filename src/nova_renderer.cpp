@@ -253,7 +253,7 @@ namespace nova::renderer {
 
             cur_frame_idx = device->get_swapchain()->acquire_next_swapchain_image(frame_allocator);
 
-            rx::vector<rhi::RhiFence*> cur_frame_fences{*global_allocator, rx::array{frame_fences[cur_frame_idx]}};
+            const rx::vector<rhi::RhiFence*> cur_frame_fences{*global_allocator, rx::array{frame_fences[cur_frame_idx].get()}};
 
             device->wait_for_fences(cur_frame_fences);
             device->reset_fences(cur_frame_fences);
@@ -423,9 +423,9 @@ namespace nova::renderer {
         return ProceduralMeshAccessor{&proc_meshes, our_id};
     }
 
-    rx::optional<Mesh> NovaRenderer::get_mesh(const MeshId mesh_id) {
-        if(const auto* mesh = meshes.find(mesh_id)) {
-            return *mesh;
+    rx::optional<Mesh*> NovaRenderer::get_mesh(const MeshId mesh_id) {
+        if(auto* mesh = meshes.find(mesh_id)) {
+            return mesh;
 
         } else {
             return rx::nullopt;
@@ -610,7 +610,7 @@ namespace nova::renderer {
         const auto& textures = device_resources->get_all_textures();
         images.reserve(textures.size());
 
-        textures.each_fwd([&](const TextureResource& texture) { images.emplace_back(texture.image); });
+        textures.each_fwd([&](const TextureResource& texture) { images.emplace_back(texture.image.get()); });
 
         return images;
     }
@@ -619,7 +619,7 @@ namespace nova::renderer {
         MTR_SCOPE("destroy_dynamic_resources", "Self");
         if(loaded_renderpack) {
             loaded_renderpack->resources.render_targets.each_fwd([&](const renderpack::TextureCreateInfo& tex_data) {
-                device_resources->destroy_render_target(tex_data.name, *renderpack_allocator);
+                device_resources->destroy_render_target(tex_data.name);
             });
 
             logger->verbose("Deleted all dynamic textures from renderpack %s", loaded_renderpack->name);
@@ -942,9 +942,9 @@ namespace nova::renderer {
         backbuffer_output_pipeline_create_info->viewport_size = device->get_swapchain()->get_size();
         auto backbuffer_pipeline = device->create_global_pipeline(*backbuffer_output_pipeline_create_info, *global_allocator);
         if(rendergraph->create_renderpass<BackbufferOutputRenderpass>(*device_resources,
-                                                                      ui_output->image,
-                                                                      scene_output->image,
-                                                                      point_sampler,
+                                                                      ui_output->image.get(),
+                                                                      scene_output->image.get(),
+                                                                      point_sampler.get(),
                                                                       rx::utility::move(backbuffer_pipeline),
                                                                       fullscreen_triangle_id,
                                                                       *device) == nullptr) {
@@ -955,7 +955,5 @@ namespace nova::renderer {
 
     void NovaRenderer::create_builtin_pipelines() {}
 
-    void NovaRenderer::initialize_material_resource_binder() {
-        material_resource_binder = device->get_material_resource_binder();
-    }
+    void NovaRenderer::initialize_material_resource_binder() { material_resource_binder = device->get_material_resource_binder(); }
 } // namespace nova::renderer

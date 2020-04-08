@@ -93,8 +93,8 @@ namespace nova::filesystem {
     }
 
     FolderAccessorBase* ZipFolderAccessor::create_subfolder_accessor(const rx::string& path) const {
-        rx::memory::allocator* allocator = &rx::memory::g_system_allocator;
-        return allocator->create<ZipFolderAccessor>(rx::string::format("%s/%s", root_folder, path), zip_archive);
+        rx::memory::allocator& allocator = rx::memory::system_allocator::instance();
+        return allocator.create<ZipFolderAccessor>(rx::string::format("%s/%s", root_folder, path), zip_archive);
     }
 
     ZipFolderAccessor::ZipFolderAccessor(const rx::string& folder, const mz_zip_archive archive)

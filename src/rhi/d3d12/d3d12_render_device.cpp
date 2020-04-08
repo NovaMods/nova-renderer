@@ -888,9 +888,9 @@ namespace nova::renderer ::rhi {
 
     void D3D12RenderDevice::create_swapchain(const HWND hwnd) {
         ComPtr<IDXGIFactory4> factory4;
-        factory.QueryInterface(factory4.GetAddressOf());
+        factory->QueryInterface(factory4.GetAddressOf());
 
-        swapchain = rx::make_ptr<D3D12Swapchain>(internal_allocator,
+        swapchain = rx::make_ptr<D3D12Swapchain>(*internal_allocator,
                                                  *this,
                                                  factory4.Get(),
                                                  device.Get(),

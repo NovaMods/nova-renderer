@@ -133,7 +133,7 @@ namespace nova::renderer {
      */
     class Renderpass {
     public:
-        explicit Renderpass(rx::string name, bool is_builtin = false);
+        explicit Renderpass(rx::string name_in, bool is_builtin_in = false);
 
         Renderpass(Renderpass&& old) noexcept = default;
         Renderpass& operator=(Renderpass&& old) noexcept = default;
@@ -180,7 +180,7 @@ namespace nova::renderer {
         /*!
          * \brief Returns the framebuffer that this renderpass should render to
          */
-        [[nodiscard]] rhi::RhiFramebuffer* get_framebuffer(const FrameContext& ctx) const;
+        [[nodiscard]] rhi::RhiFramebuffer& get_framebuffer(const FrameContext& ctx) const;
 
     protected:
         /*!
@@ -265,12 +265,12 @@ namespace nova::renderer {
          * We use shader reflection to figure out which render targets the pipeline wants to use, then cache them from the device resources
          * object. This means that a renderpack's dynamic resources _MUST_ be created before its render graph
          *
-         * \param name The name of this renderpass
-         * \param pipeline The graphics pipeline state to use when executing this renderpass
-         * \param mesh The mesh to execute this renderpass over. Will usually be the fullscreen triangle
-         * \param is_builtin Whether this render pass is built in to Nova or comes from a renderpack
+         * \param name_in The name of this renderpass
+         * \param pipeline_in The graphics pipeline state to use when executing this renderpass
+         * \param mesh_in The mesh to execute this renderpass over. Will usually be the fullscreen triangle
+         * \param is_builtin_in Whether this render pass is built in to Nova or comes from a renderpack
          */
-        explicit GlobalRenderpass(const rx::string& name, rx::ptr<rhi::RhiPipeline> pipeline, MeshId mesh, bool is_builtin = false);
+        explicit GlobalRenderpass(const rx::string& name_in, rx::ptr<rhi::RhiPipeline> pipeline_in, MeshId mesh_in, bool is_builtin_in = false);
 
     protected:
         rx::ptr<rhi::RhiPipeline> pipeline;
@@ -297,7 +297,7 @@ namespace nova::renderer {
          * \brief Constructs a Rendergraph which will allocate its internal memory from the provided allocator, and which will execute on
          * the provided device
          */
-        Rendergraph(rx::memory::allocator& allocator, rhi::RenderDevice& device);
+        Rendergraph(rx::memory::allocator& allocator_in, rhi::RenderDevice& device_in);
 
         /*!
          * \brief Creates a new renderpass of the specified type using it's own create info
@@ -459,7 +459,7 @@ namespace nova::renderer {
         // Backbuffer framebuffers are owned by the swapchain, not the renderpass that writes to them, so if the
         // renderpass writes to the backbuffer then we don't need to create a framebuffer for it
         if(!renderpass->writes_to_backbuffer) {
-            renderpass->framebuffer = device.create_framebuffer(renderpass->renderpass.get(),
+            renderpass->framebuffer = device.create_framebuffer(*renderpass->renderpass,
                                                                 color_attachments,
                                                                 depth_attachment.get(),
                                                                 framebuffer_size,

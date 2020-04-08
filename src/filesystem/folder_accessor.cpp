@@ -12,16 +12,16 @@ namespace nova::filesystem {
     bool is_zip_folder(const rx::string& path_to_folder) { return path_to_folder.ends_with(".zip"); }
 
     FolderAccessorBase* FolderAccessorBase::create(const rx::string& path) {
-        rx::memory::allocator* allocator = &rx::memory::g_system_allocator;
+        rx::memory::allocator& allocator = rx::memory::system_allocator::instance();
 
         // Where is the renderpack, and what kind of folder is it in ?
         if(is_zip_folder(path)) {
             // zip folder in renderpacks folder
-            return allocator->create<ZipFolderAccessor>(path);
+            return allocator.create<ZipFolderAccessor>(path);
 
         } else if(const rx::filesystem::directory directory(path); directory) {
             // regular folder in renderpacks folder
-            return allocator->create<RegularFolderAccessor>(path);
+            return allocator.create<RegularFolderAccessor>(path);
         }
 
         logger->error("Could not create folder accessor for path %s", path);

@@ -13,9 +13,11 @@
 namespace nova::renderer {
     using namespace renderpack;
 
+    using rx::utility::move;
+
     RX_LOG("Rendergraph", logger);
 
-    Renderpass::Renderpass(rx::string name, const bool is_builtin) : name(std::move(name)), is_builtin(is_builtin) {}
+    Renderpass::Renderpass(rx::string name_in, const bool is_builtin_in) : name(std::move(name_in)), is_builtin(is_builtin_in) {}
 
     void Renderpass::execute(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
         const auto& profiling_event_name = rx::string::format("Execute %s", name);
@@ -28,9 +30,9 @@ namespace nova::renderer {
 
         setup_renderpass(cmds, ctx);
 
-        const auto framebuffer = get_framebuffer(ctx);
+        const auto& framebuffer_to_bind = get_framebuffer(ctx);
 
-        cmds.begin_renderpass(renderpass, framebuffer);
+        cmds.begin_renderpass(*renderpass, framebuffer_to_bind);
 
         record_renderpass_contents(cmds, ctx);
 
@@ -56,7 +58,7 @@ namespace nova::renderer {
         }
 
         if(writes_to_backbuffer) {
-            rhi::RhiResourceBarrier backbuffer_barrier{};
+            rhi::RhiResourceBarrier backbuffer_barrier;
             backbuffer_barrier.resource_to_barrier = ctx.swapchain_image;
             backbuffer_barrier.access_before_barrier = rhi::ResourceAccess::MemoryRead;
             backbuffer_barrier.access_after_barrier = rhi::ResourceAccess::ColorAttachmentWrite;
@@ -68,9 +70,7 @@ namespace nova::renderer {
 
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
-            rx::vector<rhi::RhiResourceBarrier> barriers{&rx::memory::g_system_allocator};
-            barriers.push_back(backbuffer_barrier);
-            cmds.resource_barriers(rhi::PipelineStage::TopOfPipe, rhi::PipelineStage::ColorAttachmentOutput, barriers);
+            cmds.resource_barriers(rhi::PipelineStage::TopOfPipe, rhi::PipelineStage::ColorAttachmentOutput, rx::array{backbuffer_barrier});
 
             cmds.set_checkpoint(rx::string::format("Finished backbuffer barrier for renderpass %s", name));
         }
@@ -92,7 +92,7 @@ namespace nova::renderer {
     void Renderpass::record_post_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
         MTR_SCOPE("Renderpass", "record_post_renderpass_barriers");
         if(writes_to_backbuffer) {
-            rhi::RhiResourceBarrier backbuffer_barrier{};
+            rhi::RhiResourceBarrier backbuffer_barrier;
             backbuffer_barrier.resource_to_barrier = ctx.swapchain_image;
             backbuffer_barrier.access_before_barrier = rhi::ResourceAccess::ColorAttachmentWrite;
             backbuffer_barrier.access_after_barrier = rhi::ResourceAccess::MemoryRead;
@@ -102,18 +102,18 @@ namespace nova::renderer {
             backbuffer_barrier.destination_queue = rhi::QueueType::Graphics;
             backbuffer_barrier.image_memory_barrier.aspect = rhi::ImageAspect::Color;
 
-            rx::vector<rhi::RhiResourceBarrier> barriers{&rx::memory::g_system_allocator};
-            barriers.push_back(backbuffer_barrier);
-            cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::BottomOfPipe, barriers);
+            cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput,
+                                   rhi::PipelineStage::BottomOfPipe,
+                                   rx::array{backbuffer_barrier});
 
             cmds.set_checkpoint(rx::string::format("Finished post renderpass backbuffer barrier for renderpass %s", name));
         }
     }
 
-    void SceneRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {}
+    void SceneRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& /* cmds */, FrameContext& /* ctx */) {}
 
-    GlobalRenderpass::GlobalRenderpass(const rx::string& name, rx::ptr<rhi::RhiPipeline> pipeline, const MeshId mesh, const bool is_builtin)
-        : Renderpass{name, is_builtin}, pipeline{rx::utility::move(pipeline)}, mesh{mesh} {}
+    GlobalRenderpass::GlobalRenderpass(const rx::string& name_in, rx::ptr<rhi::RhiPipeline> pipeline_in, const MeshId mesh_in, const bool is_builtin_in)
+        : Renderpass{name_in, is_builtin_in}, pipeline{move(pipeline_in)}, mesh{mesh_in} {}
 
     void GlobalRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
         cmds.set_pipeline(*pipeline);
@@ -121,22 +121,23 @@ namespace nova::renderer {
         cmds.bind_resources(*resource_binder);
 
         const auto mesh_data = ctx.nova->get_mesh(mesh);
-        cmds.bind_index_buffer(mesh_data->index_buffer, rhi::IndexType::Uint32);
-        cmds.bind_vertex_buffers(rx::array{mesh_data->vertex_buffer});
+        cmds.bind_index_buffer(*(*mesh_data)->index_buffer, rhi::IndexType::Uint32);
+        cmds.bind_vertex_buffers(rx::array{(*mesh_data)->vertex_buffer.get()});
 
         cmds.draw_indexed_mesh(3);
         cmds.set_checkpoint(rx::string::format("Draw %s fullscreen triangle", name));
     }
 
-    Rendergraph::Rendergraph(rx::memory::allocator& allocator, rhi::RenderDevice& device) : allocator(allocator), device(device) {}
+    Rendergraph::Rendergraph(rx::memory::allocator& allocator_in, rhi::RenderDevice& device_in)
+        : allocator(allocator_in), device(device_in) {}
 
     void Rendergraph::destroy_renderpass(const rx::string& name) {
         if(Renderpass** renderpass = renderpasses.find(name)) {
             if((*renderpass)->framebuffer) {
-                device.destroy_framebuffer((*renderpass)->framebuffer, allocator);
+                device.destroy_framebuffer(move((*renderpass)->framebuffer));
             }
 
-            device.destroy_renderpass((*renderpass)->renderpass, allocator);
+            device.destroy_renderpass(move((*renderpass)->renderpass));
 
             renderpasses.erase(name);
             renderpass_metadatas.erase(name);
@@ -149,7 +150,7 @@ namespace nova::renderer {
         MTR_SCOPE("Rendergraph", "calculate_renderpass_execution_order");
         if(is_dirty) {
             const auto create_infos = [&]() {
-                rx::vector<RenderPassCreateInfo> create_info_temp{&allocator};
+                rx::vector<RenderPassCreateInfo> create_info_temp{allocator};
                 create_info_temp.reserve(renderpass_metadatas.size());
 
                 renderpass_metadatas.each_value([&](const RenderpassMetadata& metadata) { create_info_temp.emplace_back(metadata.data); });
@@ -189,11 +190,11 @@ namespace nova::renderer {
         return rx::nullopt;
     }
 
-    rhi::RhiFramebuffer* Renderpass::get_framebuffer(const FrameContext& ctx) const {
+    rhi::RhiFramebuffer& Renderpass::get_framebuffer(const FrameContext& ctx) const {
         if(!writes_to_backbuffer) {
-            return framebuffer;
+            return *framebuffer;
         } else {
-            return ctx.swapchain_framebuffer;
+            return *ctx.swapchain_framebuffer;
         }
     }
 
@@ -229,7 +230,7 @@ namespace nova::renderer {
 
         if(start_index != ctx.cur_model_matrix_index) {
             // TODO: There's probably a better way to do this
-            rx::vector<rhi::RhiBuffer*> vertex_buffers{ctx.allocator};
+            rx::vector<rhi::RhiBuffer*> vertex_buffers{*ctx.allocator};
             vertex_buffers.reserve(batch.num_vertex_attributes);
             for(uint32_t i = 0; i < batch.num_vertex_attributes; i++) {
                 vertex_buffers.push_back(batch.vertex_buffer);

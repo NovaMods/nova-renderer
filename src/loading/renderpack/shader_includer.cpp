@@ -12,7 +12,7 @@ namespace nova::renderer {
     NovaDxcIncludeHandler::NovaDxcIncludeHandler(rx::memory::allocator& allocator,
                                                  IDxcLibrary& library,
                                                  filesystem::FolderAccessorBase* folder_accessor)
-        : allocator{allocator}, library{library}, folder_accessor{folder_accessor}, builtin_files{&allocator} {
+        : allocator{allocator}, library{library}, folder_accessor{folder_accessor}, builtin_files{allocator} {
         const auto standard_pipeline_layout_hlsl = R"(
 struct Camera {
     float4x4 view;
@@ -116,7 +116,7 @@ Texture2D textures[] : register(t3);
 #endif
 
     HRESULT NovaDxcIncludeHandler::LoadSource(const LPCWSTR wide_filename, IDxcBlob** included_source) {
-        const rx::wide_string wide_filename_str{&allocator, reinterpret_cast<const rx_u16*>(wide_filename)};
+        const rx::wide_string wide_filename_str{allocator, reinterpret_cast<const rx_u16*>(wide_filename)};
         const auto filename = wide_filename_str.to_utf8();
 
         logger->verbose("Trying to include file (%s)", filename);

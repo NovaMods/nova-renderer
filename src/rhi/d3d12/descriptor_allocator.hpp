@@ -5,6 +5,9 @@
 
 #include "rx/core/vector.h"
 
+// Fix WinAPI cause Rex broke it
+#define interface struct
+
 namespace rx {
     namespace memory {
         struct allocator;

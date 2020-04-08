@@ -1,5 +1,8 @@
 #pragma once
 
+// Fix WinAPI cause Rex broke it
+#define interface struct
+
 #include <D3D12MemAlloc.h>
 #include <d3d12.h>
 #include <d3d12shader.h>
@@ -13,6 +16,9 @@
 
 #include "d3d12_structs.hpp"
 #include "descriptor_allocator.hpp"
+
+// Fix WinAPI cause Rex broke it
+#define interface struct
 
 namespace nova::renderer::rhi {
     class D3D12RenderDevice final : public RenderDevice {

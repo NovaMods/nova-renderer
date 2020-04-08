@@ -47,7 +47,7 @@ namespace nova::renderer {
     private:
         rx::memory::allocator& internal_allocator;
 
-        rx::vector<rhi::RhiBuffer*> per_frame_buffers;
+        rx::vector<rx::ptr<rhi::RhiBuffer>> per_frame_buffers;
         rhi::RenderDevice& device;
 
         rx::vector<ElementType> data;
@@ -72,7 +72,7 @@ namespace nova::renderer {
         for(uint32_t i = 0; i < num_in_flight_frames; i++) {
             create_info.name = rx::string::format("CameraBuffer%u", i);
 
-            per_frame_buffers.emplace_back(device.create_buffer(create_info, internal_allocator));
+            per_frame_buffers.push_back(device.create_buffer(create_info, internal_allocator));
         }
 
         // All camera indices are free at program startup
@@ -97,7 +97,7 @@ namespace nova::renderer {
 
         const auto num_bytes_to_write = sizeof(ElementType) * data.size();
 
-        device.write_data_to_buffer(data.data(), num_bytes_to_write, per_frame_buffers[frame_idx]);
+        device.write_data_to_buffer(data.data(), num_bytes_to_write, *per_frame_buffers[frame_idx]);
     }
 
     template <typename ElementType>
@@ -121,6 +121,6 @@ namespace nova::renderer {
 
     template <typename ElementType>
     rhi::RhiBuffer* PerFrameDeviceArray<ElementType>::get_buffer_for_frame(const uint32_t frame_idx) const {
-        return per_frame_buffers[frame_idx];
+        return per_frame_buffers[frame_idx].get();
     }
 } // namespace nova::renderer

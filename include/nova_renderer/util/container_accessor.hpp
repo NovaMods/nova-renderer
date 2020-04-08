@@ -13,7 +13,7 @@ namespace nova::renderer {
     public:
         MapAccessor() = default;
 
-        MapAccessor(rx::map<KeyType, ValueType>* map_in, const KeyType& key) : map(map_in), key(key) {}
+        MapAccessor(rx::map<KeyType, ValueType>* map_in, const KeyType& key_in) : map(map_in), key(key_in) {}
 
         MapAccessor(const MapAccessor& other) = default;
         MapAccessor& operator=(const MapAccessor& other) = default;

@@ -9,6 +9,9 @@
 
 #include "d3d12_render_device.hpp"
 
+// Fix WinAPI cause Rex broke it
+#define interface struct
+
 namespace nova::renderer::rhi {
     class D3D12Swapchain : public Swapchain {
     public:

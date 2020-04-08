@@ -10,6 +10,8 @@ namespace nova::renderer {
     using namespace rhi;
     using namespace renderpack;
 
+    using rx::utility::move;
+
     constexpr size_t STAGING_BUFFER_ALIGNMENT = 2048;
     constexpr size_t STAGING_BUFFER_TOTAL_MEMORY_SIZE = 8388608;
 
@@ -18,10 +20,9 @@ namespace nova::renderer {
 
     size_t size_in_bytes(PixelFormat pixel_format);
 
-    DeviceResources::DeviceResources(NovaRenderer& renderer)
-        : renderer{renderer},
-          device{renderer.get_device()},
-          internal_allocator{renderer.get_global_allocator()},
+    DeviceResources::DeviceResources(NovaRenderer& renderer_in)
+        : device{renderer_in.get_device()},
+          internal_allocator{renderer_in.get_global_allocator()},
           textures{internal_allocator},
           staging_buffers{internal_allocator},
           uniform_buffers{internal_allocator} {
@@ -31,7 +32,7 @@ namespace nova::renderer {
     rx::optional<BufferResourceAccessor> DeviceResources::create_uniform_buffer(const rx::string& name, const Bytes size) {
         const auto event_name = rx::string::format("create_uniform_buffer(%s)", name);
         MTR_SCOPE("DeviceResources", event_name.data());
-        BufferResource resource = {};
+        BufferResource resource;
         resource.name = name;
         resource.size = size;
 
@@ -42,7 +43,7 @@ namespace nova::renderer {
             return rx::nullopt;
         }
 
-        uniform_buffers.insert(name, resource);
+        uniform_buffers.insert(name, move(resource));
 
         return BufferResourceAccessor{&uniform_buffers, name};
     }
@@ -95,10 +96,7 @@ namespace nova::renderer {
             MTR_SCOPE("DeviceResources", "Upload Data To Texture");
             auto staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
 
-            auto cmds = device.create_command_list(0,
-                                                                    QueueType::Transfer,
-                                                                    RhiRenderCommandList::Level::Primary,
-                                                                    allocator);
+            auto cmds = device.create_command_list(0, QueueType::Transfer, RhiRenderCommandList::Level::Primary, allocator);
             cmds->set_debug_name(rx::string::format("UploadTo%s", name));
 
             RhiResourceBarrier initial_texture_barrier = {};
@@ -131,21 +129,21 @@ namespace nova::renderer {
             cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::VertexShader, final_barriers);
 
             auto upload_done_fence = device.create_fence(false, allocator);
-            device.submit_command_list(rx::utility::move(cmds), QueueType::Transfer, *upload_done_fence);
+            device.submit_command_list(move(cmds), QueueType::Transfer, *upload_done_fence);
 
             // Be sure that the data copy is complete, so that this method doesn't return before the GPU is done with the staging buffer
             // TODO: Be smarter about this
             device.wait_for_fences(rx::array{upload_done_fence.get()});
-            device.destroy_fences(rx::array{rx::utility::move(upload_done_fence)}, allocator);
+            device.destroy_fences(rx::array{move(upload_done_fence)});
 
-            return_staging_buffer(staging_buffer);
+            return_staging_buffer(move(staging_buffer));
 
             logger->verbose("Uploaded texture data to texture %s", name);
         }
 
         auto idx = textures.size();
 
-        textures.push_back(resource);
+        textures.push_back(move(resource));
         texture_name_to_idx.insert(name, static_cast<uint32_t>(idx));
 
         logger->verbose("Added texture %s to the textures array, there's now %u textures total", name, textures.size());
@@ -168,7 +166,7 @@ namespace nova::renderer {
 
         }
 
-#if NOVA_DEBUG
+#ifdef NOVA_DEBUG
         else {
             logger->error("Could not find image \"%s\"", name);
         }
@@ -205,15 +203,12 @@ namespace nova::renderer {
             resource.format = pixel_format;
             resource.height = height;
             resource.width = width;
-            resource.image = rx::utility::move(image);
+            resource.image = move(image);
 
             {
                 MTR_SCOPE("DeviceResources", "Transition Render Target Layout");
 
-                auto cmds = device.create_command_list(0,
-                                                                        QueueType::Graphics,
-                                                                        RhiRenderCommandList::Level::Primary,
-                                                                        allocator);
+                auto cmds = device.create_command_list(0, QueueType::Graphics, RhiRenderCommandList::Level::Primary, allocator);
                 cmds->set_debug_name(rx::string::format("ChangeFormatOf%s", name));
 
                 RhiResourceBarrier initial_texture_barrier = {};
@@ -246,14 +241,14 @@ namespace nova::renderer {
                 cmds->resource_barriers(PipelineStage::TopOfPipe, stage_after_barrier, initial_barriers);
 
                 auto upload_done_fence = device.create_fence(false, allocator);
-                device.submit_command_list(rx::utility::move(cmds), QueueType::Graphics, *upload_done_fence.get());
+                device.submit_command_list(move(cmds), QueueType::Graphics, *upload_done_fence);
 
                 // Be sure that the data copy is complete, so that this method doesn't return before the GPU is done with the staging buffer
                 device.wait_for_fences(rx::array{upload_done_fence.get()});
-                device.destroy_fences(rx::array{rx::utility::move(upload_done_fence)}, allocator);
+                device.destroy_fences(rx::array{move(upload_done_fence)});
             }
 
-            render_targets.insert(name, resource);
+            render_targets.insert(name, move(resource));
 
             return RenderTargetAccessor{&render_targets, name};
 
@@ -272,13 +267,13 @@ namespace nova::renderer {
         }
     }
 
-    void DeviceResources::destroy_render_target(const rx::string& texture_name, rx::memory::allocator& allocator) {
+    void DeviceResources::destroy_render_target(const rx::string& texture_name) {
         if(const auto idx = get_texture_idx_for_name(texture_name); idx) {
-            auto texture = rx::utility::move(textures[*idx]);
-            device.destroy_texture(rx::utility::move(texture.image), allocator);
+            auto texture = move(textures[*idx]);
+            device.destroy_texture(move(texture.image));
             textures.erase(*idx, *idx);
         }
-#if NOVA_DEBUG
+#ifdef NOVA_DEBUG
         else {
             logger->error("Could not delete texture %s, are you sure you spelled it correctly?", texture_name);
         }
@@ -295,7 +290,7 @@ namespace nova::renderer {
         if(auto* staging_buffer = staging_buffers.find(actual_size); staging_buffer != nullptr) {
             auto& buffer_list = *staging_buffer;
             if(buffer_list.size() > 0) {
-                auto* buffer = buffer_list.last();
+                auto buffer = move(buffer_list.last());
                 buffer_list.erase(buffer_list.size() - 1, buffer_list.size() - 1);
 
                 return buffer;
@@ -308,14 +303,14 @@ namespace nova::renderer {
         return buffer;
     }
 
-    void DeviceResources::return_staging_buffer(RhiBuffer* buffer) {
+    void DeviceResources::return_staging_buffer(rx::ptr<RhiBuffer> buffer) {
         const auto size = buffer->size.b_count();
         auto* buffers = staging_buffers.find(size);
         if(!buffers) {
             buffers = staging_buffers.insert(size, {});
         }
 
-        buffers->push_back(buffer);
+        buffers->push_back(move(buffer));
     }
 
     const rx::vector<TextureResource>& DeviceResources::get_all_textures() const { return textures; }
@@ -325,8 +320,11 @@ namespace nova::renderer {
 
         const auto make_color_tex = [&](const rx::string& name, const uint32_t color) {
             rx::array<uint8_t[64 * 4]> tex_data;
-            for(uint32_t i = 0; i < tex_data.size(); i++) {
-                tex_data[i] = color;
+            for(uint32_t i = 0; i < tex_data.size(); i += 4) {
+                tex_data[i] = static_cast<uint8_t>(color >> 24);
+                tex_data[i + 1] = static_cast<uint8_t>(color >> 16);
+                tex_data[i + 2] = static_cast<uint8_t>(color >> 8);
+                tex_data[i + 3] = static_cast<uint8_t>(color);
             }
             if(!create_texture(name, 8, 8, PixelFormat::Rgba8, tex_data.data(), internal_allocator)) {
                 logger->error("Could not create texture %s", name);

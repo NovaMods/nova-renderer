@@ -7,15 +7,15 @@
 namespace nova::filesystem {
     RX_LOG("VirtualFilesystem", logger);
 
-    VirtualFilesystem* VirtualFilesystem::instance = nullptr;
+    rx::ptr<VirtualFilesystem> VirtualFilesystem::instance;
 
     VirtualFilesystem* VirtualFilesystem::get_instance() {
         if(!instance) {
-            rx::memory::allocator* allocator = &rx::memory::g_system_allocator;
-            instance = allocator->create<VirtualFilesystem>();
+            rx::memory::allocator& allocator = rx::memory::system_allocator::instance();
+            instance = rx::make_ptr<VirtualFilesystem>(allocator);
         }
 
-        return instance;
+        return instance.get();
     }
 
     void VirtualFilesystem::add_resource_root(const rx::string& root) { resource_roots.emplace_back(FolderAccessorBase::create(root)); }

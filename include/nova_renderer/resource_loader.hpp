@@ -50,7 +50,7 @@ namespace nova::renderer {
      */
     class DeviceResources {
     public:
-        explicit DeviceResources(NovaRenderer& renderer);
+        explicit DeviceResources(NovaRenderer& renderer_in);
 
         [[nodiscard]] rx::optional<BufferResourceAccessor> create_uniform_buffer(const rx::string& name, mem::Bytes size);
 
@@ -113,7 +113,7 @@ namespace nova::renderer {
          */
         [[nodiscard]] rx::optional<RenderTargetAccessor> get_render_target(const rx::string& name);
 
-        void destroy_render_target(const rx::string& texture_name, rx::memory::allocator& allocator);
+        void destroy_render_target(const rx::string& texture_name);
 
         /*!
          * \brief Retrieves a staging buffer at least the specified size
@@ -122,15 +122,13 @@ namespace nova::renderer {
          *
          * When you're done with the staging buffer, return it to the pool with `return_staging_buffer`
          */
-        rhi::RhiBuffer* get_staging_buffer_with_size(mem::Bytes size);
+        rx::ptr<rhi::RhiBuffer> get_staging_buffer_with_size(mem::Bytes size);
 
-        void return_staging_buffer(rhi::RhiBuffer* buffer);
+        void return_staging_buffer(rx::ptr<rhi::RhiBuffer> buffer);
 
         [[nodiscard]] const rx::vector<TextureResource>& get_all_textures() const;
 
     private:
-        NovaRenderer& renderer;
-
         rhi::RenderDevice& device;
 
         rx::memory::allocator& internal_allocator;
@@ -141,7 +139,7 @@ namespace nova::renderer {
 
         rx::map<rx::string, TextureResource> render_targets;
 
-        rx::map<rx_size, rx::vector<rhi::RhiBuffer*>> staging_buffers;
+        rx::map<rx_size, rx::vector<rx::ptr<rhi::RhiBuffer>>> staging_buffers;
 
         rx::map<rx::string, BufferResource> uniform_buffers;
 

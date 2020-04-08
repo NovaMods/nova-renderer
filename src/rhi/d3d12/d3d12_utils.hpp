@@ -3,11 +3,15 @@
 #include <d3d12.h>
 #include <d3d12shader.h>
 #include <dxc/dxcapi.h>
-#include <rx/core/string.h>
 
 #include "nova_renderer/renderpack_data.hpp"
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"
+
+#include "rx/core/string.h"
+
+// Fix WinAPI cause Rex broke it
+#define interface struct
 
 namespace nova::renderer::rhi {
     void set_object_name(ID3D12Object* object, const rx::string& name);

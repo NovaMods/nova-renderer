@@ -7,6 +7,9 @@
 #include "d3d12_structs.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 
+// Fix WinAPI cause Rex broke it
+#define interface struct
+
 namespace nova::renderer::rhi {
     class D3D12RenderCommandList : RhiRenderCommandList {
     public:

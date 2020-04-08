@@ -284,18 +284,15 @@ namespace nova::renderer::renderpack {
                 info.stencil_state->front_face_op.pass_op = to_stencil_op(data.front_face->fail_op);
                 info.stencil_state->front_face_op.depth_fail_op = to_stencil_op(data.front_face->depth_fail_op);
                 info.stencil_state->front_face_op.compare_op = to_compare_op(data.front_face->compare_op);
-                info.stencil_state->front_face_op.compare_mask = data.front_face->compare_mask;
-                info.stencil_state->front_face_op.write_mask = data.front_face->write_mask;
-                info.stencil_state->front_face_op.reference_value = data.stencil_ref;
+                info.stencil_state->compare_mask = data.front_face->compare_mask;
+                info.stencil_state->write_mask = data.front_face->write_mask;
+                info.stencil_state->reference_value = data.stencil_ref;
             }
             if(data.back_face) {
                 info.stencil_state->back_face_op.fail_op = to_stencil_op(data.back_face->fail_op);
                 info.stencil_state->back_face_op.pass_op = to_stencil_op(data.back_face->fail_op);
                 info.stencil_state->back_face_op.depth_fail_op = to_stencil_op(data.back_face->depth_fail_op);
                 info.stencil_state->back_face_op.compare_op = to_compare_op(data.back_face->compare_op);
-                info.stencil_state->back_face_op.compare_mask = data.back_face->compare_mask;
-                info.stencil_state->back_face_op.write_mask = data.back_face->write_mask;
-                info.stencil_state->back_face_op.reference_value = data.stencil_ref;
             }
         }
 

@@ -1,10 +1,14 @@
 #pragma once
 
 #include <d3d12.h>
-#include <rx/core/map.h>
 #include <wrl/client.h>
 
 #include "nova_renderer/rhi/resource_binder.hpp"
+
+#include "rx/core/map.h"
+
+// Fix WinAPI cause Rex broke it
+#define interface struct
 
 #include "d3d12_enums.hpp"
 #include "d3d12_structs.hpp"

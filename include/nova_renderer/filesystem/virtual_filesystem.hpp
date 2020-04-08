@@ -1,6 +1,7 @@
 #pragma once
 
 #include "folder_accessor.hpp"
+#include <rx/core/ptr.h>
 
 namespace nova::filesystem {
     /*!
@@ -31,7 +32,7 @@ namespace nova::filesystem {
         [[nodiscard]] FolderAccessorBase* get_folder_accessor(const rx::string& path) const;
 
     private:
-        static VirtualFilesystem* instance;
+        static rx::ptr<VirtualFilesystem> instance;
 
         rx::vector<FolderAccessorBase*> resource_roots;
     };

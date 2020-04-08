@@ -37,3 +37,5 @@ readability*
 -clang-diagnostic-covered-switch-default
 -readability-implicit-bool-conversion
 -cppcoreguidelines-pro-bounds-array-to-pointer-decay
+-google-build-using-namespace
+-cppcoreguidelines-avoid-c-arrays

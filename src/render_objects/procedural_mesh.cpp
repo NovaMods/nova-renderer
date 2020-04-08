@@ -5,83 +5,78 @@
 #include "nova_renderer/rhi/render_device.hpp"
 
 #include "../util/memory_utils.hpp"
+
 using namespace nova::mem;
+
+using rx::utility::move;
 
 namespace nova::renderer {
     RX_LOG("ProceduralMesh", logger);
 
     using namespace rhi;
 
-    ProceduralMesh::ProceduralMesh(const uint64_t vertex_buffer_size,
-                                   const uint64_t index_buffer_size,
+    ProceduralMesh::ProceduralMesh(const uint64_t vertex_buffer_size_in,
+                                   const uint64_t index_buffer_size_in,
                                    const uint32_t num_in_flight_frames,
-                                   RenderDevice* device,
-                                   const rx::string& name)
-        : device(device),
-          name(name)
+                                   RenderDevice* device_in,
+                                   const rx::string& name_in)
+        : device(device_in), name(name_in), allocator {
+        &rx::memory::system_allocator::instance()
+    }
 #ifdef NOVA_DEBUG
-          ,
-          vertex_buffer_size(vertex_buffer_size),
-          index_buffer_size(index_buffer_size)
+    , vertex_buffer_size(vertex_buffer_size_in),
+        index_buffer_size(index_buffer_size_in)
 #endif
     {
-        const auto aligned_vertex_buffer_size = align(vertex_buffer_size, 256);
-        const auto aligned_index_buffer_size = align(index_buffer_size, 256);
-        const auto host_memory_size = aligned_vertex_buffer_size + aligned_index_buffer_size;
-        const auto device_memory_size = host_memory_size * 3;
 
-        allocator = &rx::memory::g_system_allocator;
-
-        vertex_buffers.resize(num_in_flight_frames);
-        index_buffers.resize(num_in_flight_frames);
+        vertex_buffers.reserve(num_in_flight_frames);
+        index_buffers.reserve(num_in_flight_frames);
         for(uint32_t i = 0; i < num_in_flight_frames; i++) {
-            vertex_buffers[i] = device->create_buffer({rx::string::format("%sVertices%d", name, i),
-                                                       vertex_buffer_size,
-                                                       BufferUsage::VertexBuffer},
-                                                      *allocator);
-            index_buffers[i] = device->create_buffer({rx::string::format("%sIndices%d", name, i),
-                                                      index_buffer_size,
-                                                      BufferUsage::IndexBuffer},
-                                                     *allocator);
+            vertex_buffers.push_back(
+                device_in->create_buffer({rx::string::format("%sVertices%d", name_in, i), vertex_buffer_size_in, BufferUsage::VertexBuffer},
+                                         *allocator));
+            index_buffers.push_back(
+                device_in->create_buffer({rx::string::format("%sIndices%d", name_in, i), index_buffer_size_in, BufferUsage::IndexBuffer},
+                                         *allocator));
         }
 
-        cached_vertex_buffer = device->create_buffer({rx::string::format("%sStagingVertices", name),
-                                                      vertex_buffer_size,
-                                                      BufferUsage::StagingBuffer},
-                                                     *allocator);
-        cached_index_buffer = device->create_buffer({rx::string::format("%sStagingIndices", name),
-                                                     index_buffer_size,
-                                                     BufferUsage::StagingBuffer},
-                                                    *allocator);
+        cached_vertex_buffer = device_in->create_buffer({rx::string::format("%sStagingVertices", name_in),
+                                                         vertex_buffer_size_in,
+                                                         BufferUsage::StagingBuffer},
+                                                        *allocator);
+        cached_index_buffer = device_in->create_buffer({rx::string::format("%sStagingIndices", name_in),
+                                                        index_buffer_size_in,
+                                                        BufferUsage::StagingBuffer},
+                                                       *allocator);
     }
 
     ProceduralMesh::ProceduralMesh(ProceduralMesh&& old) noexcept
         : device{old.device},
-          vertex_buffers{rx::utility::move(old.vertex_buffers)},
-          index_buffers{rx::utility::move(old.index_buffers)},
-          cached_vertex_buffer{old.cached_vertex_buffer},
-          cached_index_buffer{old.cached_index_buffer},
+          vertex_buffers{move(old.vertex_buffers)},
+          index_buffers{move(old.index_buffers)},
+          cached_vertex_buffer{move(old.cached_vertex_buffer)},
+          cached_index_buffer{move(old.cached_index_buffer)},
           num_vertex_bytes_to_upload{old.num_vertex_bytes_to_upload},
           num_index_bytes_to_upload{old.num_index_bytes_to_upload},
           allocator {
         old.allocator
     }
-#if NOVA_DEBUG
+#ifdef NOVA_DEBUG
     , vertex_buffer_size{old.vertex_buffer_size}, index_buffer_size { old.index_buffer_size }
 #endif
     { old.device = nullptr; }
 
     ProceduralMesh& ProceduralMesh::operator=(ProceduralMesh&& old) noexcept {
         device = old.device;
-        vertex_buffers = rx::utility::move(old.vertex_buffers);
-        index_buffers = rx::utility::move(old.index_buffers);
-        cached_vertex_buffer = old.cached_vertex_buffer;
-        cached_index_buffer = old.cached_index_buffer;
+        vertex_buffers = move(old.vertex_buffers);
+        index_buffers = move(old.index_buffers);
+        cached_vertex_buffer = move(old.cached_vertex_buffer);
+        cached_index_buffer = move(old.cached_index_buffer);
         num_vertex_bytes_to_upload = old.num_vertex_bytes_to_upload;
         num_index_bytes_to_upload = old.num_index_bytes_to_upload;
         allocator = old.allocator;
 
-#if NOVA_DEBUG
+#ifdef NOVA_DEBUG
         vertex_buffer_size = old.vertex_buffer_size;
         index_buffer_size = old.index_buffer_size;
 #endif
@@ -99,13 +94,13 @@ namespace nova::renderer {
                 vertex_buffer_size,
                 size);
 
-            device->write_data_to_buffer(data, vertex_buffer_size, cached_vertex_buffer);
+            device->write_data_to_buffer(data, vertex_buffer_size, *cached_vertex_buffer);
             num_vertex_bytes_to_upload = vertex_buffer_size;
 
         } else {
 #endif
 
-            device->write_data_to_buffer(data, size, cached_vertex_buffer);
+            device->write_data_to_buffer(data, size, *cached_vertex_buffer);
             num_vertex_bytes_to_upload = size;
 
 #ifdef NOVA_DEBUG
@@ -121,12 +116,12 @@ namespace nova::renderer {
                 index_buffer_size,
                 size);
 
-            device->write_data_to_buffer(data, index_buffer_size, cached_index_buffer);
+            device->write_data_to_buffer(data, index_buffer_size, *cached_index_buffer);
             num_index_bytes_to_upload = index_buffer_size;
 
         } else {
 #endif
-            device->write_data_to_buffer(data, size, cached_index_buffer);
+            device->write_data_to_buffer(data, size, *cached_index_buffer);
             num_index_bytes_to_upload = size;
 
 #ifdef NOVA_DEBUG
@@ -138,8 +133,8 @@ namespace nova::renderer {
         const bool should_upload_vertex_buffer = num_vertex_bytes_to_upload > 0;
         const bool should_upload_index_buffer = num_index_bytes_to_upload > 0;
 
-        auto* cur_vertex_buffer = vertex_buffers[frame_idx];
-        auto* cur_index_buffer = index_buffers[frame_idx];
+        auto* cur_vertex_buffer = vertex_buffers[frame_idx].get();
+        auto* cur_index_buffer = index_buffers[frame_idx].get();
 
         rx::vector<RhiResourceBarrier> barriers_before_upload;
 
@@ -180,11 +175,11 @@ namespace nova::renderer {
         cmds->resource_barriers(PipelineStage::VertexInput, PipelineStage::Transfer, barriers_before_upload);
 
         if(should_upload_vertex_buffer) {
-            cmds->copy_buffer(cur_vertex_buffer, 0, cached_vertex_buffer, 0, num_vertex_bytes_to_upload);
+            cmds->copy_buffer(*cur_vertex_buffer, 0, *cached_vertex_buffer, 0, num_vertex_bytes_to_upload);
         }
 
         if(should_upload_index_buffer) {
-            cmds->copy_buffer(cur_index_buffer, 0, cached_index_buffer, 0, num_index_bytes_to_upload);
+            cmds->copy_buffer(*cur_index_buffer, 0, *cached_index_buffer, 0, num_index_bytes_to_upload);
         }
 
         rx::vector<RhiResourceBarrier> barriers_after_upload;
@@ -225,8 +220,8 @@ namespace nova::renderer {
     }
 
     ProceduralMesh::Buffers ProceduralMesh::get_buffers_for_frame(const uint8_t frame_idx) const {
-        auto* vertex_buffer = vertex_buffers[frame_idx];
-        auto* index_buffer = index_buffers[frame_idx];
+        auto* vertex_buffer = vertex_buffers[frame_idx].get();
+        auto* index_buffer = index_buffers[frame_idx].get();
 
         return {vertex_buffer, index_buffer};
     }
