@@ -25,23 +25,15 @@ namespace nova::renderer::rhi {
 
         void set_checkpoint(const rx::string& checkpoint_name) override;
 
-        void bind_material_resources(RhiBuffer* camera_buffer,
-                                     RhiBuffer* material_buffer,
-                                     RhiSampler* point_sampler,
-                                     RhiSampler* bilinear_sampler,
-                                     RhiSampler* trilinear_sampler,
-                                     const rx::vector<RhiImage*>& textures,
-                                     rx::memory::allocator& allocator) override;
-
         void bind_resources(RhiResourceBinder& binder) override;
 
         void resource_barriers(PipelineStage stages_before_barrier,
                                PipelineStage stages_after_barrier,
                                const rx::vector<RhiResourceBarrier>& barriers) override;
 
-        void copy_buffer(RhiBuffer* destination_buffer,
+        void copy_buffer(const RhiBuffer& destination_buffer,
                          mem::Bytes destination_offset,
-                         RhiBuffer* source_buffer,
+                         const RhiBuffer& source_buffer,
                          mem::Bytes source_offset,
                          mem::Bytes num_bytes) override;
 
@@ -49,7 +41,7 @@ namespace nova::renderer::rhi {
 
         void set_camera(const Camera& camera) override;
 
-        void begin_renderpass(RhiRenderpass* renderpass, RhiFramebuffer* framebuffer) override;
+        void begin_renderpass(RhiRenderpass& renderpass, const RhiFramebuffer& framebuffer) override;
 
         void end_renderpass() override;
 
@@ -59,14 +51,18 @@ namespace nova::renderer::rhi {
 
         void bind_vertex_buffers(const rx::vector<RhiBuffer*>& buffers) override;
 
-        void bind_index_buffer(const RhiBuffer* buffer, IndexType index_type) override;
+        void bind_index_buffer(const RhiBuffer& buffer, IndexType index_type) override;
 
         void draw_indexed_mesh(uint32_t num_indices, uint32_t offset, uint32_t num_instances) override;
 
         void set_scissor_rect(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
-        void upload_data_to_image(
-            RhiImage* image, size_t width, size_t height, size_t bytes_per_pixel, RhiBuffer* staging_buffer, const void* data) override;
+        void upload_data_to_image(const RhiImage& image,
+                                  size_t width,
+                                  size_t height,
+                                  size_t bytes_per_pixel,
+                                  const RhiBuffer& staging_buffer,
+                                  const void* data) override;
 
     public:
         /*!
@@ -75,7 +71,7 @@ namespace nova::renderer::rhi {
          * This method should free any transient resources that the command lists uses
          */
         void cleanup_resources();
-        
+
     private:
         VulkanRenderDevice& device;
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <rx/core/deferred_function.h>
 #include <vulkan/vulkan.hpp>
 
 #include "nova_renderer/rhi/resource_binder.hpp"

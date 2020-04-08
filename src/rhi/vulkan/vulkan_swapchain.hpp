@@ -22,8 +22,8 @@ namespace nova::renderer::rhi {
      */
     class VulkanSwapchain final : public Swapchain {
     public:
-        VulkanSwapchain(uint32_t num_swapchain_images,
-                        VulkanRenderDevice* render_device,
+        VulkanSwapchain(uint32_t num_swapchain_images_in,
+                        VulkanRenderDevice* render_device_in,
                         glm::uvec2 window_dimensions,
                         const rx::vector<VkPresentModeKHR>& present_modes);
 
@@ -46,9 +46,9 @@ namespace nova::renderer::rhi {
         VulkanRenderDevice* render_device;
 
         VkSwapchainKHR swapchain{};
-        VkExtent2D swapchain_extent;
-        VkPresentModeKHR present_mode;
-        VkFormat swapchain_format;
+        VkExtent2D swapchain_extent{};
+        VkPresentModeKHR present_mode{};
+        VkFormat swapchain_format{};
 
         rx::vector<VkImageView> swapchain_image_views;
         rx::vector<VkImageLayout> swapchain_image_layouts;

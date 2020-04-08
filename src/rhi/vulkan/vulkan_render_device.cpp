@@ -70,6 +70,8 @@ namespace nova::renderer::rhi {
         create_per_thread_command_pools();
 
         create_standard_pipeline_layout();
+
+        create_material_resource_binder();
     }
 
     void VulkanRenderDevice::set_num_renderpasses(uint32_t /* num_renderpasses */) {
@@ -332,6 +334,8 @@ namespace nova::renderer::rhi {
                                                   vk_pipeline.layout.layout,
                                                   allocator);
     }
+
+    RhiResourceBinder* VulkanRenderDevice::get_material_resource_binder() { return material_resource_binder.get(); }
 
     rx::optional<vk::DescriptorPool> VulkanRenderDevice::create_descriptor_pool(
         const rx::map<DescriptorType, uint32_t>& descriptor_capacity, rx::memory::allocator& allocator) {
@@ -1736,6 +1740,15 @@ namespace nova::renderer::rhi {
                                                         .setPObjectName("Standard Descriptor Set Layout");
             device.setDebugUtilsObjectNameEXT(&descriptor_set_layout_name, device_dynamic_loader);
         }
+    }
+
+    void VulkanRenderDevice::create_material_resource_binder() {
+        material_resource_binder = rx::make_ptr<VulkanResourceBinder>(internal_allocator,
+                                                                      *this,
+                                                                      standard_layout_bindings,
+                                                                      standard_descriptor_sets,
+                                                                      standard_pipeline_layout,
+                                                                      internal_allocator);
     }
 
     rx::map<uint32_t, VkCommandPool> VulkanRenderDevice::make_new_command_pools() const {

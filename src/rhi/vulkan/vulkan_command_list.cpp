@@ -29,10 +29,10 @@ namespace nova::renderer::rhi {
         return VK_INDEX_TYPE_UINT32;
     }
 
-    VulkanRenderCommandList::VulkanRenderCommandList(VkCommandBuffer cmds,
+    VulkanRenderCommandList::VulkanRenderCommandList(const VkCommandBuffer cmds,
                                                      VulkanRenderDevice& render_device,
                                                      rx::memory::allocator& allocator)
-        : cmds(cmds), device(render_device), internal_allocator(allocator), descriptor_sets{&allocator} {
+        : cmds{cmds}, device{render_device}, internal_allocator{allocator}, descriptor_sets{allocator} {
         MTR_SCOPE("VulkanRenderCommandList", "VulkanRenderCommandList");
         // TODO: Put this begin info in the constructor parameters
         VkCommandBufferBeginInfo begin_info = {};
@@ -58,110 +58,6 @@ namespace nova::renderer::rhi {
 
             device.device_dynamic_loader.vkCmdSetCheckpointNV(cmds, reinterpret_cast<void*>(checkpoint_idx));
         }
-    }
-
-    void VulkanRenderCommandList::bind_material_resources(RhiBuffer* camera_buffer,
-                                                          RhiBuffer* material_buffer,
-                                                          RhiSampler* point_sampler,
-                                                          RhiSampler* bilinear_sampler,
-                                                          RhiSampler* trilinear_sampler,
-                                                          const rx::vector<RhiImage*>& textures,
-                                                          rx::memory::allocator& allocator) {
-        const auto set = device.get_next_standard_descriptor_set();
-
-        const auto* vk_camera_buffer = static_cast<VulkanBuffer*>(camera_buffer);
-        const auto camera_buffer_write = vk::DescriptorBufferInfo()
-                                             .setOffset(0)
-                                             .setRange(vk_camera_buffer->size.b_count())
-                                             .setBuffer(vk_camera_buffer->buffer);
-        const auto camera_buffer_descriptor_type = vk_camera_buffer->size < device.gpu.props.limits.maxUniformBufferRange ?
-                                                       vk::DescriptorType::eUniformBuffer :
-                                                       vk::DescriptorType::eStorageBuffer;
-
-        const auto* vk_material_buffer = static_cast<VulkanBuffer*>(material_buffer);
-        const auto material_buffer_write = vk::DescriptorBufferInfo()
-                                               .setOffset(0)
-                                               .setRange(material_buffer->size.b_count())
-                                               .setBuffer(vk_material_buffer->buffer);
-        const auto material_buffer_descriptor_type = material_buffer->size < device.gpu.props.limits.maxUniformBufferRange ?
-                                                         vk::DescriptorType::eUniformBuffer :
-                                                         vk::DescriptorType::eStorageBuffer;
-
-        const auto* vk_point_sampler = static_cast<VulkanSampler*>(point_sampler);
-        const auto point_sampler_write = vk::DescriptorImageInfo().setSampler(vk_point_sampler->sampler);
-
-        const auto* vk_bilinear_sampler = static_cast<VulkanSampler*>(bilinear_sampler);
-        const auto bilinear_sampler_write = vk::DescriptorImageInfo().setSampler(vk_bilinear_sampler->sampler);
-
-        const auto* vk_trilinear_sampler = static_cast<VulkanSampler*>(trilinear_sampler);
-        const auto trilinear_sampler_write = vk::DescriptorImageInfo().setSampler(vk_trilinear_sampler->sampler);
-
-        rx::vector<vk::DescriptorImageInfo> vk_textures{&allocator};
-        vk_textures.reserve(textures.size());
-
-        textures.each_fwd([&](const RhiImage* image) {
-            const auto* vk_image = static_cast<const VulkanImage*>(image);
-            vk_textures.emplace_back(
-                vk::DescriptorImageInfo().setImageView(vk_image->image_view).setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal));
-        });
-
-        const auto writes = rx::array{
-            vk::WriteDescriptorSet()
-                .setDstSet(set)
-                .setDstBinding(0)
-                .setDstArrayElement(0)
-                .setDescriptorCount(1)
-                .setDescriptorType(camera_buffer_descriptor_type)
-                .setPBufferInfo(&camera_buffer_write),
-            vk::WriteDescriptorSet()
-                .setDstSet(set)
-                .setDstBinding(1)
-                .setDstArrayElement(0)
-                .setDescriptorCount(1)
-                .setDescriptorType(material_buffer_descriptor_type)
-                .setPBufferInfo(&material_buffer_write),
-            vk::WriteDescriptorSet()
-                .setDstSet(set)
-                .setDstBinding(2)
-                .setDstArrayElement(0)
-                .setDescriptorCount(1)
-                .setDescriptorType(vk::DescriptorType::eSampler)
-                .setPImageInfo(&point_sampler_write),
-            vk::WriteDescriptorSet()
-                .setDstSet(set)
-                .setDstBinding(3)
-                .setDstArrayElement(0)
-                .setDescriptorCount(1)
-                .setDescriptorType(vk::DescriptorType::eSampler)
-                .setPImageInfo(&bilinear_sampler_write),
-            vk::WriteDescriptorSet()
-                .setDstSet(set)
-                .setDstBinding(4)
-                .setDstArrayElement(0)
-                .setDescriptorCount(1)
-                .setDescriptorType(vk::DescriptorType::eSampler)
-                .setPImageInfo(&trilinear_sampler_write),
-            vk::WriteDescriptorSet()
-                .setDstSet(set)
-                .setDstBinding(5)
-                .setDstArrayElement(0)
-                .setDescriptorCount(static_cast<uint32_t>(vk_textures.size()))
-                .setDescriptorType(vk::DescriptorType::eSampledImage)
-                .setPImageInfo(vk_textures.data()),
-        };
-
-        device.device.updateDescriptorSets(static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
-
-        vkCmdBindDescriptorSets(cmds,
-                                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                device.standard_pipeline_layout,
-                                0,
-                                1,
-                                reinterpret_cast<const VkDescriptorSet*>(&set),
-                                0,
-                                nullptr);
-
-        descriptor_sets.emplace_back(set);
     }
 
     void VulkanRenderCommandList::bind_resources(RhiResourceBinder& binder) {
@@ -243,9 +139,9 @@ namespace nova::renderer::rhi {
                              image_barriers.data());
     }
 
-    void VulkanRenderCommandList::copy_buffer(RhiBuffer* destination_buffer,
+    void VulkanRenderCommandList::copy_buffer(const RhiBuffer& destination_buffer,
                                               const mem::Bytes destination_offset,
-                                              RhiBuffer* source_buffer,
+                                              const RhiBuffer& source_buffer,
                                               const mem::Bytes source_offset,
                                               const mem::Bytes num_bytes) {
         MTR_SCOPE("VulkanRenderCommandList", "copy_buffer");
@@ -253,15 +149,15 @@ namespace nova::renderer::rhi {
         copy.srcOffset = source_offset.b_count();
         copy.dstOffset = destination_offset.b_count();
         copy.size = num_bytes.b_count();
-        auto* vk_destination_buffer = static_cast<VulkanBuffer*>(destination_buffer);
-        auto* vk_source_buffer = static_cast<VulkanBuffer*>(source_buffer);
+        const auto& vk_destination_buffer = static_cast<const VulkanBuffer&>(destination_buffer);
+        const auto& vk_source_buffer = static_cast<const VulkanBuffer&>(source_buffer);
 
-        vkCmdCopyBuffer(cmds, vk_source_buffer->buffer, vk_destination_buffer->buffer, 1, &copy);
+        vkCmdCopyBuffer(cmds, vk_source_buffer.buffer, vk_destination_buffer.buffer, 1, &copy);
     }
 
     void VulkanRenderCommandList::execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) {
         MTR_SCOPE("VulkanRenderCommandList", "execute_command_lists");
-        rx::vector<VkCommandBuffer> buffers{&internal_allocator};
+        rx::vector<VkCommandBuffer> buffers{internal_allocator};
         buffers.reserve(lists.size());
 
         lists.each_fwd([&](RhiRenderCommandList* list) {
@@ -279,21 +175,21 @@ namespace nova::renderer::rhi {
         vkCmdPushConstants(cmds, device.standard_pipeline_layout, VK_SHADER_STAGE_ALL, 0, sizeof(uint32_t), &camera_index);
     }
 
-    void VulkanRenderCommandList::begin_renderpass(RhiRenderpass* renderpass, RhiFramebuffer* framebuffer) {
+    void VulkanRenderCommandList::begin_renderpass(RhiRenderpass& renderpass, const RhiFramebuffer& framebuffer) {
         MTR_SCOPE("VulkanRenderCommandList", "begin_renderpass");
-        auto* vk_renderpass = static_cast<VulkanRenderpass*>(renderpass);
-        auto* vk_framebuffer = static_cast<VulkanFramebuffer*>(framebuffer);
+        auto& vk_renderpass = static_cast<VulkanRenderpass&>(renderpass);
+        const auto& vk_framebuffer = static_cast<const VulkanFramebuffer&>(framebuffer);
 
-        current_render_pass = vk_renderpass;
+        current_render_pass = &vk_renderpass;
 
-        rx::vector<VkClearValue> clear_values{&internal_allocator, vk_framebuffer->num_attachments};
+        rx::vector<VkClearValue> clear_values{internal_allocator, vk_framebuffer.num_attachments};
 
         VkRenderPassBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        begin_info.renderPass = vk_renderpass->pass;
-        begin_info.framebuffer = vk_framebuffer->framebuffer;
-        begin_info.renderArea = {{0, 0}, {static_cast<uint32_t>(framebuffer->size.x), static_cast<uint32_t>(framebuffer->size.y)}};
-        begin_info.clearValueCount = vk_framebuffer->num_attachments;
+        begin_info.renderPass = vk_renderpass.pass;
+        begin_info.framebuffer = vk_framebuffer.framebuffer;
+        begin_info.renderArea = {{0, 0}, {static_cast<uint32_t>(framebuffer.size.x), static_cast<uint32_t>(framebuffer.size.y)}};
+        begin_info.clearValueCount = vk_framebuffer.num_attachments;
         begin_info.pClearValues = clear_values.data();
 
         vkCmdBeginRenderPass(cmds, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
@@ -340,10 +236,10 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderCommandList::bind_vertex_buffers(const rx::vector<RhiBuffer*>& buffers) {
         MTR_SCOPE("VulkanRenderCommandList", "bind_vertex_buffers");
-        rx::vector<VkBuffer> vk_buffers{&internal_allocator};
+        rx::vector<VkBuffer> vk_buffers{internal_allocator};
         vk_buffers.reserve(buffers.size());
 
-        rx::vector<VkDeviceSize> offsets{&internal_allocator};
+        rx::vector<VkDeviceSize> offsets{internal_allocator};
         offsets.reserve(buffers.size());
         for(uint32_t i = 0; i < buffers.size(); i++) {
             offsets.push_back(i);
@@ -354,11 +250,11 @@ namespace nova::renderer::rhi {
         vkCmdBindVertexBuffers(cmds, 0, static_cast<uint32_t>(vk_buffers.size()), vk_buffers.data(), offsets.data());
     }
 
-    void VulkanRenderCommandList::bind_index_buffer(const RhiBuffer* buffer, const IndexType index_type) {
+    void VulkanRenderCommandList::bind_index_buffer(const RhiBuffer& buffer, const IndexType index_type) {
         MTR_SCOPE("VulkanRenderCommandList", "bind_index_buffer");
-        const auto* vk_buffer = static_cast<const VulkanBuffer*>(buffer);
+        const auto& vk_buffer = static_cast<const VulkanBuffer&>(buffer);
 
-        vkCmdBindIndexBuffer(cmds, vk_buffer->buffer, 0, to_vk_index_type(index_type));
+        vkCmdBindIndexBuffer(cmds, vk_buffer.buffer, 0, to_vk_index_type(index_type));
     }
 
     void VulkanRenderCommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t offset, const uint32_t num_instances) {
@@ -372,20 +268,20 @@ namespace nova::renderer::rhi {
         vkCmdSetScissor(cmds, 0, 1, &scissor_rect);
     }
 
-    void VulkanRenderCommandList::upload_data_to_image(RhiImage* image,
+    void VulkanRenderCommandList::upload_data_to_image(const RhiImage& image,
                                                        const size_t width,
                                                        const size_t height,
                                                        const size_t bytes_per_pixel,
-                                                       RhiBuffer* staging_buffer,
+                                                       const RhiBuffer& staging_buffer,
                                                        const void* data) {
         MTR_SCOPE("VulkanRenderCommandList", "upload_data_to_image");
-        auto* vk_image = static_cast<VulkanImage*>(image);
-        auto* vk_buffer = static_cast<VulkanBuffer*>(staging_buffer);
+        const auto& vk_image = static_cast<const VulkanImage&>(image);
+        const auto& vk_buffer = static_cast<const VulkanBuffer&>(staging_buffer);
 
-        memcpy(vk_buffer->allocation_info.pMappedData, data, width * height * bytes_per_pixel);
+        memcpy(vk_buffer.allocation_info.pMappedData, data, width * height * bytes_per_pixel);
 
         VkBufferImageCopy image_copy{};
-        if(!vk_image->is_depth_tex) {
+        if(!vk_image.is_depth_tex) {
             image_copy.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         } else {
             logger->error("Can not upload data to depth images");
@@ -393,7 +289,7 @@ namespace nova::renderer::rhi {
         image_copy.imageSubresource.layerCount = 1;
         image_copy.imageExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1};
 
-        vkCmdCopyBufferToImage(cmds, vk_buffer->buffer, vk_image->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &image_copy);
+        vkCmdCopyBufferToImage(cmds, vk_buffer.buffer, vk_image.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &image_copy);
     }
 
     void VulkanRenderCommandList::cleanup_resources() {

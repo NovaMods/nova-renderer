@@ -10,17 +10,19 @@
 #undef ERROR
 #endif
 
+using rx::utility::move;
+
 namespace nova::renderer::rhi {
     RX_LOG("VulkanSwapchain", logger);
 
-    VulkanSwapchain::VulkanSwapchain(const uint32_t num_swapchain_images,
-                                     VulkanRenderDevice* render_device,
+    VulkanSwapchain::VulkanSwapchain(const uint32_t num_swapchain_images_in,
+                                     VulkanRenderDevice* render_device_in,
                                      const glm::uvec2 window_dimensions,
                                      const rx::vector<VkPresentModeKHR>& present_modes)
-        : Swapchain(num_swapchain_images, window_dimensions), render_device(render_device), num_swapchain_images(num_swapchain_images) {
+        : Swapchain{num_swapchain_images_in, window_dimensions}, render_device{render_device_in}, num_swapchain_images{num_swapchain_images_in} {
         MTR_SCOPE("VulkanSwapchain", "VulkanSwapchain");
 
-        create_swapchain(num_swapchain_images, present_modes, window_dimensions);
+        create_swapchain(num_swapchain_images_in, present_modes, window_dimensions);
 
         rx::vector<VkImage> vk_images = get_swapchain_images();
 
@@ -28,20 +30,20 @@ namespace nova::renderer::rhi {
             logger->error("The swapchain returned zero images");
         }
 
-        swapchain_image_layouts.resize(num_swapchain_images);
+        swapchain_image_layouts.resize(num_swapchain_images_in);
         swapchain_image_layouts.each_fwd(
             [&](VkImageLayout& swapchain_image_layout) { swapchain_image_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; });
 
         // Create a dummy renderpass that writes to a single color attachment - the swapchain
-        const VkRenderPass renderpass = create_dummy_renderpass();
+        VkRenderPass renderpass = create_dummy_renderpass();
 
         const glm::uvec2 swapchain_size = {swapchain_extent.width, swapchain_extent.height};
 
-        for(uint32_t i = 0; i < num_swapchain_images; i++) {
+        for(uint32_t i = 0; i < num_swapchain_images_in; i++) {
             create_resources_for_frame(vk_images[i], renderpass, swapchain_size);
         }
 
-        vkDestroyRenderPass(render_device->device, renderpass, nullptr);
+        vkDestroyRenderPass(render_device_in->device, renderpass, nullptr);
 
         // move the swapchain images into the correct layout cause I guess they aren't for some reason?
         transition_swapchain_images_into_color_attachment_layout(vk_images);
@@ -49,8 +51,8 @@ namespace nova::renderer::rhi {
 
     uint8_t VulkanSwapchain::acquire_next_swapchain_image(rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanSwapchain", "acquire_next_swapchain_image");
-        auto* fence = render_device->create_fence(false, allocator);
-        auto* vk_fence = static_cast<VulkanFence*>(fence);
+        auto fence = render_device->create_fence(false, allocator);
+        auto* vk_fence = static_cast<VulkanFence*>(fence.get());
 
         uint32_t acquired_image_idx;
         const auto acquire_result = vkAcquireNextImageKHR(render_device->device,
@@ -69,11 +71,9 @@ namespace nova::renderer::rhi {
         }
 
         // Block until we have the swapchain image in order to mimic D3D12. TODO: Reevaluate this decision
-        rx::vector<RhiFence*> fences;
-        fences.push_back(vk_fence);
-        render_device->wait_for_fences(fences);
+        render_device->wait_for_fences(rx::array{vk_fence});
 
-        render_device->destroy_fences(fences, allocator);
+        render_device->destroy_fences(rx::array{move(fence)});
 
         return static_cast<uint8_t>(acquired_image_idx);
     }
@@ -180,20 +180,18 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanSwapchain::deinit() {
-        swapchain_images.each_fwd([&](const RhiImage* i) {
-            const auto* vk_image = static_cast<const VulkanImage*>(i);
+        swapchain_images.each_fwd([&](const rx::ptr<RhiImage>& i) {
+            const auto* vk_image = static_cast<const VulkanImage*>(i.get());
             vkDestroyImage(render_device->device, vk_image->image, nullptr);
-            delete i;
         });
         swapchain_images.clear();
 
         swapchain_image_views.each_fwd([&](const VkImageView& iv) { vkDestroyImageView(render_device->device, iv, nullptr); });
         swapchain_image_views.clear();
 
-        fences.each_fwd([&](const RhiFence* f) {
-            const auto* vk_fence = static_cast<const VulkanFence*>(f);
+        fences.each_fwd([&](const rx::ptr<RhiFence>& f) {
+            const auto* vk_fence = static_cast<const VulkanFence*>(f.get());
             vkDestroyFence(render_device->device, vk_fence->fence, nullptr);
-            delete f;
         });
         fences.clear();
     }
@@ -257,7 +255,7 @@ namespace nova::renderer::rhi {
         MTR_SCOPE("VulkanSwapchain", "create_swapchain");
 
         const auto surface_format = choose_surface_format(render_device->gpu.surface_formats);
-        const auto present_mode = choose_present_mode(present_modes);
+        present_mode = choose_present_mode(present_modes);
         const auto extent = choose_surface_extent(render_device->gpu.surface_capabilities, window_dimensions);
 
         VkSwapchainCreateInfoKHR info = {};
@@ -292,13 +290,15 @@ namespace nova::renderer::rhi {
         }
 
         swapchain_format = surface_format.format;
-        this->present_mode = present_mode;
         swapchain_extent = extent;
     }
 
     void VulkanSwapchain::create_resources_for_frame(const VkImage image, const VkRenderPass renderpass, const glm::uvec2& swapchain_size) {
         MTR_SCOPE("VulkanSwapchain", "create_resources_for_frame");
-        auto* vk_image = new VulkanImage;
+
+        auto& allocator = rx::memory::system_allocator::instance();
+
+        auto vk_image = rx::make_ptr<VulkanImage>(allocator);
         vk_image->type = ResourceType::Image;
         vk_image->is_dynamic = true;
         vk_image->image = image;
@@ -324,7 +324,7 @@ namespace nova::renderer::rhi {
         vkCreateImageView(render_device->device, &image_view_create_info, nullptr, &vk_image->image_view);
         swapchain_image_views.push_back(vk_image->image_view);
 
-        swapchain_images.push_back(vk_image);
+        swapchain_images.push_back(move(vk_image));
 
         VkFramebufferCreateInfo framebuffer_create_info = {};
         framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -335,19 +335,21 @@ namespace nova::renderer::rhi {
         framebuffer_create_info.height = swapchain_extent.height;
         framebuffer_create_info.layers = 1;
 
-        auto* vk_framebuffer = new VulkanFramebuffer;
+        auto vk_framebuffer = rx::make_ptr<VulkanFramebuffer>(allocator);
         vk_framebuffer->size = swapchain_size;
         vk_framebuffer->num_attachments = 1;
         vkCreateFramebuffer(render_device->device, &framebuffer_create_info, nullptr, &vk_framebuffer->framebuffer);
 
-        framebuffers.push_back(vk_framebuffer);
+        framebuffers.push_back(move(vk_framebuffer));
 
         VkFenceCreateInfo fence_create_info = {};
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
         VkFence fence;
         vkCreateFence(render_device->device, &fence_create_info, nullptr, &fence);
-        fences.push_back(new VulkanFence{{}, fence});
+        auto vk_fence = rx::make_ptr<VulkanFence>(allocator);
+        vk_fence->fence = fence;
+        fences.push_back(move(vk_fence));
     }
 
     rx::vector<VkImage> VulkanSwapchain::get_swapchain_images() {

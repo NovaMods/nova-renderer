@@ -18,7 +18,7 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
-#include <windows.h>
+#include <Windows.h>
 #include <vulkan/vulkan_win32.h>
 #endif
 #pragma warning(pop)

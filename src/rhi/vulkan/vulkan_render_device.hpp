@@ -6,6 +6,7 @@
 #include "nova_renderer/rhi/render_device.hpp"
 
 #include "vk_structs.hpp"
+#include "vulkan_resource_binder.hpp"
 #include "vulkan_swapchain.hpp"
 
 namespace nova::renderer::rhi {
@@ -92,7 +93,7 @@ namespace nova::renderer::rhi {
         VulkanRenderDevice(const VulkanRenderDevice& other) = delete;
         VulkanRenderDevice& operator=(const VulkanRenderDevice& other) = delete;
 
-        ~VulkanRenderDevice() = default;
+        ~VulkanRenderDevice() override = default;
 
 #pragma region Render engine interface
         void set_num_renderpasses(uint32_t num_renderpasses) override;
@@ -115,6 +116,8 @@ namespace nova::renderer::rhi {
 
         rx::ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
                                                                        rx::memory::allocator& allocator) override;
+
+        RhiResourceBinder* get_material_resource_binder() override;
 
         rx::ptr<RhiBuffer> create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) override;
 
@@ -224,6 +227,8 @@ namespace nova::renderer::rhi {
 
         rx::vector<rx::string> checkpoint_names;
 
+        rx::ptr<VulkanResourceBinder> material_resource_binder;
+
 #pragma region Initialization
         rx::vector<const char*> enabled_layer_names;
 
@@ -249,6 +254,8 @@ namespace nova::renderer::rhi {
         void create_per_thread_command_pools();
 
         void create_standard_pipeline_layout();
+
+        void create_material_resource_binder();
 
         [[nodiscard]] rx::map<uint32_t, VkCommandPool> make_new_command_pools() const;
 #pragma endregion
