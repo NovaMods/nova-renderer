@@ -31,6 +31,13 @@ option(NOVA_TEST "Enable tests." OFF)
 option(NOVA_ENABLE_EXPERIMENTAL "Enable experimental features, may be in code as well as in the CMake files" OFF)
 option(NOVA_TREAT_WARNINGS_AS_ERRORS "Add -Werror flag or /WX for MSVC" OFF)
 option(NOVA_PACKAGE "Build only the library, nothing else." OFF)
+option(NOVA_VULKAN_BACKEND "Compile the Vulkan rendering backend" ON)
+
+if(WIN32)
+option(NOVA_D3D12_BACKEND "Compile the D3D12 rendering backend" ON)
+else()
+option(NOVA_D3D12_BACKEND "Compile the D3D12 rendering backend" OFF)
+endif()
 
 option(NOVA_FORCE_DEBUGGING "Force compiling all the debugging and validation code" OFF)
 
@@ -224,7 +231,23 @@ set(WINDOWS_NOVA_SOURCE
         include/nova_renderer/util/windows.hpp
         src/util/windows_utils.cpp
         src/util/windows_utils.hpp
+        )
 
+set(UNIX_NOVA_SOURCE
+        include/nova_renderer/util/x11_but_good.hpp
+        src/util/linux_utils.cpp
+        src/util/linux_utils.hpp
+        )
+
+if(WIN32)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${WINDOWS_NOVA_SOURCE})
+    set(OTHER_NOVA_SOURCE ${UNIX_NOVA_SOURCE})
+else()
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${UNIX_NOVA_SOURCE})
+    set(OTHER_NOVA_SOURCE ${WINDOWS_NOVA_SOURCE})
+endif()
+
+set(D3D12_NOVA_SOURCE
         src/rhi/d3d12/d3dx12.h
         src/rhi/d3d12/d3d12_render_device.cpp
         src/rhi/d3d12/d3d12_render_device.hpp
@@ -246,18 +269,8 @@ set(WINDOWS_NOVA_SOURCE
         external/D3D12MemoryAllocator/src/D3D12MemAlloc.cpp
         )
 
-set(UNIX_NOVA_SOURCE
-        include/nova_renderer/util/x11_but_good.hpp
-        src/util/linux_utils.cpp
-        src/util/linux_utils.hpp
-        )
-
-if(WIN32)
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${WINDOWS_NOVA_SOURCE})
-    set(OTHER_NOVA_SOURCE ${UNIX_NOVA_SOURCE})
-else()
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${UNIX_NOVA_SOURCE})
-    set(OTHER_NOVA_SOURCE ${WINDOWS_NOVA_SOURCE})
+if(NOVA_D3D12_BACKEND) 
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${D3D12_NOVA_SOURCE})
 endif()
 
 ##########################################
@@ -362,14 +375,14 @@ set(COMMON_LINK_LIBS
         spirv-cross-reflect
         spirv-cross-util)
 
-# D3D12-relevant libraries, we should control this better
-set(COMMON_LINK_LIBS 
-    ${COMMON_LINK_LIBS}
-    d3d12 
-    dxgi 
-    d3dcompiler 
-    spirv-cross-hlsl 
-    spirv-cross-glsl)
+if(NOVA_D3D12_BACKEND)
+    set(COMMON_LINK_LIBS 
+        ${COMMON_LINK_LIBS}
+        d3d12 
+        dxgi 
+        d3dcompiler 
+        spirv-cross-hlsl)
+endif()
 
 # TODO: Figure out why we need to do this, and add a comment when we know
 if(TARGET glfw)
