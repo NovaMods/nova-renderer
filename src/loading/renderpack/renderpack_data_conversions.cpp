@@ -1,11 +1,11 @@
 #include "nova_renderer/renderpack_data_conversions.hpp"
 
+#include <rx/core/log.h>
+#include <spirv_cross.hpp>
+
 #include "nova_renderer/rendergraph.hpp"
 #include "nova_renderer/renderpack_data.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"
-
-#include "rx/core/log.h"
-#include "spirv_glsl.hpp"
 
 namespace nova::renderer::renderpack {
     using namespace spirv_cross;
@@ -92,7 +92,7 @@ namespace nova::renderer::renderpack {
 
     rx::vector<rhi::RhiVertexField> get_vertex_fields(const ShaderSource& vertex_shader) {
         // TODO: Figure out if there's a better way to reflect on the shader
-        const CompilerGLSL shader_compiler{vertex_shader.source.data(), vertex_shader.source.size()};
+        const Compiler shader_compiler{vertex_shader.source.data(), vertex_shader.source.size()};
 
         const auto& shader_vertex_fields = shader_compiler.get_shader_resources().stage_inputs;
 

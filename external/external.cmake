@@ -27,9 +27,22 @@ endif()
 set(BUILD_STATIC_LIBS OFF CACHE BOOL "Compile everything as a static lib" FORCE)
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Don't compile anything as a shared lib" FORCE)
 
+set(ENABLE_EXPORTS ON CACHE BOOL "Enable linking SPIRV_Cross" FORCE)
+set(SPIRV_CROSS_CLI OFF CACHE BOOL "Don't build the CLI" FORCE)
+set(SPIRV_CROSS_ENABLE_TESTS OFF CACHE BOOL "Tests are for library developers, not library consumers" FORCE)
+set(SPIRV_CROSS_ENABLE_MSL OFF CACHE BOOL "Nova doesn't use MSL" FORCE)	# Need to remove this is we add a Metal RHI backend
+set(SPIRV_CROSS_ENABLE_CPP OFF CACHE BOOL "Nova doesn't use C++ shaders, but one of its debugging tools might" FORCE)
+set(SPIRV_CROSS_SKIP_INSTALL ON CACHE BOOL "No stop install bad" FORCE)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Cross)
+
 # Compile things as static libraries
 set(BUILD_STATIC_LIBS ON CACHE BOOL "Compile everything as a static lib" FORCE)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Don't compile anything as a shared lib" FORCE)
+
+set(SPIRV-Headers_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers" CACHE FILEPATH "Use our submodule SPIRV-Headers" FORCE)
+set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
+set(SPIRV_WERROR OFF CACHE BOOL "Enable error on warning SPIRV-Tools" FORCE)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools)
 
 set(GLM_TEST_ENABLE_CXX_17 ON)
 set(GLM_TEST_ENABLE OFF)
