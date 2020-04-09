@@ -79,6 +79,37 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/D3D12MemoryAllocator/src)
 # DXC
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/dxc-wrapper/extern/dxc)
 
+# Hide unnecessary targets from all
+
+set_property(TARGET spirv-tools-build-version PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET spirv-tools-header-DebugInfo PROPERTY EXCLUDE_FROM_ALL True)
+
+set_property(TARGET spirv-tools-cpp-example PROPERTY EXCLUDE_FROM_ALL True)
+
+set_property(TARGET spirv-as PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET spirv-cfg PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET spirv-dis PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET spirv-link PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET spirv-opt PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET spirv-reduce PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET spirv-val PROPERTY EXCLUDE_FROM_ALL True)
+
+set_property(TARGET SPIRV-Tools PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET SPIRV-Tools-link PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET SPIRV-Tools-opt PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET SPIRV-Tools-reduce PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET SPIRV-Tools-shared PROPERTY EXCLUDE_FROM_ALL True)
+
+set_property(TARGET spirv-tools-vimsyntax PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET spirv-tools-pkg-config PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET spirv-tools-shared-pkg-config PROPERTY EXCLUDE_FROM_ALL True)
+
+set_property(TARGET spirv-cross-core PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET spirv-cross-glsl PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET spirv-cross-hlsl PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET spirv-cross-reflect PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET spirv-cross-util PROPERTY EXCLUDE_FROM_ALL True)
+
 #####################
 # Test dependencies #
 #####################
