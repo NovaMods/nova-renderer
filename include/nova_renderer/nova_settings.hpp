@@ -56,7 +56,14 @@ namespace nova::renderer {
         virtual void on_config_loaded(const NovaSettingsAccessManager& config) = 0;
     };
 
+    enum class Api {
+        D3D12,
+        Vulkan,
+    };
+
     struct NovaSettings {
+        Api api = Api::D3D12;
+
         /*!
          * \brief Options for configuring the way mesh memory is allocated
          *
