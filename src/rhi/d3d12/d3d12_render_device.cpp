@@ -371,25 +371,29 @@ namespace nova::renderer ::rhi {
     rx::ptr<RhiBuffer> D3D12RenderDevice::create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) {
         const auto desc = CD3DX12_RESOURCE_DESC::Buffer(info.size.b_count());
 
+        D3D12_RESOURCE_STATES initial_state = D3D12_RESOURCE_STATE_COMMON;
+
         D3D12MA::ALLOCATION_DESC alloc_desc{};
         switch(info.buffer_usage) {
             case BufferUsage::StagingBuffer:
                 [[fallthrough]];
             case BufferUsage::UniformBuffer:
                 alloc_desc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+                initial_state = D3D12_RESOURCE_STATE_GENERIC_READ;
                 break;
 
             case BufferUsage::IndexBuffer:
                 [[fallthrough]];
             case BufferUsage::VertexBuffer:
                 alloc_desc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+                initial_state = D3D12_RESOURCE_STATE_COMMON;
                 break;
         }
 
         auto buffer = rx::make_ptr<D3D12Buffer>(allocator);
         const auto result = dma_allocator->CreateResource(&alloc_desc,
                                                           &desc,
-                                                          D3D12_RESOURCE_STATE_COMMON,
+                                                          initial_state,
                                                           nullptr,
                                                           &buffer->alloc,
                                                           IID_PPV_ARGS(&buffer->resource));
@@ -892,9 +896,9 @@ namespace nova::renderer ::rhi {
 
         // TODO: Score adapters based on things like supported feature level and available vram
 
-        adapters.each_fwd([&](const ComPtr<IDXGIAdapter>& adapter) {
+        adapters.each_fwd([&](const ComPtr<IDXGIAdapter>& cur_adapter) {
             DXGI_ADAPTER_DESC desc;
-            adapter->GetDesc(&desc);
+            cur_adapter->GetDesc(&desc);
 
             if(desc.VendorId == INTEL_PCI_VENDOR_ID && adapters.size() > 1) {
                 // Prefer something other then the Intel GPU
@@ -902,7 +906,7 @@ namespace nova::renderer ::rhi {
             }
 
             ComPtr<ID3D12Device> try_device;
-            auto res = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&try_device));
+            auto res = D3D12CreateDevice(cur_adapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&try_device));
             if(SUCCEEDED(res)) {
                 // check the features we care about
                 D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12_options;
@@ -914,6 +918,8 @@ namespace nova::renderer ::rhi {
 
                     return RX_ITERATION_CONTINUE;
                 }
+
+                adapter = cur_adapter;
 
                 device = try_device;
 
@@ -1077,13 +1083,25 @@ namespace nova::renderer ::rhi {
         // Point sampler
         auto& point_sampler_desc = static_samplers[0];
         point_sampler_desc.Filter = D3D12_FILTER_MAXIMUM_MIN_MAG_MIP_POINT;
+        point_sampler_desc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+        point_sampler_desc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+        point_sampler_desc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+        point_sampler_desc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 
         auto& linear_sampler = static_samplers[1];
         linear_sampler.Filter = D3D12_FILTER_MAXIMUM_MIN_MAG_MIP_LINEAR;
+        linear_sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+        linear_sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+        linear_sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+        linear_sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
         linear_sampler.RegisterSpace = 1;
 
         auto& trilinear_sampler = static_samplers[2];
         trilinear_sampler.Filter = D3D12_FILTER_ANISOTROPIC;
+        trilinear_sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+        trilinear_sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+        trilinear_sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+        trilinear_sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
         trilinear_sampler.MaxAnisotropy = 8;
         trilinear_sampler.RegisterSpace = 2;
 
