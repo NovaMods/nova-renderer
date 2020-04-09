@@ -1143,7 +1143,7 @@ namespace nova::renderer::rhi {
 
                     checkpoint_data.each_fwd([&](const VkCheckpointDataNV& data) {
                         const auto stages = vk::to_string(vk::PipelineStageFlagBits{static_cast<VkPipelineStageFlags>(data.stage)});
-                        const auto checkpoint_name = checkpoint_names[reinterpret_cast<uint32_t>(data.pCheckpointMarker)];
+                        const auto checkpoint_name = checkpoint_names[reinterpret_cast<rx_size>(data.pCheckpointMarker)];
                         logger->error("Pipeline stage %s reached checkpoint %s", stages.c_str(), checkpoint_name);
                     });
                 }
