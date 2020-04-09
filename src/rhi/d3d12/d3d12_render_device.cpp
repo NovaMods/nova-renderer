@@ -406,6 +406,20 @@ namespace nova::renderer ::rhi {
         return buffer;
     }
 
+    void D3D12RenderDevice::write_data_to_buffer(const void* data, mem::Bytes num_bytes, const RhiBuffer& buffer) {
+        const auto& d3d12_buffer = static_cast<const D3D12Buffer&>(buffer);
+
+        D3D12_RANGE range;
+        range.Begin = 0;
+        range.End = d3d12_buffer.size.b_count();
+        void* dst;
+        d3d12_buffer.resource->Map(0, &range, &dst);
+
+        memcpy(dst, data, num_bytes.b_count());
+
+        d3d12_buffer.resource->Unmap(0, &range);
+    }
+
     rx::ptr<RhiSampler> D3D12RenderDevice::create_sampler(const RhiSamplerCreateInfo& create_info, rx::memory::allocator& allocator) {
         MTR_SCOPE("D3D12RenderDevice", "create_sampler");
 
@@ -666,6 +680,68 @@ namespace nova::renderer ::rhi {
         cmds->QueryInterface(commands.GetAddressOf());
 
         return rx::make_ptr<D3D12RenderCommandList>(allocator, allocator, commands, *this);
+    }
+
+    void D3D12RenderDevice::submit_command_list(rx::ptr<RhiRenderCommandList> cmds,
+                                                QueueType queue,
+                                                rx::optional<RhiFence> fence_to_signal,
+                                                const rx::vector<RhiSemaphore*>& wait_semaphores,
+                                                const rx::vector<RhiSemaphore*>& signal_semaphores) {
+
+        auto* d3d12_queue = [&] {
+            switch(queue) {
+                case QueueType::Graphics:
+                    return graphics_queue.Get();
+
+                case QueueType::Transfer:
+                    if(is_uma) {
+                        return dma_queue.Get();
+                    } else {
+                        return graphics_queue.Get();
+                    }
+
+                case QueueType::AsyncCompute:
+                    return graphics_queue.Get();
+            }
+
+            return graphics_queue.Get();
+        }();
+
+        wait_semaphores.each_fwd([&](const RhiSemaphore* semaphore) {
+            const auto* d3d12_semaphore = static_cast<const D3D12Semaphore*>(semaphore);
+            d3d12_queue->Wait(d3d12_semaphore->fence.Get(), GPU_FENCE_SIGNALED);
+        });
+
+        auto* d3d12_cmds = static_cast<D3D12RenderCommandList*>(cmds.get());
+        d3d12_cmds->finalize();
+
+        ID3D12CommandList* const d3d12_list = d3d12_cmds->get_d3d12_list();
+        d3d12_queue->ExecuteCommandLists(1, &d3d12_list);
+
+        signal_semaphores.each_fwd([&](const RhiSemaphore* semaphore) {
+            const auto* d3d12_semaphore = static_cast<const D3D12Semaphore*>(semaphore);
+            d3d12_queue->Signal(d3d12_semaphore->fence.Get(), GPU_FENCE_SIGNALED);
+        });
+
+        if(fence_to_signal) {
+            const auto& d3d12_fence = static_cast<const D3D12Fence&>(*fence_to_signal);
+            d3d12_queue->Signal(d3d12_fence.fence.Get(), CPU_FENCE_SIGNALED);
+        }
+    }
+
+    void D3D12RenderDevice::end_frame(FrameContext& /* ctx */) {
+        // Intentionally empty... for now
+    }
+
+    void D3D12RenderDevice::wait_for_single_fence(const D3D12Fence& fence) {
+        const auto event = get_next_event();
+
+        fence.fence->SetEventOnCompletion(CPU_FENCE_SIGNALED, event);
+
+        // 2 seconds is the default TDR limit
+        WaitForSingleObject(event, 2000);
+
+        fence_wait_events.push_back(event);
     }
 
     ComPtr<ID3D12PipelineState> D3D12RenderDevice::compile_pso(const D3D12Pipeline& pipeline_info, D3D12Renderpass& current_renderpass) {

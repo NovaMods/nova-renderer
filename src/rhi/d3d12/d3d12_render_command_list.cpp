@@ -259,5 +259,9 @@ namespace nova::renderer::rhi {
         command_list->RSSetScissorRects(1, &scissor_rect);
     }
 
+    void D3D12RenderCommandList::finalize() {
+        command_list->Close();
+    }
+
     ID3D12GraphicsCommandList* D3D12RenderCommandList::get_d3d12_list() const { return command_list.Get(); }
 } // namespace nova::renderer::rhi

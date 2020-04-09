@@ -1,13 +1,57 @@
 #include "d3d12_resource_binder.hpp"
 
-#include <rx/core/log.h>
+#include <minitrace.h>
 
 #include "d3dx12.h"
-#include "minitrace.h"
+#include "rx/core/log.h"
 
 namespace nova::renderer::rhi {
     RX_LOG("D3D12ResourceBinder", logger);
     D3D12RootParameter::D3D12RootParameter() : type{Type::RootDescriptor} {}
+
+    D3D12RootParameter::D3D12RootParameter(const D3D12RootParameter& other) : type{other.type} {
+        if(other.type == Type::RootDescriptor) {
+            root_descriptor = other.root_descriptor;
+
+        } else if(other.type == Type::DescriptorTable) {
+            descriptor_table = other.descriptor_table;
+        }
+    }
+
+    D3D12RootParameter& D3D12RootParameter::operator=(const D3D12RootParameter& other) {
+        type = other.type;
+
+        if(other.type == Type::RootDescriptor) {
+            root_descriptor = other.root_descriptor;
+
+        } else if(other.type == Type::DescriptorTable) {
+            descriptor_table = other.descriptor_table;
+        }
+
+        return *this;
+    }
+
+    D3D12RootParameter::D3D12RootParameter(D3D12RootParameter&& old) noexcept : type{old.type} {
+        if(old.type == Type::RootDescriptor) {
+            root_descriptor = old.root_descriptor;
+
+        } else if(old.type == Type::DescriptorTable) {
+            descriptor_table = old.descriptor_table;
+        }
+    }
+
+    D3D12RootParameter& D3D12RootParameter::operator=(D3D12RootParameter&& old) noexcept {
+        type = old.type;
+
+        if(old.type == Type::RootDescriptor) {
+            root_descriptor = old.root_descriptor;
+
+        } else if(old.type == Type::DescriptorTable) {
+            descriptor_table = old.descriptor_table;
+        }
+
+        return *this;
+    }
 
     D3D12RootParameter::~D3D12RootParameter() {
         if(type == Type::RootDescriptor) {

@@ -41,6 +41,12 @@ namespace nova::renderer::rhi {
 
         D3D12RootParameter();
 
+        D3D12RootParameter(const D3D12RootParameter& other);
+        D3D12RootParameter& operator=(const D3D12RootParameter& other);
+
+        D3D12RootParameter(D3D12RootParameter&& old) noexcept;
+        D3D12RootParameter& operator=(D3D12RootParameter&& old) noexcept;
+
         ~D3D12RootParameter();
     };
 
