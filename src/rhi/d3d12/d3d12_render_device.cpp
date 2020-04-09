@@ -254,7 +254,7 @@ namespace nova::renderer ::rhi {
         return pipeline;
     }
 
-    void get_bindings_for_shader(::ID3D12ShaderReflection* reflector, rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings);
+    void get_bindings_for_shader(ID3D12ShaderReflection* reflector, rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings);
 
     rx::ptr<RhiPipeline> D3D12RenderDevice::create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
                                                                    rx::memory::allocator& allocator) {
@@ -270,7 +270,7 @@ namespace nova::renderer ::rhi {
             return {};
         }
 
-        ComPtr<::ID3D12ShaderReflection> reflector;
+        ComPtr<ID3D12ShaderReflection> reflector;
         auto result = D3DReflect(pipeline->vertex_shader_bytecode->GetBufferPointer(),
                                  pipeline->vertex_shader_bytecode->GetBufferSize(),
                                  IID_PPV_ARGS(&reflector));
@@ -295,7 +295,7 @@ namespace nova::renderer ::rhi {
                 return {};
             }
 
-            ComPtr<::ID3D12ShaderReflection> geometry_reflector;
+            ComPtr<ID3D12ShaderReflection> geometry_reflector;
             result = D3DReflect(pipeline->geometry_shader_bytecode->GetBufferPointer(),
                                 pipeline->geometry_shader_bytecode->GetBufferSize(),
                                 IID_PPV_ARGS(&geometry_reflector));
@@ -314,7 +314,7 @@ namespace nova::renderer ::rhi {
                 return {};
             }
 
-            ComPtr<::ID3D12ShaderReflection> pixel_reflector;
+            ComPtr<ID3D12ShaderReflection> pixel_reflector;
             result = D3DReflect(pipeline->pixel_shader_bytecode->GetBufferPointer(),
                                 pipeline->pixel_shader_bytecode->GetBufferSize(),
                                 IID_PPV_ARGS(&pixel_reflector));
@@ -332,6 +332,21 @@ namespace nova::renderer ::rhi {
 
         pipeline->bindings = bindings;
 
+        rx::string first_key;
+        bindings.each_key([&](const rx::string& key) {
+            first_key = key;
+            return RX_ITERATION_STOP;
+        });
+
+        const auto* heap_start_descriptor = descriptors.find(first_key);
+
+        D3D12RootParameter table;
+        table.type = D3D12RootParameter::Type::DescriptorTable;
+        table.descriptor_table.descriptor_table_start = heap_start_descriptor->gpu_handle;
+
+        pipeline->root_parameters.reserve(1);
+        pipeline->root_parameters.push_back(move(table));
+
         return pipeline;
     }
 
@@ -345,8 +360,8 @@ namespace nova::renderer ::rhi {
                                                         shader_resource_descriptors->get_descriptor_size(),
                                                         device,
                                                         d3d12_pipeline.root_signature,
-                                                        rx::vector<D3D12RootParameter>{},
-                                                        rx::map<rx::string, D3D12Descriptor>{});
+                                                        d3d12_pipeline.root_parameters,
+                                                        d3d12_pipeline.descriptors);
 
         return binder;
     }
@@ -479,7 +494,7 @@ namespace nova::renderer ::rhi {
         for(uint32_t i = 0; i < num_semaphores; i++) {
             auto semaphore = create_semaphore(allocator);
             if(semaphore) {
-                semaphores.push_back(rx::utility::move(semaphore));
+                semaphores.push_back(move(semaphore));
             } else {
                 return {};
             }
@@ -515,7 +530,7 @@ namespace nova::renderer ::rhi {
         for(uint32_t i = 0; i < num_fences; i++) {
             auto fence = create_fence(signaled, allocator);
             if(fence) {
-                fences.push_back(rx::utility::move(fence));
+                fences.push_back(move(fence));
             } else {
                 return {};
             }
@@ -893,7 +908,7 @@ namespace nova::renderer ::rhi {
         }
     }
 
-    void D3D12RenderDevice::create_swapchain(HWND hwnd) {
+    void D3D12RenderDevice::create_swapchain(const HWND hwnd) {
         ComPtr<IDXGIFactory4> factory4;
         factory->QueryInterface(factory4.GetAddressOf());
 
@@ -1036,7 +1051,7 @@ namespace nova::renderer ::rhi {
         D3D12MA::ALLOCATOR_DESC allocator_desc{};
         allocator_desc.pAdapter = adapter.Get();
         allocator_desc.pDevice = device.Get();
-        const auto result = D3D12MA::CreateAllocator(&allocator_desc, &dma_allocator);
+        const auto result = CreateAllocator(&allocator_desc, &dma_allocator);
         if(FAILED(result)) {
             throw Exception("Could not initialize D3D12 Memory Allocator");
         }
@@ -1047,31 +1062,31 @@ namespace nova::renderer ::rhi {
         standard_hlsl_bindings.reserve(6);
 
         spirv_cross::HLSLResourceBinding camera_buffer_binding{};
-        standard_hlsl_bindings.push_back(rx::utility::move(camera_buffer_binding));
+        standard_hlsl_bindings.push_back(move(camera_buffer_binding));
 
         spirv_cross::HLSLResourceBinding material_buffer_binding{};
         material_buffer_binding.binding = 1;
         material_buffer_binding.srv.register_binding = 1;
-        standard_hlsl_bindings.push_back(rx::utility::move(material_buffer_binding));
+        standard_hlsl_bindings.push_back(move(material_buffer_binding));
 
         spirv_cross::HLSLResourceBinding point_sampler_binding{};
         point_sampler_binding.binding = 2;
-        standard_hlsl_bindings.push_back(rx::utility::move(point_sampler_binding));
+        standard_hlsl_bindings.push_back(move(point_sampler_binding));
 
         spirv_cross::HLSLResourceBinding bilinear_sampler_binding{};
         bilinear_sampler_binding.binding = 3;
         bilinear_sampler_binding.sampler.register_space = 1;
-        standard_hlsl_bindings.push_back(rx::utility::move(bilinear_sampler_binding));
+        standard_hlsl_bindings.push_back(move(bilinear_sampler_binding));
 
         spirv_cross::HLSLResourceBinding trilinear_sampler_binding{};
         trilinear_sampler_binding.binding = 4;
         trilinear_sampler_binding.sampler.register_space = 2;
-        standard_hlsl_bindings.push_back(rx::utility::move(trilinear_sampler_binding));
+        standard_hlsl_bindings.push_back(move(trilinear_sampler_binding));
 
         spirv_cross::HLSLResourceBinding texture_binding{};
         texture_binding.binding = 5;
         texture_binding.srv.register_binding = 3;
-        standard_hlsl_bindings.push_back(rx::utility::move(texture_binding));
+        standard_hlsl_bindings.push_back(move(texture_binding));
     }
 
     void D3D12RenderDevice::create_shader_compiler() {
@@ -1112,7 +1127,8 @@ namespace nova::renderer ::rhi {
                                                                      device,
                                                                      standard_root_signature,
                                                                      move(root_parameters),
-                                                                     rx::map<rx::string, D3D12Descriptor>{rx::array{rx::pair{"textures", textures_descriptor}}});
+                                                                     rx::map<rx::string, D3D12Descriptor>{
+                                                                         rx::array{rx::pair{"textures", textures_descriptor}}});
     }
 
     void get_bindings_for_shader(ID3D12ShaderReflection* reflector, rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings) {
@@ -1177,13 +1193,13 @@ namespace nova::renderer ::rhi {
 
             D3D12_DESCRIPTOR_RANGE range;
             range.RangeType = to_range_type(binding_desc.Type);
-            range.NumDescriptors = 1;
+            range.NumDescriptors = binding_desc.BindCount;
             range.BaseShaderRegister = binding_desc.BindPoint;
             range.RegisterSpace = binding_desc.Space;
             range.OffsetInDescriptorsFromTableStart = static_cast<UINT>(descriptor.cpu_handle.ptr /
                                                                         shader_resource_descriptors->get_descriptor_size());
 
-            ranges.push_back(rx::utility::move(range));
+            ranges.push_back(move(range));
 
             descriptors.insert(binding_name, descriptor);
         });

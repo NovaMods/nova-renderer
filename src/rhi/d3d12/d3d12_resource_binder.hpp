@@ -16,34 +16,6 @@
 namespace nova::renderer::rhi {
     struct D3D12Pipeline;
 
-    struct D3D12RootDescriptor {
-        D3D12ResourceType type;
-        rx::string binding_name;
-    };
-
-    struct D3D12DescriptorTable {
-        D3D12_GPU_DESCRIPTOR_HANDLE descriptor_table_start;
-    };
-
-    struct D3D12RootParameter {
-        enum class Type {
-            RootConstant,
-            RootDescriptor,
-            DescriptorTable,
-        };
-
-        Type type;
-
-        union {
-            D3D12RootDescriptor root_descriptor{};
-            D3D12DescriptorTable descriptor_table;
-        };
-
-        D3D12RootParameter();
-
-        ~D3D12RootParameter();
-    };
-
     /*!
      * \brief Allows the user to bind resources to a D3D12 command list in a sane way
      *

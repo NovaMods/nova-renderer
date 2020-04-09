@@ -16,6 +16,34 @@ namespace nova::renderer::rhi {
     constexpr uint32_t CPU_FENCE_SIGNALED = 16;
     constexpr uint32_t GPU_FENCE_SIGNALED = 32;
 
+    struct D3D12RootDescriptor {
+        D3D12ResourceType type;
+        rx::string binding_name;
+    };
+
+    struct D3D12DescriptorTable {
+        D3D12_GPU_DESCRIPTOR_HANDLE descriptor_table_start;
+    };
+
+    struct D3D12RootParameter {
+        enum class Type {
+            RootConstant,
+            RootDescriptor,
+            DescriptorTable,
+        };
+
+        Type type;
+
+        union {
+            D3D12RootDescriptor root_descriptor{};
+            D3D12DescriptorTable descriptor_table;
+        };
+
+        D3D12RootParameter();
+
+        ~D3D12RootParameter();
+    };
+
     struct D3D12Descriptor {
         D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle;
         D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle;
@@ -78,6 +106,7 @@ namespace nova::renderer::rhi {
         RhiGraphicsPipelineState create_info;
 
         Microsoft::WRL::ComPtr<ID3D12RootSignature> root_signature;
+        rx::vector<D3D12RootParameter> root_parameters;
 
         rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC> bindings;
         rx::map<rx::string, D3D12Descriptor> descriptors;
