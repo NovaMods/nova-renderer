@@ -317,8 +317,6 @@ add_library(nova-renderer STATIC
         )
 nova_format(nova-renderer "${OTHER_NOVA_SOURCE}")
 
-target_link_libraries(nova-renderer PRIVATE d3d12 dxgi d3dcompiler spirv-cross-hlsl)
-
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 
@@ -363,6 +361,15 @@ set(COMMON_LINK_LIBS
         spirv-cross-glsl
         spirv-cross-reflect
         spirv-cross-util)
+
+# D3D12-relevant libraries, we should control this better
+set(COMMON_LINK_LIBS 
+    ${COMMON_LINK_LIBS}
+    d3d12 
+    dxgi 
+    d3dcompiler 
+    spirv-cross-hlsl 
+    spirv-cross-glsl)
 
 # TODO: Figure out why we need to do this, and add a comment when we know
 if(TARGET glfw)
