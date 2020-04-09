@@ -77,7 +77,7 @@ Texture2D textures[] : register(t3);
         builtin_files.insert(STANDARD_PIPELINE_LAYOUT_FILE_NAME, standard_pipeline_layout_hlsl);
     }
 
-    HRESULT NovaDxcIncludeHandler::QueryInterface(const REFIID class_id, void** output_object) {
+    HRESULT NovaDxcIncludeHandler::QueryInterface(REFIID class_id, void** output_object) {
         if(!output_object) {
             return E_INVALIDARG;
         }

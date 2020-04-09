@@ -1142,7 +1142,7 @@ namespace nova::renderer::rhi {
                     device_dynamic_loader.vkGetQueueCheckpointDataNV(queue_to_submit_to, &num_checkpoints, checkpoint_data.data());
 
                     checkpoint_data.each_fwd([&](const VkCheckpointDataNV& data) {
-                        const auto stages = vk::to_string(vk::PipelineStageFlagBits{data.stage});
+                        const auto stages = vk::to_string(vk::PipelineStageFlagBits{static_cast<VkPipelineStageFlags>(data.stage)});
                         const auto checkpoint_name = checkpoint_names[reinterpret_cast<uint32_t>(data.pCheckpointMarker)];
                         logger->error("Pipeline stage %s reached checkpoint %s", stages.c_str(), checkpoint_name);
                     });
@@ -1396,7 +1396,7 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderDevice::create_device_and_queues() {
         MTR_SCOPE("VulkanRenderDevice", "create_device_and_queues");
-        rx::vector<char*> device_extensions{internal_allocator};
+        rx::vector<const char*> device_extensions{internal_allocator};
         device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
         device_extensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
         device_extensions.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
@@ -1562,7 +1562,8 @@ namespace nova::renderer::rhi {
         }
         device = vk_device;
 
-        device_dynamic_loader = vk::DispatchLoaderDynamic{instance, device};
+        device_dynamic_loader.init(instance);
+        device_dynamic_loader.init(device);
 
         graphics_family_index = graphics_family_idx;
         vkGetDeviceQueue(device, graphics_family_idx, 0, &graphics_queue);
@@ -1572,7 +1573,7 @@ namespace nova::renderer::rhi {
         vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
     }
 
-    bool VulkanRenderDevice::does_device_support_extensions(VkPhysicalDevice device, const rx::vector<char*>& required_device_extensions) {
+    bool VulkanRenderDevice::does_device_support_extensions(VkPhysicalDevice device, const rx::vector<const char*>& required_device_extensions) {
         uint32_t extension_count;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
         rx::vector<VkExtensionProperties> available(extension_count);

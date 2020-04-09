@@ -1,6 +1,7 @@
 #pragma once
 
 #include <d3d12.h>
+#include <stdint.h>
 #include <wrl/client.h>
 
 #include "rx/core/vector.h"
@@ -25,6 +26,8 @@ namespace nova::renderer::rhi {
                             rx::memory::allocator& allocator);
 
         [[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE get_next_free_descriptor();
+
+        [[nodiscard]] D3D12_GPU_DESCRIPTOR_HANDLE reserve_space_for_descriptor_table(uint32_t num_descriptors);
 
         void release_descriptor(D3D12_CPU_DESCRIPTOR_HANDLE descriptor);
 

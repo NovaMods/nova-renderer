@@ -13,10 +13,6 @@ namespace nova::renderer {
     using rx::utility::move;
 
     constexpr size_t STAGING_BUFFER_ALIGNMENT = 2048;
-    constexpr size_t STAGING_BUFFER_TOTAL_MEMORY_SIZE = 8388608;
-
-    constexpr size_t UNIFORM_BUFFER_ALIGNMENT = 64;           // TODO: Get a real value
-    constexpr size_t UNIFORM_BUFFER_TOTAL_MEMORY_SIZE = 8096; // TODO: Get a real value
 
     size_t size_in_bytes(PixelFormat pixel_format);
 

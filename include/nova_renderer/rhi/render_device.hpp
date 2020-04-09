@@ -127,7 +127,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Retrieves the resource binder that binds the material resources
          */
-        [[nodiscar]] virtual RhiResourceBinder* get_material_resource_binder() = 0;
+        [[nodiscard]] virtual RhiResourceBinder* get_material_resource_binder() = 0;
 
         /*!
          * \brief Creates a buffer with undefined contents

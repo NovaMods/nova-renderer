@@ -264,8 +264,6 @@ namespace nova::renderer::renderpack {
         rx::json& j, const char* field_name, const rx::string& context, const rx::json& default_value, ValidationReport& report) {
         if(!j[field_name]) {
             j[field_name] = default_value[field_name];
-            size_t out_size;
-            // const char* json_string = reinterpret_cast<const char*>(json_write_minified(j[field_name].raw(), &out_size));
             report.warnings.emplace_back(context + ": Missing field " + field_name + ". A default value will be used");
         }
     }

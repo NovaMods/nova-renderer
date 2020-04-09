@@ -23,6 +23,13 @@ namespace nova::renderer::rhi {
         }
     }
 
+    D3D12_GPU_DESCRIPTOR_HANDLE DescriptorAllocator::reserve_space_for_descriptor_table(uint32_t num_descriptors) {
+        const auto descriptor_idx = next_unallocated_descriptor;
+        next_unallocated_descriptor += num_descriptors;
+
+        return CD3DX12_GPU_DESCRIPTOR_HANDLE{heap->GetGPUDescriptorHandleForHeapStart(), descriptor_idx, descriptor_size};
+    }
+
     void DescriptorAllocator::release_descriptor(const D3D12_CPU_DESCRIPTOR_HANDLE descriptor) { available_descriptors.push_back(descriptor); }
 
     UINT DescriptorAllocator::get_descriptor_size() const {

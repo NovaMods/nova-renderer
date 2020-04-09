@@ -246,7 +246,7 @@ namespace nova::renderer {
         void record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) override;
 
     private:
-        ObjectType drawn_objects;
+        // ObjectType drawn_objects;
     };
 
     /*!

@@ -7,9 +7,19 @@
 
 namespace nova::renderer::rhi {
     RX_LOG("D3D12ResourceBinder", logger);
+    D3D12RootParameter::D3D12RootParameter() : type{Type::RootDescriptor} {}
+
+    D3D12RootParameter::~D3D12RootParameter() {
+        if(type == Type::RootDescriptor) {
+            root_descriptor.~D3D12RootDescriptor();
+
+        } else if(type == Type::DescriptorTable) {
+            descriptor_table.~D3D12DescriptorTable();
+        }
+    }
 
     D3D12ResourceBinder::D3D12ResourceBinder(rx::memory::allocator& allocator,
-                                             INT descriptor_size_in,
+                                             UINT descriptor_size_in,
                                              Microsoft::WRL::ComPtr<ID3D12Device> device_in,
                                              Microsoft::WRL::ComPtr<ID3D12RootSignature> root_signature_in,
                                              rx::vector<D3D12RootParameter> root_parameters_in,
@@ -195,13 +205,13 @@ namespace nova::renderer::rhi {
             srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
             srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
             srv_desc.Texture2D.MostDetailedMip = 0;
-            srv_desc.Texture2D.MipLevels = -1;
+            srv_desc.Texture2D.MipLevels = 0xFFFFFFFF;
             srv_desc.Texture2D.PlaneSlice = 0;
             srv_desc.Texture2D.ResourceMinLODClamp = 0;
 
             device->CreateShaderResourceView(image->resource.Get(), &srv_desc, handle);
 
-            handle.Offset(descriptor_size);
+            handle.Offset(static_cast<INT>(descriptor_size));
         });
     }
 
@@ -217,7 +227,7 @@ namespace nova::renderer::rhi {
 
             device->CreateUnorderedAccessView(image->resource.Get(), nullptr, &uav_desc, handle);
 
-            handle.Offset(descriptor_size);
+            handle.Offset(static_cast<INT>(descriptor_size));
         });
     }
 
@@ -225,13 +235,13 @@ namespace nova::renderer::rhi {
         CD3DX12_CPU_DESCRIPTOR_HANDLE handle{start_descriptor.handle};
 
         buffers.each_fwd([&](const D3D12Buffer* buffer) {
-            D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc{};
+            D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc;
             cbv_desc.BufferLocation = buffer->resource->GetGPUVirtualAddress();
             cbv_desc.SizeInBytes = static_cast<UINT>(buffer->size.b_count());
 
             device->CreateConstantBufferView(&cbv_desc, handle);
 
-            handle.Offset(descriptor_size);
+            handle.Offset(static_cast<INT>(descriptor_size));
         });
     }
 
@@ -249,7 +259,7 @@ namespace nova::renderer::rhi {
 
             device->CreateShaderResourceView(buffer->resource.Get(), &srv_desc, handle);
 
-            handle.Offset(descriptor_size);
+            handle.Offset(static_cast<INT>(descriptor_size));
         });
     }
 
@@ -261,12 +271,12 @@ namespace nova::renderer::rhi {
             uav_desc.Format = DXGI_FORMAT_UNKNOWN;
             uav_desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
             uav_desc.Buffer.FirstElement = 0;
-            uav_desc.Buffer.NumElements = buffer->size.b_count() / start_descriptor.array_element_size;
+            uav_desc.Buffer.NumElements = static_cast<UINT>(buffer->size.b_count() / start_descriptor.array_element_size);
             uav_desc.Buffer.StructureByteStride = start_descriptor.array_element_size;
 
             device->CreateUnorderedAccessView(buffer->resource.Get(), nullptr, &uav_desc, handle);
 
-            handle.Offset(descriptor_size);
+            handle.Offset(static_cast<INT>(descriptor_size));
         });
     }
 } // namespace nova::renderer::rhi

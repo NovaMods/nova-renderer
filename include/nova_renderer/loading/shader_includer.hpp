@@ -34,7 +34,7 @@ namespace nova::renderer {
 
         virtual ~NovaDxcIncludeHandler() = default;
 
-        HRESULT STDMETHODCALLTYPE QueryInterface(const REFIID class_id, void** output_object) override;
+        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID class_id, void** output_object) override;
 
         // In the Linux support library, these are implemented in IUnknown
         // However, I ran into an issue where the linker couldn't find definitions for these methods. I added the definitions to the

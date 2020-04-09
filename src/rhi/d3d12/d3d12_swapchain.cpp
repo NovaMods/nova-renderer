@@ -73,7 +73,7 @@ namespace nova::renderer::rhi {
         rtv_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
         rtv_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
-        device->CreateDesctiptorHeap(&rtv_heap_desc, IID_PPV_ARGS(rtv_descriptor_heap.GetAddressOf()));
+        device->CreateDescriptorHeap(&rtv_heap_desc, IID_PPV_ARGS(rtv_descriptor_heap.GetAddressOf()));
 
         CD3DX12_CPU_DESCRIPTOR_HANDLE rtv_handle(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart());
 
@@ -84,7 +84,7 @@ namespace nova::renderer::rhi {
             const auto image_name = rx::string::format("Swapchain image %d", i);
             rendertarget->SetName(reinterpret_cast<LPCWSTR>(image_name.to_utf16().data()));
 
-            auto image = rx::make_ptr<D3D12Image>(allocator, {{ResourceType::Image, true}, false}, swapchain_format, nullptr, rendertarget);
+            auto image = rx::make_ptr<D3D12Image>(allocator, RhiImage{RhiResource{ResourceType::Image, true}, false}, swapchain_format, nullptr, rendertarget);
             swapchain_images.push_back(rx::utility::move(image));
 
             // Create the Render Target View, which binds the swapchain buffer to the RTV handle

@@ -421,7 +421,7 @@ namespace nova::renderer::renderpack {
 
         rx::vector<LPCWSTR> args = rx::array{L"-spirv", L"-fspv-target-env=vulkan1.1", L"-fspv-reflect"};
 
-        auto* includer = new NovaDxcIncludeHandler{*(&rx::memory::g_system_allocator), *lib, folder_accessor};
+        auto* includer = new NovaDxcIncludeHandler{rx::memory::system_allocator::instance(), *lib, folder_accessor};
 
         IDxcOperationResult* compile_result;
         hr = compiler->Compile(encoding,

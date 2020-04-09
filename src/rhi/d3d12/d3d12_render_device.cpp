@@ -23,6 +23,8 @@
 
 using Microsoft::WRL::ComPtr;
 
+using rx::utility::move;
+
 namespace nova::renderer ::rhi {
     RX_LOG("D3D12RenderDevice", logger);
 
@@ -78,7 +80,7 @@ namespace nova::renderer ::rhi {
         return renderpass;
     }
 
-    rx::ptr<RhiFramebuffer> D3D12RenderDevice::create_framebuffer(const RhiRenderpass* /* renderpass */,
+    rx::ptr<RhiFramebuffer> D3D12RenderDevice::create_framebuffer(const RhiRenderpass& /* renderpass */,
                                                                   const rx::vector<RhiImage*>& color_attachments,
                                                                   const rx::optional<RhiImage*> depth_attachment,
                                                                   const glm::uvec2& framebuffer_size,
@@ -172,7 +174,7 @@ namespace nova::renderer ::rhi {
     }
 
     static rx::pair<rx::vector<D3D12_INPUT_ELEMENT_DESC>, rx::vector<rx::string>> get_input_assembler_elements(
-        ::ID3D12ShaderReflection* reflector) {
+        ID3D12ShaderReflection* reflector) {
         D3D12_SHADER_DESC shader_desc;
         reflector->GetDesc(&shader_desc);
 
@@ -196,7 +198,7 @@ namespace nova::renderer ::rhi {
             const auto& name = semantic_names.last();
 
             attributes
-                .emplace_back(name.data(), param_desc.SemanticIndex, format, i, offset, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 1);
+                .emplace_back(name.data(), param_desc.SemanticIndex, format, i, offset, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 1_u32);
 
             offset += size_in_bytes(format);
         }
@@ -338,7 +340,13 @@ namespace nova::renderer ::rhi {
         MTR_SCOPE("D3D12ResourceBinder", "create_resource_binder_for_pipeline");
 
         auto& d3d12_pipeline = static_cast<const D3D12Pipeline&>(pipeline);
-        auto binder = rx::make_ptr<D3D12ResourceBinder>(allocator, d3d12_pipeline, allocator);
+        auto binder = rx::make_ptr<D3D12ResourceBinder>(allocator,
+                                                        allocator,
+                                                        shader_resource_descriptors->get_descriptor_size(),
+                                                        device,
+                                                        d3d12_pipeline.root_signature,
+                                                        rx::vector<D3D12RootParameter>{},
+                                                        rx::map<rx::string, D3D12Descriptor>{});
 
         return binder;
     }
@@ -392,7 +400,7 @@ namespace nova::renderer ::rhi {
         sampler->desc.AddressV = to_d3d12_address_mode(create_info.y_wrap_mode);
         sampler->desc.AddressW = to_d3d12_address_mode(create_info.z_wrap_mode);
         sampler->desc.MipLODBias = create_info.mip_bias;
-        sampler->desc.MaxAnisotropy = rx::math::round(create_info.max_anisotropy);
+        sampler->desc.MaxAnisotropy = static_cast<UINT>(rx::math::round(create_info.max_anisotropy));
         sampler->desc.MinLOD = create_info.min_lod;
         sampler->desc.MaxLOD = create_info.max_lod;
 
@@ -583,11 +591,11 @@ namespace nova::renderer ::rhi {
     void D3D12RenderDevice::reset_fences(const rx::vector<RhiFence*>& /* fences */) { /* Don't need to reset fences in D3D12 */
     }
 
-    void D3D12RenderDevice::destroy_renderpass(rx::ptr<RhiRenderpass> /* pass */, rx::memory::allocator& /* allocator */) {
+    void D3D12RenderDevice::destroy_renderpass(rx::ptr<RhiRenderpass> /* pass */) {
         // D3D12 renderpasses have no GPU objects, so we don't need to do anything+ to destroy them
     }
 
-    void D3D12RenderDevice::destroy_framebuffer(const rx::ptr<RhiFramebuffer> framebuffer, rx::memory::allocator& /* allocator */) {
+    void D3D12RenderDevice::destroy_framebuffer(const rx::ptr<RhiFramebuffer> framebuffer) {
         MTR_SCOPE("D3D12RenderDevice", "destroy_framebuffer");
 
         const auto* fb = framebuffer.get();
@@ -601,14 +609,13 @@ namespace nova::renderer ::rhi {
         }
     }
 
-    void D3D12RenderDevice::destroy_texture(rx::ptr<RhiImage> /* resource */, rx::memory::allocator& /* allocator */) {
+    void D3D12RenderDevice::destroy_texture(rx::ptr<RhiImage> /* resource */) {
         // D3D12 ComPtr will free the texture when needed
     }
 
-    void D3D12RenderDevice::destroy_semaphores(rx::vector<rx::ptr<RhiSemaphore>>& /* semaphores */,
-                                               rx::memory::allocator& /* allocator */) {}
+    void D3D12RenderDevice::destroy_semaphores(rx::vector<rx::ptr<RhiSemaphore>>& /* semaphores */) {}
 
-    void D3D12RenderDevice::destroy_fences(const rx::vector<rx::ptr<RhiFence>>& /* fences */, rx::memory::allocator& /* allocator */) {}
+    void D3D12RenderDevice::destroy_fences(const rx::vector<rx::ptr<RhiFence>>& /* fences */) {}
 
     rx::ptr<RhiRenderCommandList> D3D12RenderDevice::create_command_list(uint32_t /* thread_idx */,
                                                                          QueueType needed_queue_type,
@@ -643,7 +650,7 @@ namespace nova::renderer ::rhi {
         ComPtr<ID3D12GraphicsCommandList> commands;
         cmds->QueryInterface(commands.GetAddressOf());
 
-        return rx::make_ptr<D3D12RenderCommandList>(allocator, commands);
+        return rx::make_ptr<D3D12RenderCommandList>(allocator, allocator, commands, *this);
     }
 
     ComPtr<ID3D12PipelineState> D3D12RenderDevice::compile_pso(const D3D12Pipeline& pipeline_info, D3D12Renderpass& current_renderpass) {
@@ -886,16 +893,16 @@ namespace nova::renderer ::rhi {
         }
     }
 
-    void D3D12RenderDevice::create_swapchain(const HWND hwnd) {
+    void D3D12RenderDevice::create_swapchain(HWND hwnd) {
         ComPtr<IDXGIFactory4> factory4;
         factory->QueryInterface(factory4.GetAddressOf());
 
-        swapchain = rx::make_ptr<D3D12Swapchain>(*internal_allocator,
+        swapchain = rx::make_ptr<D3D12Swapchain>(internal_allocator,
                                                  *this,
                                                  factory4.Get(),
                                                  device.Get(),
                                                  hwnd,
-                                                 {settings->window.width, settings->window.height},
+                                                 glm::uvec2{settings->window.width, settings->window.height},
                                                  settings->max_in_flight_frames,
                                                  graphics_queue.Get());
     }
@@ -963,7 +970,16 @@ namespace nova::renderer ::rhi {
         root_parameters[2].InitAsShaderResourceView(1);
 
         // Textures array
-        root_parameters[3].InitAsShaderResourceView(3, MAX_NUM_TEXTURES);
+        rx::vector<D3D12_DESCRIPTOR_RANGE> descriptor_table_ranges{internal_allocator};
+        D3D12_DESCRIPTOR_RANGE textures_array;
+        textures_array.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+        textures_array.NumDescriptors = MAX_NUM_TEXTURES;
+        textures_array.BaseShaderRegister = 3;
+        textures_array.RegisterSpace = 0;
+        textures_array.OffsetInDescriptorsFromTableStart = 0;
+        descriptor_table_ranges.push_back(move(textures_array));
+
+        root_parameters[3].InitAsDescriptorTable(static_cast<UINT>(descriptor_table_ranges.size()), descriptor_table_ranges.data());
 
         rx::vector<D3D12_STATIC_SAMPLER_DESC> static_samplers{internal_allocator, 3};
 
@@ -1073,11 +1089,28 @@ namespace nova::renderer ::rhi {
     }
 
     void D3D12RenderDevice::create_material_resource_binder() {
+        rx::vector<D3D12RootParameter> root_parameters{internal_allocator, 4};
+
+        root_parameters[0].type = D3D12RootParameter::Type::RootConstant;
+
+        root_parameters[1].type = D3D12RootParameter::Type::RootDescriptor;
+        root_parameters[1].root_descriptor.type = D3D12ResourceType::SRV;
+        root_parameters[1].root_descriptor.binding_name = "cameras";
+
+        root_parameters[2].type = D3D12RootParameter::Type::RootDescriptor;
+        root_parameters[2].root_descriptor.type = D3D12ResourceType::SRV;
+        root_parameters[2].root_descriptor.binding_name = "material_buffer";
+
+        root_parameters[3].type = D3D12RootParameter::Type::DescriptorTable;
+        // root_parameters[3].descriptor_table.descriptor_table_start =
 
         material_resource_binder = rx::make_ptr<D3D12ResourceBinder>(internal_allocator,
-                                                                     &internal_allocator,
+                                                                     internal_allocator,
+                                                                     shader_resource_descriptors->get_descriptor_size(),
                                                                      device,
-                                                                     standard_root_signature);
+                                                                     standard_root_signature,
+                                                                     move(root_parameters),
+                                                                     rx::map<rx::string, D3D12Descriptor>{});
     }
 
     void get_bindings_for_shader(ID3D12ShaderReflection* reflector, rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings) {

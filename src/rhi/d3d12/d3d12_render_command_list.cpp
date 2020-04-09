@@ -11,6 +11,8 @@
 
 using Microsoft::WRL::ComPtr;
 
+using rx::utility::move;
+
 namespace nova::renderer::rhi {
     RX_LOG("D3D12RenderCommandList", logger);
 
@@ -70,21 +72,21 @@ namespace nova::renderer::rhi {
 
             const auto d3d12_barrier = CD3DX12_RESOURCE_BARRIER::Transition(resource, state_before, states_after);
 
-            d3d12_barriers.push_back(rx::utility::must_move(d3d12_barrier));
+            d3d12_barriers.push_back(move(d3d12_barrier));
         });
 
         command_list->ResourceBarrier(static_cast<UINT>(d3d12_barriers.size()), d3d12_barriers.data());
     }
 
-    void D3D12RenderCommandList::copy_buffer(RhiBuffer& destination_buffer,
+    void D3D12RenderCommandList::copy_buffer(const RhiBuffer& destination_buffer,
                                              const mem::Bytes destination_offset,
-                                             RhiBuffer& source_buffer,
+                                             const RhiBuffer& source_buffer,
                                              const mem::Bytes source_offset,
                                              const mem::Bytes num_bytes) {
         MTR_SCOPE("D3D12RenderCommandList", "copy_buffer");
 
-        auto& d3d12_dst_buffer = static_cast<D3D12Buffer&>(destination_buffer);
-        auto& d3d12_src_buffer = static_cast<D3D12Buffer&>(source_buffer);
+        const auto& d3d12_dst_buffer = static_cast<const D3D12Buffer&>(destination_buffer);
+        const auto& d3d12_src_buffer = static_cast<const D3D12Buffer&>(source_buffer);
 
         command_list->CopyBufferRegion(d3d12_dst_buffer.resource.Get(),
                                        destination_offset.b_count(),
@@ -93,24 +95,24 @@ namespace nova::renderer::rhi {
                                        num_bytes.b_count());
     }
 
-    void D3D12RenderCommandList::upload_data_to_image(RhiImage& image,
+    void D3D12RenderCommandList::upload_data_to_image(const RhiImage& image,
                                                       const size_t width,
                                                       const size_t height,
                                                       const size_t bytes_per_pixel,
-                                                      RhiBuffer& staging_buffer,
+                                                      const RhiBuffer& staging_buffer,
                                                       const void* data) {
         MTR_SCOPE("D3D12RenderCommandList", "upload_data_to_image");
 
         const auto data_size = width * height * bytes_per_pixel;
 
-        auto& d3d12_staging_buffer = static_cast<D3D12Buffer&>(staging_buffer);
+        const auto& d3d12_staging_buffer = static_cast<const D3D12Buffer&>(staging_buffer);
 
         D3D12_RANGE map_range{0, data_size};
         void* dst;
         d3d12_staging_buffer.resource->Map(0, &map_range, &dst);
         memcpy(dst, data, data_size);
 
-        auto& d3d12_image = static_cast<D3D12Image&>(image);
+        const auto& d3d12_image = static_cast<const D3D12Image&>(image);
 
         command_list->CopyResource(d3d12_image.resource.Get(), d3d12_staging_buffer.resource.Get());
     }
@@ -130,7 +132,7 @@ namespace nova::renderer::rhi {
         command_list->SetGraphicsRoot32BitConstant(0, camera.index, 0);
     }
 
-    void D3D12RenderCommandList::begin_renderpass(RhiRenderpass& renderpass, RhiFramebuffer& framebuffer) {
+    void D3D12RenderCommandList::begin_renderpass(RhiRenderpass& renderpass, const RhiFramebuffer& framebuffer) {
         MTR_SCOPE("D3D12RenderCommandList", "begin_renderpass");
 
         auto& d3d12_renderpass = static_cast<D3D12Renderpass&>(renderpass);
@@ -147,7 +149,7 @@ namespace nova::renderer::rhi {
                                             d3d12_renderpass.flags);
 
         } else {
-            auto& d3d12_framebuffer = static_cast<D3D12Framebuffer&>(framebuffer);
+            const auto& d3d12_framebuffer = static_cast<const D3D12Framebuffer&>(framebuffer);
 
             auto* depth_stencil_descriptor = d3d12_framebuffer.depth_stencil_descriptor ? &(*d3d12_framebuffer.depth_stencil_descriptor) :
                                                                                           nullptr;
@@ -207,7 +209,7 @@ namespace nova::renderer::rhi {
         // Ideal solution: `RhiMeshBuffers` that has vertex buffers, index buffers, and information about how to bind them
         buffers.each_fwd([&](const RhiBuffer* buffer) {
             const auto* d3d12_buffer = static_cast<const D3D12Buffer*>(buffer);
-            views.emplace_back(d3d12_buffer->resource->GetGPUVirtualAddress(), static_cast<UINT>(d3d12_buffer->size.b_count()), 0);
+            views.emplace_back(d3d12_buffer->resource->GetGPUVirtualAddress(), static_cast<UINT>(d3d12_buffer->size.b_count()), static_cast<UINT>(0));
         });
 
         command_list->IASetVertexBuffers(0, static_cast<UINT>(views.size()), views.data());
@@ -241,10 +243,10 @@ namespace nova::renderer::rhi {
 
     void D3D12RenderCommandList::set_scissor_rect(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height) {
         D3D12_RECT scissor_rect;
-        scissor_rect.top = y;
-        scissor_rect.left = x;
-        scissor_rect.bottom = y + height;
-        scissor_rect.right = x + width;
+        scissor_rect.top = static_cast<LONG>(y);
+        scissor_rect.left =static_cast<LONG>( x);
+        scissor_rect.bottom = static_cast<LONG>(y + height);
+        scissor_rect.right = static_cast<LONG>(x + width);
 
         command_list->RSSetScissorRects(1, &scissor_rect);
     }

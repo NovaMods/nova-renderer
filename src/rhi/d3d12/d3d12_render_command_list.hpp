@@ -11,7 +11,7 @@
 #define interface struct
 
 namespace nova::renderer::rhi {
-    class D3D12RenderCommandList : RhiRenderCommandList {
+    class D3D12RenderCommandList : public RhiRenderCommandList {
     public:
         explicit D3D12RenderCommandList(rx::memory::allocator& allocator, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmds, D3D12RenderDevice& device_in);
 
@@ -34,20 +34,24 @@ namespace nova::renderer::rhi {
                                PipelineStage stages_after_barrier,
                                const rx::vector<RhiResourceBarrier>& barriers) override;
 
-        void copy_buffer(RhiBuffer& destination_buffer,
+        void copy_buffer(const RhiBuffer& destination_buffer,
                          mem::Bytes destination_offset,
-                         RhiBuffer& source_buffer,
+                         const RhiBuffer& source_buffer,
                          mem::Bytes source_offset,
                          mem::Bytes num_bytes) override;
 
-        void upload_data_to_image(
-            RhiImage& image, size_t width, size_t height, size_t bytes_per_pixel, RhiBuffer& staging_buffer, const void* data) override;
+        void upload_data_to_image(const RhiImage& image,
+                                  size_t width,
+                                  size_t height,
+                                  size_t bytes_per_pixel,
+                                  const RhiBuffer& staging_buffer,
+                                  const void* data) override;
 
         void execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) override;
 
         void set_camera(const Camera& camera) override;
 
-        void begin_renderpass(RhiRenderpass& renderpass, RhiFramebuffer& framebuffer) override;
+        void begin_renderpass(RhiRenderpass& renderpass, const RhiFramebuffer& framebuffer) override;
 
         void end_renderpass() override;
 

@@ -340,19 +340,9 @@ target_include_directories(nova-renderer PUBLIC
 target_link_directories(nova-renderer PUBLIC $ENV{VULKAN_SDK}/Lib)
 
 target_include_directories(nova-renderer PRIVATE Vulkan_INCLUDE_DIR)
+target_include_directories(nova-renderer PRIVATE ${Vulkan_INCLUDE_DIR}/spirv_cross)
 
 include(GNUInstallDirs)
-
-##################################
-# Add extra warnings if possible #
-##################################
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options_if_supported(nova-renderer PUBLIC 
-                                        -Wall -Wextra -Wpedantic -Wconversion -Wdefaulted-function-deleted 
-                                        -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-c++98-c++11-c++14-compat 
-                                        -Wno-c++98-c++11-c++14-compat-pedantic -Wno-ctad-maybe-unsupported
-                                        -Wno-global-constructors -Wno-zero-as-null-pointer-constant)
-endif()
 
 add_coverage(nova-renderer)
 

@@ -247,7 +247,7 @@ namespace nova::renderer::rhi {
 
         void create_device_and_queues();
 
-        bool does_device_support_extensions(VkPhysicalDevice device, const rx::vector<char*>& required_device_extensions);
+        bool does_device_support_extensions(VkPhysicalDevice device, const rx::vector<const char*>& required_device_extensions);
 
         void create_swapchain();
 

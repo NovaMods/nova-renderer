@@ -34,8 +34,9 @@ readability*
 -clang-diagnostic-return-std-move-in-c++11
 -clang-diagnostic-language-extension-token
 -modernize-use-trailing-return-type
--clang-diagnostic-covered-switch-default
+-covered-switch-default
 -readability-implicit-bool-conversion
 -cppcoreguidelines-pro-bounds-array-to-pointer-decay
 -google-build-using-namespace
 -cppcoreguidelines-avoid-c-arrays
+-old-style-cast

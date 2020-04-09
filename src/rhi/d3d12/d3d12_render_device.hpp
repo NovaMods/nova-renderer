@@ -36,7 +36,7 @@ namespace nova::renderer::rhi {
                                                                const glm::uvec2& framebuffer_size,
                                                                rx::memory::allocator& allocator) override;
 
-        [[nodiscard]] rx::ptr<RhiFramebuffer> create_framebuffer(const RhiRenderpass* renderpass,
+        [[nodiscard]] rx::ptr<RhiFramebuffer> create_framebuffer(const RhiRenderpass& renderpass,
                                                                  const rx::vector<RhiImage*>& color_attachments,
                                                                  const rx::optional<RhiImage*> depth_attachment,
                                                                  const glm::uvec2& framebuffer_size,
@@ -77,15 +77,15 @@ namespace nova::renderer::rhi {
 
         void reset_fences(const rx::vector<RhiFence*>& fences) override;
 
-        void destroy_renderpass(rx::ptr<RhiRenderpass> pass, rx::memory::allocator& allocator) override;
+        void destroy_renderpass(rx::ptr<RhiRenderpass> pass) override;
 
-        void destroy_framebuffer(rx::ptr<RhiFramebuffer> framebuffer, rx::memory::allocator& allocator) override;
+        void destroy_framebuffer(rx::ptr<RhiFramebuffer> framebuffer) override;
 
-        void destroy_texture(rx::ptr<RhiImage> resource, rx::memory::allocator& allocator) override;
+        void destroy_texture(rx::ptr<RhiImage> resource) override;
 
-        void destroy_semaphores(rx::vector<rx::ptr<RhiSemaphore>>& semaphores, rx::memory::allocator& allocator) override;
+        void destroy_semaphores(rx::vector<rx::ptr<RhiSemaphore>>& semaphores) override;
 
-        void destroy_fences(const rx::vector<rx::ptr<RhiFence>>& fences, rx::memory::allocator& allocator) override;
+        void destroy_fences(const rx::vector<rx::ptr<RhiFence>>& fences) override;
 
         rx::ptr<RhiRenderCommandList> create_command_list(uint32_t thread_idx,
                                                           QueueType needed_queue_type,
@@ -206,7 +206,7 @@ namespace nova::renderer::rhi {
         [[nodiscard]] Microsoft::WRL::ComPtr<ID3D12RootSignature> compile_root_signature(
             const D3D12_ROOT_SIGNATURE_DESC& root_signature_desc) const;
 
-        [[nodisacrd]] HANDLE get_next_event();
+        [[nodiscard]] HANDLE get_next_event();
 #pragma endregion
     };
 } // namespace nova::renderer::rhi

@@ -35,9 +35,13 @@ namespace nova::renderer::rhi {
         Type type;
 
         union {
-            D3D12RootDescriptor root_descriptor;
+            D3D12RootDescriptor root_descriptor{};
             D3D12DescriptorTable descriptor_table;
         };
+
+        D3D12RootParameter();
+
+        ~D3D12RootParameter();
     };
 
     struct D3D12Descriptor {
@@ -78,7 +82,7 @@ namespace nova::renderer::rhi {
          * \param descriptor_table_bindings_in All the descriptors in descriptor tables managed by this resource binder
          */
         D3D12ResourceBinder(rx::memory::allocator& allocator,
-                            INT descriptor_size_in,
+                            UINT descriptor_size_in,
                             Microsoft::WRL::ComPtr<ID3D12Device> device_in,
                             Microsoft::WRL::ComPtr<ID3D12RootSignature> root_signature_in,
                             rx::vector<D3D12RootParameter> root_parameters_in,
@@ -123,7 +127,7 @@ namespace nova::renderer::rhi {
          */
         rx::map<rx::string, D3D12Descriptor> descriptor_table_bindings;
 
-        INT descriptor_size;
+        UINT descriptor_size;
 
         bool is_dirty = false;
 
