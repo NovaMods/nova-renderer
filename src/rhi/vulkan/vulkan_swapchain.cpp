@@ -324,8 +324,6 @@ namespace nova::renderer::rhi {
         vkCreateImageView(render_device->device, &image_view_create_info, nullptr, &vk_image->image_view);
         swapchain_image_views.push_back(vk_image->image_view);
 
-        swapchain_images.push_back(move(vk_image));
-
         VkFramebufferCreateInfo framebuffer_create_info = {};
         framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebuffer_create_info.attachmentCount = 1;
@@ -341,6 +339,8 @@ namespace nova::renderer::rhi {
         vkCreateFramebuffer(render_device->device, &framebuffer_create_info, nullptr, &vk_framebuffer->framebuffer);
 
         framebuffers.push_back(move(vk_framebuffer));
+
+        swapchain_images.push_back(move(vk_image));
 
         VkFenceCreateInfo fence_create_info = {};
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;

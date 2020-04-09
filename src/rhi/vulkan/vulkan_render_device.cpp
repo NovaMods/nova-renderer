@@ -1117,18 +1117,16 @@ namespace nova::renderer::rhi {
         submit_info.signalSemaphoreCount = static_cast<uint32_t>(vk_signal_semaphores.size());
         submit_info.pSignalSemaphores = vk_signal_semaphores.data();
 
-        const auto vk_signal_fence = [&]() -> vk::Fence {
-            if(fence_to_signal) {
-                return static_cast<const VulkanFence&>(*fence_to_signal).fence;
+        vk::Fence vk_signal_fence;
+        if(fence_to_signal) {
+            vk_signal_fence = static_cast<const VulkanFence&>(*fence_to_signal).fence;
 
-            } else {
-                return get_next_submission_fence();
-            }
-        }();
+        } else {
+            vk_signal_fence = get_next_submission_fence();
+        }
 
-        // For debugging
-        vkQueueWaitIdle(queue_to_submit_to);
-        const auto result = vkQueueSubmit(queue_to_submit_to, 1, &submit_info, vk_signal_fence);
+        rx::log::flush();
+        const auto result = vkQueueSubmit(queue_to_submit_to, 1, &submit_info, static_cast<VkFence>(vk_signal_fence));
 
         if(settings->debug.enabled) {
             if(result != VK_SUCCESS) {
@@ -1427,12 +1425,12 @@ namespace nova::renderer::rhi {
                     // _probably_ discreet GPUs, so let's not use the Intel GPU and instead use the discreet GPU
                     // TODO: Make a local device for the integrated GPU when we figure out multi-GPU
                     // TODO: Rework this code when Intel releases discreet GPUs
-                    // continue;
-                }
-
-                if(!is_intel_gpu) {
                     continue;
                 }
+
+                // if(!is_intel_gpu) {
+                   // continue;
+                // }
 
                 const auto supports_extensions = does_device_support_extensions(current_device, device_extensions);
                 if(!supports_extensions) {
@@ -1562,8 +1560,7 @@ namespace nova::renderer::rhi {
         }
         device = vk_device;
 
-        device_dynamic_loader.init(instance);
-        device_dynamic_loader.init(device);
+        device_dynamic_loader.init(instance, vkGetInstanceProcAddr, device);
 
         graphics_family_index = graphics_family_idx;
         vkGetDeviceQueue(device, graphics_family_idx, 0, &graphics_queue);
@@ -1573,7 +1570,8 @@ namespace nova::renderer::rhi {
         vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
     }
 
-    bool VulkanRenderDevice::does_device_support_extensions(VkPhysicalDevice device, const rx::vector<const char*>& required_device_extensions) {
+    bool VulkanRenderDevice::does_device_support_extensions(VkPhysicalDevice device,
+                                                            const rx::vector<const char*>& required_device_extensions) {
         uint32_t extension_count;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
         rx::vector<VkExtensionProperties> available(extension_count);
