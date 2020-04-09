@@ -241,6 +241,9 @@ set(WINDOWS_NOVA_SOURCE
         src/rhi/d3d12/d3d12_utils.hpp
         src/rhi/d3d12/d3d12_utils.cpp
         src/rhi/d3d12/d3d12_enums.hpp
+
+        external/D3D12MemoryAllocator/src/Common.cpp
+        external/D3D12MemoryAllocator/src/D3D12MemAlloc.cpp
         )
 
 set(UNIX_NOVA_SOURCE
@@ -314,10 +317,7 @@ add_library(nova-renderer STATIC
         )
 nova_format(nova-renderer "${OTHER_NOVA_SOURCE}")
 
-# Add VULKAN_SDK to the include path
-# TODO: Only add if the user is compiling the Vulkan backend
-
-message(STATUS "Miniz headers: ${INSTALL_HEADERS}")
+target_link_libraries(nova-renderer PRIVATE d3d12 dxgi d3dcompiler spirv-cross-hlsl)
 
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
