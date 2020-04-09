@@ -9,10 +9,34 @@
 #include "nova_renderer/rhi/pipeline_create_info.hpp"
 #include "nova_renderer/rhi/rhi_types.hpp"
 
+
+
 namespace nova::renderer::rhi {
     constexpr uint32_t CPU_FENCE_UNSIGNALED = 0;
     constexpr uint32_t CPU_FENCE_SIGNALED = 16;
     constexpr uint32_t GPU_FENCE_SIGNALED = 32;
+
+    struct D3D12Descriptor {
+        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle;
+        D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle;
+
+        D3D12ResourceType type;
+
+        /*!
+         * \brief Size of the array element of a structured buffer
+         *
+         * This will often be 0 because not every binding will be a structured buffer. However, for bindings which _are_ a structured
+         * buffer, this member is the size, in bytes, of the structure
+         */
+        UINT struct_size = 0;
+
+        /*!
+         * \brief Number of elements in the descriptor array that this descriptor starts
+         *
+         * aka the number of descriptors, including this one, which can be safely updated from the handles in this descriptor
+         */
+        UINT array_size = 1;
+    };
 
     struct D3D12Renderpass : RhiRenderpass {
         rx::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC> render_target_descriptions;
@@ -27,8 +51,8 @@ namespace nova::renderer::rhi {
     };
 
     struct D3D12Framebuffer : RhiFramebuffer {
-        rx::vector<D3D12_CPU_DESCRIPTOR_HANDLE> render_target_descriptors;
-        rx::optional<D3D12_CPU_DESCRIPTOR_HANDLE> depth_stencil_descriptor;
+        rx::vector<D3D12Descriptor> render_target_descriptors;
+        rx::optional<D3D12Descriptor> depth_stencil_descriptor;
     };
 
     struct D3D12Image : RhiImage {
@@ -56,7 +80,7 @@ namespace nova::renderer::rhi {
         Microsoft::WRL::ComPtr<ID3D12RootSignature> root_signature;
 
         rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC> bindings;
-        rx::map<rx::string, D3D12_CPU_DESCRIPTOR_HANDLE> descriptors;
+        rx::map<rx::string, D3D12Descriptor> descriptors;
 
         rx::vector<D3D12_INPUT_ELEMENT_DESC> input_assembler_elements;
         rx::vector<rx::string> input_assembler_semantic_names;

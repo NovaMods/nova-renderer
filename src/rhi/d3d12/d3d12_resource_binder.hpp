@@ -44,19 +44,6 @@ namespace nova::renderer::rhi {
         ~D3D12RootParameter();
     };
 
-    struct D3D12Descriptor {
-        D3D12_CPU_DESCRIPTOR_HANDLE handle;
-        D3D12ResourceType type;
-
-        /*!
-         * \brief Size of the array element of a structured buffer
-         *
-         * This will often be 0 because not every binding will be a structured buffer. However, for bindings which _are_ a structured
-         * buffer, this member is the size, in bytes, of the structure
-         */
-        UINT array_element_size = 0;
-    };
-
     /*!
      * \brief Allows the user to bind resources to a D3D12 command list in a sane way
      *

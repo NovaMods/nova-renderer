@@ -90,30 +90,30 @@ namespace nova::renderer ::rhi {
         auto framebuffer = rx::make_ptr<D3D12Framebuffer>(allocator);
         framebuffer->size = framebuffer_size;
 
-        rx::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtv_descriptors{allocator};
+        framebuffer->render_target_descriptors.reserve(color_attachments.size());
         color_attachments.each_fwd([&](const RhiImage* image) {
             auto* d3d12_image = static_cast<const D3D12Image*>(image);
-            const auto descriptor_handle = render_target_descriptors->get_next_free_descriptor();
+            const auto descriptor_handle = render_target_descriptors->get_descriptor();
 
             D3D12_RENDER_TARGET_VIEW_DESC desc{};
             desc.Format = d3d12_image->format;
             desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
-            device->CreateRenderTargetView(d3d12_image->resource.Get(), &desc, descriptor_handle);
+            device->CreateRenderTargetView(d3d12_image->resource.Get(), &desc, descriptor_handle.cpu_handle);
 
-            rtv_descriptors.push_back(descriptor_handle);
+            framebuffer->render_target_descriptors.push_back(descriptor_handle);
         });
         framebuffer->num_attachments = static_cast<uint32_t>(framebuffer->render_target_descriptors.size());
 
         if(depth_attachment) {
             auto* d3d12_depth = static_cast<const D3D12Image*>(*depth_attachment);
-            const auto descriptor_handle = depth_stencil_descriptors->get_next_free_descriptor();
+            const auto descriptor_handle = depth_stencil_descriptors->get_descriptor();
 
             D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc{};
             dsv_desc.Format = d3d12_depth->format;
             dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 
-            device->CreateDepthStencilView(d3d12_depth->resource.Get(), &dsv_desc, descriptor_handle);
+            device->CreateDepthStencilView(d3d12_depth->resource.Get(), &dsv_desc, descriptor_handle.cpu_handle);
 
             framebuffer->depth_stencil_descriptor = descriptor_handle;
         }
@@ -602,7 +602,7 @@ namespace nova::renderer ::rhi {
         const auto* d3d12_framebuffer = static_cast<const D3D12Framebuffer*>(fb);
 
         d3d12_framebuffer->render_target_descriptors.each_fwd(
-            [&](const D3D12_CPU_DESCRIPTOR_HANDLE& descriptor) { render_target_descriptors->release_descriptor(descriptor); });
+            [&](const D3D12Descriptor& descriptor) { render_target_descriptors->release_descriptor(descriptor); });
 
         if(d3d12_framebuffer->depth_stencil_descriptor) {
             depth_stencil_descriptors->release_descriptor(*d3d12_framebuffer->depth_stencil_descriptor);
@@ -1101,8 +1101,10 @@ namespace nova::renderer ::rhi {
         root_parameters[2].root_descriptor.type = D3D12ResourceType::SRV;
         root_parameters[2].root_descriptor.binding_name = "material_buffer";
 
+        auto textures_descriptor = shader_resource_descriptors->get_descriptor(MAX_NUM_TEXTURES);
+
         root_parameters[3].type = D3D12RootParameter::Type::DescriptorTable;
-        // root_parameters[3].descriptor_table.descriptor_table_start =
+        root_parameters[3].descriptor_table.descriptor_table_start = textures_descriptor.gpu_handle;
 
         material_resource_binder = rx::make_ptr<D3D12ResourceBinder>(internal_allocator,
                                                                      internal_allocator,
@@ -1110,7 +1112,7 @@ namespace nova::renderer ::rhi {
                                                                      device,
                                                                      standard_root_signature,
                                                                      move(root_parameters),
-                                                                     rx::map<rx::string, D3D12Descriptor>{});
+                                                                     rx::map<rx::string, D3D12Descriptor>{rx::array{rx::pair{"textures", textures_descriptor}}});
     }
 
     void get_bindings_for_shader(ID3D12ShaderReflection* reflector, rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings) {
@@ -1165,20 +1167,20 @@ namespace nova::renderer ::rhi {
         // build a descriptor table for these bindings
         // We allocate descriptors for the table as well, because we need them for the root signature
 
-        rx::map<rx::string, D3D12_CPU_DESCRIPTOR_HANDLE> descriptors{allocator};
+        rx::map<rx::string, D3D12Descriptor> descriptors{allocator};
 
         rx::vector<D3D12_DESCRIPTOR_RANGE> ranges{allocator};
         ranges.reserve(bindings.size());
 
         bindings.each_pair([&](const rx::string& binding_name, const D3D12_SHADER_INPUT_BIND_DESC& binding_desc) {
-            const auto descriptor = shader_resource_descriptors->get_next_free_descriptor();
+            const auto descriptor = shader_resource_descriptors->get_descriptor();
 
             D3D12_DESCRIPTOR_RANGE range;
             range.RangeType = to_range_type(binding_desc.Type);
             range.NumDescriptors = 1;
             range.BaseShaderRegister = binding_desc.BindPoint;
             range.RegisterSpace = binding_desc.Space;
-            range.OffsetInDescriptorsFromTableStart = static_cast<UINT>(descriptor.ptr /
+            range.OffsetInDescriptorsFromTableStart = static_cast<UINT>(descriptor.cpu_handle.ptr /
                                                                         shader_resource_descriptors->get_descriptor_size());
 
             ranges.push_back(rx::utility::move(range));

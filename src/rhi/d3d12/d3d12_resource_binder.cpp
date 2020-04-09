@@ -197,7 +197,7 @@ namespace nova::renderer::rhi {
     }
 
     void D3D12ResourceBinder::create_srv_array(const rx::vector<D3D12Image*>& images, const D3D12Descriptor& start_descriptor) const {
-        CD3DX12_CPU_DESCRIPTOR_HANDLE handle{start_descriptor.handle};
+        CD3DX12_CPU_DESCRIPTOR_HANDLE handle{start_descriptor.cpu_handle};
 
         images.each_fwd([&](const D3D12Image* image) {
             D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
@@ -216,7 +216,7 @@ namespace nova::renderer::rhi {
     }
 
     void D3D12ResourceBinder::create_uav_array(const rx::vector<D3D12Image*>& images, const D3D12Descriptor& start_descriptor) const {
-        CD3DX12_CPU_DESCRIPTOR_HANDLE handle{start_descriptor.handle};
+        CD3DX12_CPU_DESCRIPTOR_HANDLE handle{start_descriptor.cpu_handle};
 
         images.each_fwd([&](const D3D12Image* image) {
             D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc;
@@ -232,7 +232,7 @@ namespace nova::renderer::rhi {
     }
 
     void D3D12ResourceBinder::create_cbv_array(const rx::vector<D3D12Buffer*>& buffers, const D3D12Descriptor& start_descriptor) const {
-        CD3DX12_CPU_DESCRIPTOR_HANDLE handle{start_descriptor.handle};
+        CD3DX12_CPU_DESCRIPTOR_HANDLE handle{start_descriptor.cpu_handle};
 
         buffers.each_fwd([&](const D3D12Buffer* buffer) {
             D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc;
@@ -246,7 +246,7 @@ namespace nova::renderer::rhi {
     }
 
     void D3D12ResourceBinder::create_srv_array(const rx::vector<D3D12Buffer*>& buffers, const D3D12Descriptor& start_descriptor) const {
-        CD3DX12_CPU_DESCRIPTOR_HANDLE handle{start_descriptor.handle};
+        CD3DX12_CPU_DESCRIPTOR_HANDLE handle{start_descriptor.cpu_handle};
 
         buffers.each_fwd([&](const D3D12Buffer* buffer) {
             D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
@@ -254,8 +254,8 @@ namespace nova::renderer::rhi {
             srv_desc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
             srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
             srv_desc.Buffer.FirstElement = 0;
-            srv_desc.Buffer.NumElements = buffer->size.b_count() / start_descriptor.array_element_size;
-            srv_desc.Buffer.StructureByteStride = start_descriptor.array_element_size;
+            srv_desc.Buffer.NumElements = buffer->size.b_count() / start_descriptor.struct_size;
+            srv_desc.Buffer.StructureByteStride = start_descriptor.struct_size;
 
             device->CreateShaderResourceView(buffer->resource.Get(), &srv_desc, handle);
 
@@ -264,15 +264,15 @@ namespace nova::renderer::rhi {
     }
 
     void D3D12ResourceBinder::create_uav_array(const rx::vector<D3D12Buffer*>& buffers, const D3D12Descriptor& start_descriptor) const {
-        CD3DX12_CPU_DESCRIPTOR_HANDLE handle{start_descriptor.handle};
+        CD3DX12_CPU_DESCRIPTOR_HANDLE handle{start_descriptor.cpu_handle};
 
         buffers.each_fwd([&](const D3D12Buffer* buffer) {
             D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc{};
             uav_desc.Format = DXGI_FORMAT_UNKNOWN;
             uav_desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
             uav_desc.Buffer.FirstElement = 0;
-            uav_desc.Buffer.NumElements = static_cast<UINT>(buffer->size.b_count() / start_descriptor.array_element_size);
-            uav_desc.Buffer.StructureByteStride = start_descriptor.array_element_size;
+            uav_desc.Buffer.NumElements = static_cast<UINT>(buffer->size.b_count() / start_descriptor.struct_size);
+            uav_desc.Buffer.StructureByteStride = start_descriptor.struct_size;
 
             device->CreateUnorderedAccessView(buffer->resource.Get(), nullptr, &uav_desc, handle);
 

@@ -197,7 +197,7 @@ namespace nova::renderer::rhi {
                                                                              LPCWSTR target_profile,
                                                                              const rx::string& pipeline_name);
 
-        using RootSignatureWithDescriptors = rx::pair<rx::map<rx::string, D3D12_CPU_DESCRIPTOR_HANDLE>,
+        using RootSignatureWithDescriptors = rx::pair<rx::map<rx::string, D3D12Descriptor>,
                                                       Microsoft::WRL::ComPtr<ID3D12RootSignature>>;
 
         [[nodiscard]] RootSignatureWithDescriptors create_root_signature(const rx::map<rx::string, D3D12_SHADER_INPUT_BIND_DESC>& bindings,

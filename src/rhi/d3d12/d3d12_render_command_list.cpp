@@ -151,11 +151,17 @@ namespace nova::renderer::rhi {
         } else {
             const auto& d3d12_framebuffer = static_cast<const D3D12Framebuffer&>(framebuffer);
 
-            auto* depth_stencil_descriptor = d3d12_framebuffer.depth_stencil_descriptor ? &(*d3d12_framebuffer.depth_stencil_descriptor) :
-                                                                                          nullptr;
+            auto* depth_stencil_descriptor = d3d12_framebuffer.depth_stencil_descriptor ?
+                                                 &d3d12_framebuffer.depth_stencil_descriptor->cpu_handle :
+                                                 nullptr;
+
+            rx::vector<D3D12_CPU_DESCRIPTOR_HANDLE> framebuffer_descriptors{*internal_allocator};
+            framebuffer_descriptors.reserve(d3d12_framebuffer.render_target_descriptors.size());
+            d3d12_framebuffer.render_target_descriptors.each_fwd(
+                [&](const D3D12Descriptor& descriptor) { framebuffer_descriptors.push_back(descriptor.cpu_handle); });
 
             command_list->OMSetRenderTargets(static_cast<UINT>(d3d12_framebuffer.render_target_descriptors.size()),
-                                             d3d12_framebuffer.render_target_descriptors.data(),
+                                             framebuffer_descriptors.data(),
                                              0,
                                              depth_stencil_descriptor);
         }
@@ -209,7 +215,9 @@ namespace nova::renderer::rhi {
         // Ideal solution: `RhiMeshBuffers` that has vertex buffers, index buffers, and information about how to bind them
         buffers.each_fwd([&](const RhiBuffer* buffer) {
             const auto* d3d12_buffer = static_cast<const D3D12Buffer*>(buffer);
-            views.emplace_back(d3d12_buffer->resource->GetGPUVirtualAddress(), static_cast<UINT>(d3d12_buffer->size.b_count()), static_cast<UINT>(0));
+            views.emplace_back(d3d12_buffer->resource->GetGPUVirtualAddress(),
+                               static_cast<UINT>(d3d12_buffer->size.b_count()),
+                               static_cast<UINT>(0));
         });
 
         command_list->IASetVertexBuffers(0, static_cast<UINT>(views.size()), views.data());
@@ -244,7 +252,7 @@ namespace nova::renderer::rhi {
     void D3D12RenderCommandList::set_scissor_rect(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height) {
         D3D12_RECT scissor_rect;
         scissor_rect.top = static_cast<LONG>(y);
-        scissor_rect.left =static_cast<LONG>( x);
+        scissor_rect.left = static_cast<LONG>(x);
         scissor_rect.bottom = static_cast<LONG>(y + height);
         scissor_rect.right = static_cast<LONG>(x + width);
 

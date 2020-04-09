@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <wrl/client.h>
 
+#include "d3d12_resource_binder.hpp"
 #include "rx/core/vector.h"
 
 // Fix WinAPI cause Rex broke it
@@ -25,11 +26,14 @@ namespace nova::renderer::rhi {
                             UINT descriptor_size_in,
                             rx::memory::allocator& allocator);
 
-        [[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE get_next_free_descriptor();
+        /*!
+         * \brief Gets a handle to one or more descriptors from the descriptor pool
+         *
+         * \param array_size The size of the array that this descriptor represents. Must be greater than 0!
+         */
+        [[nodiscard]] D3D12Descriptor get_descriptor(uint32_t array_size = 1);
 
-        [[nodiscard]] D3D12_GPU_DESCRIPTOR_HANDLE reserve_space_for_descriptor_table(uint32_t num_descriptors);
-
-        void release_descriptor(D3D12_CPU_DESCRIPTOR_HANDLE descriptor);
+        void release_descriptor(const D3D12Descriptor& descriptor);
 
         [[nodiscard]] UINT get_descriptor_size() const;
 
@@ -38,6 +42,6 @@ namespace nova::renderer::rhi {
         UINT descriptor_size;
 
         INT next_unallocated_descriptor = 0;
-        rx::vector<D3D12_CPU_DESCRIPTOR_HANDLE> available_descriptors;
+        rx::vector<D3D12Descriptor> available_descriptors;
     };
 } // namespace nova::renderer::rhi
