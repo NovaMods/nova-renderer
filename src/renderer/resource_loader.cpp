@@ -27,7 +27,7 @@ namespace nova::renderer {
 
     rx::optional<BufferResourceAccessor> DeviceResources::create_uniform_buffer(const rx::string& name, const Bytes size) {
         const auto event_name = rx::string::format("create_uniform_buffer(%s)", name);
-        MTR_SCOPE("DeviceResources", event_name.data());
+        //MTR_SCOPE("DeviceResources", event_name.data());
         BufferResource resource;
         resource.name = name;
         resource.size = size;

@@ -146,6 +146,8 @@ namespace nova::renderer::rhi {
         Intersection = 0x1000,
         Task = 0x0040,
         Mesh = 0x0080,
+        All = Vertex | TessellationControl | TessellationEvaluation | Geometry | Pixel | Compute | Raygen | AnyHit | ClosestHit | Miss |
+              Intersection | Task | Mesh,
     };
 
     enum class QueueType {

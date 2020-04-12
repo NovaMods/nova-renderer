@@ -324,12 +324,11 @@ namespace nova::renderer::rhi {
                                               vk_pipeline.layout.variable_descriptor_set_counts,
                                               allocator);
 
-        auto* binder = allocator.create<VulkanResourceBinder>(
-                                                  *this,
-                                                  vk_pipeline.layout.bindings,
-                                                  descriptors,
-                                                  vk_pipeline.layout.layout,
-                                                  allocator);
+        auto* binder = allocator.create<VulkanResourceBinder>(*this,
+                                                              vk_pipeline.layout.bindings,
+                                                              descriptors,
+                                                              vk_pipeline.layout.layout,
+                                                              allocator);
 
         return rx::ptr<RhiResourceBinder>{allocator, binder};
     }
@@ -1057,8 +1056,8 @@ namespace nova::renderer::rhi {
         return rx::ptr<RhiRenderCommandList>{allocator, list};
     }
 
-    void VulkanRenderDevice::submit_command_list(rx::ptr<RhiRenderCommandList> cmds,
-                                                 QueueType queue,
+    void VulkanRenderDevice::submit_command_list(const rx::ptr<RhiRenderCommandList> cmds,
+                                                 const QueueType queue,
                                                  RhiFence* fence_to_signal,
                                                  const rx::vector<RhiSemaphore*>& wait_semaphores,
                                                  const rx::vector<RhiSemaphore*>& signal_semaphores) {
@@ -1412,7 +1411,7 @@ namespace nova::renderer::rhi {
                 }
 
                 // if(!is_intel_gpu) {
-                   // continue;
+                // continue;
                 // }
 
                 const auto supports_extensions = does_device_support_extensions(current_device, device_extensions);
@@ -1724,10 +1723,60 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderDevice::create_material_resource_binder() {
+        standard_layout_bindings.insert("cameras",
+                                        RhiResourceBindingDescription{/* .set = */ 0,
+                                                                      /* .binding = */ 0,
+                                                                      /* .count = */ 1,
+                                                                      /* .is_unbounded = */ false,
+                                                                      /* .type = */ DescriptorType::StorageBuffer,
+                                                                      /* .stages = */ ShaderStage::All});
+
+        standard_layout_bindings.insert("material_buffer",
+                                        RhiResourceBindingDescription{/* .set = */ 0,
+                                                                      /* .binding = */ 1,
+                                                                      /* .count = */ 1,
+                                                                      /* .is_unbounded = */ false,
+                                                                      /* .type = */ DescriptorType::StorageBuffer,
+                                                                      /* .stages = */ ShaderStage::All});
+
+        standard_layout_bindings.insert("point_sampler",
+                                        RhiResourceBindingDescription{/* .set = */ 0,
+                                                                      /* .binding = */ 2,
+                                                                      /* .count = */ 1,
+                                                                      /* .is_unbounded = */ false,
+                                                                      /* .type = */ DescriptorType::Sampler,
+                                                                      /* .stages = */ ShaderStage::All});
+
+        standard_layout_bindings.insert("bilinear_sampler",
+                                        RhiResourceBindingDescription{/* .set = */ 0,
+                                                                      /* .binding = */ 3,
+                                                                      /* .count = */ 1,
+                                                                      /* .is_unbounded = */ false,
+                                                                      /* .type = */ DescriptorType::Sampler,
+                                                                      /* .stages = */ ShaderStage::All});
+
+        standard_layout_bindings.insert("trilinear_sampler",
+                                        RhiResourceBindingDescription{/* .set = */ 0,
+                                                                      /* .binding = */ 4,
+                                                                      /* .count = */ 1,
+                                                                      /* .is_unbounded = */ false,
+                                                                      /* .type = */ DescriptorType::Sampler,
+                                                                      /* .stages = */ ShaderStage::All});
+
+        standard_layout_bindings.insert("textures",
+                                        RhiResourceBindingDescription{/* .set = */ 0,
+                                                                      /* .binding = */ 5,
+                                                                      /* .count = */ MAX_NUM_TEXTURES,
+                                                                      /* .is_unbounded = */ true,
+                                                                      /* .type = */ DescriptorType::Texture,
+                                                                      /* .stages = */ ShaderStage::All});
+
+        auto set = get_next_standard_descriptor_set();
+
         material_resource_binder = rx::make_ptr<VulkanResourceBinder>(internal_allocator,
                                                                       *this,
                                                                       standard_layout_bindings,
-                                                                      standard_descriptor_sets,
+                                                                      rx::array{set},
                                                                       standard_pipeline_layout,
                                                                       internal_allocator);
     }

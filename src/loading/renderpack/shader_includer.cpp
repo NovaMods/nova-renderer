@@ -59,13 +59,13 @@ SamplerState point_sampler : register(s0, space0);
  * \brief Bilinear sampler you can use to sample any texture
  */
 [[vk::binding(3, 0)]]
-SamplerState bilinear_filter : register(s0, space1);
+SamplerState bilinear_sampler : register(s0, space1);
 
 /*!
  * \brief Trilinear sampler you can use to sample any texture
  */
 [[vk::binding(4, 0)]]
-SamplerState trilinear_filter : register(s0, space2);
+SamplerState trilinear_sampler : register(s0, space2);
 
 /*!
  * \brief Array of all the textures that are available for a shader to sample from
