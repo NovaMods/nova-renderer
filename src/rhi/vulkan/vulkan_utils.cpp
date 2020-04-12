@@ -625,9 +625,8 @@ namespace nova::renderer::rhi {
 
         rx::vector<vk::DescriptorSetLayout> ds_layouts{allocator};
         ds_layouts.resize(dsl_create_infos.size());
-        auto vk_allocator = wrap_allocator(allocator);
         for(size_t i = 0; i < dsl_create_infos.size(); i++) {
-            render_device.device.createDescriptorSetLayout(&dsl_create_infos[i], &vk_allocator, &ds_layouts[i]);
+            render_device.device.createDescriptorSetLayout(&dsl_create_infos[i], nullptr, &ds_layouts[i]);
         }
 
         return ds_layouts;

@@ -103,18 +103,16 @@ namespace nova::renderer::rhi {
                                                       const void* data) {
         MTR_SCOPE("D3D12RenderCommandList", "upload_data_to_image");
 
-        const auto data_size = width * height * bytes_per_pixel;
-
         const auto& d3d12_staging_buffer = static_cast<const D3D12Buffer&>(staging_buffer);
-
-        D3D12_RANGE map_range{0, data_size};
-        void* dst;
-        d3d12_staging_buffer.resource->Map(0, &map_range, &dst);
-        memcpy(dst, data, data_size);
 
         const auto& d3d12_image = static_cast<const D3D12Image&>(image);
 
-        command_list->CopyResource(d3d12_image.resource.Get(), d3d12_staging_buffer.resource.Get());
+        D3D12_SUBRESOURCE_DATA subresource;
+        subresource.pData = data;
+        subresource.RowPitch = width * bytes_per_pixel;
+        subresource.SlicePitch = width * height * bytes_per_pixel;
+
+        UpdateSubresources(command_list.Get(), d3d12_image.resource.Get(), d3d12_staging_buffer.resource.Get(), 0, 0, 1, &subresource);
     }
 
     void D3D12RenderCommandList::execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) {
@@ -259,9 +257,7 @@ namespace nova::renderer::rhi {
         command_list->RSSetScissorRects(1, &scissor_rect);
     }
 
-    void D3D12RenderCommandList::finalize() {
-        command_list->Close();
-    }
+    void D3D12RenderCommandList::finalize() { command_list->Close(); }
 
     ID3D12GraphicsCommandList* D3D12RenderCommandList::get_d3d12_list() const { return command_list.Get(); }
 } // namespace nova::renderer::rhi

@@ -35,8 +35,6 @@ namespace nova::renderer::rhi {
      */
     class VulkanRenderDevice final : public RenderDevice {
     public:
-        vk::AllocationCallbacks vk_internal_allocator;
-
         // Global Vulkan objects
         VkInstance instance;
         vk::DispatchLoaderDynamic instance_dynamic_loader;

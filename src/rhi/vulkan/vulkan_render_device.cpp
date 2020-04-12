@@ -45,7 +45,6 @@ namespace nova::renderer::rhi {
                                            NovaWindow& window_in,
                                            rx::memory::allocator& allocator) // NOLINT(cppcoreguidelines-pro-type-member-init)
         : RenderDevice{settings_in, window_in, allocator},
-          vk_internal_allocator{wrap_allocator(internal_allocator)},
           command_pools_by_thread_idx{internal_allocator},
           fenced_tasks{internal_allocator},
           checkpoint_names{internal_allocator} {
@@ -226,8 +225,7 @@ namespace nova::renderer::rhi {
         render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
         render_pass_create_info.pAttachments = attachments.data();
 
-        const VkAllocationCallbacks& vk_alloc = wrap_allocator(allocator);
-        NOVA_CHECK_RESULT(vkCreateRenderPass(device, &render_pass_create_info, &vk_alloc, &renderpass->pass));
+        NOVA_CHECK_RESULT(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &renderpass->pass));
 
         if(writes_to_backbuffer) {
             if(data.texture_outputs.size() > 1) {
@@ -284,8 +282,7 @@ namespace nova::renderer::rhi {
         framebuffer->size = framebuffer_size;
         framebuffer->num_attachments = static_cast<uint32_t>(attachment_views.size());
 
-        const VkAllocationCallbacks& vk_alloc = wrap_allocator(allocator);
-        NOVA_CHECK_RESULT(vkCreateFramebuffer(device, &framebuffer_create_info, &vk_alloc, &framebuffer->framebuffer));
+        NOVA_CHECK_RESULT(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer->framebuffer));
 
         return move(framebuffer);
     }
@@ -355,8 +352,7 @@ namespace nova::renderer::rhi {
                                           .setPPoolSizes(pool_sizes.data());
 
         vk::DescriptorPool pool;
-        const auto& vk_alloc = wrap_allocator(allocator);
-        const auto result = device.createDescriptorPool(&pool_create_info, &vk_alloc, &pool);
+        const auto result = device.createDescriptorPool(&pool_create_info, nullptr, &pool);
         if(result != vk::Result::eSuccess) {
             logger->error("Could not create descriptor pool: %s", vk::to_string(result).c_str());
         }
@@ -429,7 +425,7 @@ namespace nova::renderer::rhi {
         if(submission_fences.is_empty()) {
             const auto fence_create_info = vk::FenceCreateInfo();
             vk::Fence fence;
-            device.createFence(&fence_create_info, &vk_internal_allocator, &fence);
+            device.createFence(&fence_create_info, nullptr, &fence);
 
             return fence;
 
@@ -707,13 +703,12 @@ namespace nova::renderer::rhi {
         pipeline_create_info.subpass = 0;
         pipeline_create_info.basePipelineIndex = -1;
 
-        const VkAllocationCallbacks& vk_alloc = wrap_allocator(allocator);
         vk::Pipeline pipeline;
         const auto result = vkCreateGraphicsPipelines(device,
                                                       nullptr,
                                                       1,
                                                       &pipeline_create_info,
-                                                      &vk_alloc,
+                                                      nullptr,
                                                       reinterpret_cast<VkPipeline*>(&pipeline));
         if(result != VK_SUCCESS) {
             return ntl::Result<vk::Pipeline>{MAKE_ERROR("Could not compile pipeline %s", state.name)};
@@ -821,8 +816,7 @@ namespace nova::renderer::rhi {
         vk_create_info.minLod = create_info.min_lod;
         vk_create_info.maxLod = create_info.max_lod;
 
-        const VkAllocationCallbacks& alloc_calls = wrap_allocator(allocator);
-        vkCreateSampler(device, &vk_create_info, &alloc_calls, &sampler->sampler);
+        vkCreateSampler(device, &vk_create_info, nullptr, &sampler->sampler);
 
         return move(sampler);
     }
@@ -904,8 +898,7 @@ namespace nova::renderer::rhi {
             image_view_create_info.subresourceRange.baseMipLevel = 0;
             image_view_create_info.subresourceRange.levelCount = 1;
 
-            const VkAllocationCallbacks& vk_alloc = wrap_allocator(allocator);
-            vkCreateImageView(device, &image_view_create_info, &vk_alloc, &image->image_view);
+            vkCreateImageView(device, &image_view_create_info, nullptr, &image->image_view);
 
             return move(image);
 
@@ -923,8 +916,7 @@ namespace nova::renderer::rhi {
         VkSemaphoreCreateInfo create_info = {};
         create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-        const VkAllocationCallbacks& vk_alloc = wrap_allocator(allocator);
-        vkCreateSemaphore(device, &create_info, &vk_alloc, &semaphore->semaphore);
+        vkCreateSemaphore(device, &create_info, nullptr, &semaphore->semaphore);
 
         return move(semaphore);
     }
@@ -944,7 +936,7 @@ namespace nova::renderer::rhi {
 
     rx::ptr<RhiFence> VulkanRenderDevice::create_fence(const bool signaled, rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_fence");
-        auto fence = rx::make_ptr<VulkanFence>(allocator);
+        auto* fence = allocator.create<VulkanFence>();
 
         VkFenceCreateInfo fence_create_info = {};
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -952,10 +944,9 @@ namespace nova::renderer::rhi {
             fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
         }
 
-        const VkAllocationCallbacks& vk_alloc = wrap_allocator(allocator);
-        vkCreateFence(device, &fence_create_info, &vk_alloc, &fence->fence);
+        vkCreateFence(device, &fence_create_info, nullptr, &fence->fence);
 
-        return move(fence);
+        return rx::ptr<RhiFence>(allocator, fence);
     }
 
     rx::vector<rx::ptr<RhiFence>> VulkanRenderDevice::create_fences(const uint32_t num_fences,
@@ -1030,8 +1021,7 @@ namespace nova::renderer::rhi {
         MTR_SCOPE("VulkanRenderDevice", "destroy_semaphores");
         semaphores.each_fwd([&](rx::ptr<RhiSemaphore>& semaphore) {
             auto* vk_semaphore = static_cast<VulkanSemaphore*>(semaphore.get());
-            const VkAllocationCallbacks& vk_alloc = wrap_allocator(semaphore.allocator());
-            vkDestroySemaphore(device, vk_semaphore->semaphore, &vk_alloc);
+            vkDestroySemaphore(device, vk_semaphore->semaphore, nullptr);
         });
     }
 
@@ -1039,8 +1029,7 @@ namespace nova::renderer::rhi {
         MTR_SCOPE("VulkanRenderDevice", "destroy_fences");
         fences.each_fwd([&](rx::ptr<RhiFence>& fence) {
             auto* vk_fence = static_cast<VulkanFence*>(fence.get());
-            const VkAllocationCallbacks& vk_alloc = wrap_allocator(fence.allocator());
-            vkDestroyFence(device, vk_fence->fence, &vk_alloc);
+            vkDestroyFence(device, vk_fence->fence, nullptr);
         });
     }
 
@@ -1061,9 +1050,9 @@ namespace nova::renderer::rhi {
         VkCommandBuffer new_buffer;
         vkAllocateCommandBuffers(device, &create_info, &new_buffer);
 
-        auto list = rx::make_ptr<VulkanRenderCommandList>(allocator, new_buffer, *this, allocator);
+        auto* list = allocator.create<VulkanRenderCommandList>(new_buffer, *this, allocator);
 
-        return move(list);
+        return rx::ptr<RhiRenderCommandList>(allocator, list);
     }
 
     void VulkanRenderDevice::submit_command_list(rx::ptr<RhiRenderCommandList> cmds,
@@ -1202,7 +1191,7 @@ namespace nova::renderer::rhi {
                                                 .setPPushConstantRanges(standard_push_constants.data()); // TODO: Get this from reflection
 
         vk::PipelineLayout layout;
-        device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &layout);
+        device.createPipelineLayout(&pipeline_layout_create, nullptr, &layout);
 
         rx::vector<uint32_t> variable_descriptor_counts{internal_allocator, ds_layouts.size()};
         bindings.each_value([&](const RhiResourceBindingDescription& binding_desc) {
@@ -1225,16 +1214,14 @@ namespace nova::renderer::rhi {
         x_surface_create_info.dpy = window.get_display();
         x_surface_create_info.window = window.get_window_handle();
 
-        const VkAllocationCallbacks& vk_alloc = wrap_allocator(internal_allocator);
-        NOVA_CHECK_RESULT(vkCreateXlibSurfaceKHR(instance, &x_surface_create_info, &vk_alloc, &surface));
+        NOVA_CHECK_RESULT(vkCreateXlibSurfaceKHR(instance, &x_surface_create_info, nullptr, &surface));
 
 #elif defined(NOVA_WINDOWS)
         VkWin32SurfaceCreateInfoKHR win32_surface_create = {};
         win32_surface_create.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
         win32_surface_create.hwnd = window.get_window_handle();
 
-        const VkAllocationCallbacks& vk_alloc = wrap_allocator(internal_allocator);
-        NOVA_CHECK_RESULT(vkCreateWin32SurfaceKHR(instance, &win32_surface_create, &vk_alloc, &surface));
+        NOVA_CHECK_RESULT(vkCreateWin32SurfaceKHR(instance, &win32_surface_create, nullptr, &surface));
 
 #else
 #error Unsuported window system
@@ -1301,10 +1288,9 @@ namespace nova::renderer::rhi {
 
         create_info.pNext = &validation_features;
 
-        const VkAllocationCallbacks& vk_alloc = wrap_allocator(internal_allocator);
         {
             MTR_SCOPE("VulkanRenderDevice", "vkCreateInstance");
-            NOVA_CHECK_RESULT(vkCreateInstance(&create_info, &vk_alloc, &instance));
+            NOVA_CHECK_RESULT(vkCreateInstance(&create_info, nullptr, &instance));
         }
 
         instance_dynamic_loader = {instance, vkGetInstanceProcAddr};
@@ -1325,9 +1311,7 @@ namespace nova::renderer::rhi {
                                                reinterpret_cast<PFN_vkDebugUtilsMessengerCallbackEXT>(&debug_report_callback))
                                            .setPUserData(this);
 
-        const auto& vk_alloc = wrap_allocator(internal_allocator);
-
-        vk::Instance{instance}.createDebugUtilsMessengerEXT(&debug_create_info, &vk_alloc, &debug_callback, instance_dynamic_loader);
+        vk::Instance{instance}.createDebugUtilsMessengerEXT(&debug_create_info, nullptr, &debug_callback, instance_dynamic_loader);
     }
 
     void VulkanRenderDevice::save_device_info() {
@@ -1376,13 +1360,10 @@ namespace nova::renderer::rhi {
     void VulkanRenderDevice::initialize_vma() {
         MTR_SCOPE("VulkanRenderDevice", "initialize_vma");
 
-        VkAllocationCallbacks callbacks = vk_internal_allocator;
-
         VmaAllocatorCreateInfo create_info{};
         create_info.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
         create_info.physicalDevice = gpu.phys_device;
         create_info.device = device;
-        create_info.pAllocationCallbacks = &callbacks;
         create_info.instance = instance;
 
         const auto result = vmaCreateAllocator(&create_info, &vma);
@@ -1549,9 +1530,8 @@ namespace nova::renderer::rhi {
         descriptor_indexing_features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
         device_create_info.pNext = &descriptor_indexing_features;
 
-        const VkAllocationCallbacks& vk_alloc = wrap_allocator(internal_allocator);
         VkDevice vk_device;
-        const auto res = PROFILE_RET_EXPR(vkCreateDevice(gpu.phys_device, &device_create_info, &vk_alloc, &vk_device),
+        const auto res = PROFILE_RET_EXPR(vkCreateDevice(gpu.phys_device, &device_create_info, nullptr, &vk_device),
                                           VulkanRenderEngine,
                                           vkCreateDevice);
         if(res != VK_SUCCESS) {
@@ -1699,7 +1679,7 @@ namespace nova::renderer::rhi {
                                            .setPBindings(bindings.data())
                                            .setPNext(&set_flags);
 
-        device.createDescriptorSetLayout(&dsl_layout_create, &vk_internal_allocator, &standard_set_layout);
+        device.createDescriptorSetLayout(&dsl_layout_create, nullptr, &standard_set_layout);
 
         const auto pipeline_layout_create = vk::PipelineLayoutCreateInfo()
                                                 .setSetLayoutCount(1)
@@ -1707,7 +1687,7 @@ namespace nova::renderer::rhi {
                                                 .setPushConstantRangeCount(static_cast<uint32_t>(standard_push_constants.size()))
                                                 .setPPushConstantRanges(standard_push_constants.data());
 
-        device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &standard_pipeline_layout);
+        device.createPipelineLayout(&pipeline_layout_create, nullptr, &standard_pipeline_layout);
 
         const auto& pool = create_descriptor_pool(rx::array{rx::pair{DescriptorType::StorageBuffer, 5_u32 * 128},
                                                             rx::pair{DescriptorType::UniformBuffer, 5_u32 * 128},
@@ -1766,9 +1746,8 @@ namespace nova::renderer::rhi {
             command_pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
             command_pool_create_info.queueFamilyIndex = queue_index;
 
-            const VkAllocationCallbacks& vk_alloc = wrap_allocator(internal_allocator);
             VkCommandPool command_pool;
-            NOVA_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_create_info, &vk_alloc, &command_pool));
+            NOVA_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool));
             pools_by_queue.insert(queue_index, command_pool);
         });
 
@@ -1851,8 +1830,7 @@ namespace nova::renderer::rhi {
         shader_module_create_info.codeSize = spirv.size() * 4;
 
         VkShaderModule module;
-        const VkAllocationCallbacks& vk_alloc = wrap_allocator(internal_allocator);
-        const auto result = vkCreateShaderModule(device, &shader_module_create_info, &vk_alloc, &module);
+        const auto result = vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module);
         if(result == VK_SUCCESS) {
             return rx::optional<VkShaderModule>(module);
 

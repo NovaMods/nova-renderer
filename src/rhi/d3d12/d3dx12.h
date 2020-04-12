@@ -1543,7 +1543,7 @@ inline UINT64 UpdateSubresources(_In_ ID3D12GraphicsCommandList* pCmdList,
 
     auto Desc = pDestinationResource->GetDesc();
     ID3D12Device* pDevice = nullptr;
-    pDestinationResource->GetDevice(IID_ID3D12Device, reinterpret_cast<void**>(&pDevice));
+    pDestinationResource->GetDevice(IID_PPV_ARGS(&pDevice));
     pDevice->GetCopyableFootprints(&Desc,
                                    FirstSubresource,
                                    NumSubresources,

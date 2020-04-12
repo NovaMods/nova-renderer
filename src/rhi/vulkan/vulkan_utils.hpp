@@ -55,37 +55,7 @@ namespace nova::renderer::rhi {
         VulkanRenderDevice& render_device,
         rx::memory::allocator& allocator);;
 
-    /*!
-     * \brief Wraps a Rex allocator so the Vulkan driver can use it
-     */
-    inline vk::AllocationCallbacks wrap_allocator(rx::memory::allocator& allocator_in);
-
     bool operator&(const ShaderStage& lhs, const ShaderStage& rhs);
-
-    RX_HINT_FORCE_INLINE vk::AllocationCallbacks wrap_allocator(rx::memory::allocator& allocator_in) {
-        vk::AllocationCallbacks callbacks{};
-
-        callbacks.pUserData = &allocator_in;
-        callbacks.setPfnAllocation(
-            +[](void* user_data, size_t size, size_t /* alignment */, VkSystemAllocationScope /* allocation_scope */) -> void* {
-            auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);
-            return allocator->allocate(size);
-        });
-        callbacks.pfnReallocation = +[](void* user_data,
-                                       void* original,
-                                       size_t size,
-                                       size_t /* alignment */,
-                                       VkSystemAllocationScope /* allocation_scope */) -> void* {
-            auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);
-            return allocator->reallocate(reinterpret_cast<rx_byte*>(original), size);
-        };
-        callbacks.pfnFree = +[](void* user_data, void* memory) {
-            auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);
-            allocator->deallocate(reinterpret_cast<rx_byte*>(memory));
-        };
-
-        return callbacks;
-    }
 } // namespace nova::renderer::rhi
 
 // Only validate errors in debug mode
