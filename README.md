@@ -12,6 +12,8 @@
   </a>
 </p>
 
+# This project is in the early stages of development, it is not working in Minecraft yet.
+
 ## Purpose
 
 We set out to make a completely new renderer for Minecraft aimed at giving more control and vastly better tooling to shaderpack developers.
