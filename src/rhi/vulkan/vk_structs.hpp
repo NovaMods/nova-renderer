@@ -95,7 +95,9 @@ namespace nova::renderer::rhi {
         VkSemaphore semaphore;
     };
 
-    struct VulkanFence : RhiFence {
+    struct VulkanFence final : RhiFence {
+        ~VulkanFence() = default;
+
         VkFence fence;
     };
 

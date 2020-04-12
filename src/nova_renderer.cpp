@@ -294,7 +294,7 @@ namespace nova::renderer {
 
             cmds->set_checkpoint("frame finished");
 
-            device->submit_command_list(rx::utility::move(cmds), rhi::QueueType::Graphics, *frame_fences[cur_frame_idx]);
+            device->submit_command_list(rx::utility::move(cmds), rhi::QueueType::Graphics, frame_fences[cur_frame_idx].get());
 
             // Wait for the GPU to finish before presenting. This destroys pipelining and throughput, however at this time I'm not sure how
             // best to say "when GPU finishes this task, CPU should do something"

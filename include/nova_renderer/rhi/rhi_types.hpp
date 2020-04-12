@@ -146,7 +146,9 @@ namespace nova::renderer::rhi {
 
     struct RhiPresentSemaphore {};
 
-    struct RhiFence {};
+    struct RhiFence {
+        virtual ~RhiFence() = default;
+    };
 
     struct RhiDescriptorPool {};
 

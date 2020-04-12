@@ -250,7 +250,7 @@ namespace nova::renderer::rhi {
 
     rx::ptr<RhiFramebuffer> VulkanRenderDevice::create_framebuffer(const RhiRenderpass& renderpass,
                                                                    const rx::vector<RhiImage*>& color_attachments,
-                                                                   const rx::optional<RhiImage*> depth_attachment,
+                                                                   RhiImage* depth_attachment,
                                                                    const glm::uvec2& framebuffer_size,
                                                                    rx::memory::allocator& allocator) {
         const auto& vk_renderpass = static_cast<const VulkanRenderpass&>(renderpass);
@@ -265,7 +265,7 @@ namespace nova::renderer::rhi {
 
         // Depth attachment is ALWAYS the last attachment
         if(depth_attachment) {
-            const auto* vk_depth_image = static_cast<const VulkanImage*>(*depth_attachment);
+            const auto* vk_depth_image = static_cast<const VulkanImage*>(depth_attachment);
             attachment_views.push_back(vk_depth_image->image_view);
         }
 
@@ -938,7 +938,7 @@ namespace nova::renderer::rhi {
 
     rx::ptr<RhiFence> VulkanRenderDevice::create_fence(const bool signaled, rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_fence");
-        auto* fence = allocator.create<VulkanFence>();
+        auto fence = rx::make_ptr<VulkanFence>(allocator);
 
         VkFenceCreateInfo fence_create_info = {};
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -948,7 +948,7 @@ namespace nova::renderer::rhi {
 
         vkCreateFence(device, &fence_create_info, nullptr, &fence->fence);
 
-        return rx::ptr<RhiFence>{allocator, fence};
+        return fence;
     }
 
     rx::vector<rx::ptr<RhiFence>> VulkanRenderDevice::create_fences(const uint32_t num_fences,
@@ -1059,7 +1059,7 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderDevice::submit_command_list(rx::ptr<RhiRenderCommandList> cmds,
                                                  QueueType queue,
-                                                 rx::optional<RhiFence> fence_to_signal,
+                                                 RhiFence* fence_to_signal,
                                                  const rx::vector<RhiSemaphore*>& wait_semaphores,
                                                  const rx::vector<RhiSemaphore*>& signal_semaphores) {
         MTR_SCOPE("VulkanRenderDevice", "submit_command_list");
@@ -1110,13 +1110,13 @@ namespace nova::renderer::rhi {
 
         vk::Fence vk_signal_fence;
         if(fence_to_signal) {
-            vk_signal_fence = static_cast<const VulkanFence&>(*fence_to_signal).fence;
+            const auto* vk_fence = static_cast<const VulkanFence*>(fence_to_signal);
+            vk_signal_fence = vk_fence->fence;
 
         } else {
             vk_signal_fence = get_next_submission_fence();
         }
 
-        rx::log::flush();
         const auto result = vkQueueSubmit(queue_to_submit_to, 1, &submit_info, static_cast<VkFence>(vk_signal_fence));
 
         if(settings->debug.enabled) {

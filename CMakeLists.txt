@@ -33,12 +33,6 @@ option(NOVA_TREAT_WARNINGS_AS_ERRORS "Add -Werror flag or /WX for MSVC" OFF)
 option(NOVA_PACKAGE "Build only the library, nothing else." OFF)
 option(NOVA_VULKAN_BACKEND "Compile the Vulkan rendering backend" ON)
 
-if(WIN32)
-option(NOVA_D3D12_BACKEND "Compile the D3D12 rendering backend" ON)
-else()
-option(NOVA_D3D12_BACKEND "Compile the D3D12 rendering backend" OFF)
-endif()
-
 option(NOVA_FORCE_DEBUGGING "Force compiling all the debugging and validation code" OFF)
 
 if(NOVA_ENABLE_EXPERIMENTAL)
@@ -245,32 +239,6 @@ if(WIN32)
 else()
     set(NOVA_SOURCE ${NOVA_SOURCE} ${UNIX_NOVA_SOURCE})
     set(OTHER_NOVA_SOURCE ${WINDOWS_NOVA_SOURCE})
-endif()
-
-set(D3D12_NOVA_SOURCE
-        src/rhi/d3d12/d3dx12.h
-        src/rhi/d3d12/d3d12_render_device.cpp
-        src/rhi/d3d12/d3d12_render_device.hpp
-        src/rhi/d3d12/d3d12_structs.hpp
-        src/rhi/d3d12/d3d12_structs.cpp
-        src/rhi/d3d12/descriptor_allocator.hpp
-        src/rhi/d3d12/descriptor_allocator.cpp
-        src/rhi/d3d12/d3d12_resource_binder.hpp
-        src/rhi/d3d12/d3d12_resource_binder.cpp
-        src/rhi/d3d12/d3d12_render_command_list.hpp
-        src/rhi/d3d12/d3d12_render_command_list.cpp
-        src/rhi/d3d12/d3d12_swapchain.hpp
-        src/rhi/d3d12/d3d12_swapchain.cpp
-        src/rhi/d3d12/d3d12_utils.hpp
-        src/rhi/d3d12/d3d12_utils.cpp
-        src/rhi/d3d12/d3d12_enums.hpp
-
-        external/D3D12MemoryAllocator/src/Common.cpp
-        external/D3D12MemoryAllocator/src/D3D12MemAlloc.cpp
-        )
-
-if(NOVA_D3D12_BACKEND) 
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${D3D12_NOVA_SOURCE})
 endif()
 
 ##########################################

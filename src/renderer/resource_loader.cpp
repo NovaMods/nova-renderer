@@ -125,7 +125,7 @@ namespace nova::renderer {
             cmds->resource_barriers(PipelineStage::Transfer, PipelineStage::VertexShader, final_barriers);
 
             auto upload_done_fence = device.create_fence(false, allocator);
-            device.submit_command_list(move(cmds), QueueType::Transfer, *upload_done_fence);
+            device.submit_command_list(move(cmds), QueueType::Transfer, upload_done_fence.get());
 
             // Be sure that the data copy is complete, so that this method doesn't return before the GPU is done with the staging buffer
             // TODO: Be smarter about this
@@ -237,7 +237,7 @@ namespace nova::renderer {
                 cmds->resource_barriers(PipelineStage::TopOfPipe, stage_after_barrier, initial_barriers);
 
                 auto upload_done_fence = device.create_fence(false, allocator);
-                device.submit_command_list(move(cmds), QueueType::Graphics, *upload_done_fence);
+                device.submit_command_list(move(cmds), QueueType::Graphics, upload_done_fence.get());
 
                 // Be sure that the data copy is complete, so that this method doesn't return before the GPU is done with the staging buffer
                 device.wait_for_fences(rx::array{upload_done_fence.get()});
@@ -287,7 +287,7 @@ namespace nova::renderer {
             auto& buffer_list = *staging_buffer;
             if(buffer_list.size() > 0) {
                 auto buffer = move(buffer_list.last());
-                buffer_list.erase(buffer_list.size() - 1, buffer_list.size() - 1);
+                buffer_list.pop_back();
 
                 return buffer;
             }

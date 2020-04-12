@@ -102,7 +102,7 @@ namespace nova::renderer::rhi {
 
         rx::ptr<RhiFramebuffer> create_framebuffer(const RhiRenderpass& renderpass,
                                                    const rx::vector<RhiImage*>& color_attachments,
-                                                   rx::optional<RhiImage*> depth_attachment,
+                                                   RhiImage* depth_attachment,
                                                    const glm::uvec2& framebuffer_size,
                                                    rx::memory::allocator& allocator) override;
 
@@ -154,7 +154,7 @@ namespace nova::renderer::rhi {
 
         void submit_command_list(rx::ptr<RhiRenderCommandList> cmds,
                                  QueueType queue,
-                                 rx::optional<RhiFence> fence_to_signal = rx::nullopt,
+                                 RhiFence* fence_to_signal = nullptr,
                                  const rx::vector<RhiSemaphore*>& wait_semaphores = {},
                                  const rx::vector<RhiSemaphore*>& signal_semaphores = {}) override;
 
