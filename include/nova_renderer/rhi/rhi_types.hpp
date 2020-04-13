@@ -13,7 +13,7 @@ namespace nova::renderer::rhi {
     struct RhiBufferCreateInfo {
         rx::string name;
 
-        mem::Bytes size = 0;
+        uint64_t size = 0;
 
         BufferUsage buffer_usage{};
     };

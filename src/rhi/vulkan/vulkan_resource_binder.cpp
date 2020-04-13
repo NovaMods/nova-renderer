@@ -102,7 +102,7 @@ namespace nova::renderer::rhi {
             images.each_fwd([&](const RhiImage* image) {
                 const auto* vk_image = static_cast<const VulkanImage*>(image);
                 auto image_info = vk::DescriptorImageInfo()
-                                      .setImageView(vk_image->image_view)
+                                      .setImageView(vk::ImageView{vk_image->image_view})
                                       .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
                 image_infos.push_back(rx::utility::move(image_info));
             });
@@ -128,7 +128,7 @@ namespace nova::renderer::rhi {
 
             samplers.each_fwd([&](const RhiSampler* sampler) {
                 const auto* vk_sampler = static_cast<const VulkanSampler*>(sampler);
-                auto sampler_info = vk::DescriptorImageInfo().setSampler(vk_sampler->sampler);
+                auto sampler_info = vk::DescriptorImageInfo().setSampler(vk::Sampler{vk_sampler->sampler});
                 sampler_infos.push_back(rx::utility::move(sampler_info));
             });
 
@@ -153,7 +153,10 @@ namespace nova::renderer::rhi {
 
             buffers.each_fwd([&](const RhiBuffer* buffer) {
                 const auto* vk_buffer = static_cast<const VulkanBuffer*>(buffer);
-                auto buffer_info = vk::DescriptorBufferInfo().setBuffer(vk_buffer->buffer).setOffset(0).setRange(vk_buffer->size.b_count());
+                auto buffer_info = vk::DescriptorBufferInfo()
+                                       .setBuffer(vk::Buffer{vk_buffer->buffer})
+                                       .setOffset(0)
+                                       .setRange(vk_buffer->size.b_count());
                 buffer_infos.push_back(rx::utility::move(buffer_info));
             });
 

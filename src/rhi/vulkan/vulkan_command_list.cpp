@@ -68,7 +68,7 @@ namespace nova::renderer::rhi {
 
         vkCmdBindDescriptorSets(cmds,
                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                layout,
+                                static_cast<VkPipelineLayout>(layout),
                                 0,
                                 static_cast<uint32_t>(sets.size()),
                                 reinterpret_cast<const VkDescriptorSet*>(sets.data()),
@@ -172,7 +172,7 @@ namespace nova::renderer::rhi {
         MTR_SCOPE("VulkanRenderCommandList", "set_camera");
         camera_index = camera.index;
 
-        vkCmdPushConstants(cmds, device.standard_pipeline_layout, VK_SHADER_STAGE_ALL, 0, sizeof(uint32_t), &camera_index);
+        vkCmdPushConstants(cmds, static_cast<VkPipelineLayout>(device.standard_pipeline_layout), VK_SHADER_STAGE_ALL, 0, sizeof(uint32_t), &camera_index);
     }
 
     void VulkanRenderCommandList::begin_renderpass(RhiRenderpass& renderpass, const RhiFramebuffer& framebuffer) {
@@ -203,7 +203,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderCommandList::set_material_index(uint32_t index) {
-        vkCmdPushConstants(cmds, device.standard_pipeline_layout, VK_SHADER_STAGE_ALL, sizeof(uint32_t), sizeof(uint32_t), &index);
+        vkCmdPushConstants(cmds, static_cast<VkPipelineLayout>(device.standard_pipeline_layout), VK_SHADER_STAGE_ALL, sizeof(uint32_t), sizeof(uint32_t), &index);
     }
 
     void VulkanRenderCommandList::set_pipeline(const RhiPipeline& state) {

@@ -225,7 +225,7 @@ namespace nova::renderer::rhi {
         render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
         render_pass_create_info.pAttachments = attachments.data();
 
-        NOVA_CHECK_RESULT(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &renderpass->pass));
+        NOVA_CHECK_RESULT(vkCreateRenderPass(static_cast<VkDevice>(device), &render_pass_create_info, nullptr, &renderpass->pass));
 
         if(writes_to_backbuffer) {
             if(data.texture_outputs.size() > 1) {
@@ -238,6 +238,7 @@ namespace nova::renderer::rhi {
         renderpass->render_area = {{0, 0}, {framebuffer_width, framebuffer_height}};
 
         if(settings.settings.debug.enabled) {
+
             const auto object_name = vk::DebugUtilsObjectNameInfoEXT{}
                                          .setObjectType(vk::ObjectType::eRenderPass)
                                          .setObjectHandle(reinterpret_cast<uint64_t>(renderpass->pass))
@@ -282,7 +283,7 @@ namespace nova::renderer::rhi {
         framebuffer->size = framebuffer_size;
         framebuffer->num_attachments = static_cast<uint32_t>(attachment_views.size());
 
-        NOVA_CHECK_RESULT(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer->framebuffer));
+        NOVA_CHECK_RESULT(vkCreateFramebuffer(static_cast<VkDevice>(device), &framebuffer_create_info, nullptr, &framebuffer->framebuffer));
 
         return rx::ptr<RhiFramebuffer>{allocator, framebuffer};
     }
@@ -698,19 +699,19 @@ namespace nova::renderer::rhi {
         pipeline_create_info.pDepthStencilState = &depth_stencil_create_info;
         pipeline_create_info.pColorBlendState = &color_blend_create_info;
         pipeline_create_info.pDynamicState = &dynamic_state_create_info;
-        pipeline_create_info.layout = pipeline_state.layout.layout;
+        pipeline_create_info.layout = static_cast<VkPipelineLayout>(pipeline_state.layout.layout);
 
         pipeline_create_info.renderPass = renderpass.pass;
         pipeline_create_info.subpass = 0;
         pipeline_create_info.basePipelineIndex = -1;
 
-        vk::Pipeline pipeline;
-        const auto result = vkCreateGraphicsPipelines(device,
-                                                      nullptr,
+        VkPipeline pipeline;
+        const auto result = vkCreateGraphicsPipelines(static_cast<VkDevice>(device),
+                                                      VK_NULL_HANDLE,
                                                       1,
                                                       &pipeline_create_info,
                                                       nullptr,
-                                                      reinterpret_cast<VkPipeline*>(&pipeline));
+                                                      &pipeline);
         if(result != VK_SUCCESS) {
             return ntl::Result<vk::Pipeline>{MAKE_ERROR("Could not compile pipeline %s", state.name)};
         }
@@ -718,13 +719,13 @@ namespace nova::renderer::rhi {
         if(settings.settings.debug.enabled) {
             const auto object_name = vk::DebugUtilsObjectNameInfoEXT{}
                                          .setObjectType(vk::ObjectType::ePipeline)
-                                         .setObjectHandle(reinterpret_cast<uint64_t>(static_cast<VkPipeline>(pipeline)))
+                                         .setObjectHandle(reinterpret_cast<uint64_t>(pipeline))
                                          .setPObjectName(state.name.data());
 
             device.setDebugUtilsObjectNameEXT(&object_name, device_dynamic_loader);
         }
 
-        return ntl::Result{pipeline};
+        return ntl::Result{vk::Pipeline{pipeline}};
     }
 
     rx::ptr<RhiBuffer> VulkanRenderDevice::create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) {
@@ -733,7 +734,7 @@ namespace nova::renderer::rhi {
 
         VkBufferCreateInfo vk_create_info = {};
         vk_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        vk_create_info.size = info.size.b_count();
+        vk_create_info.size = info.size;
         vk_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         VmaAllocationCreateInfo vma_alloc{};
@@ -817,7 +818,7 @@ namespace nova::renderer::rhi {
         vk_create_info.minLod = create_info.min_lod;
         vk_create_info.maxLod = create_info.max_lod;
 
-        vkCreateSampler(device, &vk_create_info, nullptr, &sampler->sampler);
+        vkCreateSampler(static_cast<VkDevice>(device), &vk_create_info, nullptr, &sampler->sampler);
 
         return rx::ptr<RhiSampler>(allocator, sampler);
     }
@@ -899,7 +900,7 @@ namespace nova::renderer::rhi {
             image_view_create_info.subresourceRange.baseMipLevel = 0;
             image_view_create_info.subresourceRange.levelCount = 1;
 
-            vkCreateImageView(device, &image_view_create_info, nullptr, &image->image_view);
+            vkCreateImageView(static_cast<VkDevice>(device), &image_view_create_info, nullptr, &image->image_view);
 
             return rx::ptr<RhiImage>{allocator, image};
 
@@ -917,7 +918,7 @@ namespace nova::renderer::rhi {
         VkSemaphoreCreateInfo create_info = {};
         create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-        vkCreateSemaphore(device, &create_info, nullptr, &semaphore->semaphore);
+        vkCreateSemaphore(static_cast<VkDevice>(device), &create_info, nullptr, &semaphore->semaphore);
 
         return rx::ptr<RhiSemaphore>{allocator, semaphore};
     }
@@ -943,9 +944,13 @@ namespace nova::renderer::rhi {
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         if(signaled) {
             fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+            logger->verbose("Creating a signaled fence");
+        } else {
+            logger->verbose("Creating an unsignaled fence");
         }
 
-        vkCreateFence(device, &fence_create_info, nullptr, &fence->fence);
+        vkCreateFence(static_cast<VkDevice>(device), &fence_create_info, nullptr, &fence->fence);
+        logger->verbose("Fence created");
 
         return fence;
     }
@@ -975,7 +980,7 @@ namespace nova::renderer::rhi {
             vk_fences.push_back(vk_fence->fence);
         });
 
-        const auto result = vkWaitForFences(device,
+        const auto result = vkWaitForFences(static_cast<VkDevice>(device),
                                             static_cast<uint32_t>(vk_fences.size()),
                                             vk_fences.data(),
                                             VK_TRUE,
@@ -997,19 +1002,19 @@ namespace nova::renderer::rhi {
             vk_fences.push_back(vk_fence->fence);
         });
 
-        vkResetFences(device, static_cast<uint32_t>(fences.size()), vk_fences.data());
+        vkResetFences(static_cast<VkDevice>(device), static_cast<uint32_t>(fences.size()), vk_fences.data());
     }
 
     void VulkanRenderDevice::destroy_renderpass(rx::ptr<RhiRenderpass> pass) {
         MTR_SCOPE("VulkanRenderDevice", "destroy_renderpasses");
         auto* vk_renderpass = static_cast<VulkanRenderpass*>(pass.get());
-        vkDestroyRenderPass(device, vk_renderpass->pass, nullptr);
+        vkDestroyRenderPass(static_cast<VkDevice>(device), vk_renderpass->pass, nullptr);
     }
 
     void VulkanRenderDevice::destroy_framebuffer(rx::ptr<RhiFramebuffer> framebuffer) {
         MTR_SCOPE("VulkanRenderDevice", "destroy_framebuffer");
         const auto* vk_framebuffer = static_cast<const VulkanFramebuffer*>(framebuffer.get());
-        vkDestroyFramebuffer(device, vk_framebuffer->framebuffer, nullptr);
+        vkDestroyFramebuffer(static_cast<VkDevice>(device), vk_framebuffer->framebuffer, nullptr);
     }
 
     void VulkanRenderDevice::destroy_texture(rx::ptr<RhiImage> resource) {
@@ -1022,7 +1027,7 @@ namespace nova::renderer::rhi {
         MTR_SCOPE("VulkanRenderDevice", "destroy_semaphores");
         semaphores.each_fwd([&](rx::ptr<RhiSemaphore>& semaphore) {
             auto* vk_semaphore = static_cast<VulkanSemaphore*>(semaphore.get());
-            vkDestroySemaphore(device, vk_semaphore->semaphore, nullptr);
+            vkDestroySemaphore(static_cast<VkDevice>(device), vk_semaphore->semaphore, nullptr);
         });
     }
 
@@ -1030,7 +1035,7 @@ namespace nova::renderer::rhi {
         MTR_SCOPE("VulkanRenderDevice", "destroy_fences");
         fences.each_fwd([&](rx::ptr<RhiFence>& fence) {
             auto* vk_fence = static_cast<VulkanFence*>(fence.get());
-            vkDestroyFence(device, vk_fence->fence, nullptr);
+            vkDestroyFence(static_cast<VkDevice>(device), vk_fence->fence, nullptr);
         });
     }
 
@@ -1049,7 +1054,7 @@ namespace nova::renderer::rhi {
         create_info.commandBufferCount = 1;
 
         VkCommandBuffer new_buffer;
-        vkAllocateCommandBuffers(device, &create_info, &new_buffer);
+        vkAllocateCommandBuffers(static_cast<VkDevice>(device), &create_info, &new_buffer);
 
         auto* list = allocator.create<VulkanRenderCommandList>(new_buffer, *this, allocator);
 
@@ -1110,7 +1115,7 @@ namespace nova::renderer::rhi {
         vk::Fence vk_signal_fence;
         if(fence_to_signal) {
             const auto* vk_fence = static_cast<const VulkanFence*>(fence_to_signal);
-            vk_signal_fence = vk_fence->fence;
+            vk_signal_fence = vk::Fence{vk_fence->fence};
 
         } else {
             vk_signal_fence = get_next_submission_fence();
@@ -1364,7 +1369,7 @@ namespace nova::renderer::rhi {
         VmaAllocatorCreateInfo create_info{};
         create_info.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
         create_info.physicalDevice = gpu.phys_device;
-        create_info.device = device;
+        create_info.device = static_cast<VkDevice>(device);
         create_info.instance = instance;
 
         const auto result = vmaCreateAllocator(&create_info, &vma);
@@ -1411,7 +1416,7 @@ namespace nova::renderer::rhi {
                 }
 
                 // if(!is_intel_gpu) {
-                // continue;
+                //     continue;
                 // }
 
                 const auto supports_extensions = does_device_support_extensions(current_device, device_extensions);
@@ -1539,16 +1544,16 @@ namespace nova::renderer::rhi {
             logger->error("Could not create Vulkan device: %s", vk::to_string(vk::Result{res}).c_str());
             rx::log::flush();
         }
-        device = vk_device;
+        device = vk::Device{vk_device};
 
-        device_dynamic_loader.init(instance, vkGetInstanceProcAddr, device);
+        device_dynamic_loader.init(instance, vkGetInstanceProcAddr, static_cast<VkDevice>(device));
 
         graphics_family_index = graphics_family_idx;
-        vkGetDeviceQueue(device, graphics_family_idx, 0, &graphics_queue);
+        vkGetDeviceQueue(static_cast<VkDevice>(device), graphics_family_idx, 0, &graphics_queue);
         compute_family_index = compute_family_idx;
-        vkGetDeviceQueue(device, compute_family_idx, 0, &compute_queue);
+        vkGetDeviceQueue(static_cast<VkDevice>(device), compute_family_idx, 0, &compute_queue);
         transfer_family_index = copy_family_idx;
-        vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
+        vkGetDeviceQueue(static_cast<VkDevice>(device), copy_family_idx, 0, &copy_queue);
     }
 
     bool VulkanRenderDevice::does_device_support_extensions(VkPhysicalDevice device,
@@ -1798,7 +1803,7 @@ namespace nova::renderer::rhi {
             command_pool_create_info.queueFamilyIndex = queue_index;
 
             VkCommandPool command_pool;
-            NOVA_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool));
+            NOVA_CHECK_RESULT(vkCreateCommandPool(static_cast<VkDevice>(device), &command_pool_create_info, nullptr, &command_pool));
             pools_by_queue.insert(queue_index, command_pool);
         });
 
@@ -1881,7 +1886,7 @@ namespace nova::renderer::rhi {
         shader_module_create_info.codeSize = spirv.size() * 4;
 
         VkShaderModule module;
-        const auto result = vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module);
+        const auto result = vkCreateShaderModule(static_cast<VkDevice>(device), &shader_module_create_info, nullptr, &module);
         if(result == VK_SUCCESS) {
             return rx::optional<VkShaderModule>(module);
 
