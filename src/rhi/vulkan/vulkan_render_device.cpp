@@ -84,7 +84,7 @@ namespace nova::renderer::rhi {
         auto* vk_swapchain = static_cast<VulkanSwapchain*>(swapchain.get());
         VkExtent2D swapchain_extent = {swapchain_size.x, swapchain_size.y};
 
-        auto* renderpass = allocator.create<VulkanRenderpass>();
+        auto renderpass = rx::make_ptr<VulkanRenderpass>(allocator);
 
         VkSubpassDescription subpass_description = {};
         subpass_description.flags = 0;
@@ -246,7 +246,7 @@ namespace nova::renderer::rhi {
             device.setDebugUtilsObjectNameEXT(&object_name, device_dynamic_loader);
         }
 
-        return rx::ptr<RhiRenderpass>{allocator, renderpass};
+        return renderpass;
     }
 
     rx::ptr<RhiFramebuffer> VulkanRenderDevice::create_framebuffer(const RhiRenderpass& renderpass,
@@ -279,20 +279,20 @@ namespace nova::renderer::rhi {
         framebuffer_create_info.height = framebuffer_size.y;
         framebuffer_create_info.layers = 1;
 
-        auto* framebuffer = allocator.create<VulkanFramebuffer>();
+        auto framebuffer = rx::make_ptr<VulkanFramebuffer>(allocator);
         framebuffer->size = framebuffer_size;
         framebuffer->num_attachments = static_cast<uint32_t>(attachment_views.size());
 
         NOVA_CHECK_RESULT(vkCreateFramebuffer(static_cast<VkDevice>(device), &framebuffer_create_info, nullptr, &framebuffer->framebuffer));
 
-        return rx::ptr<RhiFramebuffer>{allocator, framebuffer};
+        return framebuffer;
     }
 
     rx::ptr<RhiPipeline> VulkanRenderDevice::create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
                                                                      rx::memory::allocator& allocator) {
         // For the Vulkan backend, creating a surface pipeline means creating a pipeline that uses the standard pipeline layout
 
-        auto* pipeline = allocator.create<VulkanPipeline>();
+        auto pipeline = rx::make_ptr<VulkanPipeline>(allocator);
         pipeline->name = pipeline_state.name;
         pipeline->layout.layout = standard_pipeline_layout;
         pipeline->layout.descriptor_set_layouts = {allocator, rx::array{standard_set_layout}};
@@ -300,7 +300,7 @@ namespace nova::renderer::rhi {
         pipeline->layout.bindings = standard_layout_bindings;
         pipeline->state = pipeline_state;
 
-        return rx::ptr<RhiPipeline>{allocator, pipeline};
+        return pipeline;
     }
 
     rx::ptr<RhiPipeline> VulkanRenderDevice::create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
@@ -309,12 +309,12 @@ namespace nova::renderer::rhi {
 
         const auto& layout = create_pipeline_layout(pipeline_state);
 
-        auto* pipeline = allocator.create<VulkanPipeline>();
+        auto pipeline = rx::make_ptr<VulkanPipeline>(allocator);
         pipeline->name = pipeline_state.name;
         pipeline->layout = layout;
         pipeline->state = pipeline_state;
 
-        return rx::ptr<RhiPipeline>{allocator, pipeline};
+        return pipeline;
     }
 
     rx::ptr<RhiResourceBinder> VulkanRenderDevice::create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
@@ -325,13 +325,13 @@ namespace nova::renderer::rhi {
                                               vk_pipeline.layout.variable_descriptor_set_counts,
                                               allocator);
 
-        auto* binder = allocator.create<VulkanResourceBinder>(*this,
+        auto binder = rx::make_ptr<VulkanResourceBinder>(allocator , * this,
                                                               vk_pipeline.layout.bindings,
                                                               descriptors,
                                                               vk_pipeline.layout.layout,
                                                               allocator);
 
-        return rx::ptr<RhiResourceBinder>{allocator, binder};
+        return binder;
     }
 
     RhiResourceBinder* VulkanRenderDevice::get_material_resource_binder() { return material_resource_binder.get(); }
@@ -730,7 +730,7 @@ namespace nova::renderer::rhi {
 
     rx::ptr<RhiBuffer> VulkanRenderDevice::create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_buffer");
-        auto* buffer = allocator.create<VulkanBuffer>();
+        auto buffer = rx::make_ptr<VulkanBuffer>(allocator);
 
         VkBufferCreateInfo vk_create_info = {};
         vk_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -785,7 +785,7 @@ namespace nova::renderer::rhi {
                 device.setDebugUtilsObjectNameEXT(&object_name, device_dynamic_loader);
             }
 
-            return rx::ptr<RhiBuffer>{allocator, buffer};
+            return buffer;
 
         } else {
             logger->error("Could not create buffer %s: %s", info.name, to_string(result));
@@ -803,7 +803,7 @@ namespace nova::renderer::rhi {
 
     rx::ptr<RhiSampler> VulkanRenderDevice::create_sampler(const RhiSamplerCreateInfo& create_info, rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_sampler");
-        auto* sampler = allocator.create<VulkanSampler>();
+        auto sampler = rx::make_ptr<VulkanSampler>(allocator);
 
         VkSamplerCreateInfo vk_create_info = {};
         vk_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -820,12 +820,12 @@ namespace nova::renderer::rhi {
 
         vkCreateSampler(static_cast<VkDevice>(device), &vk_create_info, nullptr, &sampler->sampler);
 
-        return rx::ptr<RhiSampler>(allocator, sampler);
+        return sampler;
     }
 
     rx::ptr<RhiImage> VulkanRenderDevice::create_image(const renderpack::TextureCreateInfo& info, rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_image");
-        auto* image = allocator.create<VulkanImage>();
+        auto image = rx::make_ptr<VulkanImage>(allocator);
 
         image->is_dynamic = true;
         image->type = ResourceType::Image;
@@ -902,8 +902,7 @@ namespace nova::renderer::rhi {
 
             vkCreateImageView(static_cast<VkDevice>(device), &image_view_create_info, nullptr, &image->image_view);
 
-            return rx::ptr<RhiImage>{allocator, image};
-
+            return image;
         } else {
             logger->error("Could not create image %s: %s", info.name, to_string(result));
 
@@ -913,14 +912,14 @@ namespace nova::renderer::rhi {
 
     rx::ptr<RhiSemaphore> VulkanRenderDevice::create_semaphore(rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_semaphore");
-        auto* semaphore = allocator.create<VulkanSemaphore>();
+        auto semaphore = rx::make_ptr<VulkanSemaphore>(allocator);
 
         VkSemaphoreCreateInfo create_info = {};
         create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
         vkCreateSemaphore(static_cast<VkDevice>(device), &create_info, nullptr, &semaphore->semaphore);
 
-        return rx::ptr<RhiSemaphore>{allocator, semaphore};
+        return semaphore;
     }
 
     rx::vector<rx::ptr<RhiSemaphore>> VulkanRenderDevice::create_semaphores(const uint32_t num_semaphores,
@@ -1056,9 +1055,9 @@ namespace nova::renderer::rhi {
         VkCommandBuffer new_buffer;
         vkAllocateCommandBuffers(static_cast<VkDevice>(device), &create_info, &new_buffer);
 
-        auto* list = allocator.create<VulkanRenderCommandList>(new_buffer, *this, allocator);
+        auto list = rx::make_ptr<VulkanRenderCommandList>(allocator, new_buffer, *this, allocator);
 
-        return rx::ptr<RhiRenderCommandList>{allocator, list};
+        return list;
     }
 
     void VulkanRenderDevice::submit_command_list(const rx::ptr<RhiRenderCommandList> cmds,
