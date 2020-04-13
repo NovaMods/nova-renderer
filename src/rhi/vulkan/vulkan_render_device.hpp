@@ -1,5 +1,6 @@
 #pragma once
 
+#include <rx/core/function.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 
@@ -25,7 +26,7 @@ namespace nova::renderer::rhi {
     struct FencedTask {
         vk::Fence fence;
 
-        std::function<void()> work_to_perform;
+        rx::function<void()> work_to_perform;
 
         void operator()() const;
     };

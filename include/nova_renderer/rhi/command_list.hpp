@@ -49,6 +49,8 @@ namespace nova::renderer::rhi {
         RhiRenderCommandList(const RhiRenderCommandList& other) = delete;
         RhiRenderCommandList& operator=(const RhiRenderCommandList& other) = delete;
 
+        virtual ~RhiRenderCommandList() = default;
+
         /*!
          * \brief Sets the debug name of this command list, so that API debugging tools can give you a nice name
          */
@@ -185,7 +187,5 @@ namespace nova::renderer::rhi {
         virtual void draw_indexed_mesh(uint32_t num_indices, uint32_t offset = 0, uint32_t num_instances = 1) = 0;
 
         virtual void set_scissor_rect(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
-
-        virtual ~RhiRenderCommandList() = default;
     };
 } // namespace nova::renderer::rhi

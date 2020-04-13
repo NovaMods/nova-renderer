@@ -19,6 +19,7 @@ namespace nova::renderer::rhi {
         VkCommandBuffer cmds;
 
         VulkanRenderCommandList(VkCommandBuffer cmds, VulkanRenderDevice& render_device, rx::memory::allocator& allocator);
+
         ~VulkanRenderCommandList() override = default;
 
         void set_debug_name(const rx::string& name) override;

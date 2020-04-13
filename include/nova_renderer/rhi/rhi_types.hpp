@@ -18,8 +18,6 @@ namespace nova::renderer::rhi {
         BufferUsage buffer_usage{};
     };
 
-    struct RhiDeviceMemory {};
-
     /*!
      * \brief A resource
      *
@@ -27,6 +25,8 @@ namespace nova::renderer::rhi {
      * while static resources are loaded once and that's that
      */
     struct RhiResource {
+        virtual ~RhiResource() = default;
+
         ResourceType type = {};
         bool is_dynamic = true;
     };
@@ -48,39 +48,43 @@ namespace nova::renderer::rhi {
         float max_lod = 0;
     };
 
-    struct RhiSampler {};
+    struct RhiSampler {
+        virtual ~RhiSampler() = default;
+    };
 
     struct RhiTextureCreateInfo {
         TextureUsage usage;
     };
 
     struct RhiImage : RhiResource {
+        ~RhiImage() override = default;
+
         bool is_depth_tex = false;
     };
 
     struct RhiBuffer : RhiResource {
+        ~RhiBuffer() override = default;
+
         mem::Bytes size = 0;
     };
 
-    struct RhiMaterialResources {
-        RhiBuffer* material_data_buffer;
-        RhiSampler* point_sampler;
-        RhiSampler* bilinear_sampler;
-        RhiSampler* trilinear_sampler;
-        rx::vector<RhiImage*> images;
-    };
-
     struct RhiPipeline {
+        virtual ~RhiPipeline() = default;
+
         rx::string name{};
     };
 
     struct RhiFramebuffer {
+        virtual ~RhiFramebuffer() = default;
+
         glm::uvec2 size{};
 
         uint32_t num_attachments{};
     };
 
-    struct RhiRenderpass {};
+    struct RhiRenderpass {
+        virtual ~RhiRenderpass() = default;
+    };
 
     struct RhiResourceBindingDescription {
         /*!
@@ -133,26 +137,13 @@ namespace nova::renderer::rhi {
         VertexFieldFormat format;
     };
 
-    /*!
-     * \brief The interface for a pipeline. Includes both inputs (descriptors) and outputs (framebuffers)
-     */
-    struct RhiPipelineInterface {
-        rx::map<rx::string, RhiResourceBindingDescription> bindings;
-
-        [[nodiscard]] uint32_t get_num_descriptors_of_type(DescriptorType type) const;
+    struct RhiSemaphore {
+        virtual ~RhiSemaphore() = default;
     };
-
-    struct RhiSemaphore {};
-
-    struct RhiPresentSemaphore {};
 
     struct RhiFence {
         virtual ~RhiFence() = default;
     };
-
-    struct RhiDescriptorPool {};
-
-    struct RhiDescriptorSet {};
 
     // TODO: Resource state tracking in the command list so we don't need all this bullshit
     struct RhiResourceBarrier {

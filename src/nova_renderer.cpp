@@ -548,7 +548,6 @@ namespace nova::renderer {
                     const auto& event_name = rx::string::format("%s.%s", material_data.name, pass_data.name);
                     MTR_SCOPE("create_materials_for_pipeline", event_name.data());
                     MaterialPass pass = {};
-                    pass.pipeline_interface = pipeline.pipeline_interface;
 
                     const FullMaterialPassName full_pass_name{pass_data.material_name, pass_data.name};
 

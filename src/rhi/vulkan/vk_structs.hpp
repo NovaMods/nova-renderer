@@ -11,28 +11,26 @@
 #include "nova_renderer/rhi/rhi_types.hpp"
 
 namespace nova::renderer::rhi {
-    struct VulkanDeviceMemory : RhiDeviceMemory {
-        VkDeviceMemory memory;
-    };
-
-    struct VulkanSampler : RhiSampler {
+    struct VulkanSampler final : RhiSampler {
         VkSampler sampler;
+
+        ~VulkanSampler() override = default;
     };
 
-    struct VulkanImage : RhiImage {
+    struct VulkanImage final : RhiImage {
         VkImage image = VK_NULL_HANDLE;
         VkImageView image_view = VK_NULL_HANDLE;
         VmaAllocation allocation{};
+
+        ~VulkanImage() override = default;
     };
 
-    struct VulkanBuffer : RhiBuffer {
+    struct VulkanBuffer final : RhiBuffer {
         VkBuffer buffer = VK_NULL_HANDLE;
         VmaAllocation allocation{};
         VmaAllocationInfo allocation_info{};
-    };
 
-    struct VulkanMaterialResources : RhiMaterialResources {
-        vk::DescriptorSet set;
+        ~VulkanBuffer() override = default;
     };
 
     struct VulkanPipelineLayoutInfo {
@@ -52,13 +50,15 @@ namespace nova::renderer::rhi {
      * write to. This struct just contains the input layout of the pipeline and the PSO create info, which we combine
      * with a renderpass to compile the pipeline
      */
-    struct VulkanPipeline : RhiPipeline {
+    struct VulkanPipeline final : RhiPipeline {
         RhiGraphicsPipelineState state;
 
         VulkanPipelineLayoutInfo layout;
+
+        ~VulkanPipeline() override = default;
     };
 
-    struct VulkanRenderpass : RhiRenderpass {
+    struct VulkanRenderpass final : RhiRenderpass {
         VkRenderPass pass = VK_NULL_HANDLE;
         VkRect2D render_area{};
 
@@ -69,34 +69,24 @@ namespace nova::renderer::rhi {
          * already used a pipeline state with this renderpass we just get the caches PSO, otherwise we have to create it
          */
         rx::map<rx::string, vk::Pipeline> cached_pipelines;
+
+        ~VulkanRenderpass() override = default;
     };
 
-    struct VulkanFramebuffer : RhiFramebuffer {
+    struct VulkanFramebuffer final : RhiFramebuffer {
         VkFramebuffer framebuffer = VK_NULL_HANDLE;
+
+        ~VulkanFramebuffer() override = default;
     };
 
-    struct VulkanPipelineInterface : RhiPipelineInterface {
-        /*!
-         * \brief Renderpass for the pipeline's output layouts because why _wouldn't_ that be married to the
-         * renderpass itself?
-         */
-        VkRenderPass pass = VK_NULL_HANDLE;
-    };
-
-    struct VulkanDescriptorPool : RhiDescriptorPool {
-        vk::DescriptorPool descriptor_pool{};
-    };
-
-    struct VulkanDescriptorSet : RhiDescriptorSet {
-        VkDescriptorSet descriptor_set;
-    };
-
-    struct VulkanSemaphore : RhiSemaphore {
+    struct VulkanSemaphore final : RhiSemaphore {
         VkSemaphore semaphore;
+
+        ~VulkanSemaphore() override = default;
     };
 
     struct VulkanFence final : RhiFence {
-        ~VulkanFence() = default;
+        ~VulkanFence() override = default;
 
         VkFence fence;
     };
