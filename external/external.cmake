@@ -76,9 +76,6 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/VulkanMemoryAllocator/src)
 # Something something check for Windows
 include_directories(${CMAKE_CURRENT_LIST_DIR}/D3D12MemoryAllocator/src)
 
-# DXC
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/dxc-wrapper/extern/dxc)
-
 # Hide unnecessary targets from all
 
 set_property(TARGET spirv-tools-build-version PROPERTY EXCLUDE_FROM_ALL True)

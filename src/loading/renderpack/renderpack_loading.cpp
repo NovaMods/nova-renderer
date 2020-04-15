@@ -3,17 +3,11 @@
 #include <rx/core/json.h>
 #include <rx/core/log.h>
 
-#include "nova_renderer/util/platform.hpp"
-#ifdef NOVA_WINDOWS
-#include <comdef.h>
-#endif
-#include <dxc/dxcapi.h>
-
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/filesystem_helpers.hpp"
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 #include "nova_renderer/filesystem/virtual_filesystem.hpp"
-#include "nova_renderer/loading/shader_includer.hpp"
+#include "nova_renderer/util/platform.hpp"
 
 #include "../json_utils.hpp"
 #include "minitrace.h"
@@ -215,37 +209,23 @@ namespace nova::renderer::renderpack {
         }
 
         auto new_pipeline = json_pipeline.decode<PipelineData>({});
-        new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename,
-                                                             folder_access,
-                                                             rhi::ShaderStage::Vertex,
-                                                             new_pipeline.defines);
+        new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename, folder_access);
 
         if(new_pipeline.geometry_shader) {
-            (*new_pipeline.geometry_shader).source = load_shader_file((*new_pipeline.geometry_shader).filename,
-                                                                      folder_access,
-                                                                      rhi::ShaderStage::Geometry,
-                                                                      new_pipeline.defines);
+            (*new_pipeline.geometry_shader).source = load_shader_file((*new_pipeline.geometry_shader).filename, folder_access);
         }
 
         if(new_pipeline.tessellation_control_shader) {
             (*new_pipeline.tessellation_control_shader).source = load_shader_file((*new_pipeline.tessellation_control_shader).filename,
-                                                                                  folder_access,
-                                                                                  rhi::ShaderStage::TessellationControl,
-                                                                                  new_pipeline.defines);
+                                                                                  folder_access);
         }
         if(new_pipeline.tessellation_evaluation_shader) {
             (*new_pipeline.tessellation_evaluation_shader)
-                .source = load_shader_file((*new_pipeline.tessellation_evaluation_shader).filename,
-                                           folder_access,
-                                           rhi::ShaderStage::TessellationEvaluation,
-                                           new_pipeline.defines);
+                .source = load_shader_file((*new_pipeline.tessellation_evaluation_shader).filename, folder_access);
         }
 
         if(new_pipeline.fragment_shader) {
-            (*new_pipeline.fragment_shader).source = load_shader_file((*new_pipeline.fragment_shader).filename,
-                                                                      folder_access,
-                                                                      rhi::ShaderStage::Pixel,
-                                                                      new_pipeline.defines);
+            (*new_pipeline.fragment_shader).source = load_shader_file((*new_pipeline.fragment_shader).filename, folder_access);
         }
 
         logger->verbose("Load of pipeline %s succeeded", pipeline_path);
@@ -253,10 +233,7 @@ namespace nova::renderer::renderpack {
         return new_pipeline;
     }
 
-    rx::vector<uint32_t> load_shader_file(const rx::string& filename,
-                                          FolderAccessorBase* folder_access,
-                                          const rhi::ShaderStage stage,
-                                          const rx::vector<rx::string>& defines) {
+    rx::vector<uint32_t> load_shader_file(const rx::string& filename, FolderAccessorBase* folder_access) {
         MTR_SCOPE("load_shader_file", filename.data());
 
         if(filename.ends_with(".spirv")) {
@@ -265,24 +242,11 @@ namespace nova::renderer::renderpack {
             rx::vector<uint8_t> bytes = folder_access->read_file(filename);
             const auto view = bytes.disown();
             return rx::vector<uint32_t>{view};
+
+        } else {
+            logger->error("Can not load shader %s: must be a SPIR-V file", filename);
+            return {};
         }
-
-        rx::string shader_source = folder_access->read_text_file(filename);
-
-        const auto& compiled_shader = [&] {
-            if(filename.ends_with(".hlsl")) {
-                return compile_shader(shader_source, stage, rhi::ShaderLanguage::Hlsl, folder_access);
-
-            } else {
-                return compile_shader(shader_source, stage, rhi::ShaderLanguage::Glsl, folder_access);
-            }
-        }();
-
-        if(compiled_shader.is_empty()) {
-            logger->error("Could not compile shader file %s", filename);
-        }
-
-        return compiled_shader;
     }
 
     rx::vector<MaterialData> load_material_files(FolderAccessorBase* folder_access) {
@@ -340,120 +304,5 @@ namespace nova::renderer::renderpack {
                 }
             });
         });
-    }
-
-    static LPCWSTR to_hlsl_profile(const rhi::ShaderStage stage) {
-        switch(stage) {
-            case rhi::ShaderStage::Vertex:
-                return L"vs_6_4";
-
-            case rhi::ShaderStage::TessellationControl:
-                return L"hs_6_4";
-
-            case rhi::ShaderStage::TessellationEvaluation:
-                return L"ds_6_4";
-
-            case rhi::ShaderStage::Geometry:
-                return L"gs_6_4";
-
-            case rhi::ShaderStage::Pixel:
-                return L"ps_6_4";
-
-            case rhi::ShaderStage::Compute:
-                return L"cs_6_4";
-
-            case rhi::ShaderStage::Task:
-                return L"as_6_4";
-
-            case rhi::ShaderStage::Mesh:
-                return L"ms_6_4";
-
-            case rhi::ShaderStage::Raygen:
-                [[fallthrough]];
-            case rhi::ShaderStage::AnyHit:
-                [[fallthrough]];
-            case rhi::ShaderStage::ClosestHit:
-                [[fallthrough]];
-            case rhi::ShaderStage::Miss:
-                [[fallthrough]];
-            case rhi::ShaderStage::Intersection:
-                [[fallthrough]];
-            default:;
-                logger->error("Unsupported shader stage %u", stage);
-                return {};
-        }
-    }
-
-    rx::vector<uint32_t> compile_shader(const rx::string& source,
-                                        const rhi::ShaderStage stage,
-                                        const rhi::ShaderLanguage source_language,
-                                        FolderAccessorBase* folder_accessor) {
-        /*
-         * Compile HLSL -> SPIR-V, using delicious DXC
-         *
-         * We use the old interface IDxcCompiler instead of IDxcCompiler3 because IDxcCompiler3 does not work, at all. It tells me that it
-         * has a result, then it won't give me that result. I asked on the DirectX server and many other places, but apparently not even
-         * Microsoft knows how to the new API for their compiler. Thus, I'm using the old and deprecated API - because it actually works
-         */
-
-        IDxcLibrary* lib;
-        auto hr = DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&lib));
-        if(FAILED(hr)) {
-            logger->error("Could not create DXC Library instance");
-            return {};
-        }
-
-        IDxcCompiler* compiler;
-        hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler));
-        if(FAILED(hr)) {
-            logger->error("Could not create DXC instance");
-            return {};
-        }
-
-        IDxcBlobEncoding* encoding;
-        hr = lib->CreateBlobWithEncodingFromPinned(source.data(), static_cast<UINT32>(source.size()), CP_UTF8, &encoding);
-        if(FAILED(hr)) {
-            logger->error("Could not create blob from shader");
-            return {};
-        }
-
-        const auto profile = to_hlsl_profile(stage);
-
-        rx::vector<LPCWSTR> args = rx::array{L"-spirv", L"-fspv-target-env=vulkan1.1", L"-fspv-reflect"};
-
-        auto* includer = new NovaDxcIncludeHandler{rx::memory::system_allocator::instance(), *lib, folder_accessor};
-
-        IDxcOperationResult* compile_result;
-        hr = compiler->Compile(encoding,
-                               L"unknown", // File name, for error messages
-                               L"main",    // Entry point
-                               profile,
-                               args.data(),
-                               static_cast<UINT32>(args.size()),
-                               nullptr,
-                               0,
-                               includer,
-                               &compile_result);
-        if(FAILED(hr)) {
-            logger->error("Could not compile shader");
-            return {};
-        }
-
-        compile_result->GetStatus(&hr);
-        if(SUCCEEDED(hr)) {
-            IDxcBlob* result_blob;
-            hr = compile_result->GetResult(&result_blob);
-            rx::vector<uint32_t> spirv{result_blob->GetBufferSize() / sizeof(uint32_t)};
-            memcpy(spirv.data(), result_blob->GetBufferPointer(), result_blob->GetBufferSize());
-            return spirv;
-
-        } else {
-            IDxcBlobEncoding* error_buffer;
-            compile_result->GetErrorBuffer(&error_buffer);
-            logger->error("Error compiling shader:\n%s\n", static_cast<char const*>(error_buffer->GetBufferPointer()));
-            error_buffer->Release();
-
-            return {};
-        }
     }
 } // namespace nova::renderer::renderpack

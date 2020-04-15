@@ -4,7 +4,6 @@
 
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 #include "nova_renderer/renderpack_data.hpp"
-#include "nova_renderer/rhi/rhi_enums.hpp"
 
 namespace nova::renderer::renderpack {
     /*!
@@ -25,12 +24,5 @@ namespace nova::renderer::renderpack {
     RenderpackData load_renderpack_data(const rx::string& renderpack_name);
 
     rx::vector<uint32_t> load_shader_file(const rx::string& filename,
-                                          filesystem::FolderAccessorBase* folder_access,
-                                          rhi::ShaderStage stage,
-                                          const rx::vector<rx::string>& defines = {});
-
-    rx::vector<uint32_t> compile_shader(const rx::string& source,
-                                        rhi::ShaderStage stage,
-                                        rhi::ShaderLanguage source_language,
-                                        filesystem::FolderAccessorBase* folder_accessor = nullptr);
+                                          filesystem::FolderAccessorBase* folder_access);
 } // namespace nova::renderer::renderpack

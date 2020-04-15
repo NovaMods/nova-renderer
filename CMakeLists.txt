@@ -109,7 +109,6 @@ set(NOVA_SOURCE
         include/nova_renderer/filesystem/virtual_filesystem.hpp
 
         include/nova_renderer/loading/renderpack_loading.hpp
-        include/nova_renderer/loading/shader_includer.hpp
 
         include/nova_renderer/rhi/forward_decls.hpp
         include/nova_renderer/rhi/command_list.hpp
@@ -180,7 +179,7 @@ set(NOVA_SOURCE
 
         src/loading/json_utils.hpp
         src/loading/renderpack/renderpack_loading.cpp
-        src/loading/renderpack/shader_includer.cpp
+        
         src/loading/renderpack/renderpack_data.cpp
         src/loading/renderpack/renderpack_validator.cpp
         src/loading/renderpack/renderpack_validator.hpp
@@ -328,11 +327,10 @@ add_coverage(nova-renderer)
 #########################
 # Set libraries to link #
 #########################
-set(COMMON_LINK_LIBS
+set(COMMON_LINK_LIBS     
         ${CMAKE_DL_LIBS}
         ${Vulkan_LIBRARIES}
         glm::glm
-        dxc-wrap 
         minitrace
         miniz
         vma::vma
@@ -400,6 +398,23 @@ endif()
 # Link all required libraries #
 ###############################
 target_link_libraries(nova-renderer PUBLIC ${COMMON_LINK_LIBS})
+
+###########################
+# Compile builtin shaders #
+###########################
+find_package(Python3)
+if(NOT Python3_Interpreter_FOUND)
+    message(ERROR "Could not find Python3 interpreter")
+endif()
+
+execute_process(
+    COMMAND ${Python3_EXECUTABLE} "${CMAKE_CURRENT_LIST_DIR}/tools/compile_shaders.py" "${CMAKE_CURRENT_LIST_DIR}/data/shaders" "${CMAKE_BINARY_OUTPUT_DIR}/data/shaders/builtin"
+    RESULT_VARIABLE COMPILE_SHADERS_RESULT
+)
+if(COMPILE_SHADERS_RESULT MATCHES 0)
+    message(ERROR "Could not compile shaders")
+endif()
+
 
 #############################
 # Fix issue with permissive #
