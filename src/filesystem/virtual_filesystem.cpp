@@ -9,6 +9,11 @@ namespace nova::filesystem {
 
     rx::ptr<VirtualFilesystem> VirtualFilesystem::instance;
 
+    VirtualFilesystem::VirtualFilesystem() {
+        // Always access the working directory
+        add_resource_root("./");
+    }
+
     VirtualFilesystem* VirtualFilesystem::get_instance() {
         if(!instance) {
             rx::memory::allocator& allocator = rx::memory::system_allocator::instance();

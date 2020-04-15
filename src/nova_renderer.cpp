@@ -95,9 +95,12 @@ namespace nova::renderer {
         constexpr const char* vertex_shader_path = "backbuffer_output.vertex.spirv";
         constexpr const char* pixel_shader_path = "backbuffer_output.pixel.spirv";
 
+        constexpr const char* builtin_shaders_directory = "data/shaders/builtin";
+
         name = BACKBUFFER_OUTPUT_PIPELINE_NAME;
 
-        auto* builtin_shader_accessor = filesystem::VirtualFilesystem::get_instance()->get_folder_accessor(NOVA_BUILTIN_SHADER_DIRECTORY);
+        auto* builtin_shader_accessor = filesystem::VirtualFilesystem::get_instance()->get_folder_accessor(builtin_shaders_directory);
+        RX_ASSERT(builtin_shader_accessor != nullptr, "Can not access the builtin shaders directory '%s'", builtin_shaders_directory);
 
         auto vertex_shader_data = builtin_shader_accessor->read_file(vertex_shader_path);
         vertex_shader = ShaderSource{vertex_shader_path, vertex_shader_data.disown()};

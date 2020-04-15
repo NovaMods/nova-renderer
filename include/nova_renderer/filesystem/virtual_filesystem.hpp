@@ -14,6 +14,8 @@ namespace nova::filesystem {
      */
     class VirtualFilesystem {
     public:
+        VirtualFilesystem();
+
         [[nodiscard]] static VirtualFilesystem* get_instance();
 
         /*!
