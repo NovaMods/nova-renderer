@@ -39,6 +39,8 @@ if(NOVA_ENABLE_EXPERIMENTAL)
     set(CMAKE_LINK_WHAT_YOU_USE TRUE) # Warn about unsued linked libraries
 endif()
 
+set(BUILTIN_SHADER_DIRECTORY "${CMAKE_BINARY_DIR}/data/shaders/builtin")
+
 #########################################################
 # Enable tests if not in submodule and debug or if MSVC #
 #########################################################
@@ -82,6 +84,8 @@ set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
 # Setup 3rd party dependencies. #
 #################################
 include(external)
+
+add_subdirectory(apps/shader_compiler)
 
 ########################
 # Add Nova source code #
@@ -299,6 +303,7 @@ nova_format(nova-renderer "${OTHER_NOVA_SOURCE}")
 
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
+target_compile_definitions(nova-renderer PUBLIC BUILTIN_SHADER_DIRECTORY="${BUILTIN_SHADER_DIRECTORY}")
 
 if(NOVA_FORCE_DEBUGGING) 
     target_compile_definitions(nova-renderer PUBLIC NOVA_DEBUG)
@@ -408,13 +413,12 @@ if(NOT Python3_Interpreter_FOUND)
 endif()
 
 execute_process(
-    COMMAND ${Python3_EXECUTABLE} "${CMAKE_CURRENT_LIST_DIR}/tools/compile_shaders.py" "${CMAKE_CURRENT_LIST_DIR}/data/shaders" "${CMAKE_BINARY_OUTPUT_DIR}/data/shaders/builtin"
+    COMMAND ${Python3_EXECUTABLE} "${CMAKE_CURRENT_LIST_DIR}/tools/compile_shaders.py" "${CMAKE_BINARY_DIR}/shader-compiler.exe" "${CMAKE_CURRENT_LIST_DIR}/data/shaders" "${BUILTIN_SHADER_DIRECTORY}"
     RESULT_VARIABLE COMPILE_SHADERS_RESULT
 )
 if(COMPILE_SHADERS_RESULT MATCHES 0)
-    message(ERROR "Could not compile shaders")
+    message(STATUS "Could not compile shaders")
 endif()
-
 
 #############################
 # Fix issue with permissive #

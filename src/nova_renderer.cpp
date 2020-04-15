@@ -90,57 +90,10 @@ namespace nova::renderer {
     BackbufferOutputPipelineCreateInfo::BackbufferOutputPipelineCreateInfo() {
         name = BACKBUFFER_OUTPUT_PIPELINE_NAME;
 
-        const rx::string vertex_source{R"(
-            struct VsInput {
-                float2 position : POSITION;
-            };
+        
 
-            struct VsOutput {
-                float4 position : SV_POSITION;
-                float2 uv : TEXCOORD;
-            };
+        const auto vertex_shader_path = BUILTIN_SHADER_DIRECTORY "/backbuffer_output.vertex.spirv";
 
-            VsOutput main(VsInput input) {
-                VsOutput output;
-                output.position = float4(input.position * 2.0 - 1.0, 0, 1);
-                output.uv = input.position;
-
-                return output;
-            })"};
-        const auto& vertex_spirv = renderpack::compile_shader(vertex_source, rhi::ShaderStage::Vertex, rhi::ShaderLanguage::Hlsl);
-        if(vertex_spirv.is_empty()) {
-            logger->error("Could not compile builtin backbuffer output vertex shader");
-        }
-        vertex_shader = {"/nova/shaders/backbuffer_output.vertex.hlsl", vertex_spirv};
-
-        const rx::string pixel_source{R"(
-            [[vk::binding(0, 0)]]
-            Texture2D ui_output : register(t0);
-
-            [[vk::binding(1, 0)]]
-            Texture2D scene_output : register(t1);
-
-            [[vk::binding(2, 0)]]
-            SamplerState tex_sampler : register(s0);
-
-            struct VsOutput {
-                float4 position : SV_POSITION;
-                float2 uv : TEXCOORD;
-            };
-
-            float3 main(VsOutput input) : SV_Target {
-                float4 ui_color = ui_output.Sample(tex_sampler, input.uv);
-                float4 scene_color = scene_output.Sample(tex_sampler, input.uv);
-
-                float3 combined_color = lerp(scene_color.rgb, ui_color.rgb, ui_color.a);
-
-                return combined_color;
-            })"};
-        const auto& pixel_spirv = renderpack::compile_shader(pixel_source, rhi::ShaderStage::Pixel, rhi::ShaderLanguage::Hlsl);
-        if(pixel_spirv.is_empty()) {
-            logger->error("Could not compile builtin backbuffer output pixel shader");
-        }
-        pixel_shader = {"/nova/shaders/backbuffer_output.pixel.hlsl", pixel_spirv};
 
         vertex_fields.emplace_back("position", rhi::VertexFieldFormat::Float2);
 
