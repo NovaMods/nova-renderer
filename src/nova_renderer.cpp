@@ -51,6 +51,8 @@ void init_rex() {
 
         // Explicitly initialize globals that need to be initialized in a specific
         // order for things to work.
+        system_group->find("heap_allocator")->init();
+        system_group->find("electric_fence_allocator")->init();
         system_group->find("allocator")->init();
         stdout_stream.init();
         system_group->find("logger")->init();
@@ -77,6 +79,8 @@ void rex_fini() {
         system_group->find("logger")->fini();
         stdout_stream.fini();
         system_group->find("allocator")->fini();
+        system_group->find("electric_fence_allocator")->fini();
+        system_group->find("heap_allocator")->fini();
 
         deinitialized = true;
     }
@@ -88,12 +92,18 @@ namespace nova::renderer {
     };
 
     BackbufferOutputPipelineCreateInfo::BackbufferOutputPipelineCreateInfo() {
+        constexpr const char* vertex_shader_path = "backbuffer_output.vertex.spirv";
+        constexpr const char* pixel_shader_path = "backbuffer_output.pixel.spirv";
+
         name = BACKBUFFER_OUTPUT_PIPELINE_NAME;
 
-        
+        auto* builtin_shader_accessor = filesystem::VirtualFilesystem::get_instance()->get_folder_accessor(NOVA_BUILTIN_SHADER_DIRECTORY);
 
-        const auto vertex_shader_path = BUILTIN_SHADER_DIRECTORY "/backbuffer_output.vertex.spirv";
+        auto vertex_shader_data = builtin_shader_accessor->read_file(vertex_shader_path);
+        vertex_shader = ShaderSource{vertex_shader_path, vertex_shader_data.disown()};
 
+        auto pixel_shader_data = builtin_shader_accessor->read_file(pixel_shader_path);
+        pixel_shader = ShaderSource{pixel_shader_path, pixel_shader_data.disown()};
 
         vertex_fields.emplace_back("position", rhi::VertexFieldFormat::Float2);
 
@@ -572,9 +582,8 @@ namespace nova::renderer {
     void NovaRenderer::destroy_dynamic_resources() {
         MTR_SCOPE("destroy_dynamic_resources", "Self");
         if(loaded_renderpack) {
-            loaded_renderpack->resources.render_targets.each_fwd([&](const renderpack::TextureCreateInfo& tex_data) {
-                device_resources->destroy_render_target(tex_data.name);
-            });
+            loaded_renderpack->resources.render_targets.each_fwd(
+                [&](const renderpack::TextureCreateInfo& tex_data) { device_resources->destroy_render_target(tex_data.name); });
 
             logger->verbose("Deleted all dynamic textures from renderpack %s", loaded_renderpack->name);
         }
