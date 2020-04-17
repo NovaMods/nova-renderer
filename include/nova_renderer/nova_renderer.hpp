@@ -80,7 +80,7 @@ namespace nova::renderer {
         /*!
          * \brief Initializes the Nova Renderer
          */
-        explicit NovaRenderer(const NovaSettings& settings_in);
+        explicit NovaRenderer(rx::memory::allocator& allocator_in, const NovaSettings& settings_in);
 
         NovaRenderer(NovaRenderer&& other) noexcept = delete;
         NovaRenderer& operator=(NovaRenderer&& other) noexcept = delete;
@@ -221,7 +221,7 @@ namespace nova::renderer {
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
-        rx::vector<rx::memory::bump_point_allocator*> frame_allocators;
+        rx::vector<rx::ptr<rx::memory::bump_point_allocator>> frame_allocators;
 
         rx::ptr<rhi::RhiSampler> point_sampler;
 
@@ -240,7 +240,7 @@ namespace nova::renderer {
         /*!
          * \brief Holds all the object loaded by the current renderpacks
          */
-        rx::memory::allocator* renderpack_allocator;
+        rx::ptr<rx::memory::bump_point_allocator> renderpack_allocator;
 
         rx::ptr<DeviceResources> device_resources;
 

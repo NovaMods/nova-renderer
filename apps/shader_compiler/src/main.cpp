@@ -3,6 +3,8 @@
 #include <dxc/dxcapi.h>
 #include <stdio.h>
 
+#include "shader_includer.hpp"
+
 // Mostly from https://github.com/microsoft/DirectXShaderCompiler/wiki/Using-dxc.exe-and-dxcompiler.dll
 
 constexpr int E_INVALID_ARGS = 1;
@@ -50,7 +52,7 @@ int main(const int argc, char** argv) {
 #ifdef NDEBUG
         return E_INVALID_ARG;
 #else
-        // Enable debugging with deafault parameters on debug builds
+        // Enable debugging with default parameters on debug builds
         input_file_name_raw = R"(E:\Documents\Nova\best-friend\external\nova-renderer\data\shaders\backbuffer_output.vertex.hlsl)";
         output_file_name = R"(E:\Documents\Nova\best-friend\data\shaders\builtin\backbuffer_output.vertex.spirv)";
 #endif
@@ -73,19 +75,18 @@ int main(const int argc, char** argv) {
     DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils));
     DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler));
 
-    CComPtr<IDxcIncludeHandler> include_handler;
-    utils->CreateDefaultIncludeHandler(&include_handler);
+    auto* include_handler = new nova::renderer::NovaDxcIncludeHandler(utils);
 
     LPCWSTR args[] = {L"-spirv", L"-fspv-target-env=vulkan1.1", L"-fspv-reflect", L"-E", L"main", L"-T", shader_target};
 
     CComPtr<IDxcBlobEncoding> source;
-    auto result = utils->LoadFile(input_file_name, nullptr, &source);
-    if(FAILED(result)) {
+    const auto hr = utils->LoadFile(input_file_name, nullptr, &source);
+    if(FAILED(hr)) {
         fprintf(stderr, "Could not open file %S\n", input_file_name);
         return E_INVALID_ARGS;
     }
 
-    DxcBuffer source_buffer;
+    DxcBuffer source_buffer{};
     source_buffer.Ptr = source->GetBufferPointer();
     source_buffer.Size = source->GetBufferSize();
     source_buffer.Encoding = DXC_CP_ACP;

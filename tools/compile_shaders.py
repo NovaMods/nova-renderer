@@ -28,7 +28,9 @@ if __name__ == '__main__':
         spirv_filename = path.stem + '.spirv'
         spirv_path = spirv_directory + '/' + spirv_filename
 
-        output = subprocess.run([shader_compiler, str(path), spirv_path], capture_output=True)
+        output = subprocess.run([shader_compiler, str(path), spirv_path], capture_output=True, text=True)
         print(output.stdout)
         if output.returncode != 0:
             print('Could not compile shader ', str(path), ': ', output.stderr)
+        else:
+            print('Successfully compiled ', str(path))

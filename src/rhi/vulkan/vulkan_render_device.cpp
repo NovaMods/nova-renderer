@@ -943,13 +943,9 @@ namespace nova::renderer::rhi {
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         if(signaled) {
             fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-            logger->verbose("Creating a signaled fence");
-        } else {
-            logger->verbose("Creating an unsignaled fence");
         }
 
         vkCreateFence(static_cast<VkDevice>(device), &fence_create_info, nullptr, &fence->fence);
-        logger->verbose("Fence created");
 
         return fence;
     }

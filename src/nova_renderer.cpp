@@ -128,8 +128,8 @@ namespace nova::renderer {
         return rx::hash_combine(material_name_hash, pass_name_hash);
     }
 
-    NovaRenderer::NovaRenderer(const NovaSettings& settings_in)
-        : settings{settings_in}, global_allocator{&rx::memory::system_allocator::instance()}, cameras{*global_allocator} {
+    NovaRenderer::NovaRenderer(rx::memory::allocator& allocator_in,const NovaSettings& settings_in)
+        : settings{settings_in}, global_allocator{&allocator_in}, cameras{*global_allocator} {
         mtr_init("trace.json");
 
         MTR_META_PROCESS_NAME("NovaRenderer");
@@ -187,6 +187,8 @@ namespace nova::renderer {
         create_builtin_uniform_buffers();
 
         create_builtin_meshes();
+
+        mtr_flush();
 
         create_renderpass_manager();
 
@@ -410,6 +412,8 @@ namespace nova::renderer {
 
             destroy_renderpasses();
             logger->verbose("Resources from old renderpack destroyed");
+
+            renderpack_allocator->reset();
         }
 
         create_dynamic_textures(data.resources.render_targets);
@@ -775,15 +779,14 @@ namespace nova::renderer {
     DeviceResources& NovaRenderer::get_resource_manager() const { return *device_resources; }
 
     void NovaRenderer::create_global_allocators() {
-
-        // TODO: Make good
-        renderpack_allocator = global_allocator;
+        auto* renderpack_memory = global_allocator->allocate(RENDERPACK_MEMORY_SIZE.b_count());
+        renderpack_allocator = rx::make_ptr<rx::memory::bump_point_allocator>(*global_allocator, renderpack_memory, RENDERPACK_MEMORY_SIZE.b_count());
 
         frame_allocators.reserve(settings->max_in_flight_frames);
         for(size_t i = 0; i < settings->max_in_flight_frames; i++) {
             rx_byte* ptr = global_allocator->allocate(PER_FRAME_MEMORY_SIZE.b_count());
-            auto* mem = global_allocator->create<rx::memory::bump_point_allocator>(ptr, PER_FRAME_MEMORY_SIZE.b_count());
-            frame_allocators.emplace_back(mem);
+            auto mem = rx::make_ptr<rx::memory::bump_point_allocator>(*global_allocator, ptr, PER_FRAME_MEMORY_SIZE.b_count());
+            frame_allocators.emplace_back(move(mem));
         }
     }
 

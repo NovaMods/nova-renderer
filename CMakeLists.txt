@@ -303,7 +303,6 @@ nova_format(nova-renderer "${OTHER_NOVA_SOURCE}")
 
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
-target_compile_definitions(nova-renderer PUBLIC NOVA_BUILTIN_SHADER_DIRECTORY="${BUILTIN_SHADER_DIRECTORY}")
 
 if(NOVA_FORCE_DEBUGGING) 
     target_compile_definitions(nova-renderer PUBLIC NOVA_DEBUG)
@@ -390,10 +389,17 @@ if(WIN32)
     endforeach()
 
 else()
-    # GCC and Clang complain loudly about the #pragma region stuff. This shuts them up.
-    target_compile_options_if_supported(nova-renderer PRIVATE -Wno-unknown-pragmas)
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs X11)
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} X11)
 endif()
+
+# Disable stupid compiler warnings
+target_compile_options_if_supported(nova-renderer PUBLIC -Wno-unknown-pragmas)
+target_compile_options_if_supported(nova-renderer PUBLIC -Wno-c++98-compat)
+target_compile_options_if_supported(nova-renderer PUBLIC -Wno-old-style-cast)
+target_compile_options_if_supported(nova-renderer PUBLIC -Wno-expansion-to-defined)
+target_compile_options_if_supported(nova-renderer PUBLIC -Wno-nonportable-include-path)
+target_compile_options_if_supported(nova-renderer PUBLIC -Wno-pragma-pack)
+target_compile_options_if_supported(nova-renderer PUBLIC -Wno-ignored-pragma-intrinsic)
 
 if(MSVC)
     target_sources(nova-renderer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/tools/vs-visualizers/RexCore.natvis)
@@ -407,18 +413,17 @@ target_link_libraries(nova-renderer PUBLIC ${COMMON_LINK_LIBS})
 ###########################
 # Compile builtin shaders #
 ###########################
+add_dependencies(nova-renderer shader-compiler)
+
 find_package(Python3)
 if(NOT Python3_Interpreter_FOUND)
     message(ERROR "Could not find Python3 interpreter")
 endif()
 
-execute_process(
+add_custom_command(TARGET nova-renderer
+    POST_BUILD
     COMMAND ${Python3_EXECUTABLE} "${CMAKE_CURRENT_LIST_DIR}/tools/compile_shaders.py" "${CMAKE_BINARY_DIR}/shader-compiler.exe" "${CMAKE_CURRENT_LIST_DIR}/data/shaders" "${BUILTIN_SHADER_DIRECTORY}"
-    RESULT_VARIABLE COMPILE_SHADERS_RESULT
 )
-if(COMPILE_SHADERS_RESULT MATCHES 0)
-    message(STATUS "Could not compile shaders")
-endif()
 
 #############################
 # Fix issue with permissive #
