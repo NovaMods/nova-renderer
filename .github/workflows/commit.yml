@@ -115,6 +115,7 @@ jobs:
           -o VulkanSDK-Installer.exe
       # Install the VulkanSDK
       - name: Install VulkanSDK
+        if: steps.cache-vulkan-sdk.outputs.cache-hit != 'true'
         shell: powershell
         run: |
           Start-Process .\VulkanSDK-Installer.exe /S -Wait

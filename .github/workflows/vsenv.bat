@@ -1,4 +1,4 @@
-@echo off
+@echo on
 
 SET VSWHERE="C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere"
 
