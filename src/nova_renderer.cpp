@@ -99,8 +99,8 @@ namespace nova::renderer {
 
         name = BACKBUFFER_OUTPUT_PIPELINE_NAME;
 
-        auto* builtin_shader_accessor = filesystem::VirtualFilesystem::get_instance()->get_folder_accessor(builtin_shaders_directory);
-        RX_ASSERT(builtin_shader_accessor != nullptr, "Can not access the builtin shaders directory '%s'", builtin_shaders_directory);
+        auto builtin_shader_accessor = filesystem::VirtualFilesystem::get_instance(rx::memory::system_allocator::instance())->get_folder_accessor(builtin_shaders_directory);
+        RX_ASSERT(builtin_shader_accessor, "Can not access the builtin shaders directory '%s'", builtin_shaders_directory);
 
         auto vertex_shader_data = builtin_shader_accessor->read_file(vertex_shader_path);
         vertex_shader = ShaderSource{vertex_shader_path, vertex_shader_data.disown()};
@@ -795,9 +795,9 @@ namespace nova::renderer {
 
         const auto vfs = filesystem::VirtualFilesystem::get_instance();
 
-        const auto renderpacks_directory = vfs->get_folder_accessor(RENDERPACK_DIRECTORY);
+        auto renderpacks_directory = vfs->get_folder_accessor(RENDERPACK_DIRECTORY);
 
-        vfs->add_resource_root(renderpacks_directory);
+        vfs->add_resource_root(move(renderpacks_directory));
     }
 
     void NovaRenderer::create_global_sync_objects() {
@@ -905,8 +905,8 @@ namespace nova::renderer {
 
     // ReSharper disable once CppMemberFunctionMayBeConst
     void NovaRenderer::create_builtin_renderpasses() {
-        const auto& ui_output = *device_resources->get_render_target(UI_OUTPUT_RT_NAME);
-        const auto& scene_output = *device_resources->get_render_target(SCENE_OUTPUT_RT_NAME);
+        const auto ui_output = *device_resources->get_render_target(UI_OUTPUT_RT_NAME);
+        const auto scene_output = *device_resources->get_render_target(SCENE_OUTPUT_RT_NAME);
 
         backbuffer_output_pipeline_create_info->viewport_size = device->get_swapchain()->get_size();
         auto backbuffer_pipeline = device->create_global_pipeline(*backbuffer_output_pipeline_create_info, *global_allocator);
