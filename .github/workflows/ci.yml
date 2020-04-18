@@ -90,7 +90,12 @@ jobs:
       matrix:
         vulkan: [1.2.131.2]
 
-    name: build-windows-msvc
+    # Lets use clang-cl
+    env:
+      CC: clang-cl
+      CXX: clang-cl
+
+    name: build-windows-clang
 
     steps:
       # Download the VulkanSDK
