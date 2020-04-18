@@ -130,6 +130,12 @@ jobs:
           Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
           scoop install ninja --global
           scoop install llvm --global
+
+          # We need to re-export the path since it has been modified by scoop
+          echo "::set-env name=PATH::$env:PATH"
+      # Configure path for VS
+      - name: Configure path
+        run: .github\workflows\vsenv.bat -arch=x64 -host_arch=x64
       # Checkout the repository, this is done via a github action
       # Don't use the latest master cause GitHub updated it to v2 and apparently v2 doesn't support submodules
       # Thanks for breaking my CI you assholes
@@ -147,9 +153,9 @@ jobs:
           mkdir build
           cd build
           echo $VULKAN_SDK
-          cmake .. -G "Visual Studio 16 2019" -A x64 -T llvm    \
-            -DNOVA_TEST=ON                                      \
-            -DCMAKE_BUILD_TYPE=Debug                            \
+          cmake .. -G "Ninja"        \
+            -DNOVA_TEST=ON           \
+            -DCMAKE_BUILD_TYPE=Debug \
             -Wno-dev
       # Build with CMake
       - name: Build with CMake
