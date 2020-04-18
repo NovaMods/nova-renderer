@@ -82,10 +82,10 @@ namespace nova::renderer::renderpack {
 
         logger->verbose("Executing Pass Scheduler");
 
-        rx::map<rx::string, RenderPassCreateInfo> render_passes_to_order;
+        rx::map<rx::string, RenderPassCreateInfo> render_passes_to_order{passes.allocator()};
         passes.each_fwd([&](const RenderPassCreateInfo& create_info) { render_passes_to_order.insert(create_info.name, create_info); });
 
-        rx::vector<rx::string> ordered_passes;
+        rx::vector<rx::string> ordered_passes{passes.allocator()};
         ordered_passes.reserve(passes.size());
 
         /*
@@ -95,13 +95,13 @@ namespace nova::renderer::renderpack {
         logger->verbose("Collecting passes that write to each resource...");
         // Maps from resource name to pass that writes to that resource, then from resource name to pass that reads from
         // that resource
-        auto resource_to_write_pass = rx::map<rx::string, rx::vector<rx::string>>{};
+        auto resource_to_write_pass = rx::map<rx::string, rx::vector<rx::string>>{passes.allocator()};
 
         passes.each_fwd([&](const RenderPassCreateInfo& pass) {
             pass.texture_outputs.each_fwd([&](const TextureAttachmentInfo& output) {
                 auto* write_pass_list = resource_to_write_pass.find(output.name);
                 if(!write_pass_list) {
-                    write_pass_list = resource_to_write_pass.insert(output.name, {});
+                    write_pass_list = resource_to_write_pass.insert(output.name, {passes.allocator()});
                 }
                 write_pass_list->push_back(pass.name);
             });
@@ -109,7 +109,7 @@ namespace nova::renderer::renderpack {
             pass.output_buffers.each_fwd([&](const rx::string& buffer_name) {
                 auto* write_pass_list = resource_to_write_pass.find(buffer_name);
                 if(!write_pass_list) {
-                    write_pass_list = resource_to_write_pass.insert(buffer_name, {});
+                    write_pass_list = resource_to_write_pass.insert(buffer_name, {passes.allocator()});
                 }
                 write_pass_list->push_back(pass.name);
             });
@@ -142,7 +142,7 @@ namespace nova::renderer::renderpack {
         // ordered_passes and increments the write position. After all the passes are written, we remove all the
         // passes after the last one we wrote to, shrinking the list of ordered passes to only include the exact passes we want
 
-        rx::vector<rx::string> unique_passes;
+        rx::vector<rx::string> unique_passes{passes.allocator()};
 
         ordered_passes.each_rev([&](const rx::string& pass_name) {
             if(unique_passes.find(pass_name) == rx::vector<rx::string>::k_npos) {
@@ -155,7 +155,7 @@ namespace nova::renderer::renderpack {
         // Granite does some reordering to try and find a submission order that has the fewest pipeline barriers. Not
         // gonna worry about that now
 
-        rx::vector<RenderPassCreateInfo> passes_in_submission_order;
+        rx::vector<RenderPassCreateInfo> passes_in_submission_order{passes.allocator()};
         passes_in_submission_order.reserve(ordered_passes.size());
 
         ordered_passes.each_fwd(
@@ -242,7 +242,7 @@ namespace nova::renderer::renderpack {
     rx::map<rx::string, rx::string> determine_aliasing_of_textures(const rx::map<rx::string, TextureCreateInfo>& textures,
                                                                    const rx::map<rx::string, Range>& resource_used_range,
                                                                    const rx::vector<rx::string>& resources_in_order) {
-        rx::map<rx::string, rx::string> aliases;
+        rx::map<rx::string, rx::string> aliases{textures.allocator()};
 
         for(size_t i = 0; i < resources_in_order.size(); i++) {
             const auto& to_alias_name = resources_in_order[i];

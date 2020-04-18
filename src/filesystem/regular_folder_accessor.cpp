@@ -8,7 +8,8 @@
 namespace nova::filesystem {
     RX_LOG("RegularFilesystem", logger);
 
-    RegularFolderAccessor::RegularFolderAccessor(const rx::string& folder) : FolderAccessorBase(folder) {}
+    RegularFolderAccessor::RegularFolderAccessor(rx::memory::allocator& allocator, const rx::string& folder)
+        : FolderAccessorBase{allocator, folder} {}
 
     rx::vector<uint8_t> RegularFolderAccessor::read_file(const rx::string& path) {
         rx::concurrency::scope_lock l(*resource_existence_mutex);
@@ -17,7 +18,7 @@ namespace nova::filesystem {
             if(has_root(path, root_folder)) {
                 return path;
             } else {
-                return rx::string::format("%s/%s", root_folder, path);
+                return rx::string::format(*internal_allocator, "%s/%s", root_folder, path);
             }
         }();
 
@@ -34,8 +35,9 @@ namespace nova::filesystem {
     }
 
     rx::vector<rx::string> RegularFolderAccessor::get_all_items_in_folder(const rx::string& folder) {
-        const auto full_path = rx::string::format("%s/%s", root_folder, folder);
-        rx::vector<rx::string> paths = {};
+        const auto full_path = rx::string::format(*internal_allocator, "%s/%s", root_folder, folder);
+        rx::vector<rx::string> paths{*internal_allocator};
+        paths.reserve(32);
 
         if(rx::filesystem::directory dir{full_path}) {
             dir.each([&](const rx::filesystem::directory::item& item) { paths.push_back(item.name()); });
@@ -66,7 +68,7 @@ namespace nova::filesystem {
         return false;
     }
 
-    FolderAccessorBase* RegularFolderAccessor::create_subfolder_accessor(const rx::string& path) const {
-        return create(rx::string::format("%s/%s", root_folder, path));
+    rx::ptr<FolderAccessorBase> RegularFolderAccessor::create_subfolder_accessor(const rx::string& path) const {
+        return create(*internal_allocator, rx::string::format(*internal_allocator, "%s/%s", root_folder, path));
     }
 } // namespace nova::filesystem

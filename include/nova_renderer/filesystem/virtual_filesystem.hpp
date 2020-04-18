@@ -1,7 +1,8 @@
 #pragma once
 
-#include "folder_accessor.hpp"
 #include <rx/core/ptr.h>
+
+#include "folder_accessor.hpp"
 
 namespace nova::filesystem {
     /*!
@@ -14,7 +15,9 @@ namespace nova::filesystem {
      */
     class VirtualFilesystem {
     public:
-        VirtualFilesystem();
+        explicit VirtualFilesystem(rx::memory::allocator& allocator);
+
+        [[nodiscard]] static VirtualFilesystem* get_instance(rx::memory::allocator& allocator);
 
         [[nodiscard]] static VirtualFilesystem* get_instance();
 
@@ -29,13 +32,15 @@ namespace nova::filesystem {
          * This method lets you add a custom folder accessor as a resource root. This allows for e.g. the Minecraft adapter to register a
          * shaderpack accessor which transpiles the shaders from GLSL 120 to SPIR-V
          */
-        void add_resource_root(FolderAccessorBase* root_accessor);
+        void add_resource_root(rx::ptr<FolderAccessorBase> root_accessor);
 
-        [[nodiscard]] FolderAccessorBase* get_folder_accessor(const rx::string& path) const;
+        [[nodiscard]] rx::ptr<FolderAccessorBase> get_folder_accessor(const rx::string& path) const;
 
     private:
         static rx::ptr<VirtualFilesystem> instance;
 
-        rx::vector<FolderAccessorBase*> resource_roots;
+        rx::memory::allocator* internal_allocator;
+
+        rx::vector<rx::ptr<FolderAccessorBase>> resource_roots;
     };
 } // namespace nova::filesystem

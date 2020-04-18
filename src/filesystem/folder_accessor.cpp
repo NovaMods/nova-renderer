@@ -11,31 +11,33 @@ namespace nova::filesystem {
 
     bool is_zip_folder(const rx::string& path_to_folder) { return path_to_folder.ends_with(".zip"); }
 
-    FolderAccessorBase* FolderAccessorBase::create(const rx::string& path) {
-        rx::memory::allocator& allocator = rx::memory::system_allocator::instance();
+    rx::ptr<FolderAccessorBase> FolderAccessorBase::create(rx::memory::allocator& allocator, const rx::string& path) {
 
         // Where is the renderpack, and what kind of folder is it in ?
         if(is_zip_folder(path)) {
             // zip folder in renderpacks folder
-            return allocator.create<ZipFolderAccessor>(path);
+            return rx::make_ptr<ZipFolderAccessor>(allocator, allocator, path);
 
         } else if(const rx::filesystem::directory directory(path); directory) {
             // regular folder in renderpacks folder
-            return allocator.create<RegularFolderAccessor>(path);
+            return rx::make_ptr<RegularFolderAccessor>(allocator, allocator, path);
         }
 
         logger->error("Could not create folder accessor for path %s", path);
 
-        return nullptr;
+        return {};
     }
 
-    FolderAccessorBase::FolderAccessorBase(rx::string folder)
-        : root_folder(rx::utility::move(folder)), resource_existence_mutex(new rx::concurrency::mutex) {}
+    FolderAccessorBase::FolderAccessorBase(rx::memory::allocator& allocator, rx::string folder)
+        : internal_allocator{&allocator},
+          root_folder{rx::utility::move(folder)},
+          resource_existence{allocator},
+          resource_existence_mutex{rx::make_ptr<rx::concurrency::mutex>(allocator)} {}
 
     bool FolderAccessorBase::does_resource_exist(const rx::string& resource_path) {
         rx::concurrency::scope_lock l(*resource_existence_mutex);
 
-        const auto full_path = rx::string::format("%s/%s", root_folder, resource_path);
+        const auto full_path = rx::string::format(*internal_allocator, "%s/%s", root_folder, resource_path);
         return does_resource_exist_on_filesystem(full_path);
     }
 

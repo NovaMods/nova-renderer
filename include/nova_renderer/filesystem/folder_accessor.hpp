@@ -7,6 +7,8 @@
 #include <rx/core/string.h>
 #include <stdint.h>
 
+#include "rx/core/ptr.h"
+
 namespace nova::filesystem {
     /*!
      * \brief A collection of resources on the filesystem
@@ -17,13 +19,13 @@ namespace nova::filesystem {
      */
     class FolderAccessorBase {
     public:
-        [[nodiscard]] static FolderAccessorBase* create(const rx::string& path);
+        [[nodiscard]] static rx::ptr<FolderAccessorBase> create(rx::memory::allocator& allocator, const rx::string& path);
 
         /*!
          * \brief Initializes this resourcepack to load resources from the folder/zip file with the provided name
          * \param folder The name of the folder or zip file to load resources from, relative to Nova's working directory
          */
-        explicit FolderAccessorBase(rx::string folder);
+        explicit FolderAccessorBase(rx::memory::allocator& allocator, rx::string folder);
 
         FolderAccessorBase(FolderAccessorBase&& other) noexcept = default;
         FolderAccessorBase& operator=(FolderAccessorBase&& other) noexcept = default;
@@ -63,9 +65,11 @@ namespace nova::filesystem {
 
         [[nodiscard]] const rx::string& get_root() const;
 
-        [[nodiscard]] virtual FolderAccessorBase* create_subfolder_accessor(const rx::string& path) const = 0;
+        [[nodiscard]] virtual rx::ptr<FolderAccessorBase> create_subfolder_accessor(const rx::string& path) const = 0;
 
     protected:
+        rx::memory::allocator* internal_allocator;
+
         rx::string root_folder;
 
         /*!
@@ -76,7 +80,7 @@ namespace nova::filesystem {
          */
         rx::map<rx::string, bool> resource_existence;
 
-        rx::concurrency::mutex* resource_existence_mutex;
+        rx::ptr<rx::concurrency::mutex> resource_existence_mutex;
 
         [[nodiscard]] rx::optional<bool> does_resource_exist_in_map(const rx::string& resource_string) const;
 

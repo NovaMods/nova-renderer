@@ -16,11 +16,11 @@ namespace nova::filesystem {
     /*!
      * \brief Allows access to a zip folder
      */
-    class ZipFolderAccessor : public FolderAccessorBase {
+    class ZipFolderAccessor final : public FolderAccessorBase {
     public:
-        explicit ZipFolderAccessor(const rx::string& folder);
+        explicit ZipFolderAccessor(rx::memory::allocator& allocator, const rx::string& folder);
 
-        ZipFolderAccessor(const rx::string& folder, mz_zip_archive archive);
+        ZipFolderAccessor(rx::memory::allocator& allocator, const rx::string& folder, mz_zip_archive archive);
 
         ZipFolderAccessor(ZipFolderAccessor&& other) noexcept = default;
         ZipFolderAccessor& operator=(ZipFolderAccessor&& other) noexcept = default;
@@ -30,11 +30,11 @@ namespace nova::filesystem {
 
         ~ZipFolderAccessor() override;
 
-        rx::vector<uint8_t> read_file(const rx::string& path) override final;
+        rx::vector<uint8_t> read_file(const rx::string& path) override;
 
-        rx::vector<rx::string> get_all_items_in_folder(const rx::string& folder) override final;
+        rx::vector<rx::string> get_all_items_in_folder(const rx::string& folder) override;
 
-        [[nodiscard]] FolderAccessorBase* create_subfolder_accessor(const rx::string& path) const override;
+        [[nodiscard]] rx::ptr<FolderAccessorBase> create_subfolder_accessor(const rx::string& path) const override;
 
     private:
         /*!
@@ -48,7 +48,7 @@ namespace nova::filesystem {
 
         void build_file_tree();
 
-        bool does_resource_exist_on_filesystem(const rx::string& resource_path) override final;
+        bool does_resource_exist_on_filesystem(const rx::string& resource_path) override;
     };
 
     /*!

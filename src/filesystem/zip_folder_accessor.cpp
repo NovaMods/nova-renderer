@@ -12,10 +12,13 @@
 namespace nova::filesystem {
     RX_LOG("ZipFilesystem", logger);
 
-    ZipFolderAccessor::ZipFolderAccessor(const rx::string& folder) : FolderAccessorBase(folder) {
+    ZipFolderAccessor::ZipFolderAccessor(rx::memory::allocator& allocator, const rx::string& folder)
+        : FolderAccessorBase{allocator, folder}, resource_indexes{allocator} {
         if(mz_zip_reader_init_file(&zip_archive, folder.data(), 0) == 0) {
             logger->error("Could not open zip archive %s", folder);
         }
+
+        files.children = rx::vector<FileTreeNode>{allocator};
 
         build_file_tree();
     }
@@ -23,7 +26,7 @@ namespace nova::filesystem {
     ZipFolderAccessor::~ZipFolderAccessor() { mz_zip_reader_end(&zip_archive); }
 
     rx::vector<uint8_t> ZipFolderAccessor::read_file(const rx::string& path) {
-        const auto full_path = rx::string::format("%s/%s", root_folder, path);
+        const auto full_path = rx::string::format(*internal_allocator, "%s/%s", root_folder, path);
 
         if(!does_resource_exist_on_filesystem(full_path)) {
             logger->error("Resource at path %s does not exist", full_path);
@@ -41,7 +44,7 @@ namespace nova::filesystem {
             logger->error("Could not get information for file %s:%s", full_path, err);
         }
 
-        rx::vector<uint8_t> resource_buffer;
+        rx::vector<uint8_t> resource_buffer{*internal_allocator};
         resource_buffer.reserve(static_cast<uint64_t>(file_stat.m_uncomp_size));
 
         const mz_bool file_extracted = mz_zip_reader_extract_to_mem(&zip_archive,
@@ -60,7 +63,7 @@ namespace nova::filesystem {
     }
 
     rx::vector<rx::string> ZipFolderAccessor::get_all_items_in_folder(const rx::string& folder) {
-        const rx::vector<rx::string> folder_path_parts = folder.split('/');
+        const rx::vector<rx::string> folder_path_parts = folder.split(*internal_allocator, '/');
 
         FileTreeNode* cur_node = &files;
         // Get the node at this path
@@ -82,7 +85,7 @@ namespace nova::filesystem {
             }
         });
 
-        rx::vector<rx::string> children_paths;
+        rx::vector<rx::string> children_paths{*internal_allocator};
         children_paths.reserve(cur_node->children.size());
         cur_node->children.each_fwd([&](const FileTreeNode& child) {
             rx::string s = child.get_full_path();
@@ -92,20 +95,22 @@ namespace nova::filesystem {
         return children_paths;
     }
 
-    FolderAccessorBase* ZipFolderAccessor::create_subfolder_accessor(const rx::string& path) const {
-        rx::memory::allocator& allocator = rx::memory::system_allocator::instance();
-        return allocator.create<ZipFolderAccessor>(rx::string::format("%s/%s", root_folder, path), zip_archive);
+    rx::ptr<FolderAccessorBase> ZipFolderAccessor::create_subfolder_accessor(const rx::string& path) const {
+        return rx::make_ptr<ZipFolderAccessor>(*internal_allocator,
+                                               *internal_allocator,
+                                               rx::string::format(*internal_allocator, "%s/%s", root_folder, path),
+                                               zip_archive);
     }
 
-    ZipFolderAccessor::ZipFolderAccessor(const rx::string& folder, const mz_zip_archive archive)
-        : FolderAccessorBase(folder), zip_archive(archive) {
+    ZipFolderAccessor::ZipFolderAccessor(rx::memory::allocator& allocator, const rx::string& folder, const mz_zip_archive archive)
+        : FolderAccessorBase{allocator, folder}, resource_indexes{allocator}, zip_archive{archive} {
         build_file_tree();
     }
 
     void ZipFolderAccessor::build_file_tree() {
         const uint32_t num_files = mz_zip_reader_get_num_files(&zip_archive);
 
-        rx::vector<rx::string> all_file_names;
+        rx::vector<rx::string> all_file_names{*internal_allocator};
         all_file_names.resize(num_files);
         char filename_buffer[1024];
 
@@ -117,7 +122,7 @@ namespace nova::filesystem {
 
         // Build a tree from all the files
         all_file_names.each_fwd([&](const rx::string& filename) {
-            const rx::vector<rx::string> filename_parts = filename.split('/');
+            const rx::vector<rx::string> filename_parts = filename.split(*internal_allocator, '/');
             FileTreeNode* cur_node = &files;
 
             filename_parts.each_fwd([&](const rx::string& part) {
@@ -141,6 +146,7 @@ namespace nova::filesystem {
                     FileTreeNode new_node;
                     new_node.name = part;
                     new_node.parent = cur_node;
+                    new_node.children = rx::vector<FileTreeNode>{*internal_allocator};
 
                     cur_node->children.push_back(new_node);
 

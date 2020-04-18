@@ -53,7 +53,7 @@ namespace nova::renderer {
 #endif
 
         RENDERDOC_API_1_3_0* api;
-        const int32_t ret = get_api(eRENDERDOC_API_Version_1_3_0, reinterpret_cast<void**>(&api));
+        const auto ret = get_api(eRENDERDOC_API_Version_1_3_0, reinterpret_cast<void**>(&api));
         if(ret != 1) {
             logger->error("Could not load RenderDoc API");
 

@@ -8,7 +8,7 @@ namespace nova::filesystem {
      */
     class RegularFolderAccessor final : public FolderAccessorBase {
     public:
-        explicit RegularFolderAccessor(const rx::string& folder);
+        explicit RegularFolderAccessor(rx::memory::allocator& allocator, const rx::string& folder);
 
         ~RegularFolderAccessor() override = default;
 
@@ -19,6 +19,6 @@ namespace nova::filesystem {
         bool does_resource_exist_on_filesystem(const rx::string& resource_path) override;
 
     protected:
-        FolderAccessorBase* create_subfolder_accessor(const rx::string& path) const override;
+        [[nodiscard]] rx::ptr<FolderAccessorBase> create_subfolder_accessor(const rx::string& path) const override;
     };
 } // namespace nova::filesystem

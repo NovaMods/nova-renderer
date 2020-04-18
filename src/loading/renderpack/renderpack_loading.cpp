@@ -88,7 +88,7 @@ namespace nova::renderer::renderpack {
     RenderpackData load_renderpack_data(const rx::string& renderpack_name) {
         MTR_SCOPE("load_renderpack_data", renderpack_name.data());
 
-        FolderAccessorBase* folder_access = VirtualFilesystem::get_instance()->get_folder_accessor(renderpack_name);
+        auto folder_access = VirtualFilesystem::get_instance()->get_folder_accessor(renderpack_name);
 
         // The renderpack has a number of items: There's the shaders themselves, of course, but there's so, so much more
         // What else is there?
@@ -100,15 +100,15 @@ namespace nova::renderer::renderpack {
         // All these things are loaded from the filesystem
 
         RenderpackData data{};
-        data.resources = *load_dynamic_resources_file(folder_access);
-        const auto& graph_data = load_rendergraph_file(folder_access);
+        data.resources = *load_dynamic_resources_file(folder_access.get());
+        const auto& graph_data = load_rendergraph_file(folder_access.get());
         if(graph_data) {
             data.graph_data = *graph_data;
         } else {
             logger->error("Could not load render graph file. Error: %s", graph_data.error.to_string());
         }
-        data.pipelines = load_pipeline_files(folder_access);
-        data.materials = load_material_files(folder_access);
+        data.pipelines = load_pipeline_files(folder_access.get());
+        data.materials = load_material_files(folder_access.get());
 
         fill_in_render_target_formats(data);
 

@@ -1255,6 +1255,7 @@ namespace nova::renderer::rhi {
         create_info.ppEnabledLayerNames = enabled_layer_names.data();
 
         rx::vector<const char*> enabled_extension_names{internal_allocator};
+        enabled_extension_names.reserve(16);
         enabled_extension_names.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
         enabled_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 #ifdef NOVA_LINUX
@@ -1265,9 +1266,10 @@ namespace nova::renderer::rhi {
 #error Unsupported Operating system
 #endif
 
-        rx::vector<VkValidationFeatureEnableEXT> enabled_validation_features;
+        rx::vector<VkValidationFeatureEnableEXT> enabled_validation_features{internal_allocator};
 
         if(settings.settings.debug.enabled) {
+            enabled_validation_features.reserve(8);
             enabled_extension_names.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
             enabled_extension_names.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
