@@ -327,7 +327,7 @@ include(GNUInstallDirs)
 ##################################
 # Add extra warnings if possible #
 ##################################
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+if((CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") AND NOT WIN32)
     target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wpedantic -Wconversion -Wdefaulted-function-deleted -Wno-c++98-compat -Wno-c++98-compat-pendantic -Wno-c++98-c++11-c++14-compat -Wno-c++98-c++11-c++14-compat-pendantic)
 endif()
 
