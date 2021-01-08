@@ -1,36 +1,9 @@
-[submodule "external/glm"]
-	path = external/glm
-	url = https://github.com/g-truc/glm.git
 [submodule "external/VulkanMemoryAllocator"]
 	path = external/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-[submodule "external/minitrace"]
-	path = external/minitrace
-	url = https://github.com/hrydgard/minitrace.git
-[submodule "external/miniz"]
-	path = external/miniz
-	url = https://github.com/richgel999/miniz.git
-[submodule "external/SPIRV-Tools"]
-	path = external/SPIRV-Tools
-	url = https://github.com/KhronosGroup/SPIRV-Tools.git
-[submodule "external/SPIRV-Headers"]
-	path = external/SPIRV-Headers
-	url = https://github.com/KhronosGroup/SPIRV-Headers.git
-[submodule "external/googletest"]
-	path = external/googletest
-	url = https://github.com/google/googletest.git
-[submodule "external/glfw"]
-	path = external/glfw
-	url = https://github.com/glfw/glfw
 [submodule "external/rex_core"]
 	path = external/rex_core
 	url = https://github.com/NovaMods/rex_core.git
-[submodule "external/SPIRV-Cross"]
-	path = external/SPIRV-Cross
-	url = https://github.com/KhronosGroup/SPIRV-Cross.git
-[submodule "external/dxc-wrapper"]
-	path = external/dxc-wrapper
-	url = https://github.com/NovaMods/dxc-wrapper.git
 [submodule "external/tracy"]
 	path = external/tracy
 	url = https://github.com/wolfpld/tracy.git
