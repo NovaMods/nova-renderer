@@ -25,22 +25,22 @@ namespace nova::renderer::rhi {
         : render_device{&device},
           allocator{&allocator},
           layout{layout},
-          sets{rx::utility::move(sets)},
-          bindings{rx::utility::move(bindings)},
+          sets{std::move(sets)},
+          bindings{std::move(bindings)},
           bound_images{&allocator},
           bound_buffers{&allocator},
           bound_samplers{&allocator} {}
 
     void VulkanResourceBinder::bind_image(const std::string& binding_name, RhiImage* image) {
-        bind_image_array(binding_name, {allocator, rx::array{image}});
+        bind_image_array(binding_name, {allocator, std::array{image}});
     }
 
     void VulkanResourceBinder::bind_buffer(const std::string& binding_name, RhiBuffer* buffer) {
-        bind_buffer_array(binding_name, {allocator, rx::array{buffer}});
+        bind_buffer_array(binding_name, {allocator, std::array{buffer}});
     }
 
     void VulkanResourceBinder::bind_sampler(const std::string& binding_name, RhiSampler* sampler) {
-        bind_sampler_array(binding_name, {allocator, rx::array{sampler}});
+        bind_sampler_array(binding_name, {allocator, std::array{sampler}});
     }
 
     void VulkanResourceBinder::bind_image_array(const std::string& binding_name, const std::vector<RhiImage*>& images) {
@@ -101,10 +101,10 @@ namespace nova::renderer::rhi {
                 auto image_info = vk::DescriptorImageInfo()
                                       .setImageView(vk_image->image_view)
                                       .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
-                image_infos.push_back(rx::utility::move(image_info));
+                image_infos.push_back(std::move(image_info));
             });
 
-            all_image_infos.push_back(rx::utility::move(image_infos));
+            all_image_infos.push_back(std::move(image_infos));
 
             auto write = vk::WriteDescriptorSet()
                              .setDstSet(set)
@@ -113,7 +113,7 @@ namespace nova::renderer::rhi {
                              .setDescriptorCount(static_cast<uint32_t>(images.size()))
                              .setDescriptorType(vk::DescriptorType::eSampledImage)
                              .setPImageInfo(all_image_infos.last().data());
-            writes.push_back(rx::utility::move(write));
+            writes.push_back(std::move(write));
         });
 
         bound_samplers.each_pair([&](const std::string& name, const std::vector<RhiSampler*>& samplers) {
@@ -126,10 +126,10 @@ namespace nova::renderer::rhi {
             samplers.each_fwd([&](const RhiSampler* sampler) {
                 const auto* vk_sampler = static_cast<const VulkanSampler*>(sampler);
                 auto sampler_info = vk::DescriptorImageInfo().setSampler(vk_sampler->sampler);
-                sampler_infos.push_back(rx::utility::move(sampler_info));
+                sampler_infos.push_back(std::move(sampler_info));
             });
 
-            all_image_infos.push_back(rx::utility::move(sampler_infos));
+            all_image_infos.push_back(std::move(sampler_infos));
 
             auto write = vk::WriteDescriptorSet()
                              .setDstSet(set)
@@ -138,7 +138,7 @@ namespace nova::renderer::rhi {
                              .setDescriptorCount(static_cast<uint32_t>(samplers.size()))
                              .setDescriptorType(vk::DescriptorType::eSampler)
                              .setPImageInfo(all_image_infos.last().data());
-            writes.push_back(rx::utility::move(write));
+            writes.push_back(std::move(write));
         });
 
         bound_buffers.each_pair([&](const std::string& name, const std::vector<RhiBuffer*>& buffers) {
@@ -151,10 +151,10 @@ namespace nova::renderer::rhi {
             buffers.each_fwd([&](const RhiBuffer* buffer) {
                 const auto* vk_buffer = static_cast<const VulkanBuffer*>(buffer);
                 auto buffer_info = vk::DescriptorBufferInfo().setBuffer(vk_buffer->buffer).setOffset(0).setRange(vk_buffer->size.b_count());
-                buffer_infos.push_back(rx::utility::move(buffer_info));
+                buffer_infos.push_back(std::move(buffer_info));
             });
 
-            all_buffer_infos.push_back(rx::utility::move(buffer_infos));
+            all_buffer_infos.push_back(std::move(buffer_infos));
 
             auto write = vk::WriteDescriptorSet()
                              .setDstSet(set)
@@ -163,7 +163,7 @@ namespace nova::renderer::rhi {
                              .setDescriptorCount(static_cast<uint32_t>(buffers.size()))
                              .setDescriptorType(vk::DescriptorType::eUniformBuffer)
                              .setPBufferInfo(all_buffer_infos.last().data());
-            writes.push_back(rx::utility::move(write));
+            writes.push_back(std::move(write));
         });
 
         render_device->device.updateDescriptorSets(static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);

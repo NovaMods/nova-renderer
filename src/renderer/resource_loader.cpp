@@ -30,8 +30,7 @@ namespace nova::renderer {
 
     std::optional<BufferResourceAccessor> DeviceResources::create_uniform_buffer(const std::string& name, const Bytes size) {
         const auto event_name = std::string::format("create_uniform_buffer(%s)", name);
-        MTR_SCOPE("DeviceResources", event_name.data());
-        BufferResource resource = {};
+        ZoneScoped;        BufferResource resource = {};
         resource.name = name;
         resource.size = size;
 
@@ -69,8 +68,7 @@ namespace nova::renderer {
                                                                           const void* data,
                                                                           rx::memory::allocator& allocator) {
         const auto event_name = std::string::format("create_texture(%s)", name);
-        MTR_SCOPE("DeviceResources", event_name.data());
-
+        ZoneScoped;
         TextureResource resource = {};
 
         resource.name = name;
@@ -92,8 +90,7 @@ namespace nova::renderer {
         resource.image->is_dynamic = false;
 
         if(data != nullptr) {
-            MTR_SCOPE("DeviceResources", "Upload Data To Texture");
-            RhiBuffer* staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
+            ZoneScoped;            RhiBuffer* staging_buffer = get_staging_buffer_with_size(width * height * pixel_size);
 
             RhiRenderCommandList* cmds = device.create_command_list(0,
                                                                     QueueType::Transfer,
@@ -185,8 +182,7 @@ namespace nova::renderer {
                                                                              rx::memory::allocator& allocator,
                                                                              const bool /* can_be_sampled // Not yet supported */) {
         const auto event_name = std::string::format("create_render_target(%s)", name);
-        MTR_SCOPE("DeviceResources", event_name.data());
-
+        ZoneScoped;
         renderpack::TextureCreateInfo create_info;
         create_info.name = name;
         create_info.usage = ImageUsage::RenderTarget;
@@ -209,8 +205,7 @@ namespace nova::renderer {
             resource.image = image;
 
             {
-                MTR_SCOPE("DeviceResources", "Transition Render Target Layout");
-
+                ZoneScoped;
                 RhiRenderCommandList* cmds = device.create_command_list(0,
                                                                         QueueType::Graphics,
                                                                         RhiRenderCommandList::Level::Primary,
@@ -324,10 +319,9 @@ namespace nova::renderer {
     const std::vector<TextureResource>& DeviceResources::get_all_textures() const { return textures; }
 
     void DeviceResources::create_default_textures() {
-        MTR_SCOPE("DeviceResources", "create_default_textures");
-
+        ZoneScoped;
         const auto make_color_tex = [&](const std::string& name, const uint32_t color) {
-            rx::array<uint8_t[64 * 4]> tex_data;
+            std::array<uint8_t[64 * 4]> tex_data;
             for(uint32_t i = 0; i < tex_data.size(); i++) {
                 tex_data[i] = color;
             }

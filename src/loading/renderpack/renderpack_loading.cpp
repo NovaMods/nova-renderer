@@ -88,8 +88,7 @@ namespace nova::renderer::renderpack {
     void cache_pipelines_by_renderpass(RenderpackData& data);
 
     RenderpackData load_renderpack_data(const std::string& renderpack_name) {
-        MTR_SCOPE("load_renderpack_data", renderpack_name.data());
-
+        ZoneScoped;
         FolderAccessorBase* folder_access = VirtualFilesystem::get_instance()->get_folder_accessor(renderpack_name);
 
         // The renderpack has a number of items: There's the shaders themselves, of course, but there's so, so much more
@@ -120,11 +119,10 @@ namespace nova::renderer::renderpack {
     }
 
     std::optional<RenderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access) {
-        MTR_SCOPE("load_dynamic_resource_file", "Self");
-
+        ZoneScoped;
         const std::string resources_string = folder_access->read_text_file(RESOURCES_FILE);
 
-        auto json_resources = rx::json(resources_string);
+        auto json_resources = nlohmann::json(resources_string);
         const ValidationReport report = validate_renderpack_resources_data(json_resources);
         print(report);
         if(!report.errors.is_empty()) {
@@ -135,11 +133,10 @@ namespace nova::renderer::renderpack {
     }
 
     ntl::Result<RendergraphData> load_rendergraph_file(FolderAccessorBase* folder_access) {
-        MTR_SCOPE("load_rendergraph_file", "Self");
-
+        ZoneScoped;
         const auto passes_bytes = folder_access->read_text_file("rendergraph.json");
 
-        const auto json_passes = rx::json(passes_bytes);
+        const auto json_passes = nlohmann::json(passes_bytes);
 
         auto rendergraph_file = json_passes.decode<RendergraphData>({});
 
@@ -173,8 +170,7 @@ namespace nova::renderer::renderpack {
     }
 
     std::vector<PipelineData> load_pipeline_files(FolderAccessorBase* folder_access) {
-        MTR_SCOPE("load_pipeline_files", "Self");
-
+        ZoneScoped;
         std::vector<std::string> potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
 
         std::vector<PipelineData> output;
@@ -198,11 +194,10 @@ namespace nova::renderer::renderpack {
     }
 
     std::optional<PipelineData> load_single_pipeline(FolderAccessorBase* folder_access, const std::string& pipeline_path) {
-        MTR_SCOPE("load_single_pipeline", pipeline_path.data());
-
+        ZoneScoped;
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
-        auto json_pipeline = rx::json{pipeline_bytes};
+        auto json_pipeline = nlohmann::json{pipeline_bytes};
         const ValidationReport report = validate_graphics_pipeline(json_pipeline);
         print(report);
         if(!report.errors.is_empty()) {
@@ -253,8 +248,7 @@ namespace nova::renderer::renderpack {
                                           FolderAccessorBase* folder_access,
                                           const rhi::ShaderStage stage,
                                           const std::vector<std::string>& defines) {
-        MTR_SCOPE("load_shader_file", filename.data());
-
+        ZoneScoped;
         if(filename.ends_with(".spirv")) {
             // SPIR-V file!
 
@@ -282,8 +276,7 @@ namespace nova::renderer::renderpack {
     }
 
     std::vector<MaterialData> load_material_files(FolderAccessorBase* folder_access) {
-        MTR_SCOPE("load_material_files", "Self");
-
+        ZoneScoped;
         std::vector<std::string> potential_material_files = folder_access->get_all_items_in_folder("materials");
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
@@ -303,11 +296,10 @@ namespace nova::renderer::renderpack {
     }
 
     MaterialData load_single_material(FolderAccessorBase* folder_access, const std::string& material_path) {
-        MTR_SCOPE("load_single_material", material_path.data());
-
+        ZoneScoped;
         const std::string material_text = folder_access->read_text_file(material_path);
 
-        const auto json_material = rx::json{material_text};
+        const auto json_material = nlohmann::json{material_text};
         const auto report = validate_material(json_material);
         print(report);
         if(!report.errors.is_empty()) {
@@ -415,7 +407,7 @@ namespace nova::renderer::renderpack {
 
         const auto profile = to_hlsl_profile(stage);
 
-        std::vector<LPCWSTR> args = rx::array{L"-spirv", L"-fspv-target-env=vulkan1.1", L"-fspv-reflect"};
+        std::vector<LPCWSTR> args = std::array{L"-spirv", L"-fspv-target-env=vulkan1.1", L"-fspv-reflect"};
 
         auto* includer = new NovaDxcIncludeHandler{*(&rx::memory::g_system_allocator), *lib, folder_accessor};
 

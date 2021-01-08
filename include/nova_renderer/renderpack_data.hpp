@@ -151,7 +151,7 @@ namespace nova::renderer::renderpack {
          */
         WrapMode wrap_mode{};
 
-        static SamplerCreateInfo from_json(const rx::json& json);
+        static SamplerCreateInfo from_json(const nlohmann::json& json);
     };
 
     struct StencilOpState {
@@ -162,7 +162,7 @@ namespace nova::renderer::renderpack {
         uint32_t compare_mask;
         uint32_t write_mask;
 
-        static StencilOpState from_json(const rx::json& json);
+        static StencilOpState from_json(const nlohmann::json& json);
     };
 
     struct RenderpackShaderSource {
@@ -290,7 +290,7 @@ namespace nova::renderer::renderpack {
         std::optional<RenderpackShaderSource> tessellation_evaluation_shader;
         std::optional<RenderpackShaderSource> fragment_shader;
 
-        static PipelineData from_json(const rx::json& json);
+        static PipelineData from_json(const nlohmann::json& json);
     };
 
     struct TextureFormat {
@@ -321,7 +321,7 @@ namespace nova::renderer::renderpack {
         bool operator==(const TextureFormat& other) const;
         bool operator!=(const TextureFormat& other) const;
 
-        static TextureFormat from_json(const rx::json& json);
+        static TextureFormat from_json(const nlohmann::json& json);
     };
 
     /*!
@@ -369,14 +369,14 @@ namespace nova::renderer::renderpack {
 
         TextureFormat format{};
 
-        static TextureCreateInfo from_json(const rx::json& json);
+        static TextureCreateInfo from_json(const nlohmann::json& json);
     };
 
     struct RenderpackResourcesData {
         std::vector<TextureCreateInfo> render_targets;
         std::vector<SamplerCreateInfo> samplers;
 
-        static RenderpackResourcesData from_json(const rx::json& json);
+        static RenderpackResourcesData from_json(const nlohmann::json& json);
     };
 
     /*!
@@ -401,7 +401,7 @@ namespace nova::renderer::renderpack {
 
         bool operator==(const TextureAttachmentInfo& other) const;
 
-        static TextureAttachmentInfo from_json(const rx::json& json);
+        static TextureAttachmentInfo from_json(const nlohmann::json& json);
     };
 
     /*!
@@ -461,7 +461,7 @@ namespace nova::renderer::renderpack {
 
         RenderPassCreateInfo() = default;
 
-        static RenderPassCreateInfo from_json(const rx::json& json);
+        static RenderPassCreateInfo from_json(const nlohmann::json& json);
     };
 
     /*!
@@ -478,7 +478,7 @@ namespace nova::renderer::renderpack {
          */
         std::vector<std::string> builtin_passes;
 
-        static RendergraphData from_json(const rx::json& json);
+        static RendergraphData from_json(const nlohmann::json& json);
     };
 
     struct MaterialPass {
@@ -497,7 +497,7 @@ namespace nova::renderer::renderpack {
          */
         std::vector<VkDescriptorSet> descriptor_sets;
 
-        static MaterialPass from_json(const rx::json& json);
+        static MaterialPass from_json(const nlohmann::json& json);
     };
 
     struct MaterialData {
@@ -505,7 +505,7 @@ namespace nova::renderer::renderpack {
         std::vector<MaterialPass> passes;
         std::string geometry_filter;
 
-        static MaterialData from_json(const rx::json& json);
+        static MaterialData from_json(const nlohmann::json& json);
     };
 
     /*!
@@ -539,18 +539,18 @@ namespace nova::renderer::renderpack {
     [[nodiscard]] ScissorTestMode scissor_test_mode_from_string(const std::string& str);
     [[nodiscard]] RasterizerState state_enum_from_string(const std::string& str);
 
-    [[nodiscard]] rhi::PixelFormat pixel_format_enum_from_json(const rx::json& j);
-    [[nodiscard]] TextureDimensionType texture_dimension_type_enum_from_json(const rx::json& j);
-    [[nodiscard]] TextureFilter texture_filter_enum_from_json(const rx::json& j);
-    [[nodiscard]] WrapMode wrap_mode_enum_from_json(const rx::json& j);
-    [[nodiscard]] RPStencilOp stencil_op_enum_from_json(const rx::json& j);
-    [[nodiscard]] RPCompareOp compare_op_enum_from_json(const rx::json& j);
-    [[nodiscard]] MsaaSupport msaa_support_enum_from_json(const rx::json& j);
-    [[nodiscard]] RPPrimitiveTopology primitive_topology_enum_from_json(const rx::json& j);
-    [[nodiscard]] RPBlendFactor blend_factor_enum_from_json(const rx::json& j);
-    [[nodiscard]] RenderQueue render_queue_enum_from_json(const rx::json& j);
-    [[nodiscard]] ScissorTestMode scissor_test_mode_from_json(const rx::json& j);
-    [[nodiscard]] RasterizerState state_enum_from_json(const rx::json& j);
+    [[nodiscard]] rhi::PixelFormat pixel_format_enum_from_json(const nlohmann::json& j);
+    [[nodiscard]] TextureDimensionType texture_dimension_type_enum_from_json(const nlohmann::json& j);
+    [[nodiscard]] TextureFilter texture_filter_enum_from_json(const nlohmann::json& j);
+    [[nodiscard]] WrapMode wrap_mode_enum_from_json(const nlohmann::json& j);
+    [[nodiscard]] RPStencilOp stencil_op_enum_from_json(const nlohmann::json& j);
+    [[nodiscard]] RPCompareOp compare_op_enum_from_json(const nlohmann::json& j);
+    [[nodiscard]] MsaaSupport msaa_support_enum_from_json(const nlohmann::json& j);
+    [[nodiscard]] RPPrimitiveTopology primitive_topology_enum_from_json(const nlohmann::json& j);
+    [[nodiscard]] RPBlendFactor blend_factor_enum_from_json(const nlohmann::json& j);
+    [[nodiscard]] RenderQueue render_queue_enum_from_json(const nlohmann::json& j);
+    [[nodiscard]] ScissorTestMode scissor_test_mode_from_json(const nlohmann::json& j);
+    [[nodiscard]] RasterizerState state_enum_from_json(const nlohmann::json& j);
 
     [[nodiscard]] std::string to_string(rhi::PixelFormat val);
     [[nodiscard]] std::string to_string(TextureDimensionType val);

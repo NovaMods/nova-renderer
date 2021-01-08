@@ -93,8 +93,7 @@ namespace nova::renderer {
 
     template <typename ElementType>
     void PerFrameDeviceArray<ElementType>::upload_to_device(const uint32_t frame_idx) {
-        MTR_SCOPE("PerFrameDeviceArray", "upload_to_device");
-
+        ZoneScoped;
         const auto num_bytes_to_write = sizeof(ElementType) * data.size();
 
         device.write_data_to_buffer(data.data(), num_bytes_to_write, per_frame_buffers[frame_idx]);

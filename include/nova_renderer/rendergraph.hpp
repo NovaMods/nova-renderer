@@ -116,7 +116,7 @@ namespace nova::renderer {
     };
 
     struct Pipeline {
-        rx::ptr<rhi::RhiPipeline> pipeline{};
+        std::unique_ptr<rhi::RhiPipeline> pipeline{};
         rhi::RhiPipelineInterface* pipeline_interface = nullptr;
 
         void record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;
@@ -269,12 +269,12 @@ namespace nova::renderer {
          * \param mesh The mesh to execute this renderpass over. Will usually be the fullscreen triangle
          * \param is_builtin Whether this render pass is built in to Nova or comes from a renderpack
          */
-        explicit GlobalRenderpass(const std::string& name, rx::ptr<rhi::RhiPipeline> pipeline, MeshId mesh, bool is_builtin = false);
+        explicit GlobalRenderpass(const std::string& name, std::unique_ptr<rhi::RhiPipeline> pipeline, MeshId mesh, bool is_builtin = false);
 
     protected:
-        rx::ptr<rhi::RhiPipeline> pipeline;
+        std::unique_ptr<rhi::RhiPipeline> pipeline;
 
-        rx::ptr<RhiResourceBinder> resource_binder;
+        std::unique_ptr<RhiResourceBinder> resource_binder;
 
         MeshId mesh;
 

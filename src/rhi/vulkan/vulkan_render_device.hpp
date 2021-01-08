@@ -108,13 +108,13 @@ namespace nova::renderer::rhi {
                                            const glm::uvec2& framebuffer_size,
                                            rx::memory::allocator& allocator) override;
 
-        rx::ptr<RhiPipeline> create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+        std::unique_ptr<RhiPipeline> create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
                                                      rx::memory::allocator& allocator) override;
 
-        rx::ptr<RhiPipeline> create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+        std::unique_ptr<RhiPipeline> create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
                                                     rx::memory::allocator& allocator) override;
 
-        rx::ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
+        std::unique_ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
                                                                        rx::memory::allocator& allocator) override;
 
         RhiBuffer* create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) override;

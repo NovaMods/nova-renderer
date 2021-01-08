@@ -38,14 +38,12 @@ namespace nova::renderer {
 
 #define PROFILE_VOID_EXPR(expr, category, event_name)                                                                                      \
     [&] {                                                                                                                                  \
-        MTR_SCOPE(#category, #event_name);                                                                                                 \
-        expr;                                                                                                                              \
+        ZoneScoped;        expr;                                                                                                                              \
     }()
 
 #define PROFILE_RET_EXPR(expr, category, event_name)                                                                                       \
     [&] {                                                                                                                                  \
-        MTR_SCOPE(#category, #event_name);                                                                                                 \
-        return expr;                                                                                                                       \
+        ZoneScoped;        return expr;                                                                                                                       \
     }()
 
 } // namespace nova::renderer

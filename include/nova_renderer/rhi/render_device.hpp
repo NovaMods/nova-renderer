@@ -109,7 +109,7 @@ namespace nova::renderer::rhi {
          * compatible with the material system. They currently can't access any resources outside of the material system, and _have_ to use
          * the standard pipeline layout
          */
-        [[nodiscard]] virtual rx::ptr<RhiPipeline> create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+        [[nodiscard]] virtual std::unique_ptr<RhiPipeline> create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
                                                                            rx::memory::allocator& allocator) = 0;
 
         /*!
@@ -118,10 +118,10 @@ namespace nova::renderer::rhi {
          * Global pipelines are pipelines that aren't tied to any specific objects in the world. Global pipelines typically read render
          * targets to do something like post processing
          */
-        [[nodiscard]] virtual rx::ptr<RhiPipeline> create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
+        [[nodiscard]] virtual std::unique_ptr<RhiPipeline> create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
                                                                           rx::memory::allocator& allocator) = 0;
 
-        [[nodiscard]] virtual rx::ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
+        [[nodiscard]] virtual std::unique_ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
                                                                                              rx::memory::allocator& allocator) = 0;
 
         /*!
@@ -279,5 +279,5 @@ namespace nova::renderer::rhi {
      * Right now we only support creating Vulkan render devices, but in the future we might support devices for different APIs, or different
      * types of hardware
      */
-    rx::ptr<RenderDevice> create_render_device(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator);
+    std::unique_ptr<RenderDevice> create_render_device(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator);
 } // namespace nova::renderer::rhi

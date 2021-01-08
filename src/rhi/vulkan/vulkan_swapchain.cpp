@@ -17,8 +17,7 @@ namespace nova::renderer::rhi {
                                      const glm::uvec2 window_dimensions,
                                      const std::vector<VkPresentModeKHR>& present_modes)
         : Swapchain(num_swapchain_images, window_dimensions), render_device(render_device), num_swapchain_images(num_swapchain_images) {
-        MTR_SCOPE("VulkanSwapchain", "VulkanSwapchain");
-
+        ZoneScoped;
         create_swapchain(num_swapchain_images, present_modes, window_dimensions);
 
         std::vector<VkImage> vk_images = get_swapchain_images();
@@ -47,8 +46,7 @@ namespace nova::renderer::rhi {
     }
 
     uint8_t VulkanSwapchain::acquire_next_swapchain_image(rx::memory::allocator& allocator) {
-        MTR_SCOPE("VulkanSwapchain", "acquire_next_swapchain_image");
-        auto* fence = render_device->create_fence(false, allocator);
+        ZoneScoped;        auto* fence = render_device->create_fence(false, allocator);
         auto* vk_fence = static_cast<VulkanFence*>(fence);
 
         uint32_t acquired_image_idx;
@@ -78,8 +76,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanSwapchain::present(const uint32_t image_idx) {
-        MTR_SCOPE("VulkanSwapchain", "present");
-        VkResult swapchain_result = {};
+        ZoneScoped;        VkResult swapchain_result = {};
 
         VkPresentInfoKHR present_info = {};
         present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -102,8 +99,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanSwapchain::transition_swapchain_images_into_color_attachment_layout(const std::vector<VkImage>& images) const {
-        MTR_SCOPE("VulkanSwapchain", "transition_swapchain_images_into_color_attachment_layout");
-        std::vector<VkImageMemoryBarrier> barriers;
+        ZoneScoped;        std::vector<VkImageMemoryBarrier> barriers;
         barriers.reserve(images.size());
 
         images.each_fwd([&](const VkImage& image) {
@@ -253,8 +249,7 @@ namespace nova::renderer::rhi {
     void VulkanSwapchain::create_swapchain(const uint32_t requested_num_swapchain_images,
                                            const std::vector<VkPresentModeKHR>& present_modes,
                                            const glm::uvec2& window_dimensions) {
-        MTR_SCOPE("VulkanSwapchain", "create_swapchain");
-
+        ZoneScoped;
         const auto surface_format = choose_surface_format(render_device->gpu.surface_formats);
         const auto present_mode = choose_present_mode(present_modes);
         const auto extent = choose_surface_extent(render_device->gpu.surface_capabilities, window_dimensions);
@@ -292,8 +287,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanSwapchain::create_resources_for_frame(const VkImage image, const VkRenderPass renderpass, const glm::uvec2& swapchain_size) {
-        MTR_SCOPE("VulkanSwapchain", "create_resources_for_frame");
-        auto* vk_image = new VulkanImage;
+        ZoneScoped;        auto* vk_image = new VulkanImage;
         vk_image->type = ResourceType::Image;
         vk_image->is_dynamic = true;
         vk_image->image = image;
@@ -346,8 +340,7 @@ namespace nova::renderer::rhi {
     }
 
     std::vector<VkImage> VulkanSwapchain::get_swapchain_images() {
-        MTR_SCOPE("VulkanSwapchain", "get_swapchain_images");
-        std::vector<VkImage> vk_images;
+        ZoneScoped;        std::vector<VkImage> vk_images;
 
         vkGetSwapchainImagesKHR(render_device->device, swapchain, &num_swapchain_images, nullptr);
         vk_images.resize(num_swapchain_images);

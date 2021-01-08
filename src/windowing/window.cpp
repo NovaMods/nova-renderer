@@ -78,15 +78,15 @@ namespace nova::renderer {
     }
 
     void NovaWindow::register_key_callback(std::function<void(uint32_t, bool, bool, bool)> key_callback) {
-        key_callbacks.emplace_back(rx::utility::move(key_callback));
+        key_callbacks.emplace_back(std::move(key_callback));
     }
 
     void NovaWindow::register_mouse_callback(std::function<void(double, double)> mouse_callback) {
-        mouse_callbacks.emplace_back(rx::utility::move(mouse_callback));
+        mouse_callbacks.emplace_back(std::move(mouse_callback));
     }
 
     void NovaWindow::register_mouse_button_callback(std::function<void(uint32_t, bool)> mouse_callback) {
-        mouse_button_callbacks.emplace_back(rx::utility::move(mouse_callback));
+        mouse_button_callbacks.emplace_back(std::move(mouse_callback));
     }
 
     void NovaWindow::broadcast_key_event(const int key, const bool is_press, const bool is_control_down, const bool is_shift_down) {

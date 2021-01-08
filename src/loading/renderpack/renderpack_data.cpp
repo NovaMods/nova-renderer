@@ -24,7 +24,7 @@ namespace nova::renderer::renderpack {
 
     bool TextureFormat::operator!=(const TextureFormat& other) const { return !(*this == other); }
 
-    TextureFormat TextureFormat::from_json(const rx::json& json) {
+    TextureFormat TextureFormat::from_json(const nlohmann::json& json) {
         TextureFormat format = {};
 
         format.pixel_format = get_json_value(json, "pixelFormat", rhi::PixelFormat::Rgba8, pixel_format_enum_from_json);
@@ -38,7 +38,7 @@ namespace nova::renderer::renderpack {
         return format;
     }
 
-    TextureCreateInfo TextureCreateInfo::from_json(const rx::json& json) {
+    TextureCreateInfo TextureCreateInfo::from_json(const nlohmann::json& json) {
         TextureCreateInfo info = {};
 
         FILL_REQUIRED_FIELD(info.name, get_json_opt<std::string>(json, "name"));
@@ -47,7 +47,7 @@ namespace nova::renderer::renderpack {
         return info;
     }
 
-    RenderpackResourcesData RenderpackResourcesData::from_json(const rx::json& json) {
+    RenderpackResourcesData RenderpackResourcesData::from_json(const nlohmann::json& json) {
         RenderpackResourcesData data;
         data.render_targets = get_json_array<TextureCreateInfo>(json, "textures");
         data.samplers = get_json_array<SamplerCreateInfo>(json, "samplers");
@@ -60,7 +60,7 @@ namespace nova::renderer::renderpack {
 
     bool TextureAttachmentInfo::operator==(const TextureAttachmentInfo& other) const { return other.name == name; }
 
-    TextureAttachmentInfo TextureAttachmentInfo::from_json(const rx::json& json) {
+    TextureAttachmentInfo TextureAttachmentInfo::from_json(const nlohmann::json& json) {
         TextureAttachmentInfo info = {};
 
         FILL_REQUIRED_FIELD(info.name, get_json_opt<std::string>(json, "name"));
@@ -69,7 +69,7 @@ namespace nova::renderer::renderpack {
         return info;
     }
 
-    RenderPassCreateInfo RenderPassCreateInfo::from_json(const rx::json& json) {
+    RenderPassCreateInfo RenderPassCreateInfo::from_json(const nlohmann::json& json) {
         RenderPassCreateInfo info = {};
 
         info.texture_inputs = get_json_array<std::string>(json, "textureInputs");
@@ -84,7 +84,7 @@ namespace nova::renderer::renderpack {
         return info;
     }
 
-    RendergraphData RendergraphData::from_json(const rx::json& json) {
+    RendergraphData RendergraphData::from_json(const nlohmann::json& json) {
         RendergraphData data;
 
         data.passes = get_json_array<RenderPassCreateInfo>(json, "passes");
@@ -93,7 +93,7 @@ namespace nova::renderer::renderpack {
         return data;
     }
 
-    SamplerCreateInfo SamplerCreateInfo::from_json(const rx::json& json) {
+    SamplerCreateInfo SamplerCreateInfo::from_json(const nlohmann::json& json) {
         SamplerCreateInfo info = {};
 
         info.filter = get_json_value(json, "filter", TextureFilter::Point, texture_filter_enum_from_json);
@@ -102,7 +102,7 @@ namespace nova::renderer::renderpack {
         return info;
     }
 
-    StencilOpState StencilOpState::from_json(const rx::json& json) {
+    StencilOpState StencilOpState::from_json(const nlohmann::json& json) {
         StencilOpState state = {};
 
         FILL_REQUIRED_FIELD(state.fail_op, get_json_opt<RPStencilOp>(json, "failOp", stencil_op_enum_from_json));
@@ -115,7 +115,7 @@ namespace nova::renderer::renderpack {
         return state;
     }
 
-    PipelineData PipelineData::from_json(const rx::json& json) {
+    PipelineData PipelineData::from_json(const nlohmann::json& json) {
         PipelineData pipeline = {};
 
         FILL_REQUIRED_FIELD(pipeline.name, get_json_opt<std::string>(json, "name"));
@@ -200,10 +200,10 @@ namespace nova::renderer::renderpack {
         return {std::round(pixel_width), std::round(pixel_height)};
     }
 
-    std::optional<std::unordered_map<std::string, std::string>> map_from_json_object(const rx::json& json) {
+    std::optional<std::unordered_map<std::string, std::string>> map_from_json_object(const nlohmann::json& json) {
         std::unordered_map<std::string, std::string> map;
 
-        json.each([&](const rx::json& elem) {
+        json.each([&](const nlohmann::json& elem) {
             std::string shader_variable;
             FILL_REQUIRED_FIELD(shader_variable, get_json_opt<std::string>(elem, "variable"));
 
@@ -216,7 +216,7 @@ namespace nova::renderer::renderpack {
         return map;
     }
 
-    MaterialPass MaterialPass::from_json(const rx::json& json) {
+    MaterialPass MaterialPass::from_json(const nlohmann::json& json) {
         MaterialPass pass = {};
 
         FILL_REQUIRED_FIELD(pass.name, get_json_opt<std::string>(json, "name"));
@@ -232,7 +232,7 @@ namespace nova::renderer::renderpack {
         return pass;
     }
 
-    MaterialData MaterialData::from_json(const rx::json& json) {
+    MaterialData MaterialData::from_json(const nlohmann::json& json) {
         MaterialData data = {};
 
         FILL_REQUIRED_FIELD(data.name, get_json_opt<std::string>(json, "name"));
@@ -491,31 +491,31 @@ namespace nova::renderer::renderpack {
         return {};
     }
 
-    rhi::PixelFormat pixel_format_enum_from_json(const rx::json& j) { return pixel_format_enum_from_string(j.as_string()); }
+    rhi::PixelFormat pixel_format_enum_from_json(const nlohmann::json& j) { return pixel_format_enum_from_string(j.as_string()); }
 
-    TextureDimensionType texture_dimension_type_enum_from_json(const rx::json& j) {
+    TextureDimensionType texture_dimension_type_enum_from_json(const nlohmann::json& j) {
         return texture_dimension_type_enum_from_string(j.as_string());
     }
 
-    TextureFilter texture_filter_enum_from_json(const rx::json& j) { return texture_filter_enum_from_string(j.as_string()); }
+    TextureFilter texture_filter_enum_from_json(const nlohmann::json& j) { return texture_filter_enum_from_string(j.as_string()); }
 
-    WrapMode wrap_mode_enum_from_json(const rx::json& j) { return wrap_mode_enum_from_string(j.as_string()); }
+    WrapMode wrap_mode_enum_from_json(const nlohmann::json& j) { return wrap_mode_enum_from_string(j.as_string()); }
 
-    RPStencilOp stencil_op_enum_from_json(const rx::json& j) { return stencil_op_enum_from_string(j.as_string()); }
+    RPStencilOp stencil_op_enum_from_json(const nlohmann::json& j) { return stencil_op_enum_from_string(j.as_string()); }
 
-    RPCompareOp compare_op_enum_from_json(const rx::json& j) { return compare_op_enum_from_string(j.as_string()); }
+    RPCompareOp compare_op_enum_from_json(const nlohmann::json& j) { return compare_op_enum_from_string(j.as_string()); }
 
-    MsaaSupport msaa_support_enum_from_json(const rx::json& j) { return msaa_support_enum_from_string(j.as_string()); }
+    MsaaSupport msaa_support_enum_from_json(const nlohmann::json& j) { return msaa_support_enum_from_string(j.as_string()); }
 
-    RPPrimitiveTopology primitive_topology_enum_from_json(const rx::json& j) { return primitive_topology_enum_from_string(j.as_string()); }
+    RPPrimitiveTopology primitive_topology_enum_from_json(const nlohmann::json& j) { return primitive_topology_enum_from_string(j.as_string()); }
 
-    RPBlendFactor blend_factor_enum_from_json(const rx::json& j) { return blend_factor_enum_from_string(j.as_string()); }
+    RPBlendFactor blend_factor_enum_from_json(const nlohmann::json& j) { return blend_factor_enum_from_string(j.as_string()); }
 
-    RenderQueue render_queue_enum_from_json(const rx::json& j) { return render_queue_enum_from_string(j.as_string()); }
+    RenderQueue render_queue_enum_from_json(const nlohmann::json& j) { return render_queue_enum_from_string(j.as_string()); }
 
-    ScissorTestMode scissor_test_mode_from_json(const rx::json& j) { return scissor_test_mode_from_string(j.as_string()); }
+    ScissorTestMode scissor_test_mode_from_json(const nlohmann::json& j) { return scissor_test_mode_from_string(j.as_string()); }
 
-    RasterizerState state_enum_from_json(const rx::json& j) { return state_enum_from_string(j.as_string()); }
+    RasterizerState state_enum_from_json(const nlohmann::json& j) { return state_enum_from_string(j.as_string()); }
 
     std::string to_string(const rhi::PixelFormat val) {
         switch(val) {

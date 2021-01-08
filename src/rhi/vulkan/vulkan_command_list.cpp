@@ -32,8 +32,7 @@ namespace nova::renderer::rhi {
                                                      VulkanRenderDevice& render_device,
                                                      rx::memory::allocator& allocator)
         : cmds(cmds), device(render_device), allocator(allocator), descriptor_sets{&allocator} {
-        MTR_SCOPE("VulkanRenderCommandList", "VulkanRenderCommandList");
-        // TODO: Put this begin info in the constructor parameters
+        ZoneScoped;        // TODO: Put this begin info in the constructor parameters
         VkCommandBufferBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -96,7 +95,7 @@ namespace nova::renderer::rhi {
                 vk::DescriptorImageInfo().setImageView(vk_image->image_view).setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal));
         });
 
-        const auto writes = rx::array{
+        const auto writes = std::array{
             vk::WriteDescriptorSet()
                 .setDstSet(set)
                 .setDstBinding(0)
@@ -173,8 +172,7 @@ namespace nova::renderer::rhi {
     void VulkanRenderCommandList::resource_barriers(const PipelineStage stages_before_barrier,
                                                     const PipelineStage stages_after_barrier,
                                                     const std::vector<RhiResourceBarrier>& barriers) {
-        MTR_SCOPE("VulkanRenderCommandList", "resource_barriers");
-        std::vector<VkBufferMemoryBarrier> buffer_barriers{&allocator};
+        ZoneScoped;        std::vector<VkBufferMemoryBarrier> buffer_barriers{&allocator};
         buffer_barriers.reserve(barriers.size());
 
         std::vector<VkImageMemoryBarrier> image_barriers{&allocator};
@@ -238,8 +236,7 @@ namespace nova::renderer::rhi {
                                               RhiBuffer* source_buffer,
                                               const mem::Bytes source_offset,
                                               const mem::Bytes num_bytes) {
-        MTR_SCOPE("VulkanRenderCommandList", "copy_buffer");
-        VkBufferCopy copy;
+        ZoneScoped;        VkBufferCopy copy;
         copy.srcOffset = source_offset.b_count();
         copy.dstOffset = destination_offset.b_count();
         copy.size = num_bytes.b_count();
@@ -251,8 +248,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderCommandList::execute_command_lists(const std::vector<RhiRenderCommandList*>& lists) {
-        MTR_SCOPE("VulkanRenderCommandList", "execute_command_lists");
-        std::vector<VkCommandBuffer> buffers{&allocator};
+        ZoneScoped;        std::vector<VkCommandBuffer> buffers{&allocator};
         buffers.reserve(lists.size());
 
         lists.each_fwd([&](RhiRenderCommandList* list) {
@@ -264,15 +260,13 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderCommandList::set_camera(const Camera& camera) {
-        MTR_SCOPE("VulkanRenderCommandList", "set_camera");
-        camera_index = camera.index;
+        ZoneScoped;        camera_index = camera.index;
 
         vkCmdPushConstants(cmds, device.standard_pipeline_layout, VK_SHADER_STAGE_ALL, 0, sizeof(uint32_t), &camera_index);
     }
 
     void VulkanRenderCommandList::begin_renderpass(RhiRenderpass* renderpass, RhiFramebuffer* framebuffer) {
-        MTR_SCOPE("VulkanRenderCommandList", "begin_renderpass");
-        auto* vk_renderpass = static_cast<VulkanRenderpass*>(renderpass);
+        ZoneScoped;        auto* vk_renderpass = static_cast<VulkanRenderpass*>(renderpass);
         auto* vk_framebuffer = static_cast<VulkanFramebuffer*>(framebuffer);
 
         current_render_pass = vk_renderpass;
@@ -291,8 +285,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderCommandList::end_renderpass() {
-        MTR_SCOPE("VulkanRenderCommandList", "end_renderpass");
-        vkCmdEndRenderPass(cmds);
+        ZoneScoped;        vkCmdEndRenderPass(cmds);
 
         current_render_pass = nullptr;
     }
@@ -302,8 +295,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderCommandList::set_pipeline(const RhiPipeline& state) {
-        MTR_SCOPE("VulkanRenderCommandList", "bind_pipeline");
-
+        ZoneScoped;
         const auto& vk_pipeline = static_cast<const VulkanPipeline&>(state);
 
         if(current_render_pass != nullptr) {
@@ -330,8 +322,7 @@ namespace nova::renderer::rhi {
 
     void VulkanRenderCommandList::bind_descriptor_sets(const std::vector<RhiDescriptorSet*>& descriptor_sets,
                                                        const RhiPipelineInterface* pipeline_interface) {
-        MTR_SCOPE("VulkanRenderCommandList", "bind_descriptor_sets");
-        const auto* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
+        ZoneScoped;        const auto* vk_interface = static_cast<const VulkanPipelineInterface*>(pipeline_interface);
 
         for(uint32_t i = 0; i < descriptor_sets.size(); i++) {
             const auto* vk_set = static_cast<const VulkanDescriptorSet*>(descriptor_sets[i]);
@@ -348,8 +339,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderCommandList::bind_vertex_buffers(const std::vector<RhiBuffer*>& buffers) {
-        MTR_SCOPE("VulkanRenderCommandList", "bind_vertex_buffers");
-        std::vector<VkBuffer> vk_buffers{&allocator};
+        ZoneScoped;        std::vector<VkBuffer> vk_buffers{&allocator};
         vk_buffers.reserve(buffers.size());
 
         std::vector<VkDeviceSize> offsets{&allocator};
@@ -364,20 +354,17 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderCommandList::bind_index_buffer(const RhiBuffer* buffer, const IndexType index_type) {
-        MTR_SCOPE("VulkanRenderCommandList", "bind_index_buffer");
-        const auto* vk_buffer = static_cast<const VulkanBuffer*>(buffer);
+        ZoneScoped;        const auto* vk_buffer = static_cast<const VulkanBuffer*>(buffer);
 
         vkCmdBindIndexBuffer(cmds, vk_buffer->buffer, 0, to_vk_index_type(index_type));
     }
 
     void VulkanRenderCommandList::draw_indexed_mesh(const uint32_t num_indices, const uint32_t offset, const uint32_t num_instances) {
-        MTR_SCOPE("VulkanRenderCommandList", "draw_indexed_mesh");
-        vkCmdDrawIndexed(cmds, num_indices, num_instances, offset, 0, 0);
+        ZoneScoped;        vkCmdDrawIndexed(cmds, num_indices, num_instances, offset, 0, 0);
     }
 
     void VulkanRenderCommandList::set_scissor_rect(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height) {
-        MTR_SCOPE("VulkanRenderCommandList", "set_scissor_rect");
-        VkRect2D scissor_rect = {{static_cast<int32_t>(x), static_cast<int32_t>(y)}, {width, height}};
+        ZoneScoped;        VkRect2D scissor_rect = {{static_cast<int32_t>(x), static_cast<int32_t>(y)}, {width, height}};
         vkCmdSetScissor(cmds, 0, 1, &scissor_rect);
     }
 
@@ -387,8 +374,7 @@ namespace nova::renderer::rhi {
                                                        const size_t bytes_per_pixel,
                                                        RhiBuffer* staging_buffer,
                                                        const void* data) {
-        MTR_SCOPE("VulkanRenderCommandList", "upload_data_to_image");
-        auto* vk_image = static_cast<VulkanImage*>(image);
+        ZoneScoped;        auto* vk_image = static_cast<VulkanImage*>(image);
         auto* vk_buffer = static_cast<VulkanBuffer*>(staging_buffer);
 
         memcpy(vk_buffer->allocation_info.pMappedData, data, width * height * bytes_per_pixel);
@@ -406,8 +392,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanRenderCommandList::cleanup_resources() {
-        MTR_SCOPE("VulkanCommandList", "cleanup_resources");
-
+        ZoneScoped;
         device.return_standard_descriptor_sets(descriptor_sets);
 
         descriptor_sets.clear();

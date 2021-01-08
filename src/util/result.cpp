@@ -1,9 +1,9 @@
 #include "nova_renderer/util/result.hpp"
 
 namespace ntl {
-    NovaError::NovaError(std::string message) : message(rx::utility::move(message)) {}
+    NovaError::NovaError(std::string message) : message(std::move(message)) {}
 
-    NovaError::NovaError(std::string message, NovaError* cause) : message(rx::utility::move(message)), cause(cause) {}
+    NovaError::NovaError(std::string message, NovaError* cause) : message(std::move(message)), cause(cause) {}
 
     std::string NovaError::to_string() const {
         if(cause) {

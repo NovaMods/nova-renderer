@@ -78,8 +78,7 @@ namespace nova::renderer::renderpack {
     }
 
     ntl::Result<std::vector<RenderPassCreateInfo>> order_passes(const std::vector<RenderPassCreateInfo>& passes) {
-        MTR_SCOPE("Renderpass", "order_passes");
-
+        ZoneScoped;
         logger->verbose("Executing Pass Scheduler");
 
         std::unordered_map<std::string, RenderPassCreateInfo> render_passes_to_order;

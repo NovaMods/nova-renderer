@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rx/core/array.h>
+#include <array>
 #include <rx/core/concepts/no_copy.h>
 #include <string>
 #include <stdint.h>

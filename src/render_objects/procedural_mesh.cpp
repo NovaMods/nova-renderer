@@ -57,8 +57,8 @@ namespace nova::renderer {
 
     ProceduralMesh::ProceduralMesh(ProceduralMesh&& old) noexcept
         : device{old.device},
-          vertex_buffers{rx::utility::move(old.vertex_buffers)},
-          index_buffers{rx::utility::move(old.index_buffers)},
+          vertex_buffers{std::move(old.vertex_buffers)},
+          index_buffers{std::move(old.index_buffers)},
           cached_vertex_buffer{old.cached_vertex_buffer},
           cached_index_buffer{old.cached_index_buffer},
           num_vertex_bytes_to_upload{old.num_vertex_bytes_to_upload},
@@ -73,8 +73,8 @@ namespace nova::renderer {
 
     ProceduralMesh& ProceduralMesh::operator=(ProceduralMesh&& old) noexcept {
         device = old.device;
-        vertex_buffers = rx::utility::move(old.vertex_buffers);
-        index_buffers = rx::utility::move(old.index_buffers);
+        vertex_buffers = std::move(old.vertex_buffers);
+        index_buffers = std::move(old.index_buffers);
         cached_vertex_buffer = old.cached_vertex_buffer;
         cached_index_buffer = old.cached_index_buffer;
         num_vertex_bytes_to_upload = old.num_vertex_bytes_to_upload;

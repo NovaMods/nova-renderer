@@ -1,7 +1,7 @@
 #include "nova_renderer/nova_settings.hpp"
 
 namespace nova::renderer {
-    NovaSettingsAccessManager::NovaSettingsAccessManager(NovaSettings settings) : settings(rx::utility::move(settings)) {}
+    NovaSettingsAccessManager::NovaSettingsAccessManager(NovaSettings settings) : settings(std::move(settings)) {}
 
     void NovaSettingsAccessManager::register_change_listener(ConfigListener* new_listener) {
         config_change_listeners.push_back(new_listener);

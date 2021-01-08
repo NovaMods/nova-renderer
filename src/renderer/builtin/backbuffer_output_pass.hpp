@@ -7,7 +7,7 @@ namespace nova::renderer {
         explicit BackbufferOutputRenderpass(rhi::RhiImage* ui_output,
                                             rhi::RhiImage* scene_output,
                                             rhi::RhiSampler* point_sampler,
-                                            rx::ptr<rhi::RhiPipeline> pipeline,
+                                            std::unique_ptr<rhi::RhiPipeline> pipeline,
                                             MeshId mesh,
                                             rhi::RenderDevice& device);
 

@@ -214,33 +214,17 @@ namespace nova::renderer {
     private:
         NovaSettingsAccessManager settings;
 
-        rx::ptr<rhi::RenderDevice> device;
-        rx::ptr<NovaWindow> window;
+        std::unique_ptr<rhi::RenderDevice> device;
+        std::unique_ptr<NovaWindow> window;
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
-        std::vector<rx::memory::bump_point_allocator*> frame_allocators;
 
         rhi::RhiSampler* point_sampler;
 
         MeshId fullscreen_triangle_id;
 
-        /*!
-         * \brief The allocator that all of Nova's memory will be allocated through
-         *
-         * Local allocators 0.1 uwu
-         *
-         * Right now I throw this allocator at the GPU memory allocators, because they need some way to allocate memory and I'm not about to
-         * try and band-aid aid things together. Future work will have a better way to bootstrap Nova's allocators
-         */
-        rx::memory::allocator* global_allocator;
-
-        /*!
-         * \brief Holds all the object loaded by the current renderpacks
-         */
-        rx::memory::allocator* renderpack_allocator;
-
-        rx::ptr<DeviceResources> device_resources;
+        std::unique_ptr<DeviceResources> device_resources;
 
         rhi::RhiDescriptorPool* global_descriptor_pool;
 
@@ -341,7 +325,7 @@ namespace nova::renderer {
         std::unordered_map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
         std::unordered_map<std::string, Pipeline> pipelines;
 
-        rx::ptr<MaterialDataBuffer> material_buffer;
+        std::unique_ptr<MaterialDataBuffer> material_buffer;
         std::vector<BufferResourceAccessor> material_device_buffers;
 
         struct RenderableKey {
@@ -355,7 +339,7 @@ namespace nova::renderer {
         std::unordered_map<RenderableId, RenderableKey> renderable_keys;
 
         std::vector<Camera> cameras;
-        rx::ptr<PerFrameDeviceArray<CameraUboData>> camera_data;
+        std::unique_ptr<PerFrameDeviceArray<CameraUboData>> camera_data;
 
         void update_camera_matrix_buffer(uint32_t frame_idx);
 

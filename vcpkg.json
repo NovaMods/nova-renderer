@@ -7,6 +7,7 @@
     "glfw3",
     "glm",
     "nlohmann-json",
+    "spdlog",
     "stb"
   ]
 }

@@ -14,7 +14,7 @@ namespace nova::renderer {
      * \note Only enabled if we're not getting a string. Use `get_json_string` to get a string
      */
     template <typename ValType>
-    std::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key);
+    std::optional<ValType> get_json_opt(const nlohmann::json& json_obj, const char* key);
 
     /*!
      * \brief Retrieves an individual value from the provided JSON structure
@@ -25,7 +25,7 @@ namespace nova::renderer {
      * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
      */
     template <typename ValType, typename FuncType>
-    std::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key, FuncType&& deserializer);
+    std::optional<ValType> get_json_opt(const nlohmann::json& json_obj, const char* key, FuncType&& deserializer);
 
     /*!
      * \brief Retrieves an individual value from the provided JSON structure
@@ -36,7 +36,7 @@ namespace nova::renderer {
      * \return The value from the JSON if the key exists in the JSON, or `default_value` if it does not
      */
     template <typename ValType>
-    ValType get_json_value(const rx::json& json_obj, const char* key, ValType default_value);
+    ValType get_json_value(const nlohmann::json& json_obj, const char* key, ValType default_value);
 
     /*!
      * \brief Retrieves an individual value from the provided JSON structure
@@ -48,7 +48,7 @@ namespace nova::renderer {
      * \return The value from the JSON if the key exists in the JSON, or `default_value` if it does not
      */
     template <typename ValType, typename FuncType>
-    ValType get_json_value(const rx::json& json_obj, const char* key, ValType default_value, FuncType&& deserializer);
+    ValType get_json_value(const nlohmann::json& json_obj, const char* key, ValType default_value, FuncType&& deserializer);
 
     /*!
      * \brief Retrieves an array of values from the provided JSON object
@@ -58,7 +58,7 @@ namespace nova::renderer {
      * \return An array of values, if the value can be found, or an empty vector if the values cannot be found
      */
     template <typename ValType>
-    std::vector<ValType> get_json_array(const rx::json& json_obj, const char* key);
+    std::vector<ValType> get_json_array(const nlohmann::json& json_obj, const char* key);
 
     /*!
      * \brief Retrieves an array of values from the provided JSON object
@@ -69,10 +69,10 @@ namespace nova::renderer {
      * \return An array of values, if the value can be found, or an empty vector if the values cannot be found
      */
     template <typename ValType, typename FuncType>
-    std::vector<ValType> get_json_array(const rx::json& json_obj, const char* key, FuncType&& deserializer);
+    std::vector<ValType> get_json_array(const nlohmann::json& json_obj, const char* key, FuncType&& deserializer);
 
     template <typename ValType>
-    std::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key) {
+    std::optional<ValType> get_json_opt(const nlohmann::json& json_obj, const char* key) {
         const auto& val_json = json_obj[key];
         if(val_json) {
             return val_json.decode<ValType>({});
@@ -82,7 +82,7 @@ namespace nova::renderer {
     }
 
     template <typename ValType, typename FuncType>
-    std::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key, FuncType&& deserializer) {
+    std::optional<ValType> get_json_opt(const nlohmann::json& json_obj, const char* key, FuncType&& deserializer) {
         const auto& val_json = json_obj[key];
         if(val_json) {
             return deserializer(val_json);
@@ -92,7 +92,7 @@ namespace nova::renderer {
     }
 
     template <typename ValType>
-    ValType get_json_value(const rx::json& json_obj, const char* key, ValType default_value) {
+    ValType get_json_value(const nlohmann::json& json_obj, const char* key, ValType default_value) {
         const auto& json_val = json_obj[key];
         if(json_val) {
             return json_val.decode<ValType>(default_value);
@@ -102,7 +102,7 @@ namespace nova::renderer {
     }
 
     template <typename ValType, typename FuncType>
-    ValType get_json_value(const rx::json& json_obj, const char* key, ValType default_value, FuncType&& deserializer) {
+    ValType get_json_value(const nlohmann::json& json_obj, const char* key, ValType default_value, FuncType&& deserializer) {
         const auto& val = json_obj[key];
         if(val) {
             ValType value = deserializer(val);
@@ -113,7 +113,7 @@ namespace nova::renderer {
     }
 
     template <typename ValType>
-    std::vector<ValType> get_json_array(const rx::json& json_obj, const char* key) {
+    std::vector<ValType> get_json_array(const nlohmann::json& json_obj, const char* key) {
         const auto& arr = json_obj[key];
         if(arr && !arr.is_empty()) {
             std::vector<ValType> vec;
@@ -130,7 +130,7 @@ namespace nova::renderer {
     }
 
     template <typename ValType, typename FuncType>
-    std::vector<ValType> get_json_array(const rx::json& json_obj, const char* key, FuncType&& deserializer) {
+    std::vector<ValType> get_json_array(const nlohmann::json& json_obj, const char* key, FuncType&& deserializer) {
         const auto& arr = json_obj[key];
         if(arr && !arr.is_empty()) {
             std::vector<ValType> vec;

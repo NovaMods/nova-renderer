@@ -19,8 +19,7 @@ namespace nova::renderer {
 
     void Renderpass::execute(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
         const auto& profiling_event_name = std::string::format("Execute %s", name);
-        MTR_SCOPE("Renderpass", profiling_event_name.data());
-        // TODO: Figure if any of these barriers are implicit
+        ZoneScoped;        // TODO: Figure if any of these barriers are implicit
         // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource instead of
         // using a robust default
 
@@ -40,8 +39,7 @@ namespace nova::renderer {
     }
 
     void Renderpass::record_pre_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
-        MTR_SCOPE("Renderpass", "record_pre_renderpass_barriers");
-        if(read_texture_barriers.size() > 0) {
+        ZoneScoped;        if(read_texture_barriers.size() > 0) {
             // TODO: Use shader reflection to figure our the stage that the pipelines in this renderpass need access to this resource
             // instead of using a robust default
             cmds.resource_barriers(rhi::PipelineStage::ColorAttachmentOutput, rhi::PipelineStage::FragmentShader, read_texture_barriers);
@@ -73,8 +71,7 @@ namespace nova::renderer {
     }
 
     void Renderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
-        MTR_SCOPE("Renderpass", "record_renderpass_contents");
-
+        ZoneScoped;
         pipeline_names.each_fwd([&](const std::string& pipeline_name) {
             const auto* pipeline = ctx.nova->find_pipeline(pipeline_name);
             if(pipeline) {
@@ -84,8 +81,7 @@ namespace nova::renderer {
     }
 
     void Renderpass::record_post_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
-        MTR_SCOPE("Renderpass", "record_post_renderpass_barriers");
-        if(writes_to_backbuffer) {
+        ZoneScoped;        if(writes_to_backbuffer) {
             rhi::RhiResourceBarrier backbuffer_barrier{};
             backbuffer_barrier.resource_to_barrier = ctx.swapchain_image;
             backbuffer_barrier.access_before_barrier = rhi::ResourceAccess::ColorAttachmentWrite;
@@ -104,8 +100,8 @@ namespace nova::renderer {
 
     void SceneRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {}
 
-    GlobalRenderpass::GlobalRenderpass(const std::string& name, rx::ptr<rhi::RhiPipeline> pipeline, const MeshId mesh, const bool is_builtin)
-        : Renderpass{name, is_builtin}, pipeline{rx::utility::move(pipeline)}, mesh{mesh} {}
+    GlobalRenderpass::GlobalRenderpass(const std::string& name, std::unique_ptr<rhi::RhiPipeline> pipeline, const MeshId mesh, const bool is_builtin)
+        : Renderpass{name, is_builtin}, pipeline{std::move(pipeline)}, mesh{mesh} {}
 
     void GlobalRenderpass::record_renderpass_contents(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) {
         cmds.set_pipeline(*pipeline);
@@ -114,7 +110,7 @@ namespace nova::renderer {
 
         const auto mesh_data = ctx.nova->get_mesh(mesh);
         cmds.bind_index_buffer(mesh_data->index_buffer, rhi::IndexType::Uint32);
-        cmds.bind_vertex_buffers(rx::array{mesh_data->vertex_buffer});
+        cmds.bind_vertex_buffers(std::array{mesh_data->vertex_buffer});
 
         cmds.draw_indexed_mesh(3);
     }
@@ -137,8 +133,7 @@ namespace nova::renderer {
     }
 
     std::vector<std::string> Rendergraph::calculate_renderpass_execution_order() {
-        MTR_SCOPE("Rendergraph", "calculate_renderpass_execution_order");
-        if(is_dirty) {
+        ZoneScoped;        if(is_dirty) {
             const auto create_infos = [&]() {
                 std::vector<RenderPassCreateInfo> create_info_temp{&allocator};
                 create_info_temp.reserve(renderpass_metadatas.size());
@@ -191,8 +186,7 @@ namespace nova::renderer {
     void Renderpass::setup_renderpass(rhi::RhiRenderCommandList& /* cmds */, FrameContext& /* ctx */) {}
 
     void renderer::MaterialPass::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
-        MTR_SCOPE("MaterialPass", "record");
-
+        ZoneScoped;
         cmds.bind_descriptor_sets(descriptor_sets, pipeline_interface);
 
         static_mesh_draws.each_fwd(
@@ -205,8 +199,7 @@ namespace nova::renderer {
     void renderer::MaterialPass::record_rendering_static_mesh_batch(const MeshBatch<StaticMeshRenderCommand>& batch,
                                                                     rhi::RhiRenderCommandList& cmds,
                                                                     FrameContext& ctx) {
-        MTR_SCOPE("MaterialPass", "record_rendering_static_mesh_batch");
-        const uint64_t start_index = ctx.cur_model_matrix_index;
+        ZoneScoped;        const uint64_t start_index = ctx.cur_model_matrix_index;
 
         auto model_matrix_buffer = ctx.nova->get_resource_manager().get_uniform_buffer(MODEL_MATRIX_BUFFER_NAME);
 
@@ -237,8 +230,7 @@ namespace nova::renderer {
     void renderer::MaterialPass::record_rendering_static_mesh_batch(const ProceduralMeshBatch<StaticMeshRenderCommand>& batch,
                                                                     rhi::RhiRenderCommandList& cmds,
                                                                     FrameContext& ctx) {
-        MTR_SCOPE("MaterialPass", "record_rendering_static_mesh_batch (ProceduralMesh)");
-        const uint64_t start_index = ctx.cur_model_matrix_index;
+        ZoneScoped;        const uint64_t start_index = ctx.cur_model_matrix_index;
 
         auto model_matrix_buffer = ctx.nova->get_resource_manager().get_uniform_buffer(MODEL_MATRIX_BUFFER_NAME);
 
@@ -266,8 +258,7 @@ namespace nova::renderer {
     }
 
     void Pipeline::record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const {
-        MTR_SCOPE("Pipeline", "record");
-        cmds.set_pipeline(*pipeline);
+        ZoneScoped;        cmds.set_pipeline(*pipeline);
 
         const auto& passes = ctx.nova->get_material_passes_for_pipeline(pipeline->name);
 

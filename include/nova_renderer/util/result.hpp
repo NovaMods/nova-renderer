@@ -33,7 +33,7 @@ namespace ntl {
 
         explicit Result(const ValueType& value) : value(value), has_value(true) {}
 
-        explicit Result(ErrorType error) : error(rx::utility::move(error)) {}
+        explicit Result(ErrorType error) : error(std::move(error)) {}
 
         explicit Result(const Result<ValueType, ErrorType>& other) {
             if(other.has_value) {
@@ -54,12 +54,12 @@ namespace ntl {
 
         explicit Result(Result<ValueType, ErrorType> && old) noexcept {
             if(old.has_value) {
-                value = rx::utility::move(old.value);
+                value = std::move(old.value);
                 old.value = {};
 
                 has_value = true;
             } else {
-                error = rx::utility::move(old.error);
+                error = std::move(old.error);
                 old.error = {};
             }
         };
@@ -97,7 +97,7 @@ namespace ntl {
             if(has_value) {
                 return Result<RetVal>(func(value));
             } else {
-                return Result<RetVal>(rx::utility::move(error));
+                return Result<RetVal>(std::move(error));
             }
         }
 
@@ -108,7 +108,7 @@ namespace ntl {
             if(has_value) {
                 return func(value);
             } else {
-                return Result<RetVal>(rx::utility::move(error));
+                return Result<RetVal>(std::move(error));
             }
         }
 

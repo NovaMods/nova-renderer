@@ -13,7 +13,7 @@ namespace nova::renderer::rhi {
           window(window),
           swapchain_size(settings.settings.window.width, settings.settings.window.height) {}
 
-    rx::ptr<RenderDevice> create_render_device(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator) {
-        return rx::make_ptr<VulkanRenderDevice>(&allocator, settings, window, allocator);
+    std::unique_ptr<RenderDevice> create_render_device(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator) {
+        return std::make_unique<VulkanRenderDevice>(&allocator, settings, window, allocator);
     }
 } // namespace nova::renderer::rhi
