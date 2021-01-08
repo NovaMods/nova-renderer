@@ -71,11 +71,6 @@ include(CompilerOptionsUtils)
 include(CheckCXXCompilerFlag)
 include(CheckIncludeFileCXX)
 
-# Only install the git hooks if we're not being included in someone else's project
-if(NOT NOVA_PACKAGE)
-    include(InstallGitHooks)
-endif()
-
 set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
 
 #################################
@@ -217,7 +212,6 @@ set(WINDOWS_NOVA_SOURCE
 
 if(WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${WINDOWS_NOVA_SOURCE})
-    set(OTHER_NOVA_SOURCE ${UNIX_NOVA_SOURCE})
 else()
    message(ERROR "Only Windows is supported")
 endif()
@@ -265,6 +259,7 @@ add_library(nova-renderer STATIC
 nova_format(nova-renderer "${OTHER_NOVA_SOURCE}")
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
+target_include_directories(nova-renderer PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
 
 if(NOVA_FORCE_DEBUGGING) 
     target_compile_definitions(nova-renderer PUBLIC NOVA_DEBUG)
@@ -278,13 +273,18 @@ endif()
 
 target_link_directories(nova-renderer PUBLIC $ENV{VULKAN_SDK}/Lib)
 
-target_include_directories(nova-renderer PRIVATE Vulkan_INCLUDE_DIR)
+target_include_directories(nova-renderer PRIVATE ${STB_INCLUDE_DIRS})
+target_include_directories(nova-renderer PRIVATE ${Vulkan_INCLUDE_DIR})
 
 #########################
 # Set libraries to link #
 #########################
 set(COMMON_LINK_LIBS
         ${CMAKE_DL_LIBS}
+        glfw
+        glm
+        nlohmann_json 
+        nlohmann_json::nlohmann_json
         vma::vma
         rex)
         
@@ -318,15 +318,3 @@ target_sources(nova-renderer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/tools/vs-visual
 # Link all required libraries #
 ###############################
 target_link_libraries(nova-renderer PUBLIC ${COMMON_LINK_LIBS})
-
-##########################
-# Add tests if requested #
-##########################
-if(NOVA_TEST)
-    add_subdirectory(tests)
-endif()
-
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-foreach(dir ${dirs})
-    message(STATUS "dir='${dir}'")
-endforeach()

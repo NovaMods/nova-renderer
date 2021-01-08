@@ -7,7 +7,6 @@
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <minitrace.h>
-#include <spirv_glsl.hpp>
 #pragma warning(pop)
 
 #include <rx/core/array.h>

@@ -12,6 +12,13 @@ include(TargetIncludesSystem)
 # External dependencies #
 #########################
 
+# VCPKG dependencies
+
+find_package(glfw3 CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_path(STB_INCLUDE_DIRS "stb.h")
+
 find_package(Vulkan)
 if (DEFINED ENV{VULKAN_SDK})
     message(STATUS "Vulkan environment variable: $ENV{VULKAN_SDK}")
@@ -21,7 +28,7 @@ else()
     set(Vulkan_INCLUDE_DIR "")
 endif()
 
-# Dependencies and specific options
+# Submodule dependencies
 
 # Compile things as static libraries
 set(BUILD_STATIC_LIBS ON CACHE BOOL "Compile everything as a static lib" FORCE)
