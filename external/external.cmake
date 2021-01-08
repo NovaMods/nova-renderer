@@ -17,6 +17,7 @@ include(TargetIncludesSystem)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 find_path(STB_INCLUDE_DIRS "stb.h")
 
 find_package(Vulkan)

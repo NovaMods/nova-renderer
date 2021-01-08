@@ -20,9 +20,9 @@ namespace nova::renderer {
 
         rhi::RhiImage* image = nullptr;
 
-        rx_size width;
+        size_t width;
 
-        rx_size height;
+        size_t height;
 
         rhi::PixelFormat format;
     };
@@ -68,8 +68,8 @@ namespace nova::renderer {
          * \return The newly-created image, or nullptr if the image could not be created. Check the Nova logs to find out why
          */
         [[nodiscard]] std::optional<TextureResourceAccessor> create_texture(const std::string& name,
-                                                                           rx_size width,
-                                                                           rx_size height,
+                                                                           size_t width,
+                                                                           size_t height,
                                                                            rhi::PixelFormat pixel_format,
                                                                            const void* data,
                                                                            rx::memory::allocator& allocator);
@@ -100,8 +100,8 @@ namespace nova::renderer {
          * \return The new render target if it could be created, or am empty optional if it could not
          */
         [[nodiscard]] std::optional<RenderTargetAccessor> create_render_target(const std::string& name,
-                                                                              rx_size width,
-                                                                              rx_size height,
+                                                                              size_t width,
+                                                                              size_t height,
                                                                               rhi::PixelFormat pixel_format,
                                                                               rx::memory::allocator& allocator,
                                                                               bool can_be_sampled = false);
@@ -139,7 +139,7 @@ namespace nova::renderer {
 
         std::unordered_map<std::string, TextureResource> render_targets;
 
-        std::unordered_map<rx_size, std::vector<rhi::RhiBuffer*>> staging_buffers;
+        std::unordered_map<size_t, std::vector<rhi::RhiBuffer*>> staging_buffers;
 
         std::unordered_map<std::string, BufferResource> uniform_buffers;
 

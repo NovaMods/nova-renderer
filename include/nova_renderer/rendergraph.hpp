@@ -32,7 +32,7 @@ namespace nova::renderer {
 
         bool operator==(const FullMaterialPassName& other) const;
 
-        rx_size hash() const;
+        size_t hash() const;
     };
 
     struct MaterialPassKey {

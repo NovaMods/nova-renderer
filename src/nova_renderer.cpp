@@ -2,15 +2,14 @@
 
 #include <array>
 #include <future>
+#include <unordered_map>
 
-#pragma warning(push, 0)
 #include <Tracy.hpp>
+#include <TracyVulkan.hpp>
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
-#pragma warning(pop)
-
-#include <array>
-#include <unordered_map>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/loading/renderpack_loading.hpp"
@@ -32,7 +31,9 @@ using namespace nova::mem;
 using namespace operators;
 
 namespace nova::renderer {
-    struct RX_HINT_EMPTY_BASES BackbufferOutputPipelineCreateInfo : RhiGraphicsPipelineState {
+    static auto logger = spdlog::stdout_color_mt("NovaRenderer");
+
+    struct BackbufferOutputPipelineCreateInfo : RhiGraphicsPipelineState {
         BackbufferOutputPipelineCreateInfo();
     };
 
@@ -89,7 +90,7 @@ namespace nova::renderer {
         if(pixel_spirv.empty()) {
             logger->error("Could not compile builtin backbuffer output pixel shader");
         }
-        pixel_shader = {"/nova/shaders/backbuffer_output.pixel.hlsl", pixel_spirv};
+        pixel_shader = ShaderSource{.filename = "/nova/shaders/backbuffer_output.pixel.hlsl", .source = pixel_spirv};
 
         vertex_fields.emplace_back("position", rhi::VertexFieldFormat::Float2);
 
@@ -97,18 +98,14 @@ namespace nova::renderer {
         color_attachments.emplace_back(BACKBUFFER_NAME, rhi::PixelFormat::Rgba8, false);
     }
 
-    static BackbufferOutputPipelineCreateInfo backbuffer_output_pipeline_create_info{"Nova", "BackbufferOutputPipelineCreateInfo"};
+    static BackbufferOutputPipelineCreateInfo backbuffer_output_pipeline_create_info{};
 
     bool FullMaterialPassName::operator==(const FullMaterialPassName& other) const {
         return material_name == other.material_name && pass_name == other.pass_name;
     }
 
     NovaRenderer::NovaRenderer(const NovaSettings& settings) : settings{settings} {
-
-        mtr_init("trace.json");
-
-        MTR_META_PROCESS_NAME("NovaRenderer");
-        MTR_META_THREAD_NAME("Main");
+        spdlog::flush_on(spdlog::level::err);
 
         ZoneScoped;
         create_global_allocators();
@@ -167,12 +164,10 @@ namespace nova::renderer {
         create_builtin_renderpasses();
 
         cameras.reserve(MAX_NUM_CAMERAS);
-        camera_data = std::make_unique<PerFrameDeviceArray<CameraUboData>>(MAX_NUM_CAMERAS, settings.max_in_flight_frames, *device, );
+        camera_data = std::make_unique<PerFrameDeviceArray<CameraUboData>>(MAX_NUM_CAMERAS, settings.max_in_flight_frames, *device);
     }
 
     NovaRenderer::~NovaRenderer() {
-        mtr_flush();
-        mtr_shutdown();
     }
 
     NovaSettingsAccessManager& NovaRenderer::get_settings() { return settings; }
@@ -230,13 +225,13 @@ namespace nova::renderer {
             device->wait_for_fences(cur_frame_fences);
 
             device->get_swapchain()->present(cur_frame_idx);
-
-            {
-                ZoneScoped;
-                rx::log::flush();
-            }
         }
-        mtr_flush();
+
+        FrameMark;
+#ifdef TRACY_ENABLE
+        TracyVkNewFrame(renderer::RenderBackend::tracy_context);
+        TracyVkCollect(renderer::RenderBackend::tracy_context);
+#endif
     }
 
     void NovaRenderer::set_num_meshes(const uint32_t /* num_meshes */) { /* TODO? */
@@ -733,9 +728,7 @@ namespace nova::renderer {
         vfs->add_resource_root(renderpacks_directory);
     }
 
-    void NovaRenderer::create_global_sync_objects() {
-        frame_fences = device->create_fences(settings->max_in_flight_frames, true);
-    }
+    void NovaRenderer::create_global_sync_objects() { frame_fences = device->create_fences(settings->max_in_flight_frames, true); }
 
     void NovaRenderer::create_global_samplers() {
         {
@@ -761,9 +754,9 @@ namespace nova::renderer {
 
             } else {
                 dynamic_texture_infos.emplace(SCENE_OUTPUT_RT_NAME,
-                                             {SCENE_OUTPUT_RT_NAME,
-                                              renderpack::ImageUsage::RenderTarget,
-                                              {rhi::PixelFormat::Rgba8, renderpack::TextureDimensionType::ScreenRelative, 1, 1}});
+                                              {SCENE_OUTPUT_RT_NAME,
+                                               renderpack::ImageUsage::RenderTarget,
+                                               {rhi::PixelFormat::Rgba8, renderpack::TextureDimensionType::ScreenRelative, 1, 1}});
             }
         }
 
@@ -779,9 +772,9 @@ namespace nova::renderer {
 
             } else {
                 dynamic_texture_infos.emplace(UI_OUTPUT_RT_NAME,
-                                             {UI_OUTPUT_RT_NAME,
-                                              renderpack::ImageUsage::RenderTarget,
-                                              {rhi::PixelFormat::Rgba8, renderpack::TextureDimensionType::ScreenRelative, 1, 1}});
+                                              {UI_OUTPUT_RT_NAME,
+                                               renderpack::ImageUsage::RenderTarget,
+                                               {rhi::PixelFormat::Rgba8, renderpack::TextureDimensionType::ScreenRelative, 1, 1}});
             }
         }
     }

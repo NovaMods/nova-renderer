@@ -18,7 +18,7 @@ namespace ntl {
         [[nodiscard]] std::string to_string() const;
     };
 
-    inline NovaError operator""_err(const char* str, const rx_size size) { return NovaError(std::string(str, size)); }
+    inline NovaError operator""_err(const char* str, const size_t size) { return NovaError(std::string(str, size)); }
 
     template <typename ValueType, typename ErrorType = NovaError>
     struct [[nodiscard]] Result {

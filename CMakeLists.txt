@@ -11,7 +11,7 @@ if(NOT NOVA_PACKAGE AND CMAKE_BUILD_TYPE)
         set(ORIGINAL_BUILD_TYPE ${CMAKE_BUILD_TYPE})
         set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Specifies the build type on single-configuration generators. (Fixed to Debug from '${TMP_BUILD_TYPE}' by nova-renderer)" FORCE)
         set(BUILD_TYPE_FIXED_BY_NOVA TRUE)
-        add_compile_options(TRACY_ENABLE)
+        add_compile_definitions(TRACY_ENABLE)
     elseif(NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Release" AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         set(ORIGINAL_BUILD_TYPE ${CMAKE_BUILD_TYPE})
         set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Specifies the build type on single-configuration generators. (Fixed to Release from '${TMP_BUILD_TYPE}' by nova-renderer)" FORCE)
@@ -52,7 +52,7 @@ endif()
 ############################
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/external)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/tools/cmake" "${3RD_PARTY_DIR}")
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
@@ -285,6 +285,8 @@ set(COMMON_LINK_LIBS
         glm
         nlohmann_json 
         nlohmann_json::nlohmann_json
+        spdlog::spdlog 
+        spdlog::spdlog_header_only
         vma::vma)
         
 set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan-1)
