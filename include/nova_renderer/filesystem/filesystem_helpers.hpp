@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rx/core/string.h>
+#include <string>
 #include <stdint.h>
 
 namespace nova::filesystem {

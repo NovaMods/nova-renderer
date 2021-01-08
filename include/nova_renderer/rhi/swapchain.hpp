@@ -1,7 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 
-#include <rx/core/vector.h>
+#include <vector>
 #include <rx/core/memory/allocator.h>
 
 namespace nova::renderer::rhi {

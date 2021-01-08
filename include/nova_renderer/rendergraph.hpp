@@ -1,8 +1,8 @@
 #pragma once
 
 #include <rx/core/log.h>
-#include <rx/core/map.h>
-#include <rx/core/optional.h>
+#include <unordered_map>
+#include  <optional>
 
 #include "nova_renderer/frame_context.hpp"
 #include "nova_renderer/procedural_mesh.hpp"
@@ -335,7 +335,7 @@ namespace nova::renderer {
 
         [[nodiscard]] Renderpass* get_renderpass(const std::string& name) const;
 
-        [[nodiscard]] rx::optional<RenderpassMetadata> get_metadata_for_renderpass(const std::string& name) const;
+        [[nodiscard]] std::optional<RenderpassMetadata> get_metadata_for_renderpass(const std::string& name) const;
 
     private:
         bool is_dirty = false;
@@ -428,7 +428,7 @@ namespace nova::renderer {
         }
 
         // Can't combine these if statements and I don't want to `.find` twice
-        const auto depth_attachment = [&]() -> rx::optional<rhi::RhiImage*> {
+        const auto depth_attachment = [&]() -> std::optional<rhi::RhiImage*> {
             if(create_info.depth_texture) {
                 if(const auto depth_tex = resource_storage.get_render_target(create_info.depth_texture->name); depth_tex) {
                     return (*depth_tex)->image;

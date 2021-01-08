@@ -1,8 +1,8 @@
 #pragma once
 
 #include <rx/core/json.h>
-#include <rx/core/string.h>
-#include <rx/core/vector.h>
+#include <string>
+#include <vector>
 
 namespace nova::renderer::renderpack {
     struct ValidationReport {

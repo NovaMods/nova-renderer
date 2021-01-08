@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rx/core/vector.h>
+#include <vector>
 
 #include "nova_renderer/filesystem/folder_accessor.hpp"
 #include "nova_renderer/renderpack_data.hpp"

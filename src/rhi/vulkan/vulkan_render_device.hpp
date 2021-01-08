@@ -104,7 +104,7 @@ namespace nova::renderer::rhi {
 
         RhiFramebuffer* create_framebuffer(const RhiRenderpass* renderpass,
                                            const std::vector<RhiImage*>& color_attachments,
-                                           const rx::optional<RhiImage*> depth_attachment,
+                                           const std::optional<RhiImage*> depth_attachment,
                                            const glm::uvec2& framebuffer_size,
                                            rx::memory::allocator& allocator) override;
 
@@ -179,7 +179,7 @@ namespace nova::renderer::rhi {
                                                                        const VulkanRenderpass& renderpass,
                                                                        rx::memory::allocator& allocator);
 
-        [[nodiscard]] rx::optional<vk::DescriptorPool> create_descriptor_pool(const std::unordered_map<DescriptorType, uint32_t>& descriptor_capacity,
+        [[nodiscard]] std::optional<vk::DescriptorPool> create_descriptor_pool(const std::unordered_map<DescriptorType, uint32_t>& descriptor_capacity,
                                                                               rx::memory::allocator& allocator);
 
         /*!
@@ -263,7 +263,7 @@ namespace nova::renderer::rhi {
         [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags,
                                                            MemorySearchMode search_mode = MemorySearchMode::Fuzzy) const;
 
-        [[nodiscard]] rx::optional<VkShaderModule> create_shader_module(const std::vector<uint32_t>& spirv) const;
+        [[nodiscard]] std::optional<VkShaderModule> create_shader_module(const std::vector<uint32_t>& spirv) const;
 
         /*!
          * \brief Gets the image view associated with the given image

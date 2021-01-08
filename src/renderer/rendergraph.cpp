@@ -2,7 +2,7 @@
 
 #include <utility>
 
-#include <minitrace.h>
+#include <Tracy.hpp>
 
 #include "nova_renderer/nova_renderer.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
@@ -172,7 +172,7 @@ namespace nova::renderer {
         return nullptr;
     }
 
-    rx::optional<RenderpassMetadata> Rendergraph::get_metadata_for_renderpass(const std::string& name) const {
+    std::optional<RenderpassMetadata> Rendergraph::get_metadata_for_renderpass(const std::string& name) const {
         if(const auto* metadata = renderpass_metadatas.find(name)) {
             return *metadata;
         }

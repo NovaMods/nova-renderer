@@ -28,7 +28,7 @@ namespace nova::renderer {
         create_default_textures();
     }
 
-    rx::optional<BufferResourceAccessor> DeviceResources::create_uniform_buffer(const std::string& name, const Bytes size) {
+    std::optional<BufferResourceAccessor> DeviceResources::create_uniform_buffer(const std::string& name, const Bytes size) {
         const auto event_name = std::string::format("create_uniform_buffer(%s)", name);
         MTR_SCOPE("DeviceResources", event_name.data());
         BufferResource resource = {};
@@ -47,7 +47,7 @@ namespace nova::renderer {
         return BufferResourceAccessor{&uniform_buffers, name};
     }
 
-    rx::optional<BufferResourceAccessor> DeviceResources::get_uniform_buffer(const std::string& name) {
+    std::optional<BufferResourceAccessor> DeviceResources::get_uniform_buffer(const std::string& name) {
         if(uniform_buffers.find(name) != nullptr) {
             return BufferResourceAccessor{&uniform_buffers, name};
         }
@@ -62,7 +62,7 @@ namespace nova::renderer {
         uniform_buffers.erase(name);
     }
 
-    rx::optional<TextureResourceAccessor> DeviceResources::create_texture(const std::string& name,
+    std::optional<TextureResourceAccessor> DeviceResources::create_texture(const std::string& name,
                                                                           const std::size_t width,
                                                                           const std::size_t height,
                                                                           const PixelFormat pixel_format,
@@ -154,7 +154,7 @@ namespace nova::renderer {
         return TextureResourceAccessor{&textures, idx};
     }
 
-    rx::optional<uint32_t> DeviceResources::get_texture_idx_for_name(const std::string& name) const {
+    std::optional<uint32_t> DeviceResources::get_texture_idx_for_name(const std::string& name) const {
         if(auto* idx = texture_name_to_idx.find(name); idx != nullptr) {
             return *idx;
         }
@@ -163,7 +163,7 @@ namespace nova::renderer {
         return 0_u32;
     }
 
-    rx::optional<TextureResourceAccessor> DeviceResources::get_texture(const std::string& name) {
+    std::optional<TextureResourceAccessor> DeviceResources::get_texture(const std::string& name) {
         if(auto idx = get_texture_idx_for_name(name); idx) {
             return TextureResourceAccessor{&textures, *idx};
 
@@ -178,7 +178,7 @@ namespace nova::renderer {
         return rx::nullopt;
     }
 
-    rx::optional<RenderTargetAccessor> DeviceResources::create_render_target(const std::string& name,
+    std::optional<RenderTargetAccessor> DeviceResources::create_render_target(const std::string& name,
                                                                              const size_t width,
                                                                              const size_t height,
                                                                              const PixelFormat pixel_format,
@@ -266,7 +266,7 @@ namespace nova::renderer {
         }
     }
 
-    rx::optional<RenderTargetAccessor> DeviceResources::get_render_target(const std::string& name) {
+    std::optional<RenderTargetAccessor> DeviceResources::get_render_target(const std::string& name) {
         if(render_targets.find(name) != nullptr) {
             return RenderTargetAccessor{&render_targets, name};
 

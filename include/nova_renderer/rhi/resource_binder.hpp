@@ -1,7 +1,7 @@
 #pragma once
 
-#include <rx/core/string.h>
-#include <rx/core/vector.h>
+#include <string>
+#include <vector>
 
 #include "nova_renderer/rhi/forward_decls.hpp"
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rx/core/json.h>
-#include <rx/core/optional.h>
+#include  <optional>
 
 namespace nova::renderer {
     /*!
@@ -14,7 +14,7 @@ namespace nova::renderer {
      * \note Only enabled if we're not getting a string. Use `get_json_string` to get a string
      */
     template <typename ValType>
-    rx::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key);
+    std::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key);
 
     /*!
      * \brief Retrieves an individual value from the provided JSON structure
@@ -25,7 +25,7 @@ namespace nova::renderer {
      * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
      */
     template <typename ValType, typename FuncType>
-    rx::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key, FuncType&& deserializer);
+    std::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key, FuncType&& deserializer);
 
     /*!
      * \brief Retrieves an individual value from the provided JSON structure
@@ -72,7 +72,7 @@ namespace nova::renderer {
     std::vector<ValType> get_json_array(const rx::json& json_obj, const char* key, FuncType&& deserializer);
 
     template <typename ValType>
-    rx::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key) {
+    std::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key) {
         const auto& val_json = json_obj[key];
         if(val_json) {
             return val_json.decode<ValType>({});
@@ -82,7 +82,7 @@ namespace nova::renderer {
     }
 
     template <typename ValType, typename FuncType>
-    rx::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key, FuncType&& deserializer) {
+    std::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key, FuncType&& deserializer) {
         const auto& val_json = json_obj[key];
         if(val_json) {
             return deserializer(val_json);

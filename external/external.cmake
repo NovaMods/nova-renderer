@@ -42,9 +42,6 @@ include_target(glm::glm "${CMAKE_CURRENT_LIST_DIR}/glm")
 include_target(vma::vma "${3RD_PARTY_DIR}/VulkanMemoryAllocator/src")
 include_target(vulkan::sdk "${VULKAN_INCLUDE}")
 
-# Rex Core lib
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/rex_core)
-
 # Tracy
 include_directories("${CMAKE_CURRENT_LIST_DIR}/tracy")
 

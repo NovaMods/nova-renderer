@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rx/core/string.h>
+#include <string>
 
 #include "nova_renderer/rhi/rhi_types.hpp"
 
@@ -248,7 +248,7 @@ namespace nova::renderer {
          *
          * If this optional is empty, the depth bounds test is disabled. Otherwise, the depth bounds test is enabled
          */
-        rx::optional<DepthBoundsTestState> bounds_test_state{};
+        std::optional<DepthBoundsTestState> bounds_test_state{};
     };
 
     /*!
@@ -358,12 +358,12 @@ namespace nova::renderer {
         /*!
          * \brief Geometry shader to use
          */
-        rx::optional<ShaderSource> geometry_shader{};
+        std::optional<ShaderSource> geometry_shader{};
 
         /*!
          * \brier Pixel shader to use
          */
-        rx::optional<ShaderSource> pixel_shader{};
+        std::optional<ShaderSource> pixel_shader{};
 
         /*!
          * \brief Description of the fields in the vertex data
@@ -390,28 +390,28 @@ namespace nova::renderer {
          */
         RasterizerState rasterizer_state{};
 
-        rx::optional<MultisamplingState> multisampling_state{};
+        std::optional<MultisamplingState> multisampling_state{};
 
         /*!
          * \brief What depth operations to perform
          *
          * If this optional has a value, the depth test is enabled. If false, the depth test is disabled
          */
-        rx::optional<DepthState> depth_state = DepthState{};
+        std::optional<DepthState> depth_state = DepthState{};
 
         /*!
          * \brief What stencil operations to perform
          *
          * If this optional has a value, the stencil test will be enabled. Otherwise, the stencil test will be disabled
          */
-        rx::optional<StencilState> stencil_state{};
+        std::optional<StencilState> stencil_state{};
 
         /*!
          * \brief How to blend colors
          *
          * If this optional has a value, blending will be enabled. Otherwise, blending will be disabled
          */
-        rx::optional<BlendState> blend_state{};
+        std::optional<BlendState> blend_state{};
 
         bool enable_color_write = true;
 
@@ -425,6 +425,6 @@ namespace nova::renderer {
         /*!
          * \brief The depth texture that this pipeline writes to, if it writes to a depth texture
          */
-        rx::optional<renderpack::TextureAttachmentInfo> depth_texture{};
+        std::optional<renderpack::TextureAttachmentInfo> depth_texture{};
     };
 } // namespace nova::renderer

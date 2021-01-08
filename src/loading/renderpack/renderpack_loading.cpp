@@ -4,10 +4,6 @@
 #include <rx/core/log.h>
 
 #include "nova_renderer/util/platform.hpp"
-#ifdef NOVA_WINDOWS
-#include <comdef.h>
-#endif
-#include <dxc/dxcapi.h>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/filesystem/filesystem_helpers.hpp"
@@ -16,7 +12,7 @@
 #include "nova_renderer/loading/shader_includer.hpp"
 
 #include "../json_utils.hpp"
-#include "minitrace.h"
+#include "Tracy.hpp"
 #include "render_graph_builder.hpp"
 #include "renderpack_validator.hpp"
 
@@ -25,12 +21,12 @@ namespace nova::renderer::renderpack {
 
     using namespace filesystem;
 
-    rx::optional<RenderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access);
+    std::optional<RenderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access);
 
     ntl::Result<RendergraphData> load_rendergraph_file(FolderAccessorBase* folder_access);
 
     std::vector<PipelineData> load_pipeline_files(FolderAccessorBase* folder_access);
-    rx::optional<PipelineData> load_single_pipeline(FolderAccessorBase* folder_access, const std::string& pipeline_path);
+    std::optional<PipelineData> load_single_pipeline(FolderAccessorBase* folder_access, const std::string& pipeline_path);
 
     std::vector<MaterialData> load_material_files(FolderAccessorBase* folder_access);
     MaterialData load_single_material(FolderAccessorBase* folder_access, const std::string& material_path);
@@ -50,7 +46,7 @@ namespace nova::renderer::renderpack {
                     // TODO: Figure out how to tell the loader about all the builtin resources
                 }
 
-                rx::optional<rhi::PixelFormat> pixel_format;
+                std::optional<rhi::PixelFormat> pixel_format;
                 textures.each_fwd([&](const TextureCreateInfo& texture_info) {
                     if(texture_info.name == output.name) {
                         pixel_format = texture_info.format.pixel_format;
@@ -72,7 +68,7 @@ namespace nova::renderer::renderpack {
             });
 
             if(pass.depth_texture) {
-                rx::optional<rhi::PixelFormat> pixel_format;
+                std::optional<rhi::PixelFormat> pixel_format;
                 textures.each_fwd([&](const TextureCreateInfo& texture_info) {
                     if(texture_info.name == pass.depth_texture->name) {
                         pixel_format = texture_info.format.pixel_format;
@@ -123,7 +119,7 @@ namespace nova::renderer::renderpack {
         return data;
     }
 
-    rx::optional<RenderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access) {
+    std::optional<RenderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access) {
         MTR_SCOPE("load_dynamic_resource_file", "Self");
 
         const std::string resources_string = folder_access->read_text_file(RESOURCES_FILE);
@@ -201,7 +197,7 @@ namespace nova::renderer::renderpack {
         return output;
     }
 
-    rx::optional<PipelineData> load_single_pipeline(FolderAccessorBase* folder_access, const std::string& pipeline_path) {
+    std::optional<PipelineData> load_single_pipeline(FolderAccessorBase* folder_access, const std::string& pipeline_path) {
         MTR_SCOPE("load_single_pipeline", pipeline_path.data());
 
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);

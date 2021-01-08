@@ -200,7 +200,7 @@ namespace nova::renderer::renderpack {
         return {std::round(pixel_width), std::round(pixel_height)};
     }
 
-    rx::optional<std::unordered_map<std::string, std::string>> map_from_json_object(const rx::json& json) {
+    std::optional<std::unordered_map<std::string, std::string>> map_from_json_object(const rx::json& json) {
         std::unordered_map<std::string, std::string> map;
 
         json.each([&](const rx::json& elem) {

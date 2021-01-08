@@ -4,7 +4,7 @@
 
 #include <sstream>
 
-#include <minitrace.h>
+#include <Tracy.hpp>
 #include <rx/core/abort.h>
 #include <rx/core/algorithm/max.h>
 #include <rx/core/log.h>
@@ -264,7 +264,7 @@ namespace nova::renderer::rhi {
 
     RhiFramebuffer* VulkanRenderDevice::create_framebuffer(const RhiRenderpass* renderpass,
                                                            const std::vector<RhiImage*>& color_attachments,
-                                                           const rx::optional<RhiImage*> depth_attachment,
+                                                           const std::optional<RhiImage*> depth_attachment,
                                                            const glm::uvec2& framebuffer_size,
                                                            rx::memory::allocator& allocator) {
         const auto* vk_renderpass = static_cast<const VulkanRenderpass*>(renderpass);
@@ -347,7 +347,7 @@ namespace nova::renderer::rhi {
                                                   allocator);
     }
 
-    rx::optional<vk::DescriptorPool> VulkanRenderDevice::create_descriptor_pool(
+    std::optional<vk::DescriptorPool> VulkanRenderDevice::create_descriptor_pool(
         const std::unordered_map<DescriptorType, uint32_t>& descriptor_capacity, rx::memory::allocator& allocator) {
         MTR_SCOPE("VulkanRenderDevice", "create_descriptor_pool");
         std::vector<vk::DescriptorPoolSize> pool_sizes{&internal_allocator};
@@ -1826,7 +1826,7 @@ namespace nova::renderer::rhi {
         return {attributes, bindings};
     }
 
-    rx::optional<VkShaderModule> VulkanRenderDevice::create_shader_module(const std::vector<uint32_t>& spirv) const {
+    std::optional<VkShaderModule> VulkanRenderDevice::create_shader_module(const std::vector<uint32_t>& spirv) const {
         MTR_SCOPE("VulkanRenderDevice", "create_shader_module");
         VkShaderModuleCreateInfo shader_module_create_info = {};
         shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -1837,7 +1837,7 @@ namespace nova::renderer::rhi {
         const VkAllocationCallbacks& vk_alloc = wrap_allocator(internal_allocator);
         const auto result = vkCreateShaderModule(device, &shader_module_create_info, &vk_alloc, &module);
         if(result == VK_SUCCESS) {
-            return rx::optional<VkShaderModule>(module);
+            return std::optional<VkShaderModule>(module);
 
         } else {
             logger->error("Could not create shader module: %s", to_string(result));

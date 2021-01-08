@@ -1,8 +1,8 @@
 #pragma once
 
 #include <rx/core/log.h>
-#include <rx/core/map.h>
-#include <rx/core/optional.h>
+#include <unordered_map>
+#include  <optional>
 #include <rx/core/ptr.h>
 
 #include "nova_renderer/camera.hpp"
@@ -123,7 +123,7 @@ namespace nova::renderer {
 
         [[nodiscard]] const std::vector<MaterialPass>& get_material_passes_for_pipeline(const std::string& pipeline);
 
-        [[nodiscard]] rx::optional<RenderpassMetadata> get_renderpass_metadata(const std::string& renderpass_name) const;
+        [[nodiscard]] std::optional<RenderpassMetadata> get_renderpass_metadata(const std::string& renderpass_name) const;
 
         /*!
          * \brief Executes a single frame
@@ -156,7 +156,7 @@ namespace nova::renderer {
          */
         [[nodiscard]] ProceduralMeshAccessor create_procedural_mesh(uint64_t vertex_size, uint64_t index_size);
 
-        [[nodiscard]] rx::optional<Mesh> get_mesh(MeshId mesh);
+        [[nodiscard]] std::optional<Mesh> get_mesh(MeshId mesh);
 
         /*!
          * \brief Destroys the mesh with the provided ID, freeing up whatever VRAM it was using
@@ -281,7 +281,7 @@ namespace nova::renderer {
 
         rx::concurrency::mutex renderpacks_loading_mutex;
 
-        rx::optional<renderpack::RenderpackData> loaded_renderpack;
+        std::optional<renderpack::RenderpackData> loaded_renderpack;
 
         Rendergraph* rendergraph;
 #pragma endregion

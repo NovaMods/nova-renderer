@@ -1,7 +1,7 @@
 #pragma once
 
-#include <minitrace.h>
-#include <rx/core/vector.h>
+#include <Tracy.hpp>
+#include <vector>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/rhi/render_device.hpp"

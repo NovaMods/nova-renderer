@@ -2,7 +2,7 @@
 
 #include <rx/core/array.h>
 #include <rx/core/concepts/no_copy.h>
-#include <rx/core/string.h>
+#include <string>
 #include <stdint.h>
 
 #include "nova_renderer/constants.hpp"

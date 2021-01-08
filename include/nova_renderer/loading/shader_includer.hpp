@@ -7,8 +7,8 @@
 
 #include <dxc/dxcapi.h>
 #include <rx/core/concurrency/mutex.h>
-#include <rx/core/map.h>
-#include <rx/core/string.h>
+#include <unordered_map>
+#include <string>
 
 namespace nova {
     namespace filesystem {

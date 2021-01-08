@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rx/core/optional.h>
+#include  <optional>
 
 #include "rhi/pipeline_create_info.hpp"
 
@@ -16,6 +16,6 @@ namespace nova {
 
 namespace nova::renderer::renderpack {
 
-    rx::optional<RhiGraphicsPipelineState> to_pipeline_state_create_info(const renderpack::PipelineData& data,
+    std::optional<RhiGraphicsPipelineState> to_pipeline_state_create_info(const renderpack::PipelineData& data,
                                                                         const Rendergraph& rendergraph);
 };

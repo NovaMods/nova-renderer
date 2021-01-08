@@ -1,6 +1,6 @@
 #include "render_graph_builder.hpp"
 
-#include <minitrace.h>
+#include <Tracy.hpp>
 #include <rx/core/algorithm/max.h>
 #include <rx/core/algorithm/min.h>
 #include <rx/core/log.h>

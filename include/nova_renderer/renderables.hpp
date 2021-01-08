@@ -3,8 +3,8 @@
 #include <atomic>
 
 #include <glm/glm.hpp>
-#include <rx/core/string.h>
-#include <rx/core/vector.h>
+#include <string>
+#include <vector>
 
 namespace nova::renderer {
     struct FullVertex {

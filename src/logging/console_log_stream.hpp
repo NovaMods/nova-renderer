@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rx/core/stream.h>
-#include <rx/core/string.h>
+#include <string>
 
 namespace nova {
     class StdoutStream final : public rx::stream {

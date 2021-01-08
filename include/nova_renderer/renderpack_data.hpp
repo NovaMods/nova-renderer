@@ -1,9 +1,9 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <rx/core/map.h>
-#include <rx/core/optional.h>
-#include <rx/core/string.h>
+#include <unordered_map>
+#include  <optional>
+#include <string>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
@@ -182,7 +182,7 @@ namespace nova::renderer::renderpack {
         /*!
          * \brief The pipeline that this pipeline inherits from
          */
-        rx::optional<std::string> parent_name;
+        std::optional<std::string> parent_name;
 
         /*!
          * \brief The name of the pass that this pipeline belongs to
@@ -202,17 +202,17 @@ namespace nova::renderer::renderpack {
         /*!
          * \brief The stencil buffer operations to perform on the front faces
          */
-        rx::optional<StencilOpState> front_face;
+        std::optional<StencilOpState> front_face;
 
         /*!
          * \brief The stencil buffer operations to perform on the back faces
          */
-        rx::optional<StencilOpState> back_face;
+        std::optional<StencilOpState> back_face;
 
         /*!
          * \brief The material to use if this one's shaders can't be found
          */
-        rx::optional<std::string> fallback;
+        std::optional<std::string> fallback;
 
         /*!
          * \brief A bias to apply to the depth
@@ -285,10 +285,10 @@ namespace nova::renderer::renderpack {
 
         RenderpackShaderSource vertex_shader{};
 
-        rx::optional<RenderpackShaderSource> geometry_shader;
-        rx::optional<RenderpackShaderSource> tessellation_control_shader;
-        rx::optional<RenderpackShaderSource> tessellation_evaluation_shader;
-        rx::optional<RenderpackShaderSource> fragment_shader;
+        std::optional<RenderpackShaderSource> geometry_shader;
+        std::optional<RenderpackShaderSource> tessellation_control_shader;
+        std::optional<RenderpackShaderSource> tessellation_evaluation_shader;
+        std::optional<RenderpackShaderSource> fragment_shader;
 
         static PipelineData from_json(const rx::json& json);
     };
@@ -442,7 +442,7 @@ namespace nova::renderer::renderpack {
         /*!
          * \brief The depth texture this pass will write to
          */
-        rx::optional<TextureAttachmentInfo> depth_texture;
+        std::optional<TextureAttachmentInfo> depth_texture;
 
         /*!
          * \brief All the buffers that this renderpass reads from

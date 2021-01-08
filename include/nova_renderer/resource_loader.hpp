@@ -50,9 +50,9 @@ namespace nova::renderer {
     public:
         explicit DeviceResources(NovaRenderer& renderer);
 
-        [[nodiscard]] rx::optional<BufferResourceAccessor> create_uniform_buffer(const std::string& name, mem::Bytes size);
+        [[nodiscard]] std::optional<BufferResourceAccessor> create_uniform_buffer(const std::string& name, mem::Bytes size);
 
-        [[nodiscard]] rx::optional<BufferResourceAccessor> get_uniform_buffer(const std::string& name);
+        [[nodiscard]] std::optional<BufferResourceAccessor> get_uniform_buffer(const std::string& name);
 
         void destroy_uniform_buffer(const std::string& name);
 
@@ -67,19 +67,19 @@ namespace nova::renderer {
          * \param allocator The allocator to allocate with
          * \return The newly-created image, or nullptr if the image could not be created. Check the Nova logs to find out why
          */
-        [[nodiscard]] rx::optional<TextureResourceAccessor> create_texture(const std::string& name,
+        [[nodiscard]] std::optional<TextureResourceAccessor> create_texture(const std::string& name,
                                                                            rx_size width,
                                                                            rx_size height,
                                                                            rhi::PixelFormat pixel_format,
                                                                            const void* data,
                                                                            rx::memory::allocator& allocator);
 
-        [[nodiscard]] rx::optional<uint32_t> get_texture_idx_for_name(const std::string& name) const;
+        [[nodiscard]] std::optional<uint32_t> get_texture_idx_for_name(const std::string& name) const;
 
         /*!
          * \brief Retrieves the texture with the specified name
          */
-        [[nodiscard]] rx::optional<TextureResourceAccessor> get_texture(const std::string& name);
+        [[nodiscard]] std::optional<TextureResourceAccessor> get_texture(const std::string& name);
 
         /*!
          * \brief Creates a new render target with the specified size and format
@@ -99,7 +99,7 @@ namespace nova::renderer {
          *
          * \return The new render target if it could be created, or am empty optional if it could not
          */
-        [[nodiscard]] rx::optional<RenderTargetAccessor> create_render_target(const std::string& name,
+        [[nodiscard]] std::optional<RenderTargetAccessor> create_render_target(const std::string& name,
                                                                               rx_size width,
                                                                               rx_size height,
                                                                               rhi::PixelFormat pixel_format,
@@ -109,7 +109,7 @@ namespace nova::renderer {
         /*!
          * \brief Retrieves the render target with the specified name
          */
-        [[nodiscard]] rx::optional<RenderTargetAccessor> get_render_target(const std::string& name);
+        [[nodiscard]] std::optional<RenderTargetAccessor> get_render_target(const std::string& name);
 
         void destroy_render_target(const std::string& texture_name, rx::memory::allocator& allocator);
 

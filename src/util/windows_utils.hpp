@@ -9,7 +9,7 @@
 #define NOVA_RENDERER_WINDOWS_UTILS_HPP
 
 #include <string>
-#include <rx/core/string.h>
+#include <string>
 
 /*!
  * \brief Converts a string to a wide string because Windows

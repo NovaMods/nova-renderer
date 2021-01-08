@@ -1,6 +1,6 @@
 #include "vulkan_command_list.hpp"
 
-#include <minitrace.h>
+#include <Tracy.hpp>
 #include <rx/core/log.h>
 #include <string.h>
 #include <vk_mem_alloc.h>

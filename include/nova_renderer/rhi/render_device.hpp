@@ -98,7 +98,7 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] virtual RhiFramebuffer* create_framebuffer(const RhiRenderpass* renderpass,
                                                                  const std::vector<RhiImage*>& color_attachments,
-                                                                 const rx::optional<RhiImage*> depth_attachment,
+                                                                 const std::optional<RhiImage*> depth_attachment,
                                                                  const glm::uvec2& framebuffer_size,
                                                                  rx::memory::allocator& allocator) = 0;
 

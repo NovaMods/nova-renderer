@@ -1,7 +1,7 @@
 #pragma once
 
-#include <rx/core/string.h>
-#include <rx/core/vector.h>
+#include <string>
+#include <vector>
 #include <stdint.h>
 
 namespace nova::renderer {

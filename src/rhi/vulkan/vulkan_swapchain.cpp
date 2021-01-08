@@ -2,7 +2,7 @@
 
 #include <rx/core/log.h>
 
-#include "minitrace.h"
+#include "Tracy.hpp"
 #include "vulkan_render_device.hpp"
 #include "vulkan_utils.hpp"
 #ifdef ERROR

@@ -221,7 +221,7 @@ namespace nova::renderer::renderpack {
         }
     }
 
-    rx::optional<RhiGraphicsPipelineState> to_pipeline_state_create_info(const PipelineData& data, const Rendergraph& rendergraph) {
+    std::optional<RhiGraphicsPipelineState> to_pipeline_state_create_info(const PipelineData& data, const Rendergraph& rendergraph) {
         constexpr auto npos = std::vector<RasterizerState>::k_npos;
 
         RhiGraphicsPipelineState info{};

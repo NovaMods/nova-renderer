@@ -2,9 +2,9 @@
 
 #include <rx/core/concurrency/mutex.h>
 #include <rx/core/filesystem/directory.h>
-#include <rx/core/map.h>
-#include <rx/core/optional.h>
-#include <rx/core/string.h>
+#include <unordered_map>
+#include  <optional>
+#include <string>
 #include <stdint.h>
 
 namespace nova::filesystem {
@@ -78,7 +78,7 @@ namespace nova::filesystem {
 
         rx::concurrency::mutex* resource_existence_mutex;
 
-        [[nodiscard]] rx::optional<bool> does_resource_exist_in_map(const std::string& resource_string) const;
+        [[nodiscard]] std::optional<bool> does_resource_exist_in_map(const std::string& resource_string) const;
 
         /*!
          * \brief Like the non-internal one, but does not add the folder's root to resource_path

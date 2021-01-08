@@ -6,14 +6,14 @@
 #pragma warning(push, 0)
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
-#include <minitrace.h>
+#include <Tracy.hpp>
 #pragma warning(pop)
 
 #include <rx/core/array.h>
 #include <rx/core/global.h>
 #include <rx/core/hash.h>
 #include <rx/core/log.h>
-#include <rx/core/map.h>
+#include <unordered_map>
 #include <rx/core/memory/bump_point_allocator.h>
 
 #include "nova_renderer/constants.hpp"
@@ -428,7 +428,7 @@ namespace nova::renderer {
         return ProceduralMeshAccessor{&proc_meshes, our_id};
     }
 
-    rx::optional<Mesh> NovaRenderer::get_mesh(const MeshId mesh_id) {
+    std::optional<Mesh> NovaRenderer::get_mesh(const MeshId mesh_id) {
         if(const auto* mesh = meshes.find(mesh_id)) {
             return *mesh;
 
@@ -469,7 +469,7 @@ namespace nova::renderer {
         return *passes_by_pipeline.find(pipeline);
     }
 
-    rx::optional<RenderpassMetadata> NovaRenderer::get_renderpass_metadata(const std::string& renderpass_name) const {
+    std::optional<RenderpassMetadata> NovaRenderer::get_renderpass_metadata(const std::string& renderpass_name) const {
         return rendergraph->get_metadata_for_renderpass(renderpass_name);
     }
 
