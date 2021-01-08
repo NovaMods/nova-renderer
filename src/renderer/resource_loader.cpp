@@ -138,7 +138,7 @@ namespace nova::renderer {
 
             return_staging_buffer(staging_buffer);
 
-            logger->verbose("Uploaded texture data to texture %s", name);
+            logger->debug("Uploaded texture data to texture %s", name);
         }
 
         auto idx = textures.size();
@@ -146,7 +146,7 @@ namespace nova::renderer {
         textures.push_back(resource);
         texture_name_to_idx.insert(name, static_cast<uint32_t>(idx));
 
-        logger->verbose("Added texture %s to the textures array, there's now %u textures total", name, textures.size());
+        logger->debug("Added texture %s to the textures array, there's now %u textures total", name, textures.size());
 
         return TextureResourceAccessor{&textures, idx};
     }

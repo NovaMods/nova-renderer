@@ -79,7 +79,7 @@ namespace nova::renderer::renderpack {
 
     ntl::Result<std::vector<RenderPassCreateInfo>> order_passes(const std::vector<RenderPassCreateInfo>& passes) {
         ZoneScoped;
-        logger->verbose("Executing Pass Scheduler");
+        logger->debug("Executing Pass Scheduler");
 
         std::unordered_map<std::string, RenderPassCreateInfo> render_passes_to_order;
         passes.each_fwd([&](const RenderPassCreateInfo& create_info) { render_passes_to_order.insert(create_info.name, create_info); });
@@ -91,7 +91,7 @@ namespace nova::renderer::renderpack {
          * Build some acceleration structures
          */
 
-        logger->verbose("Collecting passes that write to each resource...");
+        logger->debug("Collecting passes that write to each resource...");
         // Maps from resource name to pass that writes to that resource, then from resource name to pass that reads from
         // that resource
         auto resource_to_write_pass = std::unordered_map<std::string, std::vector<std::string>>{};
@@ -118,7 +118,7 @@ namespace nova::renderer::renderpack {
          * Initial ordering of passes
          */
 
-        logger->verbose("First pass at ordering passes...");
+        logger->debug("First pass at ordering passes...");
         // The passes, in simple dependency order
         if(resource_to_write_pass.find(BACKBUFFER_NAME) == nullptr) {
             logger->error(
@@ -245,7 +245,7 @@ namespace nova::renderer::renderpack {
 
         for(size_t i = 0; i < resources_in_order.size(); i++) {
             const auto& to_alias_name = resources_in_order[i];
-            logger->verbose("Determining if we can alias `%s`. Does it exist? %d",
+            logger->debug("Determining if we can alias `%s`. Does it exist? %d",
                             to_alias_name,
                             (textures.find(to_alias_name) != nullptr));
 
@@ -258,7 +258,7 @@ namespace nova::renderer::renderpack {
 
             // Only try to alias with lower-indexed resources
             for(size_t j = 0; j < i; j++) {
-                logger->verbose("Trying to alias it with resource at index %zu out of %zu", j, resources_in_order.size());
+                logger->debug("Trying to alias it with resource at index %zu out of %zu", j, resources_in_order.size());
                 const std::string& try_alias_name = resources_in_order[j];
                 if(resource_used_range.find(to_alias_name)->is_disjoint_with(*resource_used_range.find(try_alias_name))) {
                     // They can be aliased if they have the same format

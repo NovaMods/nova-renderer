@@ -167,8 +167,7 @@ namespace nova::renderer {
         camera_data = std::make_unique<PerFrameDeviceArray<CameraUboData>>(MAX_NUM_CAMERAS, settings.max_in_flight_frames, *device);
     }
 
-    NovaRenderer::~NovaRenderer() {
-    }
+    NovaRenderer::~NovaRenderer() {}
 
     NovaSettingsAccessManager& NovaRenderer::get_settings() { return settings; }
 
@@ -346,8 +345,8 @@ namespace nova::renderer {
     }
 
     std::optional<Mesh> NovaRenderer::get_mesh(const MeshId mesh_id) {
-        if(const auto* mesh = meshes.find(mesh_id)) {
-            return *mesh;
+        if(const auto mesh_itr = meshes.find(mesh_id); mesh_itr != meshes.end()) {
+            return mesh_itr->second;
 
         } else {
             return std::nullopt;
@@ -362,23 +361,23 @@ namespace nova::renderer {
             destroy_dynamic_resources();
 
             destroy_renderpasses();
-            logger->verbose("Resources from old renderpack destroyed");
+            logger->debug("Resources from old renderpack destroyed");
         }
 
         create_dynamic_textures(data.resources.render_targets);
-        logger->verbose("Dynamic textures created");
+        logger->debug("Dynamic textures created");
 
         create_render_passes(data.graph_data.passes, data.pipelines);
 
-        logger->verbose("Created render passes");
+        logger->debug("Created render passes");
 
         create_pipelines_and_materials(data.pipelines, data.materials);
 
-        logger->verbose("Created pipelines and materials");
+        logger->debug("Created pipelines and materials");
 
         renderpacks_loaded = true;
 
-        logger->verbose("Renderpack %s loaded successfully", renderpack_name);
+        logger->debug("Renderpack %s loaded successfully", renderpack_name);
     }
 
     const std::vector<MaterialPass>& NovaRenderer::get_material_passes_for_pipeline(const std::string& pipeline) {
@@ -432,7 +431,7 @@ namespace nova::renderer {
             const auto pipeline_state = to_pipeline_state_create_info(rp_pipeline_state, *rendergraph);
             if(!pipeline_state) {
                 logger->error("Could not create pipeline %s", rp_pipeline_state.name);
-                return false;
+                continue;
             }
 
             // TODO: A way for renderpack pipelines to say if they're global or surface pipelines
@@ -443,8 +442,8 @@ namespace nova::renderer {
 
             pipelines.emplace(rp_pipeline_state.name, std::move(pipeline));
 
-            return true;
-        });
+            return;
+        }
     }
 
     void NovaRenderer::create_materials_for_pipeline(const Pipeline& pipeline,
@@ -462,7 +461,7 @@ namespace nova::renderer {
         for(const renderpack::MaterialData& material_data : materials) {
             for(const renderpack::MaterialPass& pass_data : material_data.passes) {
                 if(pass_data.pipeline == pipeline_name) {
-                    const auto& event_name = std::string::format("%s.%s", material_data.name, pass_data.name);
+                    const auto& event_name = fmt::format("{}.{}", material_data.name, pass_data.name);
                     ZoneScoped;
                     MaterialPass pass = {};
                     pass.pipeline_interface = pipeline.pipeline_interface;
@@ -473,12 +472,12 @@ namespace nova::renderer {
 
                     MaterialPassMetadata pass_metadata{};
                     pass_metadata.data = pass_data;
-                    material_metadatas.insert(full_pass_name, pass_metadata);
+                    material_metadatas.emplace(full_pass_name, pass_metadata);
 
                     MaterialPassKey key = template_key;
                     key.material_pass_index = static_cast<uint32_t>(passes.size());
 
-                    material_pass_keys.insert(full_pass_name, key);
+                    material_pass_keys.emplace(full_pass_name, key);
 
                     passes.push_back(pass);
                 }
@@ -540,9 +539,9 @@ namespace nova::renderer {
         if(loaded_renderpack) {
             for(const renderpack::TextureCreateInfo& tex_data : loaded_renderpack->resources.render_targets) {
                 device_resources->destroy_render_target(tex_data.name);
-            });
+            }
 
-            logger->verbose("Deleted all dynamic textures from renderpack %s", loaded_renderpack->name);
+            logger->debug("Deleted all dynamic textures from renderpack %s", loaded_renderpack->name);
         }
     }
 
@@ -550,12 +549,18 @@ namespace nova::renderer {
         ZoneScoped;
         for(const renderpack::RenderPassCreateInfo& renderpass : loaded_renderpack->graph_data.passes) {
             rendergraph->destroy_renderpass(renderpass.name);
-        });
+        }
     }
 
     rhi::RhiSampler* NovaRenderer::get_point_sampler() const { return point_sampler; }
 
-    Pipeline* NovaRenderer::find_pipeline(const std::string& pipeline_name) { return pipelines.find(pipeline_name); }
+    Pipeline* NovaRenderer::find_pipeline(const std::string& pipeline_name) {
+        if(const auto pipeline_itr = pipelines.find(pipeline_name); pipeline_itr != pipelines.end()) {
+            return &pipeline_itr->second;
+        }
+
+        return nullptr;
+    }
 
     RenderableId NovaRenderer::add_renderable_for_material(const FullMaterialPassName& material_name,
                                                            const StaticMeshRenderableCreateInfo& create_info) {
@@ -563,54 +568,56 @@ namespace nova::renderer {
         const RenderableId id = next_renderable_id.load();
         next_renderable_id.fetch_add(1);
 
-        const auto* pass_key = material_pass_keys.find(material_name);
-        if(pass_key == nullptr) {
+        const auto pass_key_itr = material_pass_keys.find(material_name);
+        if(pass_key_itr == material_pass_keys.end()) {
             logger->error("No material named %s for pass %s", material_name.material_name, material_name.pass_name);
             return std::numeric_limits<uint64_t>::max();
         }
 
+        const auto& pass_key = pass_key_itr->second;
+
         RenderableKey key;
-        key.pipeline_name = pass_key->pipeline_name;
-        key.material_pass_idx = pass_key->material_pass_index;
+        key.pipeline_name = pass_key.pipeline_name;
+        key.material_pass_idx = pass_key.material_pass_index;
 
         // Figure out where to put the renderable
-        auto* materials = passes_by_pipeline.find(pass_key->pipeline_name);
+        auto materials_itr = passes_by_pipeline.find(pass_key.pipeline_name);
 
-        if(!materials) {
+        if(materials_itr == passes_by_pipeline.end()) {
             return std::numeric_limits<uint64_t>::max();
         }
 
-        auto& material = (*materials)[pass_key->material_pass_index];
+        auto& material = materials_itr->second[pass_key.material_pass_index];
 
         StaticMeshRenderCommand command = make_render_command(create_info, id);
 
-        if(const auto* mesh = meshes.find(create_info.mesh)) {
+        if(const auto& mesh_itr = meshes.find(create_info.mesh); mesh_itr != meshes.end()) {
+            const auto& mesh = mesh_itr->second;
             if(create_info.is_static) {
                 key.type = RenderableType::StaticMesh;
                 bool need_to_add_batch = true;
 
                 uint32_t batch_idx = 0;
-                material.static_mesh_draws.each_fwd([&](MeshBatch<StaticMeshRenderCommand>& batch) {
-                    if(batch.vertex_buffer == mesh->vertex_buffer) {
+                for(MeshBatch<StaticMeshRenderCommand>& batch : material.static_mesh_draws) {
+                    if(batch.vertex_buffer == mesh.vertex_buffer) {
                         key.batch_idx = batch_idx;
                         key.renderable_idx = static_cast<uint32_t>(batch.commands.size());
 
                         batch.commands.emplace_back(command);
 
                         need_to_add_batch = false;
-                        return false;
+                        break;
                     }
 
                     batch_idx++;
-                    return true;
-                });
+                }
 
                 if(need_to_add_batch) {
                     MeshBatch<StaticMeshRenderCommand> batch;
-                    batch.num_vertex_attributes = mesh->num_vertex_attributes;
-                    batch.num_indices = mesh->num_indices;
-                    batch.vertex_buffer = mesh->vertex_buffer;
-                    batch.index_buffer = mesh->index_buffer;
+                    batch.num_vertex_attributes = mesh.num_vertex_attributes;
+                    batch.num_indices = mesh.num_indices;
+                    batch.vertex_buffer = mesh.vertex_buffer;
+                    batch.index_buffer = mesh.index_buffer;
                     batch.commands.emplace_back(command);
 
                     key.batch_idx = static_cast<uint32_t>(material.static_mesh_draws.size());
@@ -620,13 +627,13 @@ namespace nova::renderer {
                 }
             }
 
-        } else if(const auto* proc_mesh = proc_meshes.find(create_info.mesh)) {
+        } else if(const auto& proc_mesh_itr = proc_meshes.find(create_info.mesh); proc_mesh_itr != proc_meshes.end()) {
             if(create_info.is_static) {
                 key.type = RenderableType::ProceduralMesh;
                 bool need_to_add_batch = false;
 
                 uint32_t batch_idx = 0;
-                material.static_procedural_mesh_draws.each_fwd([&](ProceduralMeshBatch<StaticMeshRenderCommand>& batch) {
+                for(ProceduralMeshBatch<StaticMeshRenderCommand>& batch : material.static_procedural_mesh_draws) {
                     if(batch.mesh.get_key() == create_info.mesh) {
                         key.batch_idx = batch_idx;
                         key.renderable_idx = static_cast<uint32_t>(batch.commands.size());
@@ -634,12 +641,11 @@ namespace nova::renderer {
                         batch.commands.emplace_back(command);
 
                         need_to_add_batch = false;
-                        return false;
+                        break;
                     }
 
                     batch_idx++;
-                    return true;
-                });
+                }
 
                 if(need_to_add_batch) {
                     ProceduralMeshBatch<StaticMeshRenderCommand> batch{&proc_meshes, create_info.mesh};
@@ -656,37 +662,38 @@ namespace nova::renderer {
             return std::numeric_limits<uint64_t>::max();
         }
 
-        renderable_keys.insert(id, key);
+        renderable_keys.emplace(id, key);
 
         return id;
     }
 
     void NovaRenderer::update_renderable(RenderableId renderable, const StaticMeshRenderableUpdateData& update_data) {
         ZoneScoped;
-        const auto* key = renderable_keys.find(renderable);
-        if(key == nullptr) {
+        const auto& key_itr = renderable_keys.find(renderable);
+        if(key_itr == renderable_keys.end()) {
             logger->error("Could not update renderable %u", renderable);
             return;
         }
 
-        auto* passes = passes_by_pipeline.find(key->pipeline_name);
-        if(passes == nullptr) {
-            logger->error("Could not find draws for pipeline %s, as requested by renderable %u", key->pipeline_name, renderable);
+        auto passes_itr = passes_by_pipeline.find(key_itr->second.pipeline_name);
+        if(passes_itr == passes_by_pipeline.end()) {
+            logger->error("Could not find draws for pipeline %s, as requested by renderable %u", key_itr->second.pipeline_name, renderable);
             return;
         }
 
-        auto& material_pass = (*passes)[key->material_pass_idx];
+        const auto& key = key_itr->second;
+        auto& material_pass = passes_itr[key.material_pass_idx];
 
         auto command = [&] {
-            switch(key->type) {
+            switch(key.type) {
                 case RenderableType::StaticMesh: {
-                    auto& batch = material_pass.static_mesh_draws[key->batch_idx];
-                    return batch.commands[key->renderable_idx];
+                    auto& batch = material_pass.static_mesh_draws[key.batch_idx];
+                    return batch.commands[key.renderable_idx];
                 }
 
                 case RenderableType::ProceduralMesh: {
-                    auto& batch = material_pass.static_procedural_mesh_draws[key->batch_idx];
-                    return batch.commands[key->renderable_idx];
+                    auto& batch = material_pass.static_procedural_mesh_draws[key.batch_idx];
+                    return batch.commands[key.renderable_idx];
                 }
             }
         }();
@@ -754,9 +761,12 @@ namespace nova::renderer {
 
             } else {
                 dynamic_texture_infos.emplace(SCENE_OUTPUT_RT_NAME,
-                                              {SCENE_OUTPUT_RT_NAME,
-                                               renderpack::ImageUsage::RenderTarget,
-                                               {rhi::PixelFormat::Rgba8, renderpack::TextureDimensionType::ScreenRelative, 1, 1}});
+                                              renderpack::TextureCreateInfo{SCENE_OUTPUT_RT_NAME,
+                                                                            renderpack::ImageUsage::RenderTarget,
+                                                                            {rhi::PixelFormat::Rgba8,
+                                                                             renderpack::TextureDimensionType::ScreenRelative,
+                                                                             1,
+                                                                             1}});
             }
         }
 
@@ -772,9 +782,12 @@ namespace nova::renderer {
 
             } else {
                 dynamic_texture_infos.emplace(UI_OUTPUT_RT_NAME,
-                                              {UI_OUTPUT_RT_NAME,
-                                               renderpack::ImageUsage::RenderTarget,
-                                               {rhi::PixelFormat::Rgba8, renderpack::TextureDimensionType::ScreenRelative, 1, 1}});
+                                              renderpack::TextureCreateInfo{UI_OUTPUT_RT_NAME,
+                                                                            renderpack::ImageUsage::RenderTarget,
+                                                                            {rhi::PixelFormat::Rgba8,
+                                                                             renderpack::TextureDimensionType::ScreenRelative,
+                                                                             1,
+                                                                             1}});
             }
         }
     }
@@ -783,7 +796,7 @@ namespace nova::renderer {
         auto* material_data_memory = new uint8_t[MATERIAL_BUFFER_SIZE.b_count()];
         material_buffer = std::make_unique<MaterialDataBuffer>();
         for(uint32_t i = 0; i < settings->max_in_flight_frames; i++) {
-            const auto buffer_name = std::string::format("%s_%d", MATERIAL_DATA_BUFFER_NAME, i);
+            const auto buffer_name = fmt::format("{}_{}", MATERIAL_DATA_BUFFER_NAME, i);
             if(auto buffer = device_resources->create_uniform_buffer(buffer_name, MATERIAL_BUFFER_SIZE); buffer) {
                 builtin_buffer_names.emplace_back(buffer_name);
                 material_device_buffers.emplace_back(*buffer);
@@ -829,7 +842,7 @@ namespace nova::renderer {
         const auto& ui_output = *device_resources->get_render_target(UI_OUTPUT_RT_NAME);
         const auto& scene_output = *device_resources->get_render_target(SCENE_OUTPUT_RT_NAME);
 
-        backbuffer_output_pipeline_create_info->viewport_size = device->get_swapchain()->get_size();
+        backbuffer_output_pipeline_create_info.viewport_size = device->get_swapchain()->get_size();
         auto backbuffer_pipeline = device->create_global_pipeline(*backbuffer_output_pipeline_create_info);
         if(rendergraph->create_renderpass<BackbufferOutputRenderpass>(*device_resources,
                                                                       ui_output->image,

@@ -239,7 +239,7 @@ namespace nova::renderer::renderpack {
                                                                       new_pipeline.defines);
         }
 
-        logger->verbose("Load of pipeline %s succeeded", pipeline_path);
+        logger->debug("Load of pipeline %s succeeded", pipeline_path);
 
         return new_pipeline;
     }
@@ -316,7 +316,7 @@ namespace nova::renderer::renderpack {
 
         material.passes.each_fwd([&](MaterialPass& pass) { pass.material_name = material.name; });
 
-        logger->verbose("Load of material &s succeeded - name %s", material_path, material.name);
+        logger->debug("Load of material &s succeeded - name %s", material_path, material.name);
         return material;
     }
 

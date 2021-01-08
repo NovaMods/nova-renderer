@@ -579,7 +579,7 @@ namespace nova::renderer::rhi {
                                                 .setDescriptorCount(binding.count)
                                                 .setStageFlags(to_vk_shader_stage_flags(binding.stages));
 
-            logger->verbose("Descriptor %u.%u is type %s", binding.set, binding.binding, descriptor_type_to_string(binding.type));
+            logger->debug("Descriptor %u.%u is type %s", binding.set, binding.binding, descriptor_type_to_string(binding.type));
 
             if(binding.is_unbounded) {
                 binding_flags_by_set[binding.set].push_back(vk::DescriptorBindingFlagBits::eVariableDescriptorCount |
@@ -588,7 +588,7 @@ namespace nova::renderer::rhi {
                 // Record the maximum number of descriptors in the variable size array in this set
                 variable_descriptor_counts[binding.set] = binding.count;
 
-                logger->verbose("Descriptor %u.%u is unbounded", binding.set, binding.binding);
+                logger->debug("Descriptor %u.%u is unbounded", binding.set, binding.binding);
 
             } else {
                 binding_flags_by_set[binding.set].push_back({});

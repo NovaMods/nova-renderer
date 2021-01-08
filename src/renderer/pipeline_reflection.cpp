@@ -61,7 +61,7 @@ namespace nova::renderer {
         new_binding.count = 1;
         new_binding.stages = shader_stage;
 
-        logger->verbose("Pipeline reflection found resource %s of type %s in binding %u.%u",
+        logger->debug("Pipeline reflection found resource %s of type %s in binding %u.%u",
                         resource.name.c_str(),
                         descriptor_type_to_string(type),
                         set_idx,

@@ -452,12 +452,12 @@ namespace nova::renderer::rhi {
         ZoneScoped;
         const auto& state = pipeline_state.state;
 
-        logger->verbose("Creating a VkPipeline for pipeline %s", state.name);
+        logger->debug("Creating a VkPipeline for pipeline %s", state.name);
 
         std::vector<VkPipelineShaderStageCreateInfo> shader_stages{&internal_allocator};
         std::unordered_map<VkShaderStageFlags, VkShaderModule> shader_modules{&internal_allocator};
 
-        logger->verbose("Compiling vertex module");
+        logger->debug("Compiling vertex module");
         const auto vertex_module = create_shader_module(state.vertex_shader.source);
         if(vertex_module) {
             shader_modules.insert(VK_SHADER_STAGE_VERTEX_BIT, *vertex_module);
@@ -466,7 +466,7 @@ namespace nova::renderer::rhi {
         }
 
         if(state.geometry_shader) {
-            logger->verbose("Compiling geometry module");
+            logger->debug("Compiling geometry module");
             const auto geometry_module = create_shader_module(state.geometry_shader->source);
             if(geometry_module) {
                 shader_modules.insert(VK_SHADER_STAGE_GEOMETRY_BIT, *geometry_module);
@@ -476,7 +476,7 @@ namespace nova::renderer::rhi {
         }
 
         if(state.pixel_shader) {
-            logger->verbose("Compiling fragment module");
+            logger->debug("Compiling fragment module");
             const auto fragment_module = create_shader_module(state.pixel_shader->source);
             if(fragment_module) {
                 shader_modules.insert(VK_SHADER_STAGE_FRAGMENT_BIT, *fragment_module);
@@ -1669,10 +1669,10 @@ namespace nova::renderer::rhi {
 
         device.createPipelineLayout(&pipeline_layout_create, &vk_internal_allocator, &standard_pipeline_layout);
 
-        const auto& pool = create_descriptor_pool(std::array{rx::pair{DescriptorType::StorageBuffer, 5_u32 * 1024},
-                                                            rx::pair{DescriptorType::UniformBuffer, 5_u32 * 1024},
-                                                            rx::pair{DescriptorType::Texture, MAX_NUM_TEXTURES * 1024},
-                                                            rx::pair{DescriptorType::Sampler, 3_u32 * 1024}},
+        const auto& pool = create_descriptor_pool(std::array{std::pair{DescriptorType::StorageBuffer, 5_u32 * 1024},
+                                                            std::pair{DescriptorType::UniformBuffer, 5_u32 * 1024},
+                                                            std::pair{DescriptorType::Texture, MAX_NUM_TEXTURES * 1024},
+                                                            std::pair{DescriptorType::Sampler, 3_u32 * 1024}},
                                                   internal_allocator);
 
         standard_descriptor_set_pool = *pool;
@@ -1889,7 +1889,7 @@ namespace nova::renderer::rhi {
         } else if((message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) != 0) {
             // Diagnostic info from the Vulkan loader and layers
             // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
-            logger->verbose("%s", msg);
+            logger->debug("%s", msg);
 
         } else if((message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U) { // No validation info!
             // Catch-all to be super sure

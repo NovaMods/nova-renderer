@@ -179,7 +179,7 @@ namespace nova::renderer {
          * \return A pointer to the new material, or nullptr if the material can't be created for whatever reason
          */
         template <typename MaterialType>
-        [[nodiscard]] rx::pair<uint32_t, MaterialType*> create_material();
+        [[nodiscard]] std::pair<uint32_t, MaterialType*> create_material();
 
         /*!
          * \brief Gets the pipeline with the provided name
@@ -343,22 +343,9 @@ namespace nova::renderer {
 
         void update_camera_matrix_buffer(uint32_t frame_idx);
 
-        std::vector<rhi::RhiImage*> get_all_images(rx::memory::allocator& allocator);
+        std::vector<rhi::RhiImage*> get_all_images();
 #pragma endregion
     };
-
-    template <typename LogHandlerFunc>
-    LogHandles& set_logging_handler(LogHandlerFunc&& log_handler) {
-        rx::global_group* system_group{rx::globals::find("system")};
-
-        auto* log_handles = system_group->find("log_handles")->cast<LogHandles>();
-        log_handles->clear();
-
-        rx::globals::find("loggers")->each(
-            [&](rx::global_node* _logger) { log_handles->push_back(_logger->cast<rx::log>()->on_write(log_handler)); });
-
-        return *log_handles;
-    }
 
     template <typename RenderpassType, typename... Args>
     RenderpassType* NovaRenderer::create_ui_renderpass(Args&&... args) {
@@ -366,7 +353,7 @@ namespace nova::renderer {
     }
 
     template <typename MaterialType>
-    rx::pair<uint32_t, MaterialType*> NovaRenderer::create_material() {
+    std::pair<uint32_t, MaterialType*> NovaRenderer::create_material() {
         // We need to return the index so that we can send the index to the shader
         // WE NEED TO RETURN THE INDEX, NOT JUST A POINTER TO THE MATERIAL
         const auto idx = material_buffer->get_next_free_index<MaterialType>();
