@@ -11,6 +11,7 @@ if(NOT NOVA_PACKAGE AND CMAKE_BUILD_TYPE)
         set(ORIGINAL_BUILD_TYPE ${CMAKE_BUILD_TYPE})
         set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Specifies the build type on single-configuration generators. (Fixed to Debug from '${TMP_BUILD_TYPE}' by nova-renderer)" FORCE)
         set(BUILD_TYPE_FIXED_BY_NOVA TRUE)
+        add_compile_options(TRACY_ENABLE)
     elseif(NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Release" AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         set(ORIGINAL_BUILD_TYPE ${CMAKE_BUILD_TYPE})
         set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Specifies the build type on single-configuration generators. (Fixed to Release from '${TMP_BUILD_TYPE}' by nova-renderer)" FORCE)
@@ -86,6 +87,8 @@ include(external)
 # Add Nova source code #
 ########################
 set(NOVA_SOURCE
+        external/tracy/TracyClient.cpp
+
         include/nova_renderer/util/platform.hpp
         include/nova_renderer/util/result.hpp
         include/nova_renderer/util/utils.hpp
@@ -144,13 +147,6 @@ set(NOVA_SOURCE
         src/rhi/vulkan/vulkan_resource_binder.hpp
         src/rhi/vulkan/vulkan_resource_binder.cpp
 
-        src/filesystem/zip_folder_accessor.hpp
-        src/filesystem/regular_folder_accessor.hpp
-        src/filesystem/folder_accessor.cpp
-        src/filesystem/regular_folder_accessor.cpp
-        src/filesystem/zip_folder_accessor.cpp
-        src/filesystem/virtual_filesystem.cpp
-
         src/settings/nova_settings.cpp
 		
         src/render_objects/procedural_mesh.cpp
@@ -193,12 +189,7 @@ set(NOVA_SOURCE
         
         src/windowing/window.cpp
         )
-
-#################################################################
-# Add NTL source code - just until I get INTERFACE libs working #
-#################################################################
-set(NOVA_SOURCE ${NOVA_SOURCE} ${NTL_SOURCE})
-
+        
 ####################
 # Add Nova headers #
 ####################
@@ -224,27 +215,16 @@ set(WINDOWS_NOVA_SOURCE
         src/util/windows_utils.hpp
         )
 
-set(UNIX_NOVA_SOURCE
-        include/nova_renderer/util/x11_but_good.hpp
-        src/util/linux_utils.cpp
-        src/util/linux_utils.hpp
-        )
-
 if(WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${WINDOWS_NOVA_SOURCE})
     set(OTHER_NOVA_SOURCE ${UNIX_NOVA_SOURCE})
 else()
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${UNIX_NOVA_SOURCE})
-    set(OTHER_NOVA_SOURCE ${WINDOWS_NOVA_SOURCE})
+   message(ERROR "Only Windows is supported")
 endif()
 
 ##########################################
 # Set platform dependent compile options #
 ##########################################
-if (UNIX)
-    add_compile_options_if_supported(-g -fno-omit-frame-pointer -fPIC -fdiagnostics-color=always -Wpessimizing-move -Wredundant-move)
-endif()
-
 if(MSVC)
     add_definitions(/D_CRT_SECURE_NO_WARNINGS=1)
 endif()
@@ -258,17 +238,6 @@ if(NOVA_TREAT_WARNINGS_AS_ERRORS)
                 -Wno-error=unused-parameter)
     endif()
 endif()
-
-macro(add_coverage target)
-    if(NOVA_COVERAGE)
-        if(MSVC)
-            message(FATAL_ERROR "Coverage not supported on MSVC.")
-        else()
-            target_compile_options(${target} PRIVATE -g -O0 --coverage -fprofile-arcs -ftest-coverage)
-            target_link_libraries(${target} PRIVATE -g --coverage)
-        endif()
-    endif()
-endmacro()
 
 ##########################################
 # Setup required options for backtracing #
@@ -294,12 +263,6 @@ add_library(nova-renderer STATIC
         ${3RD_PARTY_SOURCE}
         )
 nova_format(nova-renderer "${OTHER_NOVA_SOURCE}")
-
-# Add VULKAN_SDK to the include path
-# TODO: Only add if the user is compiling the Vulkan backend
-
-message(STATUS "Miniz headers: ${INSTALL_HEADERS}")
-
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 
@@ -313,102 +276,48 @@ if(NOVA_DEBUG)
     target_compile_definitions(nova-renderer PUBLIC RX_DEBUG)
 endif()
 
-target_include_directories(nova-renderer PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $ENV{VULKAN_SDK}/Include
-        ${CMAKE_CURRENT_SOURCE_DIR}/external/miniz	# Miniz doesn't export a MINIZ_HEADERS variable?
-        )
 target_link_directories(nova-renderer PUBLIC $ENV{VULKAN_SDK}/Lib)
 
 target_include_directories(nova-renderer PRIVATE Vulkan_INCLUDE_DIR)
-
-include(GNUInstallDirs)
-
-##################################
-# Add extra warnings if possible #
-##################################
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wpedantic -Wconversion -Wdefaulted-function-deleted -Wno-c++98-compat -Wno-c++98-compat-pendantic -Wno-c++98-c++11-c++14-compat -Wno-c++98-c++11-c++14-compat-pendantic)
-endif()
-
-add_coverage(nova-renderer)
 
 #########################
 # Set libraries to link #
 #########################
 set(COMMON_LINK_LIBS
         ${CMAKE_DL_LIBS}
-        glm::glm
-        dxc-wrap 
-        minitrace
-        miniz
         vma::vma
-        rex
-        SPIRV-Tools
-        spirv-cross-core
-        spirv-cross-glsl
-        spirv-cross-reflect
-        spirv-cross-util)
-
-if(WIN32)
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan-1)
-else()
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan)
-endif()
-
-# TODO: Figure out why we need to do this, and add a comment when we know
-if(TARGET glfw)
-    set(GLFW_TARGET_NAME glfw)
-elseif(TARGET glfw3)
-    set(GLFW_TARGET_NAME glfw3)
-else()
-    message(FATAL_ERROR "GLFW target name could not be found")
-endif()
-set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} ${GLFW_TARGET_NAME})
-include_directories(SYSTEM ${CMAKE_CURRENT_LIST_DIR}/external/glfw/include)
+        rex)
+        
+set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan-1)
 
 ############################
 # Platform dependent fixes #
 ############################
-if(WIN32)
-    find_package(WindowsSDK)
-    get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WinSDK_DIRS)
+find_package(WindowsSDK)
+get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WinSDK_DIRS)
 
-    # MSVC 15.9 broke the Windows SDK by implementing two phase lookup. "/Zc:twoPhase-" disables it.
-    add_compile_options_if_supported(/Zc:twoPhase- /permissive /bigobj )
+# MSVC 15.9 broke the Windows SDK by implementing two phase lookup. "/Zc:twoPhase-" disables it.
+add_compile_options_if_supported(/Zc:twoPhase- /permissive /bigobj )
 
-    set_target_properties(nova-renderer PROPERTIES PREFIX "")
-    target_include_directories(nova-renderer PRIVATE ${WinSDK_DIRS})
-    target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING NOMINMAX)
-    target_compile_definitions(nova-renderer PRIVATE NOVA_EXPORT)
+set_target_properties(nova-renderer PROPERTIES PREFIX "")
+target_include_directories(nova-renderer PRIVATE ${WinSDK_DIRS})
+target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING NOMINMAX)
+target_compile_definitions(nova-renderer PRIVATE NOVA_EXPORT)
 
-    # Visual Studio is stupid. Is it really that hard to use filesystem directories to organize code like literally
-    # everyone else?
-    foreach(source IN LISTS NOVA_SOURCE)
-        get_filename_component(source_path "${source}" PATH)
-        string(REPLACE "/" "\\" source_path_msvc "${source_path}")
-        source_group("${source_path_msvc}" FILES "${source}")
-    endforeach()
+# Visual Studio is stupid. Is it really that hard to use filesystem directories to organize code like literally
+# everyone else?
+foreach(source IN LISTS NOVA_SOURCE)
+    get_filename_component(source_path "${source}" PATH)
+    string(REPLACE "/" "\\" source_path_msvc "${source_path}")
+    source_group("${source_path_msvc}" FILES "${source}")
+endforeach()
 
-else()
-    # GCC and Clang complain loudly about the #pragma region stuff. This shuts them up.
-    target_compile_options_if_supported(nova-renderer PRIVATE -Wno-unknown-pragmas)
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs X11)
-endif()
-
-if(MSVC)
-    target_sources(nova-renderer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/tools/vs-visualizers/RexCore.natvis)
-endif()
+target_sources(nova-renderer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/tools/vs-visualizers/RexCore.natvis)
 
 ###############################
 # Link all required libraries #
 ###############################
 target_link_libraries(nova-renderer PUBLIC ${COMMON_LINK_LIBS})
-
-#############################
-# Fix issue with permissive #
-#############################
-remove_permissive(nova-renderer)
 
 ##########################
 # Add tests if requested #
