@@ -1,0 +1,12 @@
+{
+  "name": "nova-renderer",
+  "version-string": "0.10.0",
+  "description": "A Vulkan renderer for Minecraft",
+  "supports": "windows",
+  "dependencies": [
+    "glfw3",
+    "glm",
+    "nlohmann-json",
+    "stb"
+  ]
+}
