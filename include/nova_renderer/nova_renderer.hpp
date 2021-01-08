@@ -36,7 +36,7 @@ namespace spirv_cross {
 } // namespace spirv_cross
 
 namespace nova::renderer {
-    using LogHandles = rx::vector<rx::log::queue_event::handle>;
+    using LogHandles = std::vector<rx::log::queue_event::handle>;
 
     /*!
      * \brief Registers a log message writing function
@@ -101,7 +101,7 @@ namespace nova::renderer {
          *
          * \param renderpack_name The name of the renderpack to load
          */
-        void load_renderpack(const rx::string& renderpack_name);
+        void load_renderpack(const std::string& renderpack_name);
 
         /*!
          * \brief Gives Nova a function to use to render UI
@@ -121,9 +121,9 @@ namespace nova::renderer {
         template <typename RenderpassType, typename... Args>
         RenderpassType* create_ui_renderpass(Args&&... args);
 
-        [[nodiscard]] const rx::vector<MaterialPass>& get_material_passes_for_pipeline(const rx::string& pipeline);
+        [[nodiscard]] const std::vector<MaterialPass>& get_material_passes_for_pipeline(const std::string& pipeline);
 
-        [[nodiscard]] rx::optional<RenderpassMetadata> get_renderpass_metadata(const rx::string& renderpass_name) const;
+        [[nodiscard]] rx::optional<RenderpassMetadata> get_renderpass_metadata(const std::string& renderpass_name) const;
 
         /*!
          * \brief Executes a single frame
@@ -188,7 +188,7 @@ namespace nova::renderer {
          *
          * \return The pipeline if it exists, or nullptr if it does not
          */
-        [[nodiscard]] Pipeline* find_pipeline(const rx::string& pipeline_name);
+        [[nodiscard]] Pipeline* find_pipeline(const std::string& pipeline_name);
 
 #pragma endregion
 
@@ -219,7 +219,7 @@ namespace nova::renderer {
         rhi::Swapchain* swapchain;
 
         RENDERDOC_API_1_3_0* render_doc;
-        rx::vector<rx::memory::bump_point_allocator*> frame_allocators;
+        std::vector<rx::memory::bump_point_allocator*> frame_allocators;
 
         rhi::RhiSampler* point_sampler;
 
@@ -287,15 +287,15 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Rendergraph
-        rx::map<rx::string, rhi::RhiImage*> builtin_images;
-        rx::map<rx::string, renderer::Renderpass*> builtin_renderpasses;
+        std::unordered_map<std::string, rhi::RhiImage*> builtin_images;
+        std::unordered_map<std::string, renderer::Renderpass*> builtin_renderpasses;
 
-        rx::map<rx::string, renderpack::TextureCreateInfo> dynamic_texture_infos;
+        std::unordered_map<std::string, renderpack::TextureCreateInfo> dynamic_texture_infos;
 
-        void create_dynamic_textures(const rx::vector<renderpack::TextureCreateInfo>& texture_create_infos);
+        void create_dynamic_textures(const std::vector<renderpack::TextureCreateInfo>& texture_create_infos);
 
-        void create_render_passes(const rx::vector<renderpack::RenderPassCreateInfo>& pass_create_infos,
-                                  const rx::vector<renderpack::PipelineData>& pipelines) const;
+        void create_render_passes(const std::vector<renderpack::RenderPassCreateInfo>& pass_create_infos,
+                                  const std::vector<renderpack::PipelineData>& pipelines) const;
 
         void destroy_dynamic_resources();
 
@@ -306,16 +306,16 @@ namespace nova::renderer {
         /*!
          * \brief Map from pipeline name to all the material passes that use that pipeline
          */
-        rx::map<rx::string, rx::vector<MaterialPass>> passes_by_pipeline;
+        std::unordered_map<std::string, std::vector<MaterialPass>> passes_by_pipeline;
 
-        rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas;
+        std::unordered_map<FullMaterialPassName, MaterialPassMetadata> material_metadatas;
 
-        void create_pipelines_and_materials(const rx::vector<renderpack::PipelineData>& pipeline_create_infos,
-                                            const rx::vector<renderpack::MaterialData>& materials);
+        void create_pipelines_and_materials(const std::vector<renderpack::PipelineData>& pipeline_create_infos,
+                                            const std::vector<renderpack::MaterialData>& materials);
 
         void create_materials_for_pipeline(const renderer::Pipeline& pipeline,
-                                           const rx::vector<renderpack::MaterialData>& materials,
-                                           const rx::string& pipeline_name);
+                                           const std::vector<renderpack::MaterialData>& materials,
+                                           const std::string& pipeline_name);
 
         void destroy_pipelines();
 
@@ -325,41 +325,41 @@ namespace nova::renderer {
 #pragma region Meshes
         MeshId next_mesh_id = 0;
 
-        rx::map<MeshId, Mesh> meshes;
-        rx::map<MeshId, ProceduralMesh> proc_meshes;
+        std::unordered_map<MeshId, Mesh> meshes;
+        std::unordered_map<MeshId, ProceduralMesh> proc_meshes;
 #pragma endregion
 
 #pragma region Rendering
         uint64_t frame_count = 0;
         uint8_t cur_frame_idx = 0;
 
-        rx::vector<rx::string> builtin_buffer_names;
+        std::vector<std::string> builtin_buffer_names;
         uint32_t cur_model_matrix_index = 0;
 
-        rx::vector<rhi::RhiFence*> frame_fences;
+        std::vector<rhi::RhiFence*> frame_fences;
 
-        rx::map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
-        rx::map<rx::string, Pipeline> pipelines;
+        std::unordered_map<FullMaterialPassName, MaterialPassKey> material_pass_keys;
+        std::unordered_map<std::string, Pipeline> pipelines;
 
         rx::ptr<MaterialDataBuffer> material_buffer;
-        rx::vector<BufferResourceAccessor> material_device_buffers;
+        std::vector<BufferResourceAccessor> material_device_buffers;
 
         struct RenderableKey {
-            rx::string pipeline_name{};
+            std::string pipeline_name{};
             uint32_t material_pass_idx{};
             RenderableType type{};
             uint32_t batch_idx{};
             uint32_t renderable_idx{};
         };
 
-        rx::map<RenderableId, RenderableKey> renderable_keys;
+        std::unordered_map<RenderableId, RenderableKey> renderable_keys;
 
-        rx::vector<Camera> cameras;
+        std::vector<Camera> cameras;
         rx::ptr<PerFrameDeviceArray<CameraUboData>> camera_data;
 
         void update_camera_matrix_buffer(uint32_t frame_idx);
 
-        rx::vector<rhi::RhiImage*> get_all_images(rx::memory::allocator& allocator);
+        std::vector<rhi::RhiImage*> get_all_images(rx::memory::allocator& allocator);
 #pragma endregion
     };
 

@@ -7,18 +7,18 @@ namespace ntl {
     struct NovaError;
 
     struct NovaError {
-        rx::string message = "";
+        std::string message = "";
 
         NovaError* cause = nullptr;
 
-        explicit NovaError(rx::string message);
+        explicit NovaError(std::string message);
 
-        NovaError(rx::string message, NovaError* cause);
+        NovaError(std::string message, NovaError* cause);
 
-        [[nodiscard]] rx::string to_string() const;
+        [[nodiscard]] std::string to_string() const;
     };
 
-    inline NovaError operator""_err(const char* str, const rx_size size) { return NovaError(rx::string(str, size)); }
+    inline NovaError operator""_err(const char* str, const rx_size size) { return NovaError(std::string(str, size)); }
 
     template <typename ValueType, typename ErrorType = NovaError>
     struct [[nodiscard]] Result {
@@ -135,5 +135,5 @@ namespace ntl {
     template <typename ValueType>
     Result(ValueType value)->Result<ValueType>;
 
-#define MAKE_ERROR(s, ...) ::ntl::NovaError(::rx::string::format(s, __VA_ARGS__))
+#define MAKE_ERROR(s, ...) ::ntl::NovaError(::std::string::format(s, __VA_ARGS__))
 } // namespace ntl

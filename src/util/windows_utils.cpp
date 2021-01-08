@@ -13,7 +13,7 @@ std::wstring s2ws(const std::string& s) {
     return r;
 }
 
-rx::string get_last_windows_error() {
+std::string get_last_windows_error() {
     const DWORD errorMessageID = GetLastError();
     if(errorMessageID == 0) {
         return {}; // No error message has been recorded

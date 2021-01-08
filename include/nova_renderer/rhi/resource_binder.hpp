@@ -16,16 +16,16 @@ namespace nova::renderer {
     public:
         virtual ~RhiResourceBinder() = default;
 
-        virtual void bind_image(const rx::string& binding_name, rhi::RhiImage* image) = 0;
+        virtual void bind_image(const std::string& binding_name, rhi::RhiImage* image) = 0;
 
-        virtual void bind_buffer(const rx::string& binding_name, rhi::RhiBuffer* buffer) = 0;
+        virtual void bind_buffer(const std::string& binding_name, rhi::RhiBuffer* buffer) = 0;
 
-        virtual void bind_sampler(const rx::string& binding_name, rhi::RhiSampler* sampler) = 0;
+        virtual void bind_sampler(const std::string& binding_name, rhi::RhiSampler* sampler) = 0;
 
-        virtual void bind_image_array(const rx::string& binding_name, const rx::vector<rhi::RhiImage*>& images) = 0;
+        virtual void bind_image_array(const std::string& binding_name, const std::vector<rhi::RhiImage*>& images) = 0;
 
-        virtual void bind_buffer_array(const rx::string& binding_name, const rx::vector<rhi::RhiBuffer*>& buffers) = 0;
+        virtual void bind_buffer_array(const std::string& binding_name, const std::vector<rhi::RhiBuffer*>& buffers) = 0;
 
-        virtual void bind_sampler_array(const rx::string& binding_name, const rx::vector<rhi::RhiSampler*>& samplers) = 0;
+        virtual void bind_sampler_array(const std::string& binding_name, const std::vector<rhi::RhiSampler*>& samplers) = 0;
     };
 } // namespace nova::renderer

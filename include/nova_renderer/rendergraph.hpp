@@ -27,8 +27,8 @@ namespace nova::renderer {
 
 #pragma region Metadata structs
     struct FullMaterialPassName {
-        rx::string material_name;
-        rx::string pass_name;
+        std::string material_name;
+        std::string pass_name;
 
         bool operator==(const FullMaterialPassName& other) const;
 
@@ -36,7 +36,7 @@ namespace nova::renderer {
     };
 
     struct MaterialPassKey {
-        rx::string pipeline_name;
+        std::string pipeline_name;
         uint32_t material_pass_index;
     };
 
@@ -47,7 +47,7 @@ namespace nova::renderer {
     struct PipelineMetadata {
         RhiGraphicsPipelineState data;
 
-        rx::map<FullMaterialPassName, MaterialPassMetadata> material_metadatas{};
+        std::unordered_map<FullMaterialPassName, MaterialPassMetadata> material_metadatas{};
     };
 
     struct RenderpassMetadata {
@@ -74,7 +74,7 @@ namespace nova::renderer {
          */
         rhi::RhiBuffer* per_renderable_data = nullptr;
 
-        rx::vector<RenderCommandType> commands;
+        std::vector<RenderCommandType> commands;
     };
 
     template <typename RenderCommandType>
@@ -91,18 +91,18 @@ namespace nova::renderer {
          */
         rhi::RhiBuffer* per_renderable_data = nullptr;
 
-        rx::vector<RenderCommandType> commands;
+        std::vector<RenderCommandType> commands;
 
-        ProceduralMeshBatch(rx::map<MeshId, ProceduralMesh>* meshes, const MeshId key) : mesh(meshes, key) {}
+        ProceduralMeshBatch(std::unordered_map<MeshId, ProceduralMesh>* meshes, const MeshId key) : mesh(meshes, key) {}
     };
 
     struct MaterialPass {
         FullMaterialPassName name;
 
-        rx::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
-        rx::vector<ProceduralMeshBatch<StaticMeshRenderCommand>> static_procedural_mesh_draws;
+        std::vector<MeshBatch<StaticMeshRenderCommand>> static_mesh_draws;
+        std::vector<ProceduralMeshBatch<StaticMeshRenderCommand>> static_procedural_mesh_draws;
 
-        rx::vector<rhi::RhiDescriptorSet*> descriptor_sets;
+        std::vector<rhi::RhiDescriptorSet*> descriptor_sets;
         const rhi::RhiPipelineInterface* pipeline_interface = nullptr;
 
         void record(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const;
@@ -132,7 +132,7 @@ namespace nova::renderer {
      */
     class Renderpass {
     public:
-        explicit Renderpass(rx::string name, bool is_builtin = false);
+        explicit Renderpass(std::string name, bool is_builtin = false);
 
         Renderpass(Renderpass&& old) noexcept = default;
         Renderpass& operator=(Renderpass&& old) noexcept = default;
@@ -143,7 +143,7 @@ namespace nova::renderer {
         virtual ~Renderpass() = default;
 
         uint32_t id = 0;
-        rx::string name;
+        std::string name;
 
         bool is_builtin = false;
 
@@ -153,12 +153,12 @@ namespace nova::renderer {
         /*!
          * \brief Names of all the pipelines which are in this renderpass
          */
-        rx::vector<rx::string> pipeline_names;
+        std::vector<std::string> pipeline_names;
 
         bool writes_to_backbuffer = false;
 
-        rx::vector<rhi::RhiResourceBarrier> read_texture_barriers;
-        rx::vector<rhi::RhiResourceBarrier> write_texture_barriers;
+        std::vector<rhi::RhiResourceBarrier> read_texture_barriers;
+        std::vector<rhi::RhiResourceBarrier> write_texture_barriers;
 
         /*!
          * \brief Performs the rendering work of this renderpass
@@ -269,7 +269,7 @@ namespace nova::renderer {
          * \param mesh The mesh to execute this renderpass over. Will usually be the fullscreen triangle
          * \param is_builtin Whether this render pass is built in to Nova or comes from a renderpack
          */
-        explicit GlobalRenderpass(const rx::string& name, rx::ptr<rhi::RhiPipeline> pipeline, MeshId mesh, bool is_builtin = false);
+        explicit GlobalRenderpass(const std::string& name, rx::ptr<rhi::RhiPipeline> pipeline, MeshId mesh, bool is_builtin = false);
 
     protected:
         rx::ptr<rhi::RhiPipeline> pipeline;
@@ -329,13 +329,13 @@ namespace nova::renderer {
                                                      const renderpack::RenderPassCreateInfo& create_info,
                                                      DeviceResources& resource_storage);
 
-        void destroy_renderpass(const rx::string& name);
+        void destroy_renderpass(const std::string& name);
 
-        [[nodiscard]] rx::vector<rx::string> calculate_renderpass_execution_order();
+        [[nodiscard]] std::vector<std::string> calculate_renderpass_execution_order();
 
-        [[nodiscard]] Renderpass* get_renderpass(const rx::string& name) const;
+        [[nodiscard]] Renderpass* get_renderpass(const std::string& name) const;
 
-        [[nodiscard]] rx::optional<RenderpassMetadata> get_metadata_for_renderpass(const rx::string& name) const;
+        [[nodiscard]] rx::optional<RenderpassMetadata> get_metadata_for_renderpass(const std::string& name) const;
 
     private:
         bool is_dirty = false;
@@ -344,10 +344,10 @@ namespace nova::renderer {
 
         rhi::RenderDevice& device;
 
-        rx::map<rx::string, Renderpass*> renderpasses;
+        std::unordered_map<std::string, Renderpass*> renderpasses;
 
-        rx::vector<rx::string> cached_execution_order;
-        rx::map<rx::string, RenderpassMetadata> renderpass_metadatas;
+        std::vector<std::string> cached_execution_order;
+        std::unordered_map<std::string, RenderpassMetadata> renderpass_metadatas;
     };
 
     template <typename RenderpassType, typename... Args>
@@ -366,14 +366,14 @@ namespace nova::renderer {
         RenderpassMetadata metadata;
         metadata.data = create_info;
 
-        rx::vector<rhi::RhiImage*> color_attachments;
+        std::vector<rhi::RhiImage*> color_attachments;
         color_attachments.reserve(create_info.texture_outputs.size());
 
         glm::uvec2 framebuffer_size(0);
 
         const auto num_attachments = create_info.depth_texture ? create_info.texture_outputs.size() + 1 :
                                                                  create_info.texture_outputs.size();
-        rx::vector<rx::string> attachment_errors;
+        std::vector<std::string> attachment_errors;
         attachment_errors.reserve(num_attachments);
 
         bool missing_render_targets = false;
@@ -384,7 +384,7 @@ namespace nova::renderer {
                     renderpass->framebuffer = nullptr; // Will be resolved when rendering
 
                 } else {
-                    attachment_errors.push_back(rx::string::format(
+                    attachment_errors.push_back(std::string::format(
                         "Pass %s writes to the backbuffer and %zu other textures, but that's not allowed. If a pass writes to the backbuffer, it can't write to any other textures",
                         create_info.name,
                         create_info.texture_outputs.size() - 1));
@@ -402,7 +402,7 @@ namespace nova::renderer {
                     const glm::uvec2 attachment_size = {render_target->width, render_target->height};
                     if(framebuffer_size.x > 0) {
                         if(attachment_size.x != framebuffer_size.x || attachment_size.y != framebuffer_size.y) {
-                            attachment_errors.push_back(rx::string::format(
+                            attachment_errors.push_back(std::string::format(
                                 "Attachment %s has a size of %dx%d, but the framebuffer for pass %s has a size of %dx%d - these must match! All attachments of a single renderpass must have the same size",
                                 attachment_info.name,
                                 attachment_size.x,
@@ -439,7 +439,7 @@ namespace nova::renderer {
         }();
 
         if(!attachment_errors.is_empty()) {
-            attachment_errors.each_fwd([&](const rx::string& err) { rg_log->error("%s", err); });
+            attachment_errors.each_fwd([&](const std::string& err) { rg_log->error("%s", err); });
 
             rg_log->error(
                 "Could not create renderpass %s because there were errors in the attachment specification. Look above this message for details",

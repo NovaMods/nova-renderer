@@ -18,12 +18,12 @@ namespace nova::renderer {
         /*!
          * \brief Filename of the file that this shader source originated from
          */
-        rx::string filename{};
+        std::string filename{};
 
         /*!
          * \brief SPIR-V shader code
          */
-        rx::vector<uint32_t> source{};
+        std::vector<uint32_t> source{};
     };
 
     enum class PrimitiveTopology {
@@ -332,7 +332,7 @@ namespace nova::renderer {
         /*!
          * \brief How to blend each render target that this pipeline state renders to
          */
-        rx::vector<RenderTargetBlendState> render_target_states{};
+        std::vector<RenderTargetBlendState> render_target_states{};
 
         /*!
          * \brief Constant values to use for any render targets where one of the blend factors involves either a constant color or constant
@@ -348,7 +348,7 @@ namespace nova::renderer {
         /*!
          * \brief Name of this pipeline state
          */
-        rx::string name{};
+        std::string name{};
 
         /*!
          * \brief Vertex shader to use
@@ -368,7 +368,7 @@ namespace nova::renderer {
         /*!
          * \brief Description of the fields in the vertex data
          */
-        rx::vector<rhi::RhiVertexField> vertex_fields{};
+        std::vector<rhi::RhiVertexField> vertex_fields{};
 
         /*!
          * \brief Size of the viewport that this pipeline state renders to, measured in pixels
@@ -420,7 +420,7 @@ namespace nova::renderer {
         /*!
          * \brief All the color attachments that this pipeline writes to
          */
-        rx::vector<renderpack::TextureAttachmentInfo> color_attachments{};
+        std::vector<renderpack::TextureAttachmentInfo> color_attachments{};
 
         /*!
          * \brief The depth texture that this pipeline writes to, if it writes to a depth texture

@@ -17,13 +17,13 @@ namespace nova::filesystem {
      */
     class FolderAccessorBase {
     public:
-        [[nodiscard]] static FolderAccessorBase* create(const rx::string& path);
+        [[nodiscard]] static FolderAccessorBase* create(const std::string& path);
 
         /*!
          * \brief Initializes this resourcepack to load resources from the folder/zip file with the provided name
          * \param folder The name of the folder or zip file to load resources from, relative to Nova's working directory
          */
-        explicit FolderAccessorBase(rx::string folder);
+        explicit FolderAccessorBase(std::string folder);
 
         FolderAccessorBase(FolderAccessorBase&& other) noexcept = default;
         FolderAccessorBase& operator=(FolderAccessorBase&& other) noexcept = default;
@@ -43,30 +43,30 @@ namespace nova::filesystem {
          * resourcepack's root
          * \return True if the resource exists, false if it does not
          */
-        [[nodiscard]] bool does_resource_exist(const rx::string& resource_path);
+        [[nodiscard]] bool does_resource_exist(const std::string& resource_path);
 
-        [[nodiscard]] virtual rx::vector<uint8_t> read_file(const rx::string& path) = 0;
+        [[nodiscard]] virtual std::vector<uint8_t> read_file(const std::string& path) = 0;
 
         /*!
          * \brief Loads the resource with the given path
          * \param resource_path The path to the resource to load, relative to this resourcepack's root
          * \return All the bytes in the loaded resource
          */
-        [[nodiscard]] rx::string read_text_file(const rx::string& resource_path);
+        [[nodiscard]] std::string read_text_file(const std::string& resource_path);
 
         /*!
          * \brief Retrieves the paths of all the items in the specified folder
          * \param folder The folder to get all items from
          * \return A list of all the paths in the provided folder
          */
-        [[nodiscard]] virtual rx::vector<rx::string> get_all_items_in_folder(const rx::string& folder) = 0;
+        [[nodiscard]] virtual std::vector<std::string> get_all_items_in_folder(const std::string& folder) = 0;
 
-        [[nodiscard]] const rx::string& get_root() const;
+        [[nodiscard]] const std::string& get_root() const;
 
-        [[nodiscard]] virtual FolderAccessorBase* create_subfolder_accessor(const rx::string& path) const = 0;
+        [[nodiscard]] virtual FolderAccessorBase* create_subfolder_accessor(const std::string& path) const = 0;
 
     protected:
-        rx::string root_folder;
+        std::string root_folder;
 
         /*!
          * \brief I expect certain resources, like textures, to be requested a lot as Nova streams them in and out of
@@ -74,18 +74,18 @@ namespace nova::filesystem {
          * requested and we don't know if it exists. However, if a path has been checked before, we can now save an IO
          * call!
          */
-        rx::map<rx::string, bool> resource_existence;
+        std::unordered_map<std::string, bool> resource_existence;
 
         rx::concurrency::mutex* resource_existence_mutex;
 
-        [[nodiscard]] rx::optional<bool> does_resource_exist_in_map(const rx::string& resource_string) const;
+        [[nodiscard]] rx::optional<bool> does_resource_exist_in_map(const std::string& resource_string) const;
 
         /*!
          * \brief Like the non-internal one, but does not add the folder's root to resource_path
          *
          * \param resource_path The path to the resource, with `our_root` already appended
          */
-        [[nodiscard]] virtual bool does_resource_exist_on_filesystem(const rx::string& resource_path) = 0;
+        [[nodiscard]] virtual bool does_resource_exist_on_filesystem(const std::string& resource_path) = 0;
     };
 
     /*!
@@ -94,5 +94,5 @@ namespace nova::filesystem {
      * \param root The potential root path of the file
      * \return True if `path` has `root` as its root, false otherwise
      */
-    [[nodiscard]] bool has_root(const rx::string& path, const rx::string& root);
+    [[nodiscard]] bool has_root(const std::string& path, const std::string& root);
 } // namespace nova::filesystem

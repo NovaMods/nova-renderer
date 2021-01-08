@@ -90,13 +90,13 @@ namespace nova::renderer::renderpack {
         return {};
     }
 
-    rx::vector<rhi::RhiVertexField> get_vertex_fields(const ShaderSource& vertex_shader) {
+    std::vector<rhi::RhiVertexField> get_vertex_fields(const ShaderSource& vertex_shader) {
         // TODO: Figure out if there's a better way to reflect on the shader
         const CompilerGLSL shader_compiler{vertex_shader.source.data(), vertex_shader.source.size()};
 
         const auto& shader_vertex_fields = shader_compiler.get_shader_resources().stage_inputs;
 
-        rx::vector<rhi::RhiVertexField> vertex_fields;
+        std::vector<rhi::RhiVertexField> vertex_fields;
         vertex_fields.reserve(shader_vertex_fields.size());
 
         for(const auto& spirv_field : shader_vertex_fields) {
@@ -222,7 +222,7 @@ namespace nova::renderer::renderpack {
     }
 
     rx::optional<RhiGraphicsPipelineState> to_pipeline_state_create_info(const PipelineData& data, const Rendergraph& rendergraph) {
-        constexpr auto npos = rx::vector<RasterizerState>::k_npos;
+        constexpr auto npos = std::vector<RasterizerState>::k_npos;
 
         RhiGraphicsPipelineState info{};
 

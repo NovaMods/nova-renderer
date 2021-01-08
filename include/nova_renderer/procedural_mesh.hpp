@@ -37,7 +37,7 @@ namespace nova::renderer {
                        uint64_t index_buffer_size,
                        uint32_t num_in_flight_frames,
                        rhi::RenderDevice* device,
-                       const rx::string& name = "ProceduralMesh");
+                       const std::string& name = "ProceduralMesh");
 
         ProceduralMesh(ProceduralMesh&& old) noexcept;
         ProceduralMesh& operator=(ProceduralMesh&& old) noexcept;
@@ -79,10 +79,10 @@ namespace nova::renderer {
     private:
         rhi::RenderDevice* device = nullptr;
 
-        rx::string name;
+        std::string name;
 
-        rx::vector<rhi::RhiBuffer*> vertex_buffers;
-        rx::vector<rhi::RhiBuffer*> index_buffers;
+        std::vector<rhi::RhiBuffer*> vertex_buffers;
+        std::vector<rhi::RhiBuffer*> index_buffers;
 
         rhi::RhiBuffer* cached_vertex_buffer;
         rhi::RhiBuffer* cached_index_buffer;

@@ -6,8 +6,8 @@
 
 namespace nova::renderer::renderpack {
     struct ValidationReport {
-        rx::vector<rx::string> warnings;
-        rx::vector<rx::string> errors;
+        std::vector<std::string> warnings;
+        std::vector<std::string> errors;
 
         void merge_in(const ValidationReport& other);
     };
@@ -47,7 +47,7 @@ namespace nova::renderer::renderpack {
      *
      * \param format_json The JSON to validate
      */
-    ValidationReport validate_texture_format(const rx::json& format_json, const rx::string& texture_name);
+    ValidationReport validate_texture_format(const rx::json& format_json, const std::string& texture_name);
 
     /*!
      * \brief Validates that the provided JSON has all the fields it needed. Warnings about optional fields are

@@ -62,7 +62,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    rx::string descriptor_type_to_string(DescriptorType type) {
+    std::string descriptor_type_to_string(DescriptorType type) {
         switch(type) {
             case DescriptorType::CombinedImageSampler:
                 return "CombinedImageSampler";

@@ -12,13 +12,13 @@ namespace spirv_cross {
 } // namespace spirv_cross
 
 namespace nova::renderer {
-    rx::map<rx::string, rhi::RhiResourceBindingDescription> get_all_descriptors(const RhiGraphicsPipelineState& pipeline_state);
+    std::unordered_map<std::string, rhi::RhiResourceBindingDescription> get_all_descriptors(const RhiGraphicsPipelineState& pipeline_state);
 
-    void get_shader_module_descriptors(const rx::vector<uint32_t>& spirv,
+    void get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
                                        rhi::ShaderStage shader_stage,
-                                       rx::map<rx::string, rhi::RhiResourceBindingDescription>& bindings);
+                                       std::unordered_map<std::string, rhi::RhiResourceBindingDescription>& bindings);
 
-    void add_resource_to_bindings(rx::map<rx::string, rhi::RhiResourceBindingDescription>& bindings,
+    void add_resource_to_bindings(std::unordered_map<std::string, rhi::RhiResourceBindingDescription>& bindings,
                                   rhi::ShaderStage shader_stage,
                                   const spirv_cross::Compiler& shader_compiler,
                                   const spirv_cross::Resource& resource,

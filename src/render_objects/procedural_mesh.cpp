@@ -16,7 +16,7 @@ namespace nova::renderer {
                                    const uint64_t index_buffer_size,
                                    const uint32_t num_in_flight_frames,
                                    RenderDevice* device,
-                                   const rx::string& name)
+                                   const std::string& name)
         : device(device),
           name(name)
 #ifdef NOVA_DEBUG
@@ -35,21 +35,21 @@ namespace nova::renderer {
         vertex_buffers.resize(num_in_flight_frames);
         index_buffers.resize(num_in_flight_frames);
         for(uint32_t i = 0; i < num_in_flight_frames; i++) {
-            vertex_buffers[i] = device->create_buffer({rx::string::format("%sVertices%d", name, i),
+            vertex_buffers[i] = device->create_buffer({std::string::format("%sVertices%d", name, i),
                                                        vertex_buffer_size,
                                                        BufferUsage::VertexBuffer},
                                                       *allocator);
-            index_buffers[i] = device->create_buffer({rx::string::format("%sIndices%d", name, i),
+            index_buffers[i] = device->create_buffer({std::string::format("%sIndices%d", name, i),
                                                       index_buffer_size,
                                                       BufferUsage::IndexBuffer},
                                                      *allocator);
         }
 
-        cached_vertex_buffer = device->create_buffer({rx::string::format("%sStagingVertices", name),
+        cached_vertex_buffer = device->create_buffer({std::string::format("%sStagingVertices", name),
                                                       vertex_buffer_size,
                                                       BufferUsage::StagingBuffer},
                                                      *allocator);
-        cached_index_buffer = device->create_buffer({rx::string::format("%sStagingIndices", name),
+        cached_index_buffer = device->create_buffer({std::string::format("%sStagingIndices", name),
                                                      index_buffer_size,
                                                      BufferUsage::StagingBuffer},
                                                     *allocator);
@@ -141,7 +141,7 @@ namespace nova::renderer {
         auto* cur_vertex_buffer = vertex_buffers[frame_idx];
         auto* cur_index_buffer = index_buffers[frame_idx];
 
-        rx::vector<RhiResourceBarrier> barriers_before_upload;
+        std::vector<RhiResourceBarrier> barriers_before_upload;
 
         if(should_upload_vertex_buffer) {
             RhiResourceBarrier barrier_before_vertex_upload = {};
@@ -187,7 +187,7 @@ namespace nova::renderer {
             cmds->copy_buffer(cur_index_buffer, 0, cached_index_buffer, 0, num_index_bytes_to_upload);
         }
 
-        rx::vector<RhiResourceBarrier> barriers_after_upload;
+        std::vector<RhiResourceBarrier> barriers_after_upload;
 
         if(should_upload_vertex_buffer) {
             RhiResourceBarrier barrier_after_vertex_upload = {};

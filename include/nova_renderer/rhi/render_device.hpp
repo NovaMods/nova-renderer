@@ -97,7 +97,7 @@ namespace nova::renderer::rhi {
                                                                             rx::memory::allocator& allocator) = 0;
 
         [[nodiscard]] virtual RhiFramebuffer* create_framebuffer(const RhiRenderpass* renderpass,
-                                                                 const rx::vector<RhiImage*>& color_attachments,
+                                                                 const std::vector<RhiImage*>& color_attachments,
                                                                  const rx::optional<RhiImage*> depth_attachment,
                                                                  const glm::uvec2& framebuffer_size,
                                                                  rx::memory::allocator& allocator) = 0;
@@ -158,11 +158,11 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] virtual RhiSemaphore* create_semaphore(rx::memory::allocator& allocator) = 0;
 
-        [[nodiscard]] virtual rx::vector<RhiSemaphore*> create_semaphores(uint32_t num_semaphores, rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual std::vector<RhiSemaphore*> create_semaphores(uint32_t num_semaphores, rx::memory::allocator& allocator) = 0;
 
         [[nodiscard]] virtual RhiFence* create_fence(bool signaled, rx::memory::allocator& allocator) = 0;
 
-        [[nodiscard]] virtual rx::vector<RhiFence*> create_fences(uint32_t num_fences, bool signaled, rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual std::vector<RhiFence*> create_fences(uint32_t num_fences, bool signaled, rx::memory::allocator& allocator) = 0;
 
         /*!
          * \blocks the fence until all fences are signaled
@@ -171,9 +171,9 @@ namespace nova::renderer::rhi {
          *
          * \param fences All the fences to wait for
          */
-        virtual void wait_for_fences(rx::vector<RhiFence*> fences) = 0;
+        virtual void wait_for_fences(std::vector<RhiFence*> fences) = 0;
 
-        virtual void reset_fences(const rx::vector<RhiFence*>& fences) = 0;
+        virtual void reset_fences(const std::vector<RhiFence*>& fences) = 0;
 
         /*!
          * \brief Clean up any GPU objects a Renderpass may own
@@ -205,7 +205,7 @@ namespace nova::renderer::rhi {
          * While Semaphores are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
          * need to clean up their GPU objects
          */
-        virtual void destroy_semaphores(rx::vector<RhiSemaphore*>& semaphores, rx::memory::allocator& allocator) = 0;
+        virtual void destroy_semaphores(std::vector<RhiSemaphore*>& semaphores, rx::memory::allocator& allocator) = 0;
 
         /*!
          * \brief Clean up any GPU objects a Fence may own
@@ -213,7 +213,7 @@ namespace nova::renderer::rhi {
          * While Fence are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still need to
          * clean up their GPU objects
          */
-        virtual void destroy_fences(const rx::vector<RhiFence*>& fences, rx::memory::allocator& allocator) = 0;
+        virtual void destroy_fences(const std::vector<RhiFence*>& fences, rx::memory::allocator& allocator) = 0;
 
         [[nodiscard]] Swapchain* get_swapchain() const;
 
@@ -239,8 +239,8 @@ namespace nova::renderer::rhi {
         virtual void submit_command_list(RhiRenderCommandList* cmds,
                                          QueueType queue,
                                          RhiFence* fence_to_signal = nullptr,
-                                         const rx::vector<RhiSemaphore*>& wait_semaphores = {},
-                                         const rx::vector<RhiSemaphore*>& signal_semaphores = {}) = 0;
+                                         const std::vector<RhiSemaphore*>& wait_semaphores = {},
+                                         const std::vector<RhiSemaphore*>& signal_semaphores = {}) = 0;
 
         /*!
          * \brief Performs any work that's needed to end the provided frame

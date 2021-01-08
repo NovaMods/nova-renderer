@@ -41,7 +41,7 @@ namespace nova::renderer::renderpack {
     TextureCreateInfo TextureCreateInfo::from_json(const rx::json& json) {
         TextureCreateInfo info = {};
 
-        FILL_REQUIRED_FIELD(info.name, get_json_opt<rx::string>(json, "name"));
+        FILL_REQUIRED_FIELD(info.name, get_json_opt<std::string>(json, "name"));
         FILL_REQUIRED_FIELD(info.format, get_json_opt<TextureFormat>(json, "format"));
 
         return info;
@@ -63,7 +63,7 @@ namespace nova::renderer::renderpack {
     TextureAttachmentInfo TextureAttachmentInfo::from_json(const rx::json& json) {
         TextureAttachmentInfo info = {};
 
-        FILL_REQUIRED_FIELD(info.name, get_json_opt<rx::string>(json, "name"));
+        FILL_REQUIRED_FIELD(info.name, get_json_opt<std::string>(json, "name"));
         info.clear = get_json_value(json, "clear", false);
 
         return info;
@@ -72,14 +72,14 @@ namespace nova::renderer::renderpack {
     RenderPassCreateInfo RenderPassCreateInfo::from_json(const rx::json& json) {
         RenderPassCreateInfo info = {};
 
-        info.texture_inputs = get_json_array<rx::string>(json, "textureInputs");
+        info.texture_inputs = get_json_array<std::string>(json, "textureInputs");
         info.texture_outputs = get_json_array<TextureAttachmentInfo>(json, "textureOutputs");
         info.depth_texture = get_json_opt<TextureAttachmentInfo>(json, "depthTexture");
 
-        info.input_buffers = get_json_array<rx::string>(json, "inputBuffers");
-        info.output_buffers = get_json_array<rx::string>(json, "outputBuffers");
+        info.input_buffers = get_json_array<std::string>(json, "inputBuffers");
+        info.output_buffers = get_json_array<std::string>(json, "outputBuffers");
 
-        info.name = get_json_value<rx::string>(json, "name", "<NAME_MISSING>");
+        info.name = get_json_value<std::string>(json, "name", "<NAME_MISSING>");
 
         return info;
     }
@@ -88,7 +88,7 @@ namespace nova::renderer::renderpack {
         RendergraphData data;
 
         data.passes = get_json_array<RenderPassCreateInfo>(json, "passes");
-        data.builtin_passes = get_json_array<rx::string>(json, "builtinPasses");
+        data.builtin_passes = get_json_array<std::string>(json, "builtinPasses");
 
         return data;
     }
@@ -118,16 +118,16 @@ namespace nova::renderer::renderpack {
     PipelineData PipelineData::from_json(const rx::json& json) {
         PipelineData pipeline = {};
 
-        FILL_REQUIRED_FIELD(pipeline.name, get_json_opt<rx::string>(json, "name"));
-        FILL_REQUIRED_FIELD(pipeline.pass, get_json_opt<rx::string>(json, "pass"));
+        FILL_REQUIRED_FIELD(pipeline.name, get_json_opt<std::string>(json, "name"));
+        FILL_REQUIRED_FIELD(pipeline.pass, get_json_opt<std::string>(json, "pass"));
         pipeline.parent_name = get_json_value(json, "parent", "");
 
-        pipeline.defines = get_json_array<rx::string>(json, "defined");
+        pipeline.defines = get_json_array<std::string>(json, "defined");
 
         pipeline.states = get_json_array<RasterizerState>(json, "states", state_enum_from_json);
         pipeline.front_face = get_json_opt<StencilOpState>(json, "frontFace");
         pipeline.back_face = get_json_opt<StencilOpState>(json, "backFace");
-        pipeline.fallback = get_json_value<rx::string>(json, "fallback", {});
+        pipeline.fallback = get_json_value<std::string>(json, "fallback", {});
         pipeline.depth_bias = get_json_value<float>(json, "depthBias", 0);
         pipeline.slope_scaled_depth_bias = get_json_value<float>(json, "slopeScaledDepthBias", 0);
         pipeline.stencil_ref = get_json_value<uint32_t>(json, "stencilRef", 0);
@@ -159,27 +159,27 @@ namespace nova::renderer::renderpack {
 
         pipeline.scissor_mode = get_json_value<ScissorTestMode>(json, "scissorMode", ScissorTestMode::Off, scissor_test_mode_from_json);
 
-        pipeline.vertex_shader.filename = get_json_value<rx::string>(json, "vertexShader", "<NAME_MISSING>");
+        pipeline.vertex_shader.filename = get_json_value<std::string>(json, "vertexShader", "<NAME_MISSING>");
 
-        const auto geometry_shader_name = get_json_opt<rx::string>(json, "geometryShader");
+        const auto geometry_shader_name = get_json_opt<std::string>(json, "geometryShader");
         if(geometry_shader_name) {
             pipeline.geometry_shader = RenderpackShaderSource{};
             pipeline.geometry_shader->filename = *geometry_shader_name;
         }
 
-        const auto tess_control_shader_name = get_json_opt<rx::string>(json, "tessellationControlShader");
+        const auto tess_control_shader_name = get_json_opt<std::string>(json, "tessellationControlShader");
         if(tess_control_shader_name) {
             pipeline.tessellation_control_shader = RenderpackShaderSource{};
             pipeline.tessellation_control_shader->filename = *tess_control_shader_name;
         }
 
-        const auto tess_eval_shader_name = get_json_opt<rx::string>(json, "tessellationEvalShader");
+        const auto tess_eval_shader_name = get_json_opt<std::string>(json, "tessellationEvalShader");
         if(tess_eval_shader_name) {
             pipeline.tessellation_evaluation_shader = RenderpackShaderSource{};
             pipeline.tessellation_evaluation_shader->filename = *tess_eval_shader_name;
         }
 
-        const auto fragment_shader_name = get_json_opt<rx::string>(json, "fragmentShader");
+        const auto fragment_shader_name = get_json_opt<std::string>(json, "fragmentShader");
         if(fragment_shader_name) {
             pipeline.fragment_shader = RenderpackShaderSource{};
             pipeline.fragment_shader->filename = *fragment_shader_name;
@@ -200,15 +200,15 @@ namespace nova::renderer::renderpack {
         return {std::round(pixel_width), std::round(pixel_height)};
     }
 
-    rx::optional<rx::map<rx::string, rx::string>> map_from_json_object(const rx::json& json) {
-        rx::map<rx::string, rx::string> map;
+    rx::optional<std::unordered_map<std::string, std::string>> map_from_json_object(const rx::json& json) {
+        std::unordered_map<std::string, std::string> map;
 
         json.each([&](const rx::json& elem) {
-            rx::string shader_variable;
-            FILL_REQUIRED_FIELD(shader_variable, get_json_opt<rx::string>(elem, "variable"));
+            std::string shader_variable;
+            FILL_REQUIRED_FIELD(shader_variable, get_json_opt<std::string>(elem, "variable"));
 
-            rx::string resource_name;
-            FILL_REQUIRED_FIELD(resource_name, get_json_opt<rx::string>(elem, "resource"));
+            std::string resource_name;
+            FILL_REQUIRED_FIELD(resource_name, get_json_opt<std::string>(elem, "resource"));
 
             map.insert(shader_variable, resource_name);
         });
@@ -219,15 +219,15 @@ namespace nova::renderer::renderpack {
     MaterialPass MaterialPass::from_json(const rx::json& json) {
         MaterialPass pass = {};
 
-        FILL_REQUIRED_FIELD(pass.name, get_json_opt<rx::string>(json, "name"));
-        FILL_REQUIRED_FIELD(pass.pipeline, get_json_opt<rx::string>(json, "pipeline"));
+        FILL_REQUIRED_FIELD(pass.name, get_json_opt<std::string>(json, "name"));
+        FILL_REQUIRED_FIELD(pass.pipeline, get_json_opt<std::string>(json, "pipeline"));
 
-        const auto val = get_json_opt<rx::map<rx::string, rx::string>>(json, "bindings", map_from_json_object);
+        const auto val = get_json_opt<std::unordered_map<std::string, std::string>>(json, "bindings", map_from_json_object);
         if(val) {
             pass.bindings = *val;
         }
 
-        // FILL_REQUIRED_FIELD(pass.bindings, get_json_opt<rx::map<rx::string, rx::string>>(json, "bindings", map_from_json_object));
+        // FILL_REQUIRED_FIELD(pass.bindings, get_json_opt<std::unordered_map<std::string, std::string>>(json, "bindings", map_from_json_object));
 
         return pass;
     }
@@ -235,14 +235,14 @@ namespace nova::renderer::renderpack {
     MaterialData MaterialData::from_json(const rx::json& json) {
         MaterialData data = {};
 
-        FILL_REQUIRED_FIELD(data.name, get_json_opt<rx::string>(json, "name"));
+        FILL_REQUIRED_FIELD(data.name, get_json_opt<std::string>(json, "name"));
         data.passes = get_json_array<MaterialPass>(json, "passes");
-        FILL_REQUIRED_FIELD(data.geometry_filter, get_json_opt<rx::string>(json, "filter"));
+        FILL_REQUIRED_FIELD(data.geometry_filter, get_json_opt<std::string>(json, "filter"));
 
         return data;
     }
 
-    rhi::PixelFormat pixel_format_enum_from_string(const rx::string& str) {
+    rhi::PixelFormat pixel_format_enum_from_string(const std::string& str) {
         if(str == "RGBA8") {
             return rhi::PixelFormat::Rgba8;
         }
@@ -263,7 +263,7 @@ namespace nova::renderer::renderpack {
         return {};
     }
 
-    TextureDimensionType texture_dimension_type_enum_from_string(const rx::string& str) {
+    TextureDimensionType texture_dimension_type_enum_from_string(const std::string& str) {
         if(str == "ScreenRelative") {
             return TextureDimensionType ::ScreenRelative;
         }
@@ -275,7 +275,7 @@ namespace nova::renderer::renderpack {
         return {};
     }
 
-    TextureFilter texture_filter_enum_from_string(const rx::string& str) {
+    TextureFilter texture_filter_enum_from_string(const std::string& str) {
         if(str == "TexelAA") {
             return TextureFilter::TexelAA;
         }
@@ -290,7 +290,7 @@ namespace nova::renderer::renderpack {
         return {};
     }
 
-    WrapMode wrap_mode_enum_from_string(const rx::string& str) {
+    WrapMode wrap_mode_enum_from_string(const std::string& str) {
         if(str == "Repeat") {
             return WrapMode::Repeat;
         }
@@ -302,7 +302,7 @@ namespace nova::renderer::renderpack {
         return {};
     }
 
-    RPStencilOp stencil_op_enum_from_string(const rx::string& str) {
+    RPStencilOp stencil_op_enum_from_string(const std::string& str) {
         if(str == "Keep") {
             return RPStencilOp::Keep;
         }
@@ -332,7 +332,7 @@ namespace nova::renderer::renderpack {
         return {};
     }
 
-    RPCompareOp compare_op_enum_from_string(const rx::string& str) {
+    RPCompareOp compare_op_enum_from_string(const std::string& str) {
         if(str == "Never") {
             return RPCompareOp::Never;
         }
@@ -362,7 +362,7 @@ namespace nova::renderer::renderpack {
         return {};
     }
 
-    MsaaSupport msaa_support_enum_from_string(const rx::string& str) {
+    MsaaSupport msaa_support_enum_from_string(const std::string& str) {
         if(str == "MSAA") {
             return MsaaSupport::MSAA;
         }
@@ -377,7 +377,7 @@ namespace nova::renderer::renderpack {
         return {};
     }
 
-    RPPrimitiveTopology primitive_topology_enum_from_string(const rx::string& str) {
+    RPPrimitiveTopology primitive_topology_enum_from_string(const std::string& str) {
         if(str == "Triangles") {
             return RPPrimitiveTopology::Triangles;
         }
@@ -389,7 +389,7 @@ namespace nova::renderer::renderpack {
         return {};
     }
 
-    RPBlendFactor blend_factor_enum_from_string(const rx::string& str) {
+    RPBlendFactor blend_factor_enum_from_string(const std::string& str) {
         if(str == "One") {
             return RPBlendFactor::One;
         }
@@ -425,7 +425,7 @@ namespace nova::renderer::renderpack {
         return {};
     }
 
-    RenderQueue render_queue_enum_from_string(const rx::string& str) {
+    RenderQueue render_queue_enum_from_string(const std::string& str) {
         if(str == "Transparent") {
             return RenderQueue::Transparent;
         }
@@ -440,7 +440,7 @@ namespace nova::renderer::renderpack {
         return {};
     }
 
-    ScissorTestMode scissor_test_mode_from_string(const rx::string& str) {
+    ScissorTestMode scissor_test_mode_from_string(const std::string& str) {
         if(str == "Off") {
             return ScissorTestMode::Off;
 
@@ -455,7 +455,7 @@ namespace nova::renderer::renderpack {
         return {};
     }
 
-    RasterizerState state_enum_from_string(const rx::string& str) {
+    RasterizerState state_enum_from_string(const std::string& str) {
         if(str == "Blending") {
             return RasterizerState::Blending;
         }
@@ -517,7 +517,7 @@ namespace nova::renderer::renderpack {
 
     RasterizerState state_enum_from_json(const rx::json& j) { return state_enum_from_string(j.as_string()); }
 
-    rx::string to_string(const rhi::PixelFormat val) {
+    std::string to_string(const rhi::PixelFormat val) {
         switch(val) {
             case rhi::PixelFormat::Rgba8:
                 return "RGBA8";
@@ -538,7 +538,7 @@ namespace nova::renderer::renderpack {
         return "Unknown value";
     }
 
-    rx::string to_string(const TextureDimensionType val) {
+    std::string to_string(const TextureDimensionType val) {
         switch(val) {
             case TextureDimensionType::ScreenRelative:
                 return "ScreenRelative";
@@ -550,7 +550,7 @@ namespace nova::renderer::renderpack {
         return "Unknown value";
     }
 
-    rx::string to_string(const TextureFilter val) {
+    std::string to_string(const TextureFilter val) {
         switch(val) {
             case TextureFilter::TexelAA:
                 return "TexelAA";
@@ -565,7 +565,7 @@ namespace nova::renderer::renderpack {
         return "Unknown value";
     }
 
-    rx::string to_string(const WrapMode val) {
+    std::string to_string(const WrapMode val) {
         switch(val) {
             case WrapMode::Repeat:
                 return "Repeat";
@@ -577,7 +577,7 @@ namespace nova::renderer::renderpack {
         return "Unknown value";
     }
 
-    rx::string to_string(const RPStencilOp val) {
+    std::string to_string(const RPStencilOp val) {
         switch(val) {
             case RPStencilOp::Keep:
                 return "Keep";
@@ -607,7 +607,7 @@ namespace nova::renderer::renderpack {
         return "Unknown value";
     }
 
-    rx::string to_string(const RPCompareOp val) {
+    std::string to_string(const RPCompareOp val) {
         switch(val) {
             case RPCompareOp::Never:
                 return "Never";
@@ -637,7 +637,7 @@ namespace nova::renderer::renderpack {
         return "Unknown value";
     }
 
-    rx::string to_string(const MsaaSupport val) {
+    std::string to_string(const MsaaSupport val) {
         switch(val) {
             case MsaaSupport::MSAA:
                 return "MSAA";
@@ -652,7 +652,7 @@ namespace nova::renderer::renderpack {
         return "Unknown value";
     }
 
-    rx::string to_string(const RPPrimitiveTopology val) {
+    std::string to_string(const RPPrimitiveTopology val) {
         switch(val) {
             case RPPrimitiveTopology::Triangles:
                 return "Triangles";
@@ -664,7 +664,7 @@ namespace nova::renderer::renderpack {
         return "Unknown value";
     }
 
-    rx::string to_string(const RPBlendFactor val) {
+    std::string to_string(const RPBlendFactor val) {
         switch(val) {
             case RPBlendFactor::One:
                 return "One";
@@ -700,7 +700,7 @@ namespace nova::renderer::renderpack {
         return "Unknown value";
     }
 
-    rx::string to_string(const RenderQueue val) {
+    std::string to_string(const RenderQueue val) {
         switch(val) {
             case RenderQueue::Transparent:
                 return "Transparent";
@@ -715,7 +715,7 @@ namespace nova::renderer::renderpack {
         return "Unknown value";
     }
 
-    rx::string to_string(const RasterizerState val) {
+    std::string to_string(const RasterizerState val) {
         switch(val) {
             case RasterizerState::Blending:
                 return "Blending";

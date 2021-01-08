@@ -13,7 +13,7 @@ namespace nova::renderer {
     public:
         MapAccessor() = default;
 
-        MapAccessor(rx::map<KeyType, ValueType> * map, const KeyType& key) : map(map), key(key) {}
+        MapAccessor(std::unordered_map<KeyType, ValueType> * map, const KeyType& key) : map(map), key(key) {}
 
         MapAccessor(const MapAccessor& other) = default;
         MapAccessor& operator=(const MapAccessor& other) = default;
@@ -30,7 +30,7 @@ namespace nova::renderer {
         [[nodiscard]] const KeyType& get_key() const { return key; }
 
     private:
-        rx::map<KeyType, ValueType>* map = nullptr;
+        std::unordered_map<KeyType, ValueType>* map = nullptr;
         KeyType key = {};
     };
 
@@ -39,7 +39,7 @@ namespace nova::renderer {
     public:
         VectorAccessor() = default;
 
-        VectorAccessor(rx::vector<ValueType>* vec, const size_t idx) : vec(vec), idx(idx) {}
+        VectorAccessor(std::vector<ValueType>* vec, const size_t idx) : vec(vec), idx(idx) {}
 
         VectorAccessor(const VectorAccessor& other) = default;
         VectorAccessor& operator=(const VectorAccessor& other) = default;
@@ -58,7 +58,7 @@ namespace nova::renderer {
         [[nodiscard]] const size_t& get_idx() const { return idx; }
 
     private:
-        rx::vector<ValueType>* vec = nullptr;
+        std::vector<ValueType>* vec = nullptr;
         size_t idx = 0;
     };
 } // namespace nova::renderer

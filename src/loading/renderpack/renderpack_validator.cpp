@@ -45,15 +45,15 @@ namespace nova::renderer::renderpack {
                                                         "geometryShader"};
     ;
 
-    const rx::array<rx::string[3]> required_graphics_pipeline_fields = {"name", "pass", "vertexShader"};
+    const rx::array<std::string[3]> required_graphics_pipeline_fields = {"name", "pass", "vertexShader"};
 
-    const rx::array<rx::string[2]> required_texture_fields = {"pixelFormat", "dimensionType"};
+    const rx::array<std::string[2]> required_texture_fields = {"pixelFormat", "dimensionType"};
 
     void ensure_field_exists(
-        rx::json& j, const rx::string& field_name, const rx::string& context, const rx::json& default_value, ValidationReport& report);
+        rx::json& j, const std::string& field_name, const std::string& context, const rx::json& default_value, ValidationReport& report);
 
-    static rx::string pipeline_msg(const rx::string& name, const rx::string& field_name) {
-        return rx::string::format("Pipeline %s: Missing field %s", name, field_name);
+    static std::string pipeline_msg(const std::string& name, const std::string& field_name) {
+        return std::string::format("Pipeline %s: Missing field %s", name, field_name);
     }
 
     ValidationReport validate_graphics_pipeline(rx::json& pipeline_json) {
@@ -62,11 +62,11 @@ namespace nova::renderer::renderpack {
         const auto name = name_json ? name_json.as_string() : "<NAME_MISSING>";
         // Don't need to check for the name's existence here, it'll be checked with the rest of the required fields
 
-        const rx::string pipeline_context = rx::string::format("Pipeline %s", name);
+        const std::string pipeline_context = std::string::format("Pipeline %s", name);
         // Check non-required fields first
         for(uint32_t i = 0; i < NUM_REQUIRED_FIELDS; i++) {
             if(!pipeline_json[required_fields[i]]) {
-                report.warnings.emplace_back(rx::string::format("%s: Missing optional field %s", pipeline_context, required_fields[i]));
+                report.warnings.emplace_back(std::string::format("%s: Missing optional field %s", pipeline_context, required_fields[i]));
             }
         }
 
@@ -82,7 +82,7 @@ namespace nova::renderer::renderpack {
         return report;
     }
 
-    static rx::string resources_msg(const rx::string& msg) { return rx::string::format("Resources file: %s", msg); }
+    static std::string resources_msg(const std::string& msg) { return std::string::format("Resources file: %s", msg); }
 
     ValidationReport validate_renderpack_resources_data(rx::json& resources_json) {
         ValidationReport report;
@@ -122,12 +122,12 @@ namespace nova::renderer::renderpack {
         return report;
     }
 
-    static rx::string texture_msg(const rx::string& name, const rx::string& msg) { return rx::string::format("Texture %s: %s", name, msg); }
+    static std::string texture_msg(const std::string& name, const std::string& msg) { return std::string::format("Texture %s: %s", name, msg); }
 
     ValidationReport validate_texture_data(const rx::json& texture_json) {
         ValidationReport report;
         const auto name_json = texture_json["name"];
-        rx::string name;
+        std::string name;
         if(name_json) {
             name = name_json.as_string();
         } else {
@@ -147,17 +147,17 @@ namespace nova::renderer::renderpack {
         return report;
     }
 
-    static rx::string format_msg(const rx::string& tex_name, const rx::string& msg) {
-        return rx::string::format("Format of texture %s: %s", tex_name, msg);
+    static std::string format_msg(const std::string& tex_name, const std::string& msg) {
+        return std::string::format("Format of texture %s: %s", tex_name, msg);
     }
 
-    ValidationReport validate_texture_format(const rx::json& format_json, const rx::string& texture_name) {
+    ValidationReport validate_texture_format(const rx::json& format_json, const std::string& texture_name) {
         ValidationReport report;
 
-        const rx::string context = rx::string::format("Format of texture %s", texture_name);
+        const std::string context = std::string::format("Format of texture %s", texture_name);
         for(uint32_t i = 0; i < required_texture_fields.size(); i++) {
             if(!format_json[required_texture_fields[i].data()]) {
-                report.warnings.emplace_back(rx::string::format("%s: Missing required field %s", context, required_texture_fields[i]));
+                report.warnings.emplace_back(std::string::format("%s: Missing required field %s", context, required_texture_fields[i]));
             }
         }
 
@@ -174,11 +174,11 @@ namespace nova::renderer::renderpack {
         return report;
     }
 
-    static rx::string sampler_msg(const rx::string& name, const rx::string& msg) { return rx::string::format("Sampler %s: %s", name, msg); }
+    static std::string sampler_msg(const std::string& name, const std::string& msg) { return std::string::format("Sampler %s: %s", name, msg); }
 
     ValidationReport validate_sampler_data(const rx::json& sampler_json) {
         ValidationReport report;
-        const rx::string name = get_json_value<rx::string>(sampler_json, "name", "<NAME_MISSING>");
+        const std::string name = get_json_value<std::string>(sampler_json, "name", "<NAME_MISSING>");
         if(name == "<NAME_MISSING>") {
             report.errors.emplace_back(sampler_msg(name, "Missing field name"));
         }
@@ -196,18 +196,18 @@ namespace nova::renderer::renderpack {
         return report;
     }
 
-    static rx::string material_msg(const rx::string& name, const rx::string& msg) {
-        return rx::string::format("Material %s: %s", name, msg);
+    static std::string material_msg(const std::string& name, const std::string& msg) {
+        return std::string::format("Material %s: %s", name, msg);
     }
-    static rx::string material_pass_msg(const rx::string& mat_name, const rx::string& pass_name, const rx::string& error) {
-        return rx::string::format("Material pass %s in material %s: %s", pass_name, mat_name, error);
+    static std::string material_pass_msg(const std::string& mat_name, const std::string& pass_name, const std::string& error) {
+        return std::string::format("Material pass %s in material %s: %s", pass_name, mat_name, error);
     }
 
     ValidationReport validate_material(const rx::json& material_json) {
         ValidationReport report;
 
         const auto name_maybe = material_json["name"];
-        rx::string name = "<NAME_MISSING>";
+        std::string name = "<NAME_MISSING>";
         if(!name_maybe) {
             report.errors.emplace_back(material_msg("<NAME_MISSING>", "Missing material name"));
         } else {
@@ -235,7 +235,7 @@ namespace nova::renderer::renderpack {
 
             passes_json.each([&](const rx::json& pass_json) {
                 const auto pass_name_maybe = pass_json["name"];
-                rx::string pass_name = "<NAME_MISSING>";
+                std::string pass_name = "<NAME_MISSING>";
                 if(!pass_name_maybe) {
                     report.errors.emplace_back(material_pass_msg(name, pass_name, "Missing field name"));
                 } else {
@@ -261,7 +261,7 @@ namespace nova::renderer::renderpack {
     }
 
     void ensure_field_exists(
-        rx::json& j, const char* field_name, const rx::string& context, const rx::json& default_value, ValidationReport& report) {
+        rx::json& j, const char* field_name, const std::string& context, const rx::json& default_value, ValidationReport& report) {
         if(!j[field_name]) {
             j[field_name] = default_value[field_name];
             size_t out_size;
@@ -271,9 +271,9 @@ namespace nova::renderer::renderpack {
     }
 
     void print(const ValidationReport& report) {
-        report.errors.each_fwd([&](const rx::string& error) { logger->error("%s", error); });
+        report.errors.each_fwd([&](const std::string& error) { logger->error("%s", error); });
 
-        report.warnings.each_fwd([&](const rx::string& warning) { logger->verbose("%s", warning); });
+        report.warnings.each_fwd([&](const std::string& warning) { logger->verbose("%s", warning); });
     }
 
     void ValidationReport::merge_in(const ValidationReport& other) {

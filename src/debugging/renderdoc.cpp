@@ -19,12 +19,12 @@
 namespace nova::renderer {
     RX_LOG("RenderDoc", logger);
 
-    ntl::Result<RENDERDOC_API_1_3_0*> load_renderdoc(const rx::string& renderdoc_dll_path) {
+    ntl::Result<RENDERDOC_API_1_3_0*> load_renderdoc(const std::string& renderdoc_dll_path) {
 #if defined(NOVA_WINDOWS)
         using Hinstance = HINSTANCE__* const;
         Hinstance renderdoc_dll = LoadLibrary(renderdoc_dll_path.data());
         if(!renderdoc_dll) {
-            const rx::string error = get_last_windows_error();
+            const std::string error = get_last_windows_error();
             return ntl::Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc. Error: %s", error));
         }
 
@@ -32,7 +32,7 @@ namespace nova::renderer {
 
         const auto get_api = reinterpret_cast<pRENDERDOC_GetAPI>(GetProcAddress(renderdoc_dll, "RENDERDOC_GetAPI"));
         if(!get_api) {
-            const rx::string error = get_last_windows_error();
+            const std::string error = get_last_windows_error();
             return ntl::Result<RENDERDOC_API_1_3_0*>(MAKE_ERROR("Could not load RenderDoc DLL. Error: %s", error));
         }
 

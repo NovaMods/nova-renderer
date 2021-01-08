@@ -22,14 +22,14 @@ namespace nova::renderer::renderpack {
      * \param renderpack_name The name of the renderpack to loads
      * \return The renderpack, if it can be loaded, or an empty optional if it cannot
      */
-    RenderpackData load_renderpack_data(const rx::string& renderpack_name);
+    RenderpackData load_renderpack_data(const std::string& renderpack_name);
 
-    rx::vector<uint32_t> load_shader_file(const rx::string& filename,
+    std::vector<uint32_t> load_shader_file(const std::string& filename,
                                           filesystem::FolderAccessorBase* folder_access,
                                           rhi::ShaderStage stage,
-                                          const rx::vector<rx::string>& defines = {});
+                                          const std::vector<std::string>& defines = {});
 
-    rx::vector<uint32_t> compile_shader(const rx::string& source,
+    std::vector<uint32_t> compile_shader(const std::string& source,
                                         rhi::ShaderStage stage,
                                         rhi::ShaderLanguage source_language,
                                         filesystem::FolderAccessorBase* folder_accessor = nullptr);

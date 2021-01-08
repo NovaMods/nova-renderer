@@ -79,7 +79,7 @@ namespace nova::renderer {
     struct RenderableMetadata {
         RenderableId id = 0;
 
-        rx::vector<rx::string> passes{};
+        std::vector<std::string> passes{};
     };
 
     struct RenderCommand {

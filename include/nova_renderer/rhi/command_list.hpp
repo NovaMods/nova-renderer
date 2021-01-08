@@ -52,7 +52,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Sets the debug name of this command list, so that API debugging tools can give you a nice name
          */
-        virtual void set_debug_name(const rx::string& name) = 0;
+        virtual void set_debug_name(const std::string& name) = 0;
 
         /*!
          * \brief Bind the buffers of all the resources that Nova needs to render an object
@@ -62,7 +62,7 @@ namespace nova::renderer::rhi {
                                              RhiSampler* point_sampler,
                                              RhiSampler* bilinear_sampler,
                                              RhiSampler* trilinear_sampler,
-                                             const rx::vector<RhiImage*>& images,
+                                             const std::vector<RhiImage*>& images,
                                              rx::memory::allocator& allocator) = 0;
 
         /*!
@@ -80,7 +80,7 @@ namespace nova::renderer::rhi {
          */
         virtual void resource_barriers(PipelineStage stages_before_barrier,
                                        PipelineStage stages_after_barrier,
-                                       const rx::vector<RhiResourceBarrier>& barriers) = 0;
+                                       const std::vector<RhiResourceBarrier>& barriers) = 0;
 
         /*!
          * \brief Records a command to copy one region of a buffer to another buffer
@@ -128,7 +128,7 @@ namespace nova::renderer::rhi {
          * These command lists should be secondary command lists. Nova doesn't validate this because yolo but you need
          * to be nice - the API-specific validation layers _will_ yell at you
          */
-        virtual void execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) = 0;
+        virtual void execute_command_lists(const std::vector<RhiRenderCommandList*>& lists) = 0;
 
         /*!
          * \brief Sets the camera that subsequent drawcalls will use to render
@@ -153,7 +153,7 @@ namespace nova::renderer::rhi {
 
         virtual void set_pipeline(const RhiPipeline& pipeline) = 0;
 
-        virtual void bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets,
+        virtual void bind_descriptor_sets(const std::vector<RhiDescriptorSet*>& descriptor_sets,
                                           const RhiPipelineInterface* pipeline_interface) = 0;
 
         /*!
@@ -164,7 +164,7 @@ namespace nova::renderer::rhi {
          *
          * \param buffers The buffers to bind
          */
-        virtual void bind_vertex_buffers(const rx::vector<RhiBuffer*>& buffers) = 0;
+        virtual void bind_vertex_buffers(const std::vector<RhiBuffer*>& buffers) = 0;
 
         /*!
          * \brief Binds the provided index buffer to the command list

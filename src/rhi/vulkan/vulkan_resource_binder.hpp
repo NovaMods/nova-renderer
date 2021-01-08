@@ -24,8 +24,8 @@ namespace nova::renderer::rhi {
     public:
 #pragma region Lifecycle
         VulkanResourceBinder(VulkanRenderDevice& device,
-                             rx::map<rx::string, RhiResourceBindingDescription> bindings,
-                             rx::vector<vk::DescriptorSet> sets,
+                             std::unordered_map<std::string, RhiResourceBindingDescription> bindings,
+                             std::vector<vk::DescriptorSet> sets,
                              vk::PipelineLayout layout,
                              rx::memory::allocator& allocator);
 
@@ -39,22 +39,22 @@ namespace nova::renderer::rhi {
 #pragma endregion
 
 #pragma region RhiResourceBinder
-        void bind_image(const rx::string& binding_name, RhiImage* image) override;
+        void bind_image(const std::string& binding_name, RhiImage* image) override;
 
-        void bind_buffer(const rx::string& binding_name, RhiBuffer* buffer) override;
+        void bind_buffer(const std::string& binding_name, RhiBuffer* buffer) override;
 
-        void bind_sampler(const rx::string& binding_name, RhiSampler* sampler) override;
+        void bind_sampler(const std::string& binding_name, RhiSampler* sampler) override;
 
-        void bind_image_array(const rx::string& binding_name, const rx::vector<RhiImage*>& images) override;
+        void bind_image_array(const std::string& binding_name, const std::vector<RhiImage*>& images) override;
 
-        void bind_buffer_array(const rx::string& binding_name, const rx::vector<RhiBuffer*>& buffers) override;
+        void bind_buffer_array(const std::string& binding_name, const std::vector<RhiBuffer*>& buffers) override;
 
-        void bind_sampler_array(const rx::string& binding_name, const rx::vector<RhiSampler*>& samplers) override;
+        void bind_sampler_array(const std::string& binding_name, const std::vector<RhiSampler*>& samplers) override;
 #pragma endregion
 
         [[nodiscard]] vk::PipelineLayout get_layout() const;
 
-        [[nodiscard]] const rx::vector<vk::DescriptorSet>& get_sets();
+        [[nodiscard]] const std::vector<vk::DescriptorSet>& get_sets();
 
     private:
         bool dirty = false;
@@ -71,13 +71,13 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Descriptor sets for this binder
          */
-        rx::vector<vk::DescriptorSet> sets;
+        std::vector<vk::DescriptorSet> sets;
 
-        rx::map<rx::string, RhiResourceBindingDescription> bindings;
+        std::unordered_map<std::string, RhiResourceBindingDescription> bindings;
 
-        rx::map<rx::string, rx::vector<RhiImage*>> bound_images;
-        rx::map<rx::string, rx::vector<RhiBuffer*>> bound_buffers;
-        rx::map<rx::string, rx::vector<RhiSampler*>> bound_samplers;
+        std::unordered_map<std::string, std::vector<RhiImage*>> bound_images;
+        std::unordered_map<std::string, std::vector<RhiBuffer*>> bound_buffers;
+        std::unordered_map<std::string, std::vector<RhiSampler*>> bound_samplers;
 
         void update_all_descriptors();
     };

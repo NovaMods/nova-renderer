@@ -44,14 +44,14 @@ namespace nova::renderer::rhi {
 
     vk::ShaderStageFlags to_vk_shader_stage_flags(ShaderStage flags);
 
-    rx::string to_string(VkResult result);
+    std::string to_string(VkResult result);
 
-    rx::string to_string(VkObjectType obj_type);
+    std::string to_string(VkObjectType obj_type);
 
     [[nodiscard]] VkFormat to_vk_vertex_format(VertexFieldFormat field);
 
-    [[nodiscard]] rx::vector<vk::DescriptorSetLayout> create_descriptor_set_layouts(
-        const rx::map<rx::string, RhiResourceBindingDescription>& all_bindings,
+    [[nodiscard]] std::vector<vk::DescriptorSetLayout> create_descriptor_set_layouts(
+        const std::unordered_map<std::string, RhiResourceBindingDescription>& all_bindings,
         VulkanRenderDevice& render_device,
         rx::memory::allocator& allocator);;
 

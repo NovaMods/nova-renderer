@@ -136,7 +136,7 @@ namespace nova::renderer::renderpack {
      * At the time of writing I'm not sure how this is correlated with a texture, but all well
      */
     struct SamplerCreateInfo {
-        rx::string name;
+        std::string name;
 
         /*!
          * \brief What kind of texture filter to use
@@ -166,8 +166,8 @@ namespace nova::renderer::renderpack {
     };
 
     struct RenderpackShaderSource {
-        rx::string filename;
-        rx::vector<uint32_t> source;
+        std::string filename;
+        std::vector<uint32_t> source;
     };
 
     /*!
@@ -177,27 +177,27 @@ namespace nova::renderer::renderpack {
         /*!
          * \brief The name of this pipeline
          */
-        rx::string name;
+        std::string name;
 
         /*!
          * \brief The pipeline that this pipeline inherits from
          */
-        rx::optional<rx::string> parent_name;
+        rx::optional<std::string> parent_name;
 
         /*!
          * \brief The name of the pass that this pipeline belongs to
          */
-        rx::string pass;
+        std::string pass;
 
         /*!
          * \brief All of the symbols in the shader that are defined by this state
          */
-        rx::vector<rx::string> defines{};
+        std::vector<std::string> defines{};
 
         /*!
          * \brief Defines the rasterizer state that's active for this pipeline
          */
-        rx::vector<RasterizerState> states{};
+        std::vector<RasterizerState> states{};
 
         /*!
          * \brief The stencil buffer operations to perform on the front faces
@@ -212,7 +212,7 @@ namespace nova::renderer::renderpack {
         /*!
          * \brief The material to use if this one's shaders can't be found
          */
-        rx::optional<rx::string> fallback;
+        rx::optional<std::string> fallback;
 
         /*!
          * \brief A bias to apply to the depth
@@ -362,7 +362,7 @@ namespace nova::renderer::renderpack {
          * If you use one of the virtual textures, then all fields except the binding are ignored
          * If you use `NovaFinal`, then all fields are ignored since the backbuffer is always bound to output location 0
          */
-        rx::string name;
+        std::string name;
 
         // TODO: Renderpack developers shouldn't have to worry about this
         ImageUsage usage;
@@ -373,8 +373,8 @@ namespace nova::renderer::renderpack {
     };
 
     struct RenderpackResourcesData {
-        rx::vector<TextureCreateInfo> render_targets;
-        rx::vector<SamplerCreateInfo> samplers;
+        std::vector<TextureCreateInfo> render_targets;
+        std::vector<SamplerCreateInfo> samplers;
 
         static RenderpackResourcesData from_json(const rx::json& json);
     };
@@ -386,7 +386,7 @@ namespace nova::renderer::renderpack {
         /*!
          * \brief The name of the texture
          */
-        rx::string name{};
+        std::string name{};
 
         rhi::PixelFormat pixel_format;
 
@@ -427,17 +427,17 @@ namespace nova::renderer::renderpack {
         /*!
          * \brief The name of this render pass
          */
-        rx::string name;
+        std::string name;
 
         /*!
          * \brief The textures that this pass will read from
          */
-        rx::vector<rx::string> texture_inputs{};
+        std::vector<std::string> texture_inputs{};
 
         /*!
          * \brief The textures that this pass will write to
          */
-        rx::vector<TextureAttachmentInfo> texture_outputs{};
+        std::vector<TextureAttachmentInfo> texture_outputs{};
 
         /*!
          * \brief The depth texture this pass will write to
@@ -447,17 +447,17 @@ namespace nova::renderer::renderpack {
         /*!
          * \brief All the buffers that this renderpass reads from
          */
-        rx::vector<rx::string> input_buffers{};
+        std::vector<std::string> input_buffers{};
 
         /*!
          * \brief All the buffers that this renderpass writes to
          */
-        rx::vector<rx::string> output_buffers{};
+        std::vector<std::string> output_buffers{};
 
         /*!
          * \brief Names of all the pipelines that use this renderpass
          */
-        rx::vector<rx::string> pipeline_names;
+        std::vector<std::string> pipeline_names;
 
         RenderPassCreateInfo() = default;
 
@@ -471,22 +471,22 @@ namespace nova::renderer::renderpack {
         /*!
          * \brief The renderpack-supplied passes
          */
-        rx::vector<RenderPassCreateInfo> passes;
+        std::vector<RenderPassCreateInfo> passes;
 
         /*!
          * \brief Names of all the builtin renderpasses that the renderpack wants to use
          */
-        rx::vector<rx::string> builtin_passes;
+        std::vector<std::string> builtin_passes;
 
         static RendergraphData from_json(const rx::json& json);
     };
 
     struct MaterialPass {
-        rx::string name;
-        rx::string material_name;
-        rx::string pipeline;
+        std::string name;
+        std::string material_name;
+        std::string pipeline;
 
-        rx::map<rx::string, rx::string> bindings;
+        std::unordered_map<std::string, std::string> bindings;
 
         /*!
          * \brief All the descriptor sets needed to bind everything used by this material to its pipeline
@@ -495,15 +495,15 @@ namespace nova::renderer::renderpack {
          * descriptor sets is allowed, although the result won't show up on screen for a couple frames because Nova
          * (will) copies its descriptor sets to each in-flight frame
          */
-        rx::vector<VkDescriptorSet> descriptor_sets;
+        std::vector<VkDescriptorSet> descriptor_sets;
 
         static MaterialPass from_json(const rx::json& json);
     };
 
     struct MaterialData {
-        rx::string name;
-        rx::vector<MaterialPass> passes;
-        rx::string geometry_filter;
+        std::string name;
+        std::vector<MaterialPass> passes;
+        std::string geometry_filter;
 
         static MaterialData from_json(const rx::json& json);
     };
@@ -512,32 +512,32 @@ namespace nova::renderer::renderpack {
      * \brief All the data that can be in a renderpack
      */
     struct RenderpackData {
-        rx::vector<PipelineData> pipelines;
+        std::vector<PipelineData> pipelines;
 
         /*!
          * \brief All the renderpasses that this renderpack needs, in submission order
          */
         RendergraphData graph_data;
 
-        rx::vector<MaterialData> materials;
+        std::vector<MaterialData> materials;
 
         RenderpackResourcesData resources;
 
-        rx::string name;
+        std::string name;
     };
 
-    [[nodiscard]] rhi::PixelFormat pixel_format_enum_from_string(const rx::string& str);
-    [[nodiscard]] TextureDimensionType texture_dimension_type_enum_from_string(const rx::string& str);
-    [[nodiscard]] TextureFilter texture_filter_enum_from_string(const rx::string& str);
-    [[nodiscard]] WrapMode wrap_mode_enum_from_string(const rx::string& str);
-    [[nodiscard]] RPStencilOp stencil_op_enum_from_string(const rx::string& str);
-    [[nodiscard]] RPCompareOp compare_op_enum_from_string(const rx::string& str);
-    [[nodiscard]] MsaaSupport msaa_support_enum_from_string(const rx::string& str);
-    [[nodiscard]] RPPrimitiveTopology primitive_topology_enum_from_string(const rx::string& str);
-    [[nodiscard]] RPBlendFactor blend_factor_enum_from_string(const rx::string& str);
-    [[nodiscard]] RenderQueue render_queue_enum_from_string(const rx::string& str);
-    [[nodiscard]] ScissorTestMode scissor_test_mode_from_string(const rx::string& str);
-    [[nodiscard]] RasterizerState state_enum_from_string(const rx::string& str);
+    [[nodiscard]] rhi::PixelFormat pixel_format_enum_from_string(const std::string& str);
+    [[nodiscard]] TextureDimensionType texture_dimension_type_enum_from_string(const std::string& str);
+    [[nodiscard]] TextureFilter texture_filter_enum_from_string(const std::string& str);
+    [[nodiscard]] WrapMode wrap_mode_enum_from_string(const std::string& str);
+    [[nodiscard]] RPStencilOp stencil_op_enum_from_string(const std::string& str);
+    [[nodiscard]] RPCompareOp compare_op_enum_from_string(const std::string& str);
+    [[nodiscard]] MsaaSupport msaa_support_enum_from_string(const std::string& str);
+    [[nodiscard]] RPPrimitiveTopology primitive_topology_enum_from_string(const std::string& str);
+    [[nodiscard]] RPBlendFactor blend_factor_enum_from_string(const std::string& str);
+    [[nodiscard]] RenderQueue render_queue_enum_from_string(const std::string& str);
+    [[nodiscard]] ScissorTestMode scissor_test_mode_from_string(const std::string& str);
+    [[nodiscard]] RasterizerState state_enum_from_string(const std::string& str);
 
     [[nodiscard]] rhi::PixelFormat pixel_format_enum_from_json(const rx::json& j);
     [[nodiscard]] TextureDimensionType texture_dimension_type_enum_from_json(const rx::json& j);
@@ -552,17 +552,17 @@ namespace nova::renderer::renderpack {
     [[nodiscard]] ScissorTestMode scissor_test_mode_from_json(const rx::json& j);
     [[nodiscard]] RasterizerState state_enum_from_json(const rx::json& j);
 
-    [[nodiscard]] rx::string to_string(rhi::PixelFormat val);
-    [[nodiscard]] rx::string to_string(TextureDimensionType val);
-    [[nodiscard]] rx::string to_string(TextureFilter val);
-    [[nodiscard]] rx::string to_string(WrapMode val);
-    [[nodiscard]] rx::string to_string(RPStencilOp val);
-    [[nodiscard]] rx::string to_string(RPCompareOp val);
-    [[nodiscard]] rx::string to_string(MsaaSupport val);
-    [[nodiscard]] rx::string to_string(RPPrimitiveTopology val);
-    [[nodiscard]] rx::string to_string(RPBlendFactor val);
-    [[nodiscard]] rx::string to_string(RenderQueue val);
-    [[nodiscard]] rx::string to_string(RasterizerState val);
+    [[nodiscard]] std::string to_string(rhi::PixelFormat val);
+    [[nodiscard]] std::string to_string(TextureDimensionType val);
+    [[nodiscard]] std::string to_string(TextureFilter val);
+    [[nodiscard]] std::string to_string(WrapMode val);
+    [[nodiscard]] std::string to_string(RPStencilOp val);
+    [[nodiscard]] std::string to_string(RPCompareOp val);
+    [[nodiscard]] std::string to_string(MsaaSupport val);
+    [[nodiscard]] std::string to_string(RPPrimitiveTopology val);
+    [[nodiscard]] std::string to_string(RPBlendFactor val);
+    [[nodiscard]] std::string to_string(RenderQueue val);
+    [[nodiscard]] std::string to_string(RasterizerState val);
 
     [[nodiscard]] uint32_t pixel_format_to_pixel_width(rhi::PixelFormat format);
 } // namespace nova::renderer::renderpack

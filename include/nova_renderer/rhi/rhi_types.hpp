@@ -11,7 +11,7 @@ namespace nova::renderer::rhi {
 
 #pragma region Structs
     struct RhiBufferCreateInfo {
-        rx::string name;
+        std::string name;
 
         mem::Bytes size = 0;
 
@@ -67,11 +67,11 @@ namespace nova::renderer::rhi {
         RhiSampler* point_sampler;
         RhiSampler* bilinear_sampler;
         RhiSampler* trilinear_sampler;
-        rx::vector<RhiImage*> images;
+        std::vector<RhiImage*> images;
     };
 
     struct RhiPipeline {
-        rx::string name;
+        std::string name;
     };
 
     struct RhiFramebuffer {
@@ -128,7 +128,7 @@ namespace nova::renderer::rhi {
     };
 
     struct RhiVertexField {
-        rx::string name;
+        std::string name;
 
         VertexFieldFormat format;
     };
@@ -137,7 +137,7 @@ namespace nova::renderer::rhi {
      * \brief The interface for a pipeline. Includes both inputs (descriptors) and outputs (framebuffers)
      */
     struct RhiPipelineInterface {
-        rx::map<rx::string, RhiResourceBindingDescription> bindings;
+        std::unordered_map<std::string, RhiResourceBindingDescription> bindings;
 
         [[nodiscard]] uint32_t get_num_descriptors_of_type(DescriptorType type) const;
     };

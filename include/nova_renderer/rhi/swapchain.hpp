@@ -43,8 +43,8 @@ namespace nova::renderer::rhi {
         // Arrays of the per-frame swapchain resources. Each swapchain implementation is responsible for filling these arrays with
         // API-specific objects
 
-        rx::vector<RhiFramebuffer*> framebuffers;
-        rx::vector<RhiImage*> swapchain_images;
-        rx::vector<RhiFence*> fences;
+        std::vector<RhiFramebuffer*> framebuffers;
+        std::vector<RhiImage*> swapchain_images;
+        std::vector<RhiFence*> fences;
     };
 } // namespace nova::renderer::rhi

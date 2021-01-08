@@ -1,7 +1,7 @@
 #include "nova_renderer/camera.hpp"
 
 namespace nova::renderer {
-    const rx::string& Camera::get_name() const { return name; }
+    const std::string& Camera::get_name() const { return name; }
 
     Camera::Camera(const CameraCreateInfo& create_info)
         : is_active(true),

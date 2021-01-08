@@ -54,7 +54,7 @@ namespace nova::renderer {
 
         filesystem::FolderAccessorBase* folder_accessor;
 
-        rx::map<rx::string, rx::string> builtin_files;
+        std::unordered_map<std::string, std::string> builtin_files;
 
 #if NOVA_WINDOWS
         rx::concurrency::mutex mtx;

@@ -132,7 +132,7 @@ namespace nova::renderer {
                 /*!
                  * \brief The path to `renderdoc.dll` on your filesystem
                  */
-                rx::string renderdoc_dll_path = R"(C:\Users\gold1\bin\RenderDoc\RenderDoc_2020_02_06_fe30fa91_64\renderdoc.dll)";
+                std::string renderdoc_dll_path = R"(C:\Users\gold1\bin\RenderDoc\RenderDoc_2020_02_06_fe30fa91_64\renderdoc.dll)";
 
                 /*!
                  * \brief The base path for RenderDoc captures
@@ -242,6 +242,6 @@ namespace nova::renderer {
         const NovaSettings* operator->() const;
 
     private:
-        rx::vector<ConfigListener*> config_change_listeners;
+        std::vector<ConfigListener*> config_change_listeners;
     };
 } // namespace nova::renderer

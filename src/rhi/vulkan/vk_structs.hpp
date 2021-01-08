@@ -36,13 +36,13 @@ namespace nova::renderer::rhi {
     };
 
     struct VulkanPipelineLayoutInfo {
-        rx::map<rx::string, RhiResourceBindingDescription> bindings;
+        std::unordered_map<std::string, RhiResourceBindingDescription> bindings;
 
-        rx::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
+        std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
 
         vk::PipelineLayout layout;
 
-        rx::vector<uint32_t> variable_descriptor_set_counts;
+        std::vector<uint32_t> variable_descriptor_set_counts;
     };
 
     /*!
@@ -68,7 +68,7 @@ namespace nova::renderer::rhi {
          * We keep a cache of PSOs that are used by this renderpass, using the frontend name of the pipeline state as a key. If we've
          * already used a pipeline state with this renderpass we just get the caches PSO, otherwise we have to create it
          */
-        rx::map<rx::string, vk::Pipeline> cached_pipelines;
+        std::unordered_map<std::string, vk::Pipeline> cached_pipelines;
     };
 
     struct VulkanFramebuffer : RhiFramebuffer {
@@ -101,10 +101,10 @@ namespace nova::renderer::rhi {
 
     struct VulkanGpuInfo {
         VkPhysicalDevice phys_device{};
-        rx::vector<VkQueueFamilyProperties> queue_family_props;
-        rx::vector<VkExtensionProperties> available_extensions;
+        std::vector<VkQueueFamilyProperties> queue_family_props;
+        std::vector<VkExtensionProperties> available_extensions;
         VkSurfaceCapabilitiesKHR surface_capabilities{};
-        rx::vector<VkSurfaceFormatKHR> surface_formats;
+        std::vector<VkSurfaceFormatKHR> surface_formats;
         VkPhysicalDeviceProperties props{};
         VkPhysicalDeviceFeatures supported_features{};
         VkPhysicalDeviceMemoryProperties memory_properties{};

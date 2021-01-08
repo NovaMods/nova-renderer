@@ -29,11 +29,11 @@ namespace nova::renderer::renderpack {
 
     ntl::Result<RendergraphData> load_rendergraph_file(FolderAccessorBase* folder_access);
 
-    rx::vector<PipelineData> load_pipeline_files(FolderAccessorBase* folder_access);
-    rx::optional<PipelineData> load_single_pipeline(FolderAccessorBase* folder_access, const rx::string& pipeline_path);
+    std::vector<PipelineData> load_pipeline_files(FolderAccessorBase* folder_access);
+    rx::optional<PipelineData> load_single_pipeline(FolderAccessorBase* folder_access, const std::string& pipeline_path);
 
-    rx::vector<MaterialData> load_material_files(FolderAccessorBase* folder_access);
-    MaterialData load_single_material(FolderAccessorBase* folder_access, const rx::string& material_path);
+    std::vector<MaterialData> load_material_files(FolderAccessorBase* folder_access);
+    MaterialData load_single_material(FolderAccessorBase* folder_access, const std::string& material_path);
 
     void fill_in_render_target_formats(RenderpackData& data) {
         const auto& textures = data.resources.render_targets;
@@ -91,7 +91,7 @@ namespace nova::renderer::renderpack {
 
     void cache_pipelines_by_renderpass(RenderpackData& data);
 
-    RenderpackData load_renderpack_data(const rx::string& renderpack_name) {
+    RenderpackData load_renderpack_data(const std::string& renderpack_name) {
         MTR_SCOPE("load_renderpack_data", renderpack_name.data());
 
         FolderAccessorBase* folder_access = VirtualFilesystem::get_instance()->get_folder_accessor(renderpack_name);
@@ -126,7 +126,7 @@ namespace nova::renderer::renderpack {
     rx::optional<RenderpackResourcesData> load_dynamic_resources_file(FolderAccessorBase* folder_access) {
         MTR_SCOPE("load_dynamic_resource_file", "Self");
 
-        const rx::string resources_string = folder_access->read_text_file(RESOURCES_FILE);
+        const std::string resources_string = folder_access->read_text_file(RESOURCES_FILE);
 
         auto json_resources = rx::json(resources_string);
         const ValidationReport report = validate_renderpack_resources_data(json_resources);
@@ -176,21 +176,21 @@ namespace nova::renderer::renderpack {
         }
     }
 
-    rx::vector<PipelineData> load_pipeline_files(FolderAccessorBase* folder_access) {
+    std::vector<PipelineData> load_pipeline_files(FolderAccessorBase* folder_access) {
         MTR_SCOPE("load_pipeline_files", "Self");
 
-        rx::vector<rx::string> potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
+        std::vector<std::string> potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
 
-        rx::vector<PipelineData> output;
+        std::vector<PipelineData> output;
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
         output.reserve(potential_pipeline_files.size());
 
-        potential_pipeline_files.each_fwd([&](const rx::string& potential_file) {
+        potential_pipeline_files.each_fwd([&](const std::string& potential_file) {
             if(potential_file.ends_with(".pipeline")) {
                 // Pipeline file!
-                const auto pipeline_relative_path = rx::string::format("%s/%s", "materials", potential_file);
+                const auto pipeline_relative_path = std::string::format("%s/%s", "materials", potential_file);
                 const auto& pipeline = load_single_pipeline(folder_access, pipeline_relative_path);
                 if(pipeline) {
                     output.push_back(*pipeline);
@@ -201,7 +201,7 @@ namespace nova::renderer::renderpack {
         return output;
     }
 
-    rx::optional<PipelineData> load_single_pipeline(FolderAccessorBase* folder_access, const rx::string& pipeline_path) {
+    rx::optional<PipelineData> load_single_pipeline(FolderAccessorBase* folder_access, const std::string& pipeline_path) {
         MTR_SCOPE("load_single_pipeline", pipeline_path.data());
 
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
@@ -253,21 +253,21 @@ namespace nova::renderer::renderpack {
         return new_pipeline;
     }
 
-    rx::vector<uint32_t> load_shader_file(const rx::string& filename,
+    std::vector<uint32_t> load_shader_file(const std::string& filename,
                                           FolderAccessorBase* folder_access,
                                           const rhi::ShaderStage stage,
-                                          const rx::vector<rx::string>& defines) {
+                                          const std::vector<std::string>& defines) {
         MTR_SCOPE("load_shader_file", filename.data());
 
         if(filename.ends_with(".spirv")) {
             // SPIR-V file!
 
-            rx::vector<uint8_t> bytes = folder_access->read_file(filename);
+            std::vector<uint8_t> bytes = folder_access->read_file(filename);
             const auto view = bytes.disown();
-            return rx::vector<uint32_t>{view};
+            return std::vector<uint32_t>{view};
         }
 
-        rx::string shader_source = folder_access->read_text_file(filename);
+        std::string shader_source = folder_access->read_text_file(filename);
 
         const auto& compiled_shader = [&] {
             if(filename.ends_with(".hlsl")) {
@@ -285,19 +285,19 @@ namespace nova::renderer::renderpack {
         return compiled_shader;
     }
 
-    rx::vector<MaterialData> load_material_files(FolderAccessorBase* folder_access) {
+    std::vector<MaterialData> load_material_files(FolderAccessorBase* folder_access) {
         MTR_SCOPE("load_material_files", "Self");
 
-        rx::vector<rx::string> potential_material_files = folder_access->get_all_items_in_folder("materials");
+        std::vector<std::string> potential_material_files = folder_access->get_all_items_in_folder("materials");
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
-        rx::vector<MaterialData> output;
+        std::vector<MaterialData> output;
         output.reserve(potential_material_files.size());
 
-        potential_material_files.each_fwd([&](const rx::string& potential_file) {
+        potential_material_files.each_fwd([&](const std::string& potential_file) {
             if(potential_file.ends_with(".mat")) {
-                const auto material_filename = rx::string::format("%s/%s", MATERIALS_DIRECTORY, potential_file);
+                const auto material_filename = std::string::format("%s/%s", MATERIALS_DIRECTORY, potential_file);
                 const MaterialData& material = load_single_material(folder_access, material_filename);
                 output.push_back(material);
             }
@@ -306,10 +306,10 @@ namespace nova::renderer::renderpack {
         return output;
     }
 
-    MaterialData load_single_material(FolderAccessorBase* folder_access, const rx::string& material_path) {
+    MaterialData load_single_material(FolderAccessorBase* folder_access, const std::string& material_path) {
         MTR_SCOPE("load_single_material", material_path.data());
 
-        const rx::string material_text = folder_access->read_text_file(material_path);
+        const std::string material_text = folder_access->read_text_file(material_path);
 
         const auto json_material = rx::json{material_text};
         const auto report = validate_material(json_material);
@@ -384,7 +384,7 @@ namespace nova::renderer::renderpack {
         }
     }
 
-    rx::vector<uint32_t> compile_shader(const rx::string& source,
+    std::vector<uint32_t> compile_shader(const std::string& source,
                                         const rhi::ShaderStage stage,
                                         const rhi::ShaderLanguage source_language,
                                         FolderAccessorBase* folder_accessor) {
@@ -419,7 +419,7 @@ namespace nova::renderer::renderpack {
 
         const auto profile = to_hlsl_profile(stage);
 
-        rx::vector<LPCWSTR> args = rx::array{L"-spirv", L"-fspv-target-env=vulkan1.1", L"-fspv-reflect"};
+        std::vector<LPCWSTR> args = rx::array{L"-spirv", L"-fspv-target-env=vulkan1.1", L"-fspv-reflect"};
 
         auto* includer = new NovaDxcIncludeHandler{*(&rx::memory::g_system_allocator), *lib, folder_accessor};
 
@@ -443,7 +443,7 @@ namespace nova::renderer::renderpack {
         if(SUCCEEDED(hr)) {
             IDxcBlob* result_blob;
             hr = compile_result->GetResult(&result_blob);
-            rx::vector<uint32_t> spirv{result_blob->GetBufferSize() / sizeof(uint32_t)};
+            std::vector<uint32_t> spirv{result_blob->GetBufferSize() / sizeof(uint32_t)};
             memcpy(spirv.data(), result_blob->GetBufferPointer(), result_blob->GetBufferSize());
             return spirv;
 

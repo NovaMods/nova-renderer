@@ -285,8 +285,7 @@ set(COMMON_LINK_LIBS
         glm
         nlohmann_json 
         nlohmann_json::nlohmann_json
-        vma::vma
-        rex)
+        vma::vma)
         
 set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan-1)
 
@@ -311,8 +310,6 @@ foreach(source IN LISTS NOVA_SOURCE)
     string(REPLACE "/" "\\" source_path_msvc "${source_path}")
     source_group("${source_path_msvc}" FILES "${source}")
 endforeach()
-
-target_sources(nova-renderer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/tools/vs-visualizers/RexCore.natvis)
 
 ###############################
 # Link all required libraries #

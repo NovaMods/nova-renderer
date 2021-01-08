@@ -21,21 +21,21 @@ namespace nova::renderer::rhi {
         VulkanRenderCommandList(VkCommandBuffer cmds, VulkanRenderDevice& render_device, rx::memory::allocator& allocator);
         ~VulkanRenderCommandList() override = default;
 
-        void set_debug_name(const rx::string& name) override;
+        void set_debug_name(const std::string& name) override;
 
         void bind_material_resources(RhiBuffer* camera_buffer,
                                      RhiBuffer* material_buffer,
                                      RhiSampler* point_sampler,
                                      RhiSampler* bilinear_sampler,
                                      RhiSampler* trilinear_sampler,
-                                     const rx::vector<RhiImage*>& textures,
+                                     const std::vector<RhiImage*>& textures,
                                      rx::memory::allocator& allocator) override;
 
         void bind_resources(RhiResourceBinder& binder) override;
 
         void resource_barriers(PipelineStage stages_before_barrier,
                                PipelineStage stages_after_barrier,
-                               const rx::vector<RhiResourceBarrier>& barriers) override;
+                               const std::vector<RhiResourceBarrier>& barriers) override;
 
         void copy_buffer(RhiBuffer* destination_buffer,
                          mem::Bytes destination_offset,
@@ -43,7 +43,7 @@ namespace nova::renderer::rhi {
                          mem::Bytes source_offset,
                          mem::Bytes num_bytes) override;
 
-        void execute_command_lists(const rx::vector<RhiRenderCommandList*>& lists) override;
+        void execute_command_lists(const std::vector<RhiRenderCommandList*>& lists) override;
 
         void set_camera(const Camera& camera) override;
 
@@ -55,10 +55,10 @@ namespace nova::renderer::rhi {
 
         void set_pipeline(const RhiPipeline& state) override;
 
-        void bind_descriptor_sets(const rx::vector<RhiDescriptorSet*>& descriptor_sets,
+        void bind_descriptor_sets(const std::vector<RhiDescriptorSet*>& descriptor_sets,
                                   const RhiPipelineInterface* pipeline_interface) override;
 
-        void bind_vertex_buffers(const rx::vector<RhiBuffer*>& buffers) override;
+        void bind_vertex_buffers(const std::vector<RhiBuffer*>& buffers) override;
 
         void bind_index_buffer(const RhiBuffer* buffer, IndexType index_type) override;
 
@@ -87,6 +87,6 @@ namespace nova::renderer::rhi {
 
         VkPipelineLayout current_layout = VK_NULL_HANDLE;
 
-        rx::vector<vk::DescriptorSet> descriptor_sets;
+        std::vector<vk::DescriptorSet> descriptor_sets;
     };
 } // namespace nova::renderer::rhi

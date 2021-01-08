@@ -13,13 +13,13 @@ namespace nova::renderer::rhi {
     RX_LOG("VulkanResourceBinder", logger);
 
     template <typename ResourceType>
-    void bind_resource_array(const rx::string& binding_name,
-                             const rx::vector<ResourceType*>& resources,
-                             rx::map<rx::string, rx::vector<ResourceType*>>& bound_resources);
+    void bind_resource_array(const std::string& binding_name,
+                             const std::vector<ResourceType*>& resources,
+                             std::unordered_map<std::string, std::vector<ResourceType*>>& bound_resources);
 
     VulkanResourceBinder::VulkanResourceBinder(VulkanRenderDevice& device,
-                                               rx::map<rx::string, RhiResourceBindingDescription> bindings,
-                                               rx::vector<vk::DescriptorSet> sets,
+                                               std::unordered_map<std::string, RhiResourceBindingDescription> bindings,
+                                               std::vector<vk::DescriptorSet> sets,
                                                vk::PipelineLayout layout,
                                                rx::memory::allocator& allocator)
         : render_device{&device},
@@ -31,25 +31,25 @@ namespace nova::renderer::rhi {
           bound_buffers{&allocator},
           bound_samplers{&allocator} {}
 
-    void VulkanResourceBinder::bind_image(const rx::string& binding_name, RhiImage* image) {
+    void VulkanResourceBinder::bind_image(const std::string& binding_name, RhiImage* image) {
         bind_image_array(binding_name, {allocator, rx::array{image}});
     }
 
-    void VulkanResourceBinder::bind_buffer(const rx::string& binding_name, RhiBuffer* buffer) {
+    void VulkanResourceBinder::bind_buffer(const std::string& binding_name, RhiBuffer* buffer) {
         bind_buffer_array(binding_name, {allocator, rx::array{buffer}});
     }
 
-    void VulkanResourceBinder::bind_sampler(const rx::string& binding_name, RhiSampler* sampler) {
+    void VulkanResourceBinder::bind_sampler(const std::string& binding_name, RhiSampler* sampler) {
         bind_sampler_array(binding_name, {allocator, rx::array{sampler}});
     }
 
-    void VulkanResourceBinder::bind_image_array(const rx::string& binding_name, const rx::vector<RhiImage*>& images) {
+    void VulkanResourceBinder::bind_image_array(const std::string& binding_name, const std::vector<RhiImage*>& images) {
         bind_resource_array(binding_name, images, bound_images);
 
         dirty = true;
     }
 
-    void VulkanResourceBinder::bind_buffer_array(const rx::string& binding_name, const rx::vector<RhiBuffer*>& buffers) {
+    void VulkanResourceBinder::bind_buffer_array(const std::string& binding_name, const std::vector<RhiBuffer*>& buffers) {
 #if NOVA_DEBUG
         buffers.each_fwd([&](const RhiBuffer* buffer) {
             if(buffer->size > render_device->gpu.props.limits.maxUniformBufferRange) {
@@ -63,7 +63,7 @@ namespace nova::renderer::rhi {
         dirty = true;
     }
 
-    void VulkanResourceBinder::bind_sampler_array(const rx::string& binding_name, const rx::vector<RhiSampler*>& samplers) {
+    void VulkanResourceBinder::bind_sampler_array(const std::string& binding_name, const std::vector<RhiSampler*>& samplers) {
         bind_resource_array(binding_name, samplers, bound_samplers);
 
         dirty = true;
@@ -71,7 +71,7 @@ namespace nova::renderer::rhi {
 
     vk::PipelineLayout VulkanResourceBinder::get_layout() const { return layout; }
 
-    const rx::vector<vk::DescriptorSet>& VulkanResourceBinder::get_sets() {
+    const std::vector<vk::DescriptorSet>& VulkanResourceBinder::get_sets() {
         if(dirty) {
             update_all_descriptors();
         }
@@ -80,20 +80,20 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanResourceBinder::update_all_descriptors() {
-        rx::vector<vk::WriteDescriptorSet> writes{allocator};
+        std::vector<vk::WriteDescriptorSet> writes{allocator};
         writes.reserve(bound_images.size() + bound_samplers.size() + bound_buffers.size());
 
-        rx::vector<rx::vector<vk::DescriptorImageInfo>> all_image_infos{allocator};
+        std::vector<std::vector<vk::DescriptorImageInfo>> all_image_infos{allocator};
         all_image_infos.reserve(bound_images.size() + bound_samplers.size());
 
-        rx::vector < rx::vector<vk::DescriptorBufferInfo>> all_buffer_infos{allocator};
+        std::vector < std::vector<vk::DescriptorBufferInfo>> all_buffer_infos{allocator};
         all_buffer_infos.reserve(bound_buffers.size());
 
-        bound_images.each_pair([&](const rx::string& name, const rx::vector<RhiImage*>& images) {
+        bound_images.each_pair([&](const std::string& name, const std::vector<RhiImage*>& images) {
             const auto& binding = *bindings.find(name);
             const auto set = sets[binding.set];
 
-            rx::vector<vk::DescriptorImageInfo> image_infos{allocator};
+            std::vector<vk::DescriptorImageInfo> image_infos{allocator};
             image_infos.reserve(images.size());
 
             images.each_fwd([&](const RhiImage* image) {
@@ -116,11 +116,11 @@ namespace nova::renderer::rhi {
             writes.push_back(rx::utility::move(write));
         });
 
-        bound_samplers.each_pair([&](const rx::string& name, const rx::vector<RhiSampler*>& samplers) {
+        bound_samplers.each_pair([&](const std::string& name, const std::vector<RhiSampler*>& samplers) {
             const auto& binding = *bindings.find(name);
             const auto set = sets[binding.set];
 
-            rx::vector<vk::DescriptorImageInfo> sampler_infos{allocator};
+            std::vector<vk::DescriptorImageInfo> sampler_infos{allocator};
             sampler_infos.reserve(samplers.size());
 
             samplers.each_fwd([&](const RhiSampler* sampler) {
@@ -141,11 +141,11 @@ namespace nova::renderer::rhi {
             writes.push_back(rx::utility::move(write));
         });
 
-        bound_buffers.each_pair([&](const rx::string& name, const rx::vector<RhiBuffer*>& buffers) {
+        bound_buffers.each_pair([&](const std::string& name, const std::vector<RhiBuffer*>& buffers) {
             const auto& binding = *bindings.find(name);
             const auto set = sets[binding.set];
 
-            rx::vector<vk::DescriptorBufferInfo> buffer_infos{allocator};
+            std::vector<vk::DescriptorBufferInfo> buffer_infos{allocator};
             buffer_infos.reserve(buffers.size());
 
             buffers.each_fwd([&](const RhiBuffer* buffer) {
@@ -170,9 +170,9 @@ namespace nova::renderer::rhi {
     }
 
     template <typename ResourceType>
-    void bind_resource_array(const rx::string& binding_name,
-                             const rx::vector<ResourceType*>& resources,
-                             rx::map<rx::string, rx::vector<ResourceType*>>& bound_resources) {
+    void bind_resource_array(const std::string& binding_name,
+                             const std::vector<ResourceType*>& resources,
+                             std::unordered_map<std::string, std::vector<ResourceType*>>& bound_resources) {
         if(auto* bound_data = bound_resources.find(binding_name)) {
             *bound_data = resources;
 

@@ -23,6 +23,6 @@ std::wstring s2ws(const std::string& s);
  * \brief Retrieves the most recent Windows error and returns it to the user
  * \return The error string of the most recent Windows error
  */
-rx::string get_last_windows_error();
+std::string get_last_windows_error();
 
 #endif // NOVA_RENDERER_WINDOWS_UTILS_HPP

@@ -17,6 +17,6 @@ namespace nova::renderer {
         void record_post_renderpass_barriers(rhi::RhiRenderCommandList& cmds, FrameContext& ctx) const override;
 
     private:
-        rx::vector<rhi::RhiResourceBarrier> post_pass_barriers;
+        std::vector<rhi::RhiResourceBarrier> post_pass_barriers;
     };
 } // namespace nova::renderer

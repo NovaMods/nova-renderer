@@ -14,9 +14,9 @@ namespace nova {
 
         bool on_flush() override;
 
-        const rx::string& name() const& override;
+        const std::string& name() const& override;
 
     private:
-        rx::string my_name = "NovaConsoleLogStream";
+        std::string my_name = "NovaConsoleLogStream";
     };
 } // namespace nova

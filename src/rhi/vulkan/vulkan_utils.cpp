@@ -369,7 +369,7 @@ namespace nova::renderer::rhi {
         return vk_flags;
     }
 
-    rx::string to_string(VkResult result) {
+    std::string to_string(VkResult result) {
         switch(result) {
             case VK_SUCCESS:
                 return "VK_SUCCESS";
@@ -440,7 +440,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    rx::string to_string(VkObjectType obj_type) {
+    std::string to_string(VkObjectType obj_type) {
         switch(obj_type) {
             case VK_OBJECT_TYPE_UNKNOWN:
                 return "Unknown";
@@ -538,8 +538,8 @@ namespace nova::renderer::rhi {
         }
     }
 
-    rx::vector<vk::DescriptorSetLayout> create_descriptor_set_layouts(
-        const rx::map<rx::string, RhiResourceBindingDescription>& all_bindings,
+    std::vector<vk::DescriptorSetLayout> create_descriptor_set_layouts(
+        const std::unordered_map<std::string, RhiResourceBindingDescription>& all_bindings,
         VulkanRenderDevice& render_device,
         rx::memory::allocator& allocator) {
         const auto max_sets = render_device.gpu.props.limits.maxBoundDescriptorSets;
@@ -553,19 +553,19 @@ namespace nova::renderer::rhi {
             }
         });
 
-        rx::vector<uint32_t> variable_descriptor_counts{&allocator};
+        std::vector<uint32_t> variable_descriptor_counts{&allocator};
         variable_descriptor_counts.resize(num_sets, 0);
 
         // Some precalculations so we know how much room we actually need
-        rx::vector<uint32_t> num_bindings_per_set{&allocator};
+        std::vector<uint32_t> num_bindings_per_set{&allocator};
         num_bindings_per_set.resize(num_sets);
 
         all_bindings.each_value([&](const RhiResourceBindingDescription& desc) {
             num_bindings_per_set[desc.set] = rx::algorithm::max(num_bindings_per_set[desc.set], desc.binding + 1);
         });
 
-        rx::vector<rx::vector<vk::DescriptorSetLayoutBinding>> bindings_by_set{&allocator, num_sets};
-        rx::vector<rx::vector<vk::DescriptorBindingFlags>> binding_flags_by_set{&allocator, num_sets};
+        std::vector<std::vector<vk::DescriptorSetLayoutBinding>> bindings_by_set{&allocator, num_sets};
+        std::vector<std::vector<vk::DescriptorBindingFlags>> binding_flags_by_set{&allocator, num_sets};
 
         all_bindings.each_value([&](const RhiResourceBindingDescription& binding) {
             if(binding.set >= bindings_by_set.size()) {
@@ -599,15 +599,15 @@ namespace nova::renderer::rhi {
             return true;
         });
 
-        rx::vector<vk::DescriptorSetLayoutCreateInfo> dsl_create_infos{&allocator};
+        std::vector<vk::DescriptorSetLayoutCreateInfo> dsl_create_infos{&allocator};
         dsl_create_infos.reserve(bindings_by_set.size());
 
-        rx::vector<vk::DescriptorSetLayoutBindingFlagsCreateInfo> flag_infos{&allocator};
+        std::vector<vk::DescriptorSetLayoutBindingFlagsCreateInfo> flag_infos{&allocator};
         flag_infos.reserve(bindings_by_set.size());
 
         // We may make bindings_by_set much larger than it needs to be is there's multiple descriptor bindings per set. Thus, only iterate
         // through the sets we actually care about
-        bindings_by_set.each_fwd([&](const rx::vector<vk::DescriptorSetLayoutBinding>& bindings) {
+        bindings_by_set.each_fwd([&](const std::vector<vk::DescriptorSetLayoutBinding>& bindings) {
             vk::DescriptorSetLayoutCreateInfo create_info = {};
             create_info.bindingCount = static_cast<uint32_t>(bindings.size());
             create_info.pBindings = bindings.data();
@@ -623,7 +623,7 @@ namespace nova::renderer::rhi {
             dsl_create_infos.push_back(create_info);
         });
 
-        rx::vector<vk::DescriptorSetLayout> ds_layouts{&allocator};
+        std::vector<vk::DescriptorSetLayout> ds_layouts{&allocator};
         ds_layouts.resize(dsl_create_infos.size());
         auto vk_allocator = wrap_allocator(allocator);
         for(size_t i = 0; i < dsl_create_infos.size(); i++) {

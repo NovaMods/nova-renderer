@@ -18,7 +18,7 @@ namespace nova::filesystem {
         /*!
          * \brief Adds the provided path to the resource roots that the virtual filesystem will care about
          */
-        void add_resource_root(const rx::string& root);
+        void add_resource_root(const std::string& root);
 
         /*!
          * \brief Adds the provided folder accessor as an accessor for one of our root directories
@@ -28,11 +28,11 @@ namespace nova::filesystem {
          */
         void add_resource_root(FolderAccessorBase* root_accessor);
 
-        [[nodiscard]] FolderAccessorBase* get_folder_accessor(const rx::string& path) const;
+        [[nodiscard]] FolderAccessorBase* get_folder_accessor(const std::string& path) const;
 
     private:
         static VirtualFilesystem* instance;
 
-        rx::vector<FolderAccessorBase*> resource_roots;
+        std::vector<FolderAccessorBase*> resource_roots;
     };
 } // namespace nova::filesystem

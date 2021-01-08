@@ -54,11 +54,11 @@ namespace nova::renderer {
          * If we see see a camera that has different parameters than what's in this cache, the visibility results for that camera are
          * invalidated
          */
-        rx::map<CameraIndex, Camera> cached_cameras;
+        std::unordered_map<CameraIndex, Camera> cached_cameras;
 
         /*!
          * \brief Cache of which renderables are visible for a given camera
          */
-        rx::map<CameraIndex, rx::map<RenderableId, bool>> visibility_cache;
+        std::unordered_map<CameraIndex, std::unordered_map<RenderableId, bool>> visibility_cache;
     };
 } // namespace nova::renderer

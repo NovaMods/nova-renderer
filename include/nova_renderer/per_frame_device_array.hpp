@@ -47,12 +47,12 @@ namespace nova::renderer {
     private:
         rx::memory::allocator& internal_allocator;
 
-        rx::vector<rhi::RhiBuffer*> per_frame_buffers;
+        std::vector<rhi::RhiBuffer*> per_frame_buffers;
         rhi::RenderDevice& device;
 
-        rx::vector<ElementType> data;
+        std::vector<ElementType> data;
 
-        rx::vector<uint32_t> free_indices;
+        std::vector<uint32_t> free_indices;
     };
 
     template <typename ElementType>
@@ -70,7 +70,7 @@ namespace nova::renderer {
 
         per_frame_buffers.reserve(num_in_flight_frames);
         for(uint32_t i = 0; i < num_in_flight_frames; i++) {
-            create_info.name = rx::string::format("CameraBuffer%u", i);
+            create_info.name = std::string::format("CameraBuffer%u", i);
 
             per_frame_buffers.emplace_back(device.create_buffer(create_info, internal_allocator));
         }

@@ -15,13 +15,13 @@ namespace nova::renderer::rhi {
     VulkanSwapchain::VulkanSwapchain(const uint32_t num_swapchain_images,
                                      VulkanRenderDevice* render_device,
                                      const glm::uvec2 window_dimensions,
-                                     const rx::vector<VkPresentModeKHR>& present_modes)
+                                     const std::vector<VkPresentModeKHR>& present_modes)
         : Swapchain(num_swapchain_images, window_dimensions), render_device(render_device), num_swapchain_images(num_swapchain_images) {
         MTR_SCOPE("VulkanSwapchain", "VulkanSwapchain");
 
         create_swapchain(num_swapchain_images, present_modes, window_dimensions);
 
-        rx::vector<VkImage> vk_images = get_swapchain_images();
+        std::vector<VkImage> vk_images = get_swapchain_images();
 
         if(vk_images.is_empty()) {
             logger->error("The swapchain returned zero images");
@@ -68,7 +68,7 @@ namespace nova::renderer::rhi {
         }
 
         // Block until we have the swapchain image in order to mimic D3D12. TODO: Reevaluate this decision
-        rx::vector<RhiFence*> fences;
+        std::vector<RhiFence*> fences;
         fences.push_back(vk_fence);
         render_device->wait_for_fences(fences);
 
@@ -101,9 +101,9 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void VulkanSwapchain::transition_swapchain_images_into_color_attachment_layout(const rx::vector<VkImage>& images) const {
+    void VulkanSwapchain::transition_swapchain_images_into_color_attachment_layout(const std::vector<VkImage>& images) const {
         MTR_SCOPE("VulkanSwapchain", "transition_swapchain_images_into_color_attachment_layout");
-        rx::vector<VkImageMemoryBarrier> barriers;
+        std::vector<VkImageMemoryBarrier> barriers;
         barriers.reserve(images.size());
 
         images.each_fwd([&](const VkImage& image) {
@@ -205,7 +205,7 @@ namespace nova::renderer::rhi {
 
     VkFormat VulkanSwapchain::get_swapchain_format() const { return swapchain_format; }
 
-    VkSurfaceFormatKHR VulkanSwapchain::choose_surface_format(const rx::vector<VkSurfaceFormatKHR>& formats) {
+    VkSurfaceFormatKHR VulkanSwapchain::choose_surface_format(const std::vector<VkSurfaceFormatKHR>& formats) {
         VkSurfaceFormatKHR result;
 
         if(formats.size() == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
@@ -217,7 +217,7 @@ namespace nova::renderer::rhi {
         // We want 32 bit rgba and srgb nonlinear... I think? Will have to read up on it more and figure out what's up
         if(const auto idx = formats.find_if([&](VkSurfaceFormatKHR& fmt) {
                return fmt.format == VK_FORMAT_B8G8R8A8_UNORM && fmt.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-           }) != rx::vector<VkSurfaceFormatKHR>::k_npos) {
+           }) != std::vector<VkSurfaceFormatKHR>::k_npos) {
             return formats[idx];
         }
 
@@ -225,11 +225,11 @@ namespace nova::renderer::rhi {
         return formats[0];
     }
 
-    VkPresentModeKHR VulkanSwapchain::choose_present_mode(const rx::vector<VkPresentModeKHR>& modes) {
+    VkPresentModeKHR VulkanSwapchain::choose_present_mode(const std::vector<VkPresentModeKHR>& modes) {
         const VkPresentModeKHR desired_mode = VK_PRESENT_MODE_MAILBOX_KHR;
 
         // Mailbox mode is best mode (also not sure why)
-        if(modes.find(desired_mode) != rx::vector<VkPresentModeKHR>::k_npos) {
+        if(modes.find(desired_mode) != std::vector<VkPresentModeKHR>::k_npos) {
             return desired_mode;
         }
 
@@ -251,7 +251,7 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanSwapchain::create_swapchain(const uint32_t requested_num_swapchain_images,
-                                           const rx::vector<VkPresentModeKHR>& present_modes,
+                                           const std::vector<VkPresentModeKHR>& present_modes,
                                            const glm::uvec2& window_dimensions) {
         MTR_SCOPE("VulkanSwapchain", "create_swapchain");
 
@@ -345,9 +345,9 @@ namespace nova::renderer::rhi {
         fences.push_back(new VulkanFence{{}, fence});
     }
 
-    rx::vector<VkImage> VulkanSwapchain::get_swapchain_images() {
+    std::vector<VkImage> VulkanSwapchain::get_swapchain_images() {
         MTR_SCOPE("VulkanSwapchain", "get_swapchain_images");
-        rx::vector<VkImage> vk_images;
+        std::vector<VkImage> vk_images;
 
         vkGetSwapchainImagesKHR(render_device->device, swapchain, &num_swapchain_images, nullptr);
         vk_images.resize(num_swapchain_images);

@@ -183,5 +183,5 @@ namespace nova::renderer::rhi {
 
     uint32_t get_byte_size(VertexFieldFormat format);
 
-    rx::string descriptor_type_to_string(DescriptorType type);
+    std::string descriptor_type_to_string(DescriptorType type);
 } // namespace nova::renderer::rhi

@@ -90,7 +90,7 @@ namespace nova::renderer {
     BackbufferOutputPipelineCreateInfo::BackbufferOutputPipelineCreateInfo() {
         name = BACKBUFFER_OUTPUT_PIPELINE_NAME;
 
-        const rx::string vertex_source{R"(
+        const std::string vertex_source{R"(
             struct VsInput {
                 float2 position : POSITION;
             };
@@ -113,7 +113,7 @@ namespace nova::renderer {
         }
         vertex_shader = {"/nova/shaders/backbuffer_output.vertex.hlsl", vertex_spirv};
 
-        const rx::string pixel_source{R"(
+        const std::string pixel_source{R"(
             [[vk::binding(0, 0)]]
             Texture2D ui_output : register(t0);
 
@@ -252,7 +252,7 @@ namespace nova::renderer {
 
             cur_frame_idx = device->get_swapchain()->acquire_next_swapchain_image(frame_allocator);
 
-            rx::vector<rhi::RhiFence*> cur_frame_fences{global_allocator};
+            std::vector<rhi::RhiFence*> cur_frame_fences{global_allocator};
             cur_frame_fences.push_back(frame_fences[cur_frame_idx]);
 
             device->wait_for_fences(cur_frame_fences);
@@ -286,7 +286,7 @@ namespace nova::renderer {
 
             const auto& renderpass_order = rendergraph->calculate_renderpass_execution_order();
 
-            renderpass_order.each_fwd([&](const rx::string& renderpass_name) {
+            renderpass_order.each_fwd([&](const std::string& renderpass_name) {
                 auto* renderpass = rendergraph->get_renderpass(renderpass_name);
                 renderpass->execute(*cmds, ctx);
             });
@@ -356,7 +356,7 @@ namespace nova::renderer {
             vertex_barrier.buffer_memory_barrier.offset = 0;
             vertex_barrier.buffer_memory_barrier.size = vertex_buffer->size;
 
-            rx::vector<rhi::RhiResourceBarrier> barriers{global_allocator};
+            std::vector<rhi::RhiResourceBarrier> barriers{global_allocator};
             barriers.push_back(vertex_barrier);
             vertex_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, barriers);
 
@@ -395,7 +395,7 @@ namespace nova::renderer {
             index_barrier.buffer_memory_barrier.offset = 0;
             index_barrier.buffer_memory_barrier.size = index_buffer->size;
 
-            rx::vector<rhi::RhiResourceBarrier> barriers{global_allocator};
+            std::vector<rhi::RhiResourceBarrier> barriers{global_allocator};
             barriers.push_back(index_barrier);
             indices_upload_cmds->resource_barriers(rhi::PipelineStage::Transfer, rhi::PipelineStage::VertexInput, barriers);
 
@@ -437,7 +437,7 @@ namespace nova::renderer {
         }
     }
 
-    void NovaRenderer::load_renderpack(const rx::string& renderpack_name) {
+    void NovaRenderer::load_renderpack(const std::string& renderpack_name) {
         MTR_SCOPE("RenderpackLoading", "load_renderpack");
 
         const renderpack::RenderpackData data = renderpack::load_renderpack_data(renderpack_name);
@@ -465,15 +465,15 @@ namespace nova::renderer {
         logger->verbose("Renderpack %s loaded successfully", renderpack_name);
     }
 
-    const rx::vector<MaterialPass>& NovaRenderer::get_material_passes_for_pipeline(const rx::string& pipeline) {
+    const std::vector<MaterialPass>& NovaRenderer::get_material_passes_for_pipeline(const std::string& pipeline) {
         return *passes_by_pipeline.find(pipeline);
     }
 
-    rx::optional<RenderpassMetadata> NovaRenderer::get_renderpass_metadata(const rx::string& renderpass_name) const {
+    rx::optional<RenderpassMetadata> NovaRenderer::get_renderpass_metadata(const std::string& renderpass_name) const {
         return rendergraph->get_metadata_for_renderpass(renderpass_name);
     }
 
-    void NovaRenderer::create_dynamic_textures(const rx::vector<renderpack::TextureCreateInfo>& texture_create_infos) {
+    void NovaRenderer::create_dynamic_textures(const std::vector<renderpack::TextureCreateInfo>& texture_create_infos) {
         MTR_SCOPE("create_dynamic_textures", "Self");
         texture_create_infos.each_fwd([&](const renderpack::TextureCreateInfo& create_info) {
             MTR_SCOPE("create_dynamic_textures", create_info.name.data());
@@ -489,8 +489,8 @@ namespace nova::renderer {
         });
     }
 
-    void NovaRenderer::create_render_passes(const rx::vector<renderpack::RenderPassCreateInfo>& pass_create_infos,
-                                            const rx::vector<renderpack::PipelineData>& pipelines) const {
+    void NovaRenderer::create_render_passes(const std::vector<renderpack::RenderPassCreateInfo>& pass_create_infos,
+                                            const std::vector<renderpack::PipelineData>& pipelines) const {
         MTR_SCOPE("create_render_passes", "Self");
         device->set_num_renderpasses(static_cast<uint32_t>(pass_create_infos.size()));
 
@@ -509,8 +509,8 @@ namespace nova::renderer {
         });
     }
 
-    void NovaRenderer::create_pipelines_and_materials(const rx::vector<renderpack::PipelineData>& pipeline_create_infos,
-                                                      const rx::vector<renderpack::MaterialData>& materials) {
+    void NovaRenderer::create_pipelines_and_materials(const std::vector<renderpack::PipelineData>& pipeline_create_infos,
+                                                      const std::vector<renderpack::MaterialData>& materials) {
         MTR_SCOPE("create_pipelines_and_materials", "Self");
         pipeline_create_infos.each_fwd([&](const renderpack::PipelineData& rp_pipeline_state) {
             MTR_SCOPE("create_pipelines_and_materials", rp_pipeline_state.name.data());
@@ -533,8 +533,8 @@ namespace nova::renderer {
     }
 
     void NovaRenderer::create_materials_for_pipeline(const Pipeline& pipeline,
-                                                     const rx::vector<renderpack::MaterialData>& materials,
-                                                     const rx::string& pipeline_name) {
+                                                     const std::vector<renderpack::MaterialData>& materials,
+                                                     const std::string& pipeline_name) {
         MTR_SCOPE("create_materials_for_pipeline", "Self");
         // Determine the pipeline layout so the material can create descriptors for the pipeline
 
@@ -542,13 +542,13 @@ namespace nova::renderer {
         template_key.pipeline_name = pipeline_name;
 
         // Large overestimate, but that's fine
-        rx::vector<MaterialPass> passes;
+        std::vector<MaterialPass> passes;
         passes.reserve(materials.size());
 
         materials.each_fwd([&](const renderpack::MaterialData& material_data) {
             material_data.passes.each_fwd([&](const renderpack::MaterialPass& pass_data) {
                 if(pass_data.pipeline == pipeline_name) {
-                    const auto& event_name = rx::string::format("%s.%s", material_data.name, pass_data.name);
+                    const auto& event_name = std::string::format("%s.%s", material_data.name, pass_data.name);
                     MTR_SCOPE("create_materials_for_pipeline", event_name.data());
                     MaterialPass pass = {};
                     pass.pipeline_interface = pipeline.pipeline_interface;
@@ -609,8 +609,8 @@ namespace nova::renderer {
         camera_data->upload_to_device(frame_idx);
     }
 
-    rx::vector<rhi::RhiImage*> NovaRenderer::get_all_images(rx::memory::allocator& allocator) {
-        rx::vector<rhi::RhiImage*> images{&allocator};
+    std::vector<rhi::RhiImage*> NovaRenderer::get_all_images(rx::memory::allocator& allocator) {
+        std::vector<rhi::RhiImage*> images{&allocator};
 
         const auto& textures = device_resources->get_all_textures();
         images.reserve(textures.size());
@@ -639,7 +639,7 @@ namespace nova::renderer {
 
     rhi::RhiSampler* NovaRenderer::get_point_sampler() const { return point_sampler; }
 
-    Pipeline* NovaRenderer::find_pipeline(const rx::string& pipeline_name) { return pipelines.find(pipeline_name); }
+    Pipeline* NovaRenderer::find_pipeline(const std::string& pipeline_name) { return pipelines.find(pipeline_name); }
 
     RenderableId NovaRenderer::add_renderable_for_material(const FullMaterialPassName& material_name,
                                                            const StaticMeshRenderableCreateInfo& create_info) {
@@ -887,7 +887,7 @@ namespace nova::renderer {
                                                                             material_data_memory,
                                                                             MATERIAL_BUFFER_SIZE.b_count()});
         for(uint32_t i = 0; i < settings->max_in_flight_frames; i++) {
-            const auto buffer_name = rx::string::format("%s_%d", MATERIAL_DATA_BUFFER_NAME, i);
+            const auto buffer_name = std::string::format("%s_%d", MATERIAL_DATA_BUFFER_NAME, i);
             if(auto buffer = device_resources->create_uniform_buffer(buffer_name, MATERIAL_BUFFER_SIZE); buffer) {
                 builtin_buffer_names.emplace_back(buffer_name);
                 material_device_buffers.emplace_back(*buffer);

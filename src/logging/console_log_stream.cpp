@@ -15,5 +15,5 @@ namespace nova {
         return true;
     }
 
-    const rx::string& StdoutStream::name() const& { return my_name; }
+    const std::string& StdoutStream::name() const& { return my_name; }
 } // namespace nova

@@ -15,7 +15,7 @@ namespace nova::renderer {
         /*!
          * \brief Name of the new camera
          */
-        rx::string name;
+        std::string name;
 
         /*!
          * \brief Vertical field of view
@@ -112,10 +112,10 @@ namespace nova::renderer {
 
         ~Camera() = default;
 
-        [[nodiscard]] const rx::string& get_name() const;
+        [[nodiscard]] const std::string& get_name() const;
 
     private:
-        rx::string name;
+        std::string name;
     };
 
     using CameraAccessor = VectorAccessor<Camera>;

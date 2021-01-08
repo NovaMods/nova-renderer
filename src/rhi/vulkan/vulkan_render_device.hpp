@@ -14,8 +14,8 @@ namespace nova::renderer::rhi {
     };
 
     struct VulkanInputAssemblerLayout {
-        rx::vector<VkVertexInputAttributeDescription> attributes;
-        rx::vector<VkVertexInputBindingDescription> bindings;
+        std::vector<VkVertexInputAttributeDescription> attributes;
+        std::vector<VkVertexInputBindingDescription> bindings;
     };
 
     /*!
@@ -59,9 +59,9 @@ namespace nova::renderer::rhi {
         /*!
          * \brief All the push constants in the standard pipeline layout
          */
-        rx::vector<vk::PushConstantRange> standard_push_constants;
+        std::vector<vk::PushConstantRange> standard_push_constants;
 
-        rx::map<rx::string, RhiResourceBindingDescription> standard_layout_bindings;
+        std::unordered_map<std::string, RhiResourceBindingDescription> standard_layout_bindings;
 
         /*!
          * \brief Layout for the standard descriptor set
@@ -78,7 +78,7 @@ namespace nova::renderer::rhi {
         /*!
          * \brief The descriptor set that binds to the standard pipeline layout
          */
-        rx::vector<vk::DescriptorSet> standard_descriptor_sets;
+        std::vector<vk::DescriptorSet> standard_descriptor_sets;
 
         // Debugging things
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
@@ -103,7 +103,7 @@ namespace nova::renderer::rhi {
                                                       rx::memory::allocator& allocator) override;
 
         RhiFramebuffer* create_framebuffer(const RhiRenderpass* renderpass,
-                                           const rx::vector<RhiImage*>& color_attachments,
+                                           const std::vector<RhiImage*>& color_attachments,
                                            const rx::optional<RhiImage*> depth_attachment,
                                            const glm::uvec2& framebuffer_size,
                                            rx::memory::allocator& allocator) override;
@@ -127,15 +127,15 @@ namespace nova::renderer::rhi {
 
         RhiSemaphore* create_semaphore(rx::memory::allocator& allocator) override;
 
-        rx::vector<RhiSemaphore*> create_semaphores(uint32_t num_semaphores, rx::memory::allocator& allocator) override;
+        std::vector<RhiSemaphore*> create_semaphores(uint32_t num_semaphores, rx::memory::allocator& allocator) override;
 
         RhiFence* create_fence(bool signaled, rx::memory::allocator& allocator) override;
 
-        rx::vector<RhiFence*> create_fences(uint32_t num_fences, bool signaled, rx::memory::allocator& allocator) override;
+        std::vector<RhiFence*> create_fences(uint32_t num_fences, bool signaled, rx::memory::allocator& allocator) override;
 
-        void wait_for_fences(rx::vector<RhiFence*> fences) override;
+        void wait_for_fences(std::vector<RhiFence*> fences) override;
 
-        void reset_fences(const rx::vector<RhiFence*>& fences) override;
+        void reset_fences(const std::vector<RhiFence*>& fences) override;
 
         void destroy_renderpass(RhiRenderpass* pass, rx::memory::allocator& allocator) override;
 
@@ -143,9 +143,9 @@ namespace nova::renderer::rhi {
 
         void destroy_texture(RhiImage* resource, rx::memory::allocator& allocator) override;
 
-        void destroy_semaphores(rx::vector<RhiSemaphore*>& semaphores, rx::memory::allocator& allocator) override;
+        void destroy_semaphores(std::vector<RhiSemaphore*>& semaphores, rx::memory::allocator& allocator) override;
 
-        void destroy_fences(const rx::vector<RhiFence*>& fences, rx::memory::allocator& allocator) override;
+        void destroy_fences(const std::vector<RhiFence*>& fences, rx::memory::allocator& allocator) override;
 
         RhiRenderCommandList* create_command_list(uint32_t thread_idx,
                                                   QueueType needed_queue_type,
@@ -155,8 +155,8 @@ namespace nova::renderer::rhi {
         void submit_command_list(RhiRenderCommandList* cmds,
                                  QueueType queue,
                                  RhiFence* fence_to_signal = nullptr,
-                                 const rx::vector<RhiSemaphore*>& wait_semaphores = {},
-                                 const rx::vector<RhiSemaphore*>& signal_semaphores = {}) override;
+                                 const std::vector<RhiSemaphore*>& wait_semaphores = {},
+                                 const std::vector<RhiSemaphore*>& signal_semaphores = {}) override;
 
         void end_frame(FrameContext& ctx) override;
 #pragma endregion
@@ -179,7 +179,7 @@ namespace nova::renderer::rhi {
                                                                        const VulkanRenderpass& renderpass,
                                                                        rx::memory::allocator& allocator);
 
-        [[nodiscard]] rx::optional<vk::DescriptorPool> create_descriptor_pool(const rx::map<DescriptorType, uint32_t>& descriptor_capacity,
+        [[nodiscard]] rx::optional<vk::DescriptorPool> create_descriptor_pool(const std::unordered_map<DescriptorType, uint32_t>& descriptor_capacity,
                                                                               rx::memory::allocator& allocator);
 
         /*!
@@ -193,10 +193,10 @@ namespace nova::renderer::rhi {
          * \brief Lets the render device know that all the provided descriptor sets are no longer in use by the GPU and can be used for
          * whatever
          */
-        void return_standard_descriptor_sets(const rx::vector<vk::DescriptorSet>& sets);
+        void return_standard_descriptor_sets(const std::vector<vk::DescriptorSet>& sets);
 
-        rx::vector<vk::DescriptorSet> create_descriptors(const rx::vector<vk::DescriptorSetLayout>& descriptor_set_layouts,
-                                                         const rx::vector<uint32_t>& variable_descriptor_max_counts,
+        std::vector<vk::DescriptorSet> create_descriptors(const std::vector<vk::DescriptorSetLayout>& descriptor_set_layouts,
+                                                         const std::vector<uint32_t>& variable_descriptor_max_counts,
                                                          rx::memory::allocator& allocator) const;
 
         [[nodiscard]] vk::Fence get_next_submission_fence();
@@ -212,14 +212,14 @@ namespace nova::renderer::rhi {
         /*!
          * The index in the vector is the thread index, the key in the map is the queue family index
          */
-        rx::vector<rx::map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
+        std::vector<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
 
-        rx::vector<FencedTask> fenced_tasks;
+        std::vector<FencedTask> fenced_tasks;
 
-        rx::vector<vk::Fence> submission_fences;
+        std::vector<vk::Fence> submission_fences;
 
 #pragma region Initialization
-        rx::vector<const char*> enabled_layer_names;
+        std::vector<const char*> enabled_layer_names;
 
         void create_instance();
 
@@ -236,7 +236,7 @@ namespace nova::renderer::rhi {
 
         void create_device_and_queues();
 
-        bool does_device_support_extensions(VkPhysicalDevice device, const rx::vector<char*>& required_device_extensions);
+        bool does_device_support_extensions(VkPhysicalDevice device, const std::vector<char*>& required_device_extensions);
 
         void create_swapchain();
 
@@ -244,7 +244,7 @@ namespace nova::renderer::rhi {
 
         void create_standard_pipeline_layout();
 
-        [[nodiscard]] rx::map<uint32_t, VkCommandPool> make_new_command_pools() const;
+        [[nodiscard]] std::unordered_map<uint32_t, VkCommandPool> make_new_command_pools() const;
 #pragma endregion
 
 #pragma region Helpers
@@ -263,7 +263,7 @@ namespace nova::renderer::rhi {
         [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags,
                                                            MemorySearchMode search_mode = MemorySearchMode::Fuzzy) const;
 
-        [[nodiscard]] rx::optional<VkShaderModule> create_shader_module(const rx::vector<uint32_t>& spirv) const;
+        [[nodiscard]] rx::optional<VkShaderModule> create_shader_module(const std::vector<uint32_t>& spirv) const;
 
         /*!
          * \brief Gets the image view associated with the given image
@@ -279,7 +279,7 @@ namespace nova::renderer::rhi {
 
         [[nodiscard]] static VkCommandBufferLevel to_vk_command_buffer_level(RhiRenderCommandList::Level level);
 
-        [[nodiscard]] static VulkanInputAssemblerLayout get_input_assembler_setup(const rx::vector<RhiVertexField>& vertex_fields);
+        [[nodiscard]] static VulkanInputAssemblerLayout get_input_assembler_setup(const std::vector<RhiVertexField>& vertex_fields);
 #pragma endregion
 
 #pragma region Debugging

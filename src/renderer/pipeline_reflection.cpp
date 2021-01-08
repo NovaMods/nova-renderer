@@ -8,8 +8,8 @@ namespace nova::renderer {
 
     RX_LOG("PipelineReflection", logger);
 
-    rx::map<rx::string, RhiResourceBindingDescription> get_all_descriptors(const RhiGraphicsPipelineState& pipeline_state) {
-        rx::map<rx::string, RhiResourceBindingDescription> bindings;
+    std::unordered_map<std::string, RhiResourceBindingDescription> get_all_descriptors(const RhiGraphicsPipelineState& pipeline_state) {
+        std::unordered_map<std::string, RhiResourceBindingDescription> bindings;
 
         get_shader_module_descriptors(pipeline_state.vertex_shader.source, ShaderStage::Vertex, bindings);
 
@@ -23,9 +23,9 @@ namespace nova::renderer {
         return bindings;
     }
 
-    void get_shader_module_descriptors(const rx::vector<uint32_t>& spirv,
+    void get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
                                        const ShaderStage shader_stage,
-                                       rx::map<rx::string, RhiResourceBindingDescription>& bindings) {
+                                       std::unordered_map<std::string, RhiResourceBindingDescription>& bindings) {
         const spirv_cross::Compiler shader_compiler{spirv.data(), spirv.size()};
         const spirv_cross::ShaderResources& resources = shader_compiler.get_shader_resources();
 
@@ -46,7 +46,7 @@ namespace nova::renderer {
         }
     }
 
-    void add_resource_to_bindings(rx::map<rx::string, RhiResourceBindingDescription>& bindings,
+    void add_resource_to_bindings(std::unordered_map<std::string, RhiResourceBindingDescription>& bindings,
                                   const ShaderStage shader_stage,
                                   const spirv_cross::Compiler& shader_compiler,
                                   const spirv_cross::Resource& resource,
@@ -74,7 +74,7 @@ namespace nova::renderer {
             new_binding.is_unbounded = true;
         }
 
-        const rx::string& resource_name = resource.name.c_str();
+        const std::string& resource_name = resource.name.c_str();
 
         if(auto* binding = bindings.find(resource_name)) {
             // Existing binding. Is it the same as our binding?

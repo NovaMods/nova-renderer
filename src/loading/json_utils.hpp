@@ -58,7 +58,7 @@ namespace nova::renderer {
      * \return An array of values, if the value can be found, or an empty vector if the values cannot be found
      */
     template <typename ValType>
-    rx::vector<ValType> get_json_array(const rx::json& json_obj, const char* key);
+    std::vector<ValType> get_json_array(const rx::json& json_obj, const char* key);
 
     /*!
      * \brief Retrieves an array of values from the provided JSON object
@@ -69,7 +69,7 @@ namespace nova::renderer {
      * \return An array of values, if the value can be found, or an empty vector if the values cannot be found
      */
     template <typename ValType, typename FuncType>
-    rx::vector<ValType> get_json_array(const rx::json& json_obj, const char* key, FuncType&& deserializer);
+    std::vector<ValType> get_json_array(const rx::json& json_obj, const char* key, FuncType&& deserializer);
 
     template <typename ValType>
     rx::optional<ValType> get_json_opt(const rx::json& json_obj, const char* key) {
@@ -113,10 +113,10 @@ namespace nova::renderer {
     }
 
     template <typename ValType>
-    rx::vector<ValType> get_json_array(const rx::json& json_obj, const char* key) {
+    std::vector<ValType> get_json_array(const rx::json& json_obj, const char* key) {
         const auto& arr = json_obj[key];
         if(arr && !arr.is_empty()) {
-            rx::vector<ValType> vec;
+            std::vector<ValType> vec;
             vec.reserve(arr.size());
 
             for(uint32_t i = 0; i < arr.size(); i++) {
@@ -130,10 +130,10 @@ namespace nova::renderer {
     }
 
     template <typename ValType, typename FuncType>
-    rx::vector<ValType> get_json_array(const rx::json& json_obj, const char* key, FuncType&& deserializer) {
+    std::vector<ValType> get_json_array(const rx::json& json_obj, const char* key, FuncType&& deserializer) {
         const auto& arr = json_obj[key];
         if(arr && !arr.is_empty()) {
-            rx::vector<ValType> vec;
+            std::vector<ValType> vec;
             vec.reserve(arr.size());
 
             for(uint32_t i = 0; i < arr.size(); i++) {
