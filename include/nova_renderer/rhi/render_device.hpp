@@ -1,7 +1,5 @@
 #pragma once
 
-#include <rx/core/memory/system_allocator.h>
-
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/renderpack_data.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
@@ -10,7 +8,6 @@
 #include "nova_renderer/window.hpp"
 
 #include "resource_binder.hpp"
-#include "rx/core/ptr.h"
 
 namespace nova::renderer {
     struct FrameContext;
@@ -24,29 +21,29 @@ namespace nova::renderer::rhi {
      * \brief All the GPU architectures that Nova cares about, at whatever granularity is most useful
      */
     enum class DeviceArchitecture {
-        Unknown,
+        unknown,
 
         /*!
          * \brief The GPU was made by AMD
          */
-        Amd,
+        amd,
 
         /*!
          * \brief The GPU was made by Nvidia
          */
-        Nvidia,
+        nvidia,
 
         /*!
          * \brief The GPU was made by Intel
          */
-        Intel,
+        intel,
     };
 
     /*!
      * \brief Information about hte capabilities and limits of the device we're running on
      */
     struct DeviceInfo {
-        DeviceArchitecture architecture = DeviceArchitecture::Unknown;
+        DeviceArchitecture architecture = DeviceArchitecture::unknown;
 
         mem::Bytes max_texture_size = 0;
 
@@ -93,14 +90,12 @@ namespace nova::renderer::rhi {
          * \return The newly created renderpass
          */
         [[nodiscard]] virtual ntl::Result<RhiRenderpass*> create_renderpass(const renderpack::RenderPassCreateInfo& data,
-                                                                            const glm::uvec2& framebuffer_size,
-                                                                            rx::memory::allocator& allocator) = 0;
+                                                                            const glm::uvec2& framebuffer_size) = 0;
 
         [[nodiscard]] virtual RhiFramebuffer* create_framebuffer(const RhiRenderpass* renderpass,
                                                                  const std::vector<RhiImage*>& color_attachments,
                                                                  const std::optional<RhiImage*> depth_attachment,
-                                                                 const glm::uvec2& framebuffer_size,
-                                                                 rx::memory::allocator& allocator) = 0;
+                                                                 const glm::uvec2& framebuffer_size) = 0;
 
         /*!
          * \brief Creates a new surface pipeline
@@ -109,8 +104,7 @@ namespace nova::renderer::rhi {
          * compatible with the material system. They currently can't access any resources outside of the material system, and _have_ to use
          * the standard pipeline layout
          */
-        [[nodiscard]] virtual std::unique_ptr<RhiPipeline> create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
-                                                                           rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual std::unique_ptr<RhiPipeline> create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state) = 0;
 
         /*!
          * \brief Creates a global pipeline
@@ -118,16 +112,14 @@ namespace nova::renderer::rhi {
          * Global pipelines are pipelines that aren't tied to any specific objects in the world. Global pipelines typically read render
          * targets to do something like post processing
          */
-        [[nodiscard]] virtual std::unique_ptr<RhiPipeline> create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
-                                                                          rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual std::unique_ptr<RhiPipeline> create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state) = 0;
 
-        [[nodiscard]] virtual std::unique_ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
-                                                                                             rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual std::unique_ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline) = 0;
 
         /*!
          * \brief Creates a buffer with undefined contents
          */
-        [[nodiscard]] virtual RhiBuffer* create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual RhiBuffer* create_buffer(const RhiBufferCreateInfo& info) = 0;
 
         /*!
          * \brief Writes data to a buffer
@@ -147,22 +139,22 @@ namespace nova::renderer::rhi {
         /*!
          * \brief Creates a new Sampler object
          */
-        [[nodiscard]] virtual RhiSampler* create_sampler(const RhiSamplerCreateInfo& create_info, rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual RhiSampler* create_sampler(const RhiSamplerCreateInfo& create_info) = 0;
 
         /*!
          * \brief Creates an empty image
          *
          * The image will start out in the Undefined layout. You must transition it to whatever layout you want to use
          */
-        [[nodiscard]] virtual RhiImage* create_image(const renderpack::TextureCreateInfo& info, rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual RhiImage* create_image(const renderpack::TextureCreateInfo& info) = 0;
 
-        [[nodiscard]] virtual RhiSemaphore* create_semaphore(rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual RhiSemaphore* create_semaphore() = 0;
 
-        [[nodiscard]] virtual std::vector<RhiSemaphore*> create_semaphores(uint32_t num_semaphores, rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual std::vector<RhiSemaphore*> create_semaphores(uint32_t num_semaphores) = 0;
 
-        [[nodiscard]] virtual RhiFence* create_fence(bool signaled, rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual RhiFence* create_fence(bool signaled) = 0;
 
-        [[nodiscard]] virtual std::vector<RhiFence*> create_fences(uint32_t num_fences, bool signaled, rx::memory::allocator& allocator) = 0;
+        [[nodiscard]] virtual std::vector<RhiFence*> create_fences(uint32_t num_fences, bool signaled) = 0;
 
         /*!
          * \blocks the fence until all fences are signaled
@@ -181,7 +173,7 @@ namespace nova::renderer::rhi {
          * While Renderpasses are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
          * need to clean up their GPU objects
          */
-        virtual void destroy_renderpass(RhiRenderpass* pass, rx::memory::allocator& allocator) = 0;
+        virtual void destroy_renderpass(RhiRenderpass* pass) = 0;
 
         /*!
          * \brief Clean up any GPU objects a Framebuffer may own
@@ -189,7 +181,7 @@ namespace nova::renderer::rhi {
          * While Framebuffers are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
          * need to clean up their GPU objects
          */
-        virtual void destroy_framebuffer(RhiFramebuffer* framebuffer, rx::memory::allocator& allocator) = 0;
+        virtual void destroy_framebuffer(RhiFramebuffer* framebuffer) = 0;
 
         /*!
          * \brief Clean up any GPU objects an Image may own
@@ -197,7 +189,7 @@ namespace nova::renderer::rhi {
          * While Images are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still need
          * to clean up their GPU objects
          */
-        virtual void destroy_texture(RhiImage* resource, rx::memory::allocator& allocator) = 0;
+        virtual void destroy_texture(RhiImage* resource) = 0;
 
         /*!
          * \brief Clean up any GPU objects a Semaphores may own
@@ -205,7 +197,7 @@ namespace nova::renderer::rhi {
          * While Semaphores are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still
          * need to clean up their GPU objects
          */
-        virtual void destroy_semaphores(std::vector<RhiSemaphore*>& semaphores, rx::memory::allocator& allocator) = 0;
+        virtual void destroy_semaphores(std::vector<RhiSemaphore*>& semaphores) = 0;
 
         /*!
          * \brief Clean up any GPU objects a Fence may own
@@ -213,7 +205,7 @@ namespace nova::renderer::rhi {
          * While Fence are per-renderpack objects, and their CPU memory will be cleaned up when a new renderpack is loaded, we still need to
          * clean up their GPU objects
          */
-        virtual void destroy_fences(const std::vector<RhiFence*>& fences, rx::memory::allocator& allocator) = 0;
+        virtual void destroy_fences(const std::vector<RhiFence*>& fences) = 0;
 
         [[nodiscard]] Swapchain* get_swapchain() const;
 
@@ -233,8 +225,7 @@ namespace nova::renderer::rhi {
          */
         virtual RhiRenderCommandList* create_command_list(uint32_t thread_idx,
                                                           QueueType needed_queue_type,
-                                                          RhiRenderCommandList::Level level,
-                                                          rx::memory::allocator& allocator) = 0;
+                                                          RhiRenderCommandList::Level level) = 0;
 
         virtual void submit_command_list(RhiRenderCommandList* cmds,
                                          QueueType queue,
@@ -247,11 +238,7 @@ namespace nova::renderer::rhi {
          */
         virtual void end_frame(FrameContext& ctx) = 0;
 
-        [[nodiscard]] rx::memory::allocator& get_allocator() const;
-
     protected:
-        rx::memory::allocator& internal_allocator;
-
         NovaWindow& window;
 
         glm::uvec2 swapchain_size = {};
@@ -261,7 +248,6 @@ namespace nova::renderer::rhi {
          * \brief Initializes the engine
          * \param settings The settings passed to nova
          * \param window The OS window that we'll be rendering to
-         * \param allocator The allocator to use for internal memory
          *
          * Intentionally does nothing. This constructor serves mostly to ensure that concrete render engines have a
          * constructor that takes in some settings
@@ -269,8 +255,7 @@ namespace nova::renderer::rhi {
          * \attention Called by the various render engine implementations
          */
         RenderDevice(NovaSettingsAccessManager& settings,
-                     NovaWindow& window,
-                     rx::memory::allocator& allocator = *rx::memory::g_system_allocator);
+                     NovaWindow& window);
     };
 
     /*!
@@ -279,5 +264,5 @@ namespace nova::renderer::rhi {
      * Right now we only support creating Vulkan render devices, but in the future we might support devices for different APIs, or different
      * types of hardware
      */
-    std::unique_ptr<RenderDevice> create_render_device(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator);
+    std::unique_ptr<RenderDevice> create_render_device(NovaSettingsAccessManager& settings, NovaWindow& window);
 } // namespace nova::renderer::rhi

@@ -494,7 +494,7 @@ namespace nova::renderer::renderpack {
          * descriptor sets is allowed, although the result won't show up on screen for a couple frames because Nova
          * (will) copies its descriptor sets to each in-flight frame
          */
-        std::vector<VkDescriptorSet> descriptor_sets;
+        std::vector<vk::DescriptorSet> descriptor_sets;
 
         static MaterialPass from_json(const nlohmann::json& json);
     };

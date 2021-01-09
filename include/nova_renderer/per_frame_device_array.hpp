@@ -2,12 +2,14 @@
 
 #include <Tracy.hpp>
 #include <vector>
+#include <spdlog/sinks/stdout_color_sinks.h>
+
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/rhi/render_device.hpp"
 
 namespace nova::renderer {
-    RX_LOG("PerFrameDeviceArray", pfa_logger);
+    static auto pfd_logger = spdlog::stdout_color_mt("PerDeviceFrameArray");
 
     /*!
      * \brief Array of data which is unique for each frame of execution
@@ -21,12 +23,10 @@ namespace nova::renderer {
          * \param num_elements The number of elements in the array
          * \param num_in_flight_frames NThe number of in-flight frames that we'll support
          * \param device The device to create the buffers on
-         * \param internal_allocator The allocator to use for internal allocations
          */
         explicit PerFrameDeviceArray(size_t num_elements,
                                      uint32_t num_in_flight_frames,
-                                     rhi::RenderDevice& device,
-                                     rx::memory::allocator& internal_allocator);
+                                     rhi::RenderDevice& device);
 
         ~PerFrameDeviceArray() = default;
 
@@ -45,8 +45,6 @@ namespace nova::renderer {
         [[nodiscard]] rhi::RhiBuffer* get_buffer_for_frame(uint32_t frame_idx) const;
 
     private:
-        rx::memory::allocator& internal_allocator;
-
         std::vector<rhi::RhiBuffer*> per_frame_buffers;
         rhi::RenderDevice& device;
 
@@ -58,19 +56,16 @@ namespace nova::renderer {
     template <typename ElementType>
     PerFrameDeviceArray<ElementType>::PerFrameDeviceArray(const size_t num_elements,
                                                           const uint32_t num_in_flight_frames,
-                                                          rhi::RenderDevice& device,
-                                                          rx::memory::allocator& internal_allocator)
-        : internal_allocator{internal_allocator},
-          device{device},
-          data{&internal_allocator, num_elements},
-          free_indices{&internal_allocator} {
+                                                          rhi::RenderDevice& device)
+        : device{device},
+          data{num_elements}{
         rhi::RhiBufferCreateInfo create_info;
         create_info.size = sizeof(ElementType) * data.size();
         create_info.buffer_usage = rhi::BufferUsage::UniformBuffer;
 
         per_frame_buffers.reserve(num_in_flight_frames);
         for(uint32_t i = 0; i < num_in_flight_frames; i++) {
-            create_info.name = std::string::format("CameraBuffer%u", i);
+            create_info.name = fmt::format("CameraBuffer{}", i);
 
             per_frame_buffers.emplace_back(device.create_buffer(create_info, internal_allocator));
         }

@@ -5,7 +5,7 @@
 // vulkan.h is a C header, so it does C things, and my C++ linter is like "wati no be more C++" but I ain't about to
 // rewrite vulkan.h
 #pragma warning(push, 0)
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 
 // I really don't know how Khronos/anyone else gets vulkan.h to work. Doing this manually feels dirty, and not in a
 // good way, but it works 

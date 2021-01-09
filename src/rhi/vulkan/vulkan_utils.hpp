@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-
 #include "nova_renderer/renderpack_data.hpp"
 #include "nova_renderer/rhi/command_list.hpp"
 
@@ -20,72 +18,40 @@ namespace nova {
 
 namespace nova::renderer::rhi {
     class VulkanRenderDevice;
-    VkImageLayout to_vk_image_layout(ResourceState layout);
+    vk::ImageLayout to_vk_image_layout(ResourceState layout);
 
-    VkAccessFlags to_vk_access_flags(ResourceAccess access);
+    vk::AccessFlags to_vk_access_flags(ResourceAccess access);
 
-    VkPrimitiveTopology to_primitive_topology(renderpack::RPPrimitiveTopology topology);
+    vk::PrimitiveTopology to_primitive_topology(renderpack::RPPrimitiveTopology topology);
 
-    VkBlendFactor to_blend_factor(BlendFactor factor);
+    vk::BlendFactor to_blend_factor(BlendFactor factor);
 
-    VkBlendOp to_blend_op(const BlendOp blend_op);
+    vk::BlendOp to_blend_op(const BlendOp blend_op);
 
-    VkCompareOp to_compare_op(CompareOp compare_op);
+    vk::CompareOp to_compare_op(CompareOp compare_op);
 
-    VkStencilOp to_stencil_op(StencilOp stencil_op);
+    vk::StencilOp to_stencil_op(StencilOp stencil_op);
 
-    VkFormat to_vk_format(PixelFormat format);
+    vk::Format to_vk_format(PixelFormat format);
 
-    VkFilter to_vk_filter(TextureFilter filter);
+    vk::Filter to_vk_filter(TextureFilter filter);
 
-    VkSamplerAddressMode to_vk_address_mode(TextureCoordWrapMode wrap_mode);
+    vk::SamplerAddressMode to_vk_address_mode(TextureCoordWrapMode wrap_mode);
 
     vk::DescriptorType to_vk_descriptor_type(DescriptorType type);
 
     vk::ShaderStageFlags to_vk_shader_stage_flags(ShaderStage flags);
 
-    std::string to_string(VkResult result);
+    std::string to_string(vk::Result result);
 
-    std::string to_string(VkObjectType obj_type);
+    std::string to_string(vk::ObjectType obj_type);
 
-    [[nodiscard]] VkFormat to_vk_vertex_format(VertexFieldFormat field);
+    [[nodiscard]] vk::Format to_vk_vertex_format(VertexFieldFormat field);
 
     [[nodiscard]] std::vector<vk::DescriptorSetLayout> create_descriptor_set_layouts(
-        const std::unordered_map<std::string, RhiResourceBindingDescription>& all_bindings,
-        VulkanRenderDevice& render_device,
-        rx::memory::allocator& allocator);;
-
-    /*!
-     * \brief Wraps a Rex allocator so the Vulkan driver can use it
-     */
-    inline vk::AllocationCallbacks wrap_allocator(rx::memory::allocator& allocator);
+        const std::unordered_map<std::string, RhiResourceBindingDescription>& all_bindings, VulkanRenderDevice& render_device);
 
     bool operator&(const ShaderStage& lhs, const ShaderStage& rhs);
-
-    RX_HINT_FORCE_INLINE vk::AllocationCallbacks wrap_allocator(rx::memory::allocator& allocator) {
-        vk::AllocationCallbacks callbacks{};
-
-        callbacks.pUserData = &allocator;
-        callbacks.pfnAllocation =
-            [](void* user_data, const size_t size, size_t /* alignment */, VkSystemAllocationScope /* allocation_scope */) -> void* {
-            auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);
-            return allocator->allocate(size);
-        };
-        callbacks.pfnReallocation = [](void* user_data,
-                                       void* original,
-                                       const size_t size,
-                                       size_t /* alignment */,
-                                       VkSystemAllocationScope /* allocation_scope */) -> void* {
-            auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);
-            return allocator->reallocate(reinterpret_cast<uint8_t*>(original), size);
-        };
-        callbacks.pfnFree = [](void* user_data, void* memory) {
-            auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);
-            allocator->deallocate(reinterpret_cast<uint8_t*>(memory));
-        };
-
-        return callbacks;
-    }
 } // namespace nova::renderer::rhi
 
 // Only validate errors in debug mode
@@ -94,9 +60,9 @@ namespace nova::renderer::rhi {
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define NOVA_CHECK_RESULT(expr)                                                                                                            \
     {                                                                                                                                      \
-        const VkResult result = (expr);                                                                                                    \
+        const vk::Result result = (expr);                                                                                                    \
         if(result != VK_SUCCESS) {                                                                                                         \
-            logger->error("%s:%u=>%s=%s", __FILE__, __LINE__, #expr, to_string(result));                                                   \
+            logger->error("{}:{}=>{}={}", __FILE__, __LINE__, #expr, to_string(result));                                                   \
         }                                                                                                                                  \
     }
 #else

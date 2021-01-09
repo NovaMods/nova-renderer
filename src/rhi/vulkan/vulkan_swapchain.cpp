@@ -15,12 +15,12 @@ namespace nova::renderer::rhi {
     VulkanSwapchain::VulkanSwapchain(const uint32_t num_swapchain_images,
                                      VulkanRenderDevice* render_device,
                                      const glm::uvec2 window_dimensions,
-                                     const std::vector<VkPresentModeKHR>& present_modes)
+                                     const std::vector<vk::PresentModeKHR>& present_modes)
         : Swapchain(num_swapchain_images, window_dimensions), render_device(render_device), num_swapchain_images(num_swapchain_images) {
         ZoneScoped;
         create_swapchain(num_swapchain_images, present_modes, window_dimensions);
 
-        std::vector<VkImage> vk_images = get_swapchain_images();
+        std::vector<vk::Image> vk_images = get_swapchain_images();
 
         if(vk_images.is_empty()) {
             logger->error("The swapchain returned zero images");
@@ -28,10 +28,10 @@ namespace nova::renderer::rhi {
 
         swapchain_image_layouts.resize(num_swapchain_images);
         swapchain_image_layouts.each_fwd(
-            [&](VkImageLayout& swapchain_image_layout) { swapchain_image_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; });
+            [&](vk::ImageLayout& swapchain_image_layout) { swapchain_image_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; });
 
         // Create a dummy renderpass that writes to a single color attachment - the swapchain
-        const VkRenderPass renderpass = create_dummy_renderpass();
+        const vk::RenderPass renderpass = create_dummy_renderpass();
 
         const glm::uvec2 swapchain_size = {swapchain_extent.width, swapchain_extent.height};
 
@@ -76,9 +76,9 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanSwapchain::present(const uint32_t image_idx) {
-        ZoneScoped;        VkResult swapchain_result = {};
+        ZoneScoped;        vk::Result swapchain_result = {};
 
-        VkPresentInfoKHR present_info = {};
+        vk::PresentInfoKHR present_info = {};
         present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         present_info.waitSemaphoreCount = 0;
         present_info.pWaitSemaphores = nullptr;
@@ -98,12 +98,12 @@ namespace nova::renderer::rhi {
         }
     }
 
-    void VulkanSwapchain::transition_swapchain_images_into_color_attachment_layout(const std::vector<VkImage>& images) const {
-        ZoneScoped;        std::vector<VkImageMemoryBarrier> barriers;
+    void VulkanSwapchain::transition_swapchain_images_into_color_attachment_layout(const std::vector<vk::Image>& images) const {
+        ZoneScoped;        std::vector<vk::ImageMemoryBarrier> barriers;
         barriers.reserve(images.size());
 
-        images.each_fwd([&](const VkImage& image) {
-            VkImageMemoryBarrier barrier = {};
+        images.each_fwd([&](const vk::Image& image) {
+            vk::ImageMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.srcQueueFamilyIndex = render_device->graphics_family_index;
             barrier.dstQueueFamilyIndex = render_device->graphics_family_index;
@@ -122,23 +122,23 @@ namespace nova::renderer::rhi {
             barriers.push_back(barrier);
         });
 
-        VkCommandPool command_pool;
+        vk::CommandPool command_pool;
 
-        VkCommandPoolCreateInfo command_pool_create_info = {};
+        vk::CommandPoolCreateInfo command_pool_create_info = {};
         command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         command_pool_create_info.queueFamilyIndex = render_device->graphics_family_index;
         vkCreateCommandPool(render_device->device, &command_pool_create_info, nullptr, &command_pool);
 
-        VkCommandBufferAllocateInfo alloc_info = {};
+        vk::CommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         alloc_info.commandPool = command_pool;
         alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         alloc_info.commandBufferCount = 1;
 
-        VkCommandBuffer cmds;
+        vk::CommandBuffer cmds;
         vkAllocateCommandBuffers(render_device->device, &alloc_info, &cmds);
 
-        VkCommandBufferBeginInfo begin_info = {};
+        vk::CommandBufferBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         vkBeginCommandBuffer(cmds, &begin_info);
@@ -156,14 +156,14 @@ namespace nova::renderer::rhi {
 
         vkEndCommandBuffer(cmds);
 
-        VkFence transition_done_fence;
+        vk::Fence transition_done_fence;
 
-        VkFenceCreateInfo fence_create_info = {};
+        vk::FenceCreateInfo fence_create_info = {};
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
         vkCreateFence(render_device->device, &fence_create_info, nullptr, &transition_done_fence);
 
-        VkSubmitInfo submit_info = {};
+        vk::SubmitInfo submit_info = {};
         submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &cmds;
@@ -182,7 +182,7 @@ namespace nova::renderer::rhi {
         });
         swapchain_images.clear();
 
-        swapchain_image_views.each_fwd([&](const VkImageView& iv) { vkDestroyImageView(render_device->device, iv, nullptr); });
+        swapchain_image_views.each_fwd([&](const vk::ImageView& iv) { vkDestroyImageView(render_device->device, iv, nullptr); });
         swapchain_image_views.clear();
 
         fences.each_fwd([&](const RhiFence* f) {
@@ -195,14 +195,14 @@ namespace nova::renderer::rhi {
 
     uint32_t VulkanSwapchain::get_num_images() const { return num_swapchain_images; }
 
-    VkImageLayout VulkanSwapchain::get_layout(const uint32_t frame_idx) { return swapchain_image_layouts[frame_idx]; }
+    vk::ImageLayout VulkanSwapchain::get_layout(const uint32_t frame_idx) { return swapchain_image_layouts[frame_idx]; }
 
-    VkExtent2D VulkanSwapchain::get_swapchain_extent() const { return swapchain_extent; }
+    vk::Extent2D VulkanSwapchain::get_swapchain_extent() const { return swapchain_extent; }
 
-    VkFormat VulkanSwapchain::get_swapchain_format() const { return swapchain_format; }
+    vk::Format VulkanSwapchain::get_swapchain_format() const { return swapchain_format; }
 
-    VkSurfaceFormatKHR VulkanSwapchain::choose_surface_format(const std::vector<VkSurfaceFormatKHR>& formats) {
-        VkSurfaceFormatKHR result;
+    vk::SurfaceFormatKHR VulkanSwapchain::choose_surface_format(const std::vector<vk::SurfaceFormatKHR>& formats) {
+        vk::SurfaceFormatKHR result;
 
         if(formats.size() == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
             result.format = VK_FORMAT_B8G8R8A8_UNORM;
@@ -211,9 +211,9 @@ namespace nova::renderer::rhi {
         }
 
         // We want 32 bit rgba and srgb nonlinear... I think? Will have to read up on it more and figure out what's up
-        if(const auto idx = formats.find_if([&](VkSurfaceFormatKHR& fmt) {
+        if(const auto idx = formats.find_if([&](vk::SurfaceFormatKHR& fmt) {
                return fmt.format == VK_FORMAT_B8G8R8A8_UNORM && fmt.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-           }) != std::vector<VkSurfaceFormatKHR>::k_npos) {
+           }) != std::vector<vk::SurfaceFormatKHR>::k_npos) {
             return formats[idx];
         }
 
@@ -221,11 +221,11 @@ namespace nova::renderer::rhi {
         return formats[0];
     }
 
-    VkPresentModeKHR VulkanSwapchain::choose_present_mode(const std::vector<VkPresentModeKHR>& modes) {
-        const VkPresentModeKHR desired_mode = VK_PRESENT_MODE_MAILBOX_KHR;
+    vk::PresentModeKHR VulkanSwapchain::choose_present_mode(const std::vector<vk::PresentModeKHR>& modes) {
+        const vk::PresentModeKHR desired_mode = VK_PRESENT_MODE_MAILBOX_KHR;
 
         // Mailbox mode is best mode (also not sure why)
-        if(modes.find(desired_mode) != std::vector<VkPresentModeKHR>::k_npos) {
+        if(modes.find(desired_mode) != std::vector<vk::PresentModeKHR>::k_npos) {
             return desired_mode;
         }
 
@@ -233,8 +233,8 @@ namespace nova::renderer::rhi {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D VulkanSwapchain::choose_surface_extent(const VkSurfaceCapabilitiesKHR& caps, const glm::ivec2& window_dimensions) {
-        VkExtent2D extent;
+    vk::Extent2D VulkanSwapchain::choose_surface_extent(const vk::SurfaceCapabilitiesKHR& caps, const glm::ivec2& window_dimensions) {
+        vk::Extent2D extent;
 
         if(caps.currentExtent.width == 0xFFFFFFFF) {
             extent.width = static_cast<uint32_t>(window_dimensions.x);
@@ -247,14 +247,14 @@ namespace nova::renderer::rhi {
     }
 
     void VulkanSwapchain::create_swapchain(const uint32_t requested_num_swapchain_images,
-                                           const std::vector<VkPresentModeKHR>& present_modes,
+                                           const std::vector<vk::PresentModeKHR>& present_modes,
                                            const glm::uvec2& window_dimensions) {
         ZoneScoped;
         const auto surface_format = choose_surface_format(render_device->gpu.surface_formats);
         const auto present_mode = choose_present_mode(present_modes);
         const auto extent = choose_surface_extent(render_device->gpu.surface_capabilities, window_dimensions);
 
-        VkSwapchainCreateInfoKHR info = {};
+        vk::SwapchainCreateInfoKHR info = {};
         info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         info.surface = render_device->surface;
 
@@ -286,13 +286,13 @@ namespace nova::renderer::rhi {
         swapchain_extent = extent;
     }
 
-    void VulkanSwapchain::create_resources_for_frame(const VkImage image, const VkRenderPass renderpass, const glm::uvec2& swapchain_size) {
+    void VulkanSwapchain::create_resources_for_frame(const vk::Image image, const vk::RenderPass renderpass, const glm::uvec2& swapchain_size) {
         ZoneScoped;        auto* vk_image = new VulkanImage;
         vk_image->type = ResourceType::Image;
         vk_image->is_dynamic = true;
         vk_image->image = image;
 
-        VkImageViewCreateInfo image_view_create_info = {};
+        vk::ImageViewCreateInfo image_view_create_info = {};
         image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 
         image_view_create_info.image = image;
@@ -315,7 +315,7 @@ namespace nova::renderer::rhi {
 
         swapchain_images.push_back(vk_image);
 
-        VkFramebufferCreateInfo framebuffer_create_info = {};
+        vk::FramebufferCreateInfo framebuffer_create_info = {};
         framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebuffer_create_info.attachmentCount = 1;
         framebuffer_create_info.pAttachments = &vk_image->image_view;
@@ -331,16 +331,16 @@ namespace nova::renderer::rhi {
 
         framebuffers.push_back(vk_framebuffer);
 
-        VkFenceCreateInfo fence_create_info = {};
+        vk::FenceCreateInfo fence_create_info = {};
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-        VkFence fence;
+        vk::Fence fence;
         vkCreateFence(render_device->device, &fence_create_info, nullptr, &fence);
         fences.push_back(new VulkanFence{{}, fence});
     }
 
-    std::vector<VkImage> VulkanSwapchain::get_swapchain_images() {
-        ZoneScoped;        std::vector<VkImage> vk_images;
+    std::vector<vk::Image> VulkanSwapchain::get_swapchain_images() {
+        ZoneScoped;        std::vector<vk::Image> vk_images;
 
         vkGetSwapchainImagesKHR(render_device->device, swapchain, &num_swapchain_images, nullptr);
         vk_images.resize(num_swapchain_images);
@@ -350,7 +350,7 @@ namespace nova::renderer::rhi {
             for(uint32_t i = 0; i < vk_images.size(); i++) {
                 const auto image_name = "Swapchain image " + std::to_string(i);
 
-                VkDebugUtilsObjectNameInfoEXT object_name = {};
+                vk::DebugUtilsObjectNameInfoEXT object_name = {};
                 object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
                 object_name.objectType = VK_OBJECT_TYPE_IMAGE;
                 object_name.objectHandle = reinterpret_cast<uint64_t>(vk_images[i]);
@@ -362,8 +362,8 @@ namespace nova::renderer::rhi {
         return vk_images;
     }
 
-    VkRenderPass VulkanSwapchain::create_dummy_renderpass() const {
-        VkAttachmentDescription color_attachment = {};
+    vk::RenderPass VulkanSwapchain::create_dummy_renderpass() const {
+        vk::AttachmentDescription color_attachment = {};
         color_attachment.format = swapchain_format;
         color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
         color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -371,16 +371,16 @@ namespace nova::renderer::rhi {
         color_attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
-        VkAttachmentReference color_ref = {};
+        vk::AttachmentReference color_ref = {};
         color_ref.attachment = 0;
         color_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        VkSubpassDescription subpass = {};
+        vk::SubpassDescription subpass = {};
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass.colorAttachmentCount = static_cast<uint32_t>(1);
         subpass.pColorAttachments = &color_ref;
 
-        VkRenderPassCreateInfo render_pass_create_info = {};
+        vk::RenderPassCreateInfo render_pass_create_info = {};
         render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         render_pass_create_info.attachmentCount = 1;
         render_pass_create_info.pAttachments = &color_attachment;
@@ -388,7 +388,7 @@ namespace nova::renderer::rhi {
         render_pass_create_info.pSubpasses = &subpass;
         render_pass_create_info.dependencyCount = 0;
 
-        VkRenderPass renderpass;
+        vk::RenderPass renderpass;
         vkCreateRenderPass(render_device->device, &render_pass_create_info, nullptr, &renderpass);
 
         return renderpass;

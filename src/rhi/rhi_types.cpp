@@ -11,11 +11,11 @@ namespace nova::renderer::rhi {
 
     uint32_t RhiPipelineInterface::get_num_descriptors_of_type(const DescriptorType type) const {
         uint32_t num_descriptors = 0;
-        bindings.each_value([&](const RhiResourceBindingDescription& description) {
+        for(const auto& [binding_name, description] : bindings) {
             if(description.type == type) {
                 num_descriptors++;
             }
-        });
+        }
 
         return num_descriptors;
     }

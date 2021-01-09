@@ -12,21 +12,21 @@
 
 namespace nova::renderer::rhi {
     struct VulkanDeviceMemory : RhiDeviceMemory {
-        VkDeviceMemory memory;
+        vk::DeviceMemory memory;
     };
 
     struct VulkanSampler : RhiSampler {
-        VkSampler sampler;
+        vk::Sampler sampler;
     };
 
     struct VulkanImage : RhiImage {
-        VkImage image = VK_NULL_HANDLE;
-        VkImageView image_view = VK_NULL_HANDLE;
+        vk::Image image = VK_NULL_HANDLE;
+        vk::ImageView image_view = VK_NULL_HANDLE;
         VmaAllocation allocation{};
     };
 
     struct VulkanBuffer : RhiBuffer {
-        VkBuffer buffer = VK_NULL_HANDLE;
+        vk::Buffer buffer = VK_NULL_HANDLE;
         VmaAllocation allocation{};
         VmaAllocationInfo allocation_info{};
     };
@@ -59,8 +59,8 @@ namespace nova::renderer::rhi {
     };
 
     struct VulkanRenderpass : RhiRenderpass {
-        VkRenderPass pass = VK_NULL_HANDLE;
-        VkRect2D render_area{};
+        vk::RenderPass pass = VK_NULL_HANDLE;
+        vk::Rect2D render_area{};
 
         /*!
          * \brief Cache of pipelines that get used in this renderpass
@@ -72,7 +72,7 @@ namespace nova::renderer::rhi {
     };
 
     struct VulkanFramebuffer : RhiFramebuffer {
-        VkFramebuffer framebuffer = VK_NULL_HANDLE;
+        vk::Framebuffer framebuffer = VK_NULL_HANDLE;
     };
 
     struct VulkanPipelineInterface : RhiPipelineInterface {
@@ -80,7 +80,7 @@ namespace nova::renderer::rhi {
          * \brief Renderpass for the pipeline's output layouts because why _wouldn't_ that be married to the
          * renderpass itself?
          */
-        VkRenderPass pass = VK_NULL_HANDLE;
+        vk::RenderPass pass = VK_NULL_HANDLE;
     };
 
     struct VulkanDescriptorPool : RhiDescriptorPool {
@@ -88,25 +88,25 @@ namespace nova::renderer::rhi {
     };
 
     struct VulkanDescriptorSet : RhiDescriptorSet {
-        VkDescriptorSet descriptor_set;
+        vk::DescriptorSet descriptor_set;
     };
 
     struct VulkanSemaphore : RhiSemaphore {
-        VkSemaphore semaphore;
+        vk::Semaphore semaphore;
     };
 
     struct VulkanFence : RhiFence {
-        VkFence fence;
+        vk::Fence fence;
     };
 
     struct VulkanGpuInfo {
-        VkPhysicalDevice phys_device{};
-        std::vector<VkQueueFamilyProperties> queue_family_props;
-        std::vector<VkExtensionProperties> available_extensions;
-        VkSurfaceCapabilitiesKHR surface_capabilities{};
-        std::vector<VkSurfaceFormatKHR> surface_formats;
-        VkPhysicalDeviceProperties props{};
-        VkPhysicalDeviceFeatures supported_features{};
-        VkPhysicalDeviceMemoryProperties memory_properties{};
+        vk::PhysicalDevice phys_device{};
+        std::vector<vk::QueueFamilyProperties> queue_family_props;
+        std::vector<vk::ExtensionProperties> available_extensions;
+        vk::SurfaceCapabilitiesKHR surface_capabilities{};
+        std::vector<vk::SurfaceFormatKHR> surface_formats;
+        vk::PhysicalDeviceProperties props{};
+        vk::PhysicalDeviceFeatures supported_features{};
+        vk::PhysicalDeviceMemoryProperties memory_properties{};
     };
 } // namespace nova::renderer::rhi

@@ -16,9 +16,9 @@ namespace nova::renderer::rhi {
      */
     class VulkanRenderCommandList final : public RhiRenderCommandList {
     public:
-        VkCommandBuffer cmds;
+        vk::CommandBuffer cmds;
 
-        VulkanRenderCommandList(VkCommandBuffer cmds, VulkanRenderDevice& render_device, rx::memory::allocator& allocator);
+        VulkanRenderCommandList(vk::CommandBuffer cmds, VulkanRenderDevice& render_device, rx::memory::allocator& allocator);
         ~VulkanRenderCommandList() override = default;
 
         void set_debug_name(const std::string& name) override;
@@ -85,7 +85,7 @@ namespace nova::renderer::rhi {
 
         VulkanRenderpass* current_render_pass = nullptr;
 
-        VkPipelineLayout current_layout = VK_NULL_HANDLE;
+        vk::PipelineLayout current_layout = VK_NULL_HANDLE;
 
         std::vector<vk::DescriptorSet> descriptor_sets;
     };

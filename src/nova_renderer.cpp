@@ -228,8 +228,8 @@ namespace nova::renderer {
 
         FrameMark;
 #ifdef TRACY_ENABLE
-        TracyVkNewFrame(renderer::RenderBackend::tracy_context);
-        TracyVkCollect(renderer::RenderBackend::tracy_context);
+        Tracyvk::NewFrame(renderer::RenderBackend::tracy_context);
+        Tracyvk::Collect(renderer::RenderBackend::tracy_context);
 #endif
     }
 
@@ -682,7 +682,7 @@ namespace nova::renderer {
         }
 
         const auto& key = key_itr->second;
-        auto& material_pass = passes_itr[key.material_pass_idx];
+        auto& material_pass = passes_itr->second[key.material_pass_idx];
 
         auto command = [&] {
             switch(key.type) {

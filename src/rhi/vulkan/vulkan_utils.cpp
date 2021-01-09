@@ -12,7 +12,7 @@
 namespace nova::renderer::rhi {
     RX_LOG("VulkanUtil", logger);
 
-    VkImageLayout to_vk_image_layout(const ResourceState layout) {
+    vk::ImageLayout to_vk_image_layout(const ResourceState layout) {
         switch(layout) {
             case ResourceState::Common:
                 return VK_IMAGE_LAYOUT_GENERAL;
@@ -50,7 +50,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkAccessFlags to_vk_access_flags(const ResourceAccess access) {
+    vk::AccessFlags to_vk_access_flags(const ResourceAccess access) {
         switch(access) {
             case ResourceAccess::IndirectCommandRead:
                 return VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
@@ -119,7 +119,7 @@ namespace nova::renderer::rhi {
         return {};
     }
 
-    VkPrimitiveTopology to_primitive_topology(const renderpack::RPPrimitiveTopology topology) {
+    vk::PrimitiveTopology to_primitive_topology(const renderpack::RPPrimitiveTopology topology) {
         switch(topology) {
             case renderpack::RPPrimitiveTopology::Lines:
                 return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
@@ -129,7 +129,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkBlendFactor to_blend_factor(const BlendFactor factor) {
+    vk::BlendFactor to_blend_factor(const BlendFactor factor) {
         switch(factor) {
             case BlendFactor::DstAlpha:
                 return VK_BLEND_FACTOR_DST_ALPHA;
@@ -156,7 +156,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkBlendOp to_blend_op(const BlendOp blend_op) {
+    vk::BlendOp to_blend_op(const BlendOp blend_op) {
         switch(blend_op) {
             case BlendOp::Add:
                 return VK_BLEND_OP_ADD;
@@ -178,7 +178,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkCompareOp to_compare_op(const CompareOp compare_op) {
+    vk::CompareOp to_compare_op(const CompareOp compare_op) {
         switch(compare_op) {
             case CompareOp::Never:
                 return VK_COMPARE_OP_NEVER;
@@ -209,7 +209,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkStencilOp to_stencil_op(const StencilOp stencil_op) {
+    vk::StencilOp to_stencil_op(const StencilOp stencil_op) {
         switch(stencil_op) {
             case StencilOp::Keep:
                 return VK_STENCIL_OP_KEEP;
@@ -240,7 +240,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkFormat to_vk_format(const PixelFormat format) {
+    vk::Format to_vk_format(const PixelFormat format) {
         switch(format) {
             case PixelFormat::Rgba8:
                 return VK_FORMAT_R8G8B8A8_UNORM;
@@ -263,7 +263,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkFilter to_vk_filter(const TextureFilter filter) {
+    vk::Filter to_vk_filter(const TextureFilter filter) {
         switch(filter) {
             case TextureFilter::Point:
                 return VK_FILTER_NEAREST;
@@ -279,7 +279,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkSamplerAddressMode to_vk_address_mode(const TextureCoordWrapMode wrap_mode) {
+    vk::SamplerAddressMode to_vk_address_mode(const TextureCoordWrapMode wrap_mode) {
         switch(wrap_mode) {
             case TextureCoordWrapMode::Repeat:
                 return VK_SAMPLER_ADDRESS_MODE_REPEAT;
@@ -369,7 +369,7 @@ namespace nova::renderer::rhi {
         return vk_flags;
     }
 
-    std::string to_string(VkResult result) {
+    std::string to_string(vk::Result result) {
         switch(result) {
             case VK_SUCCESS:
                 return "VK_SUCCESS";
@@ -440,7 +440,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    std::string to_string(VkObjectType obj_type) {
+    std::string to_string(vk::ObjectType obj_type) {
         switch(obj_type) {
             case VK_OBJECT_TYPE_UNKNOWN:
                 return "Unknown";
@@ -519,7 +519,7 @@ namespace nova::renderer::rhi {
         }
     }
 
-    VkFormat to_vk_vertex_format(const VertexFieldFormat field) {
+    vk::Format to_vk_vertex_format(const VertexFieldFormat field) {
         switch(field) {
             case VertexFieldFormat::Uint:
                 return VK_FORMAT_R32_UINT;

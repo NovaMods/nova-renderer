@@ -135,5 +135,5 @@ namespace ntl {
     template <typename ValueType>
     Result(ValueType value)->Result<ValueType>;
 
-#define MAKE_ERROR(s, ...) ::ntl::NovaError(::std::string::format(s, __VA_ARGS__))
+#define MAKE_ERROR(s, ...) ::ntl::NovaError(::fmt::format(s, __VA_ARGS__))
 } // namespace ntl

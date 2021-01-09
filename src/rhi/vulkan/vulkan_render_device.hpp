@@ -3,10 +3,15 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 
-#include "nova_renderer/rhi/render_device.hpp"
-
 #include "vk_structs.hpp"
 #include "vulkan_swapchain.hpp"
+
+namespace nova {
+    namespace renderer {
+        class NovaWindow;
+        class NovaSettingsAccessManager;
+    }
+}
 
 namespace nova::renderer::rhi {
     struct VulkanDeviceInfo {
@@ -14,8 +19,8 @@ namespace nova::renderer::rhi {
     };
 
     struct VulkanInputAssemblerLayout {
-        std::vector<VkVertexInputAttributeDescription> attributes;
-        std::vector<VkVertexInputBindingDescription> bindings;
+        std::vector<vk::VertexInputAttributeDescription> attributes;
+        std::vector<vk::VertexInputBindingDescription> bindings;
     };
 
     /*!
@@ -32,24 +37,24 @@ namespace nova::renderer::rhi {
     /*!
      * \brief Vulkan implementation of a render engine
      */
-    class VulkanRenderDevice final : public RenderDevice {
+    class VulkanRenderDevice final {
     public:
         vk::AllocationCallbacks vk_internal_allocator;
 
         // Global Vulkan objects
-        VkInstance instance;
+        vk::Instance instance;
 
         vk::Device device;
 
-        VkSurfaceKHR surface{};
+        vk::SurfaceKHR surface{};
 
         uint32_t graphics_family_index;
         uint32_t compute_family_index;
         uint32_t transfer_family_index;
 
-        VkQueue graphics_queue;
-        VkQueue compute_queue;
-        VkQueue copy_queue;
+        vk::Queue graphics_queue;
+        vk::Queue compute_queue;
+        vk::Queue copy_queue;
 
         // Info about the hardware
         VulkanGpuInfo gpu;
@@ -85,7 +90,7 @@ namespace nova::renderer::rhi {
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
         PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;
 
-        VulkanRenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator);
+        VulkanRenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window);
 
         VulkanRenderDevice(VulkanRenderDevice&& old) noexcept = delete;
         VulkanRenderDevice& operator=(VulkanRenderDevice&& old) noexcept = delete;
@@ -99,58 +104,52 @@ namespace nova::renderer::rhi {
         void set_num_renderpasses(uint32_t num_renderpasses) override;
 
         ntl::Result<RhiRenderpass*> create_renderpass(const renderpack::RenderPassCreateInfo& data,
-                                                      const glm::uvec2& framebuffer_size,
-                                                      rx::memory::allocator& allocator) override;
+                                                      const glm::uvec2& framebuffer_size) override;
 
         RhiFramebuffer* create_framebuffer(const RhiRenderpass* renderpass,
                                            const std::vector<RhiImage*>& color_attachments,
                                            const std::optional<RhiImage*> depth_attachment,
-                                           const glm::uvec2& framebuffer_size,
-                                           rx::memory::allocator& allocator) override;
+                                           const glm::uvec2& framebuffer_size) override;
 
-        std::unique_ptr<RhiPipeline> create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state,
-                                                     rx::memory::allocator& allocator) override;
+        std::unique_ptr<RhiPipeline> create_surface_pipeline(const RhiGraphicsPipelineState& pipeline_state) override;
 
-        std::unique_ptr<RhiPipeline> create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state,
-                                                    rx::memory::allocator& allocator) override;
+        std::unique_ptr<RhiPipeline> create_global_pipeline(const RhiGraphicsPipelineState& pipeline_state) override;
 
-        std::unique_ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline,
-                                                                       rx::memory::allocator& allocator) override;
+        std::unique_ptr<RhiResourceBinder> create_resource_binder_for_pipeline(const RhiPipeline& pipeline) override;
 
-        RhiBuffer* create_buffer(const RhiBufferCreateInfo& info, rx::memory::allocator& allocator) override;
+        RhiBuffer* create_buffer(const RhiBufferCreateInfo& info) override;
 
         void write_data_to_buffer(const void* data, mem::Bytes num_bytes, const RhiBuffer* buffer) override;
 
-        RhiSampler* create_sampler(const RhiSamplerCreateInfo& create_info, rx::memory::allocator& allocator) override;
+        RhiSampler* create_sampler(const RhiSamplerCreateInfo& create_info) override;
 
-        RhiImage* create_image(const renderpack::TextureCreateInfo& info, rx::memory::allocator& allocator) override;
+        RhiImage* create_image(const renderpack::TextureCreateInfo& info) override;
 
-        RhiSemaphore* create_semaphore(rx::memory::allocator& allocator) override;
+        RhiSemaphore* create_semaphore() override;
 
-        std::vector<RhiSemaphore*> create_semaphores(uint32_t num_semaphores, rx::memory::allocator& allocator) override;
+        std::vector<RhiSemaphore*> create_semaphores(uint32_t num_semaphores) override;
 
-        RhiFence* create_fence(bool signaled, rx::memory::allocator& allocator) override;
+        RhiFence* create_fence(bool signaled) override;
 
-        std::vector<RhiFence*> create_fences(uint32_t num_fences, bool signaled, rx::memory::allocator& allocator) override;
+        std::vector<RhiFence*> create_fences(uint32_t num_fences, bool signaled) override;
 
         void wait_for_fences(std::vector<RhiFence*> fences) override;
 
         void reset_fences(const std::vector<RhiFence*>& fences) override;
 
-        void destroy_renderpass(RhiRenderpass* pass, rx::memory::allocator& allocator) override;
+        void destroy_renderpass(RhiRenderpass* pass) override;
 
-        void destroy_framebuffer(RhiFramebuffer* framebuffer, rx::memory::allocator& allocator) override;
+        void destroy_framebuffer(RhiFramebuffer* framebuffer) override;
 
-        void destroy_texture(RhiImage* resource, rx::memory::allocator& allocator) override;
+        void destroy_texture(RhiImage* resource) override;
 
-        void destroy_semaphores(std::vector<RhiSemaphore*>& semaphores, rx::memory::allocator& allocator) override;
+        void destroy_semaphores(std::vector<RhiSemaphore*>& semaphores) override;
 
-        void destroy_fences(const std::vector<RhiFence*>& fences, rx::memory::allocator& allocator) override;
+        void destroy_fences(const std::vector<RhiFence*>& fences) override;
 
         RhiRenderCommandList* create_command_list(uint32_t thread_idx,
                                                   QueueType needed_queue_type,
-                                                  RhiRenderCommandList::Level level,
-                                                  rx::memory::allocator& allocator) override;
+                                                  RhiRenderCommandList::Level level) override;
 
         void submit_command_list(RhiRenderCommandList* cmds,
                                  QueueType queue,
@@ -175,12 +174,10 @@ namespace nova::renderer::rhi {
          *
          * \return The new PSO
          */
-        [[nodiscard]] ntl::Result<vk::Pipeline> compile_pipeline_state(const VulkanPipeline& state,
-                                                                       const VulkanRenderpass& renderpass,
-                                                                       rx::memory::allocator& allocator);
+        [[nodiscard]] ntl::Result<vk::Pipeline> compile_pipeline_state(const VulkanPipeline& state, const VulkanRenderpass& renderpass);
 
-        [[nodiscard]] std::optional<vk::DescriptorPool> create_descriptor_pool(const std::unordered_map<DescriptorType, uint32_t>& descriptor_capacity,
-                                                                              rx::memory::allocator& allocator);
+        [[nodiscard]] std::optional<vk::DescriptorPool> create_descriptor_pool(
+            const std::unordered_map<DescriptorType, uint32_t>& descriptor_capacity);
 
         /*!
          * \brief Gets the next available descriptor set for the standard pipeline layout
@@ -196,8 +193,7 @@ namespace nova::renderer::rhi {
         void return_standard_descriptor_sets(const std::vector<vk::DescriptorSet>& sets);
 
         std::vector<vk::DescriptorSet> create_descriptors(const std::vector<vk::DescriptorSetLayout>& descriptor_set_layouts,
-                                                         const std::vector<uint32_t>& variable_descriptor_max_counts,
-                                                         rx::memory::allocator& allocator) const;
+                                                          const std::vector<uint32_t>& variable_descriptor_max_counts) const;
 
         [[nodiscard]] vk::Fence get_next_submission_fence();
 
@@ -212,7 +208,7 @@ namespace nova::renderer::rhi {
         /*!
          * The index in the vector is the thread index, the key in the map is the queue family index
          */
-        std::vector<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
+        std::vector<std::unordered_map<uint32_t, vk::CommandPool>> command_pools_by_thread_idx;
 
         std::vector<FencedTask> fenced_tasks;
 
@@ -236,7 +232,7 @@ namespace nova::renderer::rhi {
 
         void create_device_and_queues();
 
-        bool does_device_support_extensions(VkPhysicalDevice device, const std::vector<char*>& required_device_extensions);
+        bool does_device_support_extensions(vk::PhysicalDevice device, const std::vector<char*>& required_device_extensions);
 
         void create_swapchain();
 
@@ -244,7 +240,7 @@ namespace nova::renderer::rhi {
 
         void create_standard_pipeline_layout();
 
-        [[nodiscard]] std::unordered_map<uint32_t, VkCommandPool> make_new_command_pools() const;
+        [[nodiscard]] std::unordered_map<uint32_t, vk::CommandPool> make_new_command_pools() const;
 #pragma endregion
 
 #pragma region Helpers
@@ -263,7 +259,7 @@ namespace nova::renderer::rhi {
         [[nodiscard]] uint32_t find_memory_type_with_flags(uint32_t search_flags,
                                                            MemorySearchMode search_mode = MemorySearchMode::Fuzzy) const;
 
-        [[nodiscard]] std::optional<VkShaderModule> create_shader_module(const std::vector<uint32_t>& spirv) const;
+        [[nodiscard]] std::optional<vk::ShaderModule> create_shader_module(const std::vector<uint32_t>& spirv) const;
 
         /*!
          * \brief Gets the image view associated with the given image
@@ -275,19 +271,19 @@ namespace nova::renderer::rhi {
          * The method checks an internal hash map. If there's already an image view for the given image then great,
          * otherwise one is created on-demand
          */
-        [[nodiscard]] static VkImageView image_view_for_image(const RhiImage* image);
+        [[nodiscard]] static vk::ImageView image_view_for_image(const RhiImage* image);
 
-        [[nodiscard]] static VkCommandBufferLevel to_vk_command_buffer_level(RhiRenderCommandList::Level level);
+        [[nodiscard]] static vk::CommandBufferLevel to_vk_command_buffer_level(RhiRenderCommandList::Level level);
 
         [[nodiscard]] static VulkanInputAssemblerLayout get_input_assembler_setup(const std::vector<RhiVertexField>& vertex_fields);
 #pragma endregion
 
 #pragma region Debugging
-        VkDebugUtilsMessengerEXT debug_callback{};
+        vk::DebugUtilsMessengerEXT debug_callback{};
 
-        static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
-                                                                    VkDebugUtilsMessageTypeFlagsEXT message_types,
-                                                                    const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+        static VKAPI_ATTR vk::Bool32 VKAPI_CALL debug_report_callback(vk::DebugUtilsMessageSeverityFlagBitsEXT message_severity,
+                                                                    vk::DebugUtilsMessageTypeFlagsEXT message_types,
+                                                                    const vk::DebugUtilsMessengerCallbackDataEXT* callback_data,
                                                                     void* render_device);
 #pragma endregion
     };

@@ -459,10 +459,10 @@ using RENDERDOC_WindowHandle = void*;
 
 // A helper macro for Vulkan, where the device handle cannot be used directly.
 //
-// Passing the VkInstance to this macro will return the RENDERDOC_DevicePointer to use.
+// Passing the vk::Instance to this macro will return the RENDERDOC_DevicePointer to use.
 //
 // Specifically, the value needed is the dispatch table pointer, which sits as the first
-// pointer-sized object in the memory pointed to by the VkInstance. Thus we cast to a void** and
+// pointer-sized object in the memory pointed to by the vk::Instance. Thus we cast to a void** and
 // indirect once.
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define RENDERDOC_DEVICEPOINTER_FROM_VKINSTANCE(inst) (*((void**) (inst)))

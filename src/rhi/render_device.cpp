@@ -5,15 +5,12 @@
 namespace nova::renderer::rhi {
     Swapchain* RenderDevice::get_swapchain() const { return swapchain; }
 
-    rx::memory::allocator& RenderDevice::get_allocator() const { return internal_allocator; }
-
-    RenderDevice::RenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator)
+    RenderDevice::RenderDevice(NovaSettingsAccessManager& settings, NovaWindow& window)
         : settings(settings),
-          internal_allocator(allocator),
           window(window),
           swapchain_size(settings.settings.window.width, settings.settings.window.height) {}
 
-    std::unique_ptr<RenderDevice> create_render_device(NovaSettingsAccessManager& settings, NovaWindow& window, rx::memory::allocator& allocator) {
-        return std::make_unique<VulkanRenderDevice>(&allocator, settings, window, allocator);
+    std::unique_ptr<RenderDevice> create_render_device(NovaSettingsAccessManager& settings, NovaWindow& window) {
+        return std::make_unique<VulkanRenderDevice>(settings, window);
     }
 } // namespace nova::renderer::rhi
