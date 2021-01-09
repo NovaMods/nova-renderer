@@ -10,7 +10,7 @@ namespace nova {
         
         virtual ~StdoutStream() = default;
 
-        rx_u64 on_write(const rx_byte* data, rx_u64 size) override;
+        rx_u64 on_write(const uint8_t* data, rx_u64 size) override;
 
         bool on_flush() override;
 

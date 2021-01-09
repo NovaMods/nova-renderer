@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 
 namespace nova::filesystem {
     inline std::string get_file_name(const std::string& path) {

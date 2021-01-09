@@ -77,11 +77,11 @@ namespace nova::renderer::rhi {
                                        size_t /* alignment */,
                                        VkSystemAllocationScope /* allocation_scope */) -> void* {
             auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);
-            return allocator->reallocate(reinterpret_cast<rx_byte*>(original), size);
+            return allocator->reallocate(reinterpret_cast<uint8_t*>(original), size);
         };
         callbacks.pfnFree = [](void* user_data, void* memory) {
             auto allocator = reinterpret_cast<rx::memory::allocator*>(user_data);
-            allocator->deallocate(reinterpret_cast<rx_byte*>(memory));
+            allocator->deallocate(reinterpret_cast<uint8_t*>(memory));
         };
 
         return callbacks;

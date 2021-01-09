@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include  <optional>
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 
 namespace nova::filesystem {
     /*!
@@ -76,7 +76,7 @@ namespace nova::filesystem {
          */
         std::unordered_map<std::string, bool> resource_existence;
 
-        rx::concurrency::mutex* resource_existence_mutex;
+        std::mutex* resource_existence_mutex;
 
         [[nodiscard]] std::optional<bool> does_resource_exist_in_map(const std::string& resource_string) const;
 

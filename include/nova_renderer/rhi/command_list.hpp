@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h> // needed for uint****
+#include <cstdint> // needed for uint****
 
 #include "nova_renderer/rhi/forward_decls.hpp"
 #include "nova_renderer/rhi/rhi_enums.hpp"

@@ -296,7 +296,7 @@ namespace nova::renderer {
          * \brief Constructs a Rendergraph which will allocate its internal memory from the provided allocator, and which will execute on
          * the provided device
          */
-        Rendergraph(rx::memory::allocator& allocator, rhi::RenderDevice& device);
+        explicit Rendergraph(rhi::RenderDevice& device);
 
         /*!
          * \brief Creates a new renderpass of the specified type using it's own create info
@@ -340,8 +340,6 @@ namespace nova::renderer {
     private:
         bool is_dirty = false;
 
-        rx::memory::allocator& allocator;
-
         rhi::RenderDevice& device;
 
         std::unordered_map<std::string, Renderpass*> renderpasses;
@@ -353,7 +351,7 @@ namespace nova::renderer {
     template <typename RenderpassType, typename... Args>
     RenderpassType* Rendergraph::create_renderpass(DeviceResources& resource_storage, Args&&... args) {
 
-        auto* renderpass = allocator.create<RenderpassType>(rx::utility::forward<Args>(args)...);
+        auto* renderpass = allocator.create<RenderpassType>(std::forward<Args>(args)...);
         const auto& create_info = RenderpassType::get_create_info();
 
         return add_renderpass(renderpass, create_info, resource_storage);

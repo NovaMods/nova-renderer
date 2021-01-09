@@ -5,7 +5,7 @@
 namespace nova {
     StdoutStream::StdoutStream() : rx::stream(k_flush | k_write) {}
 
-    rx_u64 StdoutStream::on_write(const rx_byte* data, const rx_u64 size) {
+    rx_u64 StdoutStream::on_write(const uint8_t* data, const rx_u64 size) {
         fwrite(data, size, 1, stdout);
         return size;
     }

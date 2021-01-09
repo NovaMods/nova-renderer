@@ -115,7 +115,7 @@ namespace nova::renderer {
         cmds.draw_indexed_mesh(3);
     }
 
-    Rendergraph::Rendergraph(rx::memory::allocator& allocator, rhi::RenderDevice& device) : allocator(allocator), device(device) {}
+    Rendergraph::Rendergraph(rhi::RenderDevice& device) : device(device) {}
 
     void Rendergraph::destroy_renderpass(const std::string& name) {
         if(Renderpass** renderpass = renderpasses.find(name)) {

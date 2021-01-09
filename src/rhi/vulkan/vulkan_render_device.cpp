@@ -1009,28 +1009,28 @@ namespace nova::renderer::rhi {
     void VulkanRenderDevice::destroy_renderpass(RhiRenderpass* pass, rx::memory::allocator& allocator) {
         ZoneScoped;        auto* vk_renderpass = static_cast<VulkanRenderpass*>(pass);
         vkDestroyRenderPass(device, vk_renderpass->pass, nullptr);
-        allocator.deallocate(reinterpret_cast<rx_byte*>(pass));
+        allocator.deallocate(reinterpret_cast<uint8_t*>(pass));
     }
 
     void VulkanRenderDevice::destroy_framebuffer(RhiFramebuffer* framebuffer, rx::memory::allocator& allocator) {
         ZoneScoped;        const auto* vk_framebuffer = static_cast<const VulkanFramebuffer*>(framebuffer);
         vkDestroyFramebuffer(device, vk_framebuffer->framebuffer, nullptr);
 
-        allocator.deallocate(reinterpret_cast<rx_byte*>(framebuffer));
+        allocator.deallocate(reinterpret_cast<uint8_t*>(framebuffer));
     }
 
     void VulkanRenderDevice::destroy_texture(RhiImage* resource, rx::memory::allocator& allocator) {
         ZoneScoped;        auto* vk_image = static_cast<VulkanImage*>(resource);
         vmaDestroyImage(vma, vk_image->image, vk_image->allocation);
 
-        allocator.deallocate(reinterpret_cast<rx_byte*>(resource));
+        allocator.deallocate(reinterpret_cast<uint8_t*>(resource));
     }
 
     void VulkanRenderDevice::destroy_semaphores(std::vector<RhiSemaphore*>& semaphores, rx::memory::allocator& allocator) {
         ZoneScoped;        semaphores.each_fwd([&](RhiSemaphore* semaphore) {
             auto* vk_semaphore = static_cast<VulkanSemaphore*>(semaphore);
             vkDestroySemaphore(device, vk_semaphore->semaphore, nullptr);
-            allocator.deallocate(reinterpret_cast<rx_byte*>(semaphore));
+            allocator.deallocate(reinterpret_cast<uint8_t*>(semaphore));
         });
     }
 
@@ -1040,7 +1040,7 @@ namespace nova::renderer::rhi {
             const VkAllocationCallbacks& vk_alloc = wrap_allocator(allocator);
             vkDestroyFence(device, vk_fence->fence, &vk_alloc);
 
-            allocator.deallocate(reinterpret_cast<rx_byte*>(fence));
+            allocator.deallocate(reinterpret_cast<uint8_t*>(fence));
         });
     }
 

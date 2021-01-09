@@ -3,7 +3,7 @@
 #include <array>
 #include <rx/core/concepts/no_copy.h>
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 
 #include "nova_renderer/constants.hpp"
 #include "nova_renderer/rhi/forward_decls.hpp"

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <rx/core/memory/allocator.h>
-#include <stdint.h>
+#include <cstdint>
+#include <vector>
 
 namespace nova::renderer {
     /*!
@@ -11,7 +11,7 @@ namespace nova::renderer {
      */
     class MaterialDataBuffer {
     public:
-        explicit MaterialDataBuffer(rx::memory::view buffer);
+        explicit MaterialDataBuffer(size_t num_bytes);
 
         MaterialDataBuffer(const MaterialDataBuffer& other) = delete;
         MaterialDataBuffer& operator=(const MaterialDataBuffer& other) = delete;
@@ -45,14 +45,14 @@ namespace nova::renderer {
         template <typename MaterialDataStruct>
         [[nodiscard]] uint32_t get_next_free_index();
 
-        [[nodiscard]] rx_byte* data() const;
+        [[nodiscard]] uint8_t* data() const;
 
     private:
-        rx::memory::view buffer;
+        std::vector<uint8_t> buffer;
 
         uint32_t num_allocated_bytes = 0;
     };
-
+    
     template <typename MaterialDataStruct>
     MaterialDataStruct& MaterialDataBuffer::at(uint32_t idx) {
         return reinterpret_cast<MaterialDataStruct*>(buffer.data)[idx];

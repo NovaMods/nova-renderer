@@ -760,13 +760,14 @@ namespace nova::renderer {
                 logger->error("Could not create scene output render target");
 
             } else {
-                dynamic_texture_infos.emplace(SCENE_OUTPUT_RT_NAME,
-                                              renderpack::TextureCreateInfo{SCENE_OUTPUT_RT_NAME,
-                                                                            renderpack::ImageUsage::RenderTarget,
-                                                                            {rhi::PixelFormat::Rgba8,
-                                                                             renderpack::TextureDimensionType::ScreenRelative,
-                                                                             1,
-                                                                             1}});
+                dynamic_texture_infos
+                    .emplace(SCENE_OUTPUT_RT_NAME,
+                             renderpack::TextureCreateInfo{.name = SCENE_OUTPUT_RT_NAME,
+                                                           .usage = renderpack::ImageUsage::RenderTarget,
+                                                           .format = {.pixel_format = rhi::PixelFormat::Rgba8,
+                                                                      .dimension_type = renderpack::TextureDimensionType::ScreenRelative,
+                                                                      .width = 1,
+                                                                      .height = 1}});
             }
         }
 
@@ -781,19 +782,19 @@ namespace nova::renderer {
                 logger->error("Could not create UI output render target");
 
             } else {
-                dynamic_texture_infos.emplace(UI_OUTPUT_RT_NAME,
-                                              renderpack::TextureCreateInfo{UI_OUTPUT_RT_NAME,
-                                                                            renderpack::ImageUsage::RenderTarget,
-                                                                            {rhi::PixelFormat::Rgba8,
-                                                                             renderpack::TextureDimensionType::ScreenRelative,
-                                                                             1,
-                                                                             1}});
+                dynamic_texture_infos
+                    .emplace(UI_OUTPUT_RT_NAME,
+                             renderpack::TextureCreateInfo{.name = UI_OUTPUT_RT_NAME,
+                                                           .usage = renderpack::ImageUsage::RenderTarget,
+                                                           .format = {.pixel_format = rhi::PixelFormat::Rgba8,
+                                                                      .dimension_type = renderpack::TextureDimensionType::ScreenRelative,
+                                                                      .width = 1,
+                                                                      .height = 1}});
             }
         }
     }
 
     void NovaRenderer::create_builtin_uniform_buffers() {
-        auto* material_data_memory = new uint8_t[MATERIAL_BUFFER_SIZE.b_count()];
         material_buffer = std::make_unique<MaterialDataBuffer>();
         for(uint32_t i = 0; i < settings->max_in_flight_frames; i++) {
             const auto buffer_name = fmt::format("{}_{}", MATERIAL_DATA_BUFFER_NAME, i);

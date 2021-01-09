@@ -57,7 +57,7 @@ namespace nova::renderer {
         std::unordered_map<std::string, std::string> builtin_files;
 
 #if NOVA_WINDOWS
-        rx::concurrency::mutex mtx;
+        std::mutex mtx;
 
         ULONG num_refs = 0;
 #endif

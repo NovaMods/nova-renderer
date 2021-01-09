@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace nova::renderer {
     using TextureId = uint32_t;

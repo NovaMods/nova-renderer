@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <stdint.h>
+#include <cstdint>
 #include <vulkan/vulkan.h>
 
 #include "nova_renderer/rhi/swapchain.hpp"

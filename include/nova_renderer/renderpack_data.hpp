@@ -6,7 +6,7 @@
 
 #include <glm/glm.hpp>
 #include <nlohmann/json.hpp>
-#include <stdint.h>
+#include <cstdint>
 #include <vulkan/vulkan.h>
 
 #include "rhi/rhi_enums.hpp"
@@ -314,8 +314,6 @@ namespace nova::renderer::renderpack {
          * \brief The height, in pixels, of the texture
          */
         float height = 0;
-
-        constexpr TextureFormat() = default;
 
         [[nodiscard]] glm::uvec2 get_size_in_pixels(const glm::uvec2& screen_size) const;
 

@@ -263,11 +263,11 @@ namespace nova::renderer {
 
         bool renderpacks_loaded = false;
 
-        rx::concurrency::mutex renderpacks_loading_mutex;
+        std::mutex renderpacks_loading_mutex;
 
         std::optional<renderpack::RenderpackData> loaded_renderpack;
 
-        Rendergraph* rendergraph;
+        std::unique_ptr<Rendergraph> rendergraph;
 #pragma endregion
 
 #pragma region Rendergraph
@@ -349,7 +349,7 @@ namespace nova::renderer {
 
     template <typename RenderpassType, typename... Args>
     RenderpassType* NovaRenderer::create_ui_renderpass(Args&&... args) {
-        return rendergraph->create_renderpass<RenderpassType>(*device_resources, rx::utility::forward<Args>(args)...);
+        return rendergraph->create_renderpass<RenderpassType>(*device_resources, std::forward<Args>(args)...);
     }
 
     template <typename MaterialType>
