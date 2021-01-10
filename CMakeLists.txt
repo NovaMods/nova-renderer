@@ -183,6 +183,9 @@ set(NOVA_SOURCE
         src/logging/console_log_stream.cpp
         
         src/windowing/window.cpp
+
+        src/render/backend/vulkan_render_backend.hpp
+        src/render/backend/vulkan_render_backend.cpp
         )
         
 ####################
@@ -287,6 +290,7 @@ set(COMMON_LINK_LIBS
         nlohmann_json::nlohmann_json
         spdlog::spdlog 
         spdlog::spdlog_header_only
+        vk-bootstrap
         vma::vma)
         
 set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} vulkan-1)

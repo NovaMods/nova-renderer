@@ -1,12 +1,13 @@
+include(FetchContent)
+include(IncludeTarget)
+include(TargetIncludesSystem)
+
 #############################
 # Overriding default values #
 #############################
 
 set(BUILD_DEMOS OFF CACHE BOOL "Disable demos" FORCE)
 set(BUILD_ICD OFF CACHE BOOL "Disable ICD" FORCE)
-
-include(IncludeTarget)
-include(TargetIncludesSystem)
 
 #########################
 # External dependencies #
@@ -49,3 +50,11 @@ include_directories("${CMAKE_CURRENT_LIST_DIR}/tracy")
 # VMA
 # Apparently they don't have an `include/` directory, you just include the src folder? Thanks AMD :|
 include_directories(${CMAKE_CURRENT_LIST_DIR}/VulkanMemoryAllocator/src)
+
+# Rando dependencies that no one likes
+FetchContent_Declare(
+    fetch_vk_bootstrap
+    GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap
+    GIT_TAG        master 
+)
+FetchContent_MakeAvailable(fetch_vk_bootstrap)

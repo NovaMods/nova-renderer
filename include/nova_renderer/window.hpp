@@ -1,20 +1,14 @@
 #pragma once
 
-// TODO: Figure out how to get rid of this include
 #include <functional>
+#include <vector>
 
 #include <glm/vec2.hpp>
-#include <vector>
 
 #include "nova_renderer/nova_settings.hpp"
 #include "nova_renderer/util/platform.hpp"
-#include "nova_renderer/window.hpp"
-#if NOVA_WINDOWS
 #include "nova_renderer/util/windows.hpp"
-
-#elif NOVA_LINUX
-#include "nova_renderer/util/x11_but_good.hpp"
-#endif
+#include "nova_renderer/window.hpp"
 
 // ReSharper disable once CppInconsistentNaming
 struct GLFWwindow;
@@ -83,15 +77,7 @@ namespace nova::renderer {
          */
         [[nodiscard]] glm::vec2 get_framebuffer_to_window_ratio() const;
 
-#if NOVA_WINDOWS
         [[nodiscard]] HWND get_window_handle() const;
-
-#elif NOVA_LINUX
-        [[nodiscard]] Window get_window_handle() const;
-
-        [[nodiscard]] Display* get_display() const;
-
-#endif
 
     private:
         GLFWwindow* window = nullptr;

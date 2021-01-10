@@ -1,5 +1,9 @@
 #pragma once
-#include <vulkan/vulkan.hpp>
+
+#include <cstdint>
+#include <vector>
+
+#include "../../rhi/vulkan/vulkan.hpp"
 
 namespace nova::renderer {
     /*!
@@ -12,7 +16,10 @@ namespace nova::renderer {
      */
     class VulkanBackend {
     public:
-        explicit VulkanBackend();
+        /*!
+         * \brief Initialize the Vulkan instance and device, created the command queues and memory allocators, registers debug helpers
+         */
+        explicit VulkanBackend(HWND window_handle);
 
         /*!
          * \brief Waits for the GPU to finish all in-flight frames, then destroys all resources and generally cleans up
@@ -50,7 +57,11 @@ namespace nova::renderer {
          */
         const static uint32_t num_gpu_frames{3};
 
+        std::vector<const char*> enabled_layer_names;
+
         vk::Instance instance;
+
+        VkSurfaceKHR surface;
 
         vk::Device device;
 
@@ -64,8 +75,19 @@ namespace nova::renderer {
         /*!
          * \brief Command buffers to submit at the end of the current frame
          */
-        std::vector<vk::CommandBuffer> batched_command_bufers;
+        std::vector<vk::CommandBuffer> batched_command_buffers;
 
         uint32_t frame_idx{0};
+
+#pragma region Init
+        void create_surface(HWND window_handle);
+#pragma endregion
+
+#pragma region Debug
+        static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+                                                                    VkDebugUtilsMessageTypeFlagsEXT message_types,
+                                                                    const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+                                                                    void* render_device);
+#pragma endregion
     };
 } // namespace nova::renderer
